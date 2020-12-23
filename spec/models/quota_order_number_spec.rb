@@ -25,8 +25,18 @@ RSpec.describe QuotaOrderNumber do
       end
     end
 
-    context 'when handled by the RPA' do
+    context 'when handled by the RPA with start code 094*' do
       let(:quota_order_number) { described_class.new(quota_order_number_id: '094504') }
+
+      describe '#quota_definition!' do
+        it 'returns nil' do
+          expect(quota_order_number.quota_definition!).to eq(nil)
+        end
+      end
+    end
+
+    context 'when handled by the RPA with start code 054*' do
+      let(:quota_order_number) { described_class.new(quota_order_number_id: '054504') }
 
       describe '#quota_definition!' do
         it 'returns nil' do
