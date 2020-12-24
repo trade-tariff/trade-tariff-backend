@@ -160,9 +160,9 @@ class MeasureValidator < TradeTariffBackend::Validator
       on: %i[create update],
       if: ->(record) {
         record.validity_start_date > Date.new(2007, 12, 31) &&
-          record.order_number.present? && record.ordernumber =~ /^09[012356789]/
+          record.ordernumber.present? && record.ordernumber =~ /^((09)|(05))[012356789]/
       } do
-    # Only quota order numbers managed by the first come first served principle are in scope; these order number are starting with '09'; except order numbers starting with '094'
+    # Only quota order numbers managed by the first come first served principle are in scope; these order number are starting with '09' or '05'; except order numbers starting with '094', '054'
     validates :validity_date_span, of: :order_number
   end
 end
