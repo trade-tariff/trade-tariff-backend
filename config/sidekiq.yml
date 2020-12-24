@@ -18,9 +18,9 @@
   #
   # Online converter: https://crontab.guru/#0_22_*_*_*
   #
-  UpdatesSynchronizerWorker:
-    cron: "0 22 * * *" # 10 PM every day
-    description: "UpdatesSynchronizerWorker will run every day at 10pm."
+  # UpdatesSynchronizerWorker:
+  #   cron: "0 22 * * *" # 10 PM every day
+  #   description: "UpdatesSynchronizerWorker will run every day at 10pm."
   TaricSequenceCheckWorker:
     cron: "0 14 * * 6" # 14:00 every Saturday
     description: "TaricSequenceCheckWorker will run every Saturday at 14:00."
