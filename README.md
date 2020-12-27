@@ -41,7 +41,7 @@ Please go through this updated [setup document](https://github.com/bitzesty/trad
 
 ## Load database
 
-Check out [wiki article on the subject](https://github.com/bitzesty/trade-tariff-backend/wiki/System-rebuild-procedure), or get a [recent database snapshot](mailto:support@bitzesty.com).
+Check out [wiki article on the subject](https://github.com/bitzesty/trade-tariff-backend/wiki/System-rebuild-procedure), or get a [recent database snapshot](mailto:trade-tariff-support@enginegroup.com).
 
 ## Performing daily updates
 

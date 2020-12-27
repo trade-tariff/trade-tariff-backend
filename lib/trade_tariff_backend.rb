@@ -35,6 +35,10 @@ module TradeTariffBackend
       ENV.fetch("TARIFF_SYNC_EMAIL")
     end
 
+    def use_cds?
+      ENV['CDS'] == 'true'
+    end
+
     def platform
       Rails.env
     end
@@ -58,11 +62,19 @@ module TradeTariffBackend
     THREAD_CURRENCY_KEY = :currency
 
     def currency=(currency)
-      Thread.current[THREAD_CURRENCY_KEY] = (currency || "EUR")
+      Thread.current[THREAD_CURRENCY_KEY] = (currency || currency_default)
     end
 
     def currency
-      Thread.current[THREAD_CURRENCY_KEY] || "EUR"
+      Thread.current[THREAD_CURRENCY_KEY] ||currency_default
+    end
+
+    def currency_default_gbp?
+      ENV.fetch('CURRENCY_GBP', 'false').to_s.downcase == 'true'
+    end
+  
+    def currency_default
+      currency_default_gbp? ? "GBP" : "EUR"
     end
 
     def data_migration_path

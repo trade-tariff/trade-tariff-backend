@@ -16,7 +16,6 @@ namespace :importer do
     end
   end
 
-
   namespace :cds do
     desc "Import CDS file"
     task import: %i[environment class_eager_load] do
