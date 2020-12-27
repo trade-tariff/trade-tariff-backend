@@ -36,7 +36,7 @@ module TradeTariffBackend
     end
 
     def use_cds?
-      ENV['CDS'] == 'true' && uk?
+      ENV['CDS'] == 'true'
     end
 
     def uk?
