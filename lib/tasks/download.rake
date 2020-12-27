@@ -16,7 +16,7 @@ namespace :tariff do
           end
         end
 
-        if ENV['CDS'] == 'true'
+        if TradeTariffBackend.use_cds?
           extract_file(filename(key)) if key.include?('.zip')
         end
       end
@@ -57,7 +57,7 @@ namespace :tariff do
     end
 
     def taric_files(s3)
-      if ENV['CDS'] == 'true'
+      if TradeTariffBackend.use_cds?
         s3.bucket(s3_bucket)
           .objects
           .collect(&:key)
@@ -71,11 +71,11 @@ namespace :tariff do
     end
 
     def s3_bucket
-      ENV['CDS'] ? 'cds-taric-dump' : 'tariff-production'
+      TradeTariffBackend.use_cds? ? 'cds-taric-dump' : 'tariff-production'
     end
 
     def filename(key)
-      ENV['CDS'] ? 'data/taric/' + key : key
+      TradeTariffBackend.use_cds? ? 'data/taric/' + key : key
     end
 
     def extract_file(filepath)
@@ -90,7 +90,7 @@ namespace :tariff do
   end
 
   def proceed_with_download?(filename)
-    return true unless ENV['CDS'] == 'true'
+    return true unless TradeTariffBackend.use_cds?
 
     !TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).present?
   end

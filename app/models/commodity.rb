@@ -104,18 +104,8 @@ class Commodity < GoodsNomenclature
       end.try(:children) || []
     }
 
-    if Rails.env.test? || Rails.env.development?
-      # Do not cache it in Test and Development environments.
-      #
-      func.call
-    else
-      # Cache for 3 hours
-      #
-      time_machine_key = Thread.current[:time_machine_now].strftime("%Y-%m-%d")
-      Rails.cache.fetch("commodity_#{goods_nomenclature_sid}_#{time_machine_key}_#{TradeTariffBackend.currency}_children", expires_in: 3.hours) do
-        func.call
-      end
-    end
+    func.call
+
   end
 
   def to_param

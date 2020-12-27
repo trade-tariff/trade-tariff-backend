@@ -54,13 +54,13 @@ class TaricImporter
   private
 
   def proceed_with_import?(filename)
-    return true unless ENV['CDS'] == 'true'
+    return true unless TradeTariffBackend.use_cds?
 
     !TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).present?
   end
 
   def post_import(file_path:, filename:)
-    create_update_entry(file_path: file_path, filename: filename) if ENV['CDS'] == 'true'
+    create_update_entry(file_path: file_path, filename: filename) if TradeTariffBackend.use_cds?
     ActiveSupport::Notifications.instrument("taric_imported.tariff_importer", filename: @taric_update.filename)
   end
 
