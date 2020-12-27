@@ -36,7 +36,15 @@ module TradeTariffBackend
     end
 
     def use_cds?
-      ENV['CDS'] == 'true'
+      ENV['CDS'] == 'true' && uk?
+    end
+
+    def uk?
+      service == 'uk'
+    end
+
+    def xi?
+      service == 'xi'
     end
 
     def platform
@@ -59,22 +67,13 @@ module TradeTariffBackend
       ENV["GOVUK_APP_DOMAIN"] == "tariff-backend-production.cloudapps.digital"
     end
 
-    THREAD_CURRENCY_KEY = :currency
-
-    def currency=(currency)
-      Thread.current[THREAD_CURRENCY_KEY] = (currency || currency_default)
-    end
+    SERVICE_CURRENCIES = {
+      'uk' => 'GBP',
+      'xi' => 'EUR'
+    }.freeze
 
     def currency
-      Thread.current[THREAD_CURRENCY_KEY] ||currency_default
-    end
-
-    def currency_default_gbp?
-      ENV.fetch('CURRENCY_GBP', 'false').to_s.downcase == 'true'
-    end
-  
-    def currency_default
-      currency_default_gbp? ? "GBP" : "EUR"
+      SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
 
     def data_migration_path
