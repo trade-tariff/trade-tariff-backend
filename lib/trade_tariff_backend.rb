@@ -11,6 +11,12 @@ module TradeTariffBackend
   autoload :Validator,       'trade_tariff_backend/validator'
 
   class << self
+    SERVICE_CURRENCIES = {
+      'uk' => 'GBP',
+      'xi' => 'EUR'
+    }.freeze
+
+
     def configure
       yield self
     end
@@ -66,11 +72,6 @@ module TradeTariffBackend
     def production?
       ENV["GOVUK_APP_DOMAIN"] == "tariff-backend-production.cloudapps.digital"
     end
-
-    SERVICE_CURRENCIES = {
-      'uk' => 'GBP',
-      'xi' => 'EUR'
-    }.freeze
 
     def currency
       SERVICE_CURRENCIES.fetch(service, 'GBP')
