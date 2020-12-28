@@ -142,8 +142,7 @@ describe DutyExpressionFormatter do
     context 'for all other duty expression types' do
       context 'duty amount present' do
         it 'result includes duty amount' do
-          expect(
-            described_class.format(duty_expression_id: '66',
+          expect( described_class.format(duty_expression_id: '66',
                                            duty_expression_description: 'abc',
                                            duty_amount: '55')
           ).to match /55/
@@ -180,12 +179,30 @@ describe DutyExpressionFormatter do
       end
 
       context 'monetary unit present' do
-        it 'result includes monetary unit' do
-          expect(
-            described_class.format(duty_expression_id: '66',
-                                           duty_expression_description: 'abc',
-                                           monetary_unit: 'EUR')
-          ).to match /EUR/
+        let(:options) do
+          {
+            duty_amount: 0.52,
+            duty_expression_id: '66',
+            duty_expression_description: 'abc',
+            monetary_unit: 'EUR',
+            formatted: formatted
+          }
+        end
+
+        context 'when formatted is `true`' do
+          let(:formatted) { true }
+
+          it 'result includes monetary unit' do
+            expect(described_class.format(options)).to eq('<span>0.52</span> EUR')
+          end
+        end
+
+        context 'when not formatted is `false`' do
+          let(:formatted) { false }
+
+          it 'result includes monetary unit' do
+            expect(described_class.format(options)).to eq('0.52 EUR')
+          end
         end
       end
 

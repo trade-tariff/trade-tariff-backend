@@ -16,7 +16,6 @@ module TradeTariffBackend
       'xi' => 'EUR'
     }.freeze
 
-
     def configure
       yield self
     end

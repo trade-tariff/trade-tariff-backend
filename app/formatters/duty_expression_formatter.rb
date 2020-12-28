@@ -57,7 +57,7 @@ class DutyExpressionFormatter
         end
         if duty_amount.present?
           output << if opts[:formatted]
-                      "<span title='#{old_duty_amount} #{old_monetary_unit}'>#{prettify(duty_amount)}</span>"
+                      html_formatted_duty_expression(duty_amount)
                     else
                       prettify(duty_amount).to_s
                     end
@@ -77,7 +77,7 @@ class DutyExpressionFormatter
       else
         if duty_amount.present?
           output << if opts[:formatted]
-                      "<span title='#{old_duty_amount} #{old_monetary_unit}'>#{prettify(duty_amount)}</span>"
+                      html_formatted_duty_expression(duty_amount)
                     else
                       prettify(duty_amount).to_s
                     end
@@ -101,6 +101,10 @@ class DutyExpressionFormatter
         end
       end
       output.join(" ").html_safe
+    end
+
+    def html_formatted_duty_expression(duty_amount)
+      "<span>#{prettify(duty_amount)}</span>"
     end
   end
 end
