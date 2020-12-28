@@ -15,6 +15,11 @@ describe DutyExpressionFormatter do
     let!(:measurement_unit_qualifier) {
       create(:measurement_unit_qualifier, measurement_unit_qualifier_code: measurement_unit_abbreviation.measurement_unit_qualifier)
     }
+    let(:currency_conversion_enabled) { true }
+
+    before do
+      allow(TradeTariffBackend).to receive(:currency_conversion_enabled?).and_return(currency_conversion_enabled)
+    end
 
     context 'for excise measure' do
       it 'does not fetch exchange rates' do
@@ -100,6 +105,22 @@ describe DutyExpressionFormatter do
                                            duty_expression_description: 'abc',
                                            monetary_unit: 'EUR')
           ).to match /EUR/
+        end
+
+        context 'when currency conversion is disabled' do
+          let(:currency_conversion_enabled) { false }
+
+          it 'does not check the currency' do
+            allow(TradeTariffBackend).to receive(:currency)
+
+            described_class.format(
+              duty_expression_id: '15',
+              duty_expression_description: 'abc',
+              monetary_unit: 'EUR'
+            )
+
+            expect(TradeTariffBackend).not_to have_received(:currency)
+          end
         end
       end
 
