@@ -11,10 +11,6 @@ module Api
         attributes :validity_start_date, :validity_end_date, :officialjournal_number,
                    :officialjournal_page
 
-        attribute :information_text do |regulation|
-          regulation&.information_text&.gsub(0xA0.chr('UTF-8'), '|')
-        end
-
         attribute :published_date do |regulation|
           regulation.try(:published_date)
         end
