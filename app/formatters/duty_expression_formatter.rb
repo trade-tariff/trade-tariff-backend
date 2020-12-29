@@ -103,6 +103,8 @@ class DutyExpressionFormatter
       output.join(" ").html_safe
     end
 
+    private
+
     def html_formatted_duty_expression(duty_amount)
       "<span>#{prettify(duty_amount)}</span>"
     end
