@@ -150,7 +150,7 @@ describe MeasureCondition do
       }
 
       it 'returns rendered requirement duty expression' do
-        expect(measure_condition.requirement).to eq "<span title='108.56 FOO'>108.56</span> FOO / <abbr title='BAR'>BAR</abbr>"
+        expect(measure_condition.requirement).to eq "<span>108.56</span> FOO / <abbr title='BAR'>BAR</abbr>"
       end
     end
   end
