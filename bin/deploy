@@ -31,7 +31,7 @@ HERE
 
 function notify() {
   curl -X POST \
-    --data-urlencode 'payload={"text": "'"$1"'", "channel": "'"#$SLACK_CHANNEL"'", "username": "cf-deploy", "icon_emoji": ":rocket:", "fields": [{"title": "ENV", "value": "'"$CF_SPACE"'", "short": true}, {"title": "SHA1", "value": "'"<https://github.com/bitzesty/trade-tariff-backend/compare/$GIT_OLD_REVISION...$GIT_NEW_REVISION|$GIT_NEW_REVISION>"'", "short": true}]}' \
+    --data-urlencode 'payload={"text": "'"$1"'", "channel": "'"#$SLACK_CHANNEL"'", "username": "cf-deploy", "icon_emoji": ":rocket:", "fields": [{"title": "ENV", "value": "'"$CF_SPACE"'", "short": true}, {"title": "SHA1", "value": "'"<https://github.com/TransformCore/trade-tariff-backend/compare/$GIT_OLD_REVISION...$GIT_NEW_REVISION|$GIT_NEW_REVISION>"'", "short": true}]}' \
     "$SLACK_WEBHOOK"
 }
 
