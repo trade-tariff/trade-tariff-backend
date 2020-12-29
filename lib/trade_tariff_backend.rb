@@ -60,6 +60,10 @@ module TradeTariffBackend
       ENV.fetch('SERVICE', 'uk')
     end
 
+    def deployed_service
+      ENV.fetch('SERVICE', 'uk-old')
+    end
+
     def deployed_environment
       PaasConfig.space
     end
