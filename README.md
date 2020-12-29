@@ -68,7 +68,6 @@ In case of any errors, changes (per single update) are roll-backed and record it
 
 We deploy to cloud foundry, so you need to have the CLI installed, and the following [cf plugin](https://github.com/bluemixgaragelondon/cf-blue-green-deploy) installed:
 
-
 Set the following ENV variables:
 * CF_USER
 * CF_PASSWORD
@@ -76,7 +75,6 @@ Set the following ENV variables:
 * CF_SPACE
 * CF_APP
 * CF_APP_WORKER
-* HEALTHCHECK_URL
 * SLACK_CHANNEL
 * SLACK_WEBHOOK
 
