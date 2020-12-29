@@ -9,10 +9,10 @@ describe UpdatesSynchronizerWorker, type: :worker do
     allow(TariffSynchronizer).to receive(:apply_cds)
   end
 
-  describe "#perfomr" do
+  describe "#perform" do
     context "for all envs" do
       before do
-        allow(PaasConfig).to receive(:space).and_return("test")
+        allow(TradeTariffBackend).to receive(:use_cds?).and_return(false)
       end
 
       it "invokes rollback" do
@@ -26,7 +26,7 @@ describe UpdatesSynchronizerWorker, type: :worker do
 
     context "for cds-test env" do
       before do
-        allow(PaasConfig).to receive(:space).and_return("cds-test")
+        allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
       end
 
       it "invokes rollback_cds" do

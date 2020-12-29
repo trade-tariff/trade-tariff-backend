@@ -8,7 +8,7 @@ class UpdatesSynchronizerWorker
     logger.info "Downloading..."
 
     # TODO: this check can be removed when we switch to CDS data.
-    if PaasConfig.space.to_s == 'cds-test'
+    if TradeTariffBackend.use_cds?
       TariffSynchronizer.download_cds
       logger.info "Applying..."
       TariffSynchronizer.apply_cds

@@ -2,10 +2,13 @@ name: "Production deployment"
 on: [workflow_dispatch]
 jobs:
   deploy_production:
-    if: github.ref == 'refs/heads/production_notyet'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 1
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        service: ["tariff-uk-backend-production", "tariff-xi-backend-production"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -17,25 +20,25 @@ jobs:
       - name: Setup Ruby
         uses: actions/setup-ruby@v1
         with:
-          ruby-version: 2.5.8
+          ruby-version: 2.7
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '12'
       - name: "Deploy production"
         env:
+          CF_APP_API_NAME: "${{ matrix.service }}"
+          CF_APP_ADMIN: "tariff-admin-production"
+          CF_APP_FRONTEND: "tariff-frontend-production"
           CF_ENDPOINT: "api.london.cloud.service.gov.uk"
-          CF_SPACE: production
-          CF_APP: "tariff-backend-production"
-          CF_APP_WORKER: "tariff-backend-worker-production"
-          CF_USER: ${{ secrets.CF_USER }}
-          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
           CF_ORG: ${{ secrets.CF_ORG }}
+          CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
+          CF_SPACE: production
+          CF_USER: ${{ secrets.CF_USER }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
         run: |
-          curl -v -L -o cf-cli_amd64.deb 'https://cli.run.pivotal.io/stable?release=debian64&source=github'
-          sudo dpkg -i cf-cli_amd64.deb
+          curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+          sudo dpkg -i cf.deb
           cf -v
           cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
           cf install-plugin blue-green-deploy -r CF-Community -f
