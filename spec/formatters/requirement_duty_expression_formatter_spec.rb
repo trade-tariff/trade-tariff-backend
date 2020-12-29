@@ -37,13 +37,35 @@ describe RequirementDutyExpressionFormatter do
     end
 
     context 'monetary unit and measurement unit are present' do
-      subject {
-        described_class.format(monetary_unit: 'EUR',
-                                                  measurement_unit: measurement_unit)
-      }
+      subject do
+        described_class.format(
+          duty_amount: 3.50,
+          monetary_unit: 'EUR',
+          measurement_unit: measurement_unit,
+          formatted: formatted
+        )
+      end
+
+      let(:formatted) { false }
+
+      it 'does not check the currency' do
+        allow(TradeTariffBackend).to receive(:currency)
+
+        subject
+
+        expect(TradeTariffBackend).not_to have_received(:currency)
+      end
 
       it 'properly formats result' do
-        expect(subject).to match /EUR \/ #{measurement_unit.description}/
+        expect(subject).to eq("3.50 EUR / #{measurement_unit.description}")
+      end
+
+      context 'when formatted in html' do
+        let(:formatted) { true }
+
+        it 'properly formats result' do
+          expect(subject).to eq("<span>3.50</span> EUR / <abbr title='#{measurement_unit.description}'>#{measurement_unit.description}</abbr>")
+        end
       end
     end
 

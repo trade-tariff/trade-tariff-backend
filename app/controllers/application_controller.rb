@@ -2,7 +2,6 @@ class ApplicationController < ActionController::Base
   respond_to :json, :html
 
   before_action :sample_requests_for_scout
-  before_action :configure_currency
   around_action :configure_time_machine
 
   unless Rails.application.config.consider_all_requests_local
@@ -60,10 +59,6 @@ class ApplicationController < ActionController::Base
     TimeMachine.at(actual_date) do
       yield
     end
-  end
-
-  def configure_currency
-    TradeTariffBackend.currency = params[:currency]&.to_s&.upcase
   end
 
   def sample_requests_for_scout

@@ -11,6 +11,11 @@ module TradeTariffBackend
   autoload :Validator,       'trade_tariff_backend/validator'
 
   class << self
+    SERVICE_CURRENCIES = {
+      'uk' => 'GBP',
+      'xi' => 'EUR'
+    }.freeze
+
     def configure
       yield self
     end
@@ -39,6 +44,14 @@ module TradeTariffBackend
       ENV['CDS'] == 'true'
     end
 
+    def uk?
+      service == 'uk'
+    end
+
+    def xi?
+      service == 'xi'
+    end
+
     def platform
       Rails.env
     end
@@ -59,22 +72,12 @@ module TradeTariffBackend
       ENV["GOVUK_APP_DOMAIN"] == "tariff-backend-production.cloudapps.digital"
     end
 
-    THREAD_CURRENCY_KEY = :currency
-
-    def currency=(currency)
-      Thread.current[THREAD_CURRENCY_KEY] = (currency || currency_default)
-    end
-
     def currency
-      Thread.current[THREAD_CURRENCY_KEY] ||currency_default
+      SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
 
-    def currency_default_gbp?
-      ENV.fetch('CURRENCY_GBP', 'false').to_s.downcase == 'true'
-    end
-  
-    def currency_default
-      currency_default_gbp? ? "GBP" : "EUR"
+    def currency_conversion_enabled?
+      ENV.fetch('CURRENCY_CONVERSION_ENABLED', 'false') == 'true'
     end
 
     def data_migration_path
