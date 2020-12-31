@@ -1,14 +1,13 @@
-name: "Staging deployment"
+name: "Dev deployment"
 on: [workflow_dispatch]
 jobs:
-  deploy_staging:
-    if: github.ref == 'refs/heads/master'
+  deploy_dev:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       max-parallel: 3
       matrix:
-        service: ["tariff-uk-backend-staging", "tariff-xi-backend-staging"]
+        service: ["tariff-uk-backend-dev", "tariff-xi-backend-dev"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
@@ -24,15 +23,15 @@ jobs:
       - uses: actions/setup-node@v2-beta
         with:
           node-version: '12'
-      - name: "Deploy staging"
+      - name: "Deploy dev"
         env:
           CF_APP_API_NAME: "${{ matrix.service }}"
-          CF_APP_ADMIN: "tariff-admin-staging"
-          CF_APP_FRONTEND: "tariff-frontend-staging"
+          CF_APP_ADMIN: "tariff-admin-dev"
+          CF_APP_FRONTEND: "tariff-frontend-dev"
           CF_ENDPOINT: "api.london.cloud.service.gov.uk"
           CF_ORG: ${{ secrets.CF_ORG }}
           CF_PASSWORD: ${{ secrets.CF_PASSWORD }}
-          CF_SPACE: staging
+          CF_SPACE: development
           CF_USER: ${{ secrets.CF_USER }}
           SLACK_CHANNEL: ${{ secrets.SLACK_CHANNEL }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
@@ -46,7 +45,7 @@ jobs:
           ./bin/deploy
   sentry_release:
     runs-on: ubuntu-latest
-    needs: [deploy_staging]
+    needs: [deploy_dev]
     steps:
       - uses: actions/checkout@v2
       - name: Create Sentry release
@@ -56,4 +55,4 @@ jobs:
           SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
           SENTRY_PROJECT: tariff-backend
         with:
-          environment: staging
+          environment: dev
