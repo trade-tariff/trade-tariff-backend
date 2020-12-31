@@ -24,7 +24,7 @@ describe UpdatesSynchronizerWorker, type: :worker do
       end
     end
 
-    context "for cds-test env" do
+    context "for cds env" do
       before do
         allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
       end

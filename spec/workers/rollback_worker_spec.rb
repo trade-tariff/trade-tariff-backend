@@ -20,9 +20,9 @@ describe RollbackWorker, type: :worker do
       end
     end
 
-    context "for cds-test env" do
+    context "for cds env" do
       before do
-        allow(PaasConfig).to receive(:space).and_return("cds-test")
+        allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
       end
 
       it "invokes rollback_cds" do

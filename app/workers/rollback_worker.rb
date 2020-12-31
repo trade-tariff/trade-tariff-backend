@@ -4,7 +4,7 @@ class RollbackWorker
   sidekiq_options queue: :rollbacks, retry: false
 
   def perform(date, redownload = false)
-    if PaasConfig.space.to_s == 'cds-test'
+    if TradeTariffBackend.use_cds?
       TariffSynchronizer.rollback_cds(date, redownload)
     else
       TariffSynchronizer.rollback(date, redownload)
