@@ -8,7 +8,7 @@ module HeadingService
     end
 
     def serializable_hash
-      heading_cache_key = "heading-#{heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{heading.declarable?}"
+      heading_cache_key = "heading-#{TradeTariffBackend.service}-#{heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{heading.declarable?}"
       if heading.declarable?
         Rails.cache.fetch('_' + heading_cache_key, expires_in: TradeTariffBackend.seconds_till_6am) do
           @measures = MeasurePresenter.new(heading.measures_dataset.eager({geographical_area: [:geographical_area_descriptions,
