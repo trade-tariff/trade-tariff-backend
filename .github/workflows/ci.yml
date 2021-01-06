@@ -70,7 +70,7 @@ jobs:
       fail-fast: false
       max-parallel: 3
       matrix:
-        service: ["tariff-backend-dev",  "tariff-uk-backend-dev",  "tariff-xi-backend-dev"]
+        service: ["tariff-uk-backend-dev",  "tariff-xi-backend-dev"]
     steps:
       - uses: actions/checkout@v2
       - uses: actions/cache@v2
