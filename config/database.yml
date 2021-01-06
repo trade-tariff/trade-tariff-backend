@@ -6,10 +6,12 @@ default: &default
 development:
   <<: *default
   database: tariff_development
+  host: localhost
 
 test:
   <<: *default
   database: tariff_test
+  host: localhost
 
 production:
   <<: *default
