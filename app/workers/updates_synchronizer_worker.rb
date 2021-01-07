@@ -12,8 +12,7 @@ class UpdatesSynchronizerWorker
       TariffSynchronizer.download_cds
       logger.info "Applying..."
       TariffSynchronizer.apply_cds
-    else
-      # TODO: this can be removed when we switch to CDS data because we don't need to run CHIEF and TARIC updates.
+    elsif TradeTariffBackend.xi?
       TariffSynchronizer.download
       logger.info "Applying..."
       TariffSynchronizer.apply
