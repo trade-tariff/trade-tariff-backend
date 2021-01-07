@@ -5,18 +5,14 @@ class RunChapterPdfWorker
 
   sidekiq_options retry: 2
 
-  def perform(currencies = ['EUR'])
+  def perform
     currency = TradeTariffBackend.currency
 
     batch = Sidekiq::Batch.new
     batch.description = "Produces PDFs for all chapters (in #{currency})"
     chapter_ids = Section.all.map(&:chapters).flatten.map(&:goods_nomenclature_sid)
     # chapter_ids = %w[47137 32338 54748] # <- short chapters
-    if currency === 'EUR'
-      ENV["MX_RATE_EUR_EUR"] = '1.0'
-    else
-      ENV["MX_RATE_EUR_#{currency}"] ||= MonetaryExchangeRate.latest(currency).to_s
-    end
+
     if chapter_ids.empty?
       puts "Cancelled batch #{batch.bid}. No chapters were specified."
     else
