@@ -2753,7 +2753,8 @@ CREATE VIEW public.geographical_areas AS
     geographical_areas1.oid,
     geographical_areas1.operation,
     geographical_areas1.operation_date,
-    geographical_areas1.filename
+    geographical_areas1.filename,
+    geographical_areas1.hjid
    FROM public.geographical_areas_oplog geographical_areas1
   WHERE ((geographical_areas1.oid IN ( SELECT max(geographical_areas2.oid) AS max
            FROM public.geographical_areas_oplog geographical_areas2
@@ -10720,5 +10721,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20180822124608_add_tariff_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20191022065944_update_filename_size.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20200905141023_create_forum_links.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006192051_add_filename_to_oplog_tables.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20201006193537_fix_index_on_chapters_sections.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20210108162807_add_hjid_to_geographical_areas_oplog.rb');INSERT INTO "schema_migrations" ("filename") VALUES ('20210108163822_add_hjid_to_geographical_area_memberships_oplog.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20201006193537_fix_index_on_chapters_sections.rb');INSERT INTO "schema_migrations" ("filename") VALUES ('20201006193537_fix_index_on_chapters_sections.rb');INSERT INTO "schema_migrations" ("filename") VALUES ('20210108162807_add_hjid_to_geographical_areas_oplog.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20210108163822_add_hjid_to_geographical_area_memberships_oplog.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20210108165416_add_hjid_to_geographical_areas_view.rb');
