@@ -2732,7 +2732,8 @@ CREATE TABLE public.geographical_areas_oplog (
     oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
-    filename text
+    filename text,
+    hjid integer
 );
 
 
@@ -10719,3 +10720,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20191022065944_update_file
 INSERT INTO "schema_migrations" ("filename") VALUES ('20200905141023_create_forum_links.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006192051_add_filename_to_oplog_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006193537_fix_index_on_chapters_sections.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20210108162807_add_hjid_to_geographical_areas_oplog.rb');
