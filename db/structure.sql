@@ -2674,7 +2674,9 @@ CREATE TABLE public.geographical_area_memberships_oplog (
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
     filename text,
-    hjid integer
+    hjid integer,
+    geographical_area_hjid integer,
+    geographical_area_group_hjid integer
 );
 
 
@@ -2692,7 +2694,9 @@ CREATE VIEW public.geographical_area_memberships AS
     geographical_area_memberships1.operation,
     geographical_area_memberships1.operation_date,
     geographical_area_memberships1.filename,
-    geographical_area_memberships1.hjid
+    geographical_area_memberships1.hjid,
+    geographical_area_memberships1.geographical_area_hjid,
+    geographical_area_memberships1.geographical_area_group_hjid
    FROM public.geographical_area_memberships_oplog geographical_area_memberships1
   WHERE ((geographical_area_memberships1.oid IN ( SELECT max(geographical_area_memberships2.oid) AS max
            FROM public.geographical_area_memberships_oplog geographical_area_memberships2
@@ -10727,3 +10731,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20210108162807_add_hjid_to
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210108163822_add_hjid_to_geographical_area_memberships_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210108165416_add_hjid_to_geographical_areas_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210108170325_add_hjid_to_geographical_area_memberships_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20210112135615_add_new_fields_to_geographical_area_memberships_oplog.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20210112160504_add_fields_to_geographical_area_memberships_view.rb');
