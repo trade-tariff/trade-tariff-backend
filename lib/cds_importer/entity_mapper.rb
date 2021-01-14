@@ -60,13 +60,13 @@ class CdsImporter
     def transform!
       return unless key == 'GeographicalArea' && xml_node.has_key?('geographicalAreaMembership')
 
-      mutateGeographicalAreaMembershipNode!
+      mutate_geographical_area_membership_node!
     end
 
-    def mutated_node
-      handleSingleMember!
+    def mutate_geographical_area_membership_node!
+      convert_single_geo_area_member_to_array!
 
-      xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
+      xml_node['geographicalAreaMembership'] = xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
         next unless geographical_area_membership.has_key?('geographicalAreaGroupSid')
 
         geographical_area = GeographicalArea[hjid: geographical_area_membership['geographicalAreaGroupSid']]
@@ -82,14 +82,10 @@ class CdsImporter
       xml_node['sid']
     end
 
-    def handleSingleMember!
+    def convert_single_geo_area_member_to_array!
       return if xml_node['geographicalAreaMembership'].kind_of?(Array)
 
-      xml_node['geographicalAreaMembership'] =[xml_node['geographicalAreaMembership']]
-    end
-
-    def mutateGeographicalAreaMembershipNode!
-      xml_node['geographicalAreaMembership'] = mutated_node
+      xml_node['geographicalAreaMembership'] = [xml_node['geographicalAreaMembership']]
     end
   end
 end
