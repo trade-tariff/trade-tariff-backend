@@ -4,10 +4,12 @@ class CdsImporter
 
     delegate :instrument, to: ActiveSupport::Notifications
 
-    def initialize(key, values)
+    attr_reader :xml_node, :key
+
+    def initialize(key, xml_node)
       @key = key
-      @values = values
-      @filename = @values.delete("filename")
+      @xml_node = xml_node
+      @filename = xml_node.delete("filename")
     end
 
     def import
@@ -15,11 +17,13 @@ class CdsImporter
       # it means that every selected mapper requires fetched by this xml key
       # sort mappers to apply top level first
       # e.g. Footnote before FootnoteDescription
-      mappers = ALL_MAPPERS.select  { |m| m.mapping_root == @key }
+      mappers = ALL_MAPPERS.select  { |m| m.mapping_root == key }
                            .sort_by { |m| m.mapping_path ? m.mapping_path.length : 0 }
 
+      transform!
+
       mappers.each do |mapper|
-        instances = mapper.new(@values).parse
+        instances = mapper.new(xml_node).parse
         instances.each do |i|
           if TariffSynchronizer.cds_logger_enabled
             save_record(i)
@@ -49,8 +53,43 @@ class CdsImporter
     def save_record(record)
       save_record!(record)
     rescue StandardError => e
-      instrument("cds_error.cds_importer", record: record, xml_key: @key, xml_node: @values, exception: e)
+      instrument("cds_error.cds_importer", record: record, xml_key: key, xml_node: xml_node, exception: e)
       nil
+    end
+
+    def transform!
+      return unless key == 'GeographicalArea' && xml_node.has_key?('geographicalAreaMembership')
+
+      mutateGeographicalAreaMembershipNode!
+    end
+
+    def mutated_node
+      handleSingleMember!
+
+      xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
+        next unless geographical_area_membership.has_key?('geographicalAreaGroupSid')
+
+        geographical_area = GeographicalArea[hjid: geographical_area_membership['geographicalAreaGroupSid']]
+
+        geographical_area_membership['geographicalAreaSid'] = geographical_area&.geographical_area_sid
+        geographical_area_membership['geographicalAreaGroupSid'] = geographical_area_group_sid.to_i
+
+        array << geographical_area_membership
+      end
+    end
+
+    def geographical_area_group_sid
+      xml_node['sid']
+    end
+
+    def handleSingleMember!
+      return if xml_node['geographicalAreaMembership'].kind_of?(Array)
+
+      xml_node['geographicalAreaMembership'] =[xml_node['geographicalAreaMembership']]
+    end
+
+    def mutateGeographicalAreaMembershipNode!
+      xml_node['geographicalAreaMembership'] = mutated_node
     end
   end
 end
