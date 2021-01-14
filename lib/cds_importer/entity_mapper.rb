@@ -20,9 +20,9 @@ class CdsImporter
       mappers = ALL_MAPPERS.select  { |m| m.mapping_root == key }
                            .sort_by { |m| m.mapping_path ? m.mapping_path.length : 0 }
 
-      transform!
-
       mappers.each do |mapper|
+        transform! if mapper == CdsImporter::EntityMapper::GeographicalAreaMembershipMapper
+
         instances = mapper.new(xml_node).parse
         instances.each do |i|
           if TariffSynchronizer.cds_logger_enabled
@@ -58,7 +58,7 @@ class CdsImporter
     end
 
     def transform!
-      return unless key == 'GeographicalArea' && xml_node.has_key?('geographicalAreaMembership')
+      return unless xml_node.has_key?('geographicalAreaMembership')
 
       mutate_geographical_area_membership_node!
     end
@@ -67,6 +67,7 @@ class CdsImporter
       convert_single_geo_area_member_to_array!
 
       xml_node['geographicalAreaMembership'] = xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
+
         next unless geographical_area_membership.has_key?('geographicalAreaGroupSid')
 
         geographical_area = GeographicalArea[hjid: geographical_area_membership['geographicalAreaGroupSid']]

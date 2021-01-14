@@ -21,7 +21,14 @@ describe CdsImporter::EntityMapper do
   let(:mapper) { described_class.new('AdditionalCode', xml_node) }
 
   before do
-    stub_const('CdsImporter::EntityMapper::ALL_MAPPERS', [CdsImporter::EntityMapper::AdditionalCodeMapper])
+    stub_const(
+      'CdsImporter::EntityMapper::ALL_MAPPERS',
+      [
+        CdsImporter::EntityMapper::AdditionalCodeMapper,
+        CdsImporter::EntityMapper::GeographicalAreaMapper,
+        CdsImporter::EntityMapper::GeographicalAreaMembershipMapper
+      ]
+    )
   end
 
   describe '#import' do
