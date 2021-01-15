@@ -39,7 +39,6 @@ gem 'bootsnap', require: false
 gem 'gds-sso', '~> 13', '>= 13.6.0'
 gem 'hashie', '~> 4'
 gem 'holidays'
-gem 'lograge', '>= 0.3.6'
 gem 'logstash-event'
 gem 'nokogiri', '>= 1.10.9'
 gem 'ox', '>= 2.8.1'
@@ -60,6 +59,11 @@ gem 'tilt'
 gem 'combine_pdf'
 gem 'sidekiq-batch'
 gem 'uktt', '~> 0.2.16', git: 'https://github.com/TransformCore/uktt.git'
+
+# Logging
+gem "lograge"
+gem "semantic_logger"
+gem 'rails_semantic_logger'
 
 group :development do
   gem 'foreman'
