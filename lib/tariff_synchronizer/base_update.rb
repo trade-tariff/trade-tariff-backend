@@ -32,10 +32,10 @@ module TariffSynchronizer
       end
     end
 
-    APPLIED_STATE = "A".freeze
-    PENDING_STATE = "P".freeze
-    FAILED_STATE  = "F".freeze
-    MISSING_STATE = "M".freeze
+    APPLIED_STATE = 'A'.freeze
+    PENDING_STATE = 'P'.freeze
+    FAILED_STATE  = 'F'.freeze
+    MISSING_STATE = 'M'.freeze
 
     self.unrestrict_primary_key
 
@@ -157,7 +157,7 @@ module TariffSynchronizer
       end
 
       def update_type
-        raise "Update Type should be specified in inheriting class"
+        raise 'Update Type should be specified in inheriting class'
       end
 
     private
@@ -177,7 +177,7 @@ module TariffSynchronizer
       end
 
       def notify_about_missing_updates
-        instrument("missing_updates.tariff_synchronizer",
+        instrument('missing_updates.tariff_synchronizer',
                    update_type: update_type,
                    count: TariffSynchronizer.warning_day_count)
       end

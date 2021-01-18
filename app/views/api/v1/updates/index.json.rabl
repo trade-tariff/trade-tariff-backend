@@ -13,4 +13,4 @@ child @collection => :updates do
   end
 end
 
-extends "api/v1/shared/pagination"
+extends 'api/v1/shared/pagination'

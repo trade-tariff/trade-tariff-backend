@@ -65,13 +65,13 @@ module TradeTariffBackend
     private
 
     def define_up_runner(&block)
-      raise ArgumentError.new("#define_up_runner expects block to be passed in") unless block_given?
+      raise ArgumentError.new('#define_up_runner expects block to be passed in') unless block_given?
 
       @up_runner = Runner.new(self, :up, &block)
     end
 
     def define_down_runner(&block)
-      raise ArgumentError.new("#define_down_runner expects block to be passed in") unless block_given?
+      raise ArgumentError.new('#define_down_runner expects block to be passed in') unless block_given?
 
       @down_runner = Runner.new(self, :down, &block)
     end

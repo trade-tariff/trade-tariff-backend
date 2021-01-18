@@ -20,7 +20,7 @@ class ChiefTransformer
         unless record.conformant?
           record.invalidated_at = Time.now
 
-          instrument("conformance_error.chief_transformer", record: record)
+          instrument('conformance_error.chief_transformer', record: record)
         end
 
         record.save

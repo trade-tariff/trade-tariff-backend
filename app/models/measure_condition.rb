@@ -111,6 +111,6 @@ class MeasureCondition < Sequel::Model
   end
 
   def duty_expression
-    measure_condition_components.map(&:formatted_duty_expression).join(" ")
+    measure_condition_components.map(&:formatted_duty_expression).join(' ')
   end
 end

@@ -31,7 +31,7 @@ class RunChapterPdfWorker
   class BatchCallback
     def on_complete(status, options)
       if Rails.env.development?
-        subject = "One or more PDF chapters were not created"
+        subject = 'One or more PDF chapters were not created'
         message = "One or more PDF chapters were not created: #{status.failures}"
         email_results(subject, message, options)
         puts "Batch has #{status.failures} failures" if status.failures != 0

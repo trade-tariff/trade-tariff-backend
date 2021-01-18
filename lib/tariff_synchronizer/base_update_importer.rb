@@ -49,9 +49,9 @@ module TariffSynchronizer
                 end
 
         @database_queries.push(
-          format("(%{class_name}) %{sql} %{binds}",
+          format('(%{class_name}) %{sql} %{binds}',
                  class_name: event.payload[:name],
-                 sql: event.payload[:sql].squeeze(" "),
+                 sql: event.payload[:sql].squeeze(' '),
                  binds: binds)
         )
       end
@@ -97,21 +97,21 @@ module TariffSynchronizer
             errors: record.errors,
             xml_key: xml_key,
             xml_node: xml_node,
-            exception: exception.class.to_s + ": " + exception.message.to_s
+            exception: exception.class.to_s + ': ' + exception.message.to_s
           }.to_json
         )
       end
     end
 
     def persist_exception_for_review(e)
-      @base_update.update(exception_class: e.class.to_s + ": " + e.message.to_s,
+      @base_update.update(exception_class: e.class.to_s + ': ' + e.message.to_s,
                           exception_backtrace: e.backtrace.join("\n"),
                           exception_queries: @database_queries.join("\n"))
     end
 
     def notify_exception(exception)
       ActiveSupport::Notifications.instrument(
-        "failed_update.tariff_synchronizer",
+        'failed_update.tariff_synchronizer',
         exception: exception,
         update: @base_update,
         database_queries: @database_queries

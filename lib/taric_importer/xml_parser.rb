@@ -57,7 +57,7 @@ class TaricImporter
 
       def replace_dots(key)
         # Rails requires name attributes with underscore
-        key.tr(".".freeze, "_".freeze)
+        key.tr('.'.freeze, '_'.freeze)
       end
     end
   end

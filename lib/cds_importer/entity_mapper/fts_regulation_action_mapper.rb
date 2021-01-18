@@ -7,17 +7,17 @@
 class CdsImporter
   class EntityMapper
     class FtsRegulationActionMapper < BaseMapper
-      self.entity_class = "FtsRegulationAction".freeze
+      self.entity_class = 'FtsRegulationAction'.freeze
 
-      self.mapping_root = "FullTemporaryStopRegulation".freeze
+      self.mapping_root = 'FullTemporaryStopRegulation'.freeze
 
-      self.mapping_path = "ftsRegulationAction".freeze
+      self.mapping_path = 'ftsRegulationAction'.freeze
 
-      self.exclude_mapping = ["metainfo.origin", "validityStartDate", "validityEndDate"].freeze
+      self.exclude_mapping = ['metainfo.origin', 'validityStartDate', 'validityEndDate'].freeze
 
       self.entity_mapping = base_mapping.merge(
-        "regulationRoleType.regulationRoleTypeId" => :fts_regulation_role,
-        "fullTemporaryStopRegulationId" => :fts_regulation_id,
+        'regulationRoleType.regulationRoleTypeId' => :fts_regulation_role,
+        'fullTemporaryStopRegulationId' => :fts_regulation_id,
         "#{mapping_path}.stoppedRegulationRole" => :stopped_regulation_role,
         "#{mapping_path}.stoppedRegulationId" => :stopped_regulation_id
       ).freeze

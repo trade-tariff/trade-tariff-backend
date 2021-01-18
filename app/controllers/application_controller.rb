@@ -16,7 +16,7 @@ class ApplicationController < ActionController::Base
       format.any { 
         response.headers['Content-Type'] = 'application/json'
         serializer = TradeTariffBackend.error_serializer(request)
-        render json: serializer.serialized_errors(error: "404 - Not Found"), status: 404
+        render json: serializer.serialized_errors(error: '404 - Not Found'), status: 404
       }
     end
   end
@@ -43,7 +43,7 @@ class ApplicationController < ActionController::Base
 
   def append_info_to_payload(payload)
     super
-    payload[:user_agent] = request.headers["HTTP_X_ORIGINAL_USER_AGENT"].presence || request.env["HTTP_USER_AGENT"]
+    payload[:user_agent] = request.headers['HTTP_X_ORIGINAL_USER_AGENT'].presence || request.env['HTTP_USER_AGENT']
   end
 
   private

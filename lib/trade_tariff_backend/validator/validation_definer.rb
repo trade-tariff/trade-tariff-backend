@@ -39,7 +39,7 @@ module TradeTariffBackend
       end
 
       def validation
-        raise ArgumentError.new("Validation block without arguments expects validation :validation_type to be provided") if validation_type.blank?
+        raise ArgumentError.new('Validation block without arguments expects validation :validation_type to be provided') if validation_type.blank?
 
         validation_class_for(validation_type).new(identifiers, description, options.merge!(validation_options: validation_options))
       end

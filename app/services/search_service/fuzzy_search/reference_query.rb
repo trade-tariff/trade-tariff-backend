@@ -20,7 +20,7 @@ class SearchService
                       { term: { reference_class: index.type.capitalize } },
                       {
                         nested: {
-                          path: "reference",
+                          path: 'reference',
                           query: {
                             bool: {
                               must: { match_all: {} },
@@ -31,8 +31,8 @@ class SearchService
                                     {
                                       bool: {
                                         must: [
-                                          { range: { "reference.validity_start_date" => { lte: date } } },
-                                          { range: { "reference.validity_end_date" => { gte: date } } }
+                                          { range: { 'reference.validity_start_date' => { lte: date } } },
+                                          { range: { 'reference.validity_end_date' => { gte: date } } }
                                         ]
                                       }
                                     },
@@ -41,8 +41,8 @@ class SearchService
                                     {
                                       bool: {
                                         must: [
-                                          { range: { "reference.validity_start_date" => { lte: date } } },
-                                          { bool: { must_not: { exists: { field: "reference.validity_end_date" } } } }
+                                          { range: { 'reference.validity_start_date' => { lte: date } } },
+                                          { bool: { must_not: { exists: { field: 'reference.validity_end_date' } } } }
                                         ]
                                       }
                                     },
@@ -50,8 +50,8 @@ class SearchService
                                     {
                                       bool: {
                                         must: [
-                                          { bool: { must_not: { exists: { field: "reference.validity_start_date" } } } },
-                                          { bool: { must_not: { exists: { field: "reference.validity_end_date" } } } }
+                                          { bool: { must_not: { exists: { field: 'reference.validity_start_date' } } } },
+                                          { bool: { must_not: { exists: { field: 'reference.validity_end_date' } } } }
                                         ]
                                       }
                                     }

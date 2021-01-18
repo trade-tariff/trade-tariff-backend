@@ -21,7 +21,7 @@ module TariffSynchronizer
       return if daily_files.empty?
 
       range.each do |date|
-        file = daily_files.find { |df| df['filename'][23..30] == date.strftime("%Y%m%d") }
+        file = daily_files.find { |df| df['filename'][23..30] == date.strftime('%Y%m%d') }
         next unless file
         TariffDownloader.new(file['filename'], file['downloadURL'], date, TariffSynchronizer::CdsUpdate).perform
       end
@@ -40,15 +40,15 @@ module TariffSynchronizer
         https = Net::HTTP.new(uri.host, uri.port)
         https.use_ssl = true
         request = Net::HTTP::Get.new(uri.request_uri)
-        request["User-Agent"] = "Trade Tariff Backend"
-        request["Accept"] = "application/vnd.hmrc.1.0+json"
-        request["Authorization"] = "Bearer #{access_token}"
+        request['User-Agent'] = 'Trade Tariff Backend'
+        request['Accept'] = 'application/vnd.hmrc.1.0+json'
+        request['Authorization'] = "Bearer #{access_token}"
         https.request(request)
       end
     end
 
     def log_request_to_cds_daily_updates
-      instrument("get_cds_daily_updates.tariff_synchronizer", date: request_date)
+      instrument('get_cds_daily_updates.tariff_synchronizer', date: request_date)
     end
 
     def access_token

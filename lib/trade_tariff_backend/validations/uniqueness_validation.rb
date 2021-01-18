@@ -4,7 +4,7 @@ module TradeTariffBackend
       def valid?(record = nil)
         args = validation_options[:of]
 
-        raise ArgumentError.new("validates :uniqueness expects parameter of: Array") if args.blank?
+        raise ArgumentError.new('validates :uniqueness expects parameter of: Array') if args.blank?
 
         criteria = record.values.slice(*args)
         ds = record.model.filter(criteria)

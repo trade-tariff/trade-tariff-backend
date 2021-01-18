@@ -1,10 +1,10 @@
 namespace :factory_girl do
-  desc "Verify that all FactoryGirl factories are valid"
+  desc 'Verify that all FactoryGirl factories are valid'
   task lint: :environment do
     if Rails.env.test?
-      print "Linting factories..."
+      print 'Linting factories...'
 
-      require_relative "../../spec/support/factory_girl"
+      require_relative '../../spec/support/factory_girl'
 
       DatabaseCleaner.clean_with(:truncation)
       DatabaseCleaner.cleaning do

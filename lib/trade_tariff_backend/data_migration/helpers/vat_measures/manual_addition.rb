@@ -20,7 +20,7 @@ module TradeTariffBackend
                 end
               end
 
-              debug_it("Script completed!")
+              debug_it('Script completed!')
               debug_it("  - deleted_list (#{deleted_list.size}): #{deleted_list.join(', ')}")
             end
 
@@ -38,22 +38,22 @@ module TradeTariffBackend
 
             def mfcm_ops(measure_candidate_ops)
               commodity_code = measure_candidate_ops[0]
-              msrgp_code, msr_type = measure_candidate_ops[1].split(" ")
+              msrgp_code, msr_type = measure_candidate_ops[1].split(' ')
               validity_start_date = measure_candidate_ops[2].to_datetime
 
               ops = {
                 fe_tsmp: validity_start_date,
-                amend_indicator: "I",
+                amend_indicator: 'I',
                 msrgp_code: msrgp_code,
                 msr_type: msr_type,
-                tty_code: "B00",
+                tty_code: 'B00',
                 tar_msr_no: nil,
                 le_tsmp: nil,
                 audit_tsmp: nil,
                 cmdty_code: commodity_code,
-                cmdty_msr_xhdg: (msr_type == "Z" ? "Y" : "N"),
-                null_tri_rqd: "N",
-                exports_use_ind: "N"
+                cmdty_msr_xhdg: (msr_type == 'Z' ? 'Y' : 'N'),
+                null_tri_rqd: 'N',
+                exports_use_ind: 'N'
               }
 
               debug_it("[#{commodity_code} - '#{msrgp_code}#{msr_type}'] options: #{ops.inspect}")
@@ -80,20 +80,20 @@ module TradeTariffBackend
               Measure.find(
                 goods_nomenclature_item_id: measure_candidate_ops[0],
                 measure_type_id: clean_up_whitespaces(measure_candidate_ops[1]),
-                operation: "C"
+                operation: 'C'
               )
             end
 
             def clean_up_whitespaces(v)
-              v.gsub(" ", "")
+              v.gsub(' ', '')
             end
 
             def debug_it(message)
-              puts ""
-              puts "-" * 100
+              puts ''
+              puts '-' * 100
               puts " #{message}"
-              puts "-" * 100
-              puts ""
+              puts '-' * 100
+              puts ''
             end
 
             def up_apply(list)
@@ -150,7 +150,7 @@ module TradeTariffBackend
                 candidates.persist
                 debug_it("#{candidate_measures.count} candidate measures persisted!")
 
-                debug_it("Script completed!")
+                debug_it('Script completed!')
 
                 added_list.map do |item|
                   debug_it("  https://www.trade-tariff.service.gov.uk/trade-tariff/commodities/#{clean_up_whitespaces(item)}")
@@ -158,7 +158,7 @@ module TradeTariffBackend
 
                 debug_it("  - skipped (#{skipped_list.size}): #{skipped_list.join(', ')}")
               else
-                debug_it("No any measure candidates found!")
+                debug_it('No any measure candidates found!')
               end
 
               #

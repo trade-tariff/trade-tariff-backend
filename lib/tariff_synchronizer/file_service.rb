@@ -19,7 +19,7 @@ module TariffSynchronizer
         if Rails.env.production?
           bucket.object(file_path).put(body: body)
         else
-          File.open(file_path, "wb") { |f| f.write(body) }
+          File.open(file_path, 'wb') { |f| f.write(body) }
         end
       end
 
@@ -49,14 +49,14 @@ module TariffSynchronizer
 
       def file_presigned_url(file_path)
         if Rails.env.production?
-          bucket.object(file_path).presigned_url("get")
+          bucket.object(file_path).presigned_url('get')
         else
           file_path
         end
       end
 
       def bucket
-        Aws::S3::Resource.new.bucket(ENV["AWS_BUCKET_NAME"])
+        Aws::S3::Resource.new.bucket(ENV['AWS_BUCKET_NAME'])
       end
     end
   end

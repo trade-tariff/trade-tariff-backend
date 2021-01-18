@@ -1,4 +1,4 @@
-require "tariff_synchronizer/taric_file_name_generator"
+require 'tariff_synchronizer/taric_file_name_generator'
 
 module TariffSynchronizer
   # Download pending updates TARIC files
@@ -38,12 +38,12 @@ module TariffSynchronizer
 
     def create_record_for_empty_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument("blank_update.tariff_synchronizer", date: date, url: url)
+      instrument('blank_update.tariff_synchronizer', date: date, url: url)
     end
 
     def create_record_for_exceeded_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument("retry_exceeded.tariff_synchronizer", date: date, url: url)
+      instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
     end
 
     def create_record_for_not_found_response
@@ -51,7 +51,7 @@ module TariffSynchronizer
       return if date >= Date.current
 
       update_or_create(BaseUpdate::MISSING_STATE, missing_filename)
-      instrument("not_found.tariff_synchronizer", date: date, url: url)
+      instrument('not_found.tariff_synchronizer', date: date, url: url)
     end
 
     def missing_filename
@@ -65,7 +65,7 @@ module TariffSynchronizer
     end
 
     def log_request_to_taric_update
-      instrument("get_taric_update_name.tariff_synchronizer", date: date, url: url)
+      instrument('get_taric_update_name.tariff_synchronizer', date: date, url: url)
     end
   end
 end

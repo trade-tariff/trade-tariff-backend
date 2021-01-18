@@ -19,7 +19,7 @@ class ChiefTransformer
   class TransformException < StandardError
     attr_reader :original
 
-    def initialize(msg = "ChiefTransformer::TransformException", original=$!)
+    def initialize(msg = 'ChiefTransformer::TransformException', original=$!)
       super(msg)
       @original = original
     end
@@ -41,7 +41,7 @@ class ChiefTransformer
   self.per_page = 1000
 
   def invoke(work_mode = :update, chief = nil)
-    instrument("start_transform.chief_transformer", mode: work_mode)
+    instrument('start_transform.chief_transformer', mode: work_mode)
 
     unless work_mode.in? work_modes
       raise TransformException.new("Invalid work mode, options: #{work_modes}")

@@ -52,11 +52,11 @@ class SearchReference < Sequel::Model
 
           pattern = case klass_name
                     when 'Chapter'
-                      id_map.keys.map { |key| "#{key}________" }.join("|")
+                      id_map.keys.map { |key| "#{key}________" }.join('|')
                     when 'Heading'
-                      id_map.keys.map { |key| "#{key}______" }.join("|")
+                      id_map.keys.map { |key| "#{key}______" }.join('|')
                     when 'Commodity'
-                      id_map.keys.join("|")
+                      id_map.keys.join('|')
                     end
 
           klass.where("goods_nomenclatures.goods_nomenclature_item_id SIMILAR TO '#{pattern}'").all do |ref|

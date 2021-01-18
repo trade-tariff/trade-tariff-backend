@@ -6,7 +6,7 @@ module TariffSynchronizer
       attr_reader :url, :original
 
       def initialize(url, original)
-        super("TariffSynchronizer::TariffUpdatesRequester::DownloadException")
+        super('TariffSynchronizer::TariffUpdatesRequester::DownloadException')
 
         @url = url
         @original = original
@@ -35,13 +35,13 @@ module TariffSynchronizer
             return response
           else
             @retry_count -= 1
-            ActiveSupport::Notifications.instrument("delay_download.tariff_synchronizer", url: @url, response_code: response.response_code)
+            ActiveSupport::Notifications.instrument('delay_download.tariff_synchronizer', url: @url, response_code: response.response_code)
             sleep TariffSynchronizer.request_throttle
           end
         rescue DownloadException => exception
-          ActiveSupport::Notifications.instrument("download_exception.tariff_synchronizer", url: @url, class: exception.original.class)
+          ActiveSupport::Notifications.instrument('download_exception.tariff_synchronizer', url: @url, class: exception.original.class)
           if @exception_retry_count == 0
-            ActiveSupport::Notifications.instrument("download_exception_exceeded.tariff_synchronizer", url: @url)
+            ActiveSupport::Notifications.instrument('download_exception_exceeded.tariff_synchronizer', url: @url)
             raise
           else
             @exception_retry_count -= 1

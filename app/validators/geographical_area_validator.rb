@@ -12,7 +12,7 @@ class GeographicalAreaValidator < TradeTariffBackend::Validator
     parent_sid = record.parent_geographical_area_group_sid
     if parent_sid.present?
       parent = record.class[geographical_area_sid: parent_sid]
-      parent.try(:geographical_code).to_s == "1"
+      parent.try(:geographical_code).to_s == '1'
     end
   end
 

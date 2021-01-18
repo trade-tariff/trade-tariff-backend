@@ -1,9 +1,9 @@
 require 'api_constraints'
 
 Rails.application.routes.draw do
-  get "healthcheck" => "healthcheck#index"
+  get 'healthcheck' => 'healthcheck#index'
 
-  namespace :api, defaults: { format: 'json' }, path: "/admin" do
+  namespace :api, defaults: { format: 'json' }, path: '/admin' do
     scope module: :admin do
       resources :sections, only: [:index, :show], constraints: { id: /\d{1,2}/ } do
         scope module: 'sections', constraints: { section_id: /\d{1,2}/, id: /\d+/ } do
@@ -39,7 +39,7 @@ Rails.application.routes.draw do
     end
   end
 
-  namespace :api, defaults: {format: 'json'}, path: "/" do
+  namespace :api, defaults: {format: 'json'}, path: '/' do
     # How (or even if) API versioning will be implemented is still an open question. We can defer
     # the choice until we need to expose the API to clients which we don't control.
 
@@ -103,17 +103,17 @@ Rails.application.routes.draw do
         collection { get :search }
       end
 
-      post "search" => "search#search"
-      get "search_suggestions" => "search#suggestions"
+      post 'search' => 'search#search'
+      get 'search_suggestions' => 'search#suggestions'
       get '/headings/:id/tree' => 'headings#tree'
 
       get 'goods_nomenclatures/section/:position', to: 'goods_nomenclatures#show_by_section', constraints: { position: /\d{1,2}/ }
       get 'goods_nomenclatures/chapter/:chapter_id', to: 'goods_nomenclatures#show_by_chapter', constraints: { chapter_id: /\d{2}/ }
       get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
 
-      get "pdf/tariff", to: "print#index"
-      get "pdf/latest", to: "print#latest"
-      get "pdf/chapters", to: "print#chapters"
+      get 'pdf/tariff', to: 'print#index'
+      get 'pdf/latest', to: 'print#latest'
+      get 'pdf/chapters', to: 'print#chapters'
     end
 
     scope module: :v1, constraints: ApiConstraints.new(version: 1, default: true) do
@@ -170,8 +170,8 @@ Rails.application.routes.draw do
 
       resources :search_references, only: [:index]
 
-      post "search" => "search#search"
-      get "search_suggestions" => "search#suggestions"
+      post 'search' => 'search#search'
+      get 'search_suggestions' => 'search#suggestions'
       get '/headings/:id/tree' => 'headings#tree'
 
       resources :rollbacks, only: [:create, :index]

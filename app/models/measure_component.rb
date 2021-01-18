@@ -39,12 +39,12 @@ class MeasureComponent < Sequel::Model
   delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
   def formatted_duty_expression
-    return "" if measure.measure_type_id.in?(%w(DDA DDJ))
+    return '' if measure.measure_type_id.in?(%w(DDA DDJ))
     DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
   end
 
   def duty_expression_str
-    return "" if measure.measure_type_id.in?(%w(DDA DDJ))
+    return '' if measure.measure_type_id.in?(%w(DDA DDJ))
     DutyExpressionFormatter.format(duty_expression_formatter_options)
   end
 

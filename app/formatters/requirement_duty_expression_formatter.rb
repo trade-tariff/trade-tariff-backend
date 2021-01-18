@@ -64,7 +64,7 @@ class RequirementDutyExpressionFormatter
                     measurement_unit
                   end
       end
-      output.join(" ").html_safe
+      output.join(' ').html_safe
     end
   end
 end

@@ -34,17 +34,17 @@ class CdsImporter
         end
       end
 
-      NATIONAL = "N".freeze
-      APPROVED_FLAG = "1".freeze
-      STOPPED_FLAG = "1".freeze
-      PATH_SEPARATOR = ".".freeze
+      NATIONAL = 'N'.freeze
+      APPROVED_FLAG = '1'.freeze
+      STOPPED_FLAG = '1'.freeze
+      PATH_SEPARATOR = '.'.freeze
       METAINFO = 'metainfo'.freeze
       BASE_MAPPING = {
-        "validityStartDate" => :validity_start_date,
-        "validityEndDate" => :validity_end_date,
-        "metainfo.origin" => :national,
-        "metainfo.opType" => :operation,
-        "metainfo.transactionDate" => :operation_date
+        'validityStartDate' => :validity_start_date,
+        'validityEndDate' => :validity_end_date,
+        'metainfo.origin' => :national,
+        'metainfo.opType' => :operation,
+        'metainfo.transactionDate' => :operation_date
       }.freeze
 
       def initialize(values)

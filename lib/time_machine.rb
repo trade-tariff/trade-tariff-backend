@@ -1,4 +1,4 @@
-require "date"
+require 'date'
 
 module TimeMachine
   THREAD_DATETIME_KEY = :time_machine_now
@@ -14,7 +14,7 @@ module TimeMachine
                   end
 
       previous = Thread.current[THREAD_DATETIME_KEY]
-      raise ArgumentError, "requires a block" unless block_given?
+      raise ArgumentError, 'requires a block' unless block_given?
       Thread.current[THREAD_DATETIME_KEY] = datetime
       yield
     ensure
@@ -26,7 +26,7 @@ module TimeMachine
   end
 
   def self.with_relevant_validity_periods(&block)
-    raise ArgumentError, "requires a block" unless block_given?
+    raise ArgumentError, 'requires a block' unless block_given?
     Thread.current[THREAD_RELEVANT_KEY] = true
     yield
   ensure

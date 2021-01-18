@@ -24,7 +24,7 @@ class GenerateChapterPdfWorker
     @chapter = Chapter.eager(:headings).where(goods_nomenclature_sid: chapter_sid).take
     file_name = "#{@chapter.section.position.to_s.rjust(2, '0')}-#{@chapter.short_code}.pdf"
     @currency = currency
-    @pdf_file_path = File.join("public", "pdf", "tariff", "chapters", @currency.downcase, file_name)
+    @pdf_file_path = File.join('public', 'pdf', 'tariff', 'chapters', @currency.downcase, file_name)
     @dir, @base = File.split(@pdf_file_path)
     return if File.exist?(@dir)
 
@@ -36,7 +36,7 @@ class GenerateChapterPdfWorker
   end
 
   def make_logger
-    log_dir = File.join(Rails.root, "log", "pdf")
+    log_dir = File.join(Rails.root, 'log', 'pdf')
     unless File.exist?(log_dir)
       begin
         FileUtils.mkpath(log_dir)

@@ -17,7 +17,7 @@ module Sequel
       module InstanceMethods
 
         def before_update
-          Audit.create(action: "update", changes: Sequel.pg_json(column_changes), auditable: self)
+          Audit.create(action: 'update', changes: Sequel.pg_json(column_changes), auditable: self)
           super
         end
       end

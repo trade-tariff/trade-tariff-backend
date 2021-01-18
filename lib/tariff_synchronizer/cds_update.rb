@@ -11,7 +11,7 @@ module TariffSynchronizer
     end
 
     def import!
-      instrument("apply_cds.tariff_synchronizer", filename: filename) do
+      instrument('apply_cds.tariff_synchronizer', filename: filename) do
         CdsImporter.new(self).import
         mark_as_applied
       end

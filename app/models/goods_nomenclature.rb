@@ -96,7 +96,7 @@ class GoodsNomenclature < Sequel::Model
 
   dataset_module do
     def declarable
-      filter(producline_suffix: "80")
+      filter(producline_suffix: '80')
     end
 
     def non_hidden
@@ -121,7 +121,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def chapter_id
-    goods_nomenclature_item_id.first(2) + "0" * 8
+    goods_nomenclature_item_id.first(2) + '0' * 8
   end
 
   def code

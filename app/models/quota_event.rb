@@ -23,7 +23,7 @@ private
   def self.for_event(event_type, quota_sid, point_in_time)
     Object.const_get("Quota#{event_type.capitalize}Event").select(:quota_definition_sid,
                                                                   :occurrence_timestamp,
-                                                                  Sequel.as(event_type, "event_type"))
+                                                                  Sequel.as(event_type, 'event_type'))
                                                           .where(quota_definition_sid: quota_sid)
                                                           .where('occurrence_timestamp <= ?', point_in_time)
   end

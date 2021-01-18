@@ -31,7 +31,7 @@ class TaricImporter
       attr_accessor :transaction_id
 
       def initialize(record_hash)
-        self.transaction_id = record_hash["transaction_id"]
+        self.transaction_id = record_hash['transaction_id']
         self.klass = fast_classify(record_hash.keys.last).constantize
         self.primary_key = [klass.primary_key].flatten.map(&:to_s)
         self.attributes = record_hash.values.last

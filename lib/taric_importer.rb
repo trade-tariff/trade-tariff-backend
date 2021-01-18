@@ -10,7 +10,7 @@ class TaricImporter
   class ImportException < StandardError
     attr_reader :original
 
-    def initialize(msg = "TaricImporter::ImportException", original=$!)
+    def initialize(msg = 'TaricImporter::ImportException', original=$!)
       super(msg)
       @original = original
     end
@@ -29,7 +29,7 @@ class TaricImporter
 
     handler = XmlProcessor.new(@taric_update.issue_date, validate)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
-    XmlParser::Reader.new(file, "record", handler).parse
+    XmlParser::Reader.new(file, 'record', handler).parse
     post_import(file_path: @taric_update.file_path, filename: filename)
   end
 
@@ -45,7 +45,7 @@ class TaricImporter
         transaction.persist
         transaction.validate if @validate
       rescue StandardError => exception
-        ActiveSupport::Notifications.instrument("taric_failed.tariff_importer", exception: exception, hash: hash_from_node)
+        ActiveSupport::Notifications.instrument('taric_failed.tariff_importer', exception: exception, hash: hash_from_node)
         raise ImportException.new
       end
     end
@@ -61,7 +61,7 @@ class TaricImporter
 
   def post_import(file_path:, filename:)
     create_update_entry(file_path: file_path, filename: filename) if TradeTariffBackend.use_cds?
-    ActiveSupport::Notifications.instrument("taric_imported.tariff_importer", filename: @taric_update.filename)
+    ActiveSupport::Notifications.instrument('taric_imported.tariff_importer', filename: @taric_update.filename)
   end
 
   def create_update_entry(file_path:, filename:)

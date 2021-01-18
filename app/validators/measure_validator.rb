@@ -44,8 +44,8 @@ class MeasureValidator < TradeTariffBackend::Validator
     # Taric may delete a Goods Code and national measures will be invalid.
     (record.national? && record.invalidated?) ||
       record.goods_nomenclature.blank? ||
-      (record.goods_nomenclature.present? && record.goods_nomenclature.producline_suffix == "80") || (
-    record.export_refund_nomenclature.present? && record.export_refund_nomenclature.productline_suffix == "80"
+      (record.goods_nomenclature.present? && record.goods_nomenclature.producline_suffix == '80') || (
+    record.export_refund_nomenclature.present? && record.export_refund_nomenclature.productline_suffix == '80'
     )
   end
 

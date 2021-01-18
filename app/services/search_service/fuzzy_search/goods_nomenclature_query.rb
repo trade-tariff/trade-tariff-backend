@@ -45,7 +45,7 @@ class SearchService
                               bool: {
                                 must: [
                                   { range: { validity_start_date: { lte: date } } },
-                                  { bool: { must_not: { exists: { field: "validity_end_date" } } } }
+                                  { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
                                 ]
                               }
                             },
@@ -53,8 +53,8 @@ class SearchService
                             {
                               bool: {
                                 must: [
-                                  { bool: { must_not: { exists: { field: "validity_start_date" } } } },
-                                  { bool: { must_not: { exists: { field: "validity_end_date" } } } }
+                                  { bool: { must_not: { exists: { field: 'validity_start_date' } } } },
+                                  { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
                                 ]
                               }
                             }

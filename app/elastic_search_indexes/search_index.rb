@@ -4,7 +4,7 @@ class SearchIndex
   end
 
   def name
-    [@namespace, type.pluralize].join("-")
+    [@namespace, type.pluralize].join('-')
   end
 
   def type
@@ -12,7 +12,7 @@ class SearchIndex
   end
 
   def model
-    self.class.name.split('::').last.chomp("Index").constantize
+    self.class.name.split('::').last.chomp('Index').constantize
   end
 
   def goods_nomenclature?

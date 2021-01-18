@@ -26,7 +26,7 @@ module TariffSynchronizer
       return if tariff_update.present?
 
       update_or_create(filename, BaseUpdate::PENDING_STATE, filesize)
-      instrument("created_tariff.tariff_synchronizer", date: date, filename: filename, type: update_klass.update_type)
+      instrument('created_tariff.tariff_synchronizer', date: date, filename: filename, type: update_klass.update_type)
     end
 
     def file_already_downloaded?
@@ -51,12 +51,12 @@ module TariffSynchronizer
 
     def create_record_for_empty_response
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-      instrument("blank_update.tariff_synchronizer", date: date, url: url)
+      instrument('blank_update.tariff_synchronizer', date: date, url: url)
     end
 
     def create_record_for_exceeded_response
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-      instrument("retry_exceeded.tariff_synchronizer", date: date, url: url)
+      instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
     end
 
     def create_record_for_not_found_response
@@ -64,7 +64,7 @@ module TariffSynchronizer
       return if date >= Date.current
 
       update_or_create(missing_update_name, BaseUpdate::MISSING_STATE)
-      instrument("not_found.tariff_synchronizer", date: date, url: url)
+      instrument('not_found.tariff_synchronizer', date: date, url: url)
     end
 
     def create_record_for_successful_response
@@ -84,7 +84,7 @@ module TariffSynchronizer
 
     def write_update_file(response_body)
       FileService.write_file(file_path, response_body)
-      instrument("downloaded_tariff_update.tariff_synchronizer",
+      instrument('downloaded_tariff_update.tariff_synchronizer',
                  date: date,
                  url: url,
                  type: update_klass.update_type,

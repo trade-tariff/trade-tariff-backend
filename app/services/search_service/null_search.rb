@@ -7,7 +7,7 @@ class SearchService
 
     def serializable_hash
       {
-        type: "null_match",
+        type: 'null_match',
       }.merge(results)
     end
   end

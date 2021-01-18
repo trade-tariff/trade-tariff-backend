@@ -10,8 +10,8 @@ class ChiefTransformer
     plugin :after_initialize
 
     DEFAULT_REGULATION_ROLE_TYPE_ID = 1
-    DEFAULT_REGULATION_ID = "IYY99990".freeze
-    DEFAULT_GEOGRAPHICAL_AREA_ID = "1011".freeze #ERGA OMNES
+    DEFAULT_REGULATION_ID = 'IYY99990'.freeze
+    DEFAULT_GEOGRAPHICAL_AREA_ID = '1011'.freeze #ERGA OMNES
 
     EXCISE_GROUP_CODES = %w[EX].freeze
     VAT_GROUP_CODES = %w[VT].freeze
@@ -49,19 +49,19 @@ class ChiefTransformer
       # must happen after validity dates are set, depends on start date
       self.additional_code_sid = AdditionalCode.where(additional_code_type_id: additional_code_type_id,
                                                       additional_code: additional_code_id)
-                                               .where("validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)", validity_start_date, validity_end_date)
+                                               .where('validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)', validity_start_date, validity_end_date)
                                                .first
                                                .try(:additional_code_sid)
       # needs to throw errors about invalid geographical area
       self.geographical_area_sid = GeographicalArea.where(geographical_area_id: geographical_area_id)
-                                                   .where("validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)", validity_start_date, validity_end_date)
+                                                   .where('validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)', validity_start_date, validity_end_date)
                                                    .first
                                                    .try(:geographical_area_sid)
       if self.geographical_area_sid.blank?
         self[:geographical_area_id] = DEFAULT_GEOGRAPHICAL_AREA_ID
 
         self.geographical_area_sid = GeographicalArea.where(geographical_area_id: geographical_area_id)
-                                                     .where("validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)", validity_start_date, validity_end_date)
+                                                     .where('validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)', validity_start_date, validity_end_date)
                                                      .first
                                                      .try(:geographical_area_sid)
       end
@@ -71,7 +71,7 @@ class ChiefTransformer
       gono_sid = nil
       [0, 1, 2, 3, 4].each do |num|
         gono_sid = GoodsNomenclature.where(goods_nomenclature_item_id: goods_nomenclature_item_id)
-                                    .where("validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)",
+                                    .where('validity_start_date <= ? AND (validity_end_date >= ? OR validity_end_date IS NULL)',
                                            validity_start_date ? validity_start_date + num.month : validity_start_date,
                                            validity_end_date ? validity_end_date + num.month : validity_end_date)
                                     .declarable
@@ -98,7 +98,7 @@ class ChiefTransformer
     def before_save
       exclusion_entry = Chief::CountryGroup.where(chief_country_grp: chief_geographical_area).first
       if exclusion_entry.present? && exclusion_entry.country_exclusions.present?
-        exclusion_entry.country_exclusions.split(",").each do |excluded_chief_code|
+        exclusion_entry.country_exclusions.split(',').each do |excluded_chief_code|
           excluded_geographical_area = GeographicalArea.where(geographical_area_id: Chief::CountryCode.to_taric(excluded_chief_code))
                                                        .latest
                                                        .first

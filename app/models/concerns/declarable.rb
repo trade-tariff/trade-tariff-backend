@@ -80,12 +80,12 @@ module Declarable
   end
 
   def consigned_from
-    description.scan(/consigned from ([a-zA-Z,' ]+)(?:\W|$)/i).join(", ") if consigned?
+    description.scan(/consigned from ([a-zA-Z,' ]+)(?:\W|$)/i).join(', ') if consigned?
   end
 
   def basic_duty_rate
     if basic_duty_rate_components.count == 1
-      basic_duty_rate_components.map(&:formatted_duty_expression).join(" ")
+      basic_duty_rate_components.map(&:formatted_duty_expression).join(' ')
     end
   end
 

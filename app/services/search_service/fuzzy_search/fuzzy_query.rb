@@ -12,7 +12,7 @@ class SearchService
       end
 
       def match_type
-        :"#{self.class.name.demodulize.chomp("Query").underscore}_match"
+        :"#{self.class.name.demodulize.chomp('Query').underscore}_match"
       end
     end
   end

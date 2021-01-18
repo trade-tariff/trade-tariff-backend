@@ -20,7 +20,7 @@ class UploadChapterPdfWorker
   end
 
   def s3_file_path
-    File.join(ENV["AWS_PDF_ROOT_PATH"].to_s, "chapters", @cur, @key).gsub(%r{^/}, '')
+    File.join(ENV['AWS_PDF_ROOT_PATH'].to_s, 'chapters', @cur, @key).gsub(%r{^/}, '')
   end
 
   def upload_to_s3

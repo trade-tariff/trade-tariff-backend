@@ -9,7 +9,7 @@ class CdsImporter
     def initialize(key, xml_node)
       @key = key
       @xml_node = xml_node
-      @filename = xml_node.delete("filename")
+      @filename = xml_node.delete('filename')
     end
 
     def import
@@ -53,7 +53,7 @@ class CdsImporter
     def save_record(record)
       save_record!(record)
     rescue StandardError => e
-      instrument("cds_error.cds_importer", record: record, xml_key: key, xml_node: xml_node, exception: e)
+      instrument('cds_error.cds_importer', record: record, xml_key: key, xml_node: xml_node, exception: e)
       nil
     end
 

@@ -32,7 +32,7 @@ module TradeTariffBackend
       end
 
       def type
-        @type ||= self.class.name.demodulize.split("Validation").first.underscore.to_sym
+        @type ||= self.class.name.demodulize.split('Validation').first.underscore.to_sym
       end
 
       def relevant_for?(record)

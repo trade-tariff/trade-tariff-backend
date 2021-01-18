@@ -27,14 +27,14 @@ module PaasS3
     {
       "aws-s3-bucket": [
         {
-          "instance_name": "tariff-pdf-dev",
-          "label": "aws-s3-bucket",
+          "instance_name": 'tariff-pdf-dev',
+          "label": 'aws-s3-bucket',
           "credentials": {
             "aws_access_key_id": ENV['AWS_PDF_ACCESS_KEY_ID'],
             "aws_region": ENV['AWS_PDF_REGION'],
             "aws_secret_access_key": ENV['AWS_PDF_SECRET_ACCESS_KEY'],
             "bucket_name": ENV['AWS_PDF_BUCKET_NAME'],
-            "deploy_env": ""
+            "deploy_env": ''
           }
         }
       ]
