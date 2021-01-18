@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe Chief::CountryCode do
   describe '.to_taric' do
-    let!(:country_code) { create :country_code}
+    let!(:country_code) { create :country_code }
     let(:example_code) { Forgery(:basic).text }
 
     it 'maps CHIEF code to Taric' do

@@ -3,36 +3,36 @@ require 'requirement_duty_expression_formatter'
 
 describe RequirementDutyExpressionFormatter do
   describe '.format' do
-    let(:measurement_unit) {
+    let(:measurement_unit) do
       measurement_unit_abbreviation.measurement_unit
-    }
-    let(:unit) {
+    end
+    let(:unit) do
       measurement_unit.abbreviation(measurement_unit_qualifier: measurement_unit_qualifier)
-    }
-    let!(:measurement_unit_abbreviation) {
+    end
+    let!(:measurement_unit_abbreviation) do
       create(:measurement_unit_abbreviation, :with_measurement_unit, :include_qualifier)
-    }
-    let!(:measurement_unit_qualifier) {
+    end
+    let!(:measurement_unit_qualifier) do
       create(:measurement_unit_qualifier, measurement_unit_qualifier_code: measurement_unit_abbreviation.measurement_unit_qualifier)
-    }
+    end
 
     context 'duty amount present' do
       it 'result includes duty amount' do
         expect(
-          described_class.format(duty_amount: '55')
-        ).to match /55/
+          described_class.format(duty_amount: '55'),
+        ).to match(/55/)
       end
     end
 
     context 'monetary unit, measurement unit & measurement_unit_qualifier are present ' do
-      subject {
+      subject do
         described_class.format(measurement_unit: measurement_unit,
-                                                  formatted_measurement_unit_qualifier: 'L',
-                                                  monetary_unit: 'EUR')
-      }
+                               formatted_measurement_unit_qualifier: 'L',
+                               monetary_unit: 'EUR')
+      end
 
       it 'properly formats output' do
-        expect(subject).to match /EUR \/ \(#{measurement_unit.description} \/ L\)/
+        expect(subject).to match(/EUR \/ \(#{measurement_unit.description} \/ L\)/)
       end
     end
 
@@ -42,7 +42,7 @@ describe RequirementDutyExpressionFormatter do
           duty_amount: 3.50,
           monetary_unit: 'EUR',
           measurement_unit: measurement_unit,
-          formatted: formatted
+          formatted: formatted,
         )
       end
 
@@ -70,9 +70,9 @@ describe RequirementDutyExpressionFormatter do
     end
 
     context 'measurement unit is present' do
-      subject {
+      subject do
         described_class.format(measurement_unit: measurement_unit)
-      }
+      end
 
       it 'properly formats output' do
         expect(subject).to match Regexp.new(measurement_unit.description)

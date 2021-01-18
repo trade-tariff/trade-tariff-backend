@@ -6,9 +6,11 @@ class InclusionValidationMatcher < TariffValidationMatcher
 
     @validation = subject.conformance_validator
                          .validations
-                         .detect{|validation| validation.type == validation_type &&
-                                              validation.validation_options[:of] == @attributes &&
-                                              validation.validation_options[:in] == @collection  }
+                         .detect do |validation|
+      validation.type == validation_type &&
+        validation.validation_options[:of] == @attributes &&
+        validation.validation_options[:in] == @collection
+    end
   end
 
   def in(collection)

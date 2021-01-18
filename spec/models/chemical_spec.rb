@@ -12,9 +12,9 @@ describe Chemical do
       end
 
       it 'can have two names' do
-        chemical.add_chemical_name({name: "water"})
+        chemical.add_chemical_name({ name: 'water' })
         expect(chemical.chemical_names.count).to eq 2
-        expect(chemical.name).to include("water")
+        expect(chemical.name).to include('water')
       end
     end
 

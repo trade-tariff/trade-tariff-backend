@@ -4,30 +4,30 @@ describe AdditionalCode do
   describe 'associations' do
     describe 'additional code description' do
       let!(:additional_code)                { create :additional_code }
-      let!(:additional_code_description1)   {
+      let!(:additional_code_description1)   do
         create :additional_code_description, :with_period,
-                                                            additional_code_sid: additional_code.additional_code_sid,
-                                                            valid_at: Date.current.ago(2.years),
-                                                            valid_to: nil
-      }
-      let!(:additional_code_description2) {
+               additional_code_sid: additional_code.additional_code_sid,
+               valid_at: Date.current.ago(2.years),
+               valid_to: nil
+      end
+      let!(:additional_code_description2) do
         create :additional_code_description, :with_period,
-                                                            additional_code_sid: additional_code.additional_code_sid,
-                                                            valid_at: Date.current.ago(5.years),
-                                                            valid_to: Date.current.ago(3.years)
-      }
-      let!(:additional_code_description3) {
+               additional_code_sid: additional_code.additional_code_sid,
+               valid_at: Date.current.ago(5.years),
+               valid_to: Date.current.ago(3.years)
+      end
+      let!(:additional_code_description3) do
         create :additional_code_description, :with_period,
-                                                            additional_code_sid: additional_code.additional_code_sid,
-                                                            valid_at: Date.current.ago(6.years),
-                                                            valid_to: Date.current.ago(1.years)
-      }
+               additional_code_sid: additional_code.additional_code_sid,
+               valid_at: Date.current.ago(6.years),
+               valid_to: Date.current.ago(1.year)
+      end
 
       context 'direct loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
-              additional_code.additional_code_description.pk
+              additional_code.additional_code_description.pk,
             ).to eq additional_code_description1.pk
           end
         end
@@ -35,19 +35,19 @@ describe AdditionalCode do
         it 'loads correct description respecting given time' do
           TimeMachine.at(1.year.ago) do
             expect(
-              additional_code.additional_code_description.pk
+              additional_code.additional_code_description.pk,
             ).to eq additional_code_description1.pk
           end
 
-          TimeMachine.at(2.year.ago) do
+          TimeMachine.at(2.years.ago) do
             expect(
-              additional_code.additional_code_description.pk
+              additional_code.additional_code_description.pk,
             ).to eq additional_code_description1.pk
           end
 
           TimeMachine.at(4.years.ago) do
             expect(
-              additional_code.reload.additional_code_description.pk
+              additional_code.reload.additional_code_description.pk,
             ).to eq additional_code_description2.pk
           end
         end
@@ -61,7 +61,7 @@ describe AdditionalCode do
                           .eager(:additional_code_descriptions)
                           .all
                           .first
-                          .additional_code_description.pk
+                          .additional_code_description.pk,
             ).to eq additional_code_description1.pk
           end
         end
@@ -73,7 +73,7 @@ describe AdditionalCode do
                           .eager(:additional_code_descriptions)
                           .all
                           .first
-                          .additional_code_description.pk
+                          .additional_code_description.pk,
             ).to eq additional_code_description1.pk
           end
         end
@@ -88,12 +88,12 @@ describe AdditionalCode do
     it { is_expected.to validate_validity_dates }
   end
 
-  describe "#code" do
+  describe '#code' do
     let(:additional_code) { build :additional_code }
 
     it 'returns conjucation of additional code type id and additional code' do
       expect(
-        additional_code.code
+        additional_code.code,
       ).to eq [additional_code.additional_code_type_id, additional_code.additional_code].join
     end
   end

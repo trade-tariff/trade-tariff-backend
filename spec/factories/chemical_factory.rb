@@ -4,9 +4,9 @@ FactoryBot.define do
     sequence(:id) { |n| n }
 
     trait :with_name do
-      after(:create) { |chemical, _evaluator|
+      after(:create) do |chemical, _evaluator|
         FactoryBot.create(:chemical_name, chemical_id: chemical.id)
-      }
+      end
     end
   end
 

@@ -19,7 +19,7 @@ describe Chief::Tame do
 
         it 'latest relevant tamf record is chosen' do
           expect(tame.tamfs).to     include tamf
-          expect(tame.tamfs).to_not include tamf1
+          expect(tame.tamfs).not_to include tamf1
         end
       end
     end

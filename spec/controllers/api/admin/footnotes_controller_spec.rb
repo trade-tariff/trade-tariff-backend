@@ -1,14 +1,10 @@
 require 'rails_helper'
 
-describe Api::Admin::FootnotesController, "GET to #index" do
+describe Api::Admin::FootnotesController, 'GET to #index' do
   render_views
 
   let!(:non_national_footnote) { create :footnote, :non_national }
-  let!(:national_footnote)     { create :footnote, :national }
-
-  before { login_as_api_user }
-
-  let(:response_pattern) {
+  let(:response_pattern) do
     {
       data: [{
         id: String,
@@ -17,31 +13,33 @@ describe Api::Admin::FootnotesController, "GET to #index" do
           footnote_id: String,
           footnote_type_id: String,
           validity_start_date: String,
-          description: String
-        }.ignore_extra_keys!
-      }]
+          description: String,
+        }.ignore_extra_keys!,
+      }],
     }
-  }
+  end
+  let(:json_body) do
+    JSON.parse(response.body)['data']
+  end
+  let!(:national_footnote) { create :footnote, :national }
 
-  let(:json_body) {
-    JSON.parse(response.body)["data"]
-  }
+  before { login_as_api_user }
 
   specify 'returns national footnote' do
     get :index, format: :json
 
     expect(response.body).to match_json_expression response_pattern
-    expect(json_body.map { |f| f["id"] }).to include national_footnote.pk.join
+    expect(json_body.map { |f| f['id'] }).to include national_footnote.pk.join
   end
 
   specify 'does not return non-national footnote' do
     get :index, format: :json
 
-    expect(json_body.map { |f| f["id"] }).not_to include non_national_footnote.pk.join
+    expect(json_body.map { |f| f['id'] }).not_to include non_national_footnote.pk.join
   end
 end
 
-describe Api::Admin::FootnotesController, "GET to #show" do
+describe Api::Admin::FootnotesController, 'GET to #show' do
   render_views
 
   before { login_as_api_user }
@@ -49,7 +47,7 @@ describe Api::Admin::FootnotesController, "GET to #show" do
   let!(:non_national_footnote) { create :footnote, :non_national }
   let!(:national_footnote)     { create :footnote, :national }
 
-  let(:response_pattern) {
+  let(:response_pattern) do
     {
       data: {
         id: String,
@@ -58,11 +56,11 @@ describe Api::Admin::FootnotesController, "GET to #show" do
           footnote_id: String,
           footnote_type_id: String,
           validity_start_date: String,
-          description: String
-        }.ignore_extra_keys!
-      }
+          description: String,
+        }.ignore_extra_keys!,
+      },
     }
-  }
+  end
 
   specify 'returns national footnote' do
     get :show, params: { id: national_footnote.pk.join }, format: :json
@@ -77,7 +75,7 @@ describe Api::Admin::FootnotesController, "GET to #show" do
   end
 end
 
-describe Api::Admin::FootnotesController, "PUT to #update" do
+describe Api::Admin::FootnotesController, 'PUT to #update' do
   render_views
 
   before { login_as_api_user }

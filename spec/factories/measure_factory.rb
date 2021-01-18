@@ -7,7 +7,7 @@ FactoryBot.define do
     transient do
       type_explosion_level { 10 }
       gono_number_indents { 1 }
-      gono_producline_suffix { "80" }
+      gono_producline_suffix { '80' }
       order_number_capture_code { 2 }
     end
 
@@ -24,29 +24,29 @@ FactoryBot.define do
     f.validity_end_date   { nil }
 
     # mandatory valid associations
-    f.goods_nomenclature {
+    f.goods_nomenclature do
       create :goods_nomenclature, validity_start_date: validity_start_date - 1.day,
-                                                       goods_nomenclature_item_id: goods_nomenclature_item_id,
-                                                       goods_nomenclature_sid: goods_nomenclature_sid,
-                                                       producline_suffix: gono_producline_suffix,
-                                                       indents: gono_number_indents
-    }
-    f.measure_type {
+                                  goods_nomenclature_item_id: goods_nomenclature_item_id,
+                                  goods_nomenclature_sid: goods_nomenclature_sid,
+                                  producline_suffix: gono_producline_suffix,
+                                  indents: gono_number_indents
+    end
+    f.measure_type do
       create :measure_type, measure_type_id: measure_type_id,
-                                   validity_start_date: validity_start_date - 1.day,
-                                   measure_explosion_level: type_explosion_level,
-                                   order_number_capture_code: order_number_capture_code
-    }
-    f.geographical_area {
+                            validity_start_date: validity_start_date - 1.day,
+                            measure_explosion_level: type_explosion_level,
+                            order_number_capture_code: order_number_capture_code
+    end
+    f.geographical_area do
       create(:geographical_area, geographical_area_sid: geographical_area_sid,
                                  geographical_area_id: geographical_area_id,
                                  validity_start_date: validity_start_date - 1.day)
-    }
-    f.base_regulation {
+    end
+    f.base_regulation do
       create(:base_regulation, base_regulation_id: measure_generating_regulation_id,
                                base_regulation_role: measure_generating_regulation_role,
                                effective_end_date: Date.current.in(10.years))
-    }
+    end
 
     trait :national do
       sequence(:measure_sid) { |n| -1 * n }
@@ -68,22 +68,22 @@ FactoryBot.define do
     trait :with_modification_regulation do
       measure_generating_regulation_role { 4 }
 
-      after(:build) { |measure, _evaluator|
+      after(:build) do |measure, _evaluator|
         FactoryBot.create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
-      }
+      end
     end
 
     trait :with_abrogated_modification_regulation do
       measure_generating_regulation_role { 4 }
 
-      after(:build) { |measure, _evaluator|
+      after(:build) do |measure, _evaluator|
         base_regulation = FactoryBot.create(:base_regulation, :abrogated)
         FactoryBot.create(:modification_regulation,
-                            modification_regulation_id: measure.measure_generating_regulation_id,
-                            modification_regulation_role: measure.measure_generating_regulation_role,
-                            base_regulation_id: base_regulation.base_regulation_id,
-                            base_regulation_role: base_regulation.base_regulation_role)
-      }
+                          modification_regulation_id: measure.measure_generating_regulation_id,
+                          modification_regulation_role: measure.measure_generating_regulation_role,
+                          base_regulation_id: base_regulation.base_regulation_id,
+                          base_regulation_role: base_regulation.base_regulation_role)
+      end
     end
 
     trait :with_geographical_area do
@@ -91,22 +91,22 @@ FactoryBot.define do
     end
 
     trait :with_additional_code_type do
-      after(:build) { |measure, _evaluator|
+      after(:build) do |measure, _evaluator|
         FactoryBot.create(:additional_code_type, additional_code_type_id: measure.additional_code_type_id)
-      }
+      end
     end
 
     trait :with_related_additional_code_type do
-      after(:build) { |measure, _evaluator|
+      after(:build) do |measure, _evaluator|
         FactoryBot.create(:additional_code_type_measure_type, additional_code_type_id: measure.additional_code_type_id,
-                                                               measure_type_id: measure.measure_type_id)
-      }
+                                                              measure_type_id: measure.measure_type_id)
+      end
     end
 
     trait :with_quota_order_number do
-      after(:build) { |measure, _evaluator|
+      after(:build) do |measure, _evaluator|
         FactoryBot.create(:quota_order_number, quota_order_number_id: measure.ordernumber)
-      }
+      end
     end
   end
 
@@ -140,20 +140,20 @@ FactoryBot.define do
 
     trait :excise do
       measure_type_series_id { 'Q' }
-      measure_type_description { "EXCISE 111" }
+      measure_type_description { 'EXCISE 111' }
     end
 
-    after(:build) { |measure_type, _evaluator|
+    after(:build) do |measure_type, _evaluator|
       FactoryBot.create(:measure_type_series, measure_type_series_id: measure_type.measure_type_series_id)
-    }
+    end
 
-    after(:build) { |measure_type, evaluator|
+    after(:build) do |measure_type, evaluator|
       FactoryBot.create(
         :measure_type_description,
         measure_type_id: measure_type.measure_type_id,
-        description: evaluator.measure_type_description
+        description: evaluator.measure_type_description,
       )
-    }
+    end
   end
 
   factory :measure_type_description do

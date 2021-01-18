@@ -5,14 +5,14 @@ describe TradeTariffBackend::DataMigration do
     let(:measure) { create :measure }
 
     context 'migration applicable' do
-      let(:migration) {
+      let(:migration) do
         TradeTariffBackend::DataMigration.new do
           up do
             applicable   { Measure.dataset.one? }
             apply        { Measure.dataset.destroy }
           end
         end
-      }
+      end
 
       it 'executes migration' do
         measure
@@ -22,14 +22,14 @@ describe TradeTariffBackend::DataMigration do
     end
 
     context 'migration not applicable' do
-      let(:migration) {
+      let(:migration) do
         TradeTariffBackend::DataMigration.new do
           up do
             applicable   { Measure.dataset.count == 42 }
             apply        { Measure.dataset.destroy }
           end
         end
-      }
+      end
 
       it 'does not execute migration' do
         measure
@@ -43,14 +43,14 @@ describe TradeTariffBackend::DataMigration do
     let(:measure) { create :measure }
 
     context 'migration applicable' do
-      let(:migration) {
+      let(:migration) do
         TradeTariffBackend::DataMigration.new do
           down do
             applicable   { Measure.dataset.one? }
             apply        { Measure.dataset.destroy }
           end
         end
-      }
+      end
 
       it 'executes migration' do
         measure
@@ -60,14 +60,14 @@ describe TradeTariffBackend::DataMigration do
     end
 
     context 'migration not applicable' do
-      let(:migration) {
+      let(:migration) do
         TradeTariffBackend::DataMigration.new do
           down do
             applicable   { Measure.dataset.count == 42 }
             apply        { Measure.dataset.destroy }
           end
         end
-      }
+      end
 
       it 'does not execute migration' do
         measure

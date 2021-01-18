@@ -3,12 +3,14 @@ require 'rails_helper'
 describe Api::V2::CommoditiesController, 'GET #show' do
   render_views
 
-  let!(:commodity) { create :commodity, :with_indent,
-                                        :with_chapter,
-                                        :with_heading,
-                                        :with_description,
-                                        :declarable }
-  let(:pattern) {
+  let!(:commodity) do
+    create :commodity, :with_indent,
+           :with_chapter,
+           :with_heading,
+           :with_description,
+           :declarable
+  end
+  let(:pattern) do
     {
       data: {
         id: String,
@@ -21,8 +23,8 @@ describe Api::V2::CommoditiesController, 'GET #show' do
           heading: Hash,
           ancestors: Hash,
           import_measures: Hash,
-          export_measures: Hash
-        }
+          export_measures: Hash,
+        },
       },
       included: [
         {
@@ -30,20 +32,22 @@ describe Api::V2::CommoditiesController, 'GET #show' do
           type: 'chapter',
           attributes: Hash,
           relationships: {
-            guides: Hash
-          }
-        }, {
+            guides: Hash,
+          },
+        },
+        {
           id: String,
           type: 'heading',
-          attributes: Hash
-        }, {
+          attributes: Hash,
+        },
+        {
           id: String,
           type: 'section',
-          attributes: Hash
-        }
-      ]
+          attributes: Hash,
+        },
+      ],
     }
-  }
+  end
 
   context 'when record is present' do
     it 'returns rendered record' do
@@ -77,16 +81,20 @@ describe Api::V2::CommoditiesController, 'GET #show' do
     # 80 are not declarable. Unfortunately this is not always the case, sometimes
     # productline suffix is 80, but commodity has children and therefore should also
     # be considered to be non-declarable.
-    let!(:heading) { create :goods_nomenclature, goods_nomenclature_item_id: '3903000000'}
-    let!(:parent_commodity) { create :commodity, :with_indent,
-                                                 :with_chapter,
-                                                 indents: 2,
-                                                 goods_nomenclature_item_id: '3903909000',
-                                                 producline_suffix: '80' }
-    let!(:child_commodity)  { create :commodity, :with_indent,
-                                                indents: 3,
-                                                goods_nomenclature_item_id: '3903909065',
-                                                producline_suffix: '80'}
+    let!(:heading) { create :goods_nomenclature, goods_nomenclature_item_id: '3903000000' }
+    let!(:parent_commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             indents: 2,
+             goods_nomenclature_item_id: '3903909000',
+             producline_suffix: '80'
+    end
+    let!(:child_commodity) do
+      create :commodity, :with_indent,
+             indents: 3,
+             goods_nomenclature_item_id: '3903909065',
+             producline_suffix: '80'
+    end
 
     it 'returns not found (is not declarable)' do
       get :show, params: { id: parent_commodity.goods_nomenclature_item_id }, format: :json
@@ -100,14 +108,16 @@ describe Api::V2::CommoditiesController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do
-    let!(:commodity) { create :commodity, :with_indent,
-                                          :with_chapter,
-                                          :with_heading,
-                                          :with_description,
-                                          :declarable,
-                                          operation_date: Date.current }
+    let!(:commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             :with_heading,
+             :with_description,
+             :declarable,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: [
           {
@@ -117,27 +127,27 @@ describe Api::V2::CommoditiesController, 'GET #changes' do
               oid: Integer,
               model_name: 'GoodsNomenclature',
               operation: 'C',
-              operation_date: String
+              operation_date: String,
             },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'goods_nomenclature'
-                }
-              }
-            }
-          }
+                  type: 'goods_nomenclature',
+                },
+              },
+            },
+          },
         ],
         included: [
           {
             id: String,
             type: 'goods_nomenclature',
-            attributes: Hash
-          }
-        ]
+            attributes: Hash,
+          },
+        ],
       }
-    }
+    end
 
     it 'returns commodity changes' do
       get :changes, params: { id: commodity }, format: :json
@@ -147,20 +157,22 @@ describe Api::V2::CommoditiesController, 'GET #changes' do
   end
 
   context 'changes happened before requested date' do
-    let!(:commodity) { create :commodity, :with_indent,
-                                          :with_chapter,
-                                          :with_heading,
-                                          :with_description,
-                                          :declarable,
-                                          operation_date: Date.current }
+    let!(:commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             :with_heading,
+             :with_description,
+             :declarable,
+             operation_date: Date.current
+    end
 
-    let!(:pattern) {
+    let!(:pattern) do
       {
         data: [],
-        included: []
+        included: [],
       }
-    }
-    
+    end
+
     it 'does not include change records' do
       get :changes, params: { id: commodity, as_of: Date.yesterday }, format: :json
 
@@ -169,22 +181,24 @@ describe Api::V2::CommoditiesController, 'GET #changes' do
   end
 
   context 'changes include deleted record' do
-    let!(:commodity) { create :commodity, :with_indent,
-                                          :with_chapter,
-                                          :with_heading,
-                                          :with_description,
-                                          :declarable,
-                                          operation_date: Date.current }
-    let!(:measure) {
+    let!(:commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             :with_heading,
+             :with_description,
+             :declarable,
+             operation_date: Date.current
+    end
+    let!(:measure) do
       create :measure,
-        :with_measure_type,
-        goods_nomenclature: commodity,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        operation_date: Date.current
-    }
+             :with_measure_type,
+             goods_nomenclature: commodity,
+             goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: [
           {
@@ -194,51 +208,53 @@ describe Api::V2::CommoditiesController, 'GET #changes' do
               oid: Integer,
               model_name: 'Measure',
               operation: 'C',
-              operation_date: String
+              operation_date: String,
             },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'measure'
-                }
-              }
-            }
-          }, {
+                  type: 'measure',
+                },
+              },
+            },
+          },
+          {
             id: String,
             type: 'change',
             attributes: {
               oid: Integer,
               model_name: 'Measure',
               operation: 'D',
-              operation_date: String
+              operation_date: String,
             },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'measure'
-                }
-              }
-            }
-          }, {
+                  type: 'measure',
+                },
+              },
+            },
+          },
+          {
             id: String,
             type: 'change',
             attributes: {
               oid: Integer,
               model_name: 'GoodsNomenclature',
               operation: 'C',
-              operation_date: String
+              operation_date: String,
             },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'goods_nomenclature'
-                }
-              }
-            }
-          }
+                  type: 'goods_nomenclature',
+                },
+              },
+            },
+          },
         ],
         included: [
           {
@@ -249,32 +265,35 @@ describe Api::V2::CommoditiesController, 'GET #changes' do
               geographical_area: {
                 data: {
                   id: String,
-                  type: 'geographical_area'
-                }
+                  type: 'geographical_area',
+                },
               },
               measure_type: {
                 data: {
                   id: String,
-                  type: 'measure_type'
-                }
-              }
-            }
-          }, {
+                  type: 'measure_type',
+                },
+              },
+            },
+          },
+          {
             id: String,
             type: 'geographical_area',
-            attributes: Hash
-          }, {
+            attributes: Hash,
+          },
+          {
             id: String,
             type: 'measure_type',
-            attributes: Hash
-          }, {
+            attributes: Hash,
+          },
+          {
             id: String,
             type: 'goods_nomenclature',
-            attributes: Hash
-          }
-        ]
+            attributes: Hash,
+          },
+        ],
       }
-    }
+    end
 
     before { measure.destroy }
 

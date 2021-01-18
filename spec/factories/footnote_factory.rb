@@ -13,25 +13,25 @@ FactoryBot.define do
     validity_start_date     { Date.current.ago(2.years).localtime }
     validity_end_date       { nil }
 
-    after(:build) { |ftn, _evaluator|
+    after(:build) do |ftn, _evaluator|
       FactoryBot.create(:footnote_type, footnote_type_id: ftn.footnote_type_id,
-                                         validity_start_date: ftn.validity_start_date - 1.day)
+                                        validity_start_date: ftn.validity_start_date - 1.day)
       ftn_desc_period = FactoryBot.create(:footnote_description_period, footnote_type_id: ftn.footnote_type_id,
-                                                       footnote_id: ftn.footnote_id,
-                                                       validity_start_date: ftn.validity_start_date)
+                                                                        footnote_id: ftn.footnote_id,
+                                                                        validity_start_date: ftn.validity_start_date)
       FactoryBot.create(:footnote_description, footnote_type_id: ftn.footnote_type_id,
-                                                footnote_id: ftn.footnote_id,
-                                                footnote_description_period_sid: ftn_desc_period.footnote_description_period_sid)
-    }
+                                               footnote_id: ftn.footnote_id,
+                                               footnote_description_period_sid: ftn_desc_period.footnote_description_period_sid)
+    end
 
     trait :with_gono_association do
-      after(:create) { |ftn, evaluator|
+      after(:create) do |ftn, evaluator|
         FactoryBot.create(:footnote_association_goods_nomenclature, goods_nomenclature_sid: evaluator.goods_nomenclature_sid,
-                                                                     footnote_id: ftn.footnote_id,
-                                                                     footnote_type: ftn.footnote_type_id,
-                                                                     validity_start_date: evaluator.valid_at,
-                                                                     validity_end_date: evaluator.valid_to)
-      }
+                                                                    footnote_id: ftn.footnote_id,
+                                                                    footnote_type: ftn.footnote_type_id,
+                                                                    validity_start_date: evaluator.valid_at,
+                                                                    validity_end_date: evaluator.valid_to)
+      end
     end
 
     trait :national do
@@ -63,13 +63,13 @@ FactoryBot.define do
     description                     { Forgery(:lorem_ipsum).sentence }
 
     trait :with_period do
-      after(:create) { |ftn_description, evaluator|
+      after(:create) do |ftn_description, evaluator|
         FactoryBot.create(:footnote_description_period, footnote_description_period_sid: ftn_description.footnote_description_period_sid,
-                                                                footnote_id: ftn_description.footnote_id,
-                                                                footnote_type_id: ftn_description.footnote_type_id,
-                                                                validity_start_date: evaluator.valid_at,
-                                                                validity_end_date: evaluator.valid_to)
-      }
+                                                        footnote_id: ftn_description.footnote_id,
+                                                        footnote_type_id: ftn_description.footnote_type_id,
+                                                        validity_start_date: evaluator.valid_at,
+                                                        validity_end_date: evaluator.valid_to)
+      end
     end
   end
 

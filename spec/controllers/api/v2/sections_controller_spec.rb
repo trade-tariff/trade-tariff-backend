@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Api::V2::SectionsController, "GET #show" do
+describe Api::V2::SectionsController, 'GET #show' do
   render_views
 
   let(:heading) { create :heading, :with_chapter }
@@ -9,10 +9,10 @@ describe Api::V2::SectionsController, "GET #show" do
   let(:section) { chapter.section }
   let!(:section_note) { create :section_note, section_id: section.id }
 
-  let(:pattern) {
+  let(:pattern) do
     {
       data: {
-        id: "#{section.id}",
+        id: section.id.to_s,
         type: 'section',
         attributes: {
           id: section.id,
@@ -21,13 +21,13 @@ describe Api::V2::SectionsController, "GET #show" do
           numeral: section.numeral,
           chapter_from: section.chapter_from,
           chapter_to: section.chapter_to,
-          section_note: section_note.content
+          section_note: section_note.content,
         },
         relationships: {
           chapters: {
             data: [
               {
-                id: "#{chapter.id}",
+                id: chapter.id.to_s,
                 type: 'chapter',
               },
             ],
@@ -36,7 +36,7 @@ describe Api::V2::SectionsController, "GET #show" do
       },
       included: [
         {
-          id: "#{chapter.id}",
+          id: chapter.id.to_s,
           type: 'chapter',
           attributes: {
             goods_nomenclature_sid: chapter.goods_nomenclature_sid,
@@ -44,30 +44,30 @@ describe Api::V2::SectionsController, "GET #show" do
             headings_from: chapter.headings_from,
             headings_to: chapter.headings_to,
             description: chapter.description,
-            formatted_description: chapter.formatted_description
+            formatted_description: chapter.formatted_description,
           },
           relationships: {
             guides: {
               data: [
                 {
-                  id: "#{chapter_guide.id}",
+                  id: chapter_guide.id.to_s,
                   type: 'guide',
-                }
-              ]
-            }
+                },
+              ],
+            },
           },
         },
         {
-          id: "#{chapter_guide.id}",
+          id: chapter_guide.id.to_s,
           type: 'guide',
           attributes: {
             title: chapter_guide.title,
-            url: chapter_guide.url
-          }
+            url: chapter_guide.url,
+          },
         },
-      ]
+      ],
     }
-  }
+  end
 
   context 'when record is present' do
     it 'returns rendered record' do
@@ -86,7 +86,7 @@ describe Api::V2::SectionsController, "GET #show" do
   end
 end
 
-describe Api::V2::SectionsController, "GET #index" do
+describe Api::V2::SectionsController, 'GET #index' do
   render_views
 
   let!(:chapter1) { create :chapter, :with_section }
@@ -95,11 +95,11 @@ describe Api::V2::SectionsController, "GET #index" do
   let(:section2)  { chapter2.section }
   let!(:section_note) { create :section_note, section_id: section1.id }
 
-  let(:pattern) {
+  let(:pattern) do
     {
       data: [
         {
-          id: "#{section1.id}",
+          id: section1.id.to_s,
           type: 'section',
           attributes: {
             id: section1.id,
@@ -107,11 +107,11 @@ describe Api::V2::SectionsController, "GET #index" do
             title: section1.title,
             numeral: section1.numeral,
             chapter_from: section1.chapter_from,
-            chapter_to: section1.chapter_to
-          }
+            chapter_to: section1.chapter_to,
+          },
         },
         {
-          id: "#{section2.id}",
+          id: section2.id.to_s,
           type: 'section',
           attributes: {
             id: section2.id,
@@ -119,12 +119,12 @@ describe Api::V2::SectionsController, "GET #index" do
             title: section2.title,
             numeral: section2.numeral,
             chapter_from: section2.chapter_from,
-            chapter_to: section2.chapter_to
-          }
+            chapter_to: section2.chapter_to,
+          },
         },
-      ]
+      ],
     }
-  }
+  end
 
   it 'returns rendered records' do
     get :index, format: :json

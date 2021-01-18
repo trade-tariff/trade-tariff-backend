@@ -2,7 +2,7 @@ class LoopingSequence
   attr_reader :value
 
   def self.lower_a_to_upper_z
-    self.new(Set[*("a".."z"), *("A".."Z")])
+    new(Set[*('a'..'z'), *('A'..'Z')])
   end
 
   def initialize(seed)

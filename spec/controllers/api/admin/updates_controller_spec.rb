@@ -1,41 +1,41 @@
 require 'rails_helper'
 
-describe Api::Admin::UpdatesController, "GET #index" do
+describe Api::Admin::UpdatesController, 'GET #index' do
   render_views
 
-  let(:pattern) {
+  let(:pattern) do
     {
       data: [
         {
           id: String,
           type: 'tariff_update',
           attributes: {
-            update_type: "TariffSynchronizer::TaricUpdate",
+            update_type: 'TariffSynchronizer::TaricUpdate',
             state: String,
             filename: String,
-            created_at: String
-          }.ignore_extra_keys!
+            created_at: String,
+          }.ignore_extra_keys!,
         }.ignore_extra_keys!,
         {
           id: String,
           type: 'tariff_update',
           attributes: {
-            update_type: "TariffSynchronizer::TaricUpdate",
+            update_type: 'TariffSynchronizer::TaricUpdate',
             state: String,
             filename: String,
-            created_at: String
-          }.ignore_extra_keys!
-        }.ignore_extra_keys!
+            created_at: String,
+          }.ignore_extra_keys!,
+        }.ignore_extra_keys!,
       ],
       meta: {
         pagination: {
           page: Integer,
           per_page: Integer,
-          total_count: Integer
-        }
-      }
+          total_count: Integer,
+        },
+      },
     }
-  }
+  end
 
   context 'when records are present' do
     let!(:taric_update1) { create :taric_update, :applied, issue_date: Date.yesterday }

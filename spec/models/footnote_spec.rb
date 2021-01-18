@@ -4,26 +4,26 @@ describe Footnote do
   describe 'associations' do
     describe 'additional code description' do
       let!(:footnote) { create :footnote }
-      let!(:footnote_description_2) {
+      let!(:footnote_description_2) do
         create :footnote_description, :with_period,
-                                                            footnote_id: footnote.footnote_id,
-                                                            footnote_type_id: footnote.footnote_type_id,
-                                                            valid_at: 2.years.ago,
-                                                            valid_to: nil
-      }
-      let!(:footnote_description_3) {
+               footnote_id: footnote.footnote_id,
+               footnote_type_id: footnote.footnote_type_id,
+               valid_at: 2.years.ago,
+               valid_to: nil
+      end
+      let!(:footnote_description_3) do
         create :footnote_description, :with_period,
-                                                            footnote_id: footnote.footnote_id,
-                                                            footnote_type_id: footnote.footnote_type_id,
-                                                            valid_at: 5.years.ago,
-                                                            valid_to: 3.years.ago
-      }
+               footnote_id: footnote.footnote_id,
+               footnote_type_id: footnote.footnote_type_id,
+               valid_at: 5.years.ago,
+               valid_to: 3.years.ago
+      end
 
       context 'direct loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
-              footnote.footnote_description.pk
+              footnote.footnote_description.pk,
             ).to eq footnote_description_2.pk
           end
         end
@@ -31,13 +31,13 @@ describe Footnote do
         it 'loads correct description respecting given time' do
           TimeMachine.at(1.year.ago) do
             expect(
-              footnote.footnote_description.pk
+              footnote.footnote_description.pk,
             ).to eq footnote_description_2.pk
           end
 
           TimeMachine.at(4.years.ago) do
             expect(
-              footnote.reload.footnote_description.pk
+              footnote.reload.footnote_description.pk,
             ).to eq footnote_description_3.pk
           end
         end
@@ -48,11 +48,11 @@ describe Footnote do
           TimeMachine.now do
             expect(
               described_class.where(footnote_id: footnote.footnote_id,
-                           footnote_type_id: footnote.footnote_type_id)
+                                    footnote_type_id: footnote.footnote_type_id)
                           .eager(:footnote_descriptions)
                           .all
                           .first
-                          .footnote_description.pk
+                          .footnote_description.pk,
             ).to eq footnote_description_2.pk
           end
         end
@@ -61,22 +61,22 @@ describe Footnote do
           TimeMachine.at(1.year.ago) do
             expect(
               described_class.where(footnote_id: footnote.footnote_id,
-                           footnote_type_id: footnote.footnote_type_id)
+                                    footnote_type_id: footnote.footnote_type_id)
                           .eager(:footnote_descriptions)
                           .all
                           .first
-                          .footnote_description.pk
+                          .footnote_description.pk,
             ).to eq footnote_description_2.pk
           end
 
           TimeMachine.at(4.years.ago) do
             expect(
               described_class.where(footnote_id: footnote.footnote_id,
-                           footnote_type_id: footnote.footnote_type_id)
+                                    footnote_type_id: footnote.footnote_type_id)
                           .eager(:footnote_descriptions)
                           .all
                           .first
-                          .footnote_description.pk
+                          .footnote_description.pk,
             ).to eq footnote_description_3.pk
           end
         end
@@ -116,11 +116,11 @@ describe Footnote do
       describe 'No two associated description periods may have the same start date.' do
         let(:footnote)      { create :footnote }
         let(:desc_period1)  { footnote.footnote_description_periods.first }
-        let!(:desc_period2) {
+        let!(:desc_period2) do
           create :footnote_description_period, footnote_type_id: footnote.footnote_type_id,
-                                                                  footnote_id: footnote.footnote_id,
-                                                                  validity_start_date: footnote.validity_start_date
-        }
+                                               footnote_id: footnote.footnote_id,
+                                               validity_start_date: footnote.validity_start_date
+        end
 
         it 'performs validation' do
           expect(footnote.reload).not_to be_conformant
@@ -142,11 +142,11 @@ describe Footnote do
     describe 'FO5' do
       let!(:measure) { create :measure }
       let!(:footnote) { create :footnote, validity_start_date: Date.new(2009, 1, 1) }
-      let!(:association) {
+      let!(:association) do
         create :footnote_association_measure, measure_sid: measure.measure_sid,
-                                                                footnote_id: footnote.footnote_id,
-                                                                footnote_type_id: footnote.footnote_type_id
-      }
+                                              footnote_id: footnote.footnote_id,
+                                              footnote_type_id: footnote.footnote_type_id
+      end
 
       it 'performs validation' do
         expect(footnote).to be_conformant
@@ -159,11 +159,11 @@ describe Footnote do
     describe 'FO6' do
       let!(:goods_nomenclature) { create :goods_nomenclature }
       let!(:footnote) { create :footnote, validity_start_date: Date.new(2009, 1, 1) }
-      let!(:association) {
+      let!(:association) do
         create :footnote_association_goods_nomenclature, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-                                                                            footnote_id: footnote.footnote_id,
-                                                                            footnote_type: footnote.footnote_type_id
-      }
+                                                         footnote_id: footnote.footnote_id,
+                                                         footnote_type: footnote.footnote_type_id
+      end
 
       it 'performs validation' do
         expect(footnote).to be_conformant
@@ -176,11 +176,11 @@ describe Footnote do
     describe 'FO7' do
       let!(:export_refund_nomenclature) { create :export_refund_nomenclature }
       let!(:footnote) { create :footnote, validity_start_date: Date.new(2009, 1, 1) }
-      let!(:association) {
+      let!(:association) do
         create :footnote_association_ern, export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
-                                                             footnote_id: footnote.footnote_id,
-                                                             footnote_type: footnote.footnote_type_id
-      }
+                                          footnote_id: footnote.footnote_id,
+                                          footnote_type: footnote.footnote_type_id
+      end
 
       it 'performs validation' do
         expect(footnote).to be_conformant
@@ -193,11 +193,11 @@ describe Footnote do
     describe 'FO9' do
       let!(:additional_code) { create :additional_code }
       let!(:footnote) { create :footnote, validity_start_date: Date.new(2009, 1, 1) }
-      let!(:association) {
+      let!(:association) do
         create :footnote_association_additional_code, additional_code_sid: additional_code.additional_code_sid,
-                                                             footnote_id: footnote.footnote_id,
-                                                             footnote_type_id: footnote.footnote_type_id
-      }
+                                                      footnote_id: footnote.footnote_id,
+                                                      footnote_type_id: footnote.footnote_type_id
+      end
 
       it 'performs validation' do
         expect(footnote).to be_conformant
@@ -218,16 +218,16 @@ describe Footnote do
     describe 'FO11' do
       let!(:footnote) { create :footnote }
       let!(:measure)  { create :measure }
-      let!(:footnote_association_measure) {
+      let!(:footnote_association_measure) do
         create :footnote_association_measure, footnote_id: footnote.footnote_id,
-                                                                                 footnote_type_id: footnote.footnote_type_id,
-                                                                                 measure_sid: measure.measure_sid
-      }
+                                              footnote_type_id: footnote.footnote_type_id,
+                                              measure_sid: measure.measure_sid
+      end
 
-      before {
+      before do
         footnote.destroy
         footnote.conformant?
-      }
+      end
 
       specify 'When a footnote is used in a measure then the footnote may not be deleted.' do
         expect(footnote.conformance_errors.keys).to include :FO11
@@ -237,16 +237,16 @@ describe Footnote do
     describe 'FO12' do
       let!(:footnote) { create :footnote }
       let!(:gono) { create :goods_nomenclature }
-      let!(:footnote_association_goods_nomenclature) {
+      let!(:footnote_association_goods_nomenclature) do
         create :footnote_association_goods_nomenclature, footnote_id: footnote.footnote_id,
-                                                                                 footnote_type: footnote.footnote_type_id,
-                                                                                 goods_nomenclature_sid: gono.goods_nomenclature_sid
-      }
+                                                         footnote_type: footnote.footnote_type_id,
+                                                         goods_nomenclature_sid: gono.goods_nomenclature_sid
+      end
 
-      before {
+      before do
         footnote.destroy
         footnote.conformant?
-      }
+      end
 
       specify 'When a footnote is used in a goods nomenclature then the footnote may not be deleted.' do
         expect(footnote.conformance_errors.keys).to include :FO12
@@ -256,16 +256,16 @@ describe Footnote do
     describe 'FO13' do
       let!(:footnote) { create :footnote }
       let!(:ern) { create :export_refund_nomenclature }
-      let!(:footnote_association_ern) {
+      let!(:footnote_association_ern) do
         create :footnote_association_ern, footnote_id: footnote.footnote_id,
-                                                                          footnote_type: footnote.footnote_type_id,
-                                                                          export_refund_nomenclature_sid: ern.export_refund_nomenclature_sid
-      }
+                                          footnote_type: footnote.footnote_type_id,
+                                          export_refund_nomenclature_sid: ern.export_refund_nomenclature_sid
+      end
 
-      before {
+      before do
         footnote.destroy
         footnote.conformant?
-      }
+      end
 
       specify 'When a footnote is used in an Export Refund code then the footnote may not be deleted.' do
         expect(footnote.conformance_errors.keys).to include :FO13
@@ -275,16 +275,16 @@ describe Footnote do
     describe 'FO15' do
       let!(:footnote) { create :footnote }
       let!(:adco) { create :additional_code }
-      let!(:footnote_association_additional_code) {
+      let!(:footnote_association_additional_code) do
         create :footnote_association_additional_code, footnote_id: footnote.footnote_id,
-                                                                          footnote_type_id: footnote.footnote_type_id,
-                                                                          additional_code_sid: adco.additional_code_sid
-      }
+                                                      footnote_type_id: footnote.footnote_type_id,
+                                                      additional_code_sid: adco.additional_code_sid
+      end
 
-      before {
+      before do
         footnote.destroy
         footnote.conformant?
-      }
+      end
 
       specify 'When a footnote is used in an additional code then the footnote may not be deleted.' do
         expect(footnote.conformance_errors.keys).to include :FO15
@@ -294,17 +294,17 @@ describe Footnote do
     describe 'FO16' do
       let!(:footnote) { create :footnote }
       let!(:meursing_heading)  { create :meursing_heading }
-      let!(:footnote_association_meursing_heading) {
+      let!(:footnote_association_meursing_heading) do
         create :footnote_association_meursing_heading, footnote_id: footnote.footnote_id,
-                                                                          footnote_type: footnote.footnote_type_id,
-                                                                          meursing_table_plan_id: meursing_heading.meursing_table_plan_id,
-                                                                          meursing_heading_number: meursing_heading.meursing_heading_number
-      }
+                                                       footnote_type: footnote.footnote_type_id,
+                                                       meursing_table_plan_id: meursing_heading.meursing_table_plan_id,
+                                                       meursing_heading_number: meursing_heading.meursing_heading_number
+      end
 
-      before {
+      before do
         footnote.destroy
         footnote.conformant?
-      }
+      end
 
       specify 'When a footnote is used in a Meursing Table heading then the footnote may not be deleted.' do
         expect(footnote.conformance_errors.keys).to include :FO16

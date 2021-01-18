@@ -6,7 +6,7 @@ FactoryBot.define do
     validity_end_date               { nil }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.years) }
+      validity_end_date { Date.current.ago(1.year) }
     end
   end
 end

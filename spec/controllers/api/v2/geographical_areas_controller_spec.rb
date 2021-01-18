@@ -1,33 +1,33 @@
 require 'rails_helper'
 
-describe Api::V2::GeographicalAreasController, "GET #countries" do
+describe Api::V2::GeographicalAreasController, 'GET #countries' do
   render_views
 
-  let!(:geographical_area1) {
+  let!(:geographical_area1) do
     create :geographical_area,
            :with_description,
            :country
-  }
-  let!(:geographical_area2) {
+  end
+  let!(:geographical_area2) do
     create :geographical_area,
            :with_description,
            :country
-  }
-  let!(:geographical_area3) {
+  end
+  let!(:geographical_area3) do
     create :geographical_area,
            :with_description,
-           geographical_code: "2"
-  }
+           geographical_code: '2'
+  end
 
-  let(:pattern) {
+  let(:pattern) do
     {
       data: [
         { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
         { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
-        { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } }
-      ]
+        { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
+      ],
     }
-  }
+  end
 
   it 'returns rendered records' do
     get :countries, format: :json
@@ -39,166 +39,166 @@ describe Api::V2::GeographicalAreasController, "GET #countries" do
     get :countries, format: :json
 
     expect(response.body.to_s).to include(
-      geographical_area3.geographical_area_id
+      geographical_area3.geographical_area_id,
     )
   end
 
-  describe "machine timed" do
-    let!(:geographical_area1) {
+  describe 'machine timed' do
+    let!(:geographical_area1) do
       create :geographical_area,
              :with_description,
              :country,
-             validity_start_date: "2014-12-31 00:00:00",
-             validity_end_date: "2015-12-31 00:00:00"
-    }
-    let!(:geographical_area2) {
+             validity_start_date: '2014-12-31 00:00:00',
+             validity_end_date: '2015-12-31 00:00:00'
+    end
+    let!(:geographical_area2) do
       create :geographical_area,
              :with_description,
              :country,
-             validity_start_date: "2014-12-01 00:00:00",
-             validity_end_date: "2015-12-01 00:00:00"
-    }
-    let!(:geographical_area3) {
+             validity_start_date: '2014-12-01 00:00:00',
+             validity_end_date: '2015-12-01 00:00:00'
+    end
+    let!(:geographical_area3) do
       create :geographical_area,
              :with_description,
-             geographical_code: "2",
-             validity_start_date: "2014-12-31 00:00:00",
-             validity_end_date: "2015-12-31 00:00:00"
-    }
+             geographical_code: '2',
+             validity_start_date: '2014-12-31 00:00:00',
+             validity_end_date: '2015-12-31 00:00:00'
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: [
           { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
-          { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } }
-        ]
+          { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
+        ],
       }
-    }
+    end
 
     before do
       get :countries,
-          params: { as_of: "2015-12-04" },
+          params: { as_of: '2015-12-04' },
           format: :json
     end
 
-    it "finds one area" do
+    it 'finds one area' do
       expect(response.body).to match_json_expression pattern
     end
 
-    it "includes area 1" do
+    it 'includes area 1' do
       expect(response.body.to_s).to include(
-        "\"id\":\"#{geographical_area1.geographical_area_id}\""
+        "\"id\":\"#{geographical_area1.geographical_area_id}\"",
       )
     end
 
     it "doesn't include area 2" do
-      expect(response.body.to_s).to_not include(
-        "\"id\":\"#{geographical_area2.geographical_area_id}\""
+      expect(response.body.to_s).not_to include(
+        "\"id\":\"#{geographical_area2.geographical_area_id}\"",
       )
     end
   end
 
   describe 'with children geographical areas' do
-    let!(:geographical_area1) {
+    let!(:geographical_area1) do
       create :geographical_area,
-        :with_description,
-        :country
-    }
-    let!(:geographical_area2) {
+             :with_description,
+             :country
+    end
+    let!(:geographical_area2) do
       create :geographical_area,
-        :with_description,
-        :country
-    }
-    let!(:geographical_area3) {
+             :with_description,
+             :country
+    end
+    let!(:geographical_area3) do
       create :geographical_area,
-        :with_description,
-        geographical_code: "2"
-    }
-    let!(:parent_geographical_area) {
+             :with_description,
+             geographical_code: '2'
+    end
+    let!(:parent_geographical_area) do
       create :geographical_area,
-        :with_description,
-        geographical_code: "1"
-    }
-    let!(:geographical_area_membership1) {
+             :with_description,
+             geographical_code: '1'
+    end
+    let!(:geographical_area_membership1) do
       create :geographical_area_membership,
-        geographical_area_sid: geographical_area1.geographical_area_sid,
-        geographical_area_group_sid: parent_geographical_area.geographical_area_sid
-    }
-    let!(:geographical_area_membership3) {
+             geographical_area_sid: geographical_area1.geographical_area_sid,
+             geographical_area_group_sid: parent_geographical_area.geographical_area_sid
+    end
+    let!(:geographical_area_membership3) do
       create :geographical_area_membership,
-        geographical_area_sid: geographical_area3.geographical_area_sid,
-        geographical_area_group_sid: parent_geographical_area.geographical_area_sid
-    }
+             geographical_area_sid: geographical_area3.geographical_area_sid,
+             geographical_area_group_sid: parent_geographical_area.geographical_area_sid
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       { data: [
-        { 
+        {
           id: String,
-          type: "geographical_area",
-          attributes: { 
-            id: String,
-            description: String,
-            geographical_area_id: String
-          }, 
-          relationships: { 
-            children_geographical_areas: { 
-              data: [] 
-            } 
-          } 
-        }, 
-        { 
-          id: String,
-          type: "geographical_area",
+          type: 'geographical_area',
           attributes: {
             id: String,
             description: String,
-            geographical_area_id: String
-          }, 
-          relationships: { 
-            children_geographical_areas: { 
-              data: [] 
-            } 
-          } 
-        }, 
-        { 
+            geographical_area_id: String,
+          },
+          relationships: {
+            children_geographical_areas: {
+              data: [],
+            },
+          },
+        },
+        {
           id: String,
-          type: "geographical_area",
+          type: 'geographical_area',
           attributes: {
             id: String,
             description: String,
-            geographical_area_id: String
-          }, 
-          relationships: { 
-            children_geographical_areas: { 
-              data: [] 
-            } 
-          } 
-        }, 
-        { 
+            geographical_area_id: String,
+          },
+          relationships: {
+            children_geographical_areas: {
+              data: [],
+            },
+          },
+        },
+        {
+          id: String,
+          type: 'geographical_area',
+          attributes: {
+            id: String,
+            description: String,
+            geographical_area_id: String,
+          },
+          relationships: {
+            children_geographical_areas: {
+              data: [],
+            },
+          },
+        },
+        {
           id: parent_geographical_area.geographical_area_id,
-          type: "geographical_area",
+          type: 'geographical_area',
           attributes: {
             id: parent_geographical_area.geographical_area_id,
             description: String,
-            geographical_area_id: String
-          }, 
-          relationships: { 
-            children_geographical_areas: { 
+            geographical_area_id: String,
+          },
+          relationships: {
+            children_geographical_areas: {
               data: [
-                { 
+                {
                   id: geographical_area1.geographical_area_id,
-                  type: "geographical_area"
-                }, 
-                { 
+                  type: 'geographical_area',
+                },
+                {
                   id: geographical_area3.geographical_area_id,
-                  type: "geographical_area"
-                }
-              ] 
-            } 
-          } 
-        } ] 
-      }
-    }
+                  type: 'geographical_area',
+                },
+              ],
+            },
+          },
+        },
+      ] }
+    end
 
     it 'returns rendered records' do
       get :index, format: :json

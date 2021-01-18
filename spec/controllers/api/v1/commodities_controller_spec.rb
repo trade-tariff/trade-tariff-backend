@@ -1,14 +1,16 @@
 require 'rails_helper'
 
-describe Api::V1::CommoditiesController, "GET #show" do
+describe Api::V1::CommoditiesController, 'GET #show' do
   render_views
 
-  let!(:commodity) { create :commodity, :with_indent,
-                                        :with_chapter,
-                                        :with_heading,
-                                        :with_description,
-                                        :declarable }
-  let(:pattern) {
+  let!(:commodity) do
+    create :commodity, :with_indent,
+           :with_chapter,
+           :with_heading,
+           :with_description,
+           :declarable
+  end
+  let(:pattern) do
     {
       goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
       description: String,
@@ -18,7 +20,7 @@ describe Api::V1::CommoditiesController, "GET #show" do
       export_measures: Array,
       _response_info: Hash,
     }.ignore_extra_keys!
-  }
+  end
 
   context 'when record is present' do
     it 'returns rendered record' do
@@ -52,16 +54,20 @@ describe Api::V1::CommoditiesController, "GET #show" do
     # 80 are not declarable. Unfortunately this is not always the case, sometimes
     # productline suffix is 80, but commodity has children and therefore should also
     # be considered to be non-declarable.
-    let!(:heading) { create :goods_nomenclature, goods_nomenclature_item_id: '3903000000'}
-    let!(:parent_commodity) { create :commodity, :with_indent,
-                                                 :with_chapter,
-                                                 indents: 2,
-                                                 goods_nomenclature_item_id: '3903909000',
-                                                 producline_suffix: '80' }
-    let!(:child_commodity)  { create :commodity, :with_indent,
-                                                indents: 3,
-                                                goods_nomenclature_item_id: '3903909065',
-                                                producline_suffix: '80'}
+    let!(:heading) { create :goods_nomenclature, goods_nomenclature_item_id: '3903000000' }
+    let!(:parent_commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             indents: 2,
+             goods_nomenclature_item_id: '3903909000',
+             producline_suffix: '80'
+    end
+    let!(:child_commodity) do
+      create :commodity, :with_indent,
+             indents: 3,
+             goods_nomenclature_item_id: '3903909065',
+             producline_suffix: '80'
+    end
 
     it 'returns not found (is not declarable)' do
       get :show, params: { id: parent_commodity.goods_nomenclature_item_id }, format: :json
@@ -71,33 +77,35 @@ describe Api::V1::CommoditiesController, "GET #show" do
   end
 end
 
-describe Api::V1::CommoditiesController, "GET #changes" do
+describe Api::V1::CommoditiesController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do
-    let!(:commodity) { create :commodity, :with_indent,
-                                          :with_chapter,
-                                          :with_heading,
-                                          :with_description,
-                                          :declarable,
-                                          operation_date: Date.current }
+    let!(:commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             :with_heading,
+             :with_description,
+             :declarable,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       [
         {
           oid: Integer,
-          model_name: "GoodsNomenclature",
+          model_name: 'GoodsNomenclature',
           operation: String,
           operation_date: String,
           record: {
             description: String,
             goods_nomenclature_item_id: String,
             validity_start_date: String,
-            validity_end_date: nil
-          }
-        }
+            validity_end_date: nil,
+          },
+        },
       ].ignore_extra_values!
-    }
+    end
 
     it 'returns commodity changes' do
       get :changes, params: { id: commodity }, format: :json
@@ -107,12 +115,14 @@ describe Api::V1::CommoditiesController, "GET #changes" do
   end
 
   context 'changes happened before requested date' do
-    let!(:commodity) { create :commodity, :with_indent,
-                                          :with_chapter,
-                                          :with_heading,
-                                          :with_description,
-                                          :declarable,
-                                          operation_date: Date.current }
+    let!(:commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             :with_heading,
+             :with_description,
+             :declarable,
+             operation_date: Date.current
+    end
 
     it 'does not include change records' do
       get :changes, params: { id: commodity, as_of: Date.yesterday }, format: :json
@@ -122,33 +132,35 @@ describe Api::V1::CommoditiesController, "GET #changes" do
   end
 
   context 'changes include deleted record' do
-    let!(:commodity) { create :commodity, :with_indent,
-                                          :with_chapter,
-                                          :with_heading,
-                                          :with_description,
-                                          :declarable,
-                                          operation_date: Date.current }
-    let!(:measure) {
+    let!(:commodity) do
+      create :commodity, :with_indent,
+             :with_chapter,
+             :with_heading,
+             :with_description,
+             :declarable,
+             operation_date: Date.current
+    end
+    let!(:measure) do
       create :measure,
-        :with_measure_type,
-        goods_nomenclature: commodity,
-        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-        operation_date: Date.current
-    }
+             :with_measure_type,
+             goods_nomenclature: commodity,
+             goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       [
         {
           oid: Integer,
-          model_name: "Measure",
-          operation: "D",
+          model_name: 'Measure',
+          operation: 'D',
           record: {
             goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
             measure_type: {
-              description: measure.measure_type.description
-            }.ignore_extra_keys!
-          }.ignore_extra_keys!
+              description: measure.measure_type.description,
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!,
         }.ignore_extra_keys!,
         {
           oid: Integer,
@@ -159,11 +171,11 @@ describe Api::V1::CommoditiesController, "GET #changes" do
             description: String,
             goods_nomenclature_item_id: String,
             validity_start_date: String,
-            validity_end_date: nil
-          }
-        }
+            validity_end_date: nil,
+          },
+        },
       ].ignore_extra_values!
-    }
+    end
 
     before { measure.destroy }
 

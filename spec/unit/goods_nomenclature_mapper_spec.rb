@@ -11,21 +11,21 @@ describe GoodsNomenclatureMapper do
     # (2) should have parent (1)
     # (3) should have parent (2)
     context 'with commodity indents on the same level' do
-      let(:commodity1) {
+      let(:commodity1) do
         create :commodity, :with_indent,
-                                            indents: 1,
-                                            goods_nomenclature_item_id: "0101000010"
-      }
-      let(:commodity2) {
+               indents: 1,
+               goods_nomenclature_item_id: '0101000010'
+      end
+      let(:commodity2) do
         create :commodity, :with_indent,
-                                            indents: 2,
-                                            goods_nomenclature_item_id: "0101000030"
-      }
-      let(:commodity3) {
+               indents: 2,
+               goods_nomenclature_item_id: '0101000030'
+      end
+      let(:commodity3) do
         create :commodity, :with_indent,
-                                            indents: 2,
-                                            goods_nomenclature_item_id: "0101000040"
-      }
+               indents: 2,
+               goods_nomenclature_item_id: '0101000040'
+      end
 
       it 'assigns no parents or children to both commodities' do
         commodities = described_class.new([commodity1, commodity2, commodity3])
@@ -53,26 +53,26 @@ describe GoodsNomenclatureMapper do
     # Expect (1) to become the child of (1).
     # Expect (3) to become the child of (4).
     context 'with commodity indents increasing' do
-      let(:commodity1) {
+      let(:commodity1) do
         create :commodity, :with_indent,
-                                            indents: 1,
-                                            goods_nomenclature_item_id: "0101000010"
-      }
-      let(:commodity2) {
+               indents: 1,
+               goods_nomenclature_item_id: '0101000010'
+      end
+      let(:commodity2) do
         create :commodity, :with_indent,
-                                            indents: 2,
-                                            goods_nomenclature_item_id: "0101000030"
-      }
-      let(:commodity3) {
+               indents: 2,
+               goods_nomenclature_item_id: '0101000030'
+      end
+      let(:commodity3) do
         create :commodity, :with_indent,
-                                            indents: 1,
-                                            goods_nomenclature_item_id: "0101000110"
-      }
-      let(:commodity4) {
+               indents: 1,
+               goods_nomenclature_item_id: '0101000110'
+      end
+      let(:commodity4) do
         create :commodity, :with_indent,
-                                            indents: 2,
-                                            goods_nomenclature_item_id: "0101000130"
-      }
+               indents: 2,
+               goods_nomenclature_item_id: '0101000130'
+      end
 
       it 'assigns no parents or children to both commodities' do
         commodities = described_class.new([commodity1, commodity2, commodity3, commodity4])
@@ -106,31 +106,31 @@ describe GoodsNomenclatureMapper do
     # Expect (4) to have no children and ancetors (1) and (2)
     # Expect (5) to have no children and ancestor (1)
     context 'with commodity indents decreasing' do
-      let(:commodity1) {
+      let(:commodity1) do
         create :commodity, :with_indent,
-                                            indents: 1,
-                                            goods_nomenclature_item_id: "0101000010"
-      }
-      let(:commodity2) {
+               indents: 1,
+               goods_nomenclature_item_id: '0101000010'
+      end
+      let(:commodity2) do
         create :commodity, :with_indent,
-                                            indents: 2,
-                                            goods_nomenclature_item_id: "0101000020"
-      }
-      let(:commodity3) {
+               indents: 2,
+               goods_nomenclature_item_id: '0101000020'
+      end
+      let(:commodity3) do
         create :commodity, :with_indent,
-                                            indents: 3,
-                                            goods_nomenclature_item_id: "0101000030"
-      }
-      let(:commodity4) {
+               indents: 3,
+               goods_nomenclature_item_id: '0101000030'
+      end
+      let(:commodity4) do
         create :commodity, :with_indent,
-                                            indents: 3,
-                                            goods_nomenclature_item_id: "0101000040"
-      }
-      let(:commodity5) {
+               indents: 3,
+               goods_nomenclature_item_id: '0101000040'
+      end
+      let(:commodity5) do
         create :commodity, :with_indent,
-                                            indents: 2,
-                                            goods_nomenclature_item_id: "0101000050"
-      }
+               indents: 2,
+               goods_nomenclature_item_id: '0101000050'
+      end
 
       it 'assigns no parents or children to both commodities' do
         commodities = described_class.new([commodity1, commodity2, commodity3, commodity4, commodity5])
@@ -169,30 +169,30 @@ describe GoodsNomenclatureMapper do
     # (3) should have children (4)
     # (4) should have parent (3)
     context 'with heading indents on the same level' do
-      let(:heading1) {
+      let(:heading1) do
         create :heading, :with_indent,
-                                        indents: 0,
-                                        goods_nomenclature_item_id: "0101000000",
-                                        producline_suffix: "10"
-      }
-      let(:heading2) {
+               indents: 0,
+               goods_nomenclature_item_id: '0101000000',
+               producline_suffix: '10'
+      end
+      let(:heading2) do
         create :heading, :with_indent,
-                                        indents: 1,
-                                        goods_nomenclature_item_id: "0101000000",
-                                        producline_suffix: "80"
-      }
-      let(:heading3) {
+               indents: 1,
+               goods_nomenclature_item_id: '0101000000',
+               producline_suffix: '80'
+      end
+      let(:heading3) do
         create :heading, :with_indent,
-                                        indents: 0,
-                                        goods_nomenclature_item_id: "0102000000",
-                                        producline_suffix: "10"
-      }
-      let(:heading4) {
+               indents: 0,
+               goods_nomenclature_item_id: '0102000000',
+               producline_suffix: '10'
+      end
+      let(:heading4) do
         create :heading, :with_indent,
-                                        indents: 0,
-                                        goods_nomenclature_item_id: "0102000000",
-                                        producline_suffix: "80"
-      }
+               indents: 0,
+               goods_nomenclature_item_id: '0102000000',
+               producline_suffix: '80'
+      end
 
       it 'assigns no parents or children to both commodities' do
         headings = described_class.new([heading1, heading2, heading3, heading4])

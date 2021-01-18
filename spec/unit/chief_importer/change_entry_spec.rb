@@ -18,13 +18,13 @@ describe ChiefImporter::ChangeEntry do
   let(:invalid_args)         { [invalid_table_name] }
 
   describe 'initialization' do
-    before(:each) do
+    before do
       # make TestStrategy a valid one
-      ChiefImporter.relevant_tables.push("TestStrategy")
+      ChiefImporter.relevant_tables.push('TestStrategy')
     end
 
-    after(:each) do
-      ChiefImporter.relevant_tables.delete("TestStrategy")
+    after do
+      ChiefImporter.relevant_tables.delete('TestStrategy')
     end
 
     it 'assigns table name' do
@@ -39,15 +39,15 @@ describe ChiefImporter::ChangeEntry do
 
       ce = ChiefImporter::ChangeEntry.new(valid_args)
       expect(ce.table).to eq valid_table_name
-      expect(ce.strategy).to_not be_blank
+      expect(ce.strategy).not_to be_blank
       expect(ce.strategy).to be_kind_of ChiefImporter::Strategies::TestStrategy
     end
   end
 
-  describe "#relevant?" do
+  describe '#relevant?' do
     it 'returns false if table is not relevant' do
       expect(
-        ChiefImporter::ChangeEntry.new(invalid_args).relevant?
+        ChiefImporter::ChangeEntry.new(invalid_args).relevant?,
       ).to be_falsy
     end
 
@@ -55,10 +55,10 @@ describe ChiefImporter::ChangeEntry do
       ChiefImporter.relevant_tables += valid_args
 
       expect(
-        ChiefImporter::ChangeEntry.new(valid_args).relevant?
+        ChiefImporter::ChangeEntry.new(valid_args).relevant?,
       ).to be_truthy
 
-      ChiefImporter.relevant_tables.delete("TestStrategy")
+      ChiefImporter.relevant_tables.delete('TestStrategy')
     end
   end
 end

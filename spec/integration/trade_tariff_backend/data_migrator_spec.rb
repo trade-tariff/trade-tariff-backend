@@ -3,7 +3,7 @@ require 'rails_helper'
 describe TradeTariffBackend::DataMigrator do
   before do
     allow(TradeTariffBackend).to receive(:data_migration_path).and_return(
-      File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples')
+      File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples'),
     )
     TradeTariffBackend::DataMigrator.migrations = []
   end
@@ -12,9 +12,10 @@ describe TradeTariffBackend::DataMigrator do
     context 'successful run' do
       before do
         allow(TradeTariffBackend::DataMigrator).to receive(:pending_migration_files).and_return(
-          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '1_migrate.rb')]
+          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '1_migrate.rb')],
         )
       end
+
       it 'executes pending migrations' do
         TradeTariffBackend::DataMigrator.migrate
 
@@ -25,7 +26,7 @@ describe TradeTariffBackend::DataMigrator do
     context 'run with errors' do
       before do
         allow(TradeTariffBackend::DataMigrator).to receive(:pending_migration_files).and_return(
-          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '2_migrate_with_errors.rb')]
+          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '2_migrate_with_errors.rb')],
         )
       end
 
@@ -43,7 +44,7 @@ describe TradeTariffBackend::DataMigrator do
     context 'successful run' do
       before do
         allow(TradeTariffBackend::DataMigrator).to receive(:pending_migration_files).and_return(
-          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '3_rollback.rb')]
+          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '3_rollback.rb')],
         )
         TradeTariffBackend::DataMigrator.migrate
       end
@@ -58,7 +59,7 @@ describe TradeTariffBackend::DataMigrator do
     context 'run with errors' do
       before do
         allow(TradeTariffBackend::DataMigrator).to receive(:pending_migration_files).and_return(
-          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '4_rollback_with_errors.rb')]
+          [File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples', '4_rollback_with_errors.rb')],
         )
         TradeTariffBackend::DataMigrator.migrate
       end

@@ -11,9 +11,9 @@ FactoryBot.define do
     validity_end_date       { nil }
 
     trait :with_export_refund_nomenclature do
-      after(:build) { |adco, _evaluator|
+      after(:build) do |adco, _evaluator|
         FactoryBot.create(:export_refund_nomenclature, export_refund_code: adco.additional_code)
-      }
+      end
     end
   end
 
@@ -39,49 +39,49 @@ FactoryBot.define do
     description                            { "#{Forgery('basic').text} #{Forgery('basic').text} #{Forgery('basic').text}" }
 
     trait :with_period do
-      after(:create) { |adco_description, evaluator|
+      after(:create) do |adco_description, evaluator|
         FactoryBot.create(:additional_code_description_period, additional_code_description_period_sid: adco_description.additional_code_description_period_sid,
-                                                                additional_code_sid: adco_description.additional_code_sid,
-                                                                additional_code_type_id: adco_description.additional_code_type_id,
-                                                                additional_code: adco_description.additional_code,
-                                                                validity_start_date: evaluator.valid_at,
-                                                                validity_end_date: evaluator.valid_to)
-      }
+                                                               additional_code_sid: adco_description.additional_code_sid,
+                                                               additional_code_type_id: adco_description.additional_code_type_id,
+                                                               additional_code: adco_description.additional_code,
+                                                               validity_start_date: evaluator.valid_at,
+                                                               validity_end_date: evaluator.valid_to)
+      end
     end
   end
 
   factory :additional_code_type do
     additional_code_type_id { generate(:additional_code_type_id) }
-    application_code        { "1" }
+    application_code        { '1' }
     validity_start_date     { Date.current.ago(2.years) }
     validity_end_date       { nil }
 
     trait :ern do
-      application_code { "0" }
+      application_code { '0' }
     end
 
     trait :adco do
-      application_code { "1" }
+      application_code { '1' }
     end
 
     trait :meursing do
-      application_code { "3" }
+      application_code { '3' }
     end
 
     trait :ern_agricultural do
-      application_code { "4" }
+      application_code { '4' }
     end
 
     trait :with_meursing_table_plan do
       meursing_table_plan_id { Forgery(:basic).number }
 
-      after(:build) { |adco_type, _evaluator|
+      after(:build) do |adco_type, _evaluator|
         create(:meursing_table_plan, meursing_table_plan_id: adco_type.meursing_table_plan_id)
-      }
+      end
     end
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.years) }
+      validity_end_date { Date.current.ago(1.year) }
     end
   end
 
@@ -90,7 +90,7 @@ FactoryBot.define do
     description                            { Forgery(:lorem_ipsum).sentence }
 
     trait :xml do
-      language_id { "EN" }
+      language_id { 'EN' }
     end
   end
 

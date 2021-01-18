@@ -9,8 +9,7 @@ describe Api::Admin::MeasureTypesController do
     let!(:national_measure_type) { create :measure_type, :national }
     let!(:non_national_measure_type) { create :measure_type, :non_national }
 
-
-    let(:response_pattern) {
+    let(:response_pattern) do
       {
         data: [
           {
@@ -18,12 +17,12 @@ describe Api::Admin::MeasureTypesController do
             type: String,
             attributes: {
               validity_start_date: String,
-              description: String
-            }.ignore_extra_keys!
-          }
-        ]
+              description: String,
+            }.ignore_extra_keys!,
+          },
+        ],
       }
-    }
+    end
 
     it 'returns national measure types' do
       get :index, format: :json
@@ -42,18 +41,18 @@ describe Api::Admin::MeasureTypesController do
     let!(:national_measure_type) { create :measure_type, :national }
     let!(:non_national_measure_type) { create :measure_type, :non_national }
 
-    let(:response_pattern) {
+    let(:response_pattern) do
       {
         data: {
           id: String,
           type: String,
           attributes: {
             validity_start_date: String,
-            description: String
-          }.ignore_extra_keys!
-        }
+            description: String,
+          }.ignore_extra_keys!,
+        },
       }
-    }
+    end
 
     it 'returns national measure types' do
       get :show, params: { id: national_measure_type.pk }, format: :json
@@ -81,7 +80,6 @@ describe Api::Admin::MeasureTypesController do
       expect(response.status).to eq 404
     end
   end
-
 
   def parsed_body
     JSON.parse(response.body)['data']

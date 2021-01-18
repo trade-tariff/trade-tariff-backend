@@ -7,7 +7,7 @@ describe Chief::CountryGroup do
 
     it 'maps CHIEF code to Taric' do
       expect(
-        Chief::CountryGroup.to_taric(country_group.chief_country_grp)
+        Chief::CountryGroup.to_taric(country_group.chief_country_grp),
       ).to eq country_group.country_grp_region
     end
 

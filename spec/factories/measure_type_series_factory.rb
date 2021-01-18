@@ -8,7 +8,7 @@ FactoryBot.define do
 
     trait :xml do
       measure_type_combination { 0 }
-      validity_end_date        { Date.current.ago(1.years) }
+      validity_end_date        { Date.current.ago(1.year) }
     end
   end
 
@@ -17,7 +17,7 @@ FactoryBot.define do
     description { Forgery(:basic).text }
 
     trait :xml do
-      language_id { "EN" }
+      language_id { 'EN' }
     end
   end
 end

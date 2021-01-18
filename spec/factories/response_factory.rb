@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :response, class: TariffSynchronizer::Response do
+  factory :response, class: 'TariffSynchronizer::Response' do
     response_code { [200, 404, 403].sample }
     content { Forgery(:basic).text }
 
@@ -19,7 +19,7 @@ FactoryBot.define do
 
     trait :blank do
       success
-      content { "" }
+      content { '' }
     end
 
     trait :retry_exceeded do

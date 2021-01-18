@@ -5,9 +5,9 @@ FactoryBot.define do
     validity_end_date   { nil }
 
     trait :with_description do
-      after(:create) { |monetary_unit, _evaluator|
+      after(:create) do |monetary_unit, _evaluator|
         FactoryBot.create :monetary_unit_description, monetary_unit_code: monetary_unit.monetary_unit_code
-      }
+      end
     end
   end
 

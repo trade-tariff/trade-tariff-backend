@@ -1,29 +1,29 @@
 require 'rails_helper'
 
 describe TaricImporter::RecordProcessor::DestroyOperation do
-  let(:empty_operation) {
+  let(:empty_operation) do
     TaricImporter::RecordProcessor::DestroyOperation.new(nil, nil)
-  }
+  end
 
-  let(:record_hash) {
-    {'transaction_id'=>'31946',
-     'record_code'=>'130',
-     'subrecord_code'=>'05',
-     'record_sequence_number'=>'1',
-     'update_type'=>'2',
-     'language_description'=>
-         {'language_code_id'=>'FR',
-          'language_id'=>'EN',
-          'description'=>'French'}}
-  }
+  let(:record_hash) do
+    { 'transaction_id' => '31946',
+      'record_code' => '130',
+      'subrecord_code' => '05',
+      'record_sequence_number' => '1',
+      'update_type' => '2',
+      'language_description' =>
+         { 'language_code_id' => 'FR',
+           'language_id' => 'EN',
+           'description' => 'French' } }
+  end
 
-  let(:record) {
+  let(:record) do
     TaricImporter::RecordProcessor::Record.new(record_hash)
-  }
+  end
 
-  let(:operation) {
+  let(:operation) do
     TaricImporter::RecordProcessor::DestroyOperation.new(record, Date.current)
-  }
+  end
 
   describe '#to_oplog_operation' do
     it 'identifies as destroy operation' do
@@ -49,7 +49,6 @@ describe TaricImporter::RecordProcessor::DestroyOperation do
         operation.send(:get_model_record)
       end
 
-
       context 'when record is NOT found' do
         it 'returns nil' do
           record = operation.send(:get_model_record)
@@ -60,9 +59,9 @@ describe TaricImporter::RecordProcessor::DestroyOperation do
       context 'when record is found' do
         before do
           LanguageDescription.unrestrict_primary_key
-          LanguageDescription.create('language_code_id'=>'FR',
-                                     'language_id'=>'EN',
-                                     'description'=>'French')
+          LanguageDescription.create('language_code_id' => 'FR',
+                                     'language_id' => 'EN',
+                                     'description' => 'French')
         end
 
         it 'returns a model record' do
@@ -92,9 +91,9 @@ describe TaricImporter::RecordProcessor::DestroyOperation do
       context 'when record is found' do
         before do
           LanguageDescription.unrestrict_primary_key
-          LanguageDescription.create('language_code_id'=>'FR',
-                                     'language_id'=>'EN',
-                                     'description'=>'French')
+          LanguageDescription.create('language_code_id' => 'FR',
+                                     'language_id' => 'EN',
+                                     'description' => 'French')
         end
 
         it 'returns a model record' do
@@ -110,9 +109,9 @@ describe TaricImporter::RecordProcessor::DestroyOperation do
     context 'if record is found' do
       before do
         LanguageDescription.unrestrict_primary_key
-        LanguageDescription.create('language_code_id'=>'FR',
-                                   'language_id'=>'EN',
-                                   'description'=>'French')
+        LanguageDescription.create('language_code_id' => 'FR',
+                                   'language_id' => 'EN',
+                                   'description' => 'French')
       end
 
       it 'destroys the record ' do
@@ -126,7 +125,7 @@ describe TaricImporter::RecordProcessor::DestroyOperation do
       end
 
       it 'does not send presence error events' do
-        expect(operation).to_not receive(:log_presence_error)
+        expect(operation).not_to receive(:log_presence_error)
         operation.call
       end
     end

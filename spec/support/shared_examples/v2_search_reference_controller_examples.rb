@@ -7,8 +7,8 @@ shared_examples_for 'v2 search references controller' do
 
   before { search_reference }
 
-  describe "GET #index" do
-    let(:pattern) {
+  describe 'GET #index' do
+    let(:pattern) do
       {
         data: [
           {
@@ -17,12 +17,12 @@ shared_examples_for 'v2 search references controller' do
             attributes: {
               title: String,
               referenced_id: String,
-              referenced_class: String
-            }
-          }
-        ]
+              referenced_class: String,
+            },
+          },
+        ],
       }
-    }
+    end
 
     context 'without pagination' do
       it 'returns rendered records with default pagination values' do
@@ -62,8 +62,8 @@ shared_examples_for 'v2 search references controller' do
     end
   end
 
-  describe "GET to #show" do
-    let(:pattern) {
+  describe 'GET to #show' do
+    let(:pattern) do
       {
         data:
           {
@@ -72,38 +72,38 @@ shared_examples_for 'v2 search references controller' do
             attributes: {
               title: String,
               referenced_id: String,
-              referenced_class: String
+              referenced_class: String,
             },
             relationships: {
               referenced: {
-                data: Hash
-              }
-            }
+                data: Hash,
+              },
+            },
           },
         included: [
           {
             id: String,
             type: String,
-            attributes: Hash
-          }.ignore_extra_keys!
-        ]
+            attributes: Hash,
+          }.ignore_extra_keys!,
+        ],
       }
-    }
+    end
 
     it 'returns rendered search reference record' do
       get :show, params: {
-        format: :json
+        format: :json,
       }.merge(resource_query)
 
       expect(response.body).to match_json_expression pattern
     end
   end
 
-  describe "POST to #create" do
-    let(:search_reference)  { build :search_reference }
+  describe 'POST to #create' do
+    let(:search_reference) { build :search_reference }
 
     context 'valid params provided' do
-      let(:pattern) {
+      let(:pattern) do
         {
           data:
             {
@@ -112,26 +112,26 @@ shared_examples_for 'v2 search references controller' do
               attributes: {
                 title: String,
                 referenced_id: String,
-                referenced_class: String
+                referenced_class: String,
               },
-              relationships: Hash
+              relationships: Hash,
             },
           included: [
             {
               id: String,
               type: String,
               attributes: Hash,
-            }.ignore_extra_keys!
-          ]
+            }.ignore_extra_keys!,
+          ],
         }
-      }
+      end
 
-      before {
+      before do
         post :create, params: {
           data: { type: :search_reference, attributes: { title: search_reference.title } },
-          format: :json
+          format: :json,
         }.merge(collection_query)
-      }
+      end
 
       it 'persists SearchReference entry' do
         expect(SearchReference.all).not_to be_none
@@ -143,16 +143,16 @@ shared_examples_for 'v2 search references controller' do
     end
 
     context 'invalid params provided' do
-      let(:pattern) {
+      let(:pattern) do
         { errors: Array }
-      }
+      end
 
-      before {
+      before do
         post :create, params: {
           data: { type: :search_reference, attributes: { title: '' } },
-          format: :json
+          format: :json,
         }.merge(collection_query)
-      }
+      end
 
       it 'does not persist SearchReference entry' do
         expect(SearchReference.all).to be_none
@@ -164,17 +164,16 @@ shared_examples_for 'v2 search references controller' do
     end
   end
 
-  describe "DELETE #destroy" do
+  describe 'DELETE #destroy' do
     context 'search reference exists' do
-
-      before { search_reference  }
+      before { search_reference }
 
       it 'destroys SearchReference entry' do
         expect {
           delete :destroy, params: {
-            format: :json
+            format: :json,
           }.merge(resource_query)
-        }.to change { SearchReference.count }.by(-1)
+        }.to change(SearchReference, :count).by(-1)
       end
     end
 
@@ -185,15 +184,15 @@ shared_examples_for 'v2 search references controller' do
         expect {
           delete :destroy, params: {
             id: bogus_search_ref_id,
-            format: :json
+            format: :json,
           }.merge(collection_query)
-        }.not_to change { SearchReference.count }
+        }.not_to change(SearchReference, :count)
       end
 
       it 'returns 404 response' do
         delete :destroy, params: {
           id: bogus_search_ref_id,
-          format: :json
+          format: :json,
         }.merge(collection_query)
 
         expect(response.status).to eq 404
@@ -201,16 +200,16 @@ shared_examples_for 'v2 search references controller' do
     end
   end
 
-  describe "PUT #update" do
-    let(:new_title)         { 'new title' }
+  describe 'PUT #update' do
+    let(:new_title) { 'new title' }
 
     context 'valid params provided' do
-      before {
+      before do
         put :update, params: {
           data: { type: search_reference, attributes: { title: new_title } },
-          format: :json
+          format: :json,
         }.merge(resource_query)
-      }
+      end
 
       it 'updates SearchReference entry' do
         expect(search_reference.reload.title).to eq new_title
@@ -226,16 +225,16 @@ shared_examples_for 'v2 search references controller' do
     end
 
     context 'invalid params provided' do
-      let(:pattern) {
+      let(:pattern) do
         { errors: Hash }
-      }
+      end
 
-      before {
+      before do
         put :update, params: {
           data: { type: search_reference, attributes: { title: '' } },
-          format: :json
+          format: :json,
         }.merge(resource_query)
-      }
+      end
 
       it 'does not update SearchReference entry' do
         expect(search_reference.reload.title).not_to eq new_title

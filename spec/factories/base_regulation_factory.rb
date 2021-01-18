@@ -9,10 +9,10 @@ FactoryBot.define do
     effective_end_date  { nil }
 
     trait :abrogated do
-      after(:build) { |br, _evaluator|
+      after(:build) do |br, _evaluator|
         FactoryBot.create(:complete_abrogation_regulation, complete_abrogation_regulation_id: br.base_regulation_id,
-                                                            complete_abrogation_regulation_role: br.base_regulation_role)
-      }
+                                                           complete_abrogation_regulation_role: br.base_regulation_role)
+      end
     end
   end
 end

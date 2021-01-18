@@ -3,11 +3,11 @@ require 'rails_helper'
 describe TradeTariffBackend::DataMigration do
   describe 'migration definition' do
     describe '.desc' do
-      let!(:example_migration) {
+      let!(:example_migration) do
         TradeTariffBackend::DataMigration.new do
           desc 'example description'
         end
-      }
+      end
 
       it 'sets a migration description' do
         expect(example_migration.desc).to eq 'example description'
@@ -15,26 +15,26 @@ describe TradeTariffBackend::DataMigration do
     end
 
     describe '.name' do
-      let!(:example_migration) {
+      let!(:example_migration) do
         TradeTariffBackend::DataMigration.new do
           name 'example name'
         end
-      }
+      end
 
       it 'sets a migration name' do
         expect(example_migration.name).to eq 'example name'
       end
-   end
+    end
 
     describe '.up' do
-      let!(:example_migration) {
+      let!(:example_migration) do
         TradeTariffBackend::DataMigration.new do
           up do
             applicable   { true }
             apply        {}
           end
         end
-      }
+      end
 
       it 'instantiates migration Runner' do
         expect(example_migration.up).to be_kind_of TradeTariffBackend::DataMigration::Runner
@@ -46,14 +46,14 @@ describe TradeTariffBackend::DataMigration do
     end
 
     describe '.down' do
-      let!(:example_migration) {
+      let!(:example_migration) do
         TradeTariffBackend::DataMigration.new do
           down do
             applicable   { true }
             apply        {}
           end
         end
-      }
+      end
 
       it 'instantiates migration Runner' do
         expect(example_migration.down).to be_kind_of TradeTariffBackend::DataMigration::Runner
@@ -66,14 +66,14 @@ describe TradeTariffBackend::DataMigration do
   end
 
   describe '#can_rollup?' do
-    let!(:example_migration) {
+    let!(:example_migration) do
       TradeTariffBackend::DataMigration.new do
         up do
           applicable   { true }
           apply        {}
         end
       end
-    }
+    end
 
     it 'delegates to up_runner' do
       expect(example_migration.can_rollup?).to be_truthy
@@ -81,14 +81,14 @@ describe TradeTariffBackend::DataMigration do
   end
 
   describe '#can_rolldown?' do
-    let!(:example_migration) {
+    let!(:example_migration) do
       TradeTariffBackend::DataMigration.new do
         down do
           applicable   { true }
           apply        {}
         end
       end
-    }
+    end
 
     it 'delegates to down_runner' do
       expect(example_migration.can_rolldown?).to be_truthy
@@ -97,9 +97,9 @@ describe TradeTariffBackend::DataMigration do
 
   describe '#up' do
     context 'runner undefined' do
-      let!(:example_migration) {
+      let!(:example_migration) do
         TradeTariffBackend::DataMigration.new
-      }
+      end
 
       it 'returns NullRunner' do
         expect(example_migration.up).to be_kind_of TradeTariffBackend::DataMigration::NullRunner
@@ -109,9 +109,9 @@ describe TradeTariffBackend::DataMigration do
 
   describe '#down' do
     context 'runner undefined' do
-      let!(:example_migration) {
+      let!(:example_migration) do
         TradeTariffBackend::DataMigration.new
-      }
+      end
 
       it 'returns NullRunner' do
         expect(example_migration.down).to be_kind_of TradeTariffBackend::DataMigration::NullRunner

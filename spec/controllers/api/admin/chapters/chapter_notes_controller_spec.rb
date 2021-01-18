@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-describe Api::Admin::Chapters::ChapterNotesController, "GET #show" do
+describe Api::Admin::Chapters::ChapterNotesController, 'GET #show' do
   render_views
 
-  let(:pattern) {
+  let(:pattern) do
     {
       data: {
         id: String,
@@ -11,11 +11,11 @@ describe Api::Admin::Chapters::ChapterNotesController, "GET #show" do
         attributes: {
           section_id: nil,
           chapter_id: String,
-          content: String
-        }
-      }
+          content: String,
+        },
+      },
     }
-  }
+  end
 
   before { login_as_api_user }
 
@@ -40,15 +40,15 @@ describe Api::Admin::Chapters::ChapterNotesController, "GET #show" do
   end
 end
 
-describe Api::Admin::Chapters::ChapterNotesController, "POST to #create" do
+describe Api::Admin::Chapters::ChapterNotesController, 'POST to #create' do
   let(:chapter) { create :chapter }
 
   before { login_as_api_user }
 
   context 'save succeeded' do
-    before {
+    before do
       post :create, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
-    }
+    end
 
     it 'responds with success' do
       expect(response.status).to eq 201
@@ -62,9 +62,9 @@ describe Api::Admin::Chapters::ChapterNotesController, "POST to #create" do
           attributes: {
             section_id: nil,
             chapter_id: String,
-            content: String
-          }
-        }
+            content: String,
+          },
+        },
       }
 
       expect(response.body).to match_json_expression(pattern)
@@ -76,9 +76,9 @@ describe Api::Admin::Chapters::ChapterNotesController, "POST to #create" do
   end
 
   context 'save failed' do
-    before {
+    before do
       post :create, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
-    }
+    end
 
     it 'responds with 422' do
       expect(response.status).to eq 422
@@ -98,7 +98,7 @@ describe Api::Admin::Chapters::ChapterNotesController, "POST to #create" do
   end
 end
 
-describe Api::Admin::Chapters::ChapterNotesController, "PUT to #update" do
+describe Api::Admin::Chapters::ChapterNotesController, 'PUT to #update' do
   let(:chapter) { create :chapter, :with_note }
 
   before { login_as_api_user }
@@ -113,7 +113,7 @@ describe Api::Admin::Chapters::ChapterNotesController, "PUT to #update" do
     it 'changes chapter_note content' do
       expect {
         put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
-      }.to change{ chapter.reload.chapter_note.content }
+      }.to change { chapter.reload.chapter_note.content }
     end
   end
 
@@ -137,12 +137,12 @@ describe Api::Admin::Chapters::ChapterNotesController, "PUT to #update" do
     it 'does not change chapter_note content' do
       expect {
         put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
-      }.not_to change{ chapter.reload.chapter_note.content }
+      }.not_to change { chapter.reload.chapter_note.content }
     end
   end
 end
 
-describe Api::Admin::Chapters::ChapterNotesController, "DELETE to #destroy" do
+describe Api::Admin::Chapters::ChapterNotesController, 'DELETE to #destroy' do
   before { login_as_api_user }
 
   context 'deletiong succeeded' do

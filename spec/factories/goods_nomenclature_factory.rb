@@ -13,16 +13,16 @@ FactoryBot.define do
     # do not allow zeroes in the goods item id as it causes unpredictable
     # results
     goods_nomenclature_item_id { 10.times.map { Random.rand(1..9) }.join }
-    producline_suffix   { "80" }
+    producline_suffix   { '80' }
     validity_start_date { Date.current.ago(2.years) }
     validity_end_date   { nil }
 
-    after(:build) { |gono, evaluator|
+    after(:build) do |gono, evaluator|
       FactoryBot.create(:goods_nomenclature_indent, goods_nomenclature_sid: gono.goods_nomenclature_sid,
-                                                     validity_start_date: gono.validity_start_date,
-                                                     validity_end_date: gono.validity_end_date,
-                                                     number_indents: evaluator.indents)
-    }
+                                                    validity_start_date: gono.validity_start_date,
+                                                    validity_end_date: gono.validity_end_date,
+                                                    number_indents: evaluator.indents)
+    end
 
     trait :actual do
       validity_start_date { Date.current.ago(3.years) }
@@ -38,7 +38,7 @@ FactoryBot.define do
     end
 
     trait :declarable do
-      producline_suffix { "80" }
+      producline_suffix { '80' }
     end
 
     trait :expired do
@@ -51,84 +51,84 @@ FactoryBot.define do
     end
 
     trait :with_description do
-      before(:create) { |gono, evaluator|
+      before(:create) do |gono, evaluator|
         FactoryBot.create(:goods_nomenclature_description, goods_nomenclature_sid: gono.goods_nomenclature_sid,
-                                                            goods_nomenclature_item_id: gono.goods_nomenclature_item_id,
-                                                            validity_start_date: gono.validity_start_date,
-                                                            validity_end_date: gono.validity_end_date,
-                                                            description: evaluator.description)
-      }
+                                                           goods_nomenclature_item_id: gono.goods_nomenclature_item_id,
+                                                           validity_start_date: gono.validity_start_date,
+                                                           validity_end_date: gono.validity_end_date,
+                                                           description: evaluator.description)
+      end
     end
 
     trait :xml do
-      validity_end_date           { Date.current.ago(1.years) }
+      validity_end_date           { Date.current.ago(1.year) }
       statistical_indicator       { 1 }
     end
   end
 
-  factory :commodity, parent: :goods_nomenclature, class: Commodity do
+  factory :commodity, parent: :goods_nomenclature, class: 'Commodity' do
     trait :declarable do
-      producline_suffix { "80" }
+      producline_suffix { '80' }
     end
 
     trait :non_declarable do
-      producline_suffix { "10" }
+      producline_suffix { '10' }
     end
 
     trait :with_indent do
-      after(:create) { |commodity, evaluator|
+      after(:create) do |commodity, evaluator|
         FactoryBot.create(:goods_nomenclature_indent,
-                           goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                           goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                           validity_start_date: commodity.validity_start_date,
-                           validity_end_date: commodity.validity_end_date,
-                           productline_suffix: commodity.producline_suffix,
-                           number_indents: evaluator.indents)
-      }
+                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                          goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                          validity_start_date: commodity.validity_start_date,
+                          validity_end_date: commodity.validity_end_date,
+                          productline_suffix: commodity.producline_suffix,
+                          number_indents: evaluator.indents)
+      end
     end
 
     trait :with_chapter do
-      after(:create) { |commodity, _evaluator|
+      after(:create) do |commodity, _evaluator|
         FactoryBot.create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
-      }
+      end
     end
 
     trait :with_heading do
-      after(:create) { |commodity, _evaluator|
+      after(:create) do |commodity, _evaluator|
         FactoryBot.create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
-      }
+      end
     end
   end
 
-  factory :heading, parent: :goods_nomenclature, class: Heading do
+  factory :heading, parent: :goods_nomenclature, class: 'Heading' do
     # +1 is needed to avoid creating heading with gono id in form of
     # xx00xxxxxx which is a Chapter
     goods_nomenclature_item_id { "#{4.times.map { Random.rand(1..8) }.join}000000" }
 
     trait :declarable do
-      producline_suffix { "80" }
+      producline_suffix { '80' }
     end
 
     trait :non_grouping do
-      producline_suffix { "80" }
+      producline_suffix { '80' }
     end
 
     trait :non_declarable do
-      after(:create) { |heading, _evaluator|
+      after(:create) do |heading, _evaluator|
         FactoryBot.create(:goods_nomenclature, :with_description,
-                                                :with_indent,
-                                                goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
-      }
+                          :with_indent,
+                          goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
+      end
     end
 
     trait :with_chapter do
-      after(:create) { |heading, _evaluator|
+      after(:create) do |heading, _evaluator|
         FactoryBot.create(:chapter, :with_section,
-                                     :with_note,
-                                     :with_description,
-                                     :with_guide,
-                                     goods_nomenclature_item_id: heading.chapter_id)
-      }
+                          :with_note,
+                          :with_description,
+                          :with_guide,
+                          goods_nomenclature_item_id: heading.chapter_id)
+      end
     end
   end
 
@@ -142,7 +142,7 @@ FactoryBot.define do
     trait :xml do
       goods_nomenclature_item_id     { Forgery(:basic).text(exactly: 2) }
       productline_suffix             { Forgery(:basic).text(exactly: 2) }
-      validity_end_date              { Date.current.ago(1.years) }
+      validity_end_date              { Date.current.ago(1.year) }
     end
   end
 
@@ -155,7 +155,7 @@ FactoryBot.define do
     trait :xml do
       goods_nomenclature_item_id                 { Forgery(:basic).text(exactly: 2) }
       productline_suffix                         { Forgery(:basic).text(exactly: 2) }
-      validity_end_date                          { Date.current.ago(1.years) }
+      validity_end_date                          { Date.current.ago(1.year) }
     end
   end
 
@@ -169,16 +169,16 @@ FactoryBot.define do
     description { Forgery(:basic).text }
     goods_nomenclature_description_period_sid { generate(:sid) }
 
-    before(:create) { |gono_description, evaluator|
+    before(:create) do |gono_description, evaluator|
       FactoryBot.create(:goods_nomenclature_description_period, goods_nomenclature_description_period_sid: gono_description.goods_nomenclature_description_period_sid,
-                                                              goods_nomenclature_sid: gono_description.goods_nomenclature_sid,
-                                                              goods_nomenclature_item_id: gono_description.goods_nomenclature_item_id,
-                                                              validity_start_date: evaluator.validity_start_date,
-                                                              validity_end_date: evaluator.validity_end_date)
-    }
+                                                                goods_nomenclature_sid: gono_description.goods_nomenclature_sid,
+                                                                goods_nomenclature_item_id: gono_description.goods_nomenclature_item_id,
+                                                                validity_start_date: evaluator.validity_start_date,
+                                                                validity_end_date: evaluator.validity_end_date)
+    end
 
     trait :xml do
-      language_id                                { "EN" }
+      language_id                                { 'EN' }
       goods_nomenclature_item_id                 { Forgery(:basic).text(exactly: 2) }
       productline_suffix                         { Forgery(:basic).text(exactly: 2) }
     end
@@ -192,7 +192,7 @@ FactoryBot.define do
     nomenclature_group_facility_code     { 0 }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.years) }
+      validity_end_date { Date.current.ago(1.year) }
     end
   end
 
@@ -202,7 +202,7 @@ FactoryBot.define do
     description                    { Forgery(:lorem_ipsum).sentence }
 
     trait :xml do
-      language_id                  { "EN" }
+      language_id                  { 'EN' }
     end
   end
 
@@ -232,7 +232,7 @@ FactoryBot.define do
     validity_end_date              { nil }
 
     trait :xml do
-      validity_end_date            { Date.current.ago(1.years) }
+      validity_end_date            { Date.current.ago(1.year) }
     end
   end
 end

@@ -5,10 +5,10 @@ describe RingBuffer do
     let(:ring_buffer) { described_class.new(2) }
 
     context 'with element limit not reached' do
-      before {
+      before do
         ring_buffer.push('foo')
         ring_buffer.push('bar')
-      }
+      end
 
       it 'pushes and keeps all elements' do
         expect(ring_buffer.to_a).to eq %w[foo bar]
@@ -16,11 +16,11 @@ describe RingBuffer do
     end
 
     context 'with element limit reached' do
-      before {
+      before do
         ring_buffer.push('foo')
         ring_buffer.push('bar')
         ring_buffer.push('baz')
-      }
+      end
 
       it 'pushes new element, popping out the first one (FIFO)' do
         expect(ring_buffer.to_a).to eq %w[bar baz]

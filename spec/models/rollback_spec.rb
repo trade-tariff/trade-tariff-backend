@@ -11,7 +11,7 @@ describe Rollback do
     end
 
     context 'with incorrect date provided' do
-      let(:rollback) { build :rollback, date: "abc" }
+      let(:rollback) { build :rollback, date: 'abc' }
 
       it 'is not a valid entity' do
         expect(rollback).not_to be_valid

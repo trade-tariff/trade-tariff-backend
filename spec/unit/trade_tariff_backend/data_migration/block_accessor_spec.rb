@@ -1,13 +1,13 @@
 require 'rails_helper'
 
 describe TradeTariffBackend::DataMigration::BlockAccessor do
-  let(:mock_class) {
+  let(:mock_class) do
     Class.new do
       include TradeTariffBackend::DataMigration::BlockAccessor
 
       block_accessor :foo
     end
-  }
+  end
 
   describe '#foo' do
     context 'called with a block' do

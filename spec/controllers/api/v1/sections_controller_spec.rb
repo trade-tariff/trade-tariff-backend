@@ -1,12 +1,12 @@
 require 'rails_helper'
 
-describe Api::V1::SectionsController, "GET #show" do
+describe Api::V1::SectionsController, 'GET #show' do
   render_views
 
   let(:chapter) { create :chapter, :with_section }
   let(:section) { chapter.section }
 
-  let(:pattern) {
+  let(:pattern) do
     {
       id: Integer,
       position: Integer,
@@ -15,9 +15,9 @@ describe Api::V1::SectionsController, "GET #show" do
       chapter_from: String,
       chapter_to: String,
       chapters: Array,
-      _response_info: Hash
+      _response_info: Hash,
     }
-  }
+  end
 
   context 'when record is present' do
     it 'returns rendered record' do
@@ -36,7 +36,7 @@ describe Api::V1::SectionsController, "GET #show" do
   end
 end
 
-describe Api::V1::SectionsController, "GET #index" do
+describe Api::V1::SectionsController, 'GET #index' do
   render_views
 
   let!(:chapter1) { create :chapter, :with_section }
@@ -44,12 +44,12 @@ describe Api::V1::SectionsController, "GET #index" do
   let(:section1)  { chapter1.section }
   let(:section2)  { chapter2.section }
 
-  let(:pattern) {
+  let(:pattern) do
     [
-      {id: Integer, section_note_id: nil, position: Integer, title: String, numeral: String, chapter_from: String, chapter_to: String, search_references_count: Integer},
-      {id: Integer, section_note_id: nil, position: Integer, title: String, numeral: String, chapter_from: String, chapter_to: String, search_references_count: Integer}
+      { id: Integer, section_note_id: nil, position: Integer, title: String, numeral: String, chapter_from: String, chapter_to: String, search_references_count: Integer },
+      { id: Integer, section_note_id: nil, position: Integer, title: String, numeral: String, chapter_from: String, chapter_to: String, search_references_count: Integer },
     ]
-  }
+  end
 
   it 'returns rendered records' do
     get :index, format: :json

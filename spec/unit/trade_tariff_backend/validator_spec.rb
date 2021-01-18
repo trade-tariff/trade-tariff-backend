@@ -2,13 +2,13 @@ require 'rails_helper'
 
 describe TradeTariffBackend::Validator do
   let(:model) { double(operation: :create, conformance_errors: double(add: true)) }
-  let(:generic_validator) {
-    Class.new(TradeTariffBackend::Validator) {
-      validation :verify1, 'some validation' do |record|
+  let(:generic_validator) do
+    Class.new(TradeTariffBackend::Validator) do
+      validation :verify1, 'some validation' do |_record|
         true
       end
-    }
-  }
+    end
+  end
 
   describe '.validations' do
     context 'no validations defined' do
@@ -21,7 +21,7 @@ describe TradeTariffBackend::Validator do
 
     context 'some validations defined' do
       it 'returns list of defined Validations' do
-        expect(generic_validator.validations).to_not be_blank
+        expect(generic_validator.validations).not_to be_blank
         expect(generic_validator.validations.first).to be_kind_of TradeTariffBackend::Validations::GenericValidation
       end
     end
@@ -34,13 +34,13 @@ describe TradeTariffBackend::Validator do
   end
 
   describe '.validate' do
-    before {
-      generic_validator.validation :vld1, 'failing validation' do |record|
+    before do
+      generic_validator.validation :vld1, 'failing validation' do |_record|
         false
       end
 
       generic_validator.new.validate(model)
-    }
+    end
 
     it 'runs validations on record' do
       expect(model.conformance_errors).to have_received(:add)
@@ -52,18 +52,18 @@ describe TradeTariffBackend::Validator do
       before { generic_validator.new.validate(model) }
 
       it 'adds no error to object errors hash' do
-        expect(model.conformance_errors).to_not have_received(:add)
+        expect(model.conformance_errors).not_to have_received(:add)
       end
     end
 
     context 'one of the validations wont pass' do
-      before {
-        generic_validator.validation :vld1, 'failing validation' do |record|
+      before do
+        generic_validator.validation :vld1, 'failing validation' do |_record|
           false
         end
 
         generic_validator.new.validate(model)
-      }
+      end
 
       it 'adds error to object errors hash' do
         expect(model.conformance_errors).to have_received(:add)
@@ -72,36 +72,36 @@ describe TradeTariffBackend::Validator do
   end
 
   describe '#validate_for_operations' do
-    let(:model) {
+    let(:model) do
       double(operation: :create,
              conformance_errors: double(add: true))
-    }
+    end
 
-    let(:contextual_validator) {
-      Class.new(TradeTariffBackend::Validator) {
-        validation :verify1, 'some validation', on: [:create, :update] do |record|
+    let(:contextual_validator) do
+      Class.new(TradeTariffBackend::Validator) do
+        validation :verify1, 'some validation', on: %i[create update] do |_record|
           true
         end
 
-        validation :verify2, 'some validation', on: [:update] do |record|
+        validation :verify2, 'some validation', on: [:update] do |_record|
           false
         end
-      }
-    }
+      end
+    end
 
     context 'operations match some defined validations' do
       context 'all validations pass' do
         before { contextual_validator.new.validate_for_operations(model, :create) }
 
         it 'adds no error to object errors hash' do
-          expect(model.conformance_errors).to_not have_received(:add)
+          expect(model.conformance_errors).not_to have_received(:add)
         end
       end
 
       context 'one of the validations wont pass' do
-        before {
+        before do
           contextual_validator.new.validate_for_operations(model, :create, :update)
-        }
+        end
 
         it 'adds an error to object errors hash' do
           expect(model.conformance_errors).to have_received(:add)
@@ -110,18 +110,18 @@ describe TradeTariffBackend::Validator do
     end
 
     context 'operatios do not match any validations' do
-      let(:contextual_validator) {
-        Class.new(TradeTariffBackend::Validator) {
-          validation :verify1, 'some validation', on: [:create, :update] do |record|
+      let(:contextual_validator) do
+        Class.new(TradeTariffBackend::Validator) do
+          validation :verify1, 'some validation', on: %i[create update] do |_record|
             true
           end
-        }
-      }
+        end
+      end
 
-      before {  contextual_validator.new.validate_for_operations(model, :destroy) }
+      before { contextual_validator.new.validate_for_operations(model, :destroy) }
 
       it 'adds no errors to objects hash' do
-        expect(model.conformance_errors).to_not have_received(:add)
+        expect(model.conformance_errors).not_to have_received(:add)
       end
     end
   end
