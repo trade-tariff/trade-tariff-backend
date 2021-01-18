@@ -1128,6 +1128,7 @@ describe CdsImporter::EntityMapper do
       'geographicalAreaMembership' => {
         'hjid' => '25864',
         'geographicalAreaGroupSid' => '461273',
+        'geographicalAreaSid' => '311',
         'validityStartDate' => '2008-01-01T00:00:00',
         'validityEndDate' => '2020-06-29T20:04:37',
         'metainfo' => {
@@ -1141,7 +1142,7 @@ describe CdsImporter::EntityMapper do
     entity = subject.parse[0]
     expect(entity).to be_a(GeographicalAreaMembership)
     expect(entity).to be_valid
-    expect(entity.geographical_area_sid.to_s).to eq(values['sid'])
+    expect(entity.geographical_area_sid.to_s).to eq(values['geographicalAreaMembership']['geographicalAreaSid'])
     expect(entity.geographical_area_group_sid.to_s).to eq(values['geographicalAreaMembership']['geographicalAreaGroupSid'])
     expect(entity.validity_start_date).to eq(values['geographicalAreaMembership']['validityStartDate'])
     expect(entity.validity_end_date).to eq(values['geographicalAreaMembership']['validityEndDate'])
