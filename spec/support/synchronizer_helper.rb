@@ -4,7 +4,7 @@ module SynchronizerHelper
   def create_taric_file(date = Date.current)
     date = Date.parse(date.to_s)
 
-    content = %{<?xml version="1.0" encoding="UTF-8"?>
+    content = %(<?xml version="1.0" encoding="UTF-8"?>
       <env:envelope xmlns="urn:publicid:-:DGTAXUD:TARIC:MESSAGE:1.0" xmlns:env="urn:publicid:-:DGTAXUD:GENERAL:ENVELOPE:1.0" id="1">
         <env:transaction id="1">
           <app.message id="8">
@@ -25,7 +25,7 @@ module SynchronizerHelper
             </transmission>
           </app.message>
         </env:transaction>
-      </env:envelope>}
+      </env:envelope>)
 
     taric_file_path = File.join(TariffSynchronizer.root_path, 'taric', "#{date}_TGB#{date.strftime('%y')}#{date.yday}.xml")
     create_file taric_file_path, content
@@ -58,7 +58,7 @@ module SynchronizerHelper
   end
 
   def create_file(path, content = '')
-    data_file = File.new(path, "w")
+    data_file = File.new(path, 'w')
     data_file.write(content)
     data_file.close
   end

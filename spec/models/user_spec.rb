@@ -1,21 +1,21 @@
-require "rails_helper"
-require "gds-sso/lint/user_spec"
+require 'rails_helper'
+require 'gds-sso/lint/user_spec'
 
 describe User do
-  describe "gds-sso" do
-    it_behaves_like "a gds-sso user class"
+  describe 'gds-sso' do
+    it_behaves_like 'a gds-sso user class'
   end
 
-  describe "#update_attributes" do
+  describe '#update_attributes' do
     let!(:user) { create :user }
-    let(:attrs) {
+    let(:attrs) do
       attributes_for :user
-    }
+    end
 
-    before {
+    before do
       user.update_attributes(attrs)
       user.reload
-    }
+    end
 
     it {
       expect(user.name).to eq(attrs[:name])
@@ -23,11 +23,11 @@ describe User do
     }
   end
 
-  describe "#create!" do
-    describe "valid" do
-      let(:attrs) {
+  describe '#create!' do
+    describe 'valid' do
+      let(:attrs) do
         attributes_for :user
-      }
+      end
 
       it {
         expect {
@@ -36,13 +36,13 @@ describe User do
       }
     end
 
-    describe "invalid" do
+    describe 'invalid' do
       let!(:user) { create :user }
-      let(:attrs) {
+      let(:attrs) do
         attributes_for(:user).merge(
-          id: user.id
+          id: user.id,
         )
-      }
+      end
 
       it {
         expect {

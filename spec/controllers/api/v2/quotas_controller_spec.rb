@@ -4,24 +4,23 @@ describe Api::V2::QuotasController, type: :controller do
   render_views
 
   describe 'quota search' do
-
     let(:validity_start_date) { Date.new(Date.current.year, 1, 1) }
     let(:quota_order_number) { create :quota_order_number }
     let!(:measure) { create :measure, ordernumber: quota_order_number.quota_order_number_id, validity_start_date: validity_start_date }
-    let!(:quota_definition) {
+    let!(:quota_definition) do
       create :quota_definition,
              quota_order_number_sid: quota_order_number.quota_order_number_sid,
              quota_order_number_id: quota_order_number.quota_order_number_id,
              critical_state: 'Y',
              validity_start_date: validity_start_date
-    }
-    let!(:quota_order_number_origin) {
+    end
+    let!(:quota_order_number_origin) do
       create :quota_order_number_origin,
              :with_geographical_area,
              quota_order_number_sid: quota_order_number.quota_order_number_sid
-    }
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: [
           {
@@ -49,75 +48,77 @@ describe Api::V2::QuotasController, type: :controller do
               order_number: {
                 data: {
                   id: String,
-                  type: 'order_number'
-                }
+                  type: 'order_number',
+                },
               },
               measures: {
                 data: [
                   {
                     id: String,
-                    type: 'measure'
-                  }
-                ]
-              }
-            }
-          }
+                    type: 'measure',
+                  },
+                ],
+              },
+            },
+          },
         ],
         included: [
           {
             id: String,
             type: 'order_number',
             attributes: {
-              number: String
+              number: String,
             },
             relationships: {
               geographical_areas: {
                 data: [
                   {
                     id: String,
-                    type: 'geographical_area'
-                  }
-                ]
-              }
-            }
-          }, {
+                    type: 'geographical_area',
+                  },
+                ],
+              },
+            },
+          },
+          {
             id: String,
             type: 'geographical_area',
             attributes: {
               id: String,
               description: String,
-              geographical_area_id: String
-            }
-          }, {
+              geographical_area_id: String,
+            },
+          },
+          {
             id: String,
             type: 'measure',
             attributes: {
-              goods_nomenclature_item_id: String
+              goods_nomenclature_item_id: String,
             },
             relationships: {
               geographical_area: {
                 data: {
                   id: String,
-                  type: 'geographical_area'
-                }
-              }
-            }
-          }
+                  type: 'geographical_area',
+                },
+              },
+            },
+          },
         ],
         meta: {
           pagination: {
             page: Integer,
             per_page: Integer,
-            total_count: Integer
-          }
-        }
+            total_count: Integer,
+          },
+        },
       }
-    }
+    end
 
-    before {
+    before do
       measure.geographical_area = quota_order_number_origin.geographical_area
       measure.save
-    }
+    end
 
     it 'returns rendered found quotas' do
       get :search, params: { year: [Date.current.year.to_s] }, format: :json

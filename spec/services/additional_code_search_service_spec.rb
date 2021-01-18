@@ -26,31 +26,31 @@ describe AdditionalCodeSearchService do
     end
 
     context 'by additional code' do
-      it 'should find additional code by code' do
+      it 'finds additional code by code' do
         result = described_class.new({
-          'code' => additional_code_1.additional_code
+          'code' => additional_code_1.additional_code,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).to include(additional_code_1.additional_code_sid)
       end
 
-      it 'should not find additional code by wrong code' do
+      it 'does not find additional code by wrong code' do
         result = described_class.new({
-          'code' => additional_code_1.additional_code
+          'code' => additional_code_1.additional_code,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).not_to include(additional_code_2.additional_code_sid)
       end
 
       context 'when user enter 4-digits code' do
-        it 'should find additional code by code' do
+        it 'finds additional code by code' do
           result = described_class.new({
-            'code' => "#{rand(9)}#{additional_code_1.additional_code}"
+            'code' => "#{rand(9)}#{additional_code_1.additional_code}",
           }, current_page, per_page).perform
           expect(result.map(&:additional_code_sid)).to include(additional_code_1.additional_code_sid)
         end
 
-        it 'should ignore first digit' do
+        it 'ignores first digit' do
           service = described_class.new({
-            'code' => "#{rand(9)}#{additional_code_1.additional_code}"
+            'code' => "#{rand(9)}#{additional_code_1.additional_code}",
           }, current_page, per_page)
           service.perform
           expect(service.code).to eq(additional_code_1.additional_code)
@@ -59,48 +59,48 @@ describe AdditionalCodeSearchService do
     end
 
     context 'by additional code type' do
-      it 'should find additional code by type' do
+      it 'finds additional code by type' do
         result = described_class.new({
-          'type' => additional_code_1.additional_code_type_id
+          'type' => additional_code_1.additional_code_type_id,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).to include(additional_code_1.additional_code_sid)
       end
 
-      it 'should not find additional code by wrong code' do
+      it 'does not find additional code by wrong code' do
         result = described_class.new({
-          'type' => additional_code_1.additional_code_type_id
+          'type' => additional_code_1.additional_code_type_id,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).not_to include(additional_code_2.additional_code_sid)
       end
     end
 
     context 'by description' do
-      it 'should find additional code by description' do
+      it 'finds additional code by description' do
         result = described_class.new({
-          'description' => additional_code_1.description
+          'description' => additional_code_1.description,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).to include(additional_code_1.additional_code_sid)
       end
 
-      it 'should not find additional code by wrong description' do
+      it 'does not find additional code by wrong description' do
         result = described_class.new({
-          'description' => additional_code_1.description
+          'description' => additional_code_1.description,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).not_to include(additional_code_2.additional_code_sid)
       end
     end
 
     context 'by description first word' do
-      it 'should find additional code by description first word' do
+      it 'finds additional code by description first word' do
         result = described_class.new({
-          'description' => additional_code_1.description.split(' ').first
+          'description' => additional_code_1.description.split(' ').first,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).to include(additional_code_1.additional_code_sid)
       end
 
-      it 'should not find additional code by wrong description first word' do
+      it 'does not find additional code by wrong description first word' do
         result = described_class.new({
-          'description' => additional_code_1.description.split(' ').first
+          'description' => additional_code_1.description.split(' ').first,
         }, current_page, per_page).perform
         expect(result.map(&:additional_code_sid)).not_to include(additional_code_2.additional_code_sid)
       end

@@ -5,21 +5,21 @@ require 'taric_importer/record_processor'
 require 'taric_importer/record_processor/create_operation'
 
 describe TaricImporter::RecordProcessor do
-  let(:record_hash) {
-    {"transaction_id"=>"31946",
-     "record_code"=>"130",
-     "subrecord_code"=>"05",
-     "record_sequence_number"=>"1",
-     "update_type"=>"3",
-     "language_description"=>
-      {"language_code_id"=>"FR",
-       "language_id"=>"EN",
-       "description"=>"French"}}
-  }
+  let(:record_hash) do
+    { 'transaction_id' => '31946',
+      'record_code' => '130',
+      'subrecord_code' => '05',
+      'record_sequence_number' => '1',
+      'update_type' => '3',
+      'language_description' =>
+      { 'language_code_id' => 'FR',
+        'language_id' => 'EN',
+        'description' => 'French' } }
+  end
 
-  let(:record_processor) {
-    TaricImporter::RecordProcessor.new(record_hash, Date.new(2013,8,1))
-  }
+  let(:record_processor) do
+    TaricImporter::RecordProcessor.new(record_hash, Date.new(2013, 8, 1))
+  end
 
   describe '#record=' do
     it 'instantiates a Record' do
@@ -31,7 +31,7 @@ describe TaricImporter::RecordProcessor do
 
   describe '#operation_class=' do
     context 'with update identifier' do
-      before { record_processor.operation_class = "1" }
+      before { record_processor.operation_class = '1' }
 
       it 'assigns UpdateOperation' do
         expect(record_processor.operation_class).to eq TaricImporter::RecordProcessor::UpdateOperation
@@ -39,7 +39,7 @@ describe TaricImporter::RecordProcessor do
     end
 
     context 'with destroy identifier' do
-      before { record_processor.operation_class = "2" }
+      before { record_processor.operation_class = '2' }
 
       it 'assigns DestroyOperation' do
         expect(record_processor.operation_class).to eq TaricImporter::RecordProcessor::DestroyOperation
@@ -47,7 +47,7 @@ describe TaricImporter::RecordProcessor do
     end
 
     context 'with create identifier' do
-      before { record_processor.operation_class = "3" }
+      before { record_processor.operation_class = '3' }
 
       it 'assigns CreateOperation' do
         expect(record_processor.operation_class).to eq TaricImporter::RecordProcessor::CreateOperation
@@ -56,7 +56,7 @@ describe TaricImporter::RecordProcessor do
 
     context 'unknown operation' do
       it 'raises TaricImporter::UnknownOperation exception' do
-        expect { record_processor.operation_class = "error" }.to raise_error TaricImporter::UnknownOperationError
+        expect { record_processor.operation_class = 'error' }.to raise_error TaricImporter::UnknownOperationError
       end
     end
   end
@@ -64,7 +64,6 @@ describe TaricImporter::RecordProcessor do
   describe '#process!' do
     context 'with default processor' do
       it 'performs default create operation' do
-
         create_operation_intance = instance_double(TaricImporter::RecordProcessor::CreateOperation, call: true)
         expect(TaricImporter::RecordProcessor::CreateOperation).to receive(:new)
                                                                    .and_return(create_operation_intance)
@@ -75,12 +74,11 @@ describe TaricImporter::RecordProcessor do
 
     context 'with custom processor' do
       it 'performs model type specific create operation' do
-
         custom_operation_instance = double('instance of LanguageDescriptionCreateOperation', call: true)
         custom_create_operation_class = double('LanguageDescriptionCreateOperation', new: custom_operation_instance)
-        stub_const("TaricImporter::RecordProcessor::LanguageDescriptionCreateOperation", custom_create_operation_class)
+        stub_const('TaricImporter::RecordProcessor::LanguageDescriptionCreateOperation', custom_create_operation_class)
 
-        record_processor = TaricImporter::RecordProcessor.new(record_hash, Date.new(2013,8,1))
+        record_processor = TaricImporter::RecordProcessor.new(record_hash, Date.new(2013, 8, 1))
         record_processor.process!
 
         expect(custom_create_operation_class).to have_received :new

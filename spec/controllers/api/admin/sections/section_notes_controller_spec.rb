@@ -1,20 +1,20 @@
 require 'rails_helper'
 
-describe Api::Admin::Sections::SectionNotesController, "GET #show" do
+describe Api::Admin::Sections::SectionNotesController, 'GET #show' do
   render_views
 
-  let(:pattern) {
+  let(:pattern) do
     {
       data: {
         id: String,
         type: 'section_note',
         attributes: {
           section_id: Integer,
-          content: String
-        }
-      }
+          content: String,
+        },
+      },
     }
-  }
+  end
 
   before { login_as_api_user }
 
@@ -39,15 +39,15 @@ describe Api::Admin::Sections::SectionNotesController, "GET #show" do
   end
 end
 
-describe Api::Admin::Sections::SectionNotesController, "POST to #create" do
+describe Api::Admin::Sections::SectionNotesController, 'POST to #create' do
   let(:section) { create :section }
 
   before { login_as_api_user }
 
   context 'save succeeded' do
-    before {
+    before do
       post :create, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
-    }
+    end
 
     it 'responds with success' do
       expect(response.status).to eq 201
@@ -60,9 +60,9 @@ describe Api::Admin::Sections::SectionNotesController, "POST to #create" do
           type: 'section_note',
           attributes: {
             section_id: Integer,
-            content: String
-          }
-        }
+            content: String,
+          },
+        },
       }
 
       expect(response.body).to match_json_expression(pattern)
@@ -74,9 +74,9 @@ describe Api::Admin::Sections::SectionNotesController, "POST to #create" do
   end
 
   context 'save failed' do
-    before {
+    before do
       post :create, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: '' } } }, format: :json
-    }
+    end
 
     it 'responds with 422' do
       expect(response.status).to eq 422
@@ -96,7 +96,7 @@ describe Api::Admin::Sections::SectionNotesController, "POST to #create" do
   end
 end
 
-describe Api::Admin::Sections::SectionNotesController, "PUT to #update" do
+describe Api::Admin::Sections::SectionNotesController, 'PUT to #update' do
   let(:section) { create :section, :with_note }
 
   before { login_as_api_user }
@@ -111,7 +111,7 @@ describe Api::Admin::Sections::SectionNotesController, "PUT to #update" do
     it 'changes section_note content' do
       expect {
         put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
-      }.to change{ section.reload.section_note.content }
+      }.to change { section.reload.section_note.content }
     end
   end
 
@@ -135,12 +135,12 @@ describe Api::Admin::Sections::SectionNotesController, "PUT to #update" do
     it 'does not change section_note content' do
       expect {
         put :update, params: { section_id: section.id, section_note: { content: '' } }, format: :json
-      }.not_to change{ section.reload.section_note.content }
+      }.not_to change { section.reload.section_note.content }
     end
   end
 end
 
-describe Api::Admin::Sections::SectionNotesController, "DELETE to #destroy" do
+describe Api::Admin::Sections::SectionNotesController, 'DELETE to #destroy' do
   before { login_as_api_user }
 
   context 'deletiong succeeded' do

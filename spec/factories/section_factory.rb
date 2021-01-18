@@ -8,9 +8,9 @@ FactoryBot.define do
     updated_at    { Time.now }
 
     trait :with_note do
-      after(:create) { |section, _evaluator|
+      after(:create) do |section, _evaluator|
         FactoryBot.create(:section_note, section_id: section.id)
-      }
+      end
     end
   end
 

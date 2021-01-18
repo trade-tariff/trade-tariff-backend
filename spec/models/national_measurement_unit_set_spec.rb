@@ -1,15 +1,15 @@
 require 'rails_helper'
 
 describe NationalMeasurementUnitSet do
-  describe "#national_measurement_unit_set_units" do
+  describe '#national_measurement_unit_set_units' do
     let(:tbl1) { create :tbl9, :unoq }
     let(:tbl2) { create :tbl9, :unoq }
     let(:tbl3) { create :tbl9, :unoq }
-    let(:comm) {
+    let(:comm) do
       create :comm, uoq_code_cdu1: tbl1.tbl_code,
-                               uoq_code_cdu2: tbl2.tbl_code,
-                               uoq_code_cdu3: tbl3.tbl_code
-    }
+                    uoq_code_cdu2: tbl2.tbl_code,
+                    uoq_code_cdu3: tbl3.tbl_code
+    end
 
     let(:nmus) { described_class.where(cmdty_code: comm.cmdty_code).first }
 
@@ -25,7 +25,7 @@ describe NationalMeasurementUnitSet do
       nmusu = nmus.national_measurement_unit_set_units.first
 
       expect(nmusu.measurement_unit_code).to eq tbl1.tbl_code
-      expect(nmusu.description).to match /#{Regexp.escape(tbl1.tbl_txt)}/i
+      expect(nmusu.description).to match(/#{Regexp.escape(tbl1.tbl_txt)}/i)
       expect(nmusu.level).to eq 1
     end
 
@@ -33,7 +33,7 @@ describe NationalMeasurementUnitSet do
       nmusu = nmus.national_measurement_unit_set_units.second
 
       expect(nmusu.measurement_unit_code).to eq tbl2.tbl_code
-      expect(nmusu.description).to match /#{Regexp.escape(tbl2.tbl_txt)}/i
+      expect(nmusu.description).to match(/#{Regexp.escape(tbl2.tbl_txt)}/i)
       expect(nmusu.level).to eq 2
     end
 
@@ -41,7 +41,7 @@ describe NationalMeasurementUnitSet do
       nmusu = nmus.national_measurement_unit_set_units.last
 
       expect(nmusu.measurement_unit_code).to eq tbl3.tbl_code
-      expect(nmusu.description).to match /#{Regexp.escape(tbl3.tbl_txt)}/i
+      expect(nmusu.description).to match(/#{Regexp.escape(tbl3.tbl_txt)}/i)
       expect(nmusu.level).to eq 3
     end
   end

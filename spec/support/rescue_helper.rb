@@ -1,8 +1,6 @@
 module RescueHelper
   def rescuing
-    begin
-      yield
-    rescue StandardError
-    end
+    yield
+  rescue StandardError
   end
 end

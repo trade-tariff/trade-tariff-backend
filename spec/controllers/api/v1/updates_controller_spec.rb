@@ -1,22 +1,19 @@
 require 'rails_helper'
 
-describe Api::V1::UpdatesController, "GET #index" do
+describe Api::V1::UpdatesController, 'GET #index' do
   render_views
 
-  let(:pattern) {
+  let(:pattern) do
     { updates:
       [
-       { update_type: "TariffSynchronizer::TaricUpdate",
-         state: String,
-         filename: String
-       }.ignore_extra_keys!,
-       { update_type: "TariffSynchronizer::TaricUpdate",
-         state: String,
-         filename: String
-       }.ignore_extra_keys!
-      ].ignore_extra_values!
-    }.ignore_extra_keys!
-  }
+        { update_type: 'TariffSynchronizer::TaricUpdate',
+          state: String,
+          filename: String }.ignore_extra_keys!,
+        { update_type: 'TariffSynchronizer::TaricUpdate',
+          state: String,
+          filename: String }.ignore_extra_keys!,
+      ].ignore_extra_values! }.ignore_extra_keys!
+  end
 
   context 'when records are present' do
     let!(:taric_update1) { create :taric_update, :applied, issue_date: Date.yesterday }
@@ -34,18 +31,18 @@ describe Api::V1::UpdatesController, "GET #index" do
     it 'returns blank array' do
       get :index, format: :json
 
-      expect(JSON.parse(response.body)["updates"]).to eq []
+      expect(JSON.parse(response.body)['updates']).to eq []
     end
   end
 end
 
-describe Api::V1::UpdatesController, "GET #latest" do
+describe Api::V1::UpdatesController, 'GET #latest' do
   render_views
 
   let(:pattern) do
     [{ update_type: String,
-      state: String,
-      filename: String}.ignore_extra_keys!].ignore_extra_values!
+       state: String,
+       filename: String }.ignore_extra_keys!].ignore_extra_values!
   end
 
   context 'when records are present' do
@@ -64,7 +61,7 @@ describe Api::V1::UpdatesController, "GET #latest" do
       get :latest, format: :json
 
       expect(
-        JSON.parse(response.body)
+        JSON.parse(response.body),
       ).to eq []
     end
   end

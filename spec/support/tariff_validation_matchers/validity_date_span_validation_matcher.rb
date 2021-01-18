@@ -4,10 +4,10 @@ class ValidityDateSpanMatcher < TariffValidationMatcher
 
     subject.conformance_validator
            .validations
-           .select{|validation| validation.type == validation_type }
-           .any?{|validation|
+           .select { |validation| validation.type == validation_type }
+           .any? do |validation|
       validation.validation_options[:of] == @attributes
-    }
+    end
   end
 end
 

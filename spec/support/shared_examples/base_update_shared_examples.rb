@@ -26,7 +26,7 @@ shared_examples_for 'Base Update' do
     end
 
     it 'does not raise error on class that overrides it' do
-      expect { described_class.update_type }.to_not raise_error
+      expect { described_class.update_type }.not_to raise_error
     end
   end
 end

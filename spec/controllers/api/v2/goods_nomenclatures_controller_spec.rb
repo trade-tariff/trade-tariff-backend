@@ -24,8 +24,8 @@ describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesContr
             description: goods_nomenclature.description,
             number_indents: goods_nomenclature.number_indents,
             producline_suffix: goods_nomenclature.producline_suffix,
-            href: Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature)
-          }
+            href: Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature),
+          },
         },
         { # heading
           id: heading.id.to_s,
@@ -36,8 +36,8 @@ describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesContr
             description: heading.description,
             number_indents: Integer,
             producline_suffix: heading.producline_suffix,
-            href: Api::V2::GoodsNomenclaturesController.api_path_builder(heading)
-          }
+            href: Api::V2::GoodsNomenclaturesController.api_path_builder(heading),
+          },
         },
         { # chapter
           id: chapter.id.to_s,
@@ -48,9 +48,9 @@ describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesContr
             description: chapter.description,
             number_indents: Integer,
             producline_suffix: chapter.producline_suffix,
-            href: Api::V2::GoodsNomenclaturesController.api_path_builder(chapter)
-          }
-        }
+            href: Api::V2::GoodsNomenclaturesController.api_path_builder(chapter),
+          },
+        },
       ],
     }
   end
@@ -66,8 +66,8 @@ describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesContr
             description: goods_nomenclature.description,
             number_indents: goods_nomenclature.number_indents,
             producline_suffix: goods_nomenclature.producline_suffix,
-            href: Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature)
-          }
+            href: Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature),
+          },
         },
         { # heading
           id: heading.id.to_s,
@@ -78,9 +78,9 @@ describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesContr
             description: heading.description,
             number_indents: Integer,
             producline_suffix: heading.producline_suffix,
-            href: Api::V2::GoodsNomenclaturesController.api_path_builder(heading)
-          }
-        }
+            href: Api::V2::GoodsNomenclaturesController.api_path_builder(heading),
+          },
+        },
       ],
     }
   end

@@ -17,8 +17,8 @@ describe TradeTariffBackend::NumberFormatter do
             number_formatter.number_with_precision(
               1.256,
               minimum_decimal_points: 2,
-              precision: 1
-            )
+              precision: 1,
+            ),
           ).to eq '1.30'
         end
       end
@@ -30,8 +30,8 @@ describe TradeTariffBackend::NumberFormatter do
               1.256,
               minimum_decimal_points: 2,
               precision: 1,
-              strip_insignificant_zeroes: true
-            )
+              strip_insignificant_zeroes: true,
+            ),
           ).to eq '1.30'
 
           expect(
@@ -39,8 +39,8 @@ describe TradeTariffBackend::NumberFormatter do
               1.25656,
               minimum_decimal_points: 4,
               precision: 3,
-              strip_insignificant_zeroes: true
-            )
+              strip_insignificant_zeroes: true,
+            ),
           ).to eq '1.2570'
         end
       end

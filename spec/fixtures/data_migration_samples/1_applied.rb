@@ -1,12 +1,12 @@
 TradeTariffBackend::DataMigrator.migration do
-  name "Applied"
+  name 'Applied'
 
   up do
     applicable   { Language.dataset.where(language_id: 'GB').last.nil? }
-    apply        {
+    apply        do
       Language.unrestrict_primary_key
       Language.create(language_id: 'GB')
-    }
+    end
   end
 
   down do

@@ -6,10 +6,10 @@ FactoryBot.define do
 
     # mandatory valid associations
     f.measure { create :measure, measure_sid: measure_sid }
-    f.geographical_area {
+    f.geographical_area do
       create :geographical_area,
-        geographical_area_sid: geographical_area_sid,
-        geographical_area_id: excluded_geographical_area
-    }
+             geographical_area_sid: geographical_area_sid,
+             geographical_area_id: excluded_geographical_area
+    end
   end
 end

@@ -15,17 +15,17 @@ describe TradeTariffBackend do
     context 'when failed' do
       let(:mock_indexer) { double }
 
-      before {
+      before do
         expect(mock_indexer).to receive(:update).and_raise(StandardError)
 
         described_class.reindex(mock_indexer)
-      }
+      end
 
       it 'notified system operator about indexing failure' do
         expect(ActionMailer::Base.deliveries).not_to be_empty
         email = ActionMailer::Base.deliveries.last
-        expect(email.encoded).to match /Backtrace/
-        expect(email.encoded).to match /failed to reindex/
+        expect(email.encoded).to match(/Backtrace/)
+        expect(email.encoded).to match(/failed to reindex/)
       end
     end
   end

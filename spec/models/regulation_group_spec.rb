@@ -11,10 +11,10 @@ describe RegulationGroup do
       let!(:regulation_group) { create :regulation_group }
       let!(:base_regulation)  { create :base_regulation, regulation_group_id: regulation_group.regulation_group_id }
 
-      before {
+      before do
         regulation_group.destroy
         regulation_group.conformant?
-      }
+      end
 
       specify 'The Regulation group cannot be deleted if it is used in a base regulation.' do
         expect(regulation_group.conformance_errors.keys).to include :RG2

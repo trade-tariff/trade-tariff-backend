@@ -4,7 +4,7 @@ describe TradeTariffBackend::Validator::ValidationDefiner do
   describe '.generic_validation_klass' do
     it 'defaults to GenericValidation' do
       expect(
-        described_class.generic_validation_klass
+        described_class.generic_validation_klass,
       ).to eq TradeTariffBackend::Validations::GenericValidation
     end
   end
@@ -20,9 +20,9 @@ describe TradeTariffBackend::Validator::ValidationDefiner do
       context 'validation evaluated' do
         it 'returns instance of validation' do
           expect(
-            described_class.define(:vld1, 'inclusion validation', {}) {
+            described_class.define(:vld1, 'inclusion validation', {}) do
               validates :inclusion, of: [:abc]
-            }
+            end,
           ).to be_kind_of TradeTariffBackend::Validations::InclusionValidation
         end
       end
@@ -30,9 +30,9 @@ describe TradeTariffBackend::Validator::ValidationDefiner do
       context 'validation not evaluated' do
         it 'raises ArgumentErorr' do
           expect {
-            described_class.define('inclusion validation', {}) {
+            described_class.define('inclusion validation', {}) do
               # noop here
-            }
+            end
           }.to raise_error ArgumentError
         end
       end
@@ -41,16 +41,16 @@ describe TradeTariffBackend::Validator::ValidationDefiner do
     context 'block with argument given' do
       it 'returns generic validation instance' do
         expect(
-          described_class.define(:vld1, 'generic_validation', {}) { |record| }
+          described_class.define(:vld1, 'generic_validation', {}) { |record| },
         ).to be_kind_of described_class.generic_validation_klass
       end
     end
   end
 
   describe '#validates' do
-    let(:validation) { described_class.new('validation', {}) { } }
+    let(:validation) { described_class.new('validation', {}) {} }
 
-    before { validation.validates(:validation_type, {a: :b}) }
+    before { validation.validates(:validation_type, { a: :b }) }
 
     it 'assigns validation type' do
       expect(validation.validation_type).to eq :validation_type
@@ -67,7 +67,7 @@ describe TradeTariffBackend::Validator::ValidationDefiner do
         expect(
           described_class.new('inclusion validation', {}) {
             validates :inclusion, of: [:a]
-          }.validation
+          }.validation,
         ).to be_kind_of TradeTariffBackend::Validations::InclusionValidation
       end
     end

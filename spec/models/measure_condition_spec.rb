@@ -59,13 +59,13 @@ describe MeasureCondition do
       context 'direct loading' do
         it 'loads associated measure condition components' do
           expect(
-            measure_condition.measure_condition_components
+            measure_condition.measure_condition_components,
           ).to include measure_condition_component1
         end
 
         it 'does not load associated measure component' do
           expect(
-            measure_condition.measure_condition_components
+            measure_condition.measure_condition_components,
           ).not_to include measure_condition_component2
         end
       end
@@ -77,7 +77,7 @@ describe MeasureCondition do
                  .eager(:measure_condition_components)
                  .all
                  .first
-                 .measure_condition_components
+                 .measure_condition_components,
           ).to include measure_condition_component1
         end
 
@@ -87,7 +87,7 @@ describe MeasureCondition do
                  .eager(:measure_condition_components)
                  .all
                  .first
-                 .measure_condition_components
+                 .measure_condition_components,
           ).not_to include measure_condition_component2
         end
       end
@@ -96,58 +96,58 @@ describe MeasureCondition do
 
   describe '#requirement' do
     context 'with document requirement' do
-      let(:certificate_type) {
+      let(:certificate_type) do
         create :certificate_type, :with_description,
-          description: 'FOO'
-      }
-      let(:certificate_description) {
+               description: 'FOO'
+      end
+      let(:certificate_description) do
         create :certificate_description, :with_period,
-          certificate_type_code: certificate_type.certificate_type_code,
-          description: 'BAR'
-      }
-      let(:certificate) {
+               certificate_type_code: certificate_type.certificate_type_code,
+               description: 'BAR'
+      end
+      let(:certificate) do
         create :certificate,
-          certificate_code: certificate_description.certificate_code,
-          certificate_type_code: certificate_description.certificate_type_code
-      }
-      let(:measure_condition) {
+               certificate_code: certificate_description.certificate_code,
+               certificate_type_code: certificate_description.certificate_type_code
+      end
+      let(:measure_condition) do
         create :measure_condition,
-          condition_code: 'L',
-          component_sequence_number: 3,
-          condition_duty_amount: nil,
-          condition_monetary_unit_code: nil,
-          condition_measurement_unit_code: nil,
-          condition_measurement_unit_qualifier_code: nil,
-          certificate_code: certificate.certificate_code,
-          certificate_type_code: certificate.certificate_type_code
-      }
+               condition_code: 'L',
+               component_sequence_number: 3,
+               condition_duty_amount: nil,
+               condition_monetary_unit_code: nil,
+               condition_measurement_unit_code: nil,
+               condition_measurement_unit_qualifier_code: nil,
+               certificate_code: certificate.certificate_code,
+               certificate_type_code: certificate.certificate_type_code
+      end
 
       it 'returns requirement certificate type and description' do
-        expect(measure_condition.requirement).to eq "FOO: BAR"
+        expect(measure_condition.requirement).to eq 'FOO: BAR'
       end
     end
 
     context 'with duty expression requirement' do
-      let(:monetary_unit) {
+      let(:monetary_unit) do
         create :monetary_unit, :with_description,
-          monetary_unit_code: 'FOO'
-      }
-      let(:measurement_unit) {
+               monetary_unit_code: 'FOO'
+      end
+      let(:measurement_unit) do
         create :measurement_unit, :with_description,
-          description: 'BAR'
-      }
+               description: 'BAR'
+      end
 
-      let(:measure_condition) {
+      let(:measure_condition) do
         create :measure_condition,
-          condition_code: 'L',
-          component_sequence_number: 3,
-          condition_duty_amount: 108.56,
-          condition_monetary_unit_code: monetary_unit.monetary_unit_code,
-          condition_measurement_unit_code: measurement_unit.measurement_unit_code,
-          condition_measurement_unit_qualifier_code: nil,
-          certificate_code: nil,
-          certificate_type_code: nil
-      }
+               condition_code: 'L',
+               component_sequence_number: 3,
+               condition_duty_amount: 108.56,
+               condition_monetary_unit_code: monetary_unit.monetary_unit_code,
+               condition_measurement_unit_code: measurement_unit.measurement_unit_code,
+               condition_measurement_unit_qualifier_code: nil,
+               certificate_code: nil,
+               certificate_type_code: nil
+      end
 
       it 'returns rendered requirement duty expression' do
         expect(measure_condition.requirement).to eq "<span>108.56</span> FOO / <abbr title='BAR'>BAR</abbr>"
@@ -177,10 +177,10 @@ describe MeasureCondition do
   end
 
   describe '#condition' do
-    let(:measure_condition) {
+    let(:measure_condition) do
       create :measure_condition, condition_code: '123',
-                                     component_sequence_number: 456
-    }
+                                 component_sequence_number: 456
+    end
     let!(:measure_condition_code) { create :measure_condition_code, condition_code: measure_condition.condition_code }
     let!(:measure_condition_code_description) { create :measure_condition_code_description, condition_code: measure_condition.condition_code }
 

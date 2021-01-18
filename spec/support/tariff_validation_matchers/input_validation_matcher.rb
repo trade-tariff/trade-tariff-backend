@@ -29,9 +29,9 @@ class InputValidationMatcher < TariffValidationMatcher
 
   def matches_required_condition?
     if required_condition.present?
-      attributes.all? {|attribute|
+      attributes.all? do |attribute|
         reflection_for(attribute)[:requires] == required_condition
-      }
+      end
     else
       true
     end

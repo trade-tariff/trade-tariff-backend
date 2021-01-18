@@ -4,15 +4,18 @@ describe Api::V2::HeadingsController, type: :controller do
   render_views
 
   context 'non-declarable heading' do
-    let!(:heading) { create :heading, :non_grouping,
-                                     :non_declarable,
-                                     :with_description }
-    let!(:chapter) { create :chapter,
-                     :with_section, :with_description,
-                     goods_nomenclature_item_id: heading.chapter_id
-    }
+    let!(:heading) do
+      create :heading, :non_grouping,
+             :non_declarable,
+             :with_description
+    end
+    let!(:chapter) do
+      create :chapter,
+             :with_section, :with_description,
+             goods_nomenclature_item_id: heading.chapter_id
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: {
           id: String,
@@ -24,20 +27,19 @@ describe Api::V2::HeadingsController, type: :controller do
           relationships: {
             commodities: Hash,
             chapter: Hash,
-          }.ignore_extra_keys!
-        }.ignore_extra_keys!
+          }.ignore_extra_keys!,
+        }.ignore_extra_keys!,
       }.ignore_extra_keys!
-    }
+    end
 
     context 'when record is present' do
-      
       before do
         Sidekiq::Testing.inline! do
           TradeTariffBackend.cache_client.reindex
           sleep 1
         end
       end
-      
+
       it 'returns rendered record' do
         get :show, params: { id: heading }, format: :json
         expect(response.body).to match_json_expression pattern
@@ -45,8 +47,8 @@ describe Api::V2::HeadingsController, type: :controller do
     end
 
     context 'when record is present and commodity has hidden commodities' do
-      let!(:commodity1) { create :commodity, :with_indent, :with_description, :with_chapter, :declarable, goods_nomenclature_item_id: "#{heading.short_code}010000"}
-      let!(:commodity2) { create :commodity, :with_indent, :with_description, :with_chapter, :declarable, goods_nomenclature_item_id: "#{heading.short_code}020000"}
+      let!(:commodity1) { create :commodity, :with_indent, :with_description, :with_chapter, :declarable, goods_nomenclature_item_id: "#{heading.short_code}010000" }
+      let!(:commodity2) { create :commodity, :with_indent, :with_description, :with_chapter, :declarable, goods_nomenclature_item_id: "#{heading.short_code}020000" }
 
       let!(:hidden_goods_nomenclature) { create :hidden_goods_nomenclature, goods_nomenclature_item_id: commodity2.goods_nomenclature_item_id }
 
@@ -56,17 +58,17 @@ describe Api::V2::HeadingsController, type: :controller do
           sleep 1
         end
       end
-      
+
       it 'does not include hidden commodities in the response' do
         get :show, params: { id: heading }, format: :json
 
         body = JSON.parse(response.body)
         expect(
-          body['data']['relationships']['commodities']['data'].map{|c| c['id'] }
+          body['data']['relationships']['commodities']['data'].map { |c| c['id'] },
         ).to include commodity1.goods_nomenclature_sid.to_s
         expect(
-          body['data']['relationships']['commodities']['data'].map{|c| c['goods_nomenclature_item_id'] }
-        ).to_not include commodity2.goods_nomenclature_sid.to_s
+          body['data']['relationships']['commodities']['data'].map { |c| c['goods_nomenclature_item_id'] },
+        ).not_to include commodity2.goods_nomenclature_sid.to_s
       end
     end
 
@@ -81,14 +83,18 @@ describe Api::V2::HeadingsController, type: :controller do
   end
 
   context 'declarable heading' do
-    let!(:heading) { create :heading, :with_indent,
-                                      :with_description,
-                                      :declarable }
-    let!(:chapter) { create :chapter,
-                     :with_section, :with_description,
-                     goods_nomenclature_item_id: heading.chapter_id }
+    let!(:heading) do
+      create :heading, :with_indent,
+             :with_description,
+             :declarable
+    end
+    let!(:chapter) do
+      create :chapter,
+             :with_section, :with_description,
+             goods_nomenclature_item_id: heading.chapter_id
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: {
           id: String,
@@ -103,10 +109,10 @@ describe Api::V2::HeadingsController, type: :controller do
             export_measures: Hash,
             footnotes: Hash,
             section: Hash,
-          }
-        }
+          },
+        },
       }.ignore_extra_keys!
-    }
+    end
 
     context 'when record is present' do
       it 'returns rendered record' do
@@ -140,13 +146,15 @@ describe Api::V2::HeadingsController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do
-    let(:heading) { create :heading, :non_grouping,
-                                     :non_declarable,
-                                     :with_description,
-                                     :with_chapter,
-                                     operation_date: Date.current }
+    let(:heading) do
+      create :heading, :non_grouping,
+             :non_declarable,
+             :with_description,
+             :with_chapter,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: [
           {
@@ -156,17 +164,17 @@ describe Api::V2::HeadingsController, 'GET #changes' do
               oid: Integer,
               model_name: 'Heading',
               operation: 'C',
-              operation_date: String
-          },
+              operation_date: String,
+            },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'heading'
-                }
-              }
-            }
-          }
+                  type: 'heading',
+                },
+              },
+            },
+          },
         ],
         included: [
           {
@@ -176,12 +184,12 @@ describe Api::V2::HeadingsController, 'GET #changes' do
               description: String,
               goods_nomenclature_item_id: String,
               validity_start_date: String,
-              validity_end_date: nil
-           }
-          }
-        ]
+              validity_end_date: nil,
+            },
+          },
+        ],
       }
-    }
+    end
 
     it 'returns heading changes' do
       get :changes, params: { id: heading }, format: :json
@@ -191,18 +199,20 @@ describe Api::V2::HeadingsController, 'GET #changes' do
   end
 
   context 'changes happened before requested date' do
-    let(:heading) { create :heading, :non_grouping,
-                                     :non_declarable,
-                                     :with_description,
-                                     :with_chapter,
-                                     operation_date: Date.current }
+    let(:heading) do
+      create :heading, :non_grouping,
+             :non_declarable,
+             :with_description,
+             :with_chapter,
+             operation_date: Date.current
+    end
 
-    let!(:pattern) {
+    let!(:pattern) do
       {
-          data: [],
-          included: []
+        data: [],
+        included: [],
       }
-    }
+    end
 
     it 'does not include change records' do
       get :changes, params: { id: heading, as_of: Date.yesterday }, format: :json
@@ -212,20 +222,22 @@ describe Api::V2::HeadingsController, 'GET #changes' do
   end
 
   context 'changes include deleted record' do
-    let(:heading) { create :heading, :non_grouping,
-                                     :non_declarable,
-                                     :with_description,
-                                     :with_chapter,
-                                     operation_date: Date.current }
-    let!(:measure) {
+    let(:heading) do
+      create :heading, :non_grouping,
+             :non_declarable,
+             :with_description,
+             :with_chapter,
+             operation_date: Date.current
+    end
+    let!(:measure) do
       create :measure,
-        :with_measure_type,
-        goods_nomenclature: heading,
-        goods_nomenclature_sid: heading.goods_nomenclature_sid,
-        goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-        operation_date: Date.current
-    }
-    let(:pattern) {
+             :with_measure_type,
+             goods_nomenclature: heading,
+             goods_nomenclature_sid: heading.goods_nomenclature_sid,
+             goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+             operation_date: Date.current
+    end
+    let(:pattern) do
       {
         data: [
           {
@@ -235,51 +247,54 @@ describe Api::V2::HeadingsController, 'GET #changes' do
               oid: Integer,
               model_name: 'Measure',
               operation: 'C',
-              operation_date: String
+              operation_date: String,
             },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'measure'
-                }
-              }
-            }
-          }, {
+                  type: 'measure',
+                },
+              },
+            },
+          },
+          {
             id: String,
             type: 'change',
             attributes: {
               oid: Integer,
               model_name: 'Measure',
               operation: 'D',
-              operation_date: String
+              operation_date: String,
             },
             relationships: {
               record: {
                 data: {
                   id: String,
-                  type: 'measure'
-                }
-              }
-            }
-        }, {
-          id: String,
-          type: 'change',
-          attributes: {
-            oid: Integer,
-            model_name: 'Heading',
-            operation: 'C',
-            operation_date: String
+                  type: 'measure',
+                },
+              },
+            },
           },
-          relationships: {
-            record: {
-              data: {
-                id: String,
-                type: 'heading'
-              }
-            }
-          }
-        }],
+          {
+            id: String,
+            type: 'change',
+            attributes: {
+              oid: Integer,
+              model_name: 'Heading',
+              operation: 'C',
+              operation_date: String,
+            },
+            relationships: {
+              record: {
+                data: {
+                  id: String,
+                  type: 'heading',
+                },
+              },
+            },
+          },
+        ],
         included: [
           {
             id: String,
@@ -287,24 +302,27 @@ describe Api::V2::HeadingsController, 'GET #changes' do
             attributes: Hash,
             relationships: {
               geographical_area: Hash,
-              measure_type: Hash
-            }
-          }, {
+              measure_type: Hash,
+            },
+          },
+          {
             id: String,
             type: 'geographical_area',
-            attributes: Hash
-          }, {
+            attributes: Hash,
+          },
+          {
             id: String,
             type: 'measure_type',
-            attributes: Hash
-          }, {
+            attributes: Hash,
+          },
+          {
             id: String,
             type: 'heading',
-            attributes: Hash
-          }
-        ]
+            attributes: Hash,
+          },
+        ],
       }
-    }
+    end
 
     before { measure.destroy }
 

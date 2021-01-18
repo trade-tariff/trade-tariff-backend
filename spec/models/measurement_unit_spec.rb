@@ -16,17 +16,17 @@ describe MeasurementUnit do
     it { is_expected.to validate_validity_dates }
   end
 
-  describe "#abbreviation" do
+  describe '#abbreviation' do
     it {
       expect(measurement_unit.abbreviation).to eq(measurement_unit.description)
     }
   end
 
-  describe "#measurement_unit_abbreviation" do
-    context "with measurement_unit_abbreviation" do
-      let!(:measurement_unit_abbreviation) {
+  describe '#measurement_unit_abbreviation' do
+    context 'with measurement_unit_abbreviation' do
+      let!(:measurement_unit_abbreviation) do
         create(:measurement_unit_abbreviation, measurement_unit_code: measurement_unit.measurement_unit_code)
-      }
+      end
 
       it {
         expect(measurement_unit.measurement_unit_abbreviation).to eq(measurement_unit_abbreviation)

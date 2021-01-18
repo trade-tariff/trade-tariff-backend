@@ -11,11 +11,11 @@ FactoryBot.define do
     validity_end_date   { nil }
 
     trait :with_description do
-      after(:create) { |measurement_unit, evaluator|
+      after(:create) do |measurement_unit, evaluator|
         FactoryBot.create :measurement_unit_description,
-          measurement_unit_code: measurement_unit.measurement_unit_code,
-          description: evaluator.description
-      }
+                          measurement_unit_code: measurement_unit.measurement_unit_code,
+                          description: evaluator.description
+      end
     end
   end
 

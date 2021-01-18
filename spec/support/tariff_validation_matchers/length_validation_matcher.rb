@@ -1,5 +1,5 @@
 class LengthValidationMatcher < TariffValidationMatcher
-  LENGTH_OPTS = [:maximum, :minimum, :exact]
+  LENGTH_OPTS = %i[maximum minimum exact].freeze
 
   attr_reader :maximum_length, :minimum_length, :exact_length
 
@@ -16,9 +16,9 @@ class LengthValidationMatcher < TariffValidationMatcher
 
     define_method("matches_#{opt}?".to_sym) do
       if send("#{opt}_length".to_sym).present?
-        attributes.all? {|attribute|
+        attributes.all? do |attribute|
           reflection_for(attribute)[opt] == send("#{opt}_length".to_sym)
-        }
+        end
       else
         true
       end

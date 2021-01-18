@@ -4,7 +4,12 @@ module ChiefDataHelper
   end
 
   def clear_standing_data
-    [Chief::CountryCode, Chief::CountryGroup, Chief::MeasureTypeAdco, Chief::DutyExpression,
-     Chief::MeasureTypeCond, Chief::MeasureTypeFootnote, Chief::MeasurementUnit].each(&:truncate)
+    [Chief::CountryCode,
+     Chief::CountryGroup,
+     Chief::MeasureTypeAdco,
+     Chief::DutyExpression,
+     Chief::MeasureTypeCond,
+     Chief::MeasureTypeFootnote,
+     Chief::MeasurementUnit].each(&:truncate)
   end
 end

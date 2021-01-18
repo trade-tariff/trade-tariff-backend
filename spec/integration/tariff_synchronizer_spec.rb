@@ -17,8 +17,8 @@ describe TariffSynchronizer do
       purge_synchronizer_folders
     end
 
-    context "when everything is fine" do
-      it "applies missing updates" do
+    context 'when everything is fine' do
+      it 'applies missing updates' do
         described_class.apply
         expect(taric_update.reload).to be_applied
         expect(chief_update.reload).to be_applied
@@ -28,9 +28,9 @@ describe TariffSynchronizer do
     context 'when chief fails' do
       before do
         expect_any_instance_of(
-          ChiefImporter
+          ChiefImporter,
         ).to receive(:import).and_raise(
-          ChiefImporter::ImportException
+          ChiefImporter::ImportException,
         )
       end
 
@@ -46,7 +46,7 @@ describe TariffSynchronizer do
     context 'when taric fails' do
       before do
         expect_any_instance_of(TaricImporter).to receive(
-          :import
+          :import,
         ).and_raise TaricImporter::ImportException
       end
 
@@ -62,7 +62,7 @@ describe TariffSynchronizer do
     context 'but elasticsearch is buggy' do
       before do
         expect_any_instance_of(TaricImporter::Transaction).to receive(
-          :persist
+          :persist,
         ).and_raise Elasticsearch::Transport::Transport::SnifferTimeoutError
       end
 
@@ -76,9 +76,9 @@ describe TariffSynchronizer do
     context 'but we have a timeout' do
       before do
         expect_any_instance_of(
-          TaricImporter::Transaction
+          TaricImporter::Transaction,
         ).to receive(
-          :persist
+          :persist,
         ).and_raise Timeout::Error
       end
 
@@ -96,9 +96,9 @@ describe TariffSynchronizer do
     let!(:mfcm)    { create :mfcm, origin: update.filename }
 
     context 'successful run' do
-      before {
+      before do
         described_class.rollback(Date.yesterday, true)
-      }
+      end
 
       it 'removes entries from oplog tables' do
         expect(Measure).to be_none
@@ -114,11 +114,11 @@ describe TariffSynchronizer do
     end
 
     context 'encounters an exception' do
-      before {
+      before do
         expect(Measure).to receive(:operation_klass).and_raise(StandardError)
 
         rescuing { described_class.rollback(Date.yesterday, true) }
-      }
+      end
 
       it 'does not remove entries from oplog derived tables' do
         expect(Measure).to be_any
@@ -134,9 +134,9 @@ describe TariffSynchronizer do
     end
 
     context 'forced to redownload by default' do
-      before {
+      before do
         described_class.rollback(Date.yesterday)
-      }
+      end
 
       it 'removes entries from oplog derived tables' do
         expect(Measure).to be_none
@@ -152,13 +152,13 @@ describe TariffSynchronizer do
     end
 
     context 'with date passed as string' do
-      let!(:older_update) {
+      let!(:older_update) do
         create :taric_update, :applied, issue_date: 2.days.ago
-      }
+      end
 
-      before {
+      before do
         described_class.rollback(Date.yesterday)
-      }
+      end
 
       it 'removes entries from oplog derived tables' do
         expect(Measure).to be_none

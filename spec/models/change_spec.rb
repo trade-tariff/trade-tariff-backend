@@ -2,14 +2,14 @@ require 'rails_helper'
 
 describe Change do
   let!(:measure) { create :measure }
-  let(:change)   {
+  let(:change)   do
     described_class.new(
       model: 'Measure',
       oid: measure.source.oid,
       operation_date: measure.source.operation_date,
-      operation: measure.operation
+      operation: measure.operation,
     )
-  }
+  end
 
   describe '#operation_record' do
     it 'returns relevant models operation record' do

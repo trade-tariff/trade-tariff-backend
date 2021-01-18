@@ -10,10 +10,10 @@ describe AdditionalCodeType do
     describe 'CT2' do
       context 'meursing table plan id present' do
         context 'application code is meursing table plan additional code type' do
-          let!(:additional_code_type) {
+          let!(:additional_code_type) do
             build :additional_code_type, :with_meursing_table_plan,
-                                                                     :meursing
-          }
+                  :meursing
+          end
 
           it 'is valid' do
             expect(additional_code_type).to be_conformant
@@ -21,10 +21,10 @@ describe AdditionalCodeType do
         end
 
         context 'application code is not meursing table plan additional code type' do
-          let!(:additional_code_type) {
+          let!(:additional_code_type) do
             build :additional_code_type, :with_meursing_table_plan,
-                                                                     :adco
-          }
+                  :adco
+          end
 
           it 'is not valid' do
             expect(additional_code_type).not_to be_conformant
@@ -43,10 +43,10 @@ describe AdditionalCodeType do
 
     describe 'CT3' do
       context 'meursing table plan exists' do
-        let!(:additional_code_type) {
+        let!(:additional_code_type) do
           build :additional_code_type, :with_meursing_table_plan,
-                                                                   :meursing
-        }
+                :meursing
+        end
 
         it 'is valid' do
           expect(additional_code_type).to be_valid
@@ -67,10 +67,10 @@ describe AdditionalCodeType do
         let!(:additional_code_type) { create :additional_code_type }
         let!(:additional_code)      { create :additional_code, additional_code_type_id: additional_code_type.additional_code_type_id }
 
-        before {
+        before do
           additional_code_type.destroy
           additional_code_type.conformant?
-        }
+        end
 
         specify 'The additional code type cannot be deleted if it is related with a non-Meursing additional code.' do
           expect(additional_code_type.conformance_errors.keys).to include :CT6
@@ -82,10 +82,10 @@ describe AdditionalCodeType do
         let!(:additional_code)      { create :additional_code, additional_code_type_id: additional_code_type.additional_code_type_id }
         let!(:meursing_additional_code) { create :meursing_additional_code, additional_code: additional_code.additional_code }
 
-        before {
+        before do
           additional_code_type.destroy
           additional_code_type.conformant?
-        }
+        end
 
         specify 'The additional code type cannot be deleted if it is related with a non-Meursing additional code.' do
           expect(additional_code_type.conformance_errors.keys).not_to include :CT6
@@ -96,10 +96,10 @@ describe AdditionalCodeType do
     describe 'CT7' do
       let(:additional_code_type) { create :additional_code_type, :with_meursing_table_plan }
 
-      before {
+      before do
         additional_code_type.destroy
         additional_code_type.conformant?
-      }
+      end
 
       specify 'The additional code type cannot be deleted if it is related with a Meursing Table plan.' do
         expect(additional_code_type.conformance_errors.keys).to include :CT7
@@ -110,10 +110,10 @@ describe AdditionalCodeType do
       let!(:additional_code_type)       { create :additional_code_type, :ern }
       let!(:export_refund_nomenclature) { create :export_refund_nomenclature, additional_code_type: additional_code_type.additional_code_type_id }
 
-      before {
+      before do
         additional_code_type.destroy
         additional_code_type.conformant?
-      }
+      end
 
       specify 'The additional code type cannot be deleted if it is related with an Export refund code.' do
         expect(additional_code_type.conformance_errors.keys).to include :CT9
@@ -123,15 +123,15 @@ describe AdditionalCodeType do
     describe 'CT10' do
       let!(:measure_type)               { create :measure_type }
       let!(:additional_code_type)       { create :additional_code_type }
-      let!(:additional_code_type_measure_type) {
+      let!(:additional_code_type_measure_type) do
         create :additional_code_type_measure_type, measure_type_id: measure_type.measure_type_id,
-                                                                                            additional_code_type_id: additional_code_type.additional_code_type_id
-      }
+                                                   additional_code_type_id: additional_code_type.additional_code_type_id
+      end
 
-      before {
+      before do
         additional_code_type.destroy
         additional_code_type.conformant?
-      }
+      end
 
       specify 'The additional code type cannot be deleted if it is related with a measure type.' do
         expect(additional_code_type.conformance_errors.keys).to include :CT10

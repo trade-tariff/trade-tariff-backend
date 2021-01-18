@@ -6,55 +6,55 @@ describe Heading do
 
     it 'uses first four digits of goods_nomenclature_item_id as param' do
       expect(
-        heading.to_param
+        heading.to_param,
       ).to eq heading.goods_nomenclature_item_id.first(4)
     end
   end
 
   describe 'associations' do
     describe 'chapter' do
-      let!(:heading1)  {
+      let!(:heading1)  do
         create :heading, validity_start_date: Date.new(1999, 1, 1),
-                                          validity_end_date: Date.new(2013, 1, 1)
-      }
-      let!(:heading2) {
+                         validity_end_date: Date.new(2013, 1, 1)
+      end
+      let!(:heading2) do
         create :heading, goods_nomenclature_item_id: heading1.goods_nomenclature_item_id,
-                                          validity_start_date: Date.new(2005, 1, 1),
-                                          validity_end_date: Date.new(2013, 1, 1)
-      }
-      let!(:chapter1) {
+                         validity_start_date: Date.new(2005, 1, 1),
+                         validity_end_date: Date.new(2013, 1, 1)
+      end
+      let!(:chapter1) do
         create :chapter, goods_nomenclature_item_id: "#{heading1.goods_nomenclature_item_id.first(2)}00000000",
-                                         validity_start_date: Date.new(1991, 1, 1),
-                                         validity_end_date: Date.new(2002, 1, 1)
-      }
-      let!(:chapter2) {
+                         validity_start_date: Date.new(1991, 1, 1),
+                         validity_end_date: Date.new(2002, 1, 1)
+      end
+      let!(:chapter2) do
         create :chapter, goods_nomenclature_item_id: "#{heading1.goods_nomenclature_item_id.first(2)}00000000",
-                                         validity_start_date: Date.new(2002, 1, 1),
-                                         validity_end_date: Date.new(2014, 1, 1)
-      }
+                         validity_start_date: Date.new(2002, 1, 1),
+                         validity_end_date: Date.new(2014, 1, 1)
+      end
 
       context 'fetching actual' do
         it 'fetches correct chapter' do
-          TimeMachine.at("2000-1-1") {
+          TimeMachine.at('2000-1-1') do
             expect(
-              heading1.reload.chapter.pk
+              heading1.reload.chapter.pk,
             ).to eq chapter1.pk
-          }
-          TimeMachine.at("2010-1-1") {
+          end
+          TimeMachine.at('2010-1-1') do
             expect(
-              heading1.reload.chapter.pk
+              heading1.reload.chapter.pk,
             ).to eq chapter2.pk
-          }
+          end
         end
       end
 
       context 'fetching relevant' do
         it 'fetches correct chapter' do
-          TimeMachine.with_relevant_validity_periods {
+          TimeMachine.with_relevant_validity_periods do
             expect(
-              heading2.reload.chapter.pk
+              heading2.reload.chapter.pk,
             ).to eq chapter2.pk
-          }
+          end
         end
       end
     end
@@ -69,7 +69,7 @@ describe Heading do
         allow(TradeTariffBackend).to receive(:service).and_return(service)
 
         # Reloads the module to update the EXCLUDED_TYPES value after stubbing the service
-        load Rails.root.join("app/models/measure_type.rb")
+        load Rails.root.join('app/models/measure_type.rb')
       end
 
       context 'when the service version is the UK' do
@@ -125,21 +125,21 @@ describe Heading do
 
     describe 'commodities' do
       let!(:heading)    { create :heading }
-      let!(:commodity1) {
+      let!(:commodity1) do
         create :commodity, goods_nomenclature_item_id: "#{heading.goods_nomenclature_item_id.first(4)}100000",
-                                         validity_start_date: 10.years.ago,
-                                         validity_end_date: nil
-      }
-      let!(:commodity2) {
+                           validity_start_date: 10.years.ago,
+                           validity_end_date: nil
+      end
+      let!(:commodity2) do
         create :commodity, goods_nomenclature_item_id: "#{heading.goods_nomenclature_item_id.first(4)}200000",
-                                         validity_start_date: 2.years.ago,
-                                         validity_end_date: nil
-      }
-      let!(:commodity3) {
+                           validity_start_date: 2.years.ago,
+                           validity_end_date: nil
+      end
+      let!(:commodity3) do
         create :commodity, goods_nomenclature_item_id: "#{heading.goods_nomenclature_item_id.first(4)}300000",
-                                         validity_start_date: 10.years.ago,
-                                         validity_end_date: 8.years.ago
-      }
+                           validity_start_date: 10.years.ago,
+                           validity_end_date: 8.years.ago
+      end
 
       around do |example|
         TimeMachine.at(1.year.ago) do
@@ -149,35 +149,35 @@ describe Heading do
 
       it 'returns commodities matched by part of own goods nomenclature item id' do
         expect(
-          heading.commodities
+          heading.commodities,
         ).to include commodity1
       end
 
       it 'returns relevant by actual time commodities' do
         expect(
-          heading.commodities
+          heading.commodities,
         ).to include commodity2
       end
 
       it 'does not return commodity that is irrelevant to given time' do
         expect(
-          heading.commodities
+          heading.commodities,
         ).not_to include commodity3
       end
     end
 
     describe 'chapter' do
       let!(:heading)  { create :heading }
-      let!(:chapter1) {
+      let!(:chapter1) do
         create :chapter, goods_nomenclature_item_id: "#{heading.goods_nomenclature_item_id.first(2)}00000000",
-                                         validity_start_date: 10.years.ago,
-                                         validity_end_date: nil
-      }
-      let!(:chapter2) {
+                         validity_start_date: 10.years.ago,
+                         validity_end_date: nil
+      end
+      let!(:chapter2) do
         create :chapter, goods_nomenclature_item_id: "#{heading.goods_nomenclature_item_id.first(2)}00000000",
-                                         validity_start_date: 10.years.ago,
-                                         validity_end_date: 8.years.ago
-      }
+                         validity_start_date: 10.years.ago,
+                         validity_end_date: 8.years.ago
+      end
 
       around do |example|
         TimeMachine.at(1.year.ago) do
@@ -200,73 +200,73 @@ describe Heading do
       today = Date.current
       t1 = today.ago(2.years)
       t2 = today.ago(1.year)
-      let!(:declarable_heading) { create :heading, :declarable, goods_nomenclature_item_id: "0102000000", validity_start_date: t1, validity_end_date: nil }
-      let!(:commodity) {
-        create :commodity, goods_nomenclature_item_id: "0102000010",
-                                                         producline_suffix: "80",
-                                                         validity_start_date: t1,
-                                                         validity_end_date: t2
-      }
+      let!(:declarable_heading) { create :heading, :declarable, goods_nomenclature_item_id: '0102000000', validity_start_date: t1, validity_end_date: nil }
+      let!(:commodity) do
+        create :commodity, goods_nomenclature_item_id: '0102000010',
+                           producline_suffix: '80',
+                           validity_start_date: t1,
+                           validity_end_date: t2
+      end
 
       it 'returns true if there are no commodities under this heading that are valid during headings validity period' do
-        TimeMachine.now {
+        TimeMachine.now do
           expect(
-            declarable_heading.declarable
+            declarable_heading.declarable,
           ).to be_truthy
-        }
+        end
       end
 
       it 'returns false if there are commodities under the heading that are valid during headings validity period' do
-        TimeMachine.at(t2.ago(1.day)) {
+        TimeMachine.at(t2.ago(1.day)) do
           expect(
-            declarable_heading.declarable
+            declarable_heading.declarable,
           ).to be_falsy
-        }
+        end
       end
     end
 
     context 'different commodity codes' do
-      let!(:declarable_heading)     { create :heading, :declarable, goods_nomenclature_item_id: "0101000000" }
-      let!(:non_declarable_heading) { create :heading, goods_nomenclature_item_id: "0102000000", producline_suffix: "10" }
-      let!(:commodity)              {
-        create :commodity, goods_nomenclature_item_id: "0102000010",
-                                                         producline_suffix: "80",
-                                                         validity_start_date: non_declarable_heading.validity_start_date,
-                                                         validity_end_date: non_declarable_heading.validity_end_date
-      }
+      let!(:declarable_heading)     { create :heading, :declarable, goods_nomenclature_item_id: '0101000000' }
+      let!(:non_declarable_heading) { create :heading, goods_nomenclature_item_id: '0102000000', producline_suffix: '10' }
+      let!(:commodity)              do
+        create :commodity, goods_nomenclature_item_id: '0102000010',
+                           producline_suffix: '80',
+                           validity_start_date: non_declarable_heading.validity_start_date,
+                           validity_end_date: non_declarable_heading.validity_end_date
+      end
 
       it 'returns true if there are no commodities under this heading that are valid during headings validity period' do
         expect(
-          declarable_heading.declarable
+          declarable_heading.declarable,
         ).to be_truthy
       end
 
       it 'returns false if there are commodities under the heading that are valid during headings validity period' do
         expect(
-          non_declarable_heading.declarable
+          non_declarable_heading.declarable,
         ).to be_falsy
       end
     end
 
     context 'same commodity codes' do
-      let!(:heading1) {
-        create :heading, goods_nomenclature_item_id: "0101000000",
-                                         producline_suffix: "10"
-      }
-      let!(:heading2) {
-        create :heading, goods_nomenclature_item_id: "0101000000",
-                                         producline_suffix: "80"
-      }
+      let!(:heading1) do
+        create :heading, goods_nomenclature_item_id: '0101000000',
+                         producline_suffix: '10'
+      end
+      let!(:heading2) do
+        create :heading, goods_nomenclature_item_id: '0101000000',
+                         producline_suffix: '80'
+      end
 
       it 'returns true if there are no commodities under this heading that are valid during headings validity period' do
         expect(
-          heading1.declarable
+          heading1.declarable,
         ).to be_falsy
       end
 
       it 'returns false if there are commodities under the heading that are valid during headings validity period' do
         expect(
-          heading2.declarable
+          heading2.declarable,
         ).to be_truthy
       end
     end
@@ -284,51 +284,51 @@ describe Heading do
 
       it 'includes Heading changes' do
         expect(
-          heading.changes.select { |change|
+          heading.changes.select do |change|
             change.oid == heading.oid &&
             change.model == described_class
-          }
+          end,
         ).to be_present
       end
     end
 
     context 'with associated Commodity changes' do
       let!(:heading)   { create :heading, operation_date: Date.yesterday }
-      let!(:commodity) {
+      let!(:commodity) do
         create :commodity,
                operation_date: Date.yesterday,
                goods_nomenclature_item_id: "#{heading.short_code}000001"
-      }
+      end
 
       it 'includes Commodity changes' do
         expect(
-          heading.changes.select { |change|
+          heading.changes.select do |change|
             change.oid == commodity.oid &&
             change.model == Commodity
-          }
+          end,
         ).to be_present
       end
 
       context 'with associated Measure (through Commodity) changes' do
         let!(:heading)   { create :heading, operation_date: Date.yesterday }
-        let!(:commodity) {
+        let!(:commodity) do
           create :commodity,
                  operation_date: Date.yesterday,
                  goods_nomenclature_item_id: "#{heading.short_code}000001"
-        }
-        let!(:measure) {
+        end
+        let!(:measure) do
           create :measure,
                  goods_nomenclature: commodity,
                  goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
                  operation_date: Date.yesterday
-        }
+        end
 
         it 'includes Measure changes' do
           expect(
-            heading.changes.select { |change|
+            heading.changes.select do |change|
               change.oid == measure.oid &&
               change.model == Measure
-            }
+            end,
           ).to be_present
         end
       end

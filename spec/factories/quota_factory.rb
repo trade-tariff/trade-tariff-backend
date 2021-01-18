@@ -1,7 +1,7 @@
 FactoryBot.define do
   sequence(:quota_order_number_sid) { |n| n }
   sequence(:quota_order_number_id) do
-    "09" + Forgery(:basic).number(at_least: 5000, at_most: 9999).to_s
+    '09' + Forgery(:basic).number(at_least: 5000, at_most: 9999).to_s
   end
 
   factory :quota_association do
@@ -18,7 +18,7 @@ FactoryBot.define do
     validity_end_date   { nil }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.years) }
+      validity_end_date { Date.current.ago(1.year) }
     end
   end
 
@@ -31,7 +31,7 @@ FactoryBot.define do
     validity_end_date              { nil }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.years) }
+      validity_end_date { Date.current.ago(1.year) }
     end
 
     trait :with_geographical_area do
@@ -57,7 +57,7 @@ FactoryBot.define do
   factory :quota_reopening_event do
     quota_definition_sid  { generate(:sid) }
     occurrence_timestamp  { 24.hours.ago }
-    reopening_date        { Date.current.ago(1.years) }
+    reopening_date        { Date.current.ago(1.year) }
   end
 
   factory :quota_definition do
@@ -75,7 +75,7 @@ FactoryBot.define do
 
     trait :xml do
       validity_start_date { Date.current.ago(3.years) }
-      validity_end_date                { Date.current.ago(1.years) }
+      validity_end_date                { Date.current.ago(1.year) }
       volume                           { Forgery(:basic).number }
       initial_volume                   { Forgery(:basic).number }
       measurement_unit_code            { Forgery(:basic).text(exactly: 2) }
@@ -91,8 +91,8 @@ FactoryBot.define do
   factory :quota_blocking_period do
     quota_blocking_period_sid  { Forgery(:basic).number }
     quota_definition_sid       { Forgery(:basic).number }
-    blocking_start_date        { Date.current.ago(1.years) }
-    blocking_end_date          { Date.current.ago(1.years) }
+    blocking_start_date        { Date.current.ago(1.year) }
+    blocking_end_date          { Date.current.ago(1.year) }
     blocking_period_type       { Forgery(:basic).number }
     description                { Forgery(:lorem_ipsum).sentence }
   end
@@ -125,20 +125,20 @@ FactoryBot.define do
   factory :quota_suspension_period do
     quota_suspension_period_sid  { generate(:sid) }
     quota_definition_sid         { generate(:sid) }
-    suspension_start_date        { Date.current.ago(1.years) }
-    suspension_end_date          { Date.current.ago(1.years) }
+    suspension_start_date        { Date.current.ago(1.year) }
+    suspension_end_date          { Date.current.ago(1.year) }
     description                  { Forgery(:lorem_ipsum).sentence }
   end
 
   factory :quota_unblocking_event do
     quota_definition_sid  { generate(:sid) }
     occurrence_timestamp  { 24.hours.ago }
-    unblocking_date       { Date.current.ago(1.years) }
+    unblocking_date       { Date.current.ago(1.year) }
   end
 
   factory :quota_unsuspension_event do
     quota_definition_sid  { generate(:sid) }
     occurrence_timestamp  { 24.hours.ago }
-    unsuspension_date     { Date.current.ago(1.years) }
+    unsuspension_date     { Date.current.ago(1.year) }
   end
 end

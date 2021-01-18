@@ -10,14 +10,14 @@ describe Api::V2::ChemicalsController, type: :controller do
       data: [
         {
           id: String,
-          type: "chemical",
+          type: 'chemical',
           attributes: {
             id: Integer,
             cas: String,
-            name: String
-          }
-        }
-      ].ignore_extra_values!
+            name: String,
+          },
+        },
+      ].ignore_extra_values!,
     }
   end
 
@@ -25,7 +25,7 @@ describe Api::V2::ChemicalsController, type: :controller do
     {
       data: {
         id: String,
-        type: "chemical",
+        type: 'chemical',
         attributes: {
           id: Integer,
           cas: String,
@@ -36,35 +36,35 @@ describe Api::V2::ChemicalsController, type: :controller do
             data: [
               {
                 id: String,
-                type: "goods_nomenclature"
-              }
+                type: 'goods_nomenclature',
+              },
             ],
           },
           chemical_names: {
             data: [
               {
                 id: String,
-                type: "chemical_name"
-              }
+                type: 'chemical_name',
+              },
             ],
-          }
+          },
         },
         links: {
-          uri: String
-        }
+          uri: String,
+        },
       },
       included: [
         {
           id: String,
-          type: "chemical_name",
+          type: 'chemical_name',
           attributes: {
             name: String,
             chemical_id: Integer,
-          }
+          },
         },
         {
           id: String,
-          type: "goods_nomenclature",
+          type: 'goods_nomenclature',
           attributes: {
             goods_nomenclature_item_id: String,
             goods_nomenclature_sid: Integer,
@@ -72,9 +72,9 @@ describe Api::V2::ChemicalsController, type: :controller do
             number_indents: Integer,
             producline_suffix: String,
             href: String,
-          }
-        }
-      ]
+          },
+        },
+      ],
     }
   end
 
@@ -83,61 +83,61 @@ describe Api::V2::ChemicalsController, type: :controller do
       data: [
         {
           id: String,
-          type: "chemical",
+          type: 'chemical',
           attributes: {
             id: Integer,
             cas: String,
-            name: String
+            name: String,
           },
           relationships: {
             goods_nomenclatures: {
               data: [
                 {
                   id: String,
-                  type: "goods_nomenclature"
-                }
-              ]
+                  type: 'goods_nomenclature',
+                },
+              ],
             },
             chemical_names: {
               data: [
                 {
                   id: String,
-                  type: "chemical_name"
-                }
-              ]
-            }
-          }
-        }
+                  type: 'chemical_name',
+                },
+              ],
+            },
+          },
+        },
       ],
       included: [
         {
           id: String,
-          type: "chemical_name",
+          type: 'chemical_name',
           attributes: {
             name: String,
-            chemical_id: Integer
-          }
+            chemical_id: Integer,
+          },
         },
         {
           id: String,
-          type: "goods_nomenclature",
+          type: 'goods_nomenclature',
           attributes: {
             goods_nomenclature_item_id: String,
             goods_nomenclature_sid: Integer,
             description: String,
             number_indents: Integer,
             producline_suffix: String,
-            href: String
-          }
-        }
+            href: String,
+          },
+        },
       ],
       meta: {
         pagination: {
           page: Integer,
           per_page: Integer,
-          total_count: Integer
-        }
-      }
+          total_count: Integer,
+        },
+      },
     }
   end
 
@@ -179,7 +179,7 @@ describe Api::V2::ChemicalsController, type: :controller do
 
   context 'with an invalid `:id` parameter, GET #show' do
     it 'returns 404' do
-      get :show, params: { id: "FOOBAR" }, format: :json
+      get :show, params: { id: 'FOOBAR' }, format: :json
 
       expect(response.code.to_i).to eq 404
     end
@@ -187,7 +187,7 @@ describe Api::V2::ChemicalsController, type: :controller do
 
   context 'with an invalid `:cas` parameter, GET #search' do
     it 'returns 404' do
-      get :search, params: { cas: "FOOBAR" }, format: :json
+      get :search, params: { cas: 'FOOBAR' }, format: :json
 
       expect(response.code.to_i).to eq 404
     end
@@ -195,7 +195,7 @@ describe Api::V2::ChemicalsController, type: :controller do
 
   context 'with an invalid `:name` parameter, GET #search' do
     it 'returns 404' do
-      get :search, params: { name: "FOOBAR" }, format: :json
+      get :search, params: { name: 'FOOBAR' }, format: :json
 
       expect(response.code.to_i).to eq 404
     end

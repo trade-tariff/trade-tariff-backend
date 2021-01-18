@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Api::V2::UpdatesController, "GET #latest" do
+describe Api::V2::UpdatesController, 'GET #latest' do
   render_views
 
   let(:pattern) do
@@ -8,15 +8,15 @@ describe Api::V2::UpdatesController, "GET #latest" do
       data: [
         {
           id: String,
-            type: 'tariff_update',
-            attributes: {
-            update_type: "TariffSynchronizer::TaricUpdate",
+          type: 'tariff_update',
+          attributes: {
+            update_type: 'TariffSynchronizer::TaricUpdate',
             state: String,
             filename: String,
-            created_at: String
-          }.ignore_extra_keys!
-        }.ignore_extra_keys!
-      ].ignore_extra_values!
+            created_at: String,
+          }.ignore_extra_keys!,
+        }.ignore_extra_keys!,
+      ].ignore_extra_values!,
     }
   end
 
@@ -36,7 +36,7 @@ describe Api::V2::UpdatesController, "GET #latest" do
       get :latest, format: :json
 
       expect(
-        JSON.parse(response.body)['data']
+        JSON.parse(response.body)['data'],
       ).to eq []
     end
   end

@@ -4,73 +4,73 @@ describe Api::V2::AdditionalCodesController, type: :controller do
   render_views
 
   context 'additional codes search' do
-
     let!(:additional_code) { create :additional_code }
     let!(:additional_code_description) { create :additional_code_description, :with_period, additional_code_sid: additional_code.additional_code_sid }
     let!(:measure) { create :measure, additional_code_sid: additional_code.additional_code_sid }
     let!(:goods_nomenclature) { measure.goods_nomenclature }
     let!(:goods_nomenclature_description) { create :goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
 
-    let(:pattern) {
+    let(:pattern) do
       {
         data: [{
           id: String,
-          type: "additional_code",
+          type: 'additional_code',
           attributes: {
             additional_code_type_id: String,
             additional_code: String,
             code: String,
             description: String,
-            formatted_description: String
+            formatted_description: String,
           },
           relationships: {
             measures: {
               data: [
                 {
                   id: String,
-                  type: "measure"
-                }
-              ]
-            }
-          }
+                  type: 'measure',
+                },
+              ],
+            },
+          },
         }],
         included: [{
           id: String,
-          type: "measure",
+          type: 'measure',
           attributes: {
             id: Integer,
             validity_start_date: String,
             validity_end_date: String,
-            goods_nomenclature_item_id: String
+            goods_nomenclature_item_id: String,
           },
           relationships: {
             goods_nomenclature: {
               data: {
                 id: String,
-                type: "goods_nomenclature"
-              }
-            }
-          }
-        }, {
-          id: String,
-          type: "goods_nomenclature",
-          attributes: {
-            goods_nomenclature_item_id: String,
-            goods_nomenclature_sid: Integer,
-            description: String,
-            number_indents: Integer,
-            producline_suffix: String
-          }
-        }],
+                type: 'goods_nomenclature',
+              },
+            },
+          },
+        },
+                   {
+                     id: String,
+                     type: 'goods_nomenclature',
+                     attributes: {
+                       goods_nomenclature_item_id: String,
+                       goods_nomenclature_sid: Integer,
+                       description: String,
+                       number_indents: Integer,
+                       producline_suffix: String,
+                     },
+                   }],
         meta: {
           pagination: {
             page: Integer,
             per_page: Integer,
-            total_count: Integer
-          }
-        }
+            total_count: Integer,
+          },
+        },
       }
-    }
+    end
 
     before do
       Sidekiq::Testing.inline! do
@@ -97,4 +97,4 @@ describe Api::V2::AdditionalCodesController, type: :controller do
       expect(response.body).to match_json_expression pattern
     end
   end
-end 
+end

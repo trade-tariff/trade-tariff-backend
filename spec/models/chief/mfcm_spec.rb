@@ -18,7 +18,7 @@ describe Chief::Mfcm do
         it 'latest relevant tame record is chosen' do
           older_tame = create :tame, mfcm_attrs.merge(audit_tsmp: 20.years.ago)
           expect(mfcm.tame).to     eq tame
-          expect(mfcm.tame).to_not eq older_tame
+          expect(mfcm.tame).not_to eq older_tame
         end
       end
     end

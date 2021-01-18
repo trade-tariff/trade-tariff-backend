@@ -1,5 +1,5 @@
-require "rails_helper"
-require "bank_holidays"
+require 'rails_helper'
+require 'bank_holidays'
 
 describe BankHolidays do
   include BankHolidaysHelper
@@ -8,7 +8,7 @@ describe BankHolidays do
     stub_holidays_gem_between_call
   end
 
-  describe ".last(n)" do
+  describe '.last(n)' do
     it 'returns last N halidays' do
       expect(described_class.last(2).length).to eq(2)
     end
@@ -47,8 +47,8 @@ describe BankHolidays do
       it 'orders holidays asc' do
         res = described_class.last(3)
         # see stub_holidays_gem_between_call example
-        expect(res[0]).to eq(Date.parse("2015-10-07"))
-        expect(res[2]).to eq(Date.parse("2016-11-30"))
+        expect(res[0]).to eq(Date.parse('2015-10-07'))
+        expect(res[2]).to eq(Date.parse('2016-11-30'))
       end
     end
 
@@ -64,9 +64,9 @@ describe BankHolidays do
       it 'orders holidays and weekends asc' do
         res = described_class.last(3)
         # see stub_holidays_gem_between_call example
-        expect(res[0]).to eq(Date.parse("2016-11-30"))
-        expect(res[1]).to eq(Date.parse("2017-05-20"))
-        expect(res[2]).to eq(Date.parse("2017-05-21"))
+        expect(res[0]).to eq(Date.parse('2016-11-30'))
+        expect(res[1]).to eq(Date.parse('2017-05-20'))
+        expect(res[2]).to eq(Date.parse('2017-05-21'))
       end
     end
   end

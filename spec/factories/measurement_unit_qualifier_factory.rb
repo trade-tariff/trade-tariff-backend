@@ -5,7 +5,7 @@ FactoryBot.define do
     validity_end_date   { nil }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.years) }
+      validity_end_date { Date.current.ago(1.year) }
     end
   end
 
@@ -14,7 +14,7 @@ FactoryBot.define do
     description { Forgery(:lorem_ipsum).sentence }
 
     trait :xml do
-      language_id { "EN" }
+      language_id { 'EN' }
     end
   end
 end

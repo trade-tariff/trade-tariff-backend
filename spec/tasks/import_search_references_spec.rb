@@ -9,9 +9,9 @@ describe ImportSearchReferences do
     context 'existing entries present in search reference table' do
       let(:search_reference) { create :search_reference }
 
-      before {
+      before do
         create_file(file_name, 'invalid')
-      }
+      end
 
       it 'truncates existing SearchReference table entries' do
         described_class.reload(file_name)
@@ -25,12 +25,12 @@ describe ImportSearchReferences do
     let(:task) { described_class.new(file_name) }
 
     context 'file contains entries for Chapters' do
-      before {
-        create_file(file_name, "Example;Chapter 01")
-      }
+      before do
+        create_file(file_name, 'Example;Chapter 01')
+      end
 
       context 'chapter exists' do
-        let!(:chapter) { create :chapter, goods_nomenclature_item_id: "0100000000" }
+        let!(:chapter) { create :chapter, goods_nomenclature_item_id: '0100000000' }
 
         it 'creates SearchReference entries for Chapters' do
           task.run
@@ -49,12 +49,12 @@ describe ImportSearchReferences do
     end
 
     context 'file contains entries for Headings' do
-      before {
-        create_file(file_name, "Example;01.02")
-      }
+      before do
+        create_file(file_name, 'Example;01.02')
+      end
 
       context 'heading is present' do
-        let!(:heading) { create :heading, goods_nomenclature_item_id: "0102000000" }
+        let!(:heading) { create :heading, goods_nomenclature_item_id: '0102000000' }
 
         it 'creates SearchReference entries for Headings' do
           task.run
@@ -73,12 +73,12 @@ describe ImportSearchReferences do
     end
 
     context 'file contains entries for Sections' do
-      before {
-        create_file(file_name, "Example;Section 1")
-      }
+      before do
+        create_file(file_name, 'Example;Section 1')
+      end
 
       context 'section is present' do
-        let!(:section) { create :section, position: "1" }
+        let!(:section) { create :section, position: '1' }
 
         it 'creates SearchReference entries for Sections' do
           task.run
@@ -100,11 +100,11 @@ describe ImportSearchReferences do
       let!(:chapter)  { create :chapter }
       let!(:heading)  { create :heading }
 
-      before {
+      before do
         create_file(file_name, "Example;Chapter #{chapter.short_code} OR #{heading.short_code.first(2)}.#{heading.short_code.last(2)}")
 
         task.run
-      }
+      end
 
       it 'creates SearchReference entry for Chapter' do
         expect(SearchReference.for_chapter(chapter)).to be_any
@@ -116,9 +116,9 @@ describe ImportSearchReferences do
     end
 
     context 'file contains no entry of known entity pattern' do
-      before {
-        create_file(file_name, " ... ")
-      }
+      before do
+        create_file(file_name, ' ... ')
+      end
 
       it 'does not create any SearchReference entities' do
         task.run

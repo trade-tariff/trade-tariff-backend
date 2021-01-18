@@ -6,9 +6,9 @@ describe Api::V1::RollbacksController, 'POST to #create' do
   before { login_as_api_user }
 
   let(:rollback_attributes) { attributes_for :rollback }
-  let(:record)        {
+  let(:record) do
     create :measure, operation_date: Date.yesterday.to_date
-  }
+  end
 
   context 'when rollback is valid' do
     before { record }
@@ -24,17 +24,17 @@ describe Api::V1::RollbacksController, 'POST to #create' do
       Sidekiq::Testing.inline! do
         expect {
           create(:rollback, date: Date.current.ago(1.month).to_date)
-        }.to change { Measure.count }.from(1).to(0)
+        }.to change(Measure, :count).from(1).to(0)
       end
     end
   end
 
   context 'when rollback is not valid' do
-    let(:response_pattern) {
+    let(:response_pattern) do
       {
-        errors: Hash
+        errors: Hash,
       }.ignore_extra_keys!
-    }
+    end
 
     it 'returns errors for rollback' do
       post :create, params: { rollback: { date: '', keep: '' } }
@@ -48,13 +48,13 @@ end
 describe Api::V1::RollbacksController, 'GET to #index' do
   render_views
 
-  before {
+  before do
     login_as_api_user
-  }
+  end
 
   let!(:rollback) { create :rollback }
 
-  let(:response_pattern) {
+  let(:response_pattern) do
     { rollbacks:
       [
         {
@@ -63,11 +63,10 @@ describe Api::V1::RollbacksController, 'GET to #index' do
           reason: rollback.reason,
           enqueued_at: wildcard_matcher,
           date: rollback.date.to_s,
-          keep: rollback.keep
-        }.ignore_extra_keys!
-      ].ignore_extra_values!
-    }.ignore_extra_keys!
-  }
+          keep: rollback.keep,
+        }.ignore_extra_keys!,
+      ].ignore_extra_values! }.ignore_extra_keys!
+  end
 
   it 'returns scheduled rollbacks' do
     get :index, format: :json

@@ -1,22 +1,22 @@
 require 'rails_helper'
 
-describe Api::V1::ChaptersController, "GET #show" do
+describe Api::V1::ChaptersController, 'GET #show' do
   render_views
 
-  let!(:chapter) { create :chapter, :with_description, :with_section, goods_nomenclature_item_id: "1100000000" }
+  let!(:chapter) { create :chapter, :with_description, :with_section, goods_nomenclature_item_id: '1100000000' }
   let!(:section_note) { create :section_note, section: chapter.section }
 
-  let(:pattern) {
+  let(:pattern) do
     {
       goods_nomenclature_item_id: chapter.code,
       description: String,
       headings: Array,
       section: {
-        section_note: String
+        section_note: String,
       }.ignore_extra_keys!,
-      _response_info: Hash
+      _response_info: Hash,
     }.ignore_extra_keys!
-  }
+  end
 
   context 'when record is present' do
     it 'returns rendered record' do
@@ -46,18 +46,18 @@ describe Api::V1::ChaptersController, "GET #show" do
   end
 end
 
-describe Api::V1::ChaptersController, "GET #index" do
+describe Api::V1::ChaptersController, 'GET #index' do
   render_views
 
   let!(:chapter1) { create :chapter, :with_section, :with_note }
   let!(:chapter2) { create :chapter, :with_section, :with_note }
 
-  let(:pattern) {
+  let(:pattern) do
     [
-      {goods_nomenclature_item_id: String, chapter_note_id: Integer },
-      {goods_nomenclature_item_id: String, chapter_note_id: Integer }
+      { goods_nomenclature_item_id: String, chapter_note_id: Integer },
+      { goods_nomenclature_item_id: String, chapter_note_id: Integer },
     ]
-  }
+  end
 
   it 'returns rendered records' do
     get :index, format: :json
@@ -66,49 +66,50 @@ describe Api::V1::ChaptersController, "GET #index" do
   end
 end
 
-
-describe Api::V1::ChaptersController, "GET #changes" do
+describe Api::V1::ChaptersController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do
-    let(:chapter) { create :chapter, :with_section, :with_note,
-                                     operation_date: Date.current }
+    let(:chapter) do
+      create :chapter, :with_section, :with_note,
+             operation_date: Date.current
+    end
 
     let(:heading) { create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000" }
-    let!(:measure) {
+    let!(:measure) do
       create :measure,
-        :with_measure_type,
-        goods_nomenclature: heading,
-        goods_nomenclature_sid: heading.goods_nomenclature_sid,
-        goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-        operation_date: Date.current
-    }
+             :with_measure_type,
+             goods_nomenclature: heading,
+             goods_nomenclature_sid: heading.goods_nomenclature_sid,
+             goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       [
         {
           oid: Integer,
-          model_name: "Measure",
+          model_name: 'Measure',
           record: {
             measure_type: {
-              description: measure.measure_type.description
-            }.ignore_extra_keys!
-          }.ignore_extra_keys!
+              description: measure.measure_type.description,
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!,
         }.ignore_extra_keys!,
         {
           oid: Integer,
-          model_name: "Chapter",
+          model_name: 'Chapter',
           operation: String,
           operation_date: String,
           record: {
             description: String,
             goods_nomenclature_item_id: String,
             validity_start_date: String,
-            validity_end_date: nil
-          }
-        }
+            validity_end_date: nil,
+          },
+        },
       ].ignore_extra_values!
-    }
+    end
 
     it 'returns chapter changes' do
       get :changes, params: { id: chapter }, format: :json
@@ -118,17 +119,19 @@ describe Api::V1::ChaptersController, "GET #changes" do
   end
 
   context 'changes happened before requested date' do
-    let(:chapter) { create :chapter, :with_section, :with_note,
-                                     operation_date: Date.current }
+    let(:chapter) do
+      create :chapter, :with_section, :with_note,
+             operation_date: Date.current
+    end
     let(:heading) { create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000" }
-    let!(:measure) {
+    let!(:measure) do
       create :measure,
-        :with_measure_type,
-        goods_nomenclature: heading,
-        goods_nomenclature_sid: heading.goods_nomenclature_sid,
-        goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-        operation_date: Date.current
-    }
+             :with_measure_type,
+             goods_nomenclature: heading,
+             goods_nomenclature_sid: heading.goods_nomenclature_sid,
+             goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+             operation_date: Date.current
+    end
 
     it 'does not include change records' do
       get :changes, params: { id: chapter, as_of: Date.yesterday }, format: :json
@@ -138,46 +141,48 @@ describe Api::V1::ChaptersController, "GET #changes" do
   end
 
   context 'changes include deleted record' do
-    let(:chapter) { create :chapter, :with_section, :with_note,
-                                     operation_date: Date.current }
+    let(:chapter) do
+      create :chapter, :with_section, :with_note,
+             operation_date: Date.current
+    end
 
     let(:heading) { create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000" }
-    let!(:measure) {
+    let!(:measure) do
       create :measure,
-        :with_measure_type,
-        goods_nomenclature: heading,
-        goods_nomenclature_sid: heading.goods_nomenclature_sid,
-        goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-        operation_date: Date.current
-    }
+             :with_measure_type,
+             goods_nomenclature: heading,
+             goods_nomenclature_sid: heading.goods_nomenclature_sid,
+             goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+             operation_date: Date.current
+    end
 
-    let(:pattern) {
+    let(:pattern) do
       [
         {
           oid: Integer,
-          model_name: "Measure",
-          operation: "D",
+          model_name: 'Measure',
+          operation: 'D',
           record: {
             goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
             measure_type: {
-              description: measure.measure_type.description
-            }.ignore_extra_keys!
-          }.ignore_extra_keys!
+              description: measure.measure_type.description,
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!,
         }.ignore_extra_keys!,
         {
           oid: Integer,
-          model_name: "Chapter",
+          model_name: 'Chapter',
           operation: String,
           operation_date: String,
           record: {
             description: String,
             goods_nomenclature_item_id: String,
             validity_start_date: String,
-            validity_end_date: nil
-          }
-        }
+            validity_end_date: nil,
+          },
+        },
       ].ignore_extra_values!
-    }
+    end
 
     before { measure.destroy }
 
