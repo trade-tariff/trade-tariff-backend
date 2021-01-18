@@ -22,14 +22,14 @@ class AdditionalCodeType < Sequel::Model
   delegate :description, to: :additional_code_type_description
 
   APPLICATION_CODES = {
-    0 => "Export refund nomencalture",
-    1 => "Additional Codes",
-    3 => "Meursing addition codes",
-    4 => "Export refund for processed agricultural goods"
+    0 => 'Export refund nomencalture',
+    1 => 'Additional Codes',
+    3 => 'Meursing addition codes',
+    4 => 'Export refund for processed agricultural goods'
   }.freeze
 
   def meursing?
-    application_code.in?("3")
+    application_code.in?('3')
   end
 
   def non_meursing?
@@ -37,10 +37,10 @@ class AdditionalCodeType < Sequel::Model
   end
 
   def export_refund?
-    application_code == "0"
+    application_code == '0'
   end
 
   def export_refund_agricultural?
-    application_code == "4"
+    application_code == '4'
   end
 end

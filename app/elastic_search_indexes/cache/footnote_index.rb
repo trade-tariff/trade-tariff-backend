@@ -8,8 +8,8 @@ module Cache
             footnote_id: { type: 'keyword' },
             footnote_type_id: { type: 'keyword' },
             description: { type: 'text', analyzer: 'snowball' },
-            validity_start_date: { type: "date", format: "date_optional_time" },
-            validity_end_date: { type: "date", format: "date_optional_time" },
+            validity_start_date: { type: 'date', format: 'date_optional_time' },
+            validity_end_date: { type: 'date', format: 'date_optional_time' },
           }
         }
       }

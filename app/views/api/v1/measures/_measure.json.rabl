@@ -22,7 +22,7 @@ node(:duty_expression) { |measure|
 
 node(:legal_acts, if: ->(measure) { !measure.national }) do |measure|
   measure.legal_acts.map do |regulation|
-    partial "api/v1/regulations/regulation", object: regulation
+    partial 'api/v1/regulations/regulation', object: regulation
   end
 end
 

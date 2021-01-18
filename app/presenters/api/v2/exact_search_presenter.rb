@@ -17,7 +17,7 @@ module Api
       
       def entry
         {
-          endpoint: result.results.class.name.parameterize(separator: "_").pluralize,
+          endpoint: result.results.class.name.parameterize(separator: '_').pluralize,
           id: result.results.to_param
         }
       end

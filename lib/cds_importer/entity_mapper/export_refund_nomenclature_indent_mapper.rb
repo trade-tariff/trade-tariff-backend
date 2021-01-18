@@ -7,22 +7,22 @@
 class CdsImporter
   class EntityMapper
     class ExportRefundNomenclatureIndentMapper < BaseMapper
-      self.entity_class = "ExportRefundNomenclatureIndent".freeze
+      self.entity_class = 'ExportRefundNomenclatureIndent'.freeze
 
-      self.mapping_root = "ExportRefundNomenclature".freeze
+      self.mapping_root = 'ExportRefundNomenclature'.freeze
 
-      self.mapping_path = "exportRefundNomenclatureIndents".freeze
+      self.mapping_path = 'exportRefundNomenclatureIndents'.freeze
 
-      self.exclude_mapping = ["metainfo.origin"].freeze
+      self.exclude_mapping = ['metainfo.origin'].freeze
 
       self.entity_mapping = base_mapping.merge(
         "#{mapping_path}.sid" => :export_refund_nomenclature_indents_sid,
-        "sid" => :export_refund_nomenclature_sid,
+        'sid' => :export_refund_nomenclature_sid,
         "#{mapping_path}.numberExportRefundNomenclatureIndents" => :number_export_refund_nomenclature_indents,
-        "goodsNomenclature.goodsNomenclatureItemId" => :goods_nomenclature_item_id,
-        "additionalCodeType.additionalCodeTypeId" => :additional_code_type,
-        "exportRefundCode" => :export_refund_code,
-        "productLine" => :productline_suffix
+        'goodsNomenclature.goodsNomenclatureItemId' => :goods_nomenclature_item_id,
+        'additionalCodeType.additionalCodeTypeId' => :additional_code_type,
+        'exportRefundCode' => :export_refund_code,
+        'productLine' => :productline_suffix
       ).freeze
 
       self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze

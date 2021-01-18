@@ -22,7 +22,7 @@ module TariffSynchronizer
     end
 
     def year_day_with_3_characters
-      sprintf("%03d", date.yday)
+      sprintf('%03d', date.yday)
     end
   end
 end

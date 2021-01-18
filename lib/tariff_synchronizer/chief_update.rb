@@ -1,4 +1,4 @@
-require "csv"
+require 'csv'
 module TariffSynchronizer
   class ChiefUpdate < BaseUpdate
     class << self
@@ -13,7 +13,7 @@ module TariffSynchronizer
     end
 
     def import!
-      instrument("apply_chief.tariff_synchronizer", filename: filename) do
+      instrument('apply_chief.tariff_synchronizer', filename: filename) do
         ChiefImporter.new(self).import
         mark_as_applied
       end

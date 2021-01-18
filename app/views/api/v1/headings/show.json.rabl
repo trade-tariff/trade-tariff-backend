@@ -14,7 +14,7 @@ attributes :goods_nomenclature_item_id, :description, :bti_url,
 if @heading.declarable?
   attributes :basic_duty_rate
 
-  extends "api/v1/declarables/declarable", object: @heading, locals: { measures: @measures }
+  extends 'api/v1/declarables/declarable', object: @heading, locals: { measures: @measures }
 else
   child :chapter do
     attributes :goods_nomenclature_item_id, :description, :formatted_description

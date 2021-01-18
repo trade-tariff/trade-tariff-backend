@@ -1,14 +1,14 @@
 class CdsImporter
   class EntityMapper
     class MeursingTablePlanMapper < BaseMapper
-      self.entity_class = "MeursingTablePlan".freeze
+      self.entity_class = 'MeursingTablePlan'.freeze
 
-      self.mapping_root = "MeursingTablePlan".freeze
+      self.mapping_root = 'MeursingTablePlan'.freeze
 
-      self.exclude_mapping = ["metainfo.origin"].freeze
+      self.exclude_mapping = ['metainfo.origin'].freeze
 
       self.entity_mapping = base_mapping.merge(
-        "meursingTablePlanId" => :meursing_table_plan_id
+        'meursingTablePlanId' => :meursing_table_plan_id
       ).freeze
 
       self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze

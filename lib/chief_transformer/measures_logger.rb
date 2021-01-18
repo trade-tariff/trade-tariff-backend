@@ -9,7 +9,7 @@ class ChiefTransformer
       def created(candidate)
         return unless TariffSynchronizer.measures_logger_enabled
 
-        File.open(tmp_file_path(candidate.origin, :created), "a+") do |f|
+        File.open(tmp_file_path(candidate.origin, :created), 'a+') do |f|
           f.puts(candidate.values.to_json)
         end
       end
@@ -17,7 +17,7 @@ class ChiefTransformer
       def failed(candidate)
         return unless TariffSynchronizer.measures_logger_enabled
 
-        File.open(tmp_file_path(candidate.origin, :failed), "a+") do |f|
+        File.open(tmp_file_path(candidate.origin, :failed), 'a+') do |f|
           f.puts(
             candidate.values.merge(
               errors: candidate.errors,
@@ -59,8 +59,8 @@ class ChiefTransformer
 
       # file path on S3
       def file_path(origin, type)
-        origin = File.basename(origin.to_s, ".*")
-        File.join(TariffSynchronizer.root_path, "measures", "#{origin}-#{type}.json.txt")
+        origin = File.basename(origin.to_s, '.*')
+        File.join(TariffSynchronizer.root_path, 'measures', "#{origin}-#{type}.json.txt")
       end
     end
   end

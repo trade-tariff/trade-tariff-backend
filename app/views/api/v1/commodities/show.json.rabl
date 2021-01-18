@@ -12,7 +12,7 @@ if footnotes.any?
   }
 end
 
-extends "api/v1/declarables/declarable", object: @commodity, locals: { measures: @measures }
+extends 'api/v1/declarables/declarable', object: @commodity, locals: { measures: @measures }
 
 child @commodity.heading do
   attributes :goods_nomenclature_item_id, :description, :formatted_description,

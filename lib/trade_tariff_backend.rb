@@ -1,5 +1,5 @@
 require 'ostruct'
-require "paas_config"
+require 'paas_config'
 
 module TradeTariffBackend
   autoload :Auditor,         'trade_tariff_backend/auditor'
@@ -32,12 +32,12 @@ module TradeTariffBackend
 
     # Email of the user who receives all info/error notifications
     def from_email
-      ENV.fetch("TARIFF_FROM_EMAIL")
+      ENV.fetch('TARIFF_FROM_EMAIL')
     end
 
     # Email of the user who receives all info/error notifications
     def admin_email
-      ENV.fetch("TARIFF_SYNC_EMAIL")
+      ENV.fetch('TARIFF_SYNC_EMAIL')
     end
 
     def use_cds?
@@ -65,11 +65,11 @@ module TradeTariffBackend
     end
 
     def govuk_app_name
-      ENV["GOVUK_APP_NAME"]
+      ENV['GOVUK_APP_NAME']
     end
 
     def production?
-      ENV["GOVUK_APP_DOMAIN"] == "tariff-backend-production.cloudapps.digital"
+      ENV['GOVUK_APP_DOMAIN'] == 'tariff-backend-production.cloudapps.digital'
     end
 
     def currency

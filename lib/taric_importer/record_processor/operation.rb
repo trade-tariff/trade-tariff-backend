@@ -15,8 +15,8 @@ class TaricImporter
       # for Oplog
       def attributes
         record.attributes.merge(
-          "operation" => to_oplog_operation,
-          "operation_date" => @operation_date
+          'operation' => to_oplog_operation,
+          'operation_date' => @operation_date
         )
       end
 
@@ -54,7 +54,7 @@ class TaricImporter
           operation_date: @operation_date,
           operation: to_oplog_operation
         )
-        instrument("presence_error.taric_importer", klass: klass.to_s, details: details)
+        instrument('presence_error.taric_importer', klass: klass.to_s, details: details)
       end
     end
   end

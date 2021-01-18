@@ -10,7 +10,7 @@ module TradeTariffBackend
     # Audit logger
     # File is rewritten on each auditor run
     cattr_accessor :logger
-    self.logger = Logger.new(File.open('log/audit.log', "w+"))
+    self.logger = Logger.new(File.open('log/audit.log', 'w+'))
 
     attr_reader :audit_file_name, :graphical
 
@@ -50,9 +50,9 @@ module TradeTariffBackend
           progress_bar.finish
 
           if @since
-            puts "Invalid records for %s since %s: %d (%.4f%%)" % [model, @since, model_invalid_record_count, model_invalid_record_count / (model.count + 1).to_f]
+            puts 'Invalid records for %s since %s: %d (%.4f%%)' % [model, @since, model_invalid_record_count, model_invalid_record_count / (model.count + 1).to_f]
           else
-            puts "Invalid records for %s: %d (%.4f%%)" % [model, model_invalid_record_count, model_invalid_record_count / (model.count + 1).to_f]
+            puts 'Invalid records for %s: %d (%.4f%%)' % [model, model_invalid_record_count, model_invalid_record_count / (model.count + 1).to_f]
           end
         end
       end

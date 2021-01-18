@@ -32,9 +32,9 @@ class TaricImporter
     def_delegator ActiveSupport::Notifications, :instrument
 
     OPERATION_MAP = {
-      "1" => UpdateOperation,
-      "2" => DestroyOperation,
-      "3" => CreateOperation
+      '1' => UpdateOperation,
+      '2' => DestroyOperation,
+      '3' => CreateOperation
     }.freeze
 
     # Instance of Record, containing extracted primary key, attributes etc
@@ -58,7 +58,7 @@ class TaricImporter
 
     def operation_class=(operation)
       @operation_class = OPERATION_MAP.fetch(operation) {
-        instrument("taric_unexpected_update_type.tariff_importer", record: record)
+        instrument('taric_unexpected_update_type.tariff_importer', record: record)
 
         raise TaricImporter::UnknownOperationError.new
       }

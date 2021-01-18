@@ -37,19 +37,19 @@ class DutyExpressionFormatter
 
       output = []
       case duty_expression_id
-      when "99"
+      when '99'
         output << if opts[:formatted]
                     "<abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
                   else
                     measurement_unit_abbreviation.to_s
                   end
-      when "12", "14", "37", "40", "41", "42", "43", "44", "21", "25", "27", "29"
+      when '12', '14', '37', '40', '41', '42', '43', '44', '21', '25', '27', '29'
         if duty_expression_abbreviation.present?
           output << duty_expression_abbreviation
         elsif duty_expression_description.present?
           output << duty_expression_description
         end
-      when "02", "04", "15", "17", "19", "20", "36"
+      when '02', '04', '15', '17', '19', '20', '36'
         if duty_expression_abbreviation.present?
           output << duty_expression_abbreviation
         elsif duty_expression_description.present?
@@ -65,7 +65,7 @@ class DutyExpressionFormatter
         output << if monetary_unit.present?
                     monetary_unit
                   else
-                    "%"
+                    '%'
                   end
         if measurement_unit_abbreviation.present?
           output << if opts[:formatted]
@@ -87,7 +87,7 @@ class DutyExpressionFormatter
         elsif duty_expression_description.present? && !monetary_unit.present?
           output << duty_expression_description
         elsif duty_expression_description.blank?
-          output << "%"
+          output << '%'
         end
         if monetary_unit.present?
           output << monetary_unit
@@ -100,7 +100,7 @@ class DutyExpressionFormatter
                     end
         end
       end
-      output.join(" ").html_safe
+      output.join(' ').html_safe
     end
 
     private

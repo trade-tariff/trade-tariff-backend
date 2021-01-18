@@ -22,7 +22,7 @@ class CertificateSearchService
             bool: {
               must: [
                 { range: { validity_start_date: { lte: as_of } } },
-                { bool: { must_not: { exists: { field: "validity_end_date" } } } }
+                { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
               ]
             }
           },
@@ -30,8 +30,8 @@ class CertificateSearchService
           {
             bool: {
               must: [
-                { bool: { must_not: { exists: { field: "validity_start_date" } } } },
-                { bool: { must_not: { exists: { field: "validity_end_date" } } } }
+                { bool: { must_not: { exists: { field: 'validity_start_date' } } } },
+                { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
               ]
             }
           }

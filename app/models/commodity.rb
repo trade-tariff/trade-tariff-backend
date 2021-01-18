@@ -5,7 +5,7 @@ class Commodity < GoodsNomenclature
   plugin :conformance_validator
   plugin :elasticsearch
 
-  set_dataset filter("goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?", '____000000').
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000').
               order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
                     Sequel.asc(:goods_nomenclatures__producline_suffix),
                     Sequel.asc(:goods_nomenclatures__goods_nomenclature_sid))
@@ -14,13 +14,13 @@ class Commodity < GoodsNomenclature
 
   one_to_one :heading, dataset: -> {
     actual_or_relevant(Heading)
-           .filter("goods_nomenclatures.goods_nomenclature_item_id LIKE ?", heading_id)
-           .filter(producline_suffix: "80")
+           .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
+           .filter(producline_suffix: '80')
   }
 
   one_to_one :chapter, dataset: -> {
     actual_or_relevant(Chapter)
-           .filter("goods_nomenclatures.goods_nomenclature_item_id LIKE ?", chapter_id)
+           .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
   }
 
   one_to_many :overview_measures, key: {}, primary_key: {}, dataset: -> {
@@ -36,12 +36,12 @@ class Commodity < GoodsNomenclature
   delegate :section, :section_id, to: :chapter, allow_nil: true
 
   dataset_module do
-    def by_code(code = "")
+    def by_code(code = '')
       filter(goods_nomenclature_item_id: code.to_s.first(10))
     end
 
     def declarable
-      filter(producline_suffix: "80")
+      filter(producline_suffix: '80')
     end
   end
 
@@ -64,14 +64,14 @@ class Commodity < GoodsNomenclature
                          :goods_nomenclature_indents__number_indents)
                  .with_actual(GoodsNomenclature)
                  .join(:goods_nomenclatures, goods_nomenclature_indents__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
-                 .where("goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?", heading_id)
-                 .where("goods_nomenclature_indents.goods_nomenclature_item_id <= ?", goods_nomenclature_item_id)
+                 .where('goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
+                 .where('goods_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
                  .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date),
                         Sequel.desc(:goods_nomenclature_indents__goods_nomenclature_item_id))
                  .from_self
                  .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
                  .from_self
-                 .where("number_indents < ?", goods_nomenclature_indent.number_indents),
+                 .where('number_indents < ?', goods_nomenclature_indent.number_indents),
          t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
           t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
       .order(Sequel.desc(:goods_nomenclatures__goods_nomenclature_item_id))
@@ -118,7 +118,7 @@ class Commodity < GoodsNomenclature
 
   def self.changes_for(depth = 0, conditions = {})
     operation_klass.select(
-      Sequel.as(Sequel.cast_string("Commodity"), :model),
+      Sequel.as(Sequel.cast_string('Commodity'), :model),
       :oid,
       :operation_date,
       :operation,
@@ -131,7 +131,7 @@ class Commodity < GoodsNomenclature
 
   def changes(depth = 1)
     operation_klass.select(
-      Sequel.as(Sequel.cast_string("GoodsNomenclature"), :model),
+      Sequel.as(Sequel.cast_string('GoodsNomenclature'), :model),
       :oid,
       :operation_date,
       :operation,

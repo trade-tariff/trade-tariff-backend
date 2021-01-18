@@ -10,7 +10,7 @@ module Sequel
         # e.g. Measure::Operation for measure oplog table
         operation_class = Class.new(Sequel::Model(:"#{model.table_name}_oplog")) do
           def record_class
-            self.class.to_s.chomp("::Operation").constantize
+            self.class.to_s.chomp('::Operation').constantize
           end
         end
 
@@ -111,7 +111,7 @@ module Sequel
         end
 
         def insert(*args)
-          raise NotImplementedError.new("You should be instantiating model and saving instances.")
+          raise NotImplementedError.new('You should be instantiating model and saving instances.')
         end
 
         def operation_klass
@@ -125,11 +125,11 @@ module Sequel
         end
 
         def insert
-          raise NotImplementedError.new("You should be inserting model instances.")
+          raise NotImplementedError.new('You should be inserting model instances.')
         end
 
         def delete
-          raise NotImplementedError.new("You should be *destroying* model instances.")
+          raise NotImplementedError.new('You should be *destroying* model instances.')
         end
       end
     end

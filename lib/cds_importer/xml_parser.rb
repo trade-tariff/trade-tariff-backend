@@ -5,7 +5,7 @@
 class CdsImporter
   module XmlParser
     class Reader < ::Ox::Sax
-      STRIP_NAMESPACE = "*".freeze
+      STRIP_NAMESPACE = '*'.freeze
       CONTENT_KEY = :__content__.freeze
 
       def initialize(stringio, target_handler)

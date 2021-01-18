@@ -10,7 +10,7 @@ module TariffSynchronizer
     end
 
     def content
-      @content.presence || ""
+      @content.presence || ''
     end
 
     def terminated?

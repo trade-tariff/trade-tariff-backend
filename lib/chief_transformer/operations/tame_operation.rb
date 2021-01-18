@@ -3,7 +3,7 @@ require 'chief_transformer/operations/operation'
 class ChiefTransformer
   class Processor
     class TameOperation < Operation
-      TAME_DUTY_EXPRESSION_ID = "01"
+      TAME_DUTY_EXPRESSION_ID = '01'
 
       private
 
@@ -98,7 +98,7 @@ class ChiefTransformer
 
           exclusion_entry = Chief::CountryGroup.where(chief_country_grp: chief_geographical_area).first
           if exclusion_entry.present? && exclusion_entry.country_exclusions.present?
-            exclusion_entry.country_exclusions.split(",").each do |excluded_chief_code|
+            exclusion_entry.country_exclusions.split(',').each do |excluded_chief_code|
               excluded_geographical_area = GeographicalArea.where(geographical_area_id: Chief::CountryCode.to_taric(excluded_chief_code))
                                                            .latest
                                                            .first

@@ -6,7 +6,7 @@ class MonetaryUnitDescription < Sequel::Model
 
   def abbreviation
     {
-      "EUC" => "EUR (EUC)",
+      'EUC' => 'EUR (EUC)',
     }[monetary_unit_code]
   end
 end

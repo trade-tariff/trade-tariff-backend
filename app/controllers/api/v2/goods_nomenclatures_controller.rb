@@ -36,11 +36,11 @@ module Api
         return nil unless gnid
 
         case GoodsNomenclature.class_determinator.call(object)
-        when "Chapter"
+        when 'Chapter'
           "/api/v2/chapters/#{gnid.first(2)}"
-        when "Heading"
+        when 'Heading'
           "/api/v2/headings/#{gnid.first(4)}"
-        when "Commodity"
+        when 'Commodity'
           "/api/v2/commodities/#{gnid.first(10)}"
         else
           "/api/v2/commodities/#{gnid.first(10)}"
@@ -68,7 +68,7 @@ module Api
           format.csv do
             headers['Content-Type'] = 'text/csv'
             headers['Content-Disposition'] = "attachment; filename=#{filename}.csv"
-            render "api/v2/goods_nomenclatures/index"
+            render 'api/v2/goods_nomenclatures/index'
           end
         end
       end
@@ -83,7 +83,7 @@ module Api
       end
 
       def set_request_format
-        request.format = :csv if request.headers["CONTENT_TYPE"] == 'text/csv'
+        request.format = :csv if request.headers['CONTENT_TYPE'] == 'text/csv'
       end
     end
   end

@@ -16,7 +16,7 @@ module TradeTariffBackend
 
       def inspect
         vars = self.instance_variables.
-          map{|v| "#{v}=#{instance_variable_get(v).inspect}"}.join(", ")
+          map{|v| "#{v}=#{instance_variable_get(v).inspect}"}.join(', ')
         "<#{self.class} #{@destination.to_s.capitalize}RunnerOn(#{@migration.class.to_s}): #{vars}>"
       end
 

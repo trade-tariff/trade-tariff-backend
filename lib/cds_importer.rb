@@ -9,7 +9,7 @@ class CdsImporter
   class ImportException < StandardError
     attr_reader :original
 
-    def initialize(msg = "CdsImporter::ImportException", original=$!)
+    def initialize(msg = 'CdsImporter::ImportException', original=$!)
       super(msg)
       @original = original
     end
@@ -28,12 +28,12 @@ class CdsImporter
 
     # The api https://developer.service.hmrc.gov.uk/api-documentation/docs/api/service/secure-data-exchange-bulk-download/1.0
     # returns zip files for daily and monthly updates and gzip for annual files.
-    if MimeMagic.by_magic(gzip_file).subtype == "gzip"
+    if MimeMagic.by_magic(gzip_file).subtype == 'gzip'
       xml_stream = Zlib::GzipReader.wrap(gzip_file)
 
       CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
 
-      ActiveSupport::Notifications.instrument("cds_imported.tariff_importer", filename: @cds_update.filename)
+      ActiveSupport::Notifications.instrument('cds_imported.tariff_importer', filename: @cds_update.filename)
     else
       Zip::File.open_buffer(gzip_file) do |archive|
         archive.entries.each do |entry|
@@ -42,7 +42,7 @@ class CdsImporter
           # do the xml parsing depending on records root depth
           CdsImporter::XmlParser::Reader.new(xml_stream.read, handler).parse
 
-          ActiveSupport::Notifications.instrument("cds_imported.tariff_importer", filename: @cds_update.filename)
+          ActiveSupport::Notifications.instrument('cds_imported.tariff_importer', filename: @cds_update.filename)
         end
       end
     end
@@ -59,7 +59,7 @@ class CdsImporter
         CdsImporter::EntityMapper.new(key, hash_from_node).import
       rescue StandardError => exception
         ActiveSupport::Notifications.instrument(
-          "cds_failed.tariff_importer",
+          'cds_failed.tariff_importer',
           exception: exception, hash: hash_from_node, key: key
         )
         raise ImportException.new

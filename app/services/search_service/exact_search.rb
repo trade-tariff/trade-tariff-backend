@@ -29,9 +29,9 @@ class SearchService
 
     def serializable_hash
       {
-        type: "exact_match",
+        type: 'exact_match',
         entry: {
-          endpoint: results.class.name.parameterize(separator: "_").pluralize,
+          endpoint: results.class.name.parameterize(separator: '_').pluralize,
           id: results.to_param
         }
       }

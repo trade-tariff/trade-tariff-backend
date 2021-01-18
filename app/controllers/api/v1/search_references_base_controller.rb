@@ -76,7 +76,7 @@ module Api
       end
 
       def search_reference_collection
-        raise ArgumentError.new("#search_reference_collection should be overriden by inheriting classes")
+        raise ArgumentError.new('#search_reference_collection should be overriden by inheriting classes')
       end
 
       def search_reference_resource
@@ -84,11 +84,11 @@ module Api
       end
 
       def search_reference_resource_association_hash
-        raise ArgumentError.new("#search_reference_resource_association_hash should be overriden by inheriting classes")
+        raise ArgumentError.new('#search_reference_resource_association_hash should be overriden by inheriting classes')
       end
 
       def set_pagination_headers
-        headers["X-Meta"] = {
+        headers['X-Meta'] = {
           pagination: {
             total: search_reference_collection.count,
             offset: page * per_page,

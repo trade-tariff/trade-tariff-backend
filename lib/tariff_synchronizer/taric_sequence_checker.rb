@@ -22,7 +22,7 @@ module TariffSynchronizer
         end
       end
 
-      @missing_updates.select! { |file| file.include?(".xml") }
+      @missing_updates.select! { |file| file.include?('.xml') }
 
       if @with_email && @missing_updates.any?
         Mailer.failed_taric_sequence(@missing_updates).deliver_now

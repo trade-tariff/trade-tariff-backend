@@ -12,9 +12,9 @@ class GenerateCoverPdfWorker
   end
 
   def setup_cover_object(currency = 'EUR')
-    file_name = "00-cover.pdf"
+    file_name = '00-cover.pdf'
     @cur = currency.downcase
-    @pdf_file_path = File.join("public", "pdf", "tariff", "chapters", @cur, file_name)
+    @pdf_file_path = File.join('public', 'pdf', 'tariff', 'chapters', @cur, file_name)
     @dir, @base = File.split(@pdf_file_path)
     return if File.exist?(@dir)
 
@@ -26,7 +26,7 @@ class GenerateCoverPdfWorker
   end
 
   def make_logger
-    log_dir = File.join(Rails.root, "log", "pdf")
+    log_dir = File.join(Rails.root, 'log', 'pdf')
     unless File.exist?(log_dir)
       begin
         FileUtils.mkpath(log_dir)

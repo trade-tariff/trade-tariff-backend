@@ -1,20 +1,20 @@
-require "tariff_importer/logger"
-require "chief_importer/entry"
-require "chief_importer/start_entry"
-require "chief_importer/end_entry"
-require "chief_importer/change_entry"
-require "chief_importer/strategies/base_strategy"
-require "chief_importer/strategies/comm"
-require "chief_importer/strategies/mfcm"
-require "chief_importer/strategies/tame"
-require "chief_importer/strategies/tamf"
-require "chief_importer/strategies/tbl9"
+require 'tariff_importer/logger'
+require 'chief_importer/entry'
+require 'chief_importer/start_entry'
+require 'chief_importer/end_entry'
+require 'chief_importer/change_entry'
+require 'chief_importer/strategies/base_strategy'
+require 'chief_importer/strategies/comm'
+require 'chief_importer/strategies/mfcm'
+require 'chief_importer/strategies/tame'
+require 'chief_importer/strategies/tamf'
+require 'chief_importer/strategies/tbl9'
 
 class ChiefImporter
   class ImportException < StandardError
     attr_reader :original
 
-    def initialize(msg = "ChiefImporter::ImportException", original = $!)
+    def initialize(msg = 'ChiefImporter::ImportException', original = $!)
       super(msg)
       @original = original
     end
@@ -24,10 +24,10 @@ class ChiefImporter
   self.relevant_tables = %w(MFCM TAMF TAME COMM TBL9)
 
   cattr_accessor :start_mark
-  self.start_mark = "AAAAAAAAAAA"
+  self.start_mark = 'AAAAAAAAAAA'
 
   cattr_accessor :end_mark
-  self.end_mark = "ZZZZZZZZZZZ"
+  self.end_mark = 'ZZZZZZZZZZZ'
 
   attr_reader :processor, :start_entry, :end_entry
 
@@ -40,7 +40,7 @@ class ChiefImporter
 
   def import
     file = TariffSynchronizer::FileService.file_as_stringio(@chief_update)
-    file.set_encoding("ISO-8859-1")
+    file.set_encoding('ISO-8859-1')
     CSV.parse(file) do |line|
       entry = Entry.build(line)
 
@@ -54,10 +54,10 @@ class ChiefImporter
         entry.process!
       end
     end
-    ActiveSupport::Notifications.instrument("chief_imported.tariff_importer",
+    ActiveSupport::Notifications.instrument('chief_imported.tariff_importer',
       filename: @chief_update.filename, count: record_count)
   rescue => exception
-    ActiveSupport::Notifications.instrument("chief_failed.tariff_importer",
+    ActiveSupport::Notifications.instrument('chief_failed.tariff_importer',
       filename: @chief_update.filename, exception: exception)
     raise ImportException.new(exception.message, exception)
   end

@@ -49,9 +49,9 @@ class ExportRefundNomenclature < Sequel::Model
                          :export_refund_nomenclature_indents__number_export_refund_nomenclature_indents)
                  .with_actual(ExportRefundNomenclature)
                  .join(:export_refund_nomenclatures, export_refund_nomenclature_indents__export_refund_nomenclature_sid: :export_refund_nomenclatures__export_refund_nomenclature_sid)
-                 .where("export_refund_nomenclature_indents.goods_nomenclature_item_id LIKE ?", heading_id)
-                 .where("export_refund_nomenclature_indents.goods_nomenclature_item_id <= ?", goods_nomenclature_item_id)
-                 .where("export_refund_nomenclature_indents.number_export_refund_nomenclature_indents < ?", export_refund_nomenclature_indent.number_export_refund_nomenclature_indents)
+                 .where('export_refund_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
+                 .where('export_refund_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
+                 .where('export_refund_nomenclature_indents.number_export_refund_nomenclature_indents < ?', export_refund_nomenclature_indent.number_export_refund_nomenclature_indents)
                  .order(Sequel.desc(:export_refund_nomenclature_indents__validity_start_date),
                         Sequel.desc(:export_refund_nomenclature_indents__goods_nomenclature_item_id))
                  .group(:export_refund_nomenclature_indents__export_refund_nomenclature_sid, :export_refund_nomenclatures__export_refund_nomenclature_sid,

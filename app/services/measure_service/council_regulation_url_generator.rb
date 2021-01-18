@@ -31,11 +31,11 @@ module MeasureService
 
     def published_journal_search_type_url
       oj_seria, oj_number = target_regulation.officialjournal_number
-                                             .split(" ")
+                                             .split(' ')
 
       oj_page = target_regulation.officialjournal_page
                                  .to_s
-                                 .rjust(4, "0")
+                                 .rjust(4, '0')
 
       url_ops = if target_regulation.is_a?(MeasurePartialTemporaryStop)
         #

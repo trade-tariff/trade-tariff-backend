@@ -20,7 +20,7 @@ class ChiefTransformer
     end
 
     def transform_lock_error(_event)
-      warn "Failed to acquire Redis lock for Chief transformation"
+      warn 'Failed to acquire Redis lock for Chief transformation'
     end
   end
 end

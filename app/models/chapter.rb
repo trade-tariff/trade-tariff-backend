@@ -3,7 +3,7 @@ class Chapter < GoodsNomenclature
   plugin :conformance_validator
   plugin :elasticsearch
 
-  set_dataset filter("goods_nomenclatures.goods_nomenclature_item_id LIKE ?", '__00000000').
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000').
               order(Sequel.asc(:goods_nomenclature_item_id))
 
   set_primary_key [:goods_nomenclature_sid]
@@ -40,8 +40,8 @@ class Chapter < GoodsNomenclature
   end
 
   dataset_module do
-    def by_code(code = "")
-      filter("goods_nomenclatures.goods_nomenclature_item_id LIKE ?", "#{code.to_s.first(2)}00000000")
+    def by_code(code = '')
+      filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', "#{code.to_s.first(2)}00000000")
     end
   end
 
@@ -85,15 +85,15 @@ class Chapter < GoodsNomenclature
 
   def changes(depth = 1)
     operation_klass.select(
-      Sequel.as(Sequel.cast_string("Chapter"), :model),
+      Sequel.as(Sequel.cast_string('Chapter'), :model),
       :oid,
       :operation_date,
       :operation,
       Sequel.as(depth, :depth)
     ).where(pk_hash)
-     .union(Heading.changes_for(depth + 1, ["goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?", relevant_headings, '__00______']))
-     .union(Commodity.changes_for(depth + 1, ["goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?", relevant_commodities, '____000000']))
-     .union(Measure.changes_for(depth + 1, ["goods_nomenclature_item_id LIKE ?", relevant_commodities]))
+     .union(Heading.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_headings, '__00______']))
+     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_commodities, '____000000']))
+     .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_commodities]))
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|

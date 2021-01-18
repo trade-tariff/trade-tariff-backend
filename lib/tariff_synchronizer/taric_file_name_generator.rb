@@ -8,7 +8,7 @@ module TariffSynchronizer
     end
 
     def url
-      format(taric_query_url_template, host: host, date: date.strftime("%Y%m%d"))
+      format(taric_query_url_template, host: host, date: date.strftime('%Y%m%d'))
     end
 
     def get_info_from_response(string)
@@ -29,7 +29,7 @@ module TariffSynchronizer
     end
 
     def remove_invalid_characters(name)
-      name.gsub(/[^0-9a-zA-Z\.]/i, "")
+      name.gsub(/[^0-9a-zA-Z\.]/i, '')
     end
   end
 end

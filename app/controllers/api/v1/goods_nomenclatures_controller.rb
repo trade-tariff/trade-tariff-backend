@@ -36,11 +36,11 @@ module Api
         gnid = object.goods_nomenclature_item_id
         return nil unless gnid
         case @class_determinator.call(object)
-        when "Chapter"
+        when 'Chapter'
           "/v1/chapters/#{gnid.first(2)}.json"
-        when "Heading"
+        when 'Heading'
           "/v1/headings/#{gnid.first(4)}.json"
-        when "Commodity"
+        when 'Commodity'
           "/v1/commodities/#{gnid.first(10)}.json"
         else
           "/v1/commodities/#{gnid.first(10)}.json"

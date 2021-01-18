@@ -47,7 +47,7 @@ module Chief
       end
 
       def valid_to(timestamp)
-        where("fe_tsmp < ?", timestamp)
+        where('fe_tsmp < ?', timestamp)
       end
 
       def initial_load
@@ -59,7 +59,7 @@ module Chief
       super
 
       errors.add(:name, 'cannot be seasonal commodity code') if cmdty_code.match(/\D/)
-      errors.add(:name, 'cannot be pseudo commodity code') if cmdty_code.first(2) == "99"
+      errors.add(:name, 'cannot be pseudo commodity code') if cmdty_code.first(2) == '99'
     end
 
     def mark_as_processed!

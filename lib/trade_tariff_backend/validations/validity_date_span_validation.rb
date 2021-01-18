@@ -4,7 +4,7 @@ module TradeTariffBackend
       def valid?(record = nil)
       association = validation_options[:of]
 
-      raise ArgumentError.new("validates :validity_date_span excepts of: option to be provided") if association.blank?
+      raise ArgumentError.new('validates :validity_date_span excepts of: option to be provided') if association.blank?
 
       associated_records = [record.send(association)].flatten.compact.select { |record|
         # not new == persisted

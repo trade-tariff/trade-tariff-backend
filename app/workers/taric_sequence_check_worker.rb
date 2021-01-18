@@ -4,7 +4,7 @@ class TaricSequenceCheckWorker
   sidekiq_options queue: :sync, retry: false
 
   def perform
-    logger.info "Running TARIC files sequence check"
+    logger.info 'Running TARIC files sequence check'
     TariffSynchronizer::TaricSequenceChecker.new(true).perform
   end
 end

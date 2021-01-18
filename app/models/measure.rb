@@ -217,27 +217,27 @@ class Measure < Sequel::Model
     end
 
     def valid_since(first_effective_timestamp)
-      where("measures.validity_start_date >= ?", first_effective_timestamp)
+      where('measures.validity_start_date >= ?', first_effective_timestamp)
     end
 
     def valid_to(last_effective_timestamp)
-      where("measures.validity_start_date <= ?", last_effective_timestamp)
+      where('measures.validity_start_date <= ?', last_effective_timestamp)
     end
 
     def valid_before(last_effective_timestamp)
-      where("measures.validity_start_date < ?", last_effective_timestamp)
+      where('measures.validity_start_date < ?', last_effective_timestamp)
     end
 
     def valid_from(timestamp)
-      where("measures.validity_start_date >= ?", timestamp)
+      where('measures.validity_start_date >= ?', timestamp)
     end
 
     def not_terminated
-      where("measures.validity_end_date IS NULL")
+      where('measures.validity_end_date IS NULL')
     end
 
     def terminated
-      where("measures.validity_end_date IS NOT NULL")
+      where('measures.validity_end_date IS NOT NULL')
     end
 
     def with_gono_id(goods_nomenclature_item_id)
@@ -274,7 +274,7 @@ class Measure < Sequel::Model
             goods_nomenclature_item_id: candidate_measure.goods_nomenclature_item_id,
             geographical_area_id: candidate_measure.geographical_area_id,
             national: true).
-      where("validity_start_date < ?", candidate_measure.validity_start_date).
+      where('validity_start_date < ?', candidate_measure.validity_start_date).
       where(validity_end_date: nil)
     end
 
@@ -306,8 +306,8 @@ class Measure < Sequel::Model
 
     # https://www.pivotaltracker.com/story/show/35164477
     case result
-    when "D9500019"
-      "D9601421"
+    when 'D9500019'
+      'D9601421'
     else
       result
     end
@@ -319,9 +319,9 @@ class Measure < Sequel::Model
 
   def origin
     if measure_sid >= 0
-      "eu"
+      'eu'
     else
-      "uk"
+      'uk'
     end
   end
 
@@ -350,7 +350,7 @@ class Measure < Sequel::Model
   end
 
   def duty_expression
-    measure_components.map(&:duty_expression_str).join(" ")
+    measure_components.map(&:duty_expression_str).join(' ')
   end
 
   def duty_expression_with_national_measurement_units_for(declarable)
@@ -363,7 +363,7 @@ class Measure < Sequel::Model
   end
 
   def formatted_duty_expression
-    measure_components.map(&:formatted_duty_expression).join(" ")
+    measure_components.map(&:formatted_duty_expression).join(' ')
   end
 
   def national_measurement_units_for(declarable)
@@ -412,7 +412,7 @@ class Measure < Sequel::Model
 
   def self.changes_for(depth = 1, conditions = {})
     operation_klass.select(
-      Sequel.as(Sequel.cast_string("Measure"), :model),
+      Sequel.as(Sequel.cast_string('Measure'), :model),
       :oid,
       :operation_date,
       :operation,

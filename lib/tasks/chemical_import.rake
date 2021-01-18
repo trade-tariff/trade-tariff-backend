@@ -1,5 +1,5 @@
 namespace :chemical do
-  desc "Import chamicals (CASRN, name) and asssociations with GNs"
+  desc 'Import chamicals (CASRN, name) and asssociations with GNs'
   task import: :environment do
     ChemicalsGoodsNomenclatures.unrestrict_primary_key
 
@@ -9,7 +9,7 @@ namespace :chemical do
     ods.each do |r|
       row = r.gsub(/["\n]/, '').split(',', 3)
       params = {
-        goods_nomenclature_sid: row[0].gsub(/\D/, '').ljust(10, "0"),
+        goods_nomenclature_sid: row[0].gsub(/\D/, '').ljust(10, '0'),
         cas: row[1].strip,
         name: row[2].strip
       }

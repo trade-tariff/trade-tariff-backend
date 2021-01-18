@@ -6,6 +6,6 @@ node(:search_references_count) { |heading| heading.search_references.count }
 
 node(:children) { |heading|
   heading.children.map do |heading|
-    partial("api/v1/headings/heading", object: heading)
+    partial('api/v1/headings/heading', object: heading)
   end
 }

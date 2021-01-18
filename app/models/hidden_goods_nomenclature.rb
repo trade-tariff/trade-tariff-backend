@@ -10,7 +10,7 @@ class HiddenGoodsNomenclature < Sequel::Model
   end
 
   def self.codes
-    Rails.cache.fetch("hidden_goods_nomenclature_codes", expires_in: 1.hours) do
+    Rails.cache.fetch('hidden_goods_nomenclature_codes', expires_in: 1.hours) do
       all.map(&:goods_nomenclature_item_id)
     end
   end

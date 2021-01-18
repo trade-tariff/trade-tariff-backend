@@ -5,27 +5,27 @@ class ChiefImporter
   module Formatters
     class ChiefCode
       def self.format(value)
-        (value == "null") ? nil : value.gsub(/\s+/, "")
+        (value == 'null') ? nil : value.gsub(/\s+/, '')
       end
     end
     class ChiefDate
       def self.format(value)
-        (value == "null") ? nil : DateTime.strptime(value, "%d/%m/%Y:%H:%M:%S")
+        (value == 'null') ? nil : DateTime.strptime(value, '%d/%m/%Y:%H:%M:%S')
       end
     end
     class ChiefString
       def self.format(value)
-        (value == "null") ? nil : value
+        (value == 'null') ? nil : value
       end
     end
     class ChiefDecimal
       def self.format(value)
-        (value == "null") ? nil : value.to_f
+        (value == 'null') ? nil : value.to_f
       end
     end
     class ChiefBoolean
       def self.format(value)
-        (value == "N") ? false : true
+        (value == 'N') ? false : true
       end
     end
   end
@@ -42,9 +42,9 @@ class ChiefImporter
 
       def operation=(operation)
         @operation = case operation
-                     when "X" then :delete
-                     when "U" then :update
-                     when "I" then :insert
+                     when 'X' then :delete
+                     when 'U' then :update
+                     when 'I' then :insert
                      end
       end
 
@@ -76,7 +76,7 @@ class ChiefImporter
       end
 
       def id(*keys)
-        Digest::SHA1.hexdigest(keys.join(""))
+        Digest::SHA1.hexdigest(keys.join(''))
       end
 
       def formatter_for(format)
