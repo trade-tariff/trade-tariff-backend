@@ -1,4 +1,4 @@
-name: "Production deployment"
+name: "Production Deployment"
 on: [workflow_dispatch]
 jobs:
   deploy_production:
