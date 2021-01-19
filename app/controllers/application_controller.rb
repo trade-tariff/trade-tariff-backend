@@ -1,6 +1,8 @@
 require 'clearable'
 
 class ApplicationController < ActionController::Base
+  include GaTrackingHelper
+  
   respond_to :json, :html
 
   before_action :clear_association_queries

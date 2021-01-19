@@ -42,5 +42,8 @@ module TradeTariffBackend
       Sequel::Model.db.extension :server_block
       Sequel::Model.db.extension :auto_literal_strings
     end
+
+    # GA measurements protocol event tracking
+    config.google_analytics_tracking_id = ENV['GOOGLE_ANALYTICS_TRACKING_ID']
   end
 end
