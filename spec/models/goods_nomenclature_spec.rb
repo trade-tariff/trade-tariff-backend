@@ -417,10 +417,14 @@ describe GoodsNomenclature do
   end
 
   describe '#bti_url' do
-    let(:gono) { create(:goods_nomenclature, goods_nomenclature_item_id: '8056116321') }
+    let(:bti_url) {
+      'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
+    }
+
+    let(:gono) { create(:goods_nomenclature) }
 
     it 'includes gono code' do
-      expect(gono.bti_url).to include(gono.code)
+      expect(gono.bti_url).to include(bti_url)
     end
   end
 

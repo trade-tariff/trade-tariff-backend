@@ -129,6 +129,6 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def bti_url
-    "http://ec.europa.eu/taxation_customs/dds2/ebti/ebti_consultation.jsp?Lang=en&nomenc=#{code}&Expand=true"
+    'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
   end
 end
