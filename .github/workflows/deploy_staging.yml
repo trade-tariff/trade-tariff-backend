@@ -1,4 +1,4 @@
-name: "Staging deployment"
+name: "Staging Deployment"
 on: [workflow_dispatch]
 jobs:
   deploy_staging:
