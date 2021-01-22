@@ -18,10 +18,14 @@ FactoryBot.define do
     validity_end_date   { nil }
 
     after(:build) do |gono, evaluator|
-      FactoryBot.create(:goods_nomenclature_indent, goods_nomenclature_sid: gono.goods_nomenclature_sid,
-                                                    validity_start_date: gono.validity_start_date,
-                                                    validity_end_date: gono.validity_end_date,
-                                                    number_indents: evaluator.indents)
+      FactoryBot.create(
+        :goods_nomenclature_indent, 
+        goods_nomenclature_sid: gono.goods_nomenclature_sid,
+        goods_nomenclature_item_id: gono.goods_nomenclature_item_id,
+        validity_start_date: gono.validity_start_date,
+        validity_end_date: gono.validity_end_date,
+        number_indents: evaluator.indents
+      )
     end
 
     trait :actual do
