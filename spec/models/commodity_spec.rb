@@ -636,6 +636,75 @@ describe Commodity do
         expect(commodity0.ancestors.map(&:number_indents)).to all(be < commodity0.number_indents)
       end
     end
+
+    describe 'TimeMachine behaviour for nested relationships' do
+      let!(:chapter) do
+        create(
+          :chapter,
+          goods_nomenclature_item_id: '8500000000',
+          validity_start_date: Date.new(2010, 1, 1),
+          producline_suffix: '80',
+          indents: 1,
+        )
+      end
+
+      let!(:heading) do
+        create(
+          :heading,
+          goods_nomenclature_item_id: '8504000000',
+          validity_start_date: Date.new(2010, 1, 1),
+          producline_suffix: '80',
+          indents: 2,
+        )
+      end
+
+      let!(:ancestor_commodity) do
+        create(
+          :commodity, :with_description,
+          goods_nomenclature_item_id: '8504900000',
+          producline_suffix: '80',
+          validity_start_date: validity_start_date,
+          indents: 3
+        )
+      end
+
+      let!(:child_commodity) do
+        create(
+          :commodity, :with_description,
+          goods_nomenclature_item_id: '8504909990',
+          producline_suffix: '80',
+          validity_start_date: validity_start_date,
+          indents: 4
+        )
+      end
+
+      let(:actual_date) { Date.new(2021, 1, 1) }
+      let(:validity_start_date) { actual_date - 3.days }
+
+      around do |example|
+        TimeMachine.at(actual_date) do
+          example.run
+        end
+      end
+
+      context 'when the ancestor indent is outside of the TimeMachine window' do
+        before do
+          indent = ancestor_commodity.goods_nomenclature_indent
+          indent.set(validity_end_date: actual_date - 1.day)
+          indent.save
+        end
+
+        it 'does not return the ancestor' do
+          expect(child_commodity.ancestors).to be_empty
+        end
+      end
+
+      context 'when the ancestor indent is inside the TimeMachine window' do
+        it 'returns the ancestor' do
+          expect(child_commodity.ancestors).to include(ancestor_commodity)
+        end
+      end
+    end
   end
 
   describe '#changes' do
