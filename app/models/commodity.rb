@@ -57,23 +57,12 @@ class Commodity < GoodsNomenclature
     Commodity.select(Sequel.expr(:goods_nomenclatures).*)
       .eager(:goods_nomenclature_indents,
              :goods_nomenclature_descriptions)
-      .join_table(:inner,
-        GoodsNomenclatureIndent
-                 .select(:goods_nomenclature_indents__goods_nomenclature_sid,
-                         :goods_nomenclature_indents__goods_nomenclature_item_id,
-                         :goods_nomenclature_indents__number_indents)
-                 .with_actual(GoodsNomenclature)
-                 .join(:goods_nomenclatures, goods_nomenclature_indents__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
-                 .where('goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
-                 .where('goods_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
-                 .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date),
-                        Sequel.desc(:goods_nomenclature_indents__goods_nomenclature_item_id))
-                 .from_self
-                 .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
-                 .from_self
-                 .where('number_indents < ?', goods_nomenclature_indent.number_indents),
-         t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
-          t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
+      .join_table(
+        :inner,
+        ancestor_indents,
+        t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
+        t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id,
+      )
       .order(Sequel.desc(:goods_nomenclatures__goods_nomenclature_item_id))
       .all
       .group_by(&:number_indents)
@@ -81,7 +70,9 @@ class Commodity < GoodsNomenclature
       .map(&:first)
       .reverse
       .sort_by(&:number_indents)
-      .select { |a| a.number_indents < goods_nomenclature_indent.number_indents }
+      .select do |ancestor|
+        ancestor.number_indents && ancestor.number_indents < goods_nomenclature_indent.number_indents
+      end
   end
 
   def declarable?
@@ -152,5 +143,24 @@ class Commodity < GoodsNomenclature
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
+  end
+
+  private
+
+  def ancestor_indents
+    GoodsNomenclatureIndent
+      .select(:goods_nomenclature_indents__goods_nomenclature_sid,
+              :goods_nomenclature_indents__goods_nomenclature_item_id,
+              :goods_nomenclature_indents__number_indents)
+      .with_actual(GoodsNomenclature)
+      .join(:goods_nomenclatures, goods_nomenclature_indents__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
+      .where('goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
+      .where('goods_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
+      .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date),
+             Sequel.desc(:goods_nomenclature_indents__goods_nomenclature_item_id))
+      .from_self
+      .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
+      .from_self
+      .where('number_indents < ?', goods_nomenclature_indent.number_indents)
   end
 end
