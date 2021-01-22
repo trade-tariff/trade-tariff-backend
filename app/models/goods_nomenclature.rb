@@ -32,7 +32,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def goods_nomenclature_indent
-    goods_nomenclature_indents(reload: true).first
+    goods_nomenclature_indents.first
   end
 
   many_to_many :goods_nomenclature_descriptions, join_table: :goods_nomenclature_description_periods,
