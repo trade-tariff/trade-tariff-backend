@@ -9,6 +9,10 @@ module Api
         set_id :goods_nomenclature_sid
 
         attributes :description, :goods_nomenclature_item_id, :validity_start_date, :validity_end_date
+
+        attribute :flibble do |commodity|
+          "flooble"
+        end
       end
     end
   end
