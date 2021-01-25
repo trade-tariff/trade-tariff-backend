@@ -57,7 +57,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def footnote
-    footnotes(reload: true).first
+    footnotes.first
   end
 
   one_to_one :national_measurement_unit_set, key: :cmdty_code,
