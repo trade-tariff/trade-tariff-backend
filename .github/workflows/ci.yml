@@ -109,6 +109,19 @@ jobs:
           cf install-plugin blue-green-deploy -r CF-Community -f
           cf install-plugin app-autoscaler-plugin -r CF-Community -f
           ./bin/deploy
+  flush_redis:
+    runs-on: ubuntu-latest
+    needs: [deploy_dev]
+    steps:
+      - run: |
+          sudo apt-get install redis-tools
+          curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+          sudo dpkg -i cf.deb
+          cf -v
+          cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+          cf install-plugin conduit
+          cf conduit tariff-uk-dev-redis-4x  -- redis-cli FLUSHALL
+          cf conduit tariff-xi-dev-redis-4x  -- redis-cli FLUSHALL
   sentry_release:
     runs-on: ubuntu-latest
     needs: [deploy_dev]
