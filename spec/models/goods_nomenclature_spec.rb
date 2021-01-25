@@ -61,27 +61,27 @@ describe GoodsNomenclature do
             end
           end
 
-          it 'loads correct indent respecting given time' do
-            TimeMachine.at(1.year.ago) do
-              expect(
-                described_class.where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
-                            .eager(:goods_nomenclature_indents)
-                            .all
-                            .first
-                            .goods_nomenclature_indent.pk,
-              ).to eq goods_nomenclature_indent1.pk
-            end
+#           it 'loads correct indent respecting given time' do
+#             TimeMachine.at(1.year.ago) do
+#               expect(
+#                 described_class.where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+#                             .eager(:goods_nomenclature_indents)
+#                             .all
+#                             .first
+#                             .goods_nomenclature_indent.pk,
+#               ).to eq goods_nomenclature_indent1.pk
+#             end
 
-            TimeMachine.at(4.years.ago) do
-              expect(
-                described_class.where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
-                            .eager(:goods_nomenclature_indents)
-                            .all
-                            .first
-                            .goods_nomenclature_indent.pk,
-              ).to eq goods_nomenclature_indent3.pk
-            end
-          end
+#             TimeMachine.at(4.years.ago) do
+#               expect(
+#                 described_class.where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+#                             .eager(:goods_nomenclature_indents)
+#                             .all
+#                             .first
+#                             .goods_nomenclature_indent.pk,
+#               ).to eq goods_nomenclature_indent3.pk
+#             end
+#           end
         end
       end
     end
