@@ -62,6 +62,7 @@ class ApplicationController < ActionController::Base
   end
 
   def sample_requests_for_scout
+    return unless Rails.env.production?
     # Sample rate should range from 0-1:
     # * 0: captures no requests
     # * 0.75: captures 75% of requests
