@@ -10,12 +10,12 @@ class MeasureType < Sequel::Model
   SUPPLEMENTARY_TYPES = %w[109 110 111].freeze
   QUOTA_TYPES = %w[046 122 123 143 146 147 653 654].freeze
   NATIONAL_PR_TYPES = %w[AHC AIL ATT CEX CHM COE COI CVD DPO ECM EHC EQC EWP HOP HSE IWP PHC PRE PRT QRC SFS].freeze
-  EXCLUDED_TYPES = %w[442 SPL].tap do |types|
-    types.concat(QUOTA_TYPES + NATIONAL_PR_TYPES) if TradeTariffBackend.service == 'xi'
-  end.freeze
+  DEFAULT_EXCLUDED_TYPES = %w[442 SPL].freeze
+  XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
+  UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
 
   plugin :time_machine, period_start_column: :measure_types__validity_start_date,
-                        period_end_column:   :measure_types__validity_end_date
+                        period_end_column: :measure_types__validity_end_date
   plugin :oplog, primary_key: :measure_type_id
   plugin :conformance_validator
 
@@ -56,5 +56,13 @@ class MeasureType < Sequel::Model
   # The VAT reduced rate 5% has measure type 305 and  VATA additional code.
   def vat?
     MeasureType::VAT_TYPES.include?(measure_type_id)
+  end
+
+  def self.excluded_measure_types
+    if TradeTariffBackend.xi?
+      XI_EXCLUDED_TYPES
+    else
+      UK_EXCLUDED_TYPES
+    end
   end
 end

@@ -13,9 +13,6 @@ describe MeasureType do
   describe 'constants' do
     before do
       allow(TradeTariffBackend).to receive(:service).and_return(service)
-
-      # Reloads the module to update the EXCLUDED_TYPES value after stubbing the service
-      load Rails.root.join('app/models/measure_type.rb')
     end
 
     context 'when the service is the UK version' do
@@ -23,18 +20,18 @@ describe MeasureType do
       let(:excluded_types) { %w[442 SPL] }
 
       it 'defines the correct EXCLUDED_TYPES list' do
-        expect(described_class::EXCLUDED_TYPES).to eq(excluded_types)
+        expect(described_class.excluded_measure_types).to eq(excluded_types)
       end
     end
 
     context 'when the service is the XI version' do
       let(:service) { 'xi' }
       let(:excluded_types) do
-        %w[442 SPL].concat(described_class::QUOTA_TYPES + described_class::NATIONAL_PR_TYPES)
+        described_class::DEFAULT_EXCLUDED_TYPES + described_class::QUOTA_TYPES + described_class::NATIONAL_PR_TYPES
       end
 
       it 'defines the correct EXCLUDED_TYPES list' do
-        expect(described_class::EXCLUDED_TYPES).to eq(excluded_types)
+        expect(described_class.excluded_measure_types).to contain_exactly(*excluded_types)
       end
     end
   end

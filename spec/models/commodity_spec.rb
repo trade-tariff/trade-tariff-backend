@@ -129,9 +129,6 @@ describe Commodity do
 
       before do
         allow(TradeTariffBackend).to receive(:service).and_return(service)
-
-        # Reloads the module to update the EXCLUDED_TYPES value after stubbing the service
-        load Rails.root.join('app/models/measure_type.rb')
       end
 
       context 'when the service version is the UK' do
