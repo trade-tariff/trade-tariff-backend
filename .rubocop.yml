@@ -12,31 +12,29 @@ AllCops:
     - 'vendor/**/*'
     - 'bin/**'
     - 'db/**/*'
-    - 'node_modules/**/*'
     - 'tmp/**/*'
-    - 'config/initializers/canonical_rails.rb'
     - 'config/puma.rb'
-    - 'spec/spec_helper.rb'
-Style/FrozenStringLiteralComment:
-  Enabled: false
-Style/Documentation:
+Layout/LineLength:
+  Max: 120
+Layout/AccessModifierIndentation:
   Enabled: false
 Metrics/AbcSize:
   Max: 20
-Layout/LineLength:
-  Max: 120
-Style/GuardClause:
-  MinBodyLength: 2
-Layout/AccessModifierIndentation:
-  Enabled: false
 Metrics/BlockLength:
   Enabled: false
 Metrics/ModuleLength:
   Enabled: false
-RSpec/DescribeClass:
-  Exclude:
-    - tasks/**/*.rb
 RSpec/ExampleLength:
   Enabled: false
+Rails/SaveBang:
+  Enabled: false
+Rails/FilePath:
+  Enabled: false
+Style/Documentation:
+  Enabled: false
+Style/FrozenStringLiteralComment:
+  Enabled: false
+Style/GuardClause:
+  MinBodyLength: 2
 Style/StringLiterals:
   EnforcedStyle: single_quotes
