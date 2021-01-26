@@ -119,7 +119,7 @@ jobs:
           sudo dpkg -i cf.deb
           cf -v
           cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
-          cf install-plugin conduit
+          cf install-plugin -f conduit
           cf conduit tariff-uk-dev-redis-4x  -- redis-cli FLUSHALL
           cf conduit tariff-xi-dev-redis-4x  -- redis-cli FLUSHALL
   sentry_release:
