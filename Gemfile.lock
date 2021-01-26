@@ -1077,6 +1077,7 @@ GEM
     multipart-post (2.1.1)
     mustermann (1.1.1)
       ruby2_keywords (~> 0.0.1)
+    newrelic_rpm (6.15.0)
     nio4r (2.5.4)
     nokogiri (1.11.0)
       mini_portile2 (~> 2.5.0)
@@ -1321,6 +1322,7 @@ DEPENDENCIES
   letter_opener
   lograge (>= 0.3.6)
   logstash-event
+  newrelic_rpm
   nokogiri (>= 1.10.9)
   ox (>= 2.8.1)
   pg (~> 1.1, >= 1.1.3)

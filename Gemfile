@@ -61,6 +61,9 @@ gem 'combine_pdf'
 gem 'sidekiq-batch'
 gem 'uktt', '~> 0.2.16', git: 'https://github.com/TransformCore/uktt.git'
 
+# Newrelic
+gem 'newrelic_rpm'
+
 group :development do
   gem 'foreman'
   gem 'letter_opener'
