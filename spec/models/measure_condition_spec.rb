@@ -56,40 +56,16 @@ describe MeasureCondition do
       let!(:measure_condition_component1)     { create :measure_condition_component, measure_condition_sid: measure_condition.measure_condition_sid }
       let!(:measure_condition_component2)     { create :measure_condition_component, measure_condition_sid: generate(:measure_condition_sid) }
 
-      context 'direct loading' do
-        it 'loads associated measure condition components' do
-          expect(
-            measure_condition.measure_condition_components,
-          ).to include measure_condition_component1
-        end
-
-        it 'does not load associated measure component' do
-          expect(
-            measure_condition.measure_condition_components,
-          ).not_to include measure_condition_component2
-        end
+      it 'loads associated measure condition components' do
+        expect(
+          measure_condition.measure_condition_components,
+        ).to include measure_condition_component1
       end
 
-      context 'eager loading' do
-        it 'loads associated measure components' do
-          expect(
-            described_class.where(measure_condition_sid: measure_condition.measure_condition_sid)
-                 .eager(:measure_condition_components)
-                 .all
-                 .first
-                 .measure_condition_components,
-          ).to include measure_condition_component1
-        end
-
-        it 'does not load associated measure component' do
-          expect(
-            described_class.where(measure_condition_sid: measure_condition.measure_condition_sid)
-                 .eager(:measure_condition_components)
-                 .all
-                 .first
-                 .measure_condition_components,
-          ).not_to include measure_condition_component2
-        end
+      it 'does not load associated measure component' do
+        expect(
+          measure_condition.measure_condition_components,
+        ).not_to include measure_condition_component2
       end
     end
   end

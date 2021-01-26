@@ -187,7 +187,7 @@ describe Heading do
       end
 
       it 'does not return commodity that is irrelevant to given time' do
-        expect(heading.chapter(reload: true)).not_to eq chapter2
+        expect(heading.chapter).not_to eq chapter2
       end
     end
   end

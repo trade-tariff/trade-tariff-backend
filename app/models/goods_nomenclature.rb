@@ -25,10 +25,9 @@ class GoodsNomenclature < Sequel::Model
     end
   }
 
-  one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
-                                           primary_key: :goods_nomenclature_sid do |ds|
-    ds.with_actual(GoodsNomenclatureIndent, self)
-      .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date))
+  one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid, primary_key: :goods_nomenclature_sid do |ds|
+    ds.order(Sequel.desc(:goods_nomenclature_indents__validity_start_date))
+      .with_actual(GoodsNomenclatureIndent, self)
   end
 
   def goods_nomenclature_indent

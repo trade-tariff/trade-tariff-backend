@@ -20,7 +20,7 @@ class Certificate < Sequel::Model
                           right_key: :measure_sid
 
   def certificate_description
-    certificate_descriptions(reload: true).first
+    certificate_descriptions.first
   end
 
   one_to_many :certificate_types, key: :certificate_type_code,
@@ -29,7 +29,7 @@ class Certificate < Sequel::Model
   end
 
   def certificate_type
-    certificate_types(reload: true).first
+    certificate_types.first
   end
 
   def id

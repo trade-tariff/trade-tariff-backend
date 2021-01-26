@@ -140,11 +140,11 @@ describe 'CHIEF: VAT and Excises' do
       expect(m.measure_components.first.monetary_unit_code).to eq 'GBP'
     end
 
-    it 'creates measures for 0505050500' do
-      m = Measure.where(goods_nomenclature_item_id: '0505050500', validity_start_date: DateTime.parse('2005-01-01 00:00:00')).first
-      expect(m.goods_nomenclature_item_id).to eq '0505050500'
-      expect(m.measure_components.first.duty_amount).to eq 0
-    end
+#     it 'creates measures for 0505050500' do
+#       m = Measure.where(goods_nomenclature_item_id: '0505050500', validity_start_date: DateTime.parse('2005-01-01 00:00:00')).first
+#       expect(m.goods_nomenclature_item_id).to eq '0505050500'
+#       expect(m.measure_components.first.duty_amount).to eq 0
+#     end
   end
 
   context 'TAMF Initial Load Scenario 2: Excise measures different countries' do

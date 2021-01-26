@@ -154,43 +154,15 @@ describe Measure do
                               operation: :update
       end
 
-      context 'direct loading' do
-        it 'loads correct description respecting given actual time' do
-          TimeMachine.now do
-            expect(measure.measure_type.pk).to eq measure_type1.pk
-          end
-        end
-
-        it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(measure.measure_type.pk).to eq measure_type1.pk
-          end
+      it 'loads correct description respecting given actual time' do
+        TimeMachine.now do
+          expect(measure.measure_type.pk).to eq measure_type1.pk
         end
       end
 
-      context 'eager loading' do
-        it 'loads correct description respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              described_class.where(measure_sid: measure.measure_sid)
-                          .eager(:measure_type)
-                          .all
-                          .first
-                          .measure_type.pk,
-            ).to eq measure_type1.pk
-          end
-        end
-
-        it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(measure_sid: measure.measure_sid)
-                          .eager(:measure_type)
-                          .all
-                          .first
-                          .measure_type.pk,
-            ).to eq measure_type1.pk
-          end
+      it 'loads correct description respecting given time' do
+        TimeMachine.at(1.year.ago) do
+          expect(measure.measure_type.pk).to eq measure_type1.pk
         end
       end
     end
@@ -200,36 +172,12 @@ describe Measure do
       let!(:measure_condition1)     { create :measure_condition, measure_sid: measure.measure_sid }
       let!(:measure_condition2)     { create :measure_condition }
 
-      context 'direct loading' do
-        it 'loads associated measure conditions' do
-          expect(measure.measure_conditions).to include measure_condition1
-        end
-
-        it 'does not load associated measure condition' do
-          expect(measure.measure_conditions).not_to include measure_condition2
-        end
+      it 'loads associated measure conditions' do
+        expect(measure.measure_conditions).to include measure_condition1
       end
 
-      context 'eager loading' do
-        it 'loads associated measure conditions' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:measure_conditions)
-                 .all
-                 .first
-                 .measure_conditions,
-          ).to include measure_condition1
-        end
-
-        it 'does not load associated measure condition' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:measure_conditions)
-                 .all
-                 .first
-                 .measure_conditions,
-          ).not_to include measure_condition2
-        end
+      it 'does not load associated measure condition' do
+        expect(measure.measure_conditions).not_to include measure_condition2
       end
 
       describe 'ordering' do
@@ -249,36 +197,12 @@ describe Measure do
       let!(:geographical_area2)     { create :geographical_area, geographical_area_id: 'de' }
       let!(:measure)                { create :measure, geographical_area_sid: geographical_area1.geographical_area_sid }
 
-      context 'direct loading' do
-        it 'loads associated measure conditions' do
-          expect(measure.geographical_area.pk).to eq geographical_area1.pk
-        end
-
-        it 'does not load associated measure condition' do
-          expect(measure.geographical_area.pk).not_to eq geographical_area2.pk
-        end
+      it 'loads associated measure conditions' do
+        expect(measure.geographical_area.pk).to eq geographical_area1.pk
       end
 
-      context 'eager loading' do
-        it 'loads associated measure conditions' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:geographical_area)
-                 .all
-                 .first
-                 .geographical_area.pk,
-          ).to eq geographical_area1.pk
-        end
-
-        it 'does not load associated measure condition' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:geographical_area)
-                 .all
-                 .first
-                 .geographical_area.pk,
-          ).not_to eq geographical_area2.pk
-        end
+      it 'does not load associated measure condition' do
+        expect(measure.geographical_area.pk).not_to eq geographical_area2.pk
       end
     end
 
@@ -303,27 +227,25 @@ describe Measure do
                                               footnote_type_id: footnote2.footnote_type_id
       end
 
-      context 'direct loading' do
-        it 'loads correct indent respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              measure.footnotes.map(&:pk),
-            ).to include footnote1.pk
-          end
+      it 'loads correct indent respecting given actual time' do
+        TimeMachine.now do
+          expect(
+            measure.footnotes.map(&:pk),
+          ).to include footnote1.pk
+        end
+      end
+
+      it 'loads correct indent respecting given time' do
+        TimeMachine.at(1.year.ago) do
+          expect(
+            measure.footnotes.map(&:pk),
+          ).to include footnote1.pk
         end
 
-        it 'loads correct indent respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              measure.footnotes.map(&:pk),
-            ).to include footnote1.pk
-          end
-
-          TimeMachine.at(4.years.ago) do
-            expect(
-              measure.reload.footnotes.map(&:pk),
-            ).to include footnote2.pk
-          end
+        TimeMachine.at(4.years.ago) do
+          expect(
+            measure.reload.footnotes.map(&:pk),
+          ).to include footnote2.pk
         end
       end
 
@@ -356,42 +278,6 @@ describe Measure do
           end
         end
       end
-
-      context 'eager loading' do
-        it 'loads correct indent respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              described_class.where(measure_sid: measure.measure_sid)
-                          .eager(:footnotes)
-                          .all
-                          .first
-                          .footnotes.map(&:pk),
-            ).to include footnote1.pk
-          end
-        end
-
-        it 'loads correct indent respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(measure_sid: measure.measure_sid)
-                          .eager(:footnotes)
-                          .all
-                          .first
-                          .footnotes(reload: true).map(&:pk),
-            ).to include footnote1.pk
-          end
-
-          TimeMachine.at(4.years.ago) do
-            expect(
-              described_class.where(measure_sid: measure.measure_sid)
-                          .eager(:footnotes)
-                          .all
-                          .first
-                          .footnotes(reload: true).map(&:pk),
-            ).to include footnote2.pk
-          end
-        end
-      end
     end
 
     describe 'measure components' do
@@ -400,40 +286,16 @@ describe Measure do
       let!(:measure_component2)     { create :measure_component }
       let!(:measure_component3)     { create :measure_component, measure_sid: measure.measure_sid, duty_expression_id: '01' }
 
-      context 'direct loading' do
-        it 'loads associated measure components' do
-          expect(measure.measure_components).to include measure_component1
-        end
-
-        it 'does not load associated measure component' do
-          expect(measure.measure_components).not_to include measure_component2
-        end
-
-        it 'orders components by duty_expression_id' do
-          expect(measure.measure_components.pluck(:duty_expression_id)).to eq(%w[01 03])
-        end
+      it 'loads associated measure components' do
+        expect(measure.measure_components).to include measure_component1
       end
 
-      context 'eager loading' do
-        it 'loads associated measure components' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:measure_components)
-                 .all
-                 .first
-                 .measure_components,
-          ).to include measure_component1
-        end
+      it 'does not load associated measure component' do
+        expect(measure.measure_components).not_to include measure_component2
+      end
 
-        it 'does not load associated measure component' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:measure_components)
-                 .all
-                 .first
-                 .measure_components,
-          ).not_to include measure_component2
-        end
+      it 'orders components by duty_expression_id' do
+        expect(measure.measure_components.pluck(:duty_expression_id)).to eq(%w[01 03])
       end
     end
 
@@ -442,36 +304,12 @@ describe Measure do
       let!(:additional_code2)     { create :additional_code, validity_start_date: Date.current.ago(5.years) }
       let!(:measure)              { create :measure, additional_code_sid: additional_code1.additional_code_sid }
 
-      context 'direct loading' do
-        it 'loads associated measure conditions' do
-          expect(measure.additional_code).to eq additional_code1
-        end
-
-        it 'does not load associated measure condition' do
-          expect(measure.additional_code).not_to eq additional_code2
-        end
+      it 'loads associated measure conditions' do
+        expect(measure.additional_code).to eq additional_code1
       end
 
-      context 'eager loading' do
-        it 'loads associated measure conditions' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:additional_code)
-                 .all
-                 .first
-                 .additional_code,
-          ).to eq additional_code1
-        end
-
-        it 'does not load associated measure condition' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:additional_code)
-                 .all
-                 .first
-                 .additional_code,
-          ).not_to eq additional_code2
-        end
+      it 'does not load associated measure condition' do
+        expect(measure.additional_code).not_to eq additional_code2
       end
     end
 
@@ -480,36 +318,12 @@ describe Measure do
       let!(:quota_order_number2)     { create :quota_order_number, validity_start_date: Date.current.ago(5.years) }
       let!(:measure)                 { create :measure, ordernumber: quota_order_number1.quota_order_number_id }
 
-      context 'direct loading' do
-        it 'loads associated measure conditions' do
-          expect(measure.quota_order_number).to eq quota_order_number1
-        end
-
-        it 'does not load associated measure condition' do
-          expect(measure.quota_order_number).not_to eq quota_order_number2
-        end
+      it 'loads associated measure conditions' do
+        expect(measure.quota_order_number).to eq quota_order_number1
       end
 
-      context 'eager loading' do
-        it 'loads associated measure conditions' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:quota_order_number)
-                 .all
-                 .first
-                 .quota_order_number,
-          ).to eq quota_order_number1
-        end
-
-        it 'does not load associated measure condition' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:quota_order_number)
-                 .all
-                 .first
-                 .quota_order_number,
-          ).not_to eq quota_order_number2
-        end
+      it 'does not load associated measure condition' do
+        expect(measure.quota_order_number).not_to eq quota_order_number2
       end
     end
 
@@ -520,36 +334,12 @@ describe Measure do
       let!(:fts_regulation_action2) { create :fts_regulation_action, fts_regulation_id: fts_regulation2.full_temporary_stop_regulation_id }
       let!(:measure)                { create :measure, measure_generating_regulation_id: fts_regulation_action1.stopped_regulation_id }
 
-      context 'direct loading' do
-        it 'loads associated full temporary stop regulation' do
-          expect(measure.full_temporary_stop_regulation.pk).to eq fts_regulation1.pk
-        end
-
-        it 'does not load associated full temporary stop regulation' do
-          expect(measure.full_temporary_stop_regulation.pk).not_to eq fts_regulation2.pk
-        end
+      it 'loads associated full temporary stop regulation' do
+        expect(measure.full_temporary_stop_regulation.pk).to eq fts_regulation1.pk
       end
 
-      context 'eager loading' do
-        it 'loads associated full temporary stop regulation' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:full_temporary_stop_regulations)
-                 .all
-                 .first
-                 .full_temporary_stop_regulation.pk,
-          ).to eq fts_regulation1.pk
-        end
-
-        it 'does not load associated full temporary stop regulation' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:full_temporary_stop_regulations)
-                 .all
-                 .first
-                 .full_temporary_stop_regulation.pk,
-          ).not_to eq fts_regulation2.pk
-        end
+      it 'does not load associated full temporary stop regulation' do
+        expect(measure.full_temporary_stop_regulation.pk).not_to eq fts_regulation2.pk
       end
     end
 
@@ -558,36 +348,12 @@ describe Measure do
       let!(:mpt_stop2)        { create :measure_partial_temporary_stop, validity_start_date: Date.current.ago(5.years) }
       let!(:measure)          { create :measure, measure_generating_regulation_id: mpt_stop1.partial_temporary_stop_regulation_id, measure_sid: mpt_stop1.measure_sid }
 
-      context 'direct loading' do
-        it 'loads associated full temporary stop regulation' do
-          expect(measure.measure_partial_temporary_stop.pk).to eq mpt_stop1.pk
-        end
-
-        it 'does not load associated full temporary stop regulation' do
-          expect(measure.measure_partial_temporary_stop.pk).not_to eq mpt_stop2.pk
-        end
+      it 'loads associated full temporary stop regulation' do
+        expect(measure.measure_partial_temporary_stop.pk).to eq mpt_stop1.pk
       end
 
-      context 'eager loading' do
-        it 'loads associated full temporary stop regulation' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:measure_partial_temporary_stops)
-                 .all
-                 .first
-                 .measure_partial_temporary_stop.pk,
-          ).to eq mpt_stop1.pk
-        end
-
-        it 'does not load associated full temporary stop regulation' do
-          expect(
-            described_class.where(measure_sid: measure.measure_sid)
-                 .eager(:measure_partial_temporary_stops)
-                 .all
-                 .first
-                 .measure_partial_temporary_stop.pk,
-          ).not_to eq mpt_stop2.pk
-        end
+      it 'does not load associated full temporary stop regulation' do
+        expect(measure.measure_partial_temporary_stop.pk).not_to eq mpt_stop2.pk
       end
     end
   end

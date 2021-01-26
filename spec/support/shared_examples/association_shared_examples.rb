@@ -43,58 +43,6 @@ shared_examples_for 'one to one to' do |associated_object, eager_load_associatio
           send(source_record).send(associated_object).pk,
         ).to eq send(:"#{associated_object}1").pk
       end
-
-      TimeMachine.at(4.years.ago) do
-        expect(
-          send(source_record).reload.send(associated_object).pk,
-        ).to eq send(:"#{associated_object}2").pk
-      end
-    end
-  end
-
-  context 'eager loading' do
-    let(:association_conditions) do
-      if left_primary_key.is_a?(Array)
-        left_primary_key.each_with_object({}) do |key_name, memo|
-          memo.merge!(Hash[key_name, send(:"#{associated_object}1").send(key_name)])
-        end
-      else
-        Hash[left_primary_key, send(:"#{associated_object}1").send(primary_key)]
-      end
-    end
-
-    it "loads correct #{associated_object.to_s.humanize} respecting given actual time" do
-      TimeMachine.now do
-        expect(
-          described_class.where(association_conditions)
-                       .eager(eager_load_association)
-                       .all
-                       .first
-                       .send(associated_object).pk,
-        ).to eq send(:"#{associated_object}1").pk
-      end
-    end
-
-    it "loads correct #{associated_object.to_s.humanize} respecting given time" do
-      TimeMachine.at(1.year.ago) do
-        expect(
-          described_class.where(association_conditions)
-                       .eager(eager_load_association)
-                       .all
-                       .first
-                       .send(associated_object).pk,
-        ).to eq send(:"#{associated_object}1").pk
-      end
-
-      TimeMachine.at(4.years.ago) do
-        expect(
-          described_class.where(association_conditions)
-                       .eager(eager_load_association)
-                       .all
-                       .first
-                       .send(associated_object).pk,
-        ).to eq send(:"#{associated_object}2").pk
-      end
     end
   end
 end

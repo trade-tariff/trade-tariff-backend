@@ -17,63 +17,19 @@ describe ExportRefundNomenclature do
                validity_end_date: 3.years.ago
       end
 
-      context 'direct loading' do
-        it 'loads correct indent respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              export_refund_nomenclature.export_refund_nomenclature_indent.pk,
-            ).to eq export_refund_nomenclature_indent1.pk
-          end
-        end
-
-        it 'loads correct indent respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              export_refund_nomenclature.export_refund_nomenclature_indent.pk,
-            ).to eq export_refund_nomenclature_indent1.pk
-          end
-
-          TimeMachine.at(4.years.ago) do
-            expect(
-              export_refund_nomenclature.reload.export_refund_nomenclature_indent.pk,
-            ).to eq export_refund_nomenclature_indent2.pk
-          end
+      it 'loads correct indent respecting given actual time' do
+        TimeMachine.now do
+          expect(
+            export_refund_nomenclature.export_refund_nomenclature_indent.pk,
+          ).to eq export_refund_nomenclature_indent1.pk
         end
       end
 
-      context 'eager loading' do
-        it 'loads correct indent respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              described_class.where(export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid)
-                             .eager(:export_refund_nomenclature_indents)
-                             .all
-                             .first
-                             .export_refund_nomenclature_indent.pk,
-            ).to eq export_refund_nomenclature_indent1.pk
-          end
-        end
-
-        it 'loads correct indent respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid)
-                          .eager(:export_refund_nomenclature_indents)
-                          .all
-                          .first
-                          .export_refund_nomenclature_indent.pk,
-            ).to eq export_refund_nomenclature_indent1.pk
-          end
-
-          TimeMachine.at(4.years.ago) do
-            expect(
-              described_class.where(export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid)
-                          .eager(:export_refund_nomenclature_indents)
-                          .all
-                          .first
-                          .export_refund_nomenclature_indent.pk,
-            ).to eq export_refund_nomenclature_indent2.pk
-          end
+      it 'loads correct indent respecting given time' do
+        TimeMachine.at(1.year.ago) do
+          expect(
+            export_refund_nomenclature.export_refund_nomenclature_indent.pk,
+          ).to eq export_refund_nomenclature_indent1.pk
         end
       end
     end
@@ -93,63 +49,19 @@ describe ExportRefundNomenclature do
                valid_to: 3.years.ago
       end
 
-      context 'direct loading' do
-        it 'loads correct description respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              export_refund_nomenclature.export_refund_nomenclature_description.pk,
-            ).to eq export_refund_nomenclature_description1.pk
-          end
-        end
-
-        it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              export_refund_nomenclature.export_refund_nomenclature_description.pk,
-            ).to eq export_refund_nomenclature_description1.pk
-          end
-
-          TimeMachine.at(4.years.ago) do
-            expect(
-              export_refund_nomenclature.reload.export_refund_nomenclature_description.pk,
-            ).to eq export_refund_nomenclature_description2.pk
-          end
+      it 'loads correct description respecting given actual time' do
+        TimeMachine.now do
+          expect(
+            export_refund_nomenclature.export_refund_nomenclature_description.pk,
+          ).to eq export_refund_nomenclature_description1.pk
         end
       end
 
-      context 'eager loading' do
-        it 'loads correct description respecting given actual time' do
-          TimeMachine.now do
-            expect(
-              described_class.where(export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid)
-                          .eager(:export_refund_nomenclature_descriptions)
-                          .all
-                          .first
-                          .export_refund_nomenclature_description.pk,
-            ).to eq export_refund_nomenclature_description1.pk
-          end
-        end
-
-        it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid)
-                          .eager(:export_refund_nomenclature_descriptions)
-                          .all
-                          .first
-                          .export_refund_nomenclature_description.pk,
-            ).to eq export_refund_nomenclature_description1.pk
-          end
-
-          TimeMachine.at(4.years.ago) do
-            expect(
-              described_class.where(export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid)
-                          .eager(:export_refund_nomenclature_descriptions)
-                          .all
-                          .first
-                          .export_refund_nomenclature_description.pk,
-            ).to eq export_refund_nomenclature_description2.pk
-          end
+      it 'loads correct description respecting given time' do
+        TimeMachine.at(1.year.ago) do
+          expect(
+            export_refund_nomenclature.export_refund_nomenclature_description.pk,
+          ).to eq export_refund_nomenclature_description1.pk
         end
       end
     end

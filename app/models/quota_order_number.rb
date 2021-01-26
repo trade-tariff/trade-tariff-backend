@@ -13,7 +13,7 @@ class QuotaOrderNumber < Sequel::Model
   def quota_definition!
     return nil if quota_order_number_id.starts_with?('094', '054')
 
-    quota_definition(reload: true)
+    quota_definition
   end
   alias :definition :quota_definition!
 
