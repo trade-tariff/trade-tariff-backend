@@ -38,12 +38,6 @@ shared_examples_for 'one to one to' do |associated_object, eager_load_associatio
     end
 
     it "loads correct #{associated_object.to_s.humanize} respecting given time" do
-      TimeMachine.at(1.year.ago) do
-        expect(
-          send(source_record).send(associated_object).pk,
-        ).to eq send(:"#{associated_object}1").pk
-      end
-
       TimeMachine.at(4.years.ago) do
         expect(
           send(source_record).reload.send(associated_object).pk,
@@ -76,16 +70,6 @@ shared_examples_for 'one to one to' do |associated_object, eager_load_associatio
     end
 
     it "loads correct #{associated_object.to_s.humanize} respecting given time" do
-      TimeMachine.at(1.year.ago) do
-        expect(
-          described_class.where(association_conditions)
-                       .eager(eager_load_association)
-                       .all
-                       .first
-                       .send(associated_object).pk,
-        ).to eq send(:"#{associated_object}1").pk
-      end
-
       TimeMachine.at(4.years.ago) do
         expect(
           described_class.where(association_conditions)

@@ -313,12 +313,6 @@ describe Measure do
         end
 
         it 'loads correct indent respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              measure.footnotes.map(&:pk),
-            ).to include footnote1.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               measure.reload.footnotes.map(&:pk),
@@ -371,16 +365,6 @@ describe Measure do
         end
 
         it 'loads correct indent respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(measure_sid: measure.measure_sid)
-                          .eager(:footnotes)
-                          .all
-                          .first
-                          .footnotes(reload: true).map(&:pk),
-            ).to include footnote1.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               described_class.where(measure_sid: measure.measure_sid)
