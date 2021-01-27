@@ -11,14 +11,13 @@ class GeographicalAreaMembershipsImportService
     CSV.foreach(filename, headers: true) do |row|
       update_geographical_area(row)
     end
-    
   end
 
   def import_hjids_stats
     {
       geographical_areas_total: GeographicalAreaMembership.count,
       geographical_areas_with_hjid_total: GeographicalAreaMembership.exclude(hjid: nil).count,
-      errors: errors.count
+      errors: errors.count,
     }
   end
 
@@ -37,9 +36,8 @@ class GeographicalAreaMembershipsImportService
       geographical_area_membership.geographical_area_group_hjid = row[3].to_i
       geographical_area_membership.save
     else
-      print "Failed to find matching geographical area for geographical_area_sid: #{row[2]}, geographical_area_group_sid: #{row[4]}, validity_start_date: #{row[5]} \n"
+      Rails.logger.info("Failed to find matching geographical area membership for geographical_area_sid: #{row[2]}, geographical_area_group_sid: #{row[4]}, validity_start_date: #{row[5]} \n")
       errors << row
     end
   end
 end
-

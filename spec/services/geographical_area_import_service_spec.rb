@@ -4,10 +4,10 @@ RSpec.describe GeographicalAreasImportService do
   subject(:importer) { described_class.new }
 
   let(:hjid_mappings_file) { Rails.root.join('spec', 'fixtures', 'files', 'hjid_to_sid_map.csv').to_s }
-  
-  let!(:area) {
+
+  let!(:area) do
     create(:geographical_area, geographical_area_sid: 374)
-  }
+  end
 
   before do
     create(:geographical_area)
@@ -15,16 +15,16 @@ RSpec.describe GeographicalAreasImportService do
 
   describe '#import_hjids' do
     it 'raises error if invalid filename' do
-      expect { importer.import_hjids('foo') }.to raise_exception
+      expect { importer.import_hjids('foo') }.to raise_error(Errno::ENOENT)
     end
 
     it 'does not raise error with valid filename' do
-      expect { importer.import_hjids(hjid_mappings_file) }.not_to raise_exception
+      expect { importer.import_hjids(hjid_mappings_file) }.not_to raise_error
     end
 
     it 'updates matching geographical areas' do
       importer.import_hjids(hjid_mappings_file)
-      expect(area.reload).to have_attributes(hjid: 23500)
+      expect(area.reload).to have_attributes(hjid: 23_500)
     end
   end
 
@@ -35,7 +35,7 @@ RSpec.describe GeographicalAreasImportService do
       expect(importer.import_hjids_stats).to eq(
         geographical_areas_total: 2,
         geographical_areas_with_hjid_total: 1,
-        errors: 1
+        errors: 1,
       )
     end
   end
