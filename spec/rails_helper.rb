@@ -55,5 +55,17 @@ RSpec.configure do |config|
     stub_codes_mapping_data
     Rails.cache.clear
     Sidekiq::Worker.clear_all
+
+    clearable_models = [
+      Certificate,
+      Chief::Tamf,
+      ExportRefundNomenclature,
+      Footnote,
+      GoodsNomenclature,
+      QuotaOrderNumber,
+    ]
+
+    clearable_models.map(&:clear_association_cache)
   end
 end
+
