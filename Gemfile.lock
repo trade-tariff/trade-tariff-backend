@@ -1235,8 +1235,6 @@ GEM
     rufus-scheduler (3.6.0)
       fugit (~> 1.1, >= 1.1.6)
     safe_yaml (1.0.5)
-    scout_apm (4.0.0)
-      parser
     sentry-raven (3.1.1)
       faraday (>= 1.0)
     sequel (5.22.0)
@@ -1340,7 +1338,6 @@ DEPENDENCIES
   rspec_junit_formatter
   rubocop-govuk
   rubyzip (>= 2.3.0)
-  scout_apm
   sentry-raven
   sequel (~> 5.22.0)
   sequel-rails (~> 1.0.0)

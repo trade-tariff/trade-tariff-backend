@@ -45,7 +45,6 @@ gem 'nokogiri', '>= 1.10.9'
 gem 'ox', '>= 2.8.1'
 gem 'plek', '~> 1.11'
 gem 'rack-timeout', '~> 0.4'
-gem 'scout_apm', require: false
 gem 'sentry-raven'
 
 # API related

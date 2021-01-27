@@ -1,7 +1,6 @@
 class ApplicationController < ActionController::Base
   respond_to :json, :html
 
-  before_action :sample_requests_for_scout
   around_action :configure_time_machine
 
   unless Rails.application.config.consider_all_requests_local
@@ -58,20 +57,6 @@ class ApplicationController < ActionController::Base
   def configure_time_machine
     TimeMachine.at(actual_date) do
       yield
-    end
-  end
-
-  def sample_requests_for_scout
-    return unless Rails.env.production?
-    # Sample rate should range from 0-1:
-    # * 0: captures no requests
-    # * 0.75: captures 75% of requests
-    # * 1: captures all requests
-    sample_rate = 0.1
-
-    if rand > sample_rate
-      Rails.logger.debug("[Scout] Ignoring request: #{request.original_url}")
-      ScoutApm::Transaction.ignore!
     end
   end
 end
