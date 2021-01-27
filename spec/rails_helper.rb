@@ -60,12 +60,15 @@ RSpec.configure do |config|
 
     clearable_models = [
       Certificate,
-      Chief::Tamf,
+      Chapter,
       ExportRefundNomenclature,
       Footnote,
+      FootnoteDescription,
       GeographicalArea,
       GoodsNomenclature,
+      Heading,
       Measure,
+      MeasureComponent,
       QuotaOrderNumber,
     ]
 
