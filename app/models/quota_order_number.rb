@@ -10,12 +10,15 @@ class QuotaOrderNumber < Sequel::Model
     ds.with_actual(QuotaDefinition)
   end
 
+  LICENSED_QUOTA_PREFIXES = %w[094 084 074 064 054 044 034 024 014].freeze
+
   def quota_definition!
-    return nil if quota_order_number_id.starts_with?('094', '054')
+    return nil if quota_order_number_id.starts_with?(*LICENSED_QUOTA_PREFIXES)
 
     quota_definition(reload: true)
   end
-  alias :definition :quota_definition!
+
+  alias_method :definition, :quota_definition!
 
   def definition_id
     definition&.quota_order_number_sid
@@ -33,10 +36,11 @@ class QuotaOrderNumber < Sequel::Model
     geographical_area&.id
   end
 
-  one_to_many :quota_order_number_origins, primary_key: :quota_order_number_sid,
+  one_to_many :quota_order_number_origins,
+              primary_key: :quota_order_number_sid,
               key: :quota_order_number_sid do |ds|
-    ds.with_actual(QuotaOrderNumberOrigin)
-  end
+                ds.with_actual(QuotaOrderNumberOrigin)
+              end
 
   def geographical_areas
     quota_order_number_origins.map(&:geographical_area)
