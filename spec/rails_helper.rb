@@ -21,7 +21,9 @@ require Rails.root.join('spec/support/tariff_validation_matcher.rb')
 Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
 
 # require models and serializers
+require 'clearable'
 Dir[Rails.root.join('app/models/*.rb')].each { |f| require f }
+# Dir[Rails.root.join('app/models/concerns/*rb')].each { |f| require concern }
 Dir[Rails.root.join('app/serializers/*.rb')].each { |f| require f }
 
 RSpec.configure do |config|
@@ -61,11 +63,12 @@ RSpec.configure do |config|
       Chief::Tamf,
       ExportRefundNomenclature,
       Footnote,
+      GeographicalArea,
       GoodsNomenclature,
+      Measure,
       QuotaOrderNumber,
     ]
 
     clearable_models.map(&:clear_association_cache)
   end
 end
-

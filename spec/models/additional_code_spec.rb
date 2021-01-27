@@ -33,18 +33,6 @@ describe AdditionalCode do
         end
 
         it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              additional_code.additional_code_description.pk,
-            ).to eq additional_code_description1.pk
-          end
-
-          TimeMachine.at(2.years.ago) do
-            expect(
-              additional_code.additional_code_description.pk,
-            ).to eq additional_code_description1.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               additional_code.reload.additional_code_description.pk,

@@ -29,12 +29,6 @@ describe Footnote do
         end
 
         it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              footnote.footnote_description.pk,
-            ).to eq footnote_description_2.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               footnote.reload.footnote_description.pk,
@@ -58,17 +52,6 @@ describe Footnote do
         end
 
         it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(footnote_id: footnote.footnote_id,
-                                    footnote_type_id: footnote.footnote_type_id)
-                          .eager(:footnote_descriptions)
-                          .all
-                          .first
-                          .footnote_description.pk,
-            ).to eq footnote_description_2.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               described_class.where(footnote_id: footnote.footnote_id,

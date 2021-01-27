@@ -29,12 +29,6 @@ describe Certificate do
         end
 
         it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              certificate.certificate_description.pk,
-            ).to eq certificate_description1.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               certificate.reload.certificate_description.pk,
@@ -58,17 +52,6 @@ describe Certificate do
         end
 
         it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            expect(
-              described_class.where(certificate_type_code: certificate.certificate_type_code,
-                                    certificate_code: certificate.certificate_code)
-                        .eager(:certificate_descriptions)
-                        .all
-                        .first
-                        .certificate_description.pk,
-            ).to eq certificate_description1.pk
-          end
-
           TimeMachine.at(4.years.ago) do
             expect(
               described_class.where(certificate_type_code: certificate.certificate_type_code,
@@ -88,8 +71,5 @@ describe Certificate do
         let(:certificate_type_code) { Forgery(:basic).text(exactly: 1) }
       end
     end
-  end
-
-  describe 'validations' do
   end
 end
