@@ -29,3 +29,6 @@ searches_without_match_or_synonym.csv
 
 # RVM
 .ruby-gemset
+
+/public/pdf
+/.vscode
