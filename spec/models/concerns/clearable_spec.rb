@@ -6,15 +6,12 @@ RSpec.describe Clearable do
       include Clearable
 
       def self.association_reflections
-        @association_reflections ||=
-          begin
-            {
-              foo: { cache: { rows: ['some stuff'] } },
-              bar: { cache: {} },
-              baz: { flibble: { some_option: true } },
+        @association_reflections ||= {
+          foo: { cache: { rows: ['some stuff'] } },
+          bar: { cache: {} },
+          baz: { flibble: { some_option: true } },
 
-            }
-          end
+        }
       end
     end
   end
