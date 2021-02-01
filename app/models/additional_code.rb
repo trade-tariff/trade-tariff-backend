@@ -12,7 +12,10 @@ class AdditionalCode < Sequel::Model
                right_key: %i[additional_code_description_period_sid
                              additional_code_sid],
                right_primary_key: %i[additional_code_description_period_sid
-                                     additional_code_sid] do |ds|
+                                     additional_code_sid],
+               eager_block: (->(ds) {
+                 ds.order(Sequel.desc(:additional_code_description_periods__validity_start_date))
+               }) do |ds|
     ds.with_actual(AdditionalCodeDescriptionPeriod)
       .order(Sequel.desc(:additional_code_description_periods__validity_start_date))
   end

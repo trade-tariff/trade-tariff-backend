@@ -371,7 +371,7 @@ describe Measure do
                           .eager(:footnotes)
                           .all
                           .first
-                          .footnotes.map(&:pk),
+                          .footnotes(reload: true).map(&:pk),
             ).to include footnote2.pk
           end
         end

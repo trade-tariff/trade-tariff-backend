@@ -15,7 +15,7 @@ class QuotaOrderNumber < Sequel::Model
   def quota_definition!
     return nil if quota_order_number_id.starts_with?(*LICENSED_QUOTA_PREFIXES)
 
-    quota_definition
+    quota_definition(reload: true)
   end
 
   alias_method :definition, :quota_definition!
