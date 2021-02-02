@@ -20,6 +20,10 @@ class GoodsNomenclatureDescription < Sequel::Model
   format :formatted_description, with: DescriptionFormatter,
                                  using: :description
 
+  def description
+    super.gsub(%r/( ?<br> ?){2,}/, '<br>')
+  end
+
   def formatted_description
     super.mb_chars.downcase.to_s.gsub(/^(.)/) { $1.capitalize }
   end
