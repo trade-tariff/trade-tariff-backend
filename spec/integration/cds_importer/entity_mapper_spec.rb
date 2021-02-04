@@ -152,7 +152,11 @@ describe CdsImporter::EntityMapper do
 
         mapper.import
 
-        expect(MeasureExcludedGeographicalArea.last.measure_sid).to eq(20130650)
+        expect(MeasureExcludedGeographicalArea.last).to have_attributes(
+          measure_sid: 20_130_650,
+          excluded_geographical_area: 'CN',
+          geographical_area_sid: 439,
+        )
       end
     end
   end
