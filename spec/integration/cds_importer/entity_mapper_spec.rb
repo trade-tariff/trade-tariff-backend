@@ -139,6 +139,18 @@ describe CdsImporter::EntityMapper do
         expect(MeasureExcludedGeographicalArea[measure_sid: other_exclusion.measure_sid]).to be_present
       end
 
+      context 'when there is an existing exclusion for this measure' do # rubocop:disable RSpec/NestedGroups
+        it 'does a hard delete of that exclusion' do
+          create(:geographical_area, geographical_area_sid: '439')
+
+          create(:measure_excluded_geographical_area, measure_sid: '20130650', excluded_geographical_area: 'IT')
+
+          mapper.import
+
+          expect(MeasureExcludedGeographicalArea[excluded_geographical_area: 'IT']).not_to be_present
+        end
+      end
+
       it 'does recreate the excluded geographical areas contained within the XML increment' do
         create(:geographical_area, geographical_area_sid: '439')
 
@@ -147,7 +159,7 @@ describe CdsImporter::EntityMapper do
         }.to change(MeasureExcludedGeographicalArea, :count).from(0).to(1)
       end
 
-      it 'does persists the correct excluded geographical area from the XML increment' do
+      it 'does persist the correct excluded geographical area from the XML increment' do
         create(:geographical_area, geographical_area_sid: '439')
 
         mapper.import

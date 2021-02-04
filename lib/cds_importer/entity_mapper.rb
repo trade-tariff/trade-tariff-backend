@@ -62,7 +62,7 @@ class CdsImporter
     def remove_excluded_geographical_areas!
       return if xml_node['sid'].blank?
 
-      MeasureExcludedGeographicalArea.where(measure_sid: xml_node['sid']).delete
+      MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
     end
 
     def transform!

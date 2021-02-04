@@ -127,6 +127,10 @@ module Sequel
         def insert
           raise NotImplementedError.new('You should be inserting model instances.')
         end
+
+        def delete
+          raise NotImplementedError.new('You should be *destroying* model instances.')
+        end
       end
     end
   end
