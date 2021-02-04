@@ -21,6 +21,8 @@ class CdsImporter
                            .sort_by { |m| m.mapping_path ? m.mapping_path.length : 0 }
 
       mappers.each do |mapper|
+        remove_excluded_geographical_areas! if mapper == CdsImporter::EntityMapper::MeasureMapper
+
         transform! if mapper == CdsImporter::EntityMapper::GeographicalAreaMembershipMapper
 
         instances = mapper.new(xml_node).parse
@@ -57,8 +59,14 @@ class CdsImporter
       nil
     end
 
+    def remove_excluded_geographical_areas!
+      return if xml_node['sid'].blank?
+
+      MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
+    end
+
     def transform!
-      return unless xml_node.has_key?('geographicalAreaMembership')
+      return unless xml_node.key?('geographicalAreaMembership')
 
       mutate_geographical_area_membership_node!
     end
@@ -67,8 +75,7 @@ class CdsImporter
       convert_single_geo_area_member_to_array!
 
       xml_node['geographicalAreaMembership'] = xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
-
-        next unless geographical_area_membership.has_key?('geographicalAreaGroupSid')
+        next unless geographical_area_membership.key?('geographicalAreaGroupSid')
 
         geographical_area = GeographicalArea[hjid: geographical_area_membership['geographicalAreaGroupSid']]
 
@@ -84,7 +91,7 @@ class CdsImporter
     end
 
     def convert_single_geo_area_member_to_array!
-      return if xml_node['geographicalAreaMembership'].kind_of?(Array)
+      return if xml_node['geographicalAreaMembership'].is_a?(Array)
 
       xml_node['geographicalAreaMembership'] = [xml_node['geographicalAreaMembership']]
     end

@@ -24,9 +24,11 @@ describe CdsImporter::EntityMapper do
     stub_const(
       'CdsImporter::EntityMapper::ALL_MAPPERS',
       [
+        CdsImporter::EntityMapper::MeasureMapper,
+        CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper,
         CdsImporter::EntityMapper::AdditionalCodeMapper,
         CdsImporter::EntityMapper::GeographicalAreaMapper,
-        CdsImporter::EntityMapper::GeographicalAreaMembershipMapper
+        CdsImporter::EntityMapper::GeographicalAreaMembershipMapper,
       ]
     )
   end
@@ -89,6 +91,85 @@ describe CdsImporter::EntityMapper do
     it 'assigns filename' do
       mapper.import
       expect(AdditionalCode.last.filename).to eq 'test.gzip'
+    end
+
+    context 'when measureExcludedGeographicalArea changes are present' do
+      let(:xml_node) do
+        {
+          'sid' => '20130650',
+          'validityStartDate' => '2021-01-01T00:00:00',
+          'metainfo' => {
+            'opType' => 'C',
+            'origin' => 'T',
+            'status' => 'L',
+            'transactionDate' => '2021-02-01T17:42:46',
+          },
+          'measureExcludedGeographicalArea' =>
+          [
+            {
+              'metainfo' => {
+                'opType' => 'C',
+                'origin' => 'T',
+                'status' => 'L',
+                'transactionDate' => '2021-02-01T17:42:46',
+              },
+              'geographicalArea' => {
+                'hjid' => '23808',
+                'sid' => '439',
+                'geographicalAreaId' => 'CN',
+                'validityStartDate' => '1984-01-01T00:00:00',
+              },
+            },
+          ],
+        }
+      end
+
+      let(:mapper) { described_class.new('Measure', xml_node) }
+
+      let(:measure) {
+        create(:measure, measure_sid: '20130650')
+      }
+
+      it 'does not remove excluded geographical areas that belong to measures not present within the XML increment' do
+        create(:geographical_area, geographical_area_sid: '439')
+        other_exclusion = create(:measure_excluded_geographical_area)
+
+        mapper.import
+
+        expect(MeasureExcludedGeographicalArea[measure_sid: other_exclusion.measure_sid]).to be_present
+      end
+
+      context 'when there is an existing exclusion for this measure' do # rubocop:disable RSpec/NestedGroups
+        it 'does a hard delete of that exclusion' do
+          create(:geographical_area, geographical_area_sid: '439')
+
+          create(:measure_excluded_geographical_area, measure_sid: '20130650', excluded_geographical_area: 'IT')
+
+          mapper.import
+
+          expect(MeasureExcludedGeographicalArea[excluded_geographical_area: 'IT']).not_to be_present
+        end
+      end
+
+      it 'does recreate the excluded geographical areas contained within the XML increment' do
+        create(:geographical_area, geographical_area_sid: '439')
+
+        expect {
+          mapper.import
+        }.to change(MeasureExcludedGeographicalArea, :count).from(0).to(1)
+      end
+
+      it 'does persist the correct excluded geographical area from the XML increment' do
+        create(:geographical_area, geographical_area_sid: '439')
+
+        mapper.import
+
+        expect(MeasureExcludedGeographicalArea.last).to have_attributes(
+          measure_sid: 20_130_650,
+          excluded_geographical_area: 'CN',
+          geographical_area_sid: 439,
+        )
+      end
     end
   end
 end
