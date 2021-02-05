@@ -56,7 +56,7 @@ class ChemicalSearchService
   end
 
   def cache_expiry(seconds = nil)
-    seconds || TradeTariffBackend.seconds_till_6am
+    seconds || 24.hours
   end
 
   def cas_cleaned
