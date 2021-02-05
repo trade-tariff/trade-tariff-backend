@@ -5,7 +5,7 @@ module Api
 
       def show
         @commodity_cache_key = "commodity-#{@commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}"
-        serializable_hash = Rails.cache.fetch('_' + @commodity_cache_key, expires_in: TradeTariffBackend.seconds_till_6am) do
+        serializable_hash = Rails.cache.fetch('_' + @commodity_cache_key, expires_in: 24.hours) do
           @measures = MeasurePresenter.new(
             @commodity.measures_dataset.eager(
               { footnotes: :footnote_descriptions },

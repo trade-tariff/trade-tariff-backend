@@ -116,10 +116,6 @@ module TradeTariffBackend
       end
     end
 
-    def seconds_till_6am
-      Time.now.end_of_day + 6.hours - Time.now
-    end
-
     # Number of changes to fetch for Commodity/Heading/Chapter
     def change_count
       10
