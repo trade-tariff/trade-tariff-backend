@@ -21,7 +21,8 @@ module TariffSynchronizer
 
       Mailer.applied(
         event.payload[:update_names],
-        event.payload.fetch(:unconformant_records, [])
+        event.payload.fetch(:unconformant_records, []),
+        event.payload.fetch(:import_warnings, []),
       ).deliver_now
     end
 
@@ -36,7 +37,7 @@ module TariffSynchronizer
       Mailer.exception(
         event.payload[:exception],
         event.payload[:update],
-        event.payload[:database_queries]
+        event.payload[:database_queries],
       ).deliver_now
     end
 

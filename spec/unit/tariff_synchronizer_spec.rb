@@ -110,6 +110,7 @@ describe TariffSynchronizer, truncation: true do
         expect(ActionMailer::Base.deliveries).not_to be_empty
         expect(ActionMailer::Base.deliveries.last.subject).to include('Tariff updates applied')
         expect(ActionMailer::Base.deliveries.last.encoded).to include('No conformance errors found.')
+        expect(ActionMailer::Base.deliveries.last.encoded).to include('No import warnings found.')
       end
     end
 
