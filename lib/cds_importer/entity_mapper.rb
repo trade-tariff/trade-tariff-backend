@@ -82,7 +82,7 @@ class CdsImporter
 
       xml_node['geographicalAreaMembership'] = xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
         unless geographical_area_membership.key?('geographicalAreaGroupSid')
-          message = "Skipping membership import due to missing geographical area sid\n\n#{JSON.pretty_generate(geographical_membership)}\n"
+          message = "Skipping membership import due to missing geographical area sid\n\n#{JSON.pretty_generate(geographical_area_membership)}\n"
 
           instrument_warning(message, xml_node)
           next
