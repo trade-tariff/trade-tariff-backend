@@ -29,11 +29,138 @@ describe CdsImporter::EntityMapper do
         CdsImporter::EntityMapper::AdditionalCodeMapper,
         CdsImporter::EntityMapper::GeographicalAreaMapper,
         CdsImporter::EntityMapper::GeographicalAreaMembershipMapper,
-      ]
+      ],
     )
   end
 
   describe '#import' do
+    before do
+      create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
+    end
+
+    context 'when the node is a GeographicalArea with multiple members' do
+      let(:mapper) do
+        described_class.new(
+          'GeographicalArea',
+          geographical_area_with_multiple_members_xml_node,
+        )
+      end
+
+      let(:geographical_area_with_multiple_members_xml_node) do
+        {
+          'hjid' => '23501',
+          'sid' => '114',
+          'geographicalAreaId' => '1010',
+          'geographicalCode' => '1',
+          'validityStartDate' => '1958-01-01T00:00:00',
+          'geographicalAreaMembership' =>
+          [
+            {
+              'hjid' => '25654',
+              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
+              'geographicalAreaGroupSid' => '23590',
+              'validityStartDate' => '2004-05-01T00:00:00',
+            },
+            {
+              'hjid' => '25473',
+              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' },
+              'geographicalAreaGroupSid' => '23575',
+              'validityStartDate' => '2007-01-01T00:00:00',
+            },
+          ],
+        }
+      end
+
+      let(:expected_hash) do
+        {
+          'hjid' => '23501',
+          'sid' => '114',
+          'geographicalAreaId' => '1010',
+          'geographicalCode' => '1',
+          'validityStartDate' => '1958-01-01T00:00:00',
+          'geographicalAreaMembership' =>
+            [
+              {
+                'hjid' => '25654',
+                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
+                'geographicalAreaGroupSid' => 114,
+                'validityStartDate' => '2004-05-01T00:00:00',
+                'geographicalAreaSid' => 331,
+              },
+              {
+                'hjid' => '25473',
+                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' },
+                'geographicalAreaGroupSid' => 114,
+                'validityStartDate' => '2007-01-01T00:00:00',
+                'geographicalAreaSid' => 112,
+              },
+            ],
+        }
+      end
+
+      before do
+        create(:geographical_area, hjid: 23_575, geographical_area_sid: 112)
+      end
+
+      it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
+        mapper.import
+
+        expect(geographical_area_with_multiple_members_xml_node).to eq(expected_hash)
+      end
+    end
+
+    context 'when the node is a GeographicalArea with a single member' do
+      let(:mapper) do
+        described_class.new(
+          'GeographicalArea',
+          geographical_area_with_one_member_xml_node,
+        )
+      end
+
+      let(:geographical_area_with_one_member_xml_node) do
+        {
+          'hjid' => '23501',
+          'sid' => '114',
+          'geographicalAreaId' => '1010',
+          'geographicalCode' => '1',
+          'validityStartDate' => '1958-01-01T00:00:00',
+          'geographicalAreaMembership' => 
+          {
+            'hjid' => '25654',
+            'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
+            'geographicalAreaGroupSid' => '23590',
+            'validityStartDate' => '2004-05-01T00:00:00',
+          },
+        }
+      end
+
+      let(:expected_hash) do
+        {
+          'hjid' => '23501',
+          'sid' => '114',
+          'geographicalAreaId' => '1010',
+          'geographicalCode' => '1',
+          'validityStartDate' => '1958-01-01T00:00:00',
+          'geographicalAreaMembership' => 
+            [
+              {
+                'hjid' => '25654',
+                'metainfo' => {'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45'},
+                'geographicalAreaGroupSid' => 114,
+                'validityStartDate' => '2004-05-01T00:00:00',
+                'geographicalAreaSid' => 331,
+              },
+            ],
+        }
+      end
+
+      it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
+        mapper.import
+
+        expect(geographical_area_with_one_member_xml_node).to eq(expected_hash)
+      end
+    end
+
     context 'when cds logger enabled' do
       before do
         allow(TariffSynchronizer).to receive(:cds_logger_enabled).and_return(true)
@@ -96,8 +223,8 @@ describe CdsImporter::EntityMapper do
     context 'when measureExcludedGeographicalArea changes are present' do
       let(:xml_node) do
         {
-          'sid' => '20130650',
-          'validityStartDate' => '2021-01-01T00:00:00',
+          'sid'  =>  '20130650',
+          'validityStartDate'  =>  '2021-01-01T00:00:00',
           'metainfo' => {
             'opType' => 'C',
             'origin' => 'T',
