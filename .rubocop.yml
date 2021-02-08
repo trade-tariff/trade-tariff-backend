@@ -26,6 +26,8 @@ Metrics/ModuleLength:
   Enabled: false
 RSpec/ExampleLength:
   Enabled: false
+RSpec/NestedGroups:
+  Enabled: false
 Rails/SaveBang:
   Enabled: false
 Rails/FilePath:
