@@ -85,3 +85,31 @@
     <strong>No presence errors found.</strong>
   </p>
 <% end %>
+
+<% if @import_warnings.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Message</th>
+      <th>XML Node</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @import_warnings.each do |warning| %>
+      <tr>
+        <td>
+          <%= warning[:message] %>
+        </td>
+
+        <td>
+          <%= warning[:xml_node] %>
+        </td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% else %>
+  <p>
+    <strong>No import warnings found.</strong>
+  </p>
+<% end %>

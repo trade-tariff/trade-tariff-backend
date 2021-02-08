@@ -107,6 +107,62 @@ describe CdsImporter::EntityMapper do
 
         expect(geographical_area_with_multiple_members_xml_node).to eq(expected_hash)
       end
+
+      context 'when the xml node is missing an membership group sid' do
+        before do
+          allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+          geographical_area_with_multiple_members_xml_node['geographicalAreaMembership'].first.delete('geographicalAreaGroupSid')
+        end
+
+        let(:expected_hash) do
+          {
+            'hjid' => '23501',
+            'sid' => '114',
+            'geographicalAreaId' => '1010',
+            'geographicalCode' => '1',
+            'validityStartDate' => '1958-01-01T00:00:00',
+            'geographicalAreaMembership' => [
+              {
+                'hjid' => '25473',
+                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' },
+                'geographicalAreaGroupSid' => 114,
+                'validityStartDate' => '2007-01-01T00:00:00',
+                'geographicalAreaSid' => 112,
+              },
+            ],
+          }
+        end
+
+        let(:expected_message) { "Skipping membership import due to missing geographical area group sid. hjid is 25654\n" }
+
+        let(:expected_xml_node) do
+          {
+            'hjid' => '23501',
+            'sid' => '114',
+            'geographicalAreaId' => '1010',
+            'geographicalCode' => '1',
+            'validityStartDate' => '1958-01-01T00:00:00',
+            'geographicalAreaMembership' => [
+              { 'hjid' => '25473', 'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' }, 'geographicalAreaGroupSid' => 114, 'validityStartDate' => '2007-01-01T00:00:00', 'geographicalAreaSid' => 112 },
+            ],
+          }
+        end
+
+        it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
+          mapper.import
+
+          expect(geographical_area_with_multiple_members_xml_node).to eq(expected_hash)
+        end
+
+        it 'instruments a message about the missing sid' do
+          mapper.import
+
+          expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+            'apply.import_warnings',
+            message: expected_message, xml_node: expected_xml_node,
+          )
+        end
+      end
     end
 
     context 'when the node is a GeographicalArea with a single member' do
@@ -124,7 +180,7 @@ describe CdsImporter::EntityMapper do
           'geographicalAreaId' => '1010',
           'geographicalCode' => '1',
           'validityStartDate' => '1958-01-01T00:00:00',
-          'geographicalAreaMembership' => 
+          'geographicalAreaMembership' =>
           {
             'hjid' => '25654',
             'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
@@ -141,11 +197,11 @@ describe CdsImporter::EntityMapper do
           'geographicalAreaId' => '1010',
           'geographicalCode' => '1',
           'validityStartDate' => '1958-01-01T00:00:00',
-          'geographicalAreaMembership' => 
+          'geographicalAreaMembership' =>
             [
               {
                 'hjid' => '25654',
-                'metainfo' => {'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45'},
+                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
                 'geographicalAreaGroupSid' => 114,
                 'validityStartDate' => '2004-05-01T00:00:00',
                 'geographicalAreaSid' => 331,
@@ -223,8 +279,8 @@ describe CdsImporter::EntityMapper do
     context 'when measureExcludedGeographicalArea changes are present' do
       let(:xml_node) do
         {
-          'sid'  =>  '20130650',
-          'validityStartDate'  =>  '2021-01-01T00:00:00',
+          'sid' => '20130650',
+          'validityStartDate' => '2021-01-01T00:00:00',
           'metainfo' => {
             'opType' => 'C',
             'origin' => 'T',
@@ -252,10 +308,7 @@ describe CdsImporter::EntityMapper do
       end
 
       let(:mapper) { described_class.new('Measure', xml_node) }
-
-      let(:measure) {
-        create(:measure, measure_sid: '20130650')
-      }
+      let(:measure) { create(:measure, measure_sid: '20130650') }
 
       it 'does not remove excluded geographical areas that belong to measures not present within the XML increment' do
         create(:geographical_area, geographical_area_sid: '439')
@@ -266,7 +319,45 @@ describe CdsImporter::EntityMapper do
         expect(MeasureExcludedGeographicalArea[measure_sid: other_exclusion.measure_sid]).to be_present
       end
 
-      context 'when there is an existing exclusion for this measure' do # rubocop:disable RSpec/NestedGroups
+      context 'when the xml node is missing the root sid for the measure' do
+        before do
+          allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+          xml_node.delete('sid')
+        end
+
+        let(:expected_message) do
+          'Skipping removal of measure geographical exclusions due to missing measure sid.'
+        end
+
+        let(:expected_xml_node) do
+          {
+            'validityStartDate' => '2021-01-01T00:00:00',
+            'metainfo' => {
+              'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-02-01T17:42:46'
+            },
+            'measureExcludedGeographicalArea' => [
+              {
+                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-02-01T17:42:46' },
+                'geographicalArea' => { 'hjid' => '23808', 'sid' => '439', 'geographicalAreaId' => 'CN', 'validityStartDate' => '1984-01-01T00:00:00' },
+              },
+            ],
+          }
+        end
+
+        it 'does not mutate the xml node' do
+          expect { mapper.import }.not_to change { xml_node }
+        end
+
+        it 'instruments a message about the missing sid' do
+          mapper.import
+
+          expect(ActiveSupport::Notifications).to have_received(:instrument).with(
+            'apply.import_warnings', message: expected_message, xml_node: expected_xml_node
+          )
+        end
+      end
+
+      context 'when there is an existing exclusion for this measure' do
         it 'does a hard delete of that exclusion' do
           create(:geographical_area, geographical_area_sid: '439')
 

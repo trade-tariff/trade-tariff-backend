@@ -60,7 +60,13 @@ class CdsImporter
     end
 
     def remove_excluded_geographical_areas!
-      return if xml_node['sid'].blank?
+      if xml_node['sid'].blank?
+        message = 'Skipping removal of measure geographical exclusions due to missing measure sid.'
+
+        instrument_warning(message, xml_node)
+
+        return
+      end
 
       MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
     end
@@ -75,7 +81,12 @@ class CdsImporter
       convert_single_geo_area_member_to_array!
 
       xml_node['geographicalAreaMembership'] = xml_node['geographicalAreaMembership'].each_with_object([]) do |geographical_area_membership, array|
-        next unless geographical_area_membership.key?('geographicalAreaGroupSid')
+        unless geographical_area_membership.key?('geographicalAreaGroupSid')
+          message = "Skipping membership import due to missing geographical area group sid. hjid is #{geographical_area_membership['hjid']}\n"
+
+          instrument_warning(message, xml_node)
+          next
+        end
 
         geographical_area = GeographicalArea[hjid: geographical_area_membership['geographicalAreaGroupSid']]
 
@@ -94,6 +105,10 @@ class CdsImporter
       return if xml_node['geographicalAreaMembership'].is_a?(Array)
 
       xml_node['geographicalAreaMembership'] = [xml_node['geographicalAreaMembership']]
+    end
+
+    def instrument_warning(message, xml_node)
+      instrument('apply.import_warnings', message: message, xml_node: xml_node)
     end
   end
 end
