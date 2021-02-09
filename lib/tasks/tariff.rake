@@ -414,13 +414,4 @@ namespace :tariff do
       puts not_on_eu
     end
   end
-
-  namespace :audit do
-    desc 'Traverse all TARIC tables and perform conformance validations on all the records'
-    task verify: %i[environment class_eager_load] do
-      models = ENV['MODELS'] ? ENV['MODELS'].split(',') : []
-
-      TradeTariffBackend::Auditor.new(models, ENV['SINCE'], ENV['AUDIT_LOG']).run
-    end
-  end
 end
