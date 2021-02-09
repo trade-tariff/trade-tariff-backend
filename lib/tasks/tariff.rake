@@ -420,6 +420,7 @@ namespace :tariff do
     task verify: %i[environment class_eager_load] do
       models = ENV['MODELS'] ? ENV['MODELS'].split(',') : []
 
+      require 'trade_tariff_backend/auditor'
       TradeTariffBackend::Auditor.new(models, ENV['SINCE'], ENV['AUDIT_LOG']).run
     end
   end
