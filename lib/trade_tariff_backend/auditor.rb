@@ -10,7 +10,7 @@ module TradeTariffBackend
     # Audit logger
     # File is rewritten on each auditor run
     cattr_accessor :logger
-    self.logger = Logger.new(File.open('log/audit.log', 'w+'))
+    self.logger = Logger.new(File.open('log/audit.log', 'ab'))
 
     attr_reader :audit_file_name, :graphical
 
