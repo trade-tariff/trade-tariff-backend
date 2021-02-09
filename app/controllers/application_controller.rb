@@ -1,6 +1,7 @@
 class ApplicationController < ActionController::Base
   respond_to :json, :html
 
+  before_action :clear_association_queries
   around_action :configure_time_machine
 
   unless Rails.application.config.consider_all_requests_local
@@ -58,5 +59,9 @@ class ApplicationController < ActionController::Base
     TimeMachine.at(actual_date) do
       yield
     end
+  end
+
+  def clear_association_queries
+    TradeTariffBackend.clearable_models.map(&:clear_association_cache)
   end
 end
