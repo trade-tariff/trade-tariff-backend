@@ -58,17 +58,6 @@ RSpec.configure do |config|
     Rails.cache.clear
     Sidekiq::Worker.clear_all
 
-    clearable_models = [
-      Certificate,
-      Chief::Tamf,
-      ExportRefundNomenclature,
-      Footnote,
-      GeographicalArea,
-      GoodsNomenclature,
-      Measure,
-      QuotaOrderNumber,
-    ]
-
-    clearable_models.map(&:clear_association_cache)
+    TradeTariffBackend.clearable_models.map(&:clear_association_cache)
   end
 end

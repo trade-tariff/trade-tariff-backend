@@ -169,6 +169,19 @@ module TradeTariffBackend
       [Heading, Certificate, AdditionalCode, Footnote]
     end
 
+    def clearable_models
+      [
+        Certificate,
+        Chief::Tamf,
+        ExportRefundNomenclature,
+        Footnote,
+        GeographicalArea,
+        GoodsNomenclature,
+        Measure,
+        QuotaOrderNumber,
+      ]
+    end
+
     def search_indexes
       indexed_models.map { |model|
         "::Search::#{model}Index".constantize.new(search_namespace)
