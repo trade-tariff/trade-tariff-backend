@@ -6,6 +6,7 @@ class CachedCommodityService
     'heading',
     'ancestors',
     'footnotes',
+    'import_measures',
     'import_measures.duty_expression',
     'import_measures.measure_type',
     'import_measures.legal_acts',
@@ -21,6 +22,7 @@ class CachedCommodityService
     'import_measures.additional_code',
     'import_measures.order_number',
     'import_measures.order_number.definition',
+    'export_measures',
     'export_measures.duty_expression',
     'export_measures.measure_type',
     'export_measures.legal_acts',
@@ -84,9 +86,10 @@ class CachedCommodityService
 
   TTL = 24.hours
 
-  def initialize(commodity, actual_date)
+  def initialize(commodity, actual_date, filter_params)
     @commodity = commodity
     @actual_date = actual_date
+    @filter_params = filter_params
   end
 
   def call
@@ -97,7 +100,7 @@ class CachedCommodityService
 
   private
 
-  attr_reader :commodity, :actual_date
+  attr_reader :commodity, :actual_date, :filter_params
 
   def presented_commodity
     Api::V2::Commodities::CommodityPresenter.new(commodity, presented_measures)
@@ -115,10 +118,29 @@ class CachedCommodityService
   end
 
   def measures
-    @commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
+    measures = commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH)
+    measures = measures.all
+
+    if filter_by_country_id?
+      measures.select { |measure| measure.relevant_for_country?(filtering_country.geographical_area_id) }
+    else
+      measures
+    end
+  end
+
+  def filter_by_country_id?
+    filter_params && filter_params[:geographical_area_id].present?
   end
 
   def cache_key
-    "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}"
+    key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}"
+
+    return key unless filter_by_country_id?
+
+    "#{key}-#{filtering_country&.geographical_area_id}"
+  end
+
+  def filtering_country
+    @filtering_country ||= GeographicalArea.find(geographical_area_id: filter_params[:geographical_area_id])
   end
 end

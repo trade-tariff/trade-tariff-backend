@@ -4,7 +4,7 @@ module Api
       before_action :find_commodity, only: %i[show changes]
 
       def show
-        render json: CachedCommodityService.new(@commodity, actual_date).call
+        render json: cached_commodity
       end
 
       def changes
@@ -28,6 +28,14 @@ module Api
 
         raise Sequel::RecordNotFound if @commodity.children.any?
         raise Sequel::RecordNotFound if @commodity.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
+      end
+
+      def cached_commodity
+        CachedCommodityService.new(@commodity, actual_date, filter_params).call
+      end
+
+      def filter_params
+        params.require(:filter).permit(:geographical_area_id) if params[:filter].present?
       end
     end
   end

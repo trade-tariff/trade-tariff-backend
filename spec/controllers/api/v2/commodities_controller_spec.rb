@@ -61,9 +61,20 @@ describe Api::V2::CommoditiesController, 'GET #show' do
     it 'initializes the CachedCommodityService' do
       get :show, params: { id: commodity }, format: :json
 
-      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today)
+      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, nil)
     end
 
+    context 'when a filter for geographical_area_id is passed' do
+      let(:filter) { { geographical_area_id: 'RO' } }
+
+      it 'passes the filter to the CachedCommodityService' do
+        get :show, params: { id: commodity, filter: filter }, format: :json
+
+        filter_params = ActionController::Parameters.new(geographical_area_id: 'RO').permit!
+
+        expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, filter_params)
+      end
+    end
   end
 
   context 'when record is not present' do
