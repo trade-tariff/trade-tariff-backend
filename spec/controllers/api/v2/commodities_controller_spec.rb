@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 describe Api::V2::CommoditiesController, 'GET #show' do
-  render_views
-
   let!(:commodity) do
     create :commodity, :with_indent,
            :with_chapter,
@@ -50,11 +48,22 @@ describe Api::V2::CommoditiesController, 'GET #show' do
   end
 
   context 'when record is present' do
+    before do
+      allow(CachedCommodityService).to receive(:new).and_call_original
+    end
+
     it 'returns rendered record' do
       get :show, params: { id: commodity }, format: :json
 
       expect(response.body).to match_json_expression pattern
     end
+
+    it 'initializes the CachedCommodityService' do
+      get :show, params: { id: commodity }, format: :json
+
+      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today)
+    end
+
   end
 
   context 'when record is not present' do
