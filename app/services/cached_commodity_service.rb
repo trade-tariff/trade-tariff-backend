@@ -121,13 +121,9 @@ class CachedCommodityService
 
   def measures
     measures = commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
-    if filter_by_country_id? && filtering_country.present?
-      measures.select do |measure|
-        measure.relevant_for_country?(filtering_country.geographical_area_id)
-      end
-    else
-      measures
-    end
+    return measures unless filter_by_country_id? && filtering_country.present?
+
+    apply_filter(measures, filtering_country)
   end
 
   def filter_by_country_id?
@@ -144,5 +140,11 @@ class CachedCommodityService
 
   def filtering_country
     @filtering_country ||= GeographicalArea.find(geographical_area_id: filter_params[:geographical_area_id])
+  end
+
+  def apply_filter(measures, filtering_country)
+    measures.select do |measure|
+      measure.relevant_for_country?(filtering_country.geographical_area_id)
+    end
   end
 end
