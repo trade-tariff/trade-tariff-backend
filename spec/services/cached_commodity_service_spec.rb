@@ -53,16 +53,64 @@ describe CachedCommodityService do
             type: 'section',
             attributes: Hash,
           },
+          {
+            id: String,
+            type: 'duty_expression',
+            attributes: Hash,
+          },
+          {
+            id: String,
+            type: 'measure_type',
+            attributes: Hash,
+          },
+          {
+            id: String,
+            type: 'legal_act',
+            attributes: Hash,
+          },
+          {
+            id: String,
+            type: 'geographical_area',
+            attributes: Hash,
+            relationships: {
+              children_geographical_areas: Hash,
+            },
+          },
+          {
+            id: String,
+            type: 'measure',
+            attributes: Hash,
+            relationships: {
+              duty_expression: Hash,
+              measure_type: Hash,
+              legal_acts: Hash,
+              measure_conditions: Hash,
+              measure_components: Hash,
+              national_measurement_units: Hash,
+              geographical_area: Hash,
+              excluded_countries: Hash,
+              footnotes: Hash,
+              order_number: Hash,
+            },
+          },
         ],
       }
     end
 
     let(:geographical_area) { create(:geographical_area, :country) }
-
-    let(:measure) { create(:measure, geographical_area_id: geographical_area.geographical_area_id, geographical_area_sid: geographical_area.geographical_area_sid) }
+    let(:measure) { create(:measure) }
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
+
+      geographical_area.geographical_area_id = 'RO'
+      geographical_area.save
+
+      measure.goods_nomenclature_item_id = commodity.goods_nomenclature_item_id
+      measure.goods_nomenclature_sid = commodity.goods_nomenclature_sid
+      measure.geographical_area_sid = geographical_area.geographical_area_sid
+      measure.geographical_area_id = geographical_area.geographical_area_id
+      measure.save
     end
 
     it 'returns a correctly serialized hash' do

@@ -107,7 +107,7 @@ class CachedCommodityService
   end
 
   def presented_measures
-    MeasurePresenter.new(measures, commodity).validate!
+    Api::V2::MeasurePresenter.new(measures, commodity).validate!
   end
 
   def options
@@ -118,11 +118,11 @@ class CachedCommodityService
   end
 
   def measures
-    measures = commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH)
-    measures = measures.all
-
-    if filter_by_country_id?
-      measures.select { |measure| measure.relevant_for_country?(filtering_country.geographical_area_id) }
+    measures = commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
+    if filter_by_country_id? && filtering_country.present?
+      measures.select do |measure|
+        measure.relevant_for_country?(filtering_country.geographical_area_id)
+      end
     else
       measures
     end
