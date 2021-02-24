@@ -31,11 +31,13 @@ FactoryBot.define do
                                   producline_suffix: gono_producline_suffix,
                                   indents: gono_number_indents
     end
+
     f.measure_type do
       create :measure_type, measure_type_id: measure_type_id,
                             validity_start_date: validity_start_date - 1.day,
                             measure_explosion_level: type_explosion_level,
-                            order_number_capture_code: order_number_capture_code
+                            order_number_capture_code: order_number_capture_code,
+                            trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample
     end
     f.geographical_area do
       create(:geographical_area, geographical_area_sid: geographical_area_sid,

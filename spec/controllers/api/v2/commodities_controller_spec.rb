@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 describe Api::V2::CommoditiesController, 'GET #show' do
-  render_views
-
   let!(:commodity) do
     create :commodity, :with_indent,
            :with_chapter,
@@ -50,10 +48,32 @@ describe Api::V2::CommoditiesController, 'GET #show' do
   end
 
   context 'when record is present' do
+    before do
+      allow(CachedCommodityService).to receive(:new).and_call_original
+    end
+
     it 'returns rendered record' do
       get :show, params: { id: commodity }, format: :json
 
       expect(response.body).to match_json_expression pattern
+    end
+
+    it 'initializes the CachedCommodityService' do
+      get :show, params: { id: commodity }, format: :json
+
+      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, nil)
+    end
+
+    context 'when a filter for geographical_area_id is passed' do
+      let(:filter) { { geographical_area_id: 'RO' } }
+
+      it 'passes the filter to the CachedCommodityService' do
+        get :show, params: { id: commodity, filter: filter }, format: :json
+
+        filter_params = ActionController::Parameters.new(geographical_area_id: 'RO').permit!
+
+        expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, filter_params)
+      end
     end
   end
 

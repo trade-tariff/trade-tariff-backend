@@ -1,6 +1,7 @@
 class GeographicalArea < Sequel::Model
   COUNTRIES_CODES = %w[0 2].freeze
   AREAS_CODES = %w[0 1 2].freeze
+  ERGA_OMNES_ID = '1011'.freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :geographical_area_sid

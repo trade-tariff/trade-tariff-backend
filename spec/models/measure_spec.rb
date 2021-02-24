@@ -1188,4 +1188,53 @@ describe Measure do
       }
     end
   end
+
+  describe '#relevant_for_country?' do
+    context 'when the measure excludes the country id' do
+      subject(:measure) { exclusion.measure }
+
+      let(:exclusion) { create(:measure_excluded_geographical_area) }
+
+      it 'returns false' do
+        expect(measure.relevant_for_country?(exclusion.geographical_area.geographical_area_id)).to eq(false)
+      end
+    end
+
+    context 'when the measure is a national measure and its geographical area is the world' do
+      subject(:measure) { create(:measure, :national, geographical_area_id: '1011') }
+
+      it 'returns true' do
+        expect(measure.relevant_for_country?('foo')).to eq(true)
+      end
+    end
+
+    context 'when the measure has no geographical area' do
+      subject(:measure) { create(:measure, geographical_area_sid: nil, geographical_area_id: nil) }
+
+      it 'returns true' do
+        expect(measure.relevant_for_country?('foo')).to eq(true)
+      end
+    end
+
+    context 'when the measure has a geographical area that is the country' do
+      subject(:measure) { create(:measure) }
+
+      it 'returns true' do
+        expect(measure.relevant_for_country?(measure.geographical_area_id)).to eq(true)
+      end
+    end
+
+    context 'when the measure has a contained geographical area that is the country' do
+      subject(:measure) { create(:measure, geographical_area_sid: geographical_area.geographical_area_sid) }
+
+      let(:geographical_area) { create(:geographical_area, :group) }
+      let(:contained_geographical_area) { create(:geographical_area, :country) }
+
+      let!(:membership) { create(:geographical_area_membership, geographical_area_sid: contained_geographical_area.geographical_area_sid, geographical_area_group_sid: geographical_area.geographical_area_sid) }
+
+      it 'returns true' do
+        expect(measure.relevant_for_country?(contained_geographical_area.geographical_area_id)).to eq(true)
+      end
+    end
+  end
 end
