@@ -107,7 +107,9 @@ class CachedCommodityService
   end
 
   def presented_measures
-    Api::V2::MeasurePresenter.new(measures, commodity).validate!
+    # TODO: This should be Api::V2::Measures::MeasurePresenter. It works currently because the real presenter used by the CommodityPresenter uses the correct V2 measures presenter.
+    #       Also, why are we validating in a presenter?
+    MeasurePresenter.new(measures, commodity).validate!
   end
 
   def options
