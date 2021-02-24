@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 describe Api::V2::GeographicalAreasController, 'GET #countries' do
-  render_views
-
   let!(:geographical_area1) do
     create :geographical_area,
            :with_description,
@@ -26,6 +24,7 @@ describe Api::V2::GeographicalAreasController, 'GET #countries' do
         { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
         { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
       ],
+      included: Array,
     }
   end
 
@@ -72,6 +71,7 @@ describe Api::V2::GeographicalAreasController, 'GET #countries' do
           { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
           { id: String, type: String, attributes: { id: String, description: String, geographical_area_id: String }, relationships: { children_geographical_areas: { data: [] } } },
         ],
+        included: Array,
       }
     end
 
@@ -117,7 +117,7 @@ describe Api::V2::GeographicalAreasController, 'GET #countries' do
     let!(:parent_geographical_area) do
       create :geographical_area,
              :with_description,
-             geographical_code: '1'
+             :group
     end
     let!(:geographical_area_membership1) do
       create :geographical_area_membership,
@@ -131,73 +131,97 @@ describe Api::V2::GeographicalAreasController, 'GET #countries' do
     end
 
     let(:pattern) do
-      { data: [
-        {
-          id: String,
-          type: 'geographical_area',
-          attributes: {
+      {
+        data: [
+          {
             id: String,
-            description: String,
-            geographical_area_id: String,
-          },
-          relationships: {
-            children_geographical_areas: {
-              data: [],
+            type: 'geographical_area',
+            attributes: {
+              id: String,
+              description: String,
+              geographical_area_id: String,
+            },
+            relationships: {
+              children_geographical_areas: {
+                data: [],
+              },
             },
           },
-        },
-        {
-          id: String,
-          type: 'geographical_area',
-          attributes: {
+          {
             id: String,
-            description: String,
-            geographical_area_id: String,
-          },
-          relationships: {
-            children_geographical_areas: {
-              data: [],
+            type: 'geographical_area',
+            attributes: {
+              id: String,
+              description: String,
+              geographical_area_id: String,
+            },
+            relationships: {
+              children_geographical_areas: {
+                data: [],
+              },
             },
           },
-        },
-        {
-          id: String,
-          type: 'geographical_area',
-          attributes: {
+          {
             id: String,
-            description: String,
-            geographical_area_id: String,
-          },
-          relationships: {
-            children_geographical_areas: {
-              data: [],
+            type: 'geographical_area',
+            attributes: {
+              id: String,
+              description: String,
+              geographical_area_id: String,
+            },
+            relationships: {
+              children_geographical_areas: {
+                data: [],
+              },
             },
           },
-        },
-        {
-          id: parent_geographical_area.geographical_area_id,
-          type: 'geographical_area',
-          attributes: {
+          {
             id: parent_geographical_area.geographical_area_id,
-            description: String,
-            geographical_area_id: String,
-          },
-          relationships: {
-            children_geographical_areas: {
-              data: [
-                {
-                  id: geographical_area1.geographical_area_id,
-                  type: 'geographical_area',
-                },
-                {
-                  id: geographical_area3.geographical_area_id,
-                  type: 'geographical_area',
-                },
-              ],
+            type: 'geographical_area',
+            attributes: {
+              id: parent_geographical_area.geographical_area_id,
+              description: String,
+              geographical_area_id: String,
+            },
+            relationships: {
+              children_geographical_areas: {
+                data: [
+                  {
+                    id: geographical_area1.geographical_area_id,
+                    type: 'geographical_area',
+                  },
+                  {
+                    id: geographical_area3.geographical_area_id,
+                    type: 'geographical_area',
+                  },
+                ],
+              },
             },
           },
-        },
-      ] }
+        ],
+        included: [
+          {
+            id: geographical_area1.geographical_area_id,
+            type: 'geographical_area',
+            attributes: {
+              id: geographical_area1.geographical_area_id,
+              description: String,
+              geographical_area_id: String,
+            },
+            relationships: Hash,
+          },
+          {
+            id: geographical_area3.geographical_area_id,
+            type: 'geographical_area',
+            attributes: {
+              id: geographical_area3.geographical_area_id,
+              description: String,
+              geographical_area_id: String,
+            },
+            relationships: Hash,
+          },
+        ],
+      }
     end
 
     it 'returns rendered records' do
