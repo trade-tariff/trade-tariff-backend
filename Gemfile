@@ -58,7 +58,7 @@ gem 'tilt'
 # Printed PDF
 gem 'combine_pdf'
 gem 'sidekiq-batch'
-gem 'uktt', '~> 0.2.16', git: 'https://github.com/TransformCore/uktt.git'
+gem 'uktt', '~> 0.6.0', git: 'https://github.com/trade-tariff/uktt.git'
 
 # Newrelic
 gem 'newrelic_rpm'
