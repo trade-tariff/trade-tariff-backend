@@ -1,5 +1,5 @@
 GIT
-  remote: https://github.com/TransformCore/uktt.git
+  remote: https://github.com/trade-tariff/uktt.git
   revision: eb6cb89c7acfd5d7d14b01203ce07da0e09491e0
   specs:
     uktt (0.6.0)
