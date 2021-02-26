@@ -23,6 +23,9 @@ describe Api::V2::CommoditiesController, 'GET #show' do
           import_measures: Hash,
           export_measures: Hash,
         },
+        meta: {
+          duty_calculator: Hash,
+        },
       },
       included: [
         {

@@ -48,6 +48,10 @@ module Api
           import_measures.any?(&:meursing?) || export_measures.any?(&:meursing?)
         end
         alias meursing_code meursing_code?
+
+        def zero_mfn_duty?
+          import_measures.any?(&:zero_mfn?)
+        end
       end
     end
   end

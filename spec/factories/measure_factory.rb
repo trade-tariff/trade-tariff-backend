@@ -9,6 +9,8 @@ FactoryBot.define do
       gono_number_indents { 1 }
       gono_producline_suffix { '80' }
       order_number_capture_code { 2 }
+      duty_amount { Forgery(:basic).number }
+      measure_components_count { 1 }
     end
 
     f.measure_sid { generate(:measure_sid) }
@@ -65,6 +67,21 @@ FactoryBot.define do
 
     trait :with_measure_type do
       # noop
+    end
+
+    trait :third_country do
+      measure_type_id { MeasureType::THIRD_COUNTRY.sample }
+    end
+
+    trait :with_measure_components do
+      after(:build) do |measure, evaluator|
+        FactoryBot.create_list(
+          :measure_component,
+          evaluator.measure_components_count,
+          measure_sid: measure.measure_sid,
+          duty_amount: evaluator.duty_amount,
+        )
+      end
     end
 
     trait :with_modification_regulation do

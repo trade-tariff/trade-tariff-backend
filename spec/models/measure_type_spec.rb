@@ -63,7 +63,7 @@ describe MeasureType do
       end
     end
 
-    context 'measure_type is a 105 third country' do
+    context 'measure_type has measure_type_id of 105' do
       let(:measure_type) { build :measure_type, measure_type_id: '105' }
 
       it 'returns true' do

@@ -389,6 +389,12 @@ class Measure < Sequel::Model
     measure_components.any?(&:meursing?)
   end
 
+  def zero_mfn?
+    third_country? &&
+      measure_components.count == 1 &&
+      measure_components.any?(&:zero_duty?)
+  end
+
   def order_number
     if quota_order_number.present?
       quota_order_number
