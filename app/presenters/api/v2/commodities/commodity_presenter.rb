@@ -45,7 +45,7 @@ module Api
         end
 
         def meursing_code?
-          import_measures.any?(&:meursing?) || export_measures.any?(&:meursing?)
+          import_measures.any?(&:meursing?)
         end
         alias_method :meursing_code, :meursing_code?
 
