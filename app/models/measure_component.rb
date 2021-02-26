@@ -48,6 +48,10 @@ class MeasureComponent < Sequel::Model
     duty_expression_id.in?(DutyExpression::MEURSING_DUTY_EXPRESSION_IDS)
   end
 
+  def zero_duty?
+    duty_amount&.zero?
+  end
+
   private
 
   def duty_expression_formatter_options

@@ -5,7 +5,7 @@
 class MeasureType < Sequel::Model
   IMPORT_MOVEMENT_CODES = [0, 2].freeze
   EXPORT_MOVEMENT_CODES = [1, 2].freeze
-  THIRD_COUNTRY = '103'.freeze
+  THIRD_COUNTRY = %w[103 105].freeze # 105 measure types are for end use Third Country duties. 103 are for everything else
   VAT_TYPES = %w[VTA VTE VTS VTZ 305].freeze
   SUPPLEMENTARY_TYPES = %w[109 110 111].freeze
   QUOTA_TYPES = %w[046 122 123 143 146 147 653 654].freeze
@@ -42,7 +42,7 @@ class MeasureType < Sequel::Model
   end
 
   def third_country?
-    measure_type_id == THIRD_COUNTRY
+    measure_type_id.in?(THIRD_COUNTRY)
   end
 
   # 306

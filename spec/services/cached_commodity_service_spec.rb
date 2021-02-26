@@ -33,6 +33,9 @@ describe CachedCommodityService do
             import_measures: Hash,
             export_measures: Hash,
           },
+          meta: {
+            duty_calculator: Hash,
+          },
         },
         included: [
           {
