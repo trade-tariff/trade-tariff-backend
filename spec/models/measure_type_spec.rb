@@ -55,16 +55,24 @@ describe MeasureType do
   end
 
   describe '#third_country?' do
-    context 'measure_type is third country' do
-      let(:measure_type) { build :measure_type, measure_type_id: MeasureType::THIRD_COUNTRY }
+    context 'measure_type has measure_type_id of 103' do
+      let(:measure_type) { build :measure_type, measure_type_id: '103' }
 
       it 'returns true' do
         expect(measure_type).to be_third_country
       end
     end
 
-    context 'measure_type is not third country' do
-      let(:measure_type) { build :measure_type, measure_type_id: 'aaa' }
+    context 'measure_type is a 105 third country' do
+      let(:measure_type) { build :measure_type, measure_type_id: '105' }
+
+      it 'returns true' do
+        expect(measure_type).to be_third_country
+      end
+    end
+
+    context 'measure_type is non-third-country measure_type_id' do
+      let(:measure_type) { build :measure_type, measure_type_id: 'foo' }
 
       it 'returns false' do
         expect(measure_type).not_to be_third_country
