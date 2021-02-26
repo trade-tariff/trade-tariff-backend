@@ -79,4 +79,22 @@ describe MeasureType do
       end
     end
   end
+
+  describe '#trade_remedy?' do
+    context 'measure_type has measure_type_id that is a defense measure type' do
+      let(:measure_type) { build :measure_type, measure_type_id: MeasureType::DEFENSE_MEASURES.sample }
+
+      it 'returns true' do
+        expect(measure_type).to be_trade_remedy
+      end
+    end
+
+    context 'measure_type does not have a measure_type_id that is a defense measure type' do
+      let(:measure_type) { build :measure_type, measure_type_id: 'foo' }
+
+      it 'returns false' do
+        expect(measure_type).not_to be_trade_remedy
+      end
+    end
+  end
 end

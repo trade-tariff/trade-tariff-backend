@@ -94,7 +94,7 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
-  delegate :third_country?, :excise?, :vat?, to: :measure_type, allow_nil: true
+  delegate :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
 
   def full_temporary_stop_regulation
     full_temporary_stop_regulations.first
