@@ -392,7 +392,7 @@ class Measure < Sequel::Model
   def zero_mfn?
     third_country? &&
       measure_components.count == 1 &&
-      measure_components.first.zero_duty
+      measure_components.first.zero_duty?
   end
 
   def order_number
