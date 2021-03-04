@@ -94,7 +94,7 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
-  delegate :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
+  delegate :third_country?, :expresses_unit?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
 
   def full_temporary_stop_regulation
     full_temporary_stop_regulations.first
@@ -420,7 +420,6 @@ class Measure < Sequel::Model
     return false if measure_excluded_geographical_areas.map(&:excluded_geographical_area).include?(country_id)
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?
     return true if geographical_area_id.blank? || geographical_area_id == country_id
-
     geographical_area.contained_geographical_areas.map(&:geographical_area_id).include?(country_id)
   end
 
@@ -435,5 +434,29 @@ class Measure < Sequel::Model
      .where { |o| o.<=(:validity_start_date, point_in_time) }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last))
+  end
+
+  def ad_valorum?
+    measure_components.count == 1 & measure_component.first(&:ad_valorum)
+  end
+
+  def measure_component_units
+    measure_components.map do |component|
+      {
+        "measure_sid" => component.measure_sid,
+        "measurement_unit_code" => component.measurement_unit_code,
+        "measurement_unit_qualifier_code" => component.measurement_unit_qualifier_code,
+      }
+    end
+  end
+
+  def measure_condition_units
+    measure_conditions.map do |condition|
+      {
+        "measure_sid" => condition.measure_sid,
+        "measurement_unit_code" => condition.condition_measurement_unit_code,
+        "measurement_unit_qualifier_code" => condition.condition_measurement_unit_qualifier_code,
+      }
+    end
   end
 end

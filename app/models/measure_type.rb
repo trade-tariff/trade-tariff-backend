@@ -24,6 +24,12 @@ class MeasureType < Sequel::Model
     '696', # Additional duties (safeguard)
   ].freeze
 
+  UNIT_EXPRESSABLE_MEASURES = [
+    'C', # Applicable duty
+    'D', # Anti-dumping/countervailing measures
+    'J', # Countervailing charge
+  ].freeze
+
   plugin :time_machine, period_start_column: :measure_types__validity_start_date,
                         period_end_column: :measure_types__validity_end_date
   plugin :oplog, primary_key: :measure_type_id
@@ -57,6 +63,10 @@ class MeasureType < Sequel::Model
 
   def trade_remedy?
     measure_type_id.in?(DEFENSE_MEASURES)
+  end
+
+  def expresses_unit?
+    measure_type_series_id.in?(UNIT_EXPRESSABLE_MEASURES)
   end
 
   # 306

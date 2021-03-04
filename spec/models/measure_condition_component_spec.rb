@@ -26,4 +26,18 @@ describe MeasureConditionComponent do
       end
     end
   end
+
+  describe '#ad_valorum?' do
+    context 'when the measure component is an ad valorum component' do
+      subject(:measure_condition_component) { create(:measure_condition_component, :ad_valorum) }
+
+      it { is_expected.to be_ad_valorum }
+    end
+
+    context 'when the measure component is not an ad valorum component' do
+      subject(:measure_condition_component) { create(:measure_condition_component) }
+
+      it { is_expected.not_to be_ad_valorum }
+    end
+  end
 end

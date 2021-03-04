@@ -1,4 +1,6 @@
 class MeasureComponent < Sequel::Model
+  AD_VALORUM_DUTY_EXPRESSION = '%'.freeze
+
   include Formatter
 
   plugin :time_machine
@@ -36,11 +38,13 @@ class MeasureComponent < Sequel::Model
 
   def formatted_duty_expression
     return '' if measure.measure_type_id.in?(%w(DDA DDJ))
+
     DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
   end
 
   def duty_expression_str
     return '' if measure.measure_type_id.in?(%w(DDA DDJ))
+
     DutyExpressionFormatter.format(duty_expression_formatter_options)
   end
 
@@ -50,6 +54,12 @@ class MeasureComponent < Sequel::Model
 
   def zero_duty?
     duty_amount&.zero?
+  end
+
+  def ad_valorum?
+    measurement_unit_code.nil? &&
+      monetary_unit_code.nil? &&
+      duty_expression_id == DutyExpression::AD_VALORUM_DUTY_EXPRESSION_ID
   end
 
   private
@@ -65,7 +75,7 @@ class MeasureComponent < Sequel::Model
       measurement_unit: measurement_unit,
       measurement_unit_qualifier: measurement_unit_qualifier,
       currency: TradeTariffBackend.currency,
-      excise: measure.excise?
+      excise: measure.excise?,
     }
   end
 end
