@@ -18,8 +18,8 @@ gem 'sequel', '~> 5.22.0'
 gem 'sequel-rails', '~> 1.0.0'
 
 # File uploads and AWS
-gem 'aws-sdk', '~> 3'
-gem 'aws-sdk-rails', '~> 3'
+gem 'aws-sdk-rails'
+gem 'aws-sdk-s3'
 
 # File zip/unzipping
 gem 'rubyzip', '>= 2.3.0'
