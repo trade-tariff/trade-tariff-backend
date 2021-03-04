@@ -14,6 +14,16 @@ class MeasureType < Sequel::Model
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
 
+  DEFENSE_MEASURES = [
+    '551', # Provisional anti-dumping duty
+    '552', # Definitive anti-dumping duty
+    '553', # Provisional countervailing duty
+    '554', # Definitive countervailing duty
+    '555', # Anti-dumping/countervailing duty - Pending collection
+    '695', # Additional duties - these are the retaliatory duties
+    '696', # Additional duties (safeguard)
+  ].freeze
+
   plugin :time_machine, period_start_column: :measure_types__validity_start_date,
                         period_end_column: :measure_types__validity_end_date
   plugin :oplog, primary_key: :measure_type_id
@@ -43,6 +53,10 @@ class MeasureType < Sequel::Model
 
   def third_country?
     measure_type_id.in?(THIRD_COUNTRY)
+  end
+
+  def trade_remedy?
+    measure_type_id.in?(DEFENSE_MEASURES)
   end
 
   # 306
