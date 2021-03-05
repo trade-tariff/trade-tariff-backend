@@ -41,17 +41,17 @@ describe MeasureComponent do
     end
   end
 
-  describe '#ad_valorum?' do
+  describe '#ad_valorem?' do
     context 'when the measure component is an ad valorum component' do
-      subject(:measure_component) { create(:measure_component, :ad_valorum) }
+      subject(:measure_component) { create(:measure_component, :ad_valorem) }
 
-      it { is_expected.to be_ad_valorum }
+      it { is_expected.to be_ad_valorem }
     end
 
     context 'when the measure component is not an ad valorum component' do
       subject(:measure_component) { build(:measure_component) }
 
-      it { is_expected.not_to be_ad_valorum }
+      it { is_expected.not_to be_ad_valorem }
     end
   end
 end

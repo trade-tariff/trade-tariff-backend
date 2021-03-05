@@ -23,8 +23,8 @@ class MeasureUnitService
   attr_reader :measures
 
   def units
-    @units ||= measures.select(&:expresses_unit?).each do |measure|
-      measure.measure_component_units + conditions = measure.measure_condition_units
+    @units ||= measures.select(&:expresses_unit?).flat_map do |measure|
+      measure.measure_component_units + measure.measure_condition_units
     end
   end
 end

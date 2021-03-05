@@ -1,6 +1,4 @@
 class MeasureComponent < Sequel::Model
-  AD_VALORUM_DUTY_EXPRESSION = '%'.freeze
-
   include Formatter
 
   plugin :time_machine
@@ -56,10 +54,10 @@ class MeasureComponent < Sequel::Model
     duty_amount&.zero?
   end
 
-  def ad_valorum?
+  def ad_valorem?
     measurement_unit_code.nil? &&
       monetary_unit_code.nil? &&
-      duty_expression_id == DutyExpression::AD_VALORUM_DUTY_EXPRESSION_ID
+      duty_expression_id == DutyExpression::AD_VALOREM_DUTY_EXPRESSION_ID
   end
 
   private

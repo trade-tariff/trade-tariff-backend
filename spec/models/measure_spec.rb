@@ -1285,4 +1285,32 @@ describe Measure do
       end
     end
   end
+
+  describe '#expresses_unit?' do
+    context 'when the measure type is one that expresses the unit' do
+      context 'when the measure is an ad_valorem measure' do
+        subject(:measure) { create(:measure, :with_measure_components, :ad_valorem, :expresses_units) }
+
+        it 'returns false' do
+          expect(measure).not_to be_expresses_unit
+        end
+      end
+
+      context 'when the measure is not ad_valorem measure' do
+        subject(:measure) { create(:measure, :with_measure_components, :no_ad_valorem, :expresses_units) }
+
+        it 'returns true' do
+          expect(measure).to be_expresses_unit
+        end
+      end
+    end
+
+    context 'when the measure type is one that does not express units' do
+      subject(:measure) { create(:measure, :with_measure_components, :no_expresses_units) }
+
+      it 'returns false' do
+        expect(measure).not_to be_expresses_unit
+      end
+    end
+  end
 end

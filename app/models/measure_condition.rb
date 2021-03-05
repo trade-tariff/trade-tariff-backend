@@ -113,4 +113,8 @@ class MeasureCondition < Sequel::Model
   def duty_expression
     measure_condition_components.map(&:formatted_duty_expression).join(' ')
   end
+
+  def ad_valorem?
+    measure_condition_components.count == 1 && measure_condition_components.first(&:ad_valorem)
+  end
 end

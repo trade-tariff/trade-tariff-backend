@@ -30,6 +30,7 @@ module Api
             duty_calculator: {
               zero_mfn_duty: commodity.zero_mfn_duty?,
               trade_defence: commodity.trade_remedies?,
+              applicable_measure_units: commodity.applicable_measure_units,
             },
           }
         end

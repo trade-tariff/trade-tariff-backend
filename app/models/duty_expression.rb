@@ -1,5 +1,5 @@
 class DutyExpression < Sequel::Model
-  AD_VALORUM_DUTY_EXPRESSION_ID = '01'.freeze
+  AD_VALOREM_DUTY_EXPRESSION_ID = '01'.freeze
   MEURSING_DUTY_EXPRESSION_IDS  = %w[12 14 21 25 27 29].freeze
 
   plugin :time_machine

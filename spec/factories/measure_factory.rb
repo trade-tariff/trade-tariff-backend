@@ -11,6 +11,10 @@ FactoryBot.define do
       order_number_capture_code { 2 }
       duty_amount { Forgery(:basic).number }
       measure_components_count { 1 }
+      duty_expression_id { '02' }
+      measurement_unit_code { nil }
+      monetary_unit_code { nil }
+      measure_type_series_id { 'S' }
     end
 
     f.measure_sid { generate(:measure_sid) }
@@ -39,7 +43,8 @@ FactoryBot.define do
                             validity_start_date: validity_start_date - 1.day,
                             measure_explosion_level: type_explosion_level,
                             order_number_capture_code: order_number_capture_code,
-                            trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample
+                            trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
+                            measure_type_series_id: measure_type_series_id
     end
     f.geographical_area do
       create(:geographical_area, geographical_area_sid: geographical_area_sid,
@@ -69,6 +74,26 @@ FactoryBot.define do
       # noop
     end
 
+    trait :ad_valorem do
+      duty_expression_id { '01' }
+      measurement_unit_code { nil }
+      monetary_unit_code { nil }
+    end
+
+    trait :no_ad_valorem do
+      duty_expression_id { '02' }
+      measurement_unit_code { 'DTN' }
+      monetary_unit_code { nil }
+    end
+
+    trait :expresses_units do
+      measure_type_series_id { 'C' }
+    end
+
+    trait :no_expresses_units do
+      measure_type_series_id { 'S' }
+    end
+
     trait :third_country do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end
@@ -80,6 +105,9 @@ FactoryBot.define do
           evaluator.measure_components_count,
           measure_sid: measure.measure_sid,
           duty_amount: evaluator.duty_amount,
+          duty_expression_id: evaluator.duty_expression_id,
+          measurement_unit_code: evaluator.measurement_unit_code,
+          monetary_unit_code: evaluator.monetary_unit_code,
         )
       end
     end

@@ -33,10 +33,10 @@ class MeasureConditionComponent < Sequel::Model
   delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
   delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
-  def ad_valorum?
+  def ad_valorem?
     monetary_unit_code.nil? &&
       measurement_unit_code.nil? &&
-      duty_expression_id == DutyExpression::AD_VALORUM_DUTY_EXPRESSION_ID
+      duty_expression_id == DutyExpression::AD_VALOREM_DUTY_EXPRESSION_ID
   end
 
   def formatted_duty_expression

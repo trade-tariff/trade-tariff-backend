@@ -94,7 +94,7 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
-  delegate :third_country?, :expresses_unit?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
+  delegate :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
 
   def full_temporary_stop_regulation
     full_temporary_stop_regulations.first
@@ -436,16 +436,28 @@ class Measure < Sequel::Model
      .order(Sequel.desc(:operation_date, nulls: :last))
   end
 
-  def ad_valorum?
-    measure_components.count == 1 & measure_component.first(&:ad_valorum)
+  def expresses_unit?
+    measure_type.expresses_unit? && !ad_valorem?
+  end
+
+  def ad_valorem?
+    ad_valorem_measure_components? || ad_valorem_measure_conditions?
+  end
+
+  def ad_valorem_measure_components?
+    measure_components.count == 1 && measure_components.first(&:ad_valorem) 
+  end
+
+  def ad_valorem_measure_conditions?
+    measure_conditions.count == 1 && measure_conditions.first(&:ad_valorem) 
   end
 
   def measure_component_units
     measure_components.map do |component|
       {
-        "measure_sid" => component.measure_sid,
-        "measurement_unit_code" => component.measurement_unit_code,
-        "measurement_unit_qualifier_code" => component.measurement_unit_qualifier_code,
+        'measure_sid' => component.measure_sid,
+        'measurement_unit_code' => component.measurement_unit_code,
+        'measurement_unit_qualifier_code' => component.measurement_unit_qualifier_code,
       }
     end
   end
@@ -453,9 +465,9 @@ class Measure < Sequel::Model
   def measure_condition_units
     measure_conditions.map do |condition|
       {
-        "measure_sid" => condition.measure_sid,
-        "measurement_unit_code" => condition.condition_measurement_unit_code,
-        "measurement_unit_qualifier_code" => condition.condition_measurement_unit_qualifier_code,
+        'measure_sid' => condition.measure_sid,
+        'measurement_unit_code' => condition.condition_measurement_unit_code,
+        'measurement_unit_qualifier_code' => condition.condition_measurement_unit_qualifier_code,
       }
     end
   end
