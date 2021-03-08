@@ -442,36 +442,29 @@ class Measure < Sequel::Model
   end
 
   def ad_valorem?
-    ad_valorem_measure_components? || ad_valorem_measure_conditions?
+    ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions)
   end
 
-  def ad_valorem_measure_components?
-    measure_components.count == 1 &&
-      measure_components.first.ad_valorem?
+  def ad_valorem_resource?(resource)
+    public_send(resource).count == 1 &&
+      public_send(resource).first.ad_valorem?
   end
 
-  def ad_valorem_measure_conditions?
-    measure_conditions.count == 1 &&
-      measure_conditions.first.ad_valorem?
+  def units
+    component_units + condition_units
   end
 
-  def measure_component_units
-    measure_components.map do |component|
-      {
-        'measure_sid' => component.measure_sid,
-        'measurement_unit_code' => component.measurement_unit_code,
-        'measurement_unit_qualifier_code' => component.measurement_unit_qualifier_code,
-      }
+  private
+
+  def component_units
+    measure_components.map(&:values).map do |component|
+      component.values.slice(:measure_sid, :measurement_unit_code, :measurement_unit_qualifier_code)
     end
   end
 
-  def measure_condition_units
-    measure_conditions.map do |condition|
-      {
-        'measure_sid' => condition.measure_sid,
-        'measurement_unit_code' => condition.condition_measurement_unit_code,
-        'measurement_unit_qualifier_code' => condition.condition_measurement_unit_qualifier_code,
-      }
+  def condition_units
+    measure_components.map(&:values).map do |component|
+      component.values.slice(:measure_sid, :condition_measurement_unit_code, :condition_measurement_unit_qualifier_code)
     end
-  end 
+  end
 end
