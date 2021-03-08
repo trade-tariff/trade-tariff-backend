@@ -1,0 +1,124 @@
+version: 2.1
+
+orbs:
+  ruby: circleci/ruby@1.1.2
+  node: circleci/node@2
+  browser-tools: circleci/browser-tools@1.1
+  cloudfoundry: circleci/cloudfoundry@1.0
+  slack: circleci/slack@4.3.0
+
+jobs:
+  build:
+    docker:
+      - image: cimg/ruby:2.7-node
+      - image: redis
+    resource_class: medium
+    steps:
+      - checkout
+      - ruby/install-deps
+  checking:
+    docker:
+      - image: 'cimg/ruby:2.7-node'
+    resource_class: small
+    steps:
+      - checkout
+      - ruby/install-deps
+      - ruby/rubocop-check:
+          format: progress
+          label: Inspecting with Rubocop
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
+  test:
+    docker:
+      - image: cimg/ruby:2.7
+        environment:
+          BUNDLE_JOBS: "3"
+          BUNDLE_RETRY: "3"
+          RAILS_ENV: test
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+      - image: circleci/postgres:10-alpine
+        environment:
+          POSTGRES_USER: postgres
+          POSTGRES_DB: tariff_test
+          POSTGRES_PASSWORD: postgres
+      - image: circleci/redis:4.0.9
+        environment:
+          - REDIS_URL: "redis://localhost:6379/"
+      - image: docker.elastic.co/elasticsearch/elasticsearch:7.9.3
+        environment:
+          - cluster.name: elasticsearch
+          - xpack.security.enabled: false
+          - transport.host: localhost
+          - network.host: 127.0.0.1
+          - http.port: 9200
+          - discovery.type: single-node
+    resource_class: medium
+    steps:
+      - checkout
+      - run:
+          name: "Install OS packages"
+          command: |
+           sudo apt-get update
+           sudo apt-get install libcurl4-openssl-dev postgresql-client
+      - ruby/install-deps
+      - run:
+          name: "Setup DB"
+          command: |
+            RAILS_ENV=test bundle exec rake db:structure:load --trace
+      - run:
+          name: "Check ElasticSearch for availability"
+          command: |
+            curl "http://localhost:9200/_cat/health"
+#      - ruby/rspec-test
+      - run:
+          name: RSpec Tests
+          command: |
+            mkdir -p "/tmp/test-results/rspec"
+            TESTFILES=$(circleci tests glob "spec/**/*_spec.rb" | circleci tests split --split-by=timings)
+            bundle exec rspec $TESTFILES  --tag '~skip_ci' --profile 10 --format RspecJunitFormatter --out /tmp/test-results/rspec/results.xml --format progress
+      - store_test_results:
+          path: /tmp/test-results/rspec
+      - store_artifacts:
+          destination: test-results
+          path: /tmp/test-results/rspec
+      - store_artifacts:
+          path: coverage
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
+  deploy_dev:
+    docker:
+      - image: cimg/ruby:2.7-node
+    steps:
+      - cf_deploy:
+          space: "development"
+          domain_prefix: "dev"
+  deploy_staging:
+    docker:
+      - image: cimg/ruby:2.7-node
+    steps:
+      - cf_deploy:
+          space: "staging"
+          domain_prefix: "staging"
+
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+# TODO: Fix rubocop issues
+#      - checking:
+#          context: trade-tariff
+      - test:
+          context: trade-tariff
+      - build:
+          context: trade-tariff
+          requires:
+            - test
+#          filters:
+#            branches:
+#              only:
+#                - master
+# TODO: Discuss production deployment strategy.
