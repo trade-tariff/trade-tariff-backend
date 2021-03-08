@@ -1240,9 +1240,14 @@ describe Measure do
 
   describe '#zero_mfn?' do
     context 'when the measure type is a third country' do
-      subject(:measure) { create(:measure, :third_country, :with_measure_components, duty_amount: duty_amount, measure_components_count: measure_components_count) }
-
-      let(:measure_components_count) { 1 }
+      subject(:measure) do
+        create(
+          :measure,
+          :third_country,
+          :with_measure_components,
+          duty_amount: duty_amount,
+        )
+      end
 
       context 'when measure components have zero duty amount' do
         let(:duty_amount) { 0.0 }
@@ -1252,7 +1257,14 @@ describe Measure do
         end
 
         context 'when there are more than one measure components' do
-          let(:measure_components_count) { 2 }
+          before do
+            create(
+              :measure_component,
+              measure_sid: measure.measure_sid,
+              duty_amount: duty_amount,
+              duty_expression_id: '01',
+            )
+          end
 
           it 'returns false' do
             expect(measure).not_to be_zero_mfn
