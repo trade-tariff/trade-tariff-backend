@@ -32,3 +32,5 @@ searches_without_match_or_synonym.csv
 
 /public/pdf
 /.vscode
+
+.nvimlog
