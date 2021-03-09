@@ -5,6 +5,43 @@ orbs:
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
 
+
+commands:
+  cf_deploy_worker:
+    parameters:
+      space:
+        type: string
+      domain_prefix:
+        type: string
+      region:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" -p deploy_manifest.yml
+      - run:
+          name: "Push Worker"
+          command: |
+            cf push "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" -f deploy_manifest.yml --no-route
+      - run:
+          name: "Run Migrations"
+          command: |
+            cf run-task "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
+
 jobs:
   build:
     docker:
@@ -87,16 +124,20 @@ jobs:
           channel: deployments
           event: fail
           template: basic_fail_1
-  deploy_dev:
+  deploy_worker_dev:
     docker:
-      - image: cimg/ruby:2.7-node
+      - image: cimg/ruby:2.7
+    parameters:
+      region:
+        type: string
     steps:
-      - cf_deploy:
+      - cf_deploy_worker:
           space: "development"
           domain_prefix: "dev"
-  deploy_staging:
+          region: << parameters.region >>
+  deploy_worker_staging:
     docker:
-      - image: cimg/ruby:2.7-node
+      - image: cimg/ruby:2.7
     steps:
       - cf_deploy:
           space: "staging"
@@ -109,14 +150,22 @@ workflows:
 # TODO: Fix rubocop issues
 #      - checking:
 #          context: trade-tariff
-      - test:
-          context: trade-tariff
-      - build:
-          context: trade-tariff
-          requires:
-            - test
+#      - test:
+#          context: trade-tariff
+#      - build:
+#          context: trade-tariff
+#          requires:
+#            - test
 #          filters:
 #            branches:
 #              only:
 #                - master
-# TODO: Discuss production deployment strategy.
+       - deploy_worker_dev:
+           name: "Deploy UK worker"
+           context: trade-tariff
+           region: "uk"
+       - deploy_worker_dev:
+           name: "Deploy XI worker"
+           context: trade-tariff
+           region: "xi"
+
