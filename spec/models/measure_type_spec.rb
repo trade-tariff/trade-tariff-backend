@@ -55,7 +55,7 @@ describe MeasureType do
   end
 
   describe '#third_country?' do
-    context 'measure_type has measure_type_id of 103' do
+    context 'when measure_type has measure_type_id of 103' do
       let(:measure_type) { build :measure_type, measure_type_id: '103' }
 
       it 'returns true' do
@@ -63,7 +63,7 @@ describe MeasureType do
       end
     end
 
-    context 'measure_type has measure_type_id of 105' do
+    context 'when measure_type has measure_type_id of 105' do
       let(:measure_type) { build :measure_type, measure_type_id: '105' }
 
       it 'returns true' do
@@ -71,7 +71,7 @@ describe MeasureType do
       end
     end
 
-    context 'measure_type is non-third-country measure_type_id' do
+    context 'when measure_type is non-third-country measure_type_id' do
       let(:measure_type) { build :measure_type, measure_type_id: 'foo' }
 
       it 'returns false' do
@@ -81,7 +81,7 @@ describe MeasureType do
   end
 
   describe '#trade_remedy?' do
-    context 'measure_type has measure_type_id that is a defense measure type' do
+    context 'when measure_type has measure_type_id that is a defense measure type' do
       let(:measure_type) { build :measure_type, measure_type_id: MeasureType::DEFENSE_MEASURES.sample }
 
       it 'returns true' do
@@ -89,11 +89,29 @@ describe MeasureType do
       end
     end
 
-    context 'measure_type does not have a measure_type_id that is a defense measure type' do
+    context 'when measure_type does not have a measure_type_id that is a defense measure type' do
       let(:measure_type) { build :measure_type, measure_type_id: 'foo' }
 
       it 'returns false' do
         expect(measure_type).not_to be_trade_remedy
+      end
+    end
+  end
+
+  describe '#expresses_unit?' do
+    context 'when measure_type has measure_type_series_id that expresses units' do
+      let(:measure_type) { build :measure_type, measure_type_series_id: MeasureType::UNIT_EXPRESSABLE_MEASURES.sample }
+
+      it 'returns true' do
+        expect(measure_type).to be_expresses_unit
+      end
+    end
+
+    context 'when measure_type has measure_type_series_id that does not express units' do
+      let(:measure_type) { build :measure_type, measure_type_series_id: 'X' }
+
+      it 'returns false' do
+        expect(measure_type).not_to be_expresses_unit
       end
     end
   end
