@@ -12,7 +12,8 @@ FactoryBot.define do
       duty_amount { Forgery(:basic).number }
       measure_components_count { 1 }
       duty_expression_id { '02' }
-      measurement_unit_code { nil }
+      measurement_unit_code { 'DTN' }
+      measurement_unit_qualifier_code { 'R' }
       monetary_unit_code { nil }
       measure_type_series_id { 'S' }
     end
@@ -107,6 +108,7 @@ FactoryBot.define do
           duty_amount: evaluator.duty_amount,
           duty_expression_id: evaluator.duty_expression_id,
           measurement_unit_code: evaluator.measurement_unit_code,
+          measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
       end
@@ -117,6 +119,8 @@ FactoryBot.define do
         condition = FactoryBot.create(
           :measure_condition,
           measure_sid: measure.measure_sid,
+          condition_measurement_unit_code: evaluator.measurement_unit_code,
+          condition_measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
         )
 
         FactoryBot.create(
@@ -125,6 +129,7 @@ FactoryBot.define do
           duty_amount: evaluator.duty_amount,
           duty_expression_id: evaluator.duty_expression_id,
           measurement_unit_code: evaluator.measurement_unit_code,
+          measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
       end

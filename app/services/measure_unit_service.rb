@@ -5,16 +5,17 @@ class MeasureUnitService
 
   def call
     units.each_with_object({}) do |unit, acc|
-      unit_key = "#{unit['measurement_unit_code']}#{unit['measurement_unit_qualifier_code']}"
+      unit_key = "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier_code]}"
 
       if acc[unit_key].present?
-        acc[unit_key]['measure_sids'].add(unit['measure_sid'])
+        acc[unit_key]['measure_sids'].add(unit[:measure_sid])
 
         next
+      else
+        acc[unit_key] = {}
+        acc[unit_key] = MeasurementUnit.measurement_units[unit_key]
+        acc[unit_key]['measure_sids'] = Set.new([unit[:measure_sid]])
       end
-
-      acc[unit_key] = MeasurementUnit.measurement_units[unit_key]
-      acc[unit_key]['measure_sids'] = Set.new([unit['measure_sid']])
     end
   end
 
