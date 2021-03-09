@@ -42,6 +42,65 @@ commands:
             cf run-task "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
             cf run-task "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
 
+  cf_blue_green_deploy:
+    parameters:
+      space:
+        type: string
+      domain_prefix:
+        type: string
+      region:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>" -p deploy_manifest.yml
+      - run:
+          name: "Push new app in dark mode"
+          command: |
+            # Push as "dark" instance
+            cf push "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route
+
+            # Map dark route
+            cf map-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark"
+
+            # Attach precreated autoscaling policy
+            cf attach-autoscaling-policy "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" config/autoscaling/<< parameters.space >>-policy.json
+
+            # Enable routing from this frontend to backend applications which are private
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+      - run:
+          name: "Switch dark app to live"
+          command: |
+            # Send "real" url to new version
+            cf unmap-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark"
+            cf map-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+
+            # Stop sending traffic to previous version
+            cf unmap-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+
+            # stop previous version
+            cf stop "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+
+            # delete previous version
+            cf delete "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>" -f
+
+            # Switch name of "dark" version to claim correct name
+            cf rename "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+
 jobs:
   build:
     docker:
@@ -135,6 +194,18 @@ jobs:
           space: "development"
           domain_prefix: "dev"
           region: << parameters.region >>
+  deploy_api_dev:
+    docker:
+      - image: cimg/ruby:2.7
+    parameters:
+      region:
+        type: string
+    steps:
+      - cf_blue_green_deploy:
+          space: "development"
+          domain_prefix: "dev"
+          region: << parameters.region >>
+
   deploy_worker_staging:
     docker:
       - image: cimg/ruby:2.7
@@ -150,22 +221,38 @@ workflows:
 # TODO: Fix rubocop issues
 #      - checking:
 #          context: trade-tariff
-#      - test:
-#          context: trade-tariff
-#      - build:
-#          context: trade-tariff
-#          requires:
-#            - test
-#          filters:
-#            branches:
-#              only:
-#                - master
+       - test:
+           context: trade-tariff
+       - build:
+           context: trade-tariff
+           requires:
+             - test
+           filters:
+             branches:
+               only:
+                 - master
        - deploy_worker_dev:
+           requires:
+             - build
            name: "Deploy UK worker"
            context: trade-tariff
            region: "uk"
        - deploy_worker_dev:
+           requires:
+             - build
            name: "Deploy XI worker"
+           context: trade-tariff
+           region: "xi"
+       - deploy_api_dev:
+           requires:
+             - build
+           name: "Deploy UK API"
+           context: trade-tariff
+           region: "uk"
+       - deploy_api_dev:
+           requires:
+             - build
+           name: "Deploy XI API"
            context: trade-tariff
            region: "xi"
 
