@@ -457,22 +457,30 @@ class Measure < Sequel::Model
   end
 
   def component_units
-    measure_components.map do |component|
-      {
+    measure_components.each_with_object([]) do |component, acc|
+      next unless component.measurement_unit_code
+
+      unit = {
         measure_sid: measure_sid,
         measurement_unit_code: component.measurement_unit_code,
         measurement_unit_qualifier_code: component.measurement_unit_qualifier_code,
       }
+
+      acc << unit
     end
   end
 
   def condition_units
-    measure_conditions.map do |condition|
-      {
+    measure_conditions.each_with_object([]) do |condition, acc|
+      next unless condition.condition_measurement_unit_code
+
+      unit = {
         measure_sid: measure_sid,
         measurement_unit_code: condition.condition_measurement_unit_code,
         measurement_unit_qualifier_code: condition.condition_measurement_unit_qualifier_code,
       }
+
+      acc << unit
     end
   end
 end
