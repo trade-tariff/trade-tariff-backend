@@ -385,16 +385,6 @@ class Measure < Sequel::Model
     end
   end
 
-  def meursing?
-    measure_components.any?(&:meursing?)
-  end
-
-  def zero_mfn?
-    third_country? &&
-      measure_components.count == 1 &&
-      measure_components.first.zero_duty?
-  end
-
   def order_number
     if quota_order_number.present?
       quota_order_number
@@ -437,6 +427,16 @@ class Measure < Sequel::Model
      .order(Sequel.desc(:operation_date, nulls: :last))
   end
 
+  def meursing?
+    measure_components.any?(&:meursing?)
+  end
+
+  def zero_mfn?
+    third_country? &&
+      measure_components.count == 1 &&
+      measure_components.first.zero_duty?
+  end
+
   def expresses_unit?
     measure_type.expresses_unit? && !ad_valorem?
   end
@@ -445,26 +445,34 @@ class Measure < Sequel::Model
     ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions)
   end
 
-  def ad_valorem_resource?(resource)
-    public_send(resource).count == 1 &&
-      public_send(resource).first.ad_valorem?
-  end
-
   def units
     component_units + condition_units
   end
 
   private
 
+  def ad_valorem_resource?(resource)
+    public_send(resource).count == 1 &&
+      public_send(resource).first.ad_valorem?
+  end
+
   def component_units
-    measure_components.map(&:values).map do |component|
-      component.values.slice(:measure_sid, :measurement_unit_code, :measurement_unit_qualifier_code)
+    measure_components.map do |component|
+      {
+        measure_sid: measure_sid,
+        measurement_unit_code: component.measurement_unit_code,
+        measurement_unit_qualifier_code: component.measurement_unit_qualifier_code,
+      }
     end
   end
 
   def condition_units
-    measure_components.map(&:values).map do |component|
-      component.values.slice(:measure_sid, :condition_measurement_unit_code, :condition_measurement_unit_qualifier_code)
+    measure_conditions.map do |condition|
+      {
+        measure_sid: measure_sid,
+        measurement_unit_code: condition.condition_measurement_unit_code,
+        measurement_unit_qualifier_code: condition.condition_measurement_unit_qualifier_code,
+      }
     end
   end
 end

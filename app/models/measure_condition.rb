@@ -115,6 +115,6 @@ class MeasureCondition < Sequel::Model
   end
 
   def ad_valorem?
-    measure_condition_components.count == 1 && measure_condition_components.first(&:ad_valorem)
+    measure_condition_components.count == 1 && measure_condition_components.first.ad_valorem?
   end
 end

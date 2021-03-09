@@ -112,6 +112,24 @@ FactoryBot.define do
       end
     end
 
+    trait :with_measure_conditions do
+      after(:build) do |measure, evaluator|
+        condition = FactoryBot.create(
+          :measure_condition,
+          measure_sid: measure.measure_sid,
+        )
+
+        FactoryBot.create(
+          :measure_condition_component,
+          measure_condition_sid: condition.measure_condition_sid,
+          duty_amount: evaluator.duty_amount,
+          duty_expression_id: evaluator.duty_expression_id,
+          measurement_unit_code: evaluator.measurement_unit_code,
+          monetary_unit_code: evaluator.monetary_unit_code,
+        )
+      end
+    end
+
     trait :with_modification_regulation do
       measure_generating_regulation_role { 4 }
 
