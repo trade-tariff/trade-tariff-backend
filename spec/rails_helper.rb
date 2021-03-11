@@ -46,10 +46,12 @@ RSpec.configure do |config|
   RedisLockDb.redis = redis
 
   config.before(:suite) do
+    TradeTariffBackend.redis.flushdb
     redis.flushdb
   end
 
   config.after(:suite) do
+    TradeTariffBackend.redis.flushdb
     redis.flushdb
   end
 
