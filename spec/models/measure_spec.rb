@@ -1238,11 +1238,70 @@ describe Measure do
     end
   end
 
+  describe '#expresses_unit?' do
+    context 'when the measure type is one that expresses the unit' do
+      context 'when the measure is an ad_valorem measure' do
+        subject(:measure) { create(:measure, :with_measure_components, :ad_valorem, :expresses_units) }
+
+        it 'returns false' do
+          expect(measure).not_to be_expresses_unit
+        end
+      end
+
+      context 'when the measure is not ad_valorem measure' do
+        subject(:measure) { create(:measure, :with_measure_components, :no_ad_valorem, :expresses_units) }
+
+        it 'returns true' do
+          expect(measure).to be_expresses_unit
+        end
+      end
+    end
+
+    context 'when the measure type is one that does not express units' do
+      subject(:measure) { create(:measure, :with_measure_components, :no_expresses_units) }
+
+      it 'returns false' do
+        expect(measure).not_to be_expresses_unit
+      end
+    end
+  end
+
+  describe '#ad_valorem?' do
+    context 'when there are ad valorem conditions' do
+      subject(:measure) { create(:measure, :with_measure_conditions, :ad_valorem) }
+
+      it 'returns true' do
+        expect(measure).to be_ad_valorem
+      end
+    end
+
+    context 'when there are ad valorem components' do
+      subject(:measure) { create(:measure, :with_measure_components, :ad_valorem) }
+
+      it 'returns true' do
+        expect(measure).to be_ad_valorem
+      end
+    end
+
+    context 'when there are no ad valorem conditions or components' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions, :no_ad_valorem) }
+
+      it 'returns false' do
+        expect(measure).not_to be_ad_valorem
+      end
+    end
+  end
+
   describe '#zero_mfn?' do
     context 'when the measure type is a third country' do
-      subject(:measure) { create(:measure, :third_country, :with_measure_components, duty_amount: duty_amount, measure_components_count: measure_components_count) }
-
-      let(:measure_components_count) { 1 }
+      subject(:measure) do
+        create(
+          :measure,
+          :third_country,
+          :with_measure_components,
+          duty_amount: duty_amount,
+        )
+      end
 
       context 'when measure components have zero duty amount' do
         let(:duty_amount) { 0.0 }
@@ -1252,7 +1311,14 @@ describe Measure do
         end
 
         context 'when there are more than one measure components' do
-          let(:measure_components_count) { 2 }
+          before do
+            create(
+              :measure_component,
+              measure_sid: measure.measure_sid,
+              duty_amount: duty_amount,
+              duty_expression_id: '01',
+            )
+          end
 
           it 'returns false' do
             expect(measure).not_to be_zero_mfn
@@ -1282,6 +1348,75 @@ describe Measure do
 
       it 'returns false' do
         expect(measure).not_to be_zero_mfn
+      end
+    end
+  end
+
+  describe '#units' do
+    context 'when there are measure components and measure components' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions) }
+
+      let(:expected_units) do
+        [
+          {
+            measure_sid: measure.measure_sid,
+            measurement_unit_code: measure.measure_components.first.measurement_unit_code,
+            measurement_unit_qualifier_code: measure.measure_components.first.measurement_unit_qualifier_code,
+          },
+          {
+            measure_sid: measure.measure_sid,
+            measurement_unit_code: measure.measure_conditions.first.condition_measurement_unit_code,
+            measurement_unit_qualifier_code: measure.measure_conditions.first.condition_measurement_unit_qualifier_code,
+          },
+        ]
+      end
+
+      it 'returns the units' do
+        expect(measure.units).to eq(expected_units)
+      end
+    end
+
+    context 'when there are measure components' do
+      subject(:measure) { create(:measure, :with_measure_components) }
+
+      let(:expected_units) do
+        [
+          {
+            measure_sid: measure.measure_sid,
+            measurement_unit_code: measure.measure_components.first.measurement_unit_code,
+            measurement_unit_qualifier_code: measure.measure_components.first.measurement_unit_qualifier_code,
+          },
+        ]
+      end
+
+      it 'returns the units' do
+        expect(measure.units).to eq(expected_units)
+      end
+    end
+
+    context 'when there are measure conditions' do
+      subject(:measure) { create(:measure, :with_measure_conditions) }
+
+      let(:expected_units) do
+        [
+          {
+            measure_sid: measure.measure_sid,
+            measurement_unit_code: measure.measure_conditions.first.condition_measurement_unit_code,
+            measurement_unit_qualifier_code: measure.measure_conditions.first.condition_measurement_unit_qualifier_code,
+          },
+        ]
+      end
+
+      it 'returns the units' do
+        expect(measure.units).to eq(expected_units)
+      end
+    end
+
+    context 'when there are no measure conditions or components' do
+      subject(:measure) { create(:measure) }
+
+      it 'returns the units' do
+        expect(measure.units).to eq([])
       end
     end
   end

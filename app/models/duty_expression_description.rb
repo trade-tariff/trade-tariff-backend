@@ -27,7 +27,7 @@ class DutyExpressionDescription < Sequel::Model
       '42' => 'EREGG',
       '43' => 'ERSUG',
       '44' => 'ERMLK',
-      '99' => 'UNSUP'
+      '99' => 'UNSUP',
     }[duty_expression_id]
   end
 end

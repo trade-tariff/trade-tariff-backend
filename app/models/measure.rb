@@ -385,16 +385,6 @@ class Measure < Sequel::Model
     end
   end
 
-  def meursing?
-    measure_components.any?(&:meursing?)
-  end
-
-  def zero_mfn?
-    third_country? &&
-      measure_components.count == 1 &&
-      measure_components.first.zero_duty?
-  end
-
   def order_number
     if quota_order_number.present?
       quota_order_number
@@ -435,5 +425,63 @@ class Measure < Sequel::Model
      .where { |o| o.<=(:validity_start_date, point_in_time) }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last))
+  end
+
+  def meursing?
+    measure_components.any?(&:meursing?)
+  end
+
+  def zero_mfn?
+    return false unless third_country?
+    return false unless measure_components.count == 1
+
+    measure_components.first.zero_duty?
+  end
+
+  def expresses_unit?
+    measure_type.expresses_unit? && !ad_valorem?
+  end
+
+  def ad_valorem?
+    ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions)
+  end
+
+  def units
+    component_units + condition_units
+  end
+
+  private
+
+  def ad_valorem_resource?(resource)
+    public_send(resource).count == 1 &&
+      public_send(resource).first.ad_valorem?
+  end
+
+  def component_units
+    measure_components.each_with_object([]) do |component, acc|
+      next unless component.measurement_unit_code
+
+      unit = {
+        measure_sid: measure_sid,
+        measurement_unit_code: component.measurement_unit_code,
+        measurement_unit_qualifier_code: component.measurement_unit_qualifier_code,
+      }
+
+      acc << unit
+    end
+  end
+
+  def condition_units
+    measure_conditions.each_with_object([]) do |condition, acc|
+      next unless condition.condition_measurement_unit_code
+
+      unit = {
+        measure_sid: measure_sid,
+        measurement_unit_code: condition.condition_measurement_unit_code,
+        measurement_unit_qualifier_code: condition.condition_measurement_unit_qualifier_code,
+      }
+
+      acc << unit
+    end
   end
 end

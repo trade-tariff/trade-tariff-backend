@@ -27,4 +27,12 @@ class MeasurementUnit < Sequel::Model
       abbreviation.measurement_unit_qualifier == measurement_unit_qualifier.try(:measurement_unit_qualifier_code)
     end
   end
+
+  def self.measurement_units
+    @measurement_units ||=
+      begin
+        file = File.join(::Rails.root, 'db', 'measurement_units.json').freeze
+        JSON.parse(File.read(file))
+      end
+  end
 end

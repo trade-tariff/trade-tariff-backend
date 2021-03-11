@@ -33,6 +33,12 @@ class MeasureConditionComponent < Sequel::Model
   delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
   delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
+  def ad_valorem?
+    monetary_unit_code.nil? &&
+      measurement_unit_code.nil? &&
+      duty_expression_id == DutyExpression::AD_VALOREM_DUTY_EXPRESSION_ID
+  end
+
   def formatted_duty_expression
     DutyExpressionFormatter.format(
       duty_expression_id: duty_expression_id,
@@ -45,7 +51,7 @@ class MeasureConditionComponent < Sequel::Model
       measurement_unit_qualifier: measurement_unit_qualifier,
       currency: TradeTariffBackend.currency,
       formatted: true,
-      excise: measure_condition.measure.excise?
+      excise: measure_condition.measure.excise?,
     )
   end
 end

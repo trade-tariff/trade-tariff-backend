@@ -2,7 +2,7 @@ module Api
   module V2
     module Commodities
       class CommodityPresenter < SimpleDelegator
-        attr_reader :commodity, :footnotes, :import_measures, :export_measures
+        attr_reader :commodity, :footnotes, :import_measures, :export_measures, :unit_measures
 
         def initialize(commodity, measures)
           super(commodity)
@@ -14,6 +14,7 @@ module Api
           @export_measures = measures.select(&:export).map do |measure|
             Api::V2::Measures::MeasurePresenter.new(measure, commodity)
           end
+          @unit_measures = @import_measures.select(&:expresses_unit?)
         end
 
         def consigned
@@ -55,6 +56,10 @@ module Api
 
         def trade_remedies?
           import_measures.any?(&:trade_remedy?)
+        end
+
+        def applicable_measure_units
+          MeasureUnitService.new(unit_measures).call
         end
       end
     end
