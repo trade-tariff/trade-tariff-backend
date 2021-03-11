@@ -432,9 +432,10 @@ class Measure < Sequel::Model
   end
 
   def zero_mfn?
-    third_country? &&
-      measure_components.count == 1 &&
-      measure_components.first.zero_duty?
+    return false unless third_country?
+    return false unless measure_components.count == 1
+
+    measure_components.first.zero_duty?
   end
 
   def expresses_unit?
