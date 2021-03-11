@@ -9,8 +9,6 @@ class MeasureUnitService
 
       if acc[unit_key].present?
         acc[unit_key]['measure_sids'].add(unit[:measure_sid])
-
-        next
       else
         acc[unit_key] = {}
         acc[unit_key] = MeasurementUnit.measurement_units[unit_key]
