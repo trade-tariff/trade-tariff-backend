@@ -19,9 +19,9 @@ class ExchangeRateService
 
       return exchange_rates if ignore_expiry
       return exchange_rates if exchange_rates['expires_at'] > now
-
-      false
     end
+
+    nil
   end
 
   def fetched_exchange_rates
@@ -48,11 +48,9 @@ class ExchangeRateService
   end
 
   def relative_day
-    if now.hour > EXCHANGE_RATES_UTC_REFRESH_HOUR
-      now.tomorrow
-    else
-      now
-    end
+    return now.tomorrow if now.hour > EXCHANGE_RATES_UTC_REFRESH_HOUR
+
+    now
   end
 
   def now
