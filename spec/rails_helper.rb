@@ -18,13 +18,13 @@ require 'sidekiq/testing'
 require 'elasticsearch/extensions/test/cluster'
 
 require Rails.root.join('spec/support/tariff_validation_matcher.rb')
-Dir[Rails.root.join('spec/support/**/*.rb')].each { |f| require f }
+Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
 # require models and serializers
 require 'clearable'
-Dir[Rails.root.join('app/models/*.rb')].each { |f| require f }
+Dir[Rails.root.join('app/models/*.rb')].sort.each { |f| require f }
 # Dir[Rails.root.join('app/models/concerns/*rb')].each { |f| require concern }
-Dir[Rails.root.join('app/serializers/*.rb')].each { |f| require f }
+Dir[Rails.root.join('app/serializers/*.rb')].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
@@ -46,10 +46,12 @@ RSpec.configure do |config|
   RedisLockDb.redis = redis
 
   config.before(:suite) do
+    TradeTariffBackend.redis.flushdb
     redis.flushdb
   end
 
   config.after(:suite) do
+    TradeTariffBackend.redis.flushdb
     redis.flushdb
   end
 

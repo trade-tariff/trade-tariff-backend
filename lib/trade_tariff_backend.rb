@@ -88,6 +88,10 @@ module TradeTariffBackend
       lock.lock!(lock_name, 5000, &block)
     end
 
+    def redis
+      @redis ||= Redis.new(PaasConfig.redis)
+    end
+
     def reindex(indexer = search_client)
       TimeMachine.with_relevant_validity_periods do
         begin
