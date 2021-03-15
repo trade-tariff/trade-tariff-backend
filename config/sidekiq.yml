@@ -33,6 +33,3 @@
   ReindexModelsWorker:
     cron: "30 2 * * *" # 02:30 every day
     description: "ReindexModelsWorker will run every day at 1am."
-  RunChapterPdfWorker:
-    cron: "0 5 * * *" # 05:00 every day
-    description: "RunChapterPdfWorker produces the Tariff PDF."

@@ -57,15 +57,6 @@ namespace :sidekiq do
     puts Sidekiq.get_schedule
   end
 
-  desc "Dynamically creates or updates the current schedule for `RunChapterPdfWorker`. Provide a crontab string as an argument, e.g., `rake sidekiq:set_schedule['0 23 * * *']`"
-  task :set_schedule, [:cron_string] do |_task, args|
-    Sidekiq.set_schedule('RunChapterPdfWorker',
-                         cron: args[:cron_string],
-                         class: 'RunChapterPdfWorker',
-                         description: 'RunChapterPdfWorker produces a printable Trade Tariff PDF.')
-    puts Sidekiq.get_schedule
-  end
-
   desc "CAUTION! Clear all of this app's Sidekiq queues from Redis (destructive)."
   task :clear_queue do
     Sidekiq.redis(&:flushdb)
