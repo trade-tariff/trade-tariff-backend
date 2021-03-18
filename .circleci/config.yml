@@ -239,6 +239,10 @@ workflows:
     jobs:
        - test:
            context: trade-tariff
+           filters:
+             branches:
+               ignore:
+                 - master
        - deploy_dev:
            matrix:
              parameters:
