@@ -29,7 +29,7 @@ module Api
       end
 
       def cache_key
-        "_geographical_areas-#{action}-#{actual_date}"
+        "_geographical-areas-#{action_name}-#{actual_date}"
       end
     end
   end
