@@ -182,18 +182,7 @@ jobs:
           channel: deployments
           event: fail
           template: basic_fail_1
-  deploy_worker_dev:
-    docker:
-      - image: cimg/ruby:2.7
-    parameters:
-      service:
-        type: string
-    steps:
-      - cf_deploy_worker:
-          space: "development"
-          domain_prefix: "dev"
-          service: << parameters.service >>
-  deploy_api_dev:
+  deploy_dev:
     docker:
       - image: cimg/ruby:2.7
     parameters:
@@ -204,54 +193,85 @@ jobs:
           space: "development"
           domain_prefix: "dev"
           service: << parameters.service >>
+      - cf_deploy_worker:
+          space: "development"
+          domain_prefix: "dev"
+          service: << parameters.service >>
 
-  deploy_worker_staging:
+  deploy_staging:
     docker:
       - image: cimg/ruby:2.7
     steps:
-      - cf_deploy:
+      - cf_blue_green_deploy:
           space: "staging"
           domain_prefix: "staging"
+          service: << parameters.service >>
+      - cf_deploy_worker:
+          space: "staging"
+          domain_prefix: "staging"
+          service: << parameters.service >>
+
+  deploy_production:
+    docker:
+      - image: cimg/ruby:2.7
+    steps:
+      - cf_blue_green_deploy:
+          space: "production"
+          domain_prefix: "production"
+          service: << parameters.service >>
+      - cf_deploy_worker:
+          space: "production"
+          domain_prefix: "production"
+          service: << parameters.service >>
 
 workflows:
   version: 2
-  build_and_test:
+  ci:
     jobs:
-# TODO: Fix rubocop issues
-#      - checking:
-#          context: trade-tariff
-       - test:
+       - test
+       - deploy_dev:
+           matrix:
+             parameters:
+               service:
+                 - xi
+                 - uk
            context: trade-tariff
-       - build:
-           context: trade-tariff
+           filters:
+             branches:
+               ignore:
+                 - master
            requires:
              - test
+       - deploy_staging:
+           matrix:
+             parameters:
+               service:
+                 - xi
+                 - uk
+           context: trade-tariff
            filters:
              branches:
                only:
                  - master
-       - deploy_worker_dev:
-           requires:
-             - build
-           name: "Deploy UK worker"
-           context: trade-tariff
-           service: "uk"
-       - deploy_worker_dev:
-           requires:
-             - build
-           name: "Deploy XI worker"
-           context: trade-tariff
-           service: "xi"
-       - deploy_api_dev:
-           requires:
-             - build
-           name: "Deploy UK API"
-           context: trade-tariff
-           service: "uk"
-       - deploy_api_dev:
-           requires:
-             - build
-           name: "Deploy XI API"
-           context: trade-tariff
-           service: "xi"
 
+       - hold_production:
+           type: approval
+           filters:
+             branches:
+               only:
+                 - master
+           requires:
+             - deploy_staging
+       - deploy_production:
+           matrix:
+             parameters:
+               service:
+                 - xi
+                 - uk
+           context: trade-tariff
+           filters:
+             branches:
+               only:
+                 - master
+           requires:
+             - hold_production
