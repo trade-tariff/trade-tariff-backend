@@ -248,7 +248,8 @@ workflows:
   version: 2
   ci:
     jobs:
-       - test
+       - test:
+           context: trade-tariff
        - deploy_dev:
            matrix:
              parameters:
