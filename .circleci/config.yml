@@ -77,10 +77,24 @@ commands:
 
             # Attach precreated autoscaling policy
             cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" config/autoscaling/<< parameters.space >>-policy.json
-
             # Enable routing from this frontend to backend applications which are private
             cf add-network-policy "$CF_FRONTEND_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
             cf add-network-policy "$CF_ADMIN_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+
+      - run:
+          name: "Verify new version is working on dark URL."
+          command: |
+            sleep 15
+            # TODO: Retry
+            # Verify new version is working on dark URL.
+            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
+
+            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
+
+            if [ "$HTTPCODE" -ne 200 ];then
+              echo "dark route not available, failing deploy ($HTTPCODE)"
+              exit 1
+            fi
       - run:
           name: "Switch dark app to live"
           command: |
