@@ -201,6 +201,9 @@ jobs:
   deploy_staging:
     docker:
       - image: cimg/ruby:2.7
+    parameters:
+      service:
+        type: string
     steps:
       - cf_blue_green_deploy:
           space: "staging"
@@ -214,6 +217,9 @@ jobs:
   deploy_production:
     docker:
       - image: cimg/ruby:2.7
+    parameters:
+      service:
+        type: string
     steps:
       - cf_blue_green_deploy:
           space: "production"
