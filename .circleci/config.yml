@@ -5,6 +5,115 @@ orbs:
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
 
+commands:
+  cf_deploy_worker:
+    parameters:
+      space:
+        type: string
+      domain_prefix:
+        type: string
+      service:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" -p deploy_manifest.yml
+      - run:
+          name: "Push Worker"
+          command: |
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" -f deploy_manifest.yml --no-route
+      - run:
+          name: "Run Migrations"
+          command: |
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
+
+  cf_blue_green_deploy:
+    parameters:
+      space:
+        type: string
+      domain_prefix:
+        type: string
+      service:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>" -p deploy_manifest.yml
+      - run:
+          name: "Push new app in dark mode"
+          command: |
+            # Push as "dark" instance
+            cf push "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route
+
+            # Map dark route
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
+
+            # Attach precreated autoscaling policy
+            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" config/autoscaling/<< parameters.space >>-policy.json
+            # Enable routing from this frontend to backend applications which are private
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+
+      - run:
+          name: "Verify new version is working on dark URL."
+          command: |
+            sleep 15
+            # TODO: Retry
+            # Verify new version is working on dark URL.
+            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
+
+            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
+
+            if [ "$HTTPCODE" -ne 200 ];then
+              echo "dark route not available, failing deploy ($HTTPCODE)"
+              exit 1
+            fi
+      - run:
+          name: "Switch dark app to live"
+          command: |
+            # Send "real" url to new version
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
+
+            # Stop sending traffic to previous version
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
+
+            # stop previous version
+            cf stop "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
+
+            # delete previous version
+            cf delete "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>" -f
+
+            # Switch name of "dark" version to claim correct name
+            cf rename "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
+
 jobs:
   build:
     docker:
@@ -89,34 +198,101 @@ jobs:
           template: basic_fail_1
   deploy_dev:
     docker:
-      - image: cimg/ruby:2.7-node
+      - image: cimg/ruby:2.7
+    parameters:
+      service:
+        type: string
     steps:
-      - cf_deploy:
+      - cf_deploy_worker:
           space: "development"
           domain_prefix: "dev"
+          service: << parameters.service >>
+      - cf_blue_green_deploy:
+          space: "development"
+          domain_prefix: "dev"
+          service: << parameters.service >>
+
   deploy_staging:
     docker:
-      - image: cimg/ruby:2.7-node
+      - image: cimg/ruby:2.7
+    parameters:
+      service:
+        type: string
     steps:
-      - cf_deploy:
+      - cf_deploy_worker:
           space: "staging"
           domain_prefix: "staging"
+          service: << parameters.service >>
+      - cf_blue_green_deploy:
+          space: "staging"
+          domain_prefix: "staging"
+          service: << parameters.service >>
+
+  deploy_production:
+    docker:
+      - image: cimg/ruby:2.7
+    parameters:
+      service:
+        type: string
+    steps:
+      - cf_deploy_worker:
+          space: "production"
+          domain_prefix: "production"
+          service: << parameters.service >>
+      - cf_blue_green_deploy:
+          space: "production"
+          domain_prefix: "production"
+          service: << parameters.service >>
 
 workflows:
   version: 2
-  build_and_test:
+  ci:
     jobs:
-# TODO: Fix rubocop issues
-#      - checking:
-#          context: trade-tariff
-      - test:
-          context: trade-tariff
-      - build:
-          context: trade-tariff
-          requires:
-            - test
-#          filters:
-#            branches:
-#              only:
-#                - master
-# TODO: Discuss production deployment strategy.
+       - test:
+           context: trade-tariff
+       - deploy_dev:
+           matrix:
+             parameters:
+               service:
+                 - xi
+                 - uk
+           context: trade-tariff
+           filters:
+             branches:
+               ignore:
+                 - master
+           requires:
+             - test
+       - deploy_staging:
+           matrix:
+             parameters:
+               service:
+                 - xi
+                 - uk
+           context: trade-tariff
+           filters:
+             branches:
+               only:
+                 - master
+
+       - hold_production:
+           type: approval
+           filters:
+             branches:
+               only:
+                 - master
+           requires:
+             - deploy_staging
+       - deploy_production:
+           matrix:
+             parameters:
+               service:
+                 - xi
+                 - uk
+           context: trade-tariff
+           filters:
+             branches:
+               only:
+                 - master
+           requires:
+             - hold_production
