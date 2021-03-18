@@ -5,7 +5,6 @@ orbs:
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
 
-
 commands:
   cf_deploy_worker:
     parameters:
@@ -13,7 +12,7 @@ commands:
         type: string
       domain_prefix:
         type: string
-      region:
+      service:
         type: string
     steps:
       - checkout
@@ -31,16 +30,16 @@ commands:
       - run:
           name: "Fetch existing manifest"
           command: |
-            cf create-app-manifest "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" -p deploy_manifest.yml
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" -p deploy_manifest.yml
       - run:
           name: "Push Worker"
           command: |
-            cf push "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" -f deploy_manifest.yml --no-route
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" -f deploy_manifest.yml --no-route
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
-            cf run-task "tariff-<< parameters.region >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
 
   cf_blue_green_deploy:
     parameters:
@@ -48,7 +47,7 @@ commands:
         type: string
       domain_prefix:
         type: string
-      region:
+      service:
         type: string
     steps:
       - checkout
@@ -66,40 +65,40 @@ commands:
       - run:
           name: "Fetch existing manifest"
           command: |
-            cf create-app-manifest "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>" -p deploy_manifest.yml
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>" -p deploy_manifest.yml
       - run:
           name: "Push new app in dark mode"
           command: |
             # Push as "dark" instance
-            cf push "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route
+            cf push "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route
 
             # Map dark route
-            cf map-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark"
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
 
             # Attach precreated autoscaling policy
-            cf attach-autoscaling-policy "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" config/autoscaling/<< parameters.space >>-policy.json
+            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" config/autoscaling/<< parameters.space >>-policy.json
 
             # Enable routing from this frontend to backend applications which are private
-            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_ADMIN_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
       - run:
           name: "Switch dark app to live"
           command: |
             # Send "real" url to new version
-            cf unmap-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark"
-            cf map-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
 
             # Stop sending traffic to previous version
-            cf unmap-route  "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>" apps.internal -n "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
 
             # stop previous version
-            cf stop "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+            cf stop "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
 
             # delete previous version
-            cf delete "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>" -f
+            cf delete "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>" -f
 
             # Switch name of "dark" version to claim correct name
-            cf rename "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>-dark" "tariff-<< parameters.region >>-backend-<< parameters.domain_prefix >>"
+            cf rename "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
 
 jobs:
   build:
@@ -187,24 +186,24 @@ jobs:
     docker:
       - image: cimg/ruby:2.7
     parameters:
-      region:
+      service:
         type: string
     steps:
       - cf_deploy_worker:
           space: "development"
           domain_prefix: "dev"
-          region: << parameters.region >>
+          service: << parameters.service >>
   deploy_api_dev:
     docker:
       - image: cimg/ruby:2.7
     parameters:
-      region:
+      service:
         type: string
     steps:
       - cf_blue_green_deploy:
           space: "development"
           domain_prefix: "dev"
-          region: << parameters.region >>
+          service: << parameters.service >>
 
   deploy_worker_staging:
     docker:
@@ -236,23 +235,23 @@ workflows:
              - build
            name: "Deploy UK worker"
            context: trade-tariff
-           region: "uk"
+           service: "uk"
        - deploy_worker_dev:
            requires:
              - build
            name: "Deploy XI worker"
            context: trade-tariff
-           region: "xi"
+           service: "xi"
        - deploy_api_dev:
            requires:
              - build
            name: "Deploy UK API"
            context: trade-tariff
-           region: "uk"
+           service: "uk"
        - deploy_api_dev:
            requires:
              - build
            name: "Deploy XI API"
            context: trade-tariff
-           region: "xi"
+           service: "xi"
 
