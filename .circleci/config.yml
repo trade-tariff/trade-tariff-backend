@@ -203,11 +203,11 @@ jobs:
       service:
         type: string
     steps:
-      - cf_blue_green_deploy:
+      - cf_deploy_worker:
           space: "development"
           domain_prefix: "dev"
           service: << parameters.service >>
-      - cf_deploy_worker:
+      - cf_blue_green_deploy:
           space: "development"
           domain_prefix: "dev"
           service: << parameters.service >>
@@ -219,11 +219,11 @@ jobs:
       service:
         type: string
     steps:
-      - cf_blue_green_deploy:
+      - cf_deploy_worker:
           space: "staging"
           domain_prefix: "staging"
           service: << parameters.service >>
-      - cf_deploy_worker:
+      - cf_blue_green_deploy:
           space: "staging"
           domain_prefix: "staging"
           service: << parameters.service >>
@@ -235,11 +235,11 @@ jobs:
       service:
         type: string
     steps:
-      - cf_blue_green_deploy:
+      - cf_deploy_worker:
           space: "production"
           domain_prefix: "production"
           service: << parameters.service >>
-      - cf_deploy_worker:
+      - cf_blue_green_deploy:
           space: "production"
           domain_prefix: "production"
           service: << parameters.service >>
