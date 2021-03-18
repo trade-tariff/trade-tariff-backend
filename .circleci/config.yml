@@ -2,15 +2,13 @@ version: 2.1
 
 orbs:
   ruby: circleci/ruby@1.1.2
-  node: circleci/node@2
-  browser-tools: circleci/browser-tools@1.1
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
 
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.7-node
+      - image: cimg/ruby:2.7
       - image: redis
     resource_class: medium
     steps:
@@ -18,7 +16,7 @@ jobs:
       - ruby/install-deps
   checking:
     docker:
-      - image: 'cimg/ruby:2.7-node'
+      - image: cimg/ruby:2.7
     resource_class: small
     steps:
       - checkout
