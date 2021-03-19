@@ -161,6 +161,10 @@ jobs:
           - network.host: 127.0.0.1
           - http.port: 9200
           - discovery.type: single-node
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
     resource_class: medium
     steps:
       - checkout
