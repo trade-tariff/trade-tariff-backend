@@ -5,6 +5,7 @@ RSpec.describe CachedGeographicalAreaService do
 
   let(:actual_date) { Time.zone.today }
   let(:countries) { false }
+  let(:xi_service) { false }
 
   describe '#call' do
     let(:pattern) do
@@ -25,6 +26,8 @@ RSpec.describe CachedGeographicalAreaService do
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
+      allow(TradeTariffBackend).to receive(:xi?).and_return(xi_service)
+
       geographical_area
     end
 
@@ -55,6 +58,36 @@ RSpec.describe CachedGeographicalAreaService do
         expected_key = "_geographical-areas-index-#{actual_date}"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
+      end
+    end
+
+    context 'when on the xi service' do
+      let(:xi_service) { true }
+      let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'GB') }
+      let(:excluded_geographical_area) { create(:geographical_area, :country, geographical_area_id: 'XU') }
+
+      it 'excludes XU' do
+        excluded_geographical_area
+        no_xu = service.call[:data].select { |country| country[:id] == 'XU' }.empty?
+        expect(no_xu).to be(true)
+      end
+    end
+
+    context 'when not on the xi service' do
+      let(:xi_service) { false }
+      let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'GB') }
+      let(:excluded_geographical_area_ids) { %w[GB XU XI] }
+
+      let(:excluded_geographical_areas) do
+        excluded_geographical_area_ids.map do |excluded_id|
+          create(:geographical_area, :country, geographical_area_id: excluded_id)
+        end
+      end
+
+      it 'excludes XU' do
+        excluded_geographical_areas
+        no_excluded_areas = service.call[:data].select { |country| country[:id].in?(excluded_geographical_area_ids) }.empty?
+        expect(no_excluded_areas).to be(true)
       end
     end
   end

@@ -10,11 +10,12 @@ class CachedGeographicalAreaService
 
   def call
     Rails.cache.fetch(cache_key, expires_in: TTL) do
-      Api::V2::GeographicalAreaTreeSerializer.new(areas.all, include: DEFAULT_INCLUDES).serializable_hash
+      Api::V2::GeographicalAreaTreeSerializer.new(
+        areas.exclude(geographical_area_id: excluded_geographical_area_ids).all,
+        include: DEFAULT_INCLUDES,
+      ).serializable_hash
     end
   end
-
-  def cached_serialized_geographical_areas(countries: false); end
 
   private
 
@@ -38,5 +39,11 @@ class CachedGeographicalAreaService
 
   def geographical_areas
     GeographicalArea.eager(GEOGRAPHICAL_AREAS_EAGER_GRAPH).actual.areas
+  end
+
+  def excluded_geographical_area_ids
+    return %w[XU] if TradeTariffBackend.xi?
+
+    %w[GB XU XI]
   end
 end
