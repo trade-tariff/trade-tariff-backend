@@ -1,5 +1,5 @@
 class CachedCommodityService
-  DEFAULT_COMMODITY_INCLUDES = [
+  DEFAULT_INCLUDES = [
     'section',
     'chapter',
     'chapter.guides',
@@ -115,7 +115,7 @@ class CachedCommodityService
   def options
     {
       is_collection: false,
-      include: DEFAULT_COMMODITY_INCLUDES,
+      include: DEFAULT_INCLUDES,
     }
   end
 

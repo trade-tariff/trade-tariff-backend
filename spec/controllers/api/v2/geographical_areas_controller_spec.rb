@@ -28,10 +28,17 @@ describe Api::V2::GeographicalAreasController, 'GET #countries' do
     }
   end
 
-  let(:actual_date) { Time.zone.today.iso8601 }
+  let(:actual_date) { Time.zone.today }
 
   before do
     allow(Rails.cache).to receive(:fetch).and_call_original
+    allow(CachedGeographicalAreaService).to receive(:new).and_call_original
+  end
+
+  it 'calls the CachedGeographicalAreaService' do
+    get :countries, format: :json
+
+    expect(CachedGeographicalAreaService).to have_received(:new).with(actual_date, true)
   end
 
   it 'caches the serialized countries' do
