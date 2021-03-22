@@ -23,6 +23,7 @@ RSpec.describe CachedGeographicalAreaService do
         included: [],
       }
     end
+    let(:expected_ordered_ids) { service.call[:data].map { |geographical_area| geographical_area[:id] } }
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
@@ -32,8 +33,8 @@ RSpec.describe CachedGeographicalAreaService do
     end
 
     context 'when fetching geographical area countries' do
-      let(:geographical_area) { create(:geographical_area, :country) }
       let(:countries) { true }
+      let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'BA') }
 
       it 'returns a correctly serialized hash' do
         expect(service.call.to_json).to match_json_expression pattern
@@ -44,11 +45,18 @@ RSpec.describe CachedGeographicalAreaService do
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
+
+      it 'sorts the geographical areas by their id' do
+        create(:geographical_area, :country, geographical_area_id: 'AA')
+
+        expect(expected_ordered_ids).to eq(%w[AA BA])
+      end
     end
 
     context 'when fetching geographical areas' do
-      let(:geographical_area) { create(:geographical_area, :group) }
+      let(:geographical_area) { create(:geographical_area, :group, geographical_area_id: 'BA') }
       let(:countries) { false }
+      let(:expected_ordered_ids) { service.call[:data].map { |geographical_area| geographical_area[:id] } }
 
       it 'returns a correctly serialized hash' do
         expect(service.call.to_json).to match_json_expression pattern
@@ -58,6 +66,12 @@ RSpec.describe CachedGeographicalAreaService do
         expected_key = "_geographical-areas-index-#{actual_date}"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
+      end
+
+      it 'sorts the geographical areas by their id' do
+        create(:geographical_area, :group, geographical_area_id: 'AA')
+
+        expect(expected_ordered_ids).to eq(%w[AA BA])
       end
     end
 

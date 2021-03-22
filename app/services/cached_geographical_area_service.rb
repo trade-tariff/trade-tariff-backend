@@ -11,7 +11,7 @@ class CachedGeographicalAreaService
   def call
     Rails.cache.fetch(cache_key, expires_in: TTL) do
       Api::V2::GeographicalAreaTreeSerializer.new(
-        areas.exclude(geographical_area_id: excluded_geographical_area_ids).all,
+        sorted_areas.all,
         include: DEFAULT_INCLUDES,
       ).serializable_hash
     end
@@ -20,6 +20,14 @@ class CachedGeographicalAreaService
   private
 
   attr_reader :countries, :actual_date
+
+  def sorted_areas
+    areas.exclude(
+      geographical_area_id: excluded_geographical_area_ids,
+    ).order(
+      Sequel.asc(:geographical_area_id),
+    )
+  end
 
   def areas
     return country_geographical_areas if countries
