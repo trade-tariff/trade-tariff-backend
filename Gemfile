@@ -7,9 +7,18 @@ end
 
 ruby '~> 2.7.1'
 
+# Exclude mimemagic dependency, by explicitly requesting only the gems we need
+gem 'actionmailer', '~> 6.0'
+gem 'actionpack', '~> 6.0'
+gem 'actionview', '~> 6.0'
+gem 'activemodel', '~> 6.0'
+gem 'activerecord', '~> 6.0'
+gem 'activesupport', '~> 6.0'
+gem 'railties', '~> 6.0'
+gem 'sprockets-rails'
+
 # Server
 gem 'puma', '~> 5.0.4'
-gem 'rails', '>= 6.0.3.4'
 gem 'sinatra', '~> 2.0.2'
 
 # DB
