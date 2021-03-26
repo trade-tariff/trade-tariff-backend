@@ -15,7 +15,7 @@ gem 'activemodel', '~> 6.0'
 gem 'activerecord', '~> 6.0'
 gem 'activesupport', '~> 6.0'
 gem 'railties', '~> 6.0'
-gem 'sprockets-rails'
+# gem 'sprockets-rails'
 
 # Server
 gem 'puma', '~> 5.0.4'
