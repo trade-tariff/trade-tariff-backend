@@ -28,6 +28,7 @@ RSpec.describe Api::V2::ExchangeRatesController do
             'id' => 'CAD',
             'type' => 'exchange_rate',
             'attributes' => {
+              'id' => 'CAD',
               'rate' => 1.5051,
               'base_currency' => 'EUR',
               'applicable_date' => '2021-03-11',
