@@ -5,7 +5,8 @@ module Api
 
       set_type :exchange_rate
 
-      attributes :rate,
+      attributes :id,
+                 :rate,
                  :base_currency,
                  :applicable_date
     end

@@ -11,6 +11,7 @@ RSpec.describe Api::V2::Measures::ExchangeRateSerializer do
         id: 'CAD',
         type: :exchange_rate,
         attributes: {
+          id: 'CAD',
           rate: serializable.rate,
           base_currency: serializable.base_currency,
           applicable_date: serializable.applicable_date,
