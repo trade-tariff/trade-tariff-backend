@@ -1,5 +1,6 @@
 class ExchangeRateService
-  API_URL = 'https://api.exchangeratesapi.io/latest'.freeze
+  ACCESS_KEY = ENV['EXCHANGE_RATE_ACCESS_KEY']
+  API_URL = "http://api.exchangeratesapi.io/v1/latest?access_key=#{ACCESS_KEY}".freeze
   EXCHANGE_RATES_UTC_REFRESH_HOUR = 15
   EXCHANGE_RATES_UTC_REFRESH_MIN  = 15
   REDIS_KEY = 'trade-tariff-exchange-rates'.freeze
