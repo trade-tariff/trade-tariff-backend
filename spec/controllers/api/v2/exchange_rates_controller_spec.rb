@@ -38,6 +38,7 @@ RSpec.describe Api::V2::ExchangeRatesController do
       }
     end
 
+    it { expect(response['Cache-Control']).to eq('no-cache') }
     it { expect(JSON.parse(response.body)).to eq(expected) }
     it { expect(response).to have_http_status(:ok) }
   end
