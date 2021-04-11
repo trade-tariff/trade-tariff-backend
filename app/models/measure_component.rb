@@ -56,8 +56,7 @@ class MeasureComponent < Sequel::Model
 
   def ad_valorem?
     measurement_unit_code.nil? &&
-      monetary_unit_code.nil? &&
-      duty_expression_id == DutyExpression::AD_VALOREM_DUTY_EXPRESSION_ID
+      monetary_unit_code.nil?
   end
 
   private

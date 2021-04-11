@@ -35,8 +35,7 @@ class MeasureConditionComponent < Sequel::Model
 
   def ad_valorem?
     monetary_unit_code.nil? &&
-      measurement_unit_code.nil? &&
-      duty_expression_id == DutyExpression::AD_VALOREM_DUTY_EXPRESSION_ID
+      measurement_unit_code.nil?
   end
 
   def formatted_duty_expression
