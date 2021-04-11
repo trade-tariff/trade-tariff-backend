@@ -1352,6 +1352,20 @@ describe Measure do
     end
   end
 
+  describe '#only_measure_conditions?' do
+    describe 'when there are measure components' do
+      subject(:measure) { create(:measure, :with_measure_components) }
+
+      it { is_expected.not_to be_only_measure_conditions }
+    end
+
+    describe 'when there are no measure components' do
+      subject(:measure) { create(:measure, :with_measure_conditions) }
+
+      it { is_expected.to be_only_measure_conditions }
+    end
+  end
+
   describe '#units' do
     context 'when there are measure components and measure components' do
       subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions) }

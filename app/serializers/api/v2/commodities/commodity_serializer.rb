@@ -11,7 +11,8 @@ module Api
         attributes :producline_suffix, :description, :number_indents,
                    :goods_nomenclature_item_id, :bti_url, :formatted_description,
                    :description_plain, :consigned, :consigned_from, :basic_duty_rate,
-                   :meursing_code
+                   :meursing_code,
+                   :only_measure_conditions
 
         attribute :declarable do
           true
@@ -32,6 +33,7 @@ module Api
               trade_defence: commodity.trade_remedies?,
               applicable_measure_units: commodity.applicable_measure_units,
               meursing_code: commodity.meursing_code,
+              only_measure_conditions: commodity.only_measure_conditions?,
             },
           }
         end

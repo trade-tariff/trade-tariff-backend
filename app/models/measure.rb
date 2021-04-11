@@ -446,6 +446,10 @@ class Measure < Sequel::Model
     ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions)
   end
 
+  def only_measure_conditions?
+    measure_components.blank?
+  end
+
   def units
     component_units + condition_units
   end

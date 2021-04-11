@@ -61,6 +61,10 @@ module Api
         def applicable_measure_units
           MeasureUnitService.new(unit_measures).call
         end
+
+        def only_measure_conditions?
+          import_measures.all?(&:only_measure_conditions?)
+        end
       end
     end
   end
