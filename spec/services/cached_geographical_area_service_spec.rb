@@ -6,6 +6,8 @@ RSpec.describe CachedGeographicalAreaService do
   let(:actual_date) { Time.zone.today }
   let(:countries) { false }
   let(:xi_service) { false }
+  let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'RO') }
+  let(:excluded_geographical_area) { create(:geographical_area, :country, geographical_area_id: 'JE') }
 
   describe '#call' do
     let(:pattern) do
@@ -30,6 +32,12 @@ RSpec.describe CachedGeographicalAreaService do
       allow(TradeTariffBackend).to receive(:xi?).and_return(xi_service)
 
       geographical_area
+    end
+
+    it 'excludes globally excluded geographical area ids' do
+      excluded_geographical_area
+      no_je = service.call[:data].select { |country| country[:id] == 'JE' }.empty?
+      expect(no_je).to be(true)
     end
 
     context 'when fetching geographical area countries' do
