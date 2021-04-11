@@ -1,4 +1,28 @@
 class CachedGeographicalAreaService
+  GLOBALLY_EXCLUDED_GEOGRAPHICAL_AREA_IDS = %w[
+    EU
+    GG
+    JE
+    QP
+    QQ
+    QR
+    QS
+    QU
+    QV
+    QW
+    QX
+    QY
+    QZ
+    ZB
+    ZD
+    ZE
+    ZF
+    ZG
+    ZH
+    ZN
+    ZU
+  ].freeze
+
   DEFAULT_INCLUDES = [:contained_geographical_areas].freeze
   GEOGRAPHICAL_AREAS_EAGER_GRAPH = :geographical_area_descriptions
   TTL = 24.hours
@@ -23,7 +47,7 @@ class CachedGeographicalAreaService
 
   def sorted_areas
     areas.exclude(
-      geographical_area_id: excluded_geographical_area_ids,
+      geographical_area_id: excluded_geographical_area_ids + GLOBALLY_EXCLUDED_GEOGRAPHICAL_AREA_IDS,
     ).order(
       Sequel.asc(:geographical_area_id),
     )
