@@ -11,6 +11,5 @@ FactoryBot.define do
   trait :ad_valorem do
     monetary_unit_code { nil }
     measurement_unit_code { nil }
-    duty_expression_id { DutyExpression::AD_VALOREM_DUTY_EXPRESSION_ID }
   end
 end
