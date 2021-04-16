@@ -80,6 +80,7 @@ commands:
             # Enable routing from this frontend to backend applications which are private
             cf add-network-policy "$CF_FRONTEND_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
             cf add-network-policy "$CF_ADMIN_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.domain_prefix >>" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" --protocol tcp --port 8080
 
       - run:
           name: "Verify new version is working on dark URL."
