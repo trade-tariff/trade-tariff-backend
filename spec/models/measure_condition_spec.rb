@@ -196,4 +196,20 @@ describe MeasureCondition do
       expect(measure_condition.condition).to include(measure_condition.measure_condition_code_description.to_s)
     end
   end
+
+  describe '#entry_price_system?' do
+    subject(:measure_condition) { build :measure_condition, condition_code: condition_code }
+
+    context 'when the condition code is for the entry price system' do
+      let(:condition_code) { 'V' }
+
+      it { is_expected.to be_entry_price_system }
+    end
+
+    context 'when the condition code is not for the entry price system' do
+      let(:condition_code) { 'FOO' }
+
+      it { is_expected.not_to be_entry_price_system }
+    end
+  end
 end

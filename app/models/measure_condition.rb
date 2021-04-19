@@ -117,4 +117,8 @@ class MeasureCondition < Sequel::Model
   def ad_valorem?
     measure_condition_components.count == 1 && measure_condition_components.first.ad_valorem?
   end
+
+  def entry_price_system?
+    condition_code == MeasureConditionCode::ENTRY_PRICE_SYSTEM_CODE
+  end
 end

@@ -58,6 +58,10 @@ module Api
           import_measures.any?(&:trade_remedy?)
         end
 
+        def entry_price_system?
+          import_measures.any?(&:entry_price_system?)
+        end
+
         def applicable_measure_units
           MeasureUnitService.new(unit_measures).call
         end

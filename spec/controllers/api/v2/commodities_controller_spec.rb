@@ -24,7 +24,13 @@ describe Api::V2::CommoditiesController, 'GET #show' do
           export_measures: Hash,
         },
         meta: {
-          duty_calculator: Hash,
+          duty_calculator: {
+            zero_mfn_duty: false,
+            trade_defence: false,
+            applicable_measure_units: Hash,
+            meursing_code: false,
+            entry_price_system: false,
+          },
         },
       },
       included: [
