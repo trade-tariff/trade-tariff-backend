@@ -450,6 +450,10 @@ class Measure < Sequel::Model
     component_units + condition_units
   end
 
+  def entry_price_system?
+    measure_conditions && measure_conditions.any?(&:entry_price_system?)
+  end
+
   private
 
   def ad_valorem_resource?(resource)

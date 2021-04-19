@@ -32,6 +32,7 @@ module Api
               trade_defence: commodity.trade_remedies?,
               applicable_measure_units: commodity.applicable_measure_units,
               meursing_code: commodity.meursing_code,
+              entry_price_system: commodity.entry_price_system?,
             },
           }
         end

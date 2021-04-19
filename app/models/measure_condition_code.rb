@@ -1,4 +1,6 @@
 class MeasureConditionCode < Sequel::Model
+  ENTRY_PRICE_SYSTEM_CODE = 'V'.freeze
+
   plugin :time_machine
   plugin :oplog, primary_key: :condition_code
   plugin :conformance_validator
