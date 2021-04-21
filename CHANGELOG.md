@@ -27,7 +27,7 @@
 - Removed geo areas from eager loading for fetching commodity measures
 - ActionDispatch::ParamsParser::DEFAULT_PARSERS was deprecated and `remove_parsers.rb` initializer was removed
 
-[August 28, 2017]: https://github.com/bitzesty/trade-tariff-backend/compare/f435635...ce68659
+[August 28, 2017]: https://github.com/trade-tariff/trade-tariff-backend/compare/f435635...ce68659
 
 ## [August 28, 2017]
 
@@ -51,7 +51,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 ### Removed
 - End national footnote 05 014
 
-[May 27, 2017]: https://github.com/bitzesty/trade-tariff-backend/compare/37f6244...e2691fc
+[May 27, 2017]: https://github.com/trade-tariff/trade-tariff-backend/compare/37f6244...e2691fc
 
 ## [August 01, 2016]
 
@@ -92,7 +92,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove the `referenced` node in the search endpoint response.
 - Remove the `ReindexModelsWorker` from the recurring jobs.
 
-[August 01, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/bef256813cd3c55e6ef7f42e72d9968a9ad06c63...95896a60459b5639993244d9c8c8f4fe4824349a
+[August 01, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/bef256813cd3c55e6ef7f42e72d9968a9ad06c63...95896a60459b5639993244d9c8c8f4fe4824349a
 
 ## [July 15, 2016]
 
@@ -115,7 +115,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 ### Removed
 - Remove unnecessary data migration now that we are in postgresql
 
-[July 15, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/e4f1dd01bde93a99778e1ec9d9b3132ad3e5915b...bef256813cd3c55e6ef7f42e72d9968a9ad06c63
+[July 15, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/e4f1dd01bde93a99778e1ec9d9b3132ad3e5915b...bef256813cd3c55e6ef7f42e72d9968a9ad06c63
 
 ## [July 09, 2016]
 
@@ -143,7 +143,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove the `aws-ses` gem
 - Remove unused rake task for initial seed files.
 
-[July 09, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/15070c5027638708633612db9926fefb8815e0bd...e4f1dd01bde93a99778e1ec9d9b3132ad3e5915b
+[July 09, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/15070c5027638708633612db9926fefb8815e0bd...e4f1dd01bde93a99778e1ec9d9b3132ad3e5915b
 
 ## [June 28, 2016]
 
@@ -170,7 +170,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove `logstasher`
 - Remove `brakeman`
 
-[June 28, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/371ee64288877f1f9bad603368e777454db2ebeb...15070c5027638708633612db9926fefb8815e0bd
+[June 28, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/371ee64288877f1f9bad603368e777454db2ebeb...15070c5027638708633612db9926fefb8815e0bd
 
 ## [May 05, 2016]
 
@@ -201,7 +201,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove unnecessary requires
 - Remove `foreman` from the Gemfile
 
-[May 05, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/89c7e3b3d76ff0903b730cbee32a6b42a33b7805...371ee64288877f1f9bad603368e777454db2ebeb
+[May 05, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/89c7e3b3d76ff0903b730cbee32a6b42a33b7805...371ee64288877f1f9bad603368e777454db2ebeb
 
 ## [April 20, 2016]
 
@@ -227,7 +227,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove unused logger methods.
 - Remove redundants `begin`
 
-[April 20, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/52dbcc7f7ae12a397235381806943ff1db320b7c...15fffae97561f87607c52d4d037d507b43989928
+[April 20, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/52dbcc7f7ae12a397235381806943ff1db320b7c...15fffae97561f87607c52d4d037d507b43989928
 
 
 ## [March 31, 2016]
@@ -258,7 +258,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove `capistrano`
 - Remove `rspec-guard`
 
-[March 31, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/36e7f1e9ed2d3b89f2d34a3286b052a53499f3f4...c4d812da4656d03f5c52c0e4c7c303bf1a6b1790
+[March 31, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/36e7f1e9ed2d3b89f2d34a3286b052a53499f3f4...c4d812da4656d03f5c52c0e4c7c303bf1a6b1790
 
 
 ## [March 15, 2016]
@@ -277,7 +277,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Remove code rescuing from `Exception`
 
 
-[March 15, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/9f9ce0824668aebf930fb182bc9c50fa2ad3ad49...36e7f1e9ed2d3b89f2d34a3286b052a53499f3f4
+[March 15, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/9f9ce0824668aebf930fb182bc9c50fa2ad3ad49...36e7f1e9ed2d3b89f2d34a3286b052a53499f3f4
 
 ## [March 07, 2016]
 
@@ -294,7 +294,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 ### Removed
 - Get rid of travis.
 
-[January 26, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/e23e7042d178f4f85b4bd09fc2c4296aada6bce2...9f9ce0824668aebf930fb182bc9c50fa2ad3ad49
+[January 26, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/e23e7042d178f4f85b4bd09fc2c4296aada6bce2...9f9ce0824668aebf930fb182bc9c50fa2ad3ad49
 
 
 ## [March 01, 2016]
@@ -315,7 +315,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Fixed tests with timezone issues
 
 
-[March 01, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/187ffdc9250cd08f25036151d4935ff41b5a00af...e23e7042d178f4f85b4bd09fc2c4296aada6bce2
+[March 01, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/187ffdc9250cd08f25036151d4935ff41b5a00af...e23e7042d178f4f85b4bd09fc2c4296aada6bce2
 
 
 ## [January 26, 2016]
@@ -326,7 +326,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 ### Changed
 - Upgraded `rails` to version 4.2.5.1
 
-[January 26, 2016]: https://github.com/bitzesty/trade-tariff-backend/compare/af7d422...b669a0d
+[January 26, 2016]: https://github.com/trade-tariff/trade-tariff-backend/compare/af7d422...b669a0d
 
 ## [December 09, 2015]
 
@@ -346,7 +346,7 @@ Maintained at now at the Bit Zesty repo - not the alphagov one.
 - Js and css linters, this app serves an API.
 - `Rails` 3 script
 
-[December 09, 2015]: https://github.com/bitzesty/trade-tariff-backend/compare/a86a349...c6f28b02
+[December 09, 2015]: https://github.com/trade-tariff/trade-tariff-backend/compare/a86a349...c6f28b02
 
 ## [release_931...release_940](https://github.com/alphagov/trade-tariff-backend/compare/release_931...release_940)
 ### Changed
