@@ -22,11 +22,6 @@ require 'tariff_synchronizer/tariff_downloader'
 require 'tariff_synchronizer/tariff_updates_requester'
 require 'tariff_synchronizer/response'
 
-# How TariffSynchronizer works
-#
-# See https://github.com/bitzesty/trade-tariff-backend/wiki/Synchronization-process
-#
-
 module TariffSynchronizer
 
   class FailedUpdatesError < StandardError; end

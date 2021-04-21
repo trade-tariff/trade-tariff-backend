@@ -1,16 +1,16 @@
 
 # Trade Tariff Backend
 
-__Now maintained at https://github.com/bitzesty/trade-tariff-backend__
+__Now maintained at https://github.com/trade-tariff/trade-tariff-backend__
 
 The API back-end for:
 
-* [Trade Tariff Frontend](https://github.com/bitzesty/trade-tariff-frontend)
-* [Trade Tariff Admin](https://github.com/bitzesty/trade-tariff-admin)
+* [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
+* [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
 
 Other related projects:
 
-* [Trade Tariff Oracle](https://github.com/bitzesty/trade-tariff-oracle)
+* [Trade Tariff Oracle](https://github.com/trade-tariff/trade-tariff-oracle)
 
 ## Development
 
@@ -23,7 +23,7 @@ Other related projects:
 
 ### Setup
 
-Please go through this updated [setup document](https://github.com/bitzesty/trade-tariff-backend/blob/master/SETUP.md)
+Please go through this updated [setup document](https://github.com/trade-tariff/trade-tariff-backend/blob/master/SETUP.md)
 
 1. Setup your environment.
 
@@ -41,7 +41,7 @@ Please go through this updated [setup document](https://github.com/bitzesty/trad
 
 ## Load database
 
-Check out [wiki article on the subject](https://github.com/bitzesty/trade-tariff-backend/wiki/System-rebuild-procedure), or get a [recent database snapshot](mailto:trade-tariff-support@enginegroup.com).
+Check out [wiki article on the subject](https://github.com/trade-tariff/trade-tariff-backend/wiki/System-rebuild-procedure), or get a [recent database snapshot](mailto:trade-tariff-support@enginegroup.com).
 
 ## Performing daily updates
 
@@ -111,7 +111,7 @@ To create or update autoscaling policy for your application run:
     cf attach-autoscaling-policy APP_NAME ./policy.json
 
 
-Current autosscaling policy files are [here](https://github.com/bitzesty/trade-tariff-backend/blob/master/config/autoscale).
+Current autosscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/blob/master/config/autoscale).
 
 
 
@@ -122,8 +122,8 @@ Current autosscaling policy files are [here](https://github.com/bitzesty/trade-t
 
 ## Contributing
 
-Please check out the [Contributing guide](https://github.com/bitzesty/trade-tariff-backend/blob/master/CONTRIBUTING.md)
+Please check out the [Contributing guide](https://github.com/trade-tariff/trade-tariff-backend/blob/master/CONTRIBUTING.md)
 
 ## Licence
 
-Trade Tariff is licenced under the [MIT licence](https://github.com/bitzesty/trade-tariff-backend/blob/master/LICENCE.txt)
+Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/master/LICENCE.txt)
