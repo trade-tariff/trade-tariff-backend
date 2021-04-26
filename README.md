@@ -27,34 +27,49 @@ Please go through this updated [setup document](https://github.com/trade-tariff/
 
 1. Setup your environment, by doing the following:
 
-    a. run rails db:create - to create the databases locally
-    b. Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html.
-    c. Check with DevOps to have a cf account created, if you don't have one already.
+    a. Run rails db:create - to create the databases locally
+
+    b. Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
+
+    c. Check with DevOps to have a cf account created, if you don't have one already
+
     d. Get a data dump of the DB from our DEV/STAGING environment, by running:
-       `cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose`
+       
+       cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
+
     e. Restore the data dump locally, by running:
-       `psql -h localhost tariff_development < <data_dump_file_name>.psql.`
+       
+       psql -h localhost tariff_development < <data_dump_file_name>.psql
 
 2. Update `.env` file with valid data. To enable the XI version, add the extra flag `SERVICE=xi`. If not added, it will default to the UK version.
 
 3. Start your services:
+    
     a. rails s -p PORT (Rails Server)
+    
     b. redis-server (Redis Server)
+    
     c. bundle exec sidekiq (Sidekiq)
-    d. cd to your ElasticSearch folder and run ./bin/elasticseach (ElasticSearch - ideally version 7.10.0)
+    
+    d. cd to your ElasticSearch folder and run:
+    
+        ./bin/elasticseach (ElasticSearch - ideally version 7.10.0)
 
 4. Verify that the app is up and running.
 
-    E.g http://localhost:3018/healthcheck
+    E.g open http://localhost:3018/healthcheck
+
 
 
 ## Load database
 
 Check out [wiki article on the subject](https://github.com/trade-tariff/trade-tariff-backend/wiki/System-rebuild-procedure), or get a [recent database snapshot](mailto:trade-tariff-support@enginegroup.com).
 
+
 ## Performing daily updates
 
 These are run hourly by a background worker UpdatesSynchronizerWorker.
+
 
 ### Sync process
 
@@ -72,6 +87,7 @@ Whole process is quite similar for both TARIC and CHIEF, but CHIEF updates under
 transformation process to convert them into a TARIC format. Check ChiefTransformer class for more info (and ChiefUpdate#import!).
 
 In case of any errors, changes (per single update) are roll-backed and record itself is marked as failed. The sync would need to be rerun after a rollback.
+
 
 ## Manual Deployment (This is automated via CircleCI now)
 
@@ -92,6 +108,7 @@ Then run
     ./bin/deploy
 
 NB: In the newer Diego architecture from CloudFoundry, no-route skips creating and binding a route for the app, but does not specify which type of health check to perform. If your app does not listen on a port, for example the sidekiq worker, then it does not satisfy the port-based health check and Cloud Foundry marks it as crashed. To prevent this, disable the port-based health check with cf set-health-check APP_NAME none.
+
 
 ## Scaling the application
 
@@ -127,9 +144,11 @@ Current autosscaling policy files are [here](https://github.com/trade-tariff/tra
 * When writing validators in `app/validators` please run the rake task
 `audit:verify` which runs the validator against existing data.
 
+
 ## Contributing
 
 Please check out the [Contributing guide](https://github.com/trade-tariff/trade-tariff-backend/blob/master/CONTRIBUTING.md)
+
 
 ## Licence
 
