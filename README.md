@@ -25,19 +25,28 @@ Other related projects:
 
 Please go through this updated [setup document](https://github.com/trade-tariff/trade-tariff-backend/blob/master/SETUP.md)
 
-1. Setup your environment.
+1. Setup your environment, by doing the following:
 
-    bin/setup
+    a. run rails db:create - to create the databases locally
+    b. Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html.
+    c. Check with DevOps to have a cf account created, if you don't have one already.
+    d. Get a data dump of the DB from our DEV/STAGING environment, by running:
+       `cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose`
+    e. Restore the data dump locally, by running:
+       `psql -h localhost tariff_development < <data_dump_file_name>.psql.`
 
 2. Update `.env` file with valid data. To enable the XI version, add the extra flag `SERVICE=xi`. If not added, it will default to the UK version.
 
-3. Start Foreman.
-
-    foreman start
+3. Start your services:
+    a. rails s -p PORT (Rails Server)
+    b. redis-server (Redis Server)
+    c. bundle exec sidekiq (Sidekiq)
+    d. cd to your ElasticSearch folder and run ./bin/elasticseach (ElasticSearch - ideally version 7.10.0)
 
 4. Verify that the app is up and running.
 
-    open http://localhost:3018/healthcheck
+    E.g http://localhost:3018/healthcheck
+
 
 ## Load database
 
@@ -64,9 +73,9 @@ transformation process to convert them into a TARIC format. Check ChiefTransform
 
 In case of any errors, changes (per single update) are roll-backed and record itself is marked as failed. The sync would need to be rerun after a rollback.
 
-## Deployment
+## Manual Deployment (This is automated via CircleCI now)
 
-We deploy to cloud foundry, so you need to have the CLI installed, and the following [cf plugin](https://github.com/bluemixgaragelondon/cf-blue-green-deploy) installed:
+You can manually deploy to cloud foundry as well, so you need to have the CLI installed, and the following [cf plugin](https://github.com/bluemixgaragelondon/cf-blue-green-deploy) installed:
 
 Set the following ENV variables:
 * CF_USER
@@ -93,7 +102,6 @@ https://docs.cloud.service.gov.uk/managing_apps.html#autoscaling
 https://github.com/cloudfoundry/app-autoscaler/blob/develop/docs/Readme.md
 
 
-
 To check autoscaling history run:
 
     cf autoscaling-history APPNAME
@@ -112,7 +120,6 @@ To create or update autoscaling policy for your application run:
 
 
 Current autosscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/blob/master/config/autoscale).
-
 
 
 ## Notes
