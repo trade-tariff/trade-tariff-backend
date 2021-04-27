@@ -17,8 +17,10 @@ Other related projects:
 ### Dependencies
 
   - Ruby
-  - Postgresql 10 (won't work with more recent versions)
-  - ElasticSearch
+  - Postgresql v10 (won't work with more recent versions)
+  - ElasticSearch v7 (last tested and working with version 7.12. It may be
+    working with a more recent version, but if you have issues try to downgrade
+    to version 7)
   - Redis
 
 ### Setup
