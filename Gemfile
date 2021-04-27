@@ -36,7 +36,7 @@ gem 'elasticsearch-extensions', '0.0.31'
 
 # Helpers
 gem 'bootsnap', require: false
-gem 'gds-sso', '~> 13', '>= 13.6.0'
+gem 'gds-sso'
 gem 'hashie', '~> 4'
 gem 'holidays'
 gem 'lograge', '>= 0.3.6'
