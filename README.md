@@ -17,7 +17,7 @@ Other related projects:
 ### Dependencies
 
   - Ruby
-  - Postgresql
+  - Postgresql 10 (won't work with more recent versions)
   - ElasticSearch
   - Redis
 
@@ -34,25 +34,25 @@ Please go through this updated [setup document](https://github.com/trade-tariff/
     c. Check with DevOps to have a cf account created, if you don't have one already
 
     d. Get a data dump of the DB from our DEV/STAGING environment, by running:
-       
+
        cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
 
     e. Restore the data dump locally, by running:
-       
+
        psql -h localhost tariff_development < <data_dump_file_name>.psql
 
 2. Update `.env` file with valid data. To enable the XI version, add the extra flag `SERVICE=xi`. If not added, it will default to the UK version.
 
 3. Start your services:
-    
+
     a. rails s -p PORT (Rails Server)
-    
+
     b. redis-server (Redis Server)
-    
+
     c. bundle exec sidekiq (Sidekiq)
-    
+
     d. cd to your ElasticSearch folder and run:
-    
+
         ./bin/elasticseach (ElasticSearch - ideally version 7.10.0)
 
 4. Verify that the app is up and running.
@@ -126,7 +126,7 @@ To check autoscaling history run:
 To check autoscaling metrics run:
 
     cf autoscaling-metrics APP_NAME METRIC_NAME
- 
+
 To remove autoscaling policy and disable App Autoscaler run:
 
     cf detach-autoscaling-policy APP_NAME
