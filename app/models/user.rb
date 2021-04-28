@@ -50,6 +50,12 @@ class User < Sequel::Model
     disabled
   end
 
+  def update!(options)
+    options.each do |key, value|
+      update_attribute(key, value)
+    end
+  end
+
   def update_attribute(attribute, value)
     update(attribute => value)
   end
