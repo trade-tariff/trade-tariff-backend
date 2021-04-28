@@ -10,6 +10,7 @@ ruby '~> 2.7.1'
 # Server
 gem 'puma', '~> 5.0.4'
 gem 'rails', '>= 6.0.3.4'
+gem 'mimemagic'
 gem 'sinatra', '~> 2.0.2'
 
 # DB
@@ -36,7 +37,7 @@ gem 'elasticsearch-extensions', '0.0.31'
 
 # Helpers
 gem 'bootsnap', require: false
-gem 'gds-sso', '~> 13', '>= 13.6.0'
+gem 'gds-sso'
 gem 'hashie', '~> 4'
 gem 'holidays'
 gem 'lograge', '>= 0.3.6'
