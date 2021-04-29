@@ -65,6 +65,10 @@ module Api
         def applicable_measure_units
           MeasureUnitService.new(unit_measures).call
         end
+
+        def applicable_additional_codes
+          ApplicableAdditionalCodeService.new(import_measures).call
+        end
       end
     end
   end

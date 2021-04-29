@@ -77,8 +77,9 @@ group :test do
   gem 'fakefs', '~> 0.18.0', require: 'fakefs/safe'
   gem 'forgery'
   gem 'json_expressions', '~> 0.9.0'
-  gem 'rspec_junit_formatter'
+  gem 'rspec-json_expectations'
   gem 'rspec-rails'
+  gem 'rspec_junit_formatter'
   gem 'simplecov', '~> 0.18', require: false
   gem 'webmock'
 end

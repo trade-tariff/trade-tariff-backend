@@ -28,6 +28,7 @@ describe Api::V2::CommoditiesController, 'GET #show' do
             zero_mfn_duty: false,
             trade_defence: false,
             applicable_measure_units: Hash,
+            applicable_additional_codes: Hash,
             meursing_code: false,
             entry_price_system: false,
           },

@@ -1,0 +1,50 @@
+{
+  "code_overrides": {
+    "2600": {
+      "code": "2600",
+      "overlay": "The product I am importing is COVID-19 critical",
+      "hint": "Read more about the <a target='_blank' href='https://www.gov.uk/government/news/hmg-suspends-import-tariffs-on-covid-19-products-to-fight-virus'>suspension of tariffs on COVID-19 critical goods [opens in a new browser window]</a>"
+    },
+    "2601": {
+      "code": "2601",
+      "overlay": "The product I am importing is not COVID-19 critical",
+      "hint": ""
+    },
+    "2550": {
+      "code": "2550",
+      "overlay": "Imported by sea and arriving via the Atlantic Ocean or the Suez canal with the port of unloading on the Mediterranean Sea or on the Black Sea",
+      "hint": ""
+    },
+    "2551": {
+      "code": "2551",
+      "overlay": "Imported by sea and arriving via the Atlantic Ocean or the Suez canal with the port of unloading on the Mediterranean Sea or on the Black Sea",
+      "hint": ""
+    },
+    "2552": {
+      "code": "2552",
+      "overlay": "Imported by sea and arriving via the Atlantic Ocean with the port of unloading in Ireland, the United Kingdom, Denmark, Estonia, Latvia, Lithuania, Poland, Sweden, Finland or on the Atlantic Coast of the Iberian Peninsula",
+      "hint": ""
+    },
+    "2500": {
+      "code": "2500",
+      "overlay": "Your commodity is included in the list of goods for which relief from customs duty is provided (<abbr title='International Non-proprietary Names for Pharmaceutical Substances'>INN</abbr> list). Find out more about <a target='_blank' href='https://www.gov.uk/government/publications/uk-trade-tariff-customs-duty-relief-on-pharmaceutical-products/explanatory-notes'>customs duty on pharmaceutical products</a>",
+      "hint": "",
+      "real": "Annex I 'Combined Nomenclature', Part Three, Section II (pharmaceutical products), Tariff Annexes 3 to 6 – R 2020/1577 (OJ L 361)"
+    },
+    "2501": {
+      "code": "2501",
+      "overlay": "Your commodity does not belong to this list",
+      "hint": ""
+    }
+  },
+  "headings": {
+    "preference": {
+      "overlay": "Describe your goods in more detail",
+      "hint": "To trade this commodity, you need to specify an additional 4 digits, known as an additional code"
+    },
+    "remedy": {
+      "overlay": "From which company are you buying these goods?",
+      "hint": "Additional duties are levied against imports from certain companies in the form of anti-dumping or anti-subsidy duties."
+    }
+  }
+}

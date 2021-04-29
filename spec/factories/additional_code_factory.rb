@@ -15,6 +15,12 @@ FactoryBot.define do
         FactoryBot.create(:export_refund_nomenclature, export_refund_code: adco.additional_code)
       end
     end
+
+    trait :with_description do
+      after(:build) do |adco, _evaluator|
+        FactoryBot.create(:additional_code_description, :with_period, additional_code_sid: adco.additional_code_sid)
+      end
+    end
   end
 
   factory :additional_code_description_period do
