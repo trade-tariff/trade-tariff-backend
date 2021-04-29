@@ -83,7 +83,7 @@ describe ApplicableAdditionalCodeService do
       it { expect(service.call).to include_json(expected_additional_codes) }
     end
 
-    context 'when the measures do not have additional codes' do
+    context 'when the measures do not have applicable additional codes' do
       let(:measures) { [measure] }
       let(:measure) do
         create(
