@@ -30,6 +30,7 @@ class MeasurePresenter
   end
 
   def third_country_duty_dedup
+    # TODO: Fix measures with additional codes that are duplicate
     if @collection.select { |m| m.measure_type_id == THIRD_COUNTRY_DUTY_ID }.size > 1
       @collection.delete_if do |m|
         m.measure_type_id == THIRD_COUNTRY_DUTY_ID && m.additional_code.blank? && m.goods_nomenclature_sid != @declarable.goods_nomenclature_sid
