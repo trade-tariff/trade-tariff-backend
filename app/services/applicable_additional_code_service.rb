@@ -4,7 +4,7 @@ class ApplicableAdditionalCodeService
   end
 
   def call
-    unique_applicable_measures.each_with_object({}) do |measure, acc|
+    applicable_measures.each_with_object({}) do |measure, acc|
       measure_type_id = measure.measure_type_id
 
       acc[measure_type_id] = {} if acc[measure_type_id].blank?
@@ -15,10 +15,6 @@ class ApplicableAdditionalCodeService
   end
 
   private
-
-  def unique_applicable_measures
-    applicable_measures.uniq { |measure| measure.measure_sid }
-  end
 
   def applicable_measures
     @measures.select { |measure| measure.additional_code&.applicable? }

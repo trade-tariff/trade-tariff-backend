@@ -9,7 +9,6 @@ describe ApplicableAdditionalCodeService do
       let(:measures) do
         [
           measure,
-          duplicate_measure,
           measure_with_same_measure_and_code_type,
           measure_with_different_measure_and_code_type,
           measure_without_additional_code,
@@ -22,16 +21,6 @@ describe ApplicableAdditionalCodeService do
           measure_type_id: '105',
           additional_code_type_id: '2',
           additional_code: '550',
-        )
-      end
-      let(:duplicate_measure) do
-        create(
-          :measure,
-          :with_additional_code,
-          measure_type_id: '105',
-          additional_code_type_id: '2',
-          additional_code: '550',
-          measure_sid: measure.measure_sid,
         )
       end
       let(:measure_with_same_measure_and_code_type) do
