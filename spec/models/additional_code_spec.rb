@@ -1,6 +1,15 @@
 require 'rails_helper'
 
 describe AdditionalCode do
+  subject(:additional_code) do
+    build(
+      :additional_code,
+      additional_code_type_id: additional_code_type_id,
+    )
+  end
+
+  let(:additional_code_type_id) { '2' }
+
   describe 'associations' do
     describe 'additional code description' do
       let!(:additional_code)                { create :additional_code }
@@ -83,6 +92,40 @@ describe AdditionalCode do
       expect(
         additional_code.code,
       ).to eq [additional_code.additional_code_type_id, additional_code.additional_code].join
+    end
+  end
+
+  describe '#type' do
+    context 'when the type id is of a preference type' do
+      let(:additional_code_type_id) { '2' }
+
+      it { expect(additional_code.type).to eq('preference') }
+    end
+
+    context 'when the type id is of a remedy type' do
+      let(:additional_code_type_id) { '8' }
+
+      it { expect(additional_code.type).to eq('remedy') }
+    end
+
+    context 'when the type id is not a remedy or a preference' do
+      let(:additional_code_type_id) { 'X' }
+
+      it { expect(additional_code.type).to eq('unknown') }
+    end
+  end
+
+  describe '#applicable?' do
+    context 'when the type is unknown' do
+      let(:additional_code_type_id) { 'X' }
+
+      it { is_expected.not_to be_applicable }
+    end
+
+    context 'when the type is not unknown' do
+      let(:additional_code_type_id) { '2' }
+
+      it { is_expected.to be_applicable }
     end
   end
 end

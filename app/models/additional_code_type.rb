@@ -25,7 +25,7 @@ class AdditionalCodeType < Sequel::Model
     0 => 'Export refund nomencalture',
     1 => 'Additional Codes',
     3 => 'Meursing addition codes',
-    4 => 'Export refund for processed agricultural goods'
+    4 => 'Export refund for processed agricultural goods',
   }.freeze
 
   def meursing?

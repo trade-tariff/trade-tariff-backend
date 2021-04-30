@@ -31,6 +31,7 @@ module Api
               zero_mfn_duty: commodity.zero_mfn_duty?,
               trade_defence: commodity.trade_remedies?,
               applicable_measure_units: commodity.applicable_measure_units,
+              applicable_additional_codes: commodity.applicable_additional_codes,
               meursing_code: commodity.meursing_code,
               entry_price_system: commodity.entry_price_system?,
             },

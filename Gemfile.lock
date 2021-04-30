@@ -294,6 +294,7 @@ GEM
     rspec-expectations (3.9.2)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
+    rspec-json_expectations (2.2.0)
     rspec-mocks (3.9.1)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.9.0)
@@ -434,6 +435,7 @@ DEPENDENCIES
   redis-rails
   redlock (~> 1.1.0)
   responders (~> 3.0.0)
+  rspec-json_expectations
   rspec-rails
   rspec_junit_formatter
   rubocop-govuk

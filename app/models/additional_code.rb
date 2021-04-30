@@ -1,4 +1,11 @@
 class AdditionalCode < Sequel::Model
+  PREFERENCE_TYPE = 'preference'.freeze
+  REMEDY_TYPE = 'remedy'.freeze
+  UNKNOWN_TYPE = 'unknown'.freeze
+
+  PREFERENCE_TYPE_IDS = %w[2].freeze
+  REMEDY_TYPE_IDS = %w[8 A B C].freeze
+
   plugin :time_machine
   plugin :oplog, primary_key: :additional_code_sid
   plugin :conformance_validator
@@ -38,5 +45,24 @@ class AdditionalCode < Sequel::Model
 
   def id
     additional_code_sid
+  end
+
+  def applicable?
+    type != UNKNOWN_TYPE
+  end
+
+  def type
+    return PREFERENCE_TYPE if additional_code_type_id.in?(PREFERENCE_TYPE_IDS)
+    return REMEDY_TYPE if  additional_code_type_id.in?(REMEDY_TYPE_IDS)
+
+    UNKNOWN_TYPE
+  end
+
+  def self.additional_codes
+    @additional_codes ||=
+      begin
+        file = File.join(::Rails.root, 'db', 'additional_codes.json').freeze
+        JSON.parse(File.read(file))
+      end
   end
 end

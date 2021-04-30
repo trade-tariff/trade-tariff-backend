@@ -160,6 +160,18 @@ FactoryBot.define do
       # noop
     end
 
+    trait :with_additional_code do
+      transient do
+        additional_code { Forgery(:basic).text(exactly: 3) }
+      end
+
+      after(:build) do |measure, evaluator|
+        adco = FactoryBot.create(:additional_code, :with_description, additional_code_type_id: measure.additional_code_type_id, additional_code: evaluator.additional_code)
+        measure.additional_code_sid = adco.additional_code_sid
+        measure.save
+      end
+    end
+
     trait :with_additional_code_type do
       after(:build) do |measure, _evaluator|
         FactoryBot.create(:additional_code_type, additional_code_type_id: measure.additional_code_type_id)
