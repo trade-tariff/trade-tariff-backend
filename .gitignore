@@ -1,5 +1,6 @@
 # Ignore bundler config.
 /.bundle
+vendor/*
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -34,3 +35,5 @@ searches_without_match_or_synonym.csv
 /.vscode
 
 .nvimlog
+
+
