@@ -88,6 +88,7 @@ GEM
       aws-eventstream (~> 1.0, >= 1.0.2)
     bootsnap (1.4.6)
       msgpack (~> 1.0)
+    brakeman (5.0.1)
     builder (3.2.4)
     byebug (11.1.3)
     coderay (1.1.3)
@@ -403,6 +404,7 @@ DEPENDENCIES
   aws-sdk-rails
   aws-sdk-s3
   bootsnap
+  brakeman
   curb (~> 0.9)
   database_cleaner
   dotenv-rails

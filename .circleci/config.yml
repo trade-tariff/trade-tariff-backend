@@ -138,7 +138,7 @@ jobs:
     steps:
       - checkout
       - ruby/install-deps
-  checking:
+  linters:
     docker:
       - image: cimg/ruby:2.7
     resource_class: small
@@ -148,10 +148,14 @@ jobs:
       - ruby/rubocop-check:
           format: progress
           label: Inspecting with Rubocop
-      - slack/notify:
-          channel: deployments
-          event: fail
-          template: basic_fail_1
+      - run:
+          name: Inspecting with Brakeman
+          when: always
+          command: 'bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models'
+      - store_test_results:
+          path: test-results/brakeman/
+      - store_artifacts:
+          path: brakeman.html
   test:
     docker:
       - image: cimg/ruby:2.7
@@ -262,13 +266,15 @@ workflows:
   version: 2
   ci:
     jobs:
-       - test:
+      - linters:
+          context: trade-tariff
+      - test:
            context: trade-tariff
            filters:
              branches:
                ignore:
                  - master
-       - deploy_dev:
+      - deploy_dev:
            matrix:
              parameters:
                service:
@@ -281,7 +287,7 @@ workflows:
                  - master
            requires:
              - test
-       - deploy_staging:
+      - deploy_staging:
            matrix:
              parameters:
                service:
@@ -292,8 +298,7 @@ workflows:
              branches:
                only:
                  - master
-
-       - hold_production:
+      - hold_production:
            type: approval
            filters:
              branches:
@@ -301,7 +306,7 @@ workflows:
                  - master
            requires:
              - deploy_staging
-       - deploy_production:
+      - deploy_production:
            matrix:
              parameters:
                service:
