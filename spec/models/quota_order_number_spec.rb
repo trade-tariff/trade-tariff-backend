@@ -12,6 +12,12 @@ RSpec.describe QuotaOrderNumber do
 
       it { is_expected.to eq(definition) }
     end
+
+    describe '#definition_id' do
+      subject { quota_order_number.definition_id }
+
+      it { is_expected.to eq(definition.quota_definition_sid) }
+    end
   end
 
   context 'without a persisted QuotaOrderNumber' do

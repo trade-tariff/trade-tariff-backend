@@ -21,7 +21,7 @@ class QuotaOrderNumber < Sequel::Model
   alias_method :definition, :quota_definition!
 
   def definition_id
-    definition&.quota_order_number_sid
+    definition&.quota_definition_sid
   end
 
   one_to_one :quota_order_number_origin, primary_key: :quota_order_number_sid,

@@ -24,7 +24,7 @@ class QuotaDefinition < Sequel::Model
   end
 
   one_to_one :measurement_unit, primary_key: :measurement_unit_code,
-             key: :measurement_unit_code do |ds|
+                                key: :measurement_unit_code do |ds|
     ds.with_actual(MeasurementUnit)
   end
 

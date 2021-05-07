@@ -4,11 +4,11 @@ module Api
       module OrderNumber
         class QuotaOrderNumberSerializer
           include JSONAPI::Serializer
-  
+
           set_type :order_number
-  
+
           set_id :quota_order_number_id
-  
+
           attribute :number do |quota|
             quota.quota_order_number_id
           end
