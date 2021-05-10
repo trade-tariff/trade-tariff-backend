@@ -72,7 +72,15 @@ FactoryBot.define do
     end
 
     trait :with_measure_type do
-      # noop
+      after(:build) do |measure, evaluator|
+        create :measure_type,
+               measure_type_id: measure.measure_type_id,
+               validity_start_date: measure.validity_start_date - 1.day,
+               measure_explosion_level: evaluator.type_explosion_level,
+               order_number_capture_code: evaluator.order_number_capture_code,
+               trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
+               measure_type_series_id: evaluator.measure_type_series_id
+      end
     end
 
     trait :ad_valorem do

@@ -8,6 +8,7 @@ class ApplicableAdditionalCodeService
       measure_type_id = measure.measure_type_id
 
       acc[measure_type_id] = {} if acc[measure_type_id].blank?
+      acc[measure_type_id]['measure_type_description'] = measure&.measure_type&.description
       acc[measure_type_id]['heading'] = heading_annotations_for(measure.additional_code.type)
       acc[measure_type_id]['additional_codes'] = [] if acc[measure_type_id]['additional_codes'].blank?
       acc[measure_type_id]['additional_codes'] << code_annotations_for(measure)
