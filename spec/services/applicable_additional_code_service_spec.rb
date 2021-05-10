@@ -19,6 +19,7 @@ describe ApplicableAdditionalCodeService do
         create(
           :measure,
           :with_additional_code,
+          :with_measure_type,
           measure_type_id: '105',
           additional_code_type_id: '2',
           additional_code: '550',
@@ -28,6 +29,7 @@ describe ApplicableAdditionalCodeService do
         create(
           :measure,
           :with_additional_code,
+          :with_measure_type,
           measure_type_id: '105',
           additional_code_type_id: '2',
           additional_code: '550',
@@ -38,6 +40,7 @@ describe ApplicableAdditionalCodeService do
         create(
           :measure,
           :with_additional_code,
+          :with_measure_type,
           measure_type_id: '105',
           additional_code_type_id: '2',
           additional_code: '551',
@@ -47,17 +50,23 @@ describe ApplicableAdditionalCodeService do
         create(
           :measure,
           :with_additional_code,
+          :with_measure_type,
           measure_type_id: '103',
           additional_code_type_id: '8',
         )
       end
       let(:measure_without_additional_code) do
-        create(:measure, measure_type_id: '103')
+        create(
+          :measure,
+          :with_measure_type,
+          measure_type_id: '103',
+        )
       end
 
       let(:expected_additional_codes) do
         {
           '105' => {
+            'measure_type_description' => be_a(String),
             'heading' => {
               'overlay' => 'Describe your goods in more detail',
               'hint' => 'To trade this commodity, you need to specify an additional 4 digits, known as an additional code',
@@ -78,6 +87,7 @@ describe ApplicableAdditionalCodeService do
             ],
           },
           '103' => {
+            'measure_type_description' => be_a(String),
             'heading' => {
               'overlay' => 'From which company are you buying these goods?',
               'hint' => 'Additional duties are levied against imports from certain companies in the form of anti-dumping or anti-subsidy duties.',
