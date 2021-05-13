@@ -178,6 +178,73 @@ describe QuotaSearchService do
       end
     end
 
+    context 'by date' do
+      let(:past_validity_start_date) { Date.new(Date.current.year - 1, 1, 1) }
+      let(:quota_order_number3) { create :quota_order_number }
+      let!(:measure3) { create :measure, ordernumber: quota_order_number3.quota_order_number_id, validity_start_date: past_validity_start_date }
+      let!(:quota_definition3) do
+        create :quota_definition,
+               quota_order_number_sid: quota_order_number3.quota_order_number_sid,
+               quota_order_number_id: quota_order_number3.quota_order_number_id,
+               critical_state: 'N',
+               validity_start_date: past_validity_start_date
+      end
+      let!(:quota_order_number_origin3) do
+        create :quota_order_number_origin,
+               :with_geographical_area,
+               quota_order_number_sid: quota_order_number3.quota_order_number_sid
+      end
+
+      it 'finds quota definition by year only' do
+        result = described_class.new(
+          {
+            'year' => (Date.current.year - 1).to_s,
+          }, current_page, per_page
+        ).perform
+        expect(result).not_to include(quota_definition1)
+      end
+
+      it 'doesn\'t filter quota definition by month only' do
+        result = described_class.new(
+          {
+            'month' => Date.current.month.to_s,
+          }, current_page, per_page
+        ).perform
+        expect(result).to include(quota_definition1, quota_definition2, quota_definition3)
+      end
+
+      it 'doesn\'t filter quota definition by day only' do
+        result = described_class.new(
+          {
+            'day' => Date.current.day.to_s,
+          }, current_page, per_page
+        ).perform
+        expect(result).to include(quota_definition1, quota_definition2, quota_definition3)
+      end
+
+      it 'finds quota definition by full date' do
+        result = described_class.new(
+          {
+            'year' => Date.current.year.to_s,
+            'month' => Date.current.month.to_s,
+            'day' => Date.current.day.to_s,
+          }, current_page, per_page
+        ).perform
+        expect(result).to include(quota_definition1, quota_definition2, quota_definition3)
+      end
+
+      it 'does not find quota definition by wrong date' do
+        result = described_class.new(
+          {
+            'year' => (Date.current.year - 1).to_s,
+            'month' => Date.current.month.to_s,
+            'day' => Date.current.day.to_s,
+          }, current_page, per_page
+        ).perform
+        expect(result).not_to include(quota_definition1)
+      end
+    end
+
     context 'by status' do
       context 'exhausted' do
         let!(:quota_exhaustion_event) do
