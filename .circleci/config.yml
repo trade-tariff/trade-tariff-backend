@@ -115,6 +115,20 @@ commands:
             # Switch name of "dark" version to claim correct name
             cf rename "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>"
 
+
+  sentry-release:
+    steps:
+      - checkout
+      - run:
+          name: Create release and notify Sentry of deploy
+          command: |
+            curl -sL https://sentry.io/get-cli/ | bash
+            export SENTRY_RELEASE=$(sentry-cli releases propose-version)
+            sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
+            sentry-cli releases set-commits $SENTRY_RELEASE --auto
+            sentry-cli releases finalize $SENTRY_RELEASE
+            sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
+
 jobs:
   build:
     docker:
@@ -186,9 +200,12 @@ jobs:
           channel: deployments
           event: fail
           template: basic_fail_1
+
   deploy_dev:
     docker:
       - image: cimg/ruby:2.7
+    environment:
+      SENTRY_ENVIRONMENT: "development"
     parameters:
       service:
         type: string
@@ -201,10 +218,13 @@ jobs:
           space: "development"
           domain_prefix: "dev"
           service: << parameters.service >>
+      - sentry-release
 
   deploy_staging:
     docker:
       - image: cimg/ruby:2.7
+    environment:
+      SENTRY_ENVIRONMENT: "staging"
     parameters:
       service:
         type: string
@@ -217,10 +237,13 @@ jobs:
           space: "staging"
           domain_prefix: "staging"
           service: << parameters.service >>
+      - sentry-release
 
   deploy_production:
     docker:
       - image: cimg/ruby:2.7
+    environment:
+      SENTRY_ENVIRONMENT: "production"
     parameters:
       service:
         type: string
@@ -233,6 +256,7 @@ jobs:
           space: "production"
           domain_prefix: "production"
           service: << parameters.service >>
+      - sentry-release
 
 workflows:
   version: 2
