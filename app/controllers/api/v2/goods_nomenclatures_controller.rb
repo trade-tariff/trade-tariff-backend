@@ -20,13 +20,13 @@ module Api
       end
 
       def show_by_chapter
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{params[:chapter_id]})\d{8}/).all
+        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(Sequel.like(:goods_nomenclature_item_id, "#{params[:chapter_id]}%")).all
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_heading
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{params[:heading_id]})\d{6}/).all
+        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(Sequel.like(:goods_nomenclature_item_id, "#{params[:heading_id]}%")).all
 
         respond_with(@goods_nomenclatures)
       end
