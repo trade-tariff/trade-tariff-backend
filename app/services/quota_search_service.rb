@@ -1,16 +1,16 @@
 class QuotaSearchService
-  STATUS_VALUES = %w(blocked exhausted not_blocked not_exhausted).freeze
+  STATUS_VALUES = %w[blocked exhausted not_blocked not_exhausted].freeze
 
   attr_accessor :scope
-  attr_reader :goods_nomenclature_item_id, :geographical_area_id, :order_number, :critical, :years, :status,
-    :current_page, :per_page
+  attr_reader :goods_nomenclature_item_id, :geographical_area_id, :order_number,
+    :critical, :years, :status, :current_page, :per_page, :date
 
   delegate :pagination_record_count, to: :scope
 
   def initialize(attributes, current_page, per_page)
     self.scope = Measure.
       eager(quota_definition: [:measures, :quota_exhaustion_events, :quota_blocking_periods, quota_order_number: [quota_order_number_origins: :geographical_area]]).
-      join(:quota_definitions, [[:measures__ordernumber, :quota_definitions__quota_order_number_id], [:measures__validity_start_date, :quota_definitions__validity_start_date]]).
+      join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id], %i[measures__validity_start_date quota_definitions__validity_start_date]]).
       distinct(:measures__ordernumber, :measures__validity_start_date).
       select(Sequel.expr(:measures).*).
       exclude(measures__ordernumber: nil).
@@ -20,7 +20,7 @@ class QuotaSearchService
     @geographical_area_id = attributes['geographical_area_id']
     @order_number = attributes['order_number']
     @critical = attributes['critical']
-    @years = Array.wrap(attributes['years']).join(', ')
+    extract_date_or_years(attributes)
     status_value = attributes['status']&.gsub(/[+ ]/, '_')
     @status = status_value if STATUS_VALUES.include?(status_value)
     @current_page = current_page
@@ -33,6 +33,7 @@ class QuotaSearchService
     apply_order_number_filter if order_number.present?
     apply_critical_filter if critical.present?
     apply_years_filter if years.present?
+    apply_date_filter if date.present?
     apply_status_filters if status.present?
 
     self.scope = scope.paginate(current_page, per_page)
@@ -40,6 +41,13 @@ class QuotaSearchService
   end
 
   private
+
+  def extract_date_or_years(attributes)
+    date = Date.parse([attributes['year'], attributes['month'], attributes['day']].join('-'))
+    @date = date
+  rescue Date::Error
+    @years = Array.wrap(attributes['years']).concat(Array.wrap(attributes['year'])).compact.join(', ')
+  end
 
   def apply_goods_nomenclature_item_id_filter
     self.scope = scope.where(Sequel.like(:measures__goods_nomenclature_item_id, "#{goods_nomenclature_item_id}%"))
@@ -62,6 +70,12 @@ class QuotaSearchService
     @scope = scope.where("EXTRACT(YEAR FROM measures.validity_start_date) IN (#{years})")
   end
 
+  def apply_date_filter
+    @scope = scope.where('(measures.validity_start_date IS NULL OR measures.validity_start_date <= ?)' \
+                         'AND (measures.validity_end_date IS NULL OR measures.validity_end_date >= ?)',
+                          date, date)
+  end
+
   def apply_status_filters
     send("apply_#{status}_filter")
   end
@@ -69,47 +83,47 @@ class QuotaSearchService
   def apply_exhausted_filter
     @scope = scope.
       where(
-      <<~SQL
-EXISTS (
-SELECT * 
-  FROM "quota_exhaustion_events"
- WHERE "quota_exhaustion_events"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
-       "quota_exhaustion_events"."occurrence_timestamp" <= '#{QuotaDefinition.point_in_time}'
- LIMIT 1
-)
-      SQL
-    )
+        <<~SQL
+          EXISTS (
+          SELECT *
+            FROM "quota_exhaustion_events"
+           WHERE "quota_exhaustion_events"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
+                 "quota_exhaustion_events"."occurrence_timestamp" <= '#{QuotaDefinition.point_in_time}'
+           LIMIT 1
+          )
+        SQL
+      )
   end
 
   def apply_not_exhausted_filter
     @scope = scope.
       where(
-      <<~SQL
-NOT EXISTS (
-SELECT * 
-  FROM "quota_exhaustion_events"
- WHERE "quota_exhaustion_events"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
-       "quota_exhaustion_events"."occurrence_timestamp" <= '#{QuotaDefinition.point_in_time}'
- LIMIT 1
-)
-    SQL
-    )
+        <<~SQL
+          NOT EXISTS (
+          SELECT *
+            FROM "quota_exhaustion_events"
+           WHERE "quota_exhaustion_events"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
+                 "quota_exhaustion_events"."occurrence_timestamp" <= '#{QuotaDefinition.point_in_time}'
+           LIMIT 1
+          )
+        SQL
+      )
   end
 
   def apply_blocked_filter
     @scope = scope.
       where(
         <<~SQL
-EXISTS (
-SELECT * 
-  FROM "quota_blocking_periods"
- WHERE "quota_blocking_periods"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
-       ("quota_blocking_periods"."blocking_start_date" <= '#{QuotaDefinition.point_in_time}' AND 
-       ("quota_blocking_periods"."blocking_end_date" >= '#{QuotaDefinition.point_in_time}' OR 
-        "quota_blocking_periods"."blocking_end_date" IS NULL))
- LIMIT 1
-)
-      SQL
+          EXISTS (
+          SELECT *
+            FROM "quota_blocking_periods"
+           WHERE "quota_blocking_periods"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
+                 ("quota_blocking_periods"."blocking_start_date" <= '#{QuotaDefinition.point_in_time}' AND
+                 ("quota_blocking_periods"."blocking_end_date" >= '#{QuotaDefinition.point_in_time}' OR
+                  "quota_blocking_periods"."blocking_end_date" IS NULL))
+           LIMIT 1
+          )
+        SQL
       )
   end
 
@@ -117,16 +131,16 @@ SELECT *
     @scope = scope.
       where(
         <<~SQL
-NOT EXISTS (
-SELECT * 
-  FROM "quota_blocking_periods"
- WHERE "quota_blocking_periods"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
-       ("quota_blocking_periods"."blocking_start_date" <= '#{QuotaDefinition.point_in_time}' AND 
-       ("quota_blocking_periods"."blocking_end_date" >= '#{QuotaDefinition.point_in_time}' OR 
-        "quota_blocking_periods"."blocking_end_date" IS NULL))
- LIMIT 1
-)
-      SQL
+          NOT EXISTS (
+          SELECT *
+            FROM "quota_blocking_periods"
+           WHERE "quota_blocking_periods"."quota_definition_sid" = "quota_definitions"."quota_definition_sid" AND
+                 ("quota_blocking_periods"."blocking_start_date" <= '#{QuotaDefinition.point_in_time}' AND
+                 ("quota_blocking_periods"."blocking_end_date" >= '#{QuotaDefinition.point_in_time}' OR
+                  "quota_blocking_periods"."blocking_end_date" IS NULL))
+           LIMIT 1
+          )
+        SQL
       )
   end
 end
