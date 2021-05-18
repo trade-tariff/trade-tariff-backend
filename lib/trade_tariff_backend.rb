@@ -176,6 +176,8 @@ module TradeTariffBackend
     def clearable_models
       [
         Certificate,
+        CertificateDescription,
+        CertificateDescriptionPeriod,
         Chief::Tamf,
         ExportRefundNomenclature,
         Footnote,
