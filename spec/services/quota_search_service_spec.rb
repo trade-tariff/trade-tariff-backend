@@ -89,6 +89,26 @@ describe QuotaSearchService do
     end
 
     context 'by order_number' do
+      context 'when the order number is current' do
+        context 'when the definition and measure have expired' do
+          it 'returns an empty result'
+        end
+
+        context 'when the definition and measure have not expired' do
+          it 'returns an the non-expired result'
+        end
+      end
+
+      context 'when the order number is non-current' do
+        context 'when the definition and measure have expired' do
+          it 'returns an empty result'
+        end
+
+        context 'when the definition and measure have not expired' do
+          it 'returns an the non-expired result'
+        end
+      end
+
       it 'finds quota definition by order number' do
         result = described_class.new(
           {

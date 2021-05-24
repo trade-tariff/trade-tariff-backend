@@ -1,20 +1,17 @@
 module Api
   module V2
     class QuotasController < ApiController
-      before_action :find_quotas
-
       def search
-        options = {}
-        options[:include] = [:quota_order_number, 'quota_order_number.geographical_areas', :measures, 'measures.geographical_area']
-        render json: Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(@quotas, options.merge(serialization_meta)).serializable_hash
+        render json: serializable_hash
       end
 
       private
 
-      def find_quotas
-        TimeMachine.now do
-          @quotas = search_service.perform
-        end
+      def serializable_hash
+        Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(
+          search_service.perform,
+          options,
+        ).serializable_hash
       end
 
       def search_service
@@ -25,15 +22,22 @@ module Api
         5
       end
 
-      def serialization_meta
+      def actual_date
+        Date.parse([params['year'], params['month'], params['day']].join('-'))
+      rescue DateError # empty date param means today
+        Date.current
+      end
+
+      def options
         {
+          include: [:quota_order_number, 'quota_order_number.geographical_areas', :measures, 'measures.geographical_area'],
           meta: {
             pagination: {
               page: current_page,
               per_page: per_page,
-              total_count: search_service.pagination_record_count
-            }
-          }
+              total_count: search_service.pagination_record_count,
+            },
+          },
         }
       end
     end

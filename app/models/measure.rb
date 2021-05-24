@@ -12,8 +12,8 @@ class Measure < Sequel::Model
   ].freeze
 
   set_primary_key [:measure_sid]
-  plugin :time_machine, period_start_column: :effective_start_date,
-                        period_end_column: :effective_end_date
+  plugin :time_machine, period_start_column: :validity_start_date,
+                        period_end_column: :validity_end_date
   plugin :oplog, primary_key: :measure_sid
   plugin :conformance_validator
   plugin :national
