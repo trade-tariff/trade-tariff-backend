@@ -14,6 +14,9 @@ commands:
         type: string
       service:
         type: string
+      buildpack_version:
+        type: string
+        default: "v1.8.39"
     steps:
       - checkout
       - run:
@@ -34,7 +37,9 @@ commands:
       - run:
           name: "Push Worker"
           command: |
-            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" -f deploy_manifest.yml --no-route
+            export BUILDPACK="https://github.com/cloudfoundry/ruby-buildpack.git#<< parameters.buildpack_version >>"
+
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" -f deploy_manifest.yml --no-route --buildpack $BUILDPACK
       - run:
           name: "Run Migrations"
           command: |
@@ -49,6 +54,9 @@ commands:
         type: string
       service:
         type: string
+      buildpack_version:
+        type: string
+        default: "v1.8.39"
     steps:
       - checkout
       - run:
@@ -69,8 +77,9 @@ commands:
       - run:
           name: "Push new app in dark mode"
           command: |
+            export BUILDPACK="https://github.com/cloudfoundry/ruby-buildpack.git#<< parameters.buildpack_version >>"
             # Push as "dark" instance
-            cf push "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route
+            cf push "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route --buildpack $BUILDPACK
 
             # Map dark route
             cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark"
@@ -132,7 +141,7 @@ commands:
 jobs:
   build:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7.3
       - image: redis
     resource_class: medium
     steps:
@@ -140,7 +149,7 @@ jobs:
       - ruby/install-deps
   linters:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7.3
     resource_class: small
     steps:
       - checkout
@@ -158,7 +167,7 @@ jobs:
           path: brakeman.html
   test:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -207,7 +216,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7.3
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -226,7 +235,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7.3
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -245,7 +254,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:2.7
+      - image: cimg/ruby:2.7.3
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
