@@ -14,7 +14,7 @@ module Api
       def show_by_section
         section = Section.where(position: params[:position]).take
         chapters = section.chapters.map(&:goods_nomenclature_item_id).map { |gn| gn[0..1] }.join('|')
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{chapters})\d{8}/).all
+        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{chapters})\d{8}/).eager(:goods_nomenclature_indents).all
 
         respond_with(@goods_nomenclatures)
       end
