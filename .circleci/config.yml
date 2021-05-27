@@ -153,6 +153,11 @@ jobs:
     resource_class: small
     steps:
       - checkout
+      - run:
+          name: Install C lib dependencies
+          command: |
+            sudo apt update
+            sudo apt install libcurl4-openssl-dev
       - ruby/install-deps
       - ruby/rubocop-check:
           format: progress
