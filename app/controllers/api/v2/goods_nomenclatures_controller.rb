@@ -3,7 +3,7 @@ require 'csv'
 module Api
   module V2
     class GoodsNomenclaturesController < ApiController
-      before_action :set_request_format, only: %w(show_by_section show_by_chapter show_by_heading)
+      before_action :set_request_format, only: %w[show_by_section show_by_chapter show_by_heading]
 
       def index
         commodities = GoodsNomenclature.non_hidden
@@ -14,7 +14,10 @@ module Api
       def show_by_section
         section = Section.where(position: params[:position]).take
         chapters = section.chapters.map(&:goods_nomenclature_item_id).map { |gn| gn[0..1] }.join('|')
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{chapters})\d{8}/).all
+        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{chapters})\d{8}/).eager(
+          :goods_nomenclature_indents,
+          :goods_nomenclature_descriptions,
+        ).all
 
         respond_with(@goods_nomenclatures)
       end
@@ -57,7 +60,7 @@ module Api
         filename = [
           'goods-nomenclatures-for',
           'as-of',
-          actual_date
+          actual_date,
         ].join('-')
 
         respond_to do |format|
@@ -78,7 +81,7 @@ module Api
           show_by_section: 'section',
           show_by_chapter: 'chapter',
           show_by_heading: 'heading',
-          show_by_commodity: 'commodity'
+          show_by_commodity: 'commodity',
         }[params[:action].to_sym]
       end
 
