@@ -11,17 +11,9 @@ module Api
 
           attributes :quota_definition_sid, :quota_order_number_id, :initial_volume, :validity_start_date, :validity_end_date, :status, :description, :balance
 
-          attribute :measurement_unit do |definition|
-            definition.formatted_measurement_unit
-          end
-
-          attribute :monetary_unit do |definition|
-            definition.monetary_unit_code
-          end
-
-          attribute :measurement_unit_qualifier do |definition|
-            definition.measurement_unit_qualifier_code
-          end
+          attribute(:measurement_unit, &:formatted_measurement_unit)
+          attribute(:monetary_unit, &:monetary_unit_code)
+          attribute(:measurement_unit_qualifier, &:measurement_unit_qualifier_code)
 
           attribute :last_allocation_date do |definition|
             definition.last_balance_event.try(:occurrence_timestamp)
@@ -45,6 +37,7 @@ module Api
 
           has_one :quota_order_number, key: :order_number, record_type: :order_number, serializer: Api::V2::Quotas::Definition::QuotaOrderNumberSerializer
           has_many :measures, serializer: Api::V2::Quotas::Definition::MeasureSerializer
+          has_many :quota_balance_events, serializer: Api::V2::Quotas::Definition::QuotaBalanceEventSerializer
         end
       end
     end

@@ -37,6 +37,10 @@ class QuotaDefinition < Sequel::Model
     measures&.map(&:measure_sid)
   end
 
+  def quota_balance_event_ids
+    quota_balance_events&.map(&:id)
+  end
+
   delegate :description, :abbreviation, to: :measurement_unit, prefix: true, allow_nil: true
 
   def formatted_measurement_unit
@@ -48,9 +52,9 @@ class QuotaDefinition < Sequel::Model
   end
 
   def last_balance_event
-    @_last_balance_event ||= quota_balance_events.select { |balance|
-      point_in_time.blank? || balance.occurrence_timestamp <= point_in_time
-    }.sort_by(&:occurrence_timestamp).last
+    @last_balance_event ||= quota_balance_events.select { |quota_balance_event|
+      point_in_time.blank? || quota_balance_event.occurrence_timestamp <= point_in_time
+    }.max_by(&:occurrence_timestamp)
   end
 
   def balance
@@ -58,11 +62,11 @@ class QuotaDefinition < Sequel::Model
   end
 
   def last_suspension_period
-    @_last_suspension_period ||= quota_suspension_periods.last
+    @last_suspension_period ||= quota_suspension_periods.last
   end
 
   def last_blocking_period
-    @_last_blocking_period ||= quota_blocking_periods.last
+    @last_blocking_period ||= quota_blocking_periods.last
   end
 
 private
