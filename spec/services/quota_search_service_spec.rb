@@ -289,21 +289,21 @@ describe QuotaSearchService do
           expect(result).to include(quota_definition2)
         end
 
-        it 'finds quota definition by not exhausted status with encoded values' do
+        it 'removes plusses from status values' do
           result = described_class.new(
             {
               'status' => 'not+exhausted',
               'year' => Date.current.year.to_s,
             }, current_page, per_page
-          ).perform
-          expect(result).to include(quota_definition2)
+          )
+          expect(result.status).to eq('not_exhausted')
           result = described_class.new(
             {
               'status' => 'not%2bexhausted',
               'year' => Date.current.year.to_s,
             }, current_page, per_page
-          ).perform
-          expect(result).to include(quota_definition2)
+          )
+          expect(result.status).to eq('')
         end
 
         it 'does not find quota definition by wrong not exhausted status' do

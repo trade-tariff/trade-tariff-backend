@@ -9,7 +9,7 @@ class QuotaBalanceEvent < Sequel::Model
                                  primary_key: :quota_definition_sid
 
   def id
-    "#{quota_definition_sid}-#{occurrence_timestamp}"
+    "#{quota_definition_sid}-#{occurrence_timestamp.iso8601}"
   end
 
   def self.status

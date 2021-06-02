@@ -35,9 +35,9 @@ module Api
             definition.last_blocking_period.try(:blocking_end_date)
           end
 
-          has_one :quota_order_number, key: :order_number, record_type: :order_number, serializer: Api::V2::Quotas::Definition::QuotaOrderNumberSerializer
-          has_many :measures, serializer: Api::V2::Quotas::Definition::MeasureSerializer
-          has_many :quota_balance_events, serializer: Api::V2::Quotas::Definition::QuotaBalanceEventSerializer
+          has_one :quota_order_number, key: :order_number, record_type: :order_number, serializer: Api::V2::Quotas::Definition::QuotaOrderNumberSerializer, lazy_load_data: true
+          has_many :measures, serializer: Api::V2::Quotas::Definition::MeasureSerializer, lazy_load_data: true
+          has_many :quota_balance_events, serializer: Api::V2::Quotas::Definition::QuotaBalanceEventSerializer, lazy_load_data: true
         end
       end
     end

@@ -1,20 +1,39 @@
 module Api
   module V2
     class QuotasController < ApiController
-      before_action :find_quotas
+      DEFAULT_INCLUDES = %w[quota_order_number quota_order_number.geographical_areas measures measures.geographical_area].freeze
+      POSSIBLE_INCLUDES = (%w[quota_balance_events] + DEFAULT_INCLUDES).freeze
 
       def search
-        options = {}
-        options[:include] = [:quota_order_number, 'quota_order_number.geographical_areas', :measures, 'measures.geographical_area']
-        render json: Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(@quotas, options.merge(serialization_meta)).serializable_hash
+        render json: serialized
       end
 
       private
 
-      def find_quotas
+      def serialized
+        Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(
+          quotas, serializer_options
+        ).serializable_hash
+      end
+
+      def quotas
+        # TODO: We've added a filter that does not propagate to related resources (e.g. the definition validity time window). We need to make sure that the as_of functionality we've added propagates to related resources.
         TimeMachine.now do
           @quotas = search_service.perform
         end
+      end
+
+      def serializer_options
+        {
+          include: includes,
+          meta: {
+            pagination: {
+              page: current_page,
+              per_page: per_page,
+              total_count: search_service.pagination_record_count,
+            },
+          },
+        }
       end
 
       def search_service
@@ -25,16 +44,14 @@ module Api
         5
       end
 
-      def serialization_meta
-        {
-          meta: {
-            pagination: {
-              page: current_page,
-              per_page: per_page,
-              total_count: search_service.pagination_record_count
-            }
-          }
-        }
+      def includes
+        return provided_includes if provided_includes.present?
+
+        DEFAULT_INCLUDES
+      end
+
+      def provided_includes
+        include_params.presence || []
       end
     end
   end

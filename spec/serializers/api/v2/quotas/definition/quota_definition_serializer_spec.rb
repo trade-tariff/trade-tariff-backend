@@ -30,18 +30,9 @@ RSpec.describe Api::V2::Quotas::Definition::QuotaDefinitionSerializer do
           blocking_period_end_date: nil,
         },
         relationships: {
-          order_number: {
-            data: { id: match(/09\d{4}/), type: 'order_number' },
-          },
-          measures: { data: [] },
-          quota_balance_events: {
-            data: [
-              {
-                id: be_a(String),
-                type: 'quota_balance_event',
-              },
-            ],
-          },
+          order_number: {},
+          measures: {},
+          quota_balance_events: {},
         },
       },
     }
@@ -53,6 +44,14 @@ RSpec.describe Api::V2::Quotas::Definition::QuotaDefinitionSerializer do
     context 'when passing include options' do
       before do
         expected_pattern[:data].merge(included_pattern)
+        expected_pattern[:data][:relationships][:quota_balance_events] = {
+          data: [
+            {
+              id: be_a(String),
+              type: 'quota_balance_event',
+            },
+          ],
+        }
       end
 
       let(:options) { { include: [:quota_balance_events] } }

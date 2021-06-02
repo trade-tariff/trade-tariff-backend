@@ -1,5 +1,5 @@
 class QuotaEvent
-  EVENTS = %w(exhaustion balance critical reopening unblocking unsuspension).freeze
+  EVENTS = %w[exhaustion balance critical reopening unblocking unsuspension].freeze
 
   # Generate SELECT .. UNION from all event types
   def self.for_quota_definition(quota_sid, point_in_time)
@@ -17,8 +17,6 @@ class QuotaEvent
       NullObject.new
     end
   end
-
-private
 
   def self.for_event(event_type, quota_sid, point_in_time)
     Object.const_get("Quota#{event_type.capitalize}Event").select(:quota_definition_sid,
