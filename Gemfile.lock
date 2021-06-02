@@ -98,12 +98,10 @@ GEM
       rexml
     crass (1.0.6)
     curb (0.9.10)
-    database_cleaner (2.0.1)
-      database_cleaner-active_record (~> 2.0.0)
-    database_cleaner-active_record (2.0.1)
-      activerecord (>= 5.a)
-      database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
+    database_cleaner-sequel (2.0.0)
+      database_cleaner-core (~> 2.0.0)
+      sequel
     diff-lcs (1.4.4)
     docile (1.4.0)
     dotenv (2.7.6)
@@ -413,7 +411,7 @@ DEPENDENCIES
   bootsnap
   brakeman
   curb (~> 0.9)
-  database_cleaner
+  database_cleaner-sequel
   dotenv-rails
   elasticsearch (= 7.9.0)
   elasticsearch-extensions (= 0.0.31)
