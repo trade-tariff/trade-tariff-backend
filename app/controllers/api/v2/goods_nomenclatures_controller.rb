@@ -14,22 +14,41 @@ module Api
       def show_by_section
         section = Section.where(position: params[:position]).take
         chapters = section.chapters.map(&:goods_nomenclature_item_id).map { |gn| gn[0..1] }.join('|')
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(goods_nomenclature_item_id: /(#{chapters})\d{8}/).eager(
-          :goods_nomenclature_indents,
-          :goods_nomenclature_descriptions,
-        ).all
+        @goods_nomenclatures = GoodsNomenclature
+          .actual
+          .non_hidden
+          .where(goods_nomenclature_item_id: /(#{chapters})\d{8}/)
+          .eager(
+            :goods_nomenclature_indents,
+            :goods_nomenclature_descriptions,
+          ).all
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_chapter
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(Sequel.like(:goods_nomenclature_item_id, "#{params[:chapter_id]}%")).all
+        @goods_nomenclatures = GoodsNomenclature
+          .actual
+          .non_hidden.where(Sequel.like(:goods_nomenclature_item_id, "#{params[:chapter_id]}%"))
+          .eager(
+            :goods_nomenclature_indents,
+            :goods_nomenclature_descriptions,
+          )
+          .all
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_heading
-        @goods_nomenclatures = GoodsNomenclature.actual.non_hidden.where(Sequel.like(:goods_nomenclature_item_id, "#{params[:heading_id]}%")).all
+        @goods_nomenclatures = GoodsNomenclature
+          .actual
+          .non_hidden
+          .where(Sequel.like(:goods_nomenclature_item_id, "#{params[:heading_id]}%"))
+          .eager(
+            :goods_nomenclature_indents,
+            :goods_nomenclature_descriptions,
+          )
+          .all
 
         respond_with(@goods_nomenclatures)
       end
