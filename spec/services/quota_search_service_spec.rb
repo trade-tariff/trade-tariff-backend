@@ -44,6 +44,27 @@ describe QuotaSearchService do
       measure2.update(geographical_area_id: quota_order_number_origin2.geographical_area_id)
     end
 
+    describe '#status' do
+      subject(:service) do
+        described_class.new(
+          {
+            'status' => status,
+            'year' => Date.current.year.to_s,
+          },
+          current_page,
+          per_page,
+        )
+      end
+
+      context 'when the status is url encoded' do
+        let(:status) { 'not+exhausted' }
+
+        it 'unescapes status values' do
+          expect(service.status).to eq('not_exhausted')
+        end
+      end
+    end
+
     context 'by goods_nomenclature_item_id' do
       it 'finds quota definition by goods nomenclature' do
         result = described_class.new(
@@ -283,23 +304,6 @@ describe QuotaSearchService do
           result = described_class.new(
             {
               'status' => 'not_exhausted',
-              'year' => Date.current.year.to_s,
-            }, current_page, per_page
-          ).perform
-          expect(result).to include(quota_definition2)
-        end
-
-        it 'finds quota definition by not exhausted status with encoded values' do
-          result = described_class.new(
-            {
-              'status' => 'not+exhausted',
-              'year' => Date.current.year.to_s,
-            }, current_page, per_page
-          ).perform
-          expect(result).to include(quota_definition2)
-          result = described_class.new(
-            {
-              'status' => 'not%2bexhausted',
               'year' => Date.current.year.to_s,
             }, current_page, per_page
           ).perform

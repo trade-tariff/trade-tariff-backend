@@ -61,9 +61,9 @@ FactoryBot.define do
   end
 
   factory :quota_definition do
-    quota_definition_sid   { generate(:quota_order_number_sid) }
-    quota_order_number_sid { generate(:quota_order_number_sid) }
-    quota_order_number_id  { generate(:quota_order_number_id) }
+    quota_definition_sid            { generate(:quota_order_number_sid) }
+    quota_order_number_sid          { generate(:quota_order_number_sid) }
+    quota_order_number_id           { generate(:quota_order_number_id) }
     monetary_unit_code              { Forgery(:basic).text(exactly: 3) }
     measurement_unit_code           { Forgery(:basic).text(exactly: 3) }
     measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
@@ -73,19 +73,34 @@ FactoryBot.define do
       validity_end_date   { nil }
     end
 
-    trait :xml do
-      validity_start_date { Date.current.ago(3.years) }
-      validity_end_date                { Date.current.ago(1.year) }
-      volume                           { Forgery(:basic).number }
-      initial_volume                   { Forgery(:basic).number }
-      measurement_unit_code            { Forgery(:basic).text(exactly: 2) }
-      maximum_precision                { Forgery(:basic).number }
-      critical_state                   { Forgery(:basic).text(exactly: 2) }
-      critical_threshold               { Forgery(:basic).number }
-      monetary_unit_code               { Forgery(:basic).text(exactly: 2) }
-      measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
-      description { Forgery(:lorem_ipsum).sentence }
+    trait :with_quota_balance_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_balance_event, quota_definition: quota_definition)
+      end
     end
+
+    trait :xml do
+      validity_start_date             { Date.current.ago(3.years) }
+      validity_end_date               { Date.current.ago(1.year) }
+      volume                          { Forgery(:basic).number }
+      initial_volume                  { Forgery(:basic).number }
+      measurement_unit_code           { Forgery(:basic).text(exactly: 2) }
+      maximum_precision               { Forgery(:basic).number }
+      critical_state                  { Forgery(:basic).text(exactly: 2) }
+      critical_threshold              { Forgery(:basic).number }
+      monetary_unit_code              { Forgery(:basic).text(exactly: 2) }
+      measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
+      description                     { Forgery(:lorem_ipsum).sentence }
+    end
+  end
+
+  factory :quota_balance_event do
+    quota_definition
+    last_import_date_in_allocation { Time.zone.now }
+    old_balance { Forgery(:basic).number }
+    new_balance { Forgery(:basic).number }
+    imported_amount { Forgery(:basic).number }
+    occurrence_timestamp { 24.hours.ago }
   end
 
   factory :quota_blocking_period do
@@ -95,15 +110,6 @@ FactoryBot.define do
     blocking_end_date          { Date.current.ago(1.year) }
     blocking_period_type       { Forgery(:basic).number }
     description                { Forgery(:lorem_ipsum).sentence }
-  end
-
-  factory :quota_balance_event do
-    quota_definition
-    last_import_date_in_allocation { Time.now }
-    old_balance { Forgery(:basic).number }
-    new_balance { Forgery(:basic).number }
-    imported_amount { Forgery(:basic).number }
-    occurrence_timestamp { 24.hours.ago }
   end
 
   factory :quota_exhaustion_event do
