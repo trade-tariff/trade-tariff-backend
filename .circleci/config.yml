@@ -139,14 +139,6 @@ commands:
             sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
 
 jobs:
-  build:
-    docker:
-      - image: cimg/ruby:2.7.3
-      - image: redis
-    resource_class: medium
-    steps:
-      - checkout
-      - ruby/install-deps
   linters:
     docker:
       - image: cimg/ruby:2.7.3

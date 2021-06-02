@@ -73,7 +73,7 @@ end
 
 group :test do
   gem 'brakeman'
-  gem 'database_cleaner'
+  gem 'database_cleaner-sequel'
   gem 'factory_bot_rails', require: false
   gem 'fakefs', '~> 0.18.0', require: 'fakefs/safe'
   gem 'forgery'
