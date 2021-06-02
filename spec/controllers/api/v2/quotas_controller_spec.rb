@@ -128,13 +128,22 @@ describe Api::V2::QuotasController, type: :controller do
       end
 
       it 'returns rendered found quotas' do
-        get :search, params: { year: [Date.current.year.to_s] }, format: :json
+        get :search, params: params, format: :json
 
         expect(response.body).to match_json_expression pattern
       end
     end
 
     context 'when specifying an includes list in the query params' do
+      let(:params) do
+        {
+          year: [
+            Date.current.year.to_s,
+          ],
+          include: 'quota_balance_events,measures,measures.geographical_area',
+        }
+      end
+
       let(:pattern) do
         {
           data: [
@@ -225,14 +234,6 @@ describe Api::V2::QuotasController, type: :controller do
               total_count: Integer,
             },
           },
-        }
-      end
-      let(:params) do
-        {
-          year: [
-            Date.current.year.to_s,
-          ],
-          include: 'quota_balance_events,measures,measures.geographical_area',
         }
       end
 

@@ -5,6 +5,7 @@ class QuotaSearchService
       :measures,
       :quota_suspension_periods,
       :quota_blocking_periods,
+      :quota_balance_events,
       { quota_order_number: [quota_order_number_origins: :geographical_area] },
     ],
   }.freeze
@@ -58,13 +59,12 @@ class QuotaSearchService
     eager_load = DEFAULT_EAGER_LOAD_GRAPH.dup
 
     eager_load[:quota_definition] << :quota_exhaustion_events if status.exhausted? || status.not_exhausted?
-    eager_load[:quota_definition] << :quota_balance_events if includes.include?('quota_balance_events')
 
     eager_load
   end
 
   def includes
-    attributes.fetch(:includes, [])
+    @includes ||= attributes.fetch(:includes, [])
   end
 
   def extract_date_or_years(attributes)

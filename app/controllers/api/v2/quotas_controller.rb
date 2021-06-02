@@ -2,15 +2,14 @@ module Api
   module V2
     class QuotasController < ApiController
       DEFAULT_INCLUDES = %w[quota_order_number quota_order_number.geographical_areas measures measures.geographical_area].freeze
-      POSSIBLE_INCLUDES = (%w[quota_balance_events] + DEFAULT_INCLUDES).freeze
 
       def search
-        render json: serialized
+        render json: serialized_quota_definitions
       end
 
       private
 
-      def serialized
+      def serialized_quota_definitions
         Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(
           quotas, serializer_options
         ).serializable_hash
