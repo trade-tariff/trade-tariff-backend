@@ -146,6 +146,11 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - run:
+          name: "Install OS packages"
+          command: |
+           sudo apt-get update
+           sudo apt-get install libcurl4-openssl-dev postgresql-client
       - ruby/install-deps
   linters:
     docker:
@@ -197,12 +202,6 @@ jobs:
     resource_class: medium
     steps:
       - checkout
-      - run:
-          name: "Install OS packages"
-          command: |
-           sudo apt-get update
-           sudo apt-get install libcurl4-openssl-dev postgresql-client
-      - ruby/install-deps
       - run:
           name: "Setup DB"
           command: |
@@ -280,6 +279,7 @@ workflows:
   version: 2
   ci:
     jobs:
+      - build
       - linters:
           context: trade-tariff
       - test:
