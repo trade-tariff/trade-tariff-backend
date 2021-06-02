@@ -139,19 +139,6 @@ commands:
             sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
 
 jobs:
-  build:
-    docker:
-      - image: cimg/ruby:2.7.3
-      - image: redis
-    resource_class: medium
-    steps:
-      - checkout
-      - run:
-          name: "Install OS packages"
-          command: |
-           sudo apt-get update
-           sudo apt-get install libcurl4-openssl-dev postgresql-client
-      - ruby/install-deps
   linters:
     docker:
       - image: cimg/ruby:2.7.3
@@ -202,6 +189,12 @@ jobs:
     resource_class: medium
     steps:
       - checkout
+      - run:
+          name: "Install OS packages"
+          command: |
+           sudo apt-get update
+           sudo apt-get install libcurl4-openssl-dev postgresql-client
+      - ruby/install-deps
       - run:
           name: "Setup DB"
           command: |
@@ -279,7 +272,6 @@ workflows:
   version: 2
   ci:
     jobs:
-      - build
       - linters:
           context: trade-tariff
       - test:
