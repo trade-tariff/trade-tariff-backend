@@ -77,7 +77,12 @@ commands:
       - run:
           name: "Push new app in dark mode"
           command: |
+            # Enables /healthcheck to show the current deployed git sha
+            export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
+            echo $GIT_NEW_REVISION >REVISION
+
             export BUILDPACK="https://github.com/cloudfoundry/ruby-buildpack.git#<< parameters.buildpack_version >>"
+
             # Push as "dark" instance
             cf push "tariff-<< parameters.service >>-backend-<< parameters.domain_prefix >>-dark" -f deploy_manifest.yml --no-route --buildpack $BUILDPACK
 
