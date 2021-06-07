@@ -1,4 +1,4 @@
-class ApplicableVatMeasuresService
+class ApplicableVatOptionsService
   def initialize(measures)
     @measures = measures
   end

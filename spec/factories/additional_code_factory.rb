@@ -4,6 +4,7 @@ FactoryBot.define do
   sequence(:meursing_additional_code_sid) { |n| n }
 
   factory :additional_code do
+
     additional_code_sid     { generate(:additional_code_sid) }
     additional_code_type_id { generate(:additional_code_type_id) }
     additional_code         { Forgery(:basic).text(exactly: 3) }
@@ -17,8 +18,12 @@ FactoryBot.define do
     end
 
     trait :with_description do
-      after(:build) do |adco, _evaluator|
-        FactoryBot.create(:additional_code_description, :with_period, additional_code_sid: adco.additional_code_sid)
+      transient do
+        additional_code_description { Forgery('basic').text }
+      end
+
+      after(:build) do |adco, evaluator|
+        FactoryBot.create(:additional_code_description, :with_period, additional_code_sid: adco.additional_code_sid, description: evaluator.additional_code_description)
       end
     end
   end

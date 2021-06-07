@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe ApplicableVatMeasuresService do
+describe ApplicableVatOptionsService do
   subject(:service) { described_class.new(measures) }
 
   describe '#call' do
