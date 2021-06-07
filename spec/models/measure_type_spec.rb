@@ -115,4 +115,18 @@ describe MeasureType do
       end
     end
   end
+
+  describe '#vat?' do
+    context 'when measure_type_id is a vat measure type id' do
+      let(:measure_type) { build :measure_type, measure_type_id: MeasureType::VAT_TYPES.sample }
+
+      it { expect(measure_type).to be_vat }
+    end
+
+    context 'when measure_type_id is not a vat measure type id' do
+      let(:measure_type) { build :measure_type, measure_type_id: '103' }
+
+      it { expect(measure_type).not_to be_vat }
+    end
+  end
 end
