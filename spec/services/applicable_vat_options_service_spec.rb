@@ -46,8 +46,8 @@ describe ApplicableVatOptionsService do
 
       let(:expected) do
         {
-          'VAT' => 'Value added tax (20.0)',
-          'VATZ' => 'VAT zero rate (0.0)',
+          'VAT' => 'Value added tax (20.0%)',
+          'VATZ' => 'VAT zero rate',
         }
       end
 

@@ -8,7 +8,7 @@ class ApplicableVatOptionsService
       vat_key = measure.additional_code.present? ? "#{measure.additional_code.additional_code_type_id}#{measure.additional_code.additional_code}" : 'VAT'
       vat_duty_amount = measure.measure_components.first&.duty_amount
       vat_description = measure.additional_code_id.present? ? measure.additional_code.description : measure.measure_type.description
-      vat_description = "#{vat_description} (#{vat_duty_amount})"
+      vat_description = "#{vat_description} (#{vat_duty_amount}%)" if measure.additional_code.blank?
 
       acc[vat_key] = vat_description
     end
