@@ -72,14 +72,21 @@ FactoryBot.define do
     end
 
     trait :with_measure_type do
+      transient do
+        measure_type_description { Forgery(:basic).text }
+      end
+
       after(:build) do |measure, evaluator|
-        create :measure_type,
-               measure_type_id: measure.measure_type_id,
-               validity_start_date: measure.validity_start_date - 1.day,
-               measure_explosion_level: evaluator.type_explosion_level,
-               order_number_capture_code: evaluator.order_number_capture_code,
-               trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
-               measure_type_series_id: evaluator.measure_type_series_id
+        create(
+          :measure_type,
+          measure_type_description: evaluator.measure_type_description,
+          measure_type_id: measure.measure_type_id,
+          validity_start_date: measure.validity_start_date - 1.day,
+          measure_explosion_level: evaluator.type_explosion_level,
+          order_number_capture_code: evaluator.order_number_capture_code,
+          trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
+          measure_type_series_id: evaluator.measure_type_series_id,
+        )
       end
     end
 
@@ -171,11 +178,20 @@ FactoryBot.define do
     trait :with_additional_code do
       transient do
         additional_code { Forgery(:basic).text(exactly: 3) }
+        additional_code_description { Forgery(:basic).text }
       end
 
       after(:build) do |measure, evaluator|
-        adco = FactoryBot.create(:additional_code, :with_description, additional_code_type_id: measure.additional_code_type_id, additional_code: evaluator.additional_code)
+        adco = FactoryBot.create(
+          :additional_code,
+          :with_description,
+          additional_code_type_id: measure.additional_code_type_id,
+          additional_code: evaluator.additional_code,
+          additional_code_description: evaluator.additional_code_description,
+        )
         measure.additional_code_sid = adco.additional_code_sid
+        measure.additional_code_id = adco.additional_code
+        measure.additional_code_type_id = adco.additional_code_type_id
         measure.save
       end
     end
