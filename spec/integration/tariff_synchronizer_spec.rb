@@ -21,7 +21,7 @@ describe TariffSynchronizer do
       it 'applies missing updates' do
         described_class.apply
         expect(taric_update.reload).to be_applied
-        expect(chief_update.reload).to be_applied
+        expect(chief_update.reload).not_to be_applied
       end
     end
 
@@ -34,7 +34,7 @@ describe TariffSynchronizer do
         )
       end
 
-      it 'marks chief update as failed' do
+      xit 'marks chief update as failed' do
         expect(taric_update).to be_pending
         expect(chief_update).to be_pending
         rescuing { described_class.apply }

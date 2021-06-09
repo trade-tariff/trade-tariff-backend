@@ -114,7 +114,7 @@ module TariffSynchronizer
     TradeTariffBackend.with_redis_lock do
       instrument('download.tariff_synchronizer') do
         begin
-          [TaricUpdate, ChiefUpdate].map(&:sync)
+          [TaricUpdate].map(&:sync)
         rescue TariffUpdatesRequester::DownloadException => exception
           instrument('failed_download.tariff_synchronizer', exception: exception)
           raise exception.original
@@ -162,10 +162,6 @@ module TariffSynchronizer
       date_range = date_range_since_last_pending_update
       date_range.each do |day|
         applied_updates << perform_update(TaricUpdate, day)
-      end
-
-      date_range.each do |day|
-        applied_updates << perform_update(ChiefUpdate, day)
       end
 
       applied_updates.flatten!
