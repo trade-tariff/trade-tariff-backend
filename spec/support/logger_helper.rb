@@ -14,11 +14,4 @@ module LoggerHelper
     setup # Setup LogSubscriber::TestHelper
     TariffSynchronizer::Logger.attach_to :tariff_synchronizer
   end
-
-  def chief_transformer_logger
-    setup # Setup LogSubscriber::TestHelper
-    ChiefTransformer::Logger.attach_to :chief_transformer
-    yield
-    teardown
-  end
 end

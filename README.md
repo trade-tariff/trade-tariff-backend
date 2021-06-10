@@ -82,11 +82,8 @@ These are run hourly by a background worker UpdatesSynchronizerWorker.
 Updates are performed in portions and protected by redis lock (see TariffSynchronizer#apply).
 
 BaseUpdate#apply is responsible for most of the logging/checking job and running
-`import!` methods located in Taric/ChiefUpdate classes. Then it runs TaricImporter
-and ChiefImporter to parse and store xml/csv files.
-
-Whole process is quite similar for both TARIC and CHIEF, but CHIEF updates undergo a tranformation
-transformation process to convert them into a TARIC format. Check ChiefTransformer class for more info (and ChiefUpdate#import!).
+`import!` methods located in Taric class. Then it runs TaricImporter
+to parse and store xml files.
 
 In case of any errors, changes (per single update) are roll-backed and record itself is marked as failed. The sync would need to be rerun after a rollback.
 

@@ -1,4 +1,3 @@
-require 'chief_transformer'
 require 'tariff_synchronizer'
 
 FactoryBot.define do

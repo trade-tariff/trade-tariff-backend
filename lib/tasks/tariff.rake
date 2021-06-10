@@ -3,15 +3,13 @@ namespace :tariff do
   task install: %w[environment
                    install:taric:sections
                    install:taric:section_notes
-                   install:taric:chapter_notes
-                   install:chief:static_national_data
-                   install:chief:standing_data]
+                   install:taric:chapter_notes]
 
   desc 'Reindex relevant entities on ElasticSearch'
   task reindex: %w[environment] do
     TradeTariffBackend.reindex
   end
-  
+
   desc 'Pre-warm heavy headings cache'
   task pre_warm_cache: %w[environment] do
     TradeTariffBackend.pre_warm_headings_cache
@@ -51,34 +49,6 @@ namespace :tariff do
   desc 'Download and apply Taric and CHIEF data'
   task sync: %w[environment sync:apply]
 
-  desc 'Restore missing chief records files'
-  task restore_missing_chief_records: :environment do
-    require 'csv'
-
-    # Custom converter
-    CSV::Converters[:null_to_nil] = lambda do |field|
-      field && field == 'NULL' ? nil : field
-    end
-
-    %w[comm tamf tbl9 mfcm tame].each do |table_name|
-      file_path = File.join(Rails.root, 'data', 'missing_chief_records', "#{table_name}.csv")
-
-      rows = CSV.read(file_path, headers: true, header_converters: :symbol, converters: [:null_to_nil])
-
-      rows.each do |line|
-        "Chief::#{table_name.capitalize}".constantize.insert line.to_hash
-      end
-
-      puts "#{table_name} table processed"
-    end
-  end
-
-  desc 'Process missing chief records files'
-  task process_missing_chief_records: :environment do
-    processor = ChiefTransformer::Processor.new(Chief::Mfcm.unprocessed.all, Chief::Tame.unprocessed.all)
-    processor.process
-  end
-
   namespace :sync do
     desc 'Update database by downloading and then applying CHIEF and TARIC updates via worker'
     task update: %i[environment class_eager_load] do
@@ -95,18 +65,6 @@ namespace :tariff do
       TariffSynchronizer.apply
     end
 
-    desc 'Transform CHIEF updates'
-    task transform: %w[environment] do
-      require 'chief_transformer'
-      # Transform imported intermediate Chief records to insert/change national measures
-
-      mode = ENV['MODE'].try(:to_sym).presence || :update
-
-      ChiefTransformer.instance.invoke(mode)
-      # Reindex ElasticSearch to see new/updated commodities
-      Rake::Task['tariff:reindex'].execute
-    end
-
     desc 'Rollback to specific date in the past'
     task rollback: %w[environment class_eager_load] do
       if ENV['DATE']
@@ -116,7 +74,7 @@ namespace :tariff do
           TariffSynchronizer.rollback(ENV['DATE'], ENV['KEEP'])
         end
       else
-        raise ArgumentError.new("Please set the date using environment variable 'DATE'")
+        raise ArgumentError, "Please set the date using environment variable 'DATE'"
       end
     end
   end
@@ -142,9 +100,9 @@ namespace :tariff do
           File.open(section_file, 'w') do |out|
             section_doc = {
               section: section_note.section_id,
-              content: section_note.content
+              content: section_note.content,
             }
-            YAML::dump(section_doc, out)
+            YAML.dump(section_doc, out)
           end
         end
       end
@@ -152,14 +110,12 @@ namespace :tariff do
       desc 'Load Section notes into database'
       task section_notes: :environment do
         Dir[Rails.root.join('db', 'notes', 'sections', '*')].each do |file|
-          begin
-            note = YAML.safe_load(File.read(file), [Symbol])
-            section_note = SectionNote.find(section_id: note[:section]) || SectionNote.new(section_id: note[:section])
-            section_note.content = note[:content]
-            section_note.save
-          rescue StandardError => e
-            puts "Error loading: #{file}, #{e}"
-          end
+          note = YAML.safe_load(File.read(file), [Symbol])
+          section_note = SectionNote.find(section_id: note[:section]) || SectionNote.new(section_id: note[:section])
+          section_note.content = note[:content]
+          section_note.save
+        rescue StandardError => e
+          puts "Error loading: #{file}, #{e}"
         end
       end
 
@@ -171,9 +127,9 @@ namespace :tariff do
             chapter_doc = {
               section: chatper_note.section_id,
               chapter: chatper_note.chapter_id.to_i,
-              content: chatper_note.content.force_encoding('ASCII-8BIT').encode('UTF-8', undef: :replace, replace: '')
+              content: chatper_note.content.force_encoding('ASCII-8BIT').encode('UTF-8', undef: :replace, replace: ''),
             }
-            YAML::dump(chapter_doc, out)
+            YAML.dump(chapter_doc, out)
           end
         end
       end
@@ -181,119 +137,98 @@ namespace :tariff do
       desc 'Load Chapter notes into database'
       task chapter_notes: :environment do
         Dir[Rails.root.join('db', 'notes', 'chapters', '*')].each do |file|
-          begin
-            note = YAML.safe_load(File.read(file), [Symbol])
-            chapter_note = ChapterNote.find(section_id: note[:section],
-                                            chapter_id: note[:chapter].to_s) || ChapterNote.new(section_id: note[:section], chapter_id: note[:chapter].to_s)
-            chapter_note.content = note[:content]
-            chapter_note.save
-          end
+          note = YAML.safe_load(File.read(file), [Symbol])
+          chapter_note = ChapterNote.find(section_id: note[:section],
+                                          chapter_id: note[:chapter].to_s) || ChapterNote.new(section_id: note[:section], chapter_id: note[:chapter].to_s)
+          chapter_note.content = note[:content]
+          chapter_note.save
         end
       end
 
       desc 'Load measurment unit abbriviations'
       task measurment_unit_abbr: :environment do
-        [ {abbr: '% vol',                code: 'ASV'},
-          {abbr: '% vol/hl',             code: 'ASV', qualifier: 'X'},
-          {abbr: 'ct/l',                 code: 'CCT'},
-          {abbr: '100 p/st',             code: 'CEN'},
-          {abbr: 'c/k',                  code: 'CTM'},
-          {abbr: '10 000 kg/polar',      code: 'DAP'},
-          {abbr: 'kg DHS',               code: 'DHS'},
-          {abbr: '100 kg',               code: 'DTN'},
-          {abbr: '100 kg/net eda',       code: 'DTN', qualifier: 'E'},
-          {abbr: '100 kg common wheat',  code: 'DTN', qualifier: 'F'},
-          {abbr: '100 kg/br',            code: 'DTN', qualifier: 'G'},
-          {abbr: '100 kg live weight',   code: 'DTN', qualifier: 'L'},
-          {abbr: '100 kg/net mas',       code: 'DTN', qualifier: 'M'},
-          {abbr: '100 kg std qual',      code: 'DTN', qualifier: 'R'},
-          {abbr: '100 kg raw sugar',     code: 'DTN', qualifier: 'S'},
-          {abbr: '100 kg/net/%sacchar.', code: 'DTN', qualifier: 'Z'},
-          {abbr: 'EUR',                  code: 'EUR'},
-          {abbr: 'gi F/S',               code: 'GFI'},
-          {abbr: 'g',                    code: 'GRM'},
-          {abbr: 'GT',                   code: 'GRT'},
-          {abbr: 'hl',                   code: 'HLT'},
-          {abbr: '100 m',                code: 'HMT'},
-          {abbr: 'kg C₅H₁₄ClNO',         code: 'KCC'},
-          {abbr: 'tonne KCl',            code: 'KCL'},
-          {abbr: 'kg',                   code: 'KGM'},
-          {abbr: 'kg/tot/alc',           code: 'KGM', qualifier: 'A'},
-          {abbr: 'kg/net eda',           code: 'KGM', qualifier: 'E'},
-          {abbr: 'GKG',                  code: 'KGM', qualifier: 'G'},
-          {abbr: 'kg/lactic matter',     code: 'KGM', qualifier: 'P'},
-          {abbr: 'kg/raw sugar',         code: 'KGM', qualifier: 'S'},
-          {abbr: 'kg/dry lactic matter', code: 'KGM', qualifier: 'T'},
-          {abbr: '1000 l',               code: 'KLT'},
-          {abbr: 'kg methylamines',      code: 'KMA'},
-          {abbr: 'KM',                   code: 'KMT'},
-          {abbr: 'kg N',                 code: 'KNI'},
-          {abbr: 'kg H₂O₂',              code: 'KNS'},
-          {abbr: 'kg KOH',               code: 'KPH'},
-          {abbr: 'kg K₂O',               code: 'KPO'},
-          {abbr: 'kg P₂O₅',              code: 'KPP'},
-          {abbr: 'kg 90% sdt',           code: 'KSD'},
-          {abbr: 'kg NaOH',              code: 'KSH'},
-          {abbr: 'kg U',                 code: 'KUR'},
-          {abbr: 'l alc. 100%',          code: 'LPA'},
-          {abbr: 'l',                    code: 'LTR'},
-          {abbr: 'L total alc.',         code: 'LTR', qualifier: 'A'},
-          {abbr: '1000 p/st',            code: 'MIL'},
-          {abbr: '1000 pa',              code: 'MPR'},
-          {abbr: 'm²',                   code: 'MTK'},
-          {abbr: 'm³',                   code: 'MTQ'},
-          {abbr: '1000 m³',              code: 'MTQ', qualifier: 'C'},
-          {abbr: 'm',                    code: 'MTR'},
-          {abbr: '1000 kWh',             code: 'MWH'},
-          {abbr: 'p/st',                 code: 'NAR'},
-          {abbr: 'b/f',                  code: 'NAR', qualifier: 'B'},
-          {abbr: 'ce/el',                code: 'NCL'},
-          {abbr: 'pa',                   code: 'NPR'},
-          {abbr: 'TJ',                   code: 'TJO'},
-          {abbr: '1000 kg',              code: 'TNE'},
-          {abbr: '1000 kg/net eda',      code: 'TNE', qualifier: 'E'},
-          {abbr: '1000 kg/biodiesel',    code: 'TNE', qualifier: 'I'},
-          {abbr: '1000 kg/fuel content', code: 'TNE', qualifier: 'J'},
-          {abbr: '1000 kg/bioethanol',   code: 'TNE', qualifier: 'K'},
-          {abbr: '1000 kg/net mas',      code: 'TNE', qualifier: 'M'},
-          {abbr: '1000 kg std qual',     code: 'TNE', qualifier: 'R'},
-          {abbr: '1000 kg/net/%saccha.', code: 'TNE', qualifier: 'Z'},
-          {abbr: 'Watt',                 code: 'WAT'} ].each do |m|
+        [{ abbr: '% vol', code: 'ASV' },
+         { abbr: '% vol/hl',             code: 'ASV', qualifier: 'X' },
+         { abbr: 'ct/l',                 code: 'CCT' },
+         { abbr: '100 p/st',             code: 'CEN' },
+         { abbr: 'c/k',                  code: 'CTM' },
+         { abbr: '10 000 kg/polar',      code: 'DAP' },
+         { abbr: 'kg DHS',               code: 'DHS' },
+         { abbr: '100 kg',               code: 'DTN' },
+         { abbr: '100 kg/net eda',       code: 'DTN', qualifier: 'E' },
+         { abbr: '100 kg common wheat',  code: 'DTN', qualifier: 'F' },
+         { abbr: '100 kg/br',            code: 'DTN', qualifier: 'G' },
+         { abbr: '100 kg live weight',   code: 'DTN', qualifier: 'L' },
+         { abbr: '100 kg/net mas',       code: 'DTN', qualifier: 'M' },
+         { abbr: '100 kg std qual',      code: 'DTN', qualifier: 'R' },
+         { abbr: '100 kg raw sugar',     code: 'DTN', qualifier: 'S' },
+         { abbr: '100 kg/net/%sacchar.', code: 'DTN', qualifier: 'Z' },
+         { abbr: 'EUR',                  code: 'EUR' },
+         { abbr: 'gi F/S',               code: 'GFI' },
+         { abbr: 'g',                    code: 'GRM' },
+         { abbr: 'GT',                   code: 'GRT' },
+         { abbr: 'hl',                   code: 'HLT' },
+         { abbr: '100 m',                code: 'HMT' },
+         { abbr: 'kg C₅H₁₄ClNO',         code: 'KCC' },
+         { abbr: 'tonne KCl',            code: 'KCL' },
+         { abbr: 'kg',                   code: 'KGM' },
+         { abbr: 'kg/tot/alc',           code: 'KGM', qualifier: 'A' },
+         { abbr: 'kg/net eda',           code: 'KGM', qualifier: 'E' },
+         { abbr: 'GKG',                  code: 'KGM', qualifier: 'G' },
+         { abbr: 'kg/lactic matter',     code: 'KGM', qualifier: 'P' },
+         { abbr: 'kg/raw sugar',         code: 'KGM', qualifier: 'S' },
+         { abbr: 'kg/dry lactic matter', code: 'KGM', qualifier: 'T' },
+         { abbr: '1000 l',               code: 'KLT' },
+         { abbr: 'kg methylamines',      code: 'KMA' },
+         { abbr: 'KM',                   code: 'KMT' },
+         { abbr: 'kg N',                 code: 'KNI' },
+         { abbr: 'kg H₂O₂',              code: 'KNS' },
+         { abbr: 'kg KOH',               code: 'KPH' },
+         { abbr: 'kg K₂O',               code: 'KPO' },
+         { abbr: 'kg P₂O₅',              code: 'KPP' },
+         { abbr: 'kg 90% sdt',           code: 'KSD' },
+         { abbr: 'kg NaOH',              code: 'KSH' },
+         { abbr: 'kg U',                 code: 'KUR' },
+         { abbr: 'l alc. 100%',          code: 'LPA' },
+         { abbr: 'l',                    code: 'LTR' },
+         { abbr: 'L total alc.',         code: 'LTR', qualifier: 'A' },
+         { abbr: '1000 p/st',            code: 'MIL' },
+         { abbr: '1000 pa',              code: 'MPR' },
+         { abbr: 'm²',                   code: 'MTK' },
+         { abbr: 'm³',                   code: 'MTQ' },
+         { abbr: '1000 m³',              code: 'MTQ', qualifier: 'C' },
+         { abbr: 'm',                    code: 'MTR' },
+         { abbr: '1000 kWh',             code: 'MWH' },
+         { abbr: 'p/st',                 code: 'NAR' },
+         { abbr: 'b/f',                  code: 'NAR', qualifier: 'B' },
+         { abbr: 'ce/el',                code: 'NCL' },
+         { abbr: 'pa',                   code: 'NPR' },
+         { abbr: 'TJ',                   code: 'TJO' },
+         { abbr: '1000 kg',              code: 'TNE' },
+         { abbr: '1000 kg/net eda',      code: 'TNE', qualifier: 'E' },
+         { abbr: '1000 kg/biodiesel',    code: 'TNE', qualifier: 'I' },
+         { abbr: '1000 kg/fuel content', code: 'TNE', qualifier: 'J' },
+         { abbr: '1000 kg/bioethanol',   code: 'TNE', qualifier: 'K' },
+         { abbr: '1000 kg/net mas',      code: 'TNE', qualifier: 'M' },
+         { abbr: '1000 kg std qual',     code: 'TNE', qualifier: 'R' },
+         { abbr: '1000 kg/net/%saccha.', code: 'TNE', qualifier: 'Z' },
+         { abbr: 'Watt',                 code: 'WAT' }].each do |m|
           MeasurementUnitAbbreviation.create(abbreviation: m[:abbr],
-                                    measurement_unit_code: m[:code],
-                               measurement_unit_qualifier: m[:qualifier])
+                                             measurement_unit_code: m[:code],
+                                             measurement_unit_qualifier: m[:qualifier])
         end
-      end
-    end
-
-    namespace :chief do
-      desc 'Load Static National Data'
-      task static_national_data: :environment do
-        Sequel::Model.db.transaction do
-          File.readlines(Rails.root.join('db', 'chief', 'static_national_data_insert.sql')).each do |line|
-            Sequel::Model.db.run(line.strip)
-          end
-        end
-      end
-
-      desc 'Load Chief Standing data used for Transformation'
-      task standing_data: :environment do
-        load(File.join(Rails.root, 'db', 'chief_standing_data.rb'))
       end
     end
   end
 
   desc 'Removes additional Trade Tariff entries'
-  task remove: %w[environment
-                  remove:taric:sections
-                  remove:chief:standing_data
-                  remove:chief:static_national_data]
+  task remove: %w[environment remove:taric:sections]
 
   namespace :remove do
     namespace :updates do
       desc 'Remove pending tariff_update entries'
       task pending: :environment do
-        Sequel::Model.db.run("DELETE FROM tariff_updates WHERE state = 'P'");
+        Sequel::Model.db.run("DELETE FROM tariff_updates WHERE state = 'P'")
       end
     end
 
@@ -301,52 +236,13 @@ namespace :tariff do
       desc 'Remove Sections and Chapter<->Section association records'
       task sections: :environment do
         Section.dataset.delete
-        Sequel::Model.db.run('DELETE FROM chapters_sections');
-      end
-    end
-
-    namespace :chief do
-      desc 'Remove Static National data for CHIEF'
-      task static_national_data: :environment do
-        Sequel::Model.db.transaction do
-          File.readlines(Rails.root.join('db', 'chief', 'static_national_data_delete.sql')).each do |line|
-            Sequel::Model.db.run(line)
-          end
-        end
-      end
-
-      desc 'Remove CHIEF standing data'
-      task standing_data: :environment do
-        [Chief::CountryCode, Chief::CountryGroup, Chief::MeasureTypeAdco, Chief::DutyExpression,
-         Chief::MeasureTypeCond, Chief::MeasureTypeFootnote, Chief::MeasurementUnit].each(&:truncate)
+        Sequel::Model.db.run('DELETE FROM chapters_sections')
       end
     end
   end
 
   namespace :support do
-    desc 'Fix CHIEF initial seed last effective dates'
-    task fix_chief: :environment do
-      Chief::Tame.unprocessed
-                 .order(:msrgp_code, :msr_type, :tty_code)
-                 .distinct(:msrgp_code, :msr_type, :tty_code)
-                 .where(tar_msr_no: nil).each do |ref_tame|
-        tames = Chief::Tame.unprocessed
-                           .where(msrgp_code: ref_tame.msrgp_code,
-                                  msr_type: ref_tame.msr_type,
-                                  tty_code: ref_tame.tty_code)
-                           .order(Sequel.asc(:fe_tsmp))
-                           .all
-        blank_tames = tames.select { |tame| tame.le_tsmp.blank? }
-
-        if blank_tames.size > 1
-          blank_tames.each do |blank_tame|
-            Chief::Tame.filter(blank_tame.pk_hash).update(le_tsmp: tames[tames.index(blank_tame) + 1].fe_tsmp) unless blank_tame == tames.last
-          end
-        end
-      end
-    end
-
-    desc 'Create feiled measures report'
+    desc 'Create failed measures report'
     task failed_measures_report: %w[environment] do
       require 'csv'
       items = []
@@ -363,7 +259,7 @@ namespace :tariff do
               line['measure_type_id'],
               origin,
               line['errors'],
-              line
+              line,
             ]
           end
         end
@@ -372,7 +268,7 @@ namespace :tariff do
 
       extra_namespaces = {
         'xmlns:oub' => 'urn:publicid:-:DGTAXUD:TARIC:MESSAGE:1.0',
-        'xmlns:env' => 'urn:publicid:-:DGTAXUD:GENERAL:ENVELOPE:1.0'
+        'xmlns:env' => 'urn:publicid:-:DGTAXUD:GENERAL:ENVELOPE:1.0',
       }
 
       items = items.map { |i| i[0] }.uniq.sort
@@ -385,7 +281,7 @@ namespace :tariff do
             doc = Nokogiri::XML(File.open(path))
             matches = doc.xpath(
               "//oub:goods.nomenclature/oub:goods.nomenclature.item.id[contains(text(), '#{item}')]",
-              extra_namespaces
+              extra_namespaces,
             )
 
             matches.each do |m|

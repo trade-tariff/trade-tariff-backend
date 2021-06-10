@@ -15,11 +15,11 @@ describe TariffSynchronizer::Logger, truncation: true do
 
     before do
       stub_holidays_gem_between_call
-      create :chief_update, :missing, issue_date: Date.current.ago(2.days)
-      create :chief_update, :missing, issue_date: Date.current.ago(3.days)
+      create :taric_update, :missing, issue_date: Date.current.ago(2.days)
+      create :taric_update, :missing, issue_date: Date.current.ago(3.days)
       allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
                                             .and_return(not_found_response)
-      TariffSynchronizer::ChiefUpdate.sync
+      TariffSynchronizer::TaricUpdate.sync
     end
 
     it 'logs a warn event' do

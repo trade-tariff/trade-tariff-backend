@@ -7,13 +7,10 @@ require 'active_support/log_subscriber'
 
 require 'bank_holidays'
 require 'taric_importer'
-require 'chief_importer'
 require 'cds_importer'
-require 'chief_transformer'
 require 'tariff_synchronizer/base_update'
 require 'tariff_synchronizer/base_update_importer'
 require 'tariff_synchronizer/cds_update_downloader'
-require 'tariff_synchronizer/chief_file_name_generator'
 require 'tariff_synchronizer/file_service'
 require 'tariff_synchronizer/logger'
 require 'tariff_synchronizer/taric_file_name_generator'
@@ -23,10 +20,8 @@ require 'tariff_synchronizer/tariff_updates_requester'
 require 'tariff_synchronizer/response'
 
 module TariffSynchronizer
-
   class FailedUpdatesError < StandardError; end
 
-  autoload :ChiefUpdate,   'tariff_synchronizer/chief_update'
   autoload :Mailer,        'tariff_synchronizer/mailer'
   autoload :TaricUpdate,   'tariff_synchronizer/taric_update'
   autoload :CdsUpdate,     'tariff_synchronizer/cds_update'
@@ -69,10 +64,6 @@ module TariffSynchronizer
   mattr_accessor :taric_initial_update_date
   self.taric_initial_update_date = Date.new(2012,6,6)
 
-  # Initial dump date + 1 day
-  mattr_accessor :chief_initial_update_date
-  self.chief_initial_update_date = Date.new(2012,6,30)
-
   # TODO:
   # set initial update date
   # Initial dump date + 1 day
@@ -86,10 +77,6 @@ module TariffSynchronizer
   # Times to retry downloading update in case of serious problems (host resolution, ssl handshake, partial file) before giving up
   mattr_accessor :exception_retry_count
   self.exception_retry_count = 10
-
-  # CHIEF update url template
-  mattr_accessor :chief_update_url_template
-  self.chief_update_url_template = '%{host}/taric/%{file_name}'
 
   # TARIC query url template
   mattr_accessor :taric_query_url_template
@@ -249,23 +236,6 @@ module TariffSynchronizer
               # delete presence errors
               taric_update.presence_errors_dataset.destroy
             end
-            # Rollback CHIEF
-            TariffSynchronizer::ChiefUpdate.applied_or_failed.where { issue_date > date_for_rollback }.each do |chief_update|
-              instrument('rollback_update.tariff_synchronizer',
-                update_type: :chief,
-                filename: chief_update.filename
-              )
-
-              [Chief::Comm, Chief::Mfcm, Chief::Tame, Chief::Tamf, Chief::Tbl9].each do |chief_model|
-                chief_model.where(origin: chief_update.filename).delete
-              end
-
-              chief_update.mark_as_pending
-              chief_update.clear_applied_at
-
-              # need to delete measure logs
-              ChiefTransformer::MeasuresLogger.delete_logs(chief_update.filename)
-            end
           else
             # Rollback TARIC
             TariffSynchronizer::TaricUpdate.where { issue_date > date_for_rollback }.each do |taric_update|
@@ -277,22 +247,6 @@ module TariffSynchronizer
               # delete presence errors
               taric_update.presence_errors_dataset.destroy
               taric_update.delete
-            end
-            # Rollback CHIEF
-            TariffSynchronizer::ChiefUpdate.where { issue_date > date_for_rollback }.each do |chief_update|
-              instrument('rollback_update.tariff_synchronizer',
-                update_type: :chief,
-                filename: chief_update.filename
-              )
-
-              [Chief::Comm, Chief::Mfcm, Chief::Tame, Chief::Tamf, Chief::Tbl9].each do |chief_model|
-                chief_model.where(origin: chief_update.filename).delete
-              end
-
-              # need to delete measure logs
-              ChiefTransformer::MeasuresLogger.delete_logs(chief_update.filename)
-
-              chief_update.delete
             end
           end
         end

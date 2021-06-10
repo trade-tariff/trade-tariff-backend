@@ -1008,58 +1008,6 @@ describe Measure do
     end
   end
 
-  describe '#national_measurement_units_for' do
-    let(:measure_type) { create :measure_type, measure_type_description: measure_type_description, measure_type_series_id: 'Q' }
-    let(:measure) { create :measure, measure_type_id: measure_type.measure_type_id }
-
-    context 'measure is excise' do
-      let(:measure_type_description) { 'EXCISE 111' }
-
-      context 'declarable is passed in' do
-        let(:commodity) { create :commodity }
-
-        context 'declarable has national measurement unit set associated' do
-          let(:tbl1) { create :tbl9, :unoq }
-          let(:tbl2) { create :tbl9, :unoq }
-          let!(:comm1) do
-            create :comm, cmdty_code: commodity.goods_nomenclature_item_id,
-                          fe_tsmp: Date.current.ago(2.years),
-                          le_tsmp: nil,
-                          uoq_code_cdu2: tbl1.tbl_code,
-                          uoq_code_cdu3: tbl2.tbl_code
-          end
-
-          it 'returns national measurement unit names as a string array' do
-            expect(measure.national_measurement_units_for(commodity).join).to match(/#{Regexp.escape(tbl1.tbl_txt)}/i)
-            expect(measure.national_measurement_units_for(commodity).join).to match(/#{Regexp.escape(tbl2.tbl_txt)}/i)
-          end
-        end
-
-        context 'declarable does not have national measurement unit set associated' do
-          it 'returns blank result' do
-            expect(measure.national_measurement_units_for(commodity)).to be_blank
-          end
-        end
-      end
-
-      context 'declarable is blank' do
-        it 'returns blank result' do
-          expect(measure.national_measurement_units_for(nil)).to be_blank
-        end
-      end
-    end
-
-    context 'measure is not excise' do
-      let(:measure_type_description) { create :measure_type_description, description: 'not really e_x_c_i_s_e' }
-      let(:measure_type) { create :measure_type, measure_type_id: measure_type_description.measure_type_id, measure_type_description: measure_type_description }
-      let(:measure) { create :measure, measure_type_id: measure_type.measure_type_id }
-
-      it 'returns blank result' do
-        expect(measure.national_measurement_units_for(nil)).to be_blank
-      end
-    end
-  end
-
   describe '.changes_for' do
     context 'measure validity start date lower than requested date' do
       it 'incudes measure' do
@@ -1155,36 +1103,6 @@ describe Measure do
 
       it {
         expect(formatted_base).to match Regexp.new(measure_component.formatted_duty_expression)
-      }
-    end
-
-    context 'with national_measurement_unit' do
-      let!(:comm1) do
-        create :comm, cmdty_code: commodity.goods_nomenclature_item_id,
-                      fe_tsmp: Date.current.ago(2.years),
-                      le_tsmp: nil,
-                      uoq_code_cdu2: tbl1.tbl_code,
-                      uoq_code_cdu3: tbl2.tbl_code
-      end
-      let(:tbl1) { create :tbl9, :unoq, tbl_code: 'aa1' }
-      let(:tbl2) { create :tbl9, :unoq, tbl_code: 'aa2' }
-
-      let(:national_measurement_units) do
-        measure.national_measurement_units_for(commodity)
-      end
-
-      it {
-        expect(base).to match Regexp.new(measure_component.duty_expression_str)
-        national_measurement_units.each do |unit|
-          expect(base).to match Regexp.new(unit)
-        end
-      }
-
-      it {
-        expect(formatted_base).to match Regexp.new(measure_component.formatted_duty_expression)
-        national_measurement_units.each do |unit|
-          expect(formatted_base).to match Regexp.new(unit)
-        end
       }
     end
   end
