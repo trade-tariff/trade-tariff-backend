@@ -37,7 +37,7 @@ module TariffSynchronizer
     FAILED_STATE  = 'F'.freeze
     MISSING_STATE = 'M'.freeze
 
-    self.unrestrict_primary_key
+    unrestrict_primary_key
 
     validates do
       presence_of :filename, :issue_date
@@ -85,7 +85,10 @@ module TariffSynchronizer
       end
 
       def latest_applied_of_both_kinds
-        distinct(:update_type).select(Sequel.expr(:tariff_updates).*).descending.applied.order_prepend(:update_type)
+        exclude(update_type: 'TariffSynchronizer::ChiefUpdate')
+          .distinct(:update_type)
+          .select(Sequel.expr(:tariff_updates).*)
+          .descending.applied.order_prepend(:update_type)
       end
     end
 
