@@ -37,7 +37,7 @@ module TariffSynchronizer
     FAILED_STATE  = 'F'.freeze
     MISSING_STATE = 'M'.freeze
 
-    self.unrestrict_primary_key
+    unrestrict_primary_key
 
     validates do
       presence_of :filename, :issue_date
@@ -85,7 +85,10 @@ module TariffSynchronizer
       end
 
       def latest_applied_of_both_kinds
-        distinct(:update_type).select(Sequel.expr(:tariff_updates).*).descending.applied.order_prepend(:update_type)
+        exclude(update_type: 'TariffSynchronizer::ChiefUpdate')
+          .distinct(:update_type)
+          .select(Sequel.expr(:tariff_updates).*)
+          .descending.applied.order_prepend(:update_type)
       end
     end
 
@@ -129,19 +132,6 @@ module TariffSynchronizer
     # TODO: is it possible to cache it? need to investigate
     def file_presigned_url
       TariffSynchronizer::FileService.file_presigned_url(file_path)
-    end
-
-    # can cause a delay as we a requesting S3 bucket for each update
-    # TODO: is it possible to cache it? need to investigate
-    # or maybe we need to switch MeasureLogger to db storage
-    def log_presigned_urls
-      ChiefTransformer::MeasuresLogger::LOG_TYPES.inject({}) do |memo, type|
-        log_path = ChiefTransformer::MeasuresLogger.file_path(filename, type)
-        if TariffSynchronizer::FileService.file_exists?(log_path)
-          memo[type] = TariffSynchronizer::FileService.file_presigned_url(log_path)
-        end
-        memo
-      end
     end
 
     def import!

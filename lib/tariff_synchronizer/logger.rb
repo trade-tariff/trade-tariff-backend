@@ -1,6 +1,6 @@
 module TariffSynchronizer
   class Logger < ActiveSupport::LogSubscriber
-    # Download all pending Taric and Chief updates
+    # Download all pending Taric updates
     def download(_event)
       info 'Finished downloading updates'
     end
@@ -15,7 +15,7 @@ module TariffSynchronizer
       error "TariffSynchronizer found failed updates that need to be fixed before running: #{event.payload[:file_names]}"
     end
 
-    # Apply all pending Taric and Chief updates
+    # Apply all pending Taric updates
     def apply(event)
       info 'Finished applying updates'
 
@@ -70,11 +70,6 @@ module TariffSynchronizer
 
     def created_tariff(event)
       info "Created/Updated #{event.payload[:type].upcase} entry for #{event.payload[:date]} and #{event.payload[:filename]}"
-    end
-
-    # Apply CHIEF update
-    def apply_chief(event)
-      info "Applied CHIEF update #{event.payload[:filename]}"
     end
 
     # Apply TARIC update

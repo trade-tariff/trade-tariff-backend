@@ -280,40 +280,6 @@ describe GoodsNomenclature do
         end
       end
     end
-
-    describe 'national measurement unit set' do
-      let(:gono) { create :goods_nomenclature }
-      let(:tbl1) { create :tbl9, :unoq }
-      let(:tbl2) { create :tbl9, :unoq }
-      let(:tbl3) { create :tbl9, :unoq }
-      let!(:comm1) do
-        create :comm, cmdty_code: gono.goods_nomenclature_item_id,
-                      fe_tsmp: Date.current.ago(2.years),
-                      le_tsmp: nil,
-                      uoq_code_cdu2: tbl1.tbl_code,
-                      uoq_code_cdu3: tbl2.tbl_code
-      end
-      let!(:comm2) do
-        create :comm, cmdty_code: gono.goods_nomenclature_item_id,
-                      fe_tsmp: Date.current.ago(5.years),
-                      le_tsmp: Date.current.ago(3.years),
-                      uoq_code_cdu2: tbl3.tbl_code
-      end
-
-      it 'loads associated national measurement unit set' do
-        TimeMachine.at(4.years.ago) do
-          nset = described_class.where(goods_nomenclature_sid: gono.goods_nomenclature_sid)
-                        .first
-                        .national_measurement_unit_set
-
-          expect(nset.second_quantity_code).to eq tbl3.tbl_code
-          expect(nset.second_quantity_description).to eq tbl3.tbl_txt
-
-          expect(nset.third_quantity_code).to be_blank
-          expect(nset.third_quantity_description).to be_blank
-        end
-      end
-    end
   end
 
   describe 'validations' do

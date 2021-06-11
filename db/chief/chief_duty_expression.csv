@@ -1,5 +1,0 @@
-id,adval1_rate,adval2_rate,spfc1_rate,spfc2_rate,duty_expression_id_spfc1,monetary_unit_code_spfc1,duty_expression_id_spfc2,monetary_unit_code_spfc2,duty_expression_id_adval1,monetary_unit_code_adval1,duty_expression_id_adval2,monetary_unit_code_adval2
-1,0,0,1,0,01,GBP,nil,nil,nil,nil,nil,nil
-2,0,0,1,1,01,GBP,17,GBP,nil,nil,nil,nil
-3,1,0,1,0,04,GBP,nil,nil,01,nil,nil,nil
-4,1,0,0,0,nil,nil,nil,nil,01,nil,nil,nil

@@ -38,7 +38,6 @@ RSpec.configure do |config|
   config.include SynchronizerHelper
   config.include LoggerHelper
   config.include RescueHelper
-  config.include ChiefDataHelper
   config.include CodesMappingHelper
   config.include ActiveSupport::Testing::TimeHelpers
 

@@ -16,8 +16,9 @@ module Api
 
       def collection
         @collection ||= TariffSynchronizer::BaseUpdate.eager(:conformance_errors, :presence_errors)
-                                                      .descending
-                                                      .paginate(current_page, per_page)
+          .descending
+          .exclude(update_type: 'TariffSynchronizer::ChiefUpdate')
+          .paginate(current_page, per_page)
       end
 
       def per_page

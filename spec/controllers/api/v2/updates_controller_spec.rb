@@ -22,7 +22,6 @@ describe Api::V2::UpdatesController, 'GET #latest' do
 
   context 'when records are present' do
     it 'returns rendered records' do
-      create :chief_update, :applied
       create :taric_update, :applied
 
       get :latest, format: :json

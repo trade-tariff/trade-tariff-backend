@@ -3,9 +3,8 @@ require 'rails_helper'
 describe TariffSynchronizer, truncation: true do
   describe '.initial_update_date_for' do
     # helper method where update type is a param
-    it 'returns initial update date for specific update type taric or chief ' do
+    it 'returns initial update date for specific update type taric' do
       expect(TariffSynchronizer.initial_update_date_for(:taric)).to eq(TariffSynchronizer.taric_initial_update_date)
-      expect(TariffSynchronizer.initial_update_date_for(:chief)).to eq(TariffSynchronizer.chief_initial_update_date)
       expect(TariffSynchronizer.initial_update_date_for(:cds)).to eq(TariffSynchronizer.cds_initial_update_date)
       expect { TariffSynchronizer.initial_update_date_for(:non_existent) }.to raise_error(NoMethodError)
     end
@@ -25,7 +24,6 @@ describe TariffSynchronizer, truncation: true do
 
       it 'logs an info event' do
         allow(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
-        allow(TariffSynchronizer::ChiefUpdate).to receive(:sync).and_return(true)
         tariff_synchronizer_logger_listener
         TariffSynchronizer.download
         expect(@logger.logged(:info).size).to eq 1
@@ -38,7 +36,6 @@ describe TariffSynchronizer, truncation: true do
         allow(TariffSynchronizer).to receive(:sync_variables_set?).and_return(false)
 
         expect(TariffSynchronizer::TaricUpdate).not_to receive(:sync)
-        expect(TariffSynchronizer::ChiefUpdate).not_to receive(:sync)
 
         TariffSynchronizer.download
       end
@@ -131,7 +128,6 @@ describe TariffSynchronizer, truncation: true do
 
       it 'does not apply pending updates' do
         expect(TariffSynchronizer::TaricUpdate).not_to receive(:pending_at)
-        expect(TariffSynchronizer::ChiefUpdate).not_to receive(:pending_at)
 
         expect { TariffSynchronizer.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end

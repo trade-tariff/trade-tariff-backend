@@ -178,7 +178,6 @@ module TradeTariffBackend
         Certificate,
         CertificateDescription,
         CertificateDescriptionPeriod,
-        Chief::Tamf,
         ExportRefundNomenclature,
         Footnote,
         GeographicalArea,
