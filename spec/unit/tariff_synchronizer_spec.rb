@@ -19,7 +19,6 @@ describe TariffSynchronizer, truncation: true do
 
       it 'invokes update downloading/syncing on all update types' do
         expect(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
-        expect(TariffSynchronizer::ChiefUpdate).to receive(:sync).and_return(true)
 
         TariffSynchronizer.download
       end
