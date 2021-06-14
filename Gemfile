@@ -8,10 +8,9 @@ end
 ruby '~> 2.7.1'
 
 # Server
+gem 'mimemagic'
 gem 'puma', '~> 5.3.1'
 gem 'rails', '>= 6.0.3.4'
-gem 'mimemagic'
-gem 'sinatra', '~> 2.0.2'
 
 # DB
 gem 'pg', '~> 1.1', '>= 1.1.3'
@@ -79,8 +78,8 @@ group :test do
   gem 'forgery'
   gem 'json_expressions', '~> 0.9.0'
   gem 'rspec-json_expectations'
-  gem 'rspec-rails'
   gem 'rspec_junit_formatter'
+  gem 'rspec-rails'
   gem 'simplecov', '~> 0.18', require: false
   gem 'webmock'
 end
