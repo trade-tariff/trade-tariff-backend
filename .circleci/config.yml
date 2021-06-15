@@ -156,9 +156,9 @@ jobs:
             sudo apt update
             sudo apt install libcurl4-openssl-dev
       - ruby/install-deps
-      # - ruby/rubocop-check:
-      #     format: progress
-      #     label: Inspecting with Rubocop
+      - ruby/rubocop-check:
+          format: progress
+          label: Inspecting with Rubocop
       - run:
           name: Inspecting with Brakeman
           when: always

@@ -30,8 +30,6 @@ RSpec/NestedGroups:
   Enabled: false
 Rails/SaveBang:
   Enabled: false
-Rails/UniqueValidationWithoutIndex:
-  Enabled: false
 Rails/FilePath:
   Enabled: false
 Style/Documentation:
