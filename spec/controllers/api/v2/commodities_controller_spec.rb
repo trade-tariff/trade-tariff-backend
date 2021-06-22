@@ -30,6 +30,7 @@ describe Api::V2::CommoditiesController, 'GET #show' do
             applicable_vat_options: Hash,
             entry_price_system: false,
             meursing_code: false,
+            source: 'uk',
             trade_defence: false,
             zero_mfn_duty: false,
           },

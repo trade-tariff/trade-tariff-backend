@@ -26,6 +26,14 @@ module Api
         has_many :footnotes, serializer: Api::V2::Measures::FootnoteSerializer
         has_one :additional_code, if: Proc.new { |measure| measure.additional_code.present? }, serializer: Api::V2::AdditionalCodeSerializer
         has_one :order_number, serializer: Api::V2::Quotas::OrderNumber::QuotaOrderNumberSerializer
+
+        meta do |_measure|
+          {
+            duty_calculator: {
+              source: TradeTariffBackend.service,
+            },
+          }
+        end
       end
     end
   end
