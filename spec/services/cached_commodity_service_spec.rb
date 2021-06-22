@@ -95,6 +95,7 @@ describe CachedCommodityService do
               footnotes: Hash,
               order_number: Hash,
             },
+            meta: { duty_calculator: { source: 'uk' } },
           },
         ],
       }
