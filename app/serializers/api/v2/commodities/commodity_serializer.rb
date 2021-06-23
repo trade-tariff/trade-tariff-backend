@@ -33,6 +33,7 @@ module Api
               applicable_vat_options: commodity.applicable_vat_options,
               entry_price_system: commodity.entry_price_system?,
               meursing_code: commodity.meursing_code,
+              source: TradeTariffBackend.service,
               trade_defence: commodity.trade_remedies?,
               zero_mfn_duty: commodity.zero_mfn_duty?,
             },
