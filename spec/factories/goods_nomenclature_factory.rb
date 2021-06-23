@@ -88,6 +88,28 @@ FactoryBot.define do
     trait :with_heading do
       after(:create) do |commodity, _evaluator|
         FactoryBot.create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
+        commodity.reload
+      end
+    end
+
+    trait :with_children do
+      after(:create) do |commodity, _evaluator|
+        # Prepare some intermediate item ids
+        level1_item_id = commodity.goods_nomenclature_item_id.first(6)
+        level2_item_id = "#{level1_item_id}#{2.times.map { Random.rand(1..9)}.join('')}"
+
+        # Make the commodity a parent
+        commodity.goods_nomenclature_item_id = level1_item_id
+        commodity.producline_suffix = '10'
+        commodity.save
+
+        # Add another intermediate level
+        FactoryBot.create(:commodity, goods_nomenclature_item_id: "#{level2_item_id}00", producline_suffix: '10')
+
+        # Add two leaf commodities
+        FactoryBot.create(:commodity, goods_nomenclature_item_id: "#{level2_item_id}#{2.times.map { Random.rand(1..9)}.join('')}")
+        FactoryBot.create(:commodity, goods_nomenclature_item_id: "#{level2_item_id}#{2.times.map { Random.rand(1..9)}.join('')}")
+        commodity.reload
       end
     end
   end
