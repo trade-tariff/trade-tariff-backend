@@ -1,0 +1,103 @@
+require 'rails_helper'
+
+describe DeltaTablesGenerator::CommodityCodeDescriptionChanged do
+  let(:db) { Sequel::Model.db }
+
+  describe '#perform_import' do
+    context 'when the database is empty' do
+      before do
+        db[:goods_nomenclatures].delete
+      end
+
+      it 'doesn\'t extract deltas' do
+        expect { described_class.perform_import }.not_to change{ Delta.count }
+      end
+    end
+
+    context 'when there are commodities but haven\'t changed' do
+      let!(:commodity) { create :goods_nomenclature, :with_description }
+
+      it 'doesn\'t extract deltas' do
+        expect { described_class.perform_import }.not_to change{ Delta.count }
+      end
+    end
+
+    context 'when there are commodities that started on the same day' do
+      let!(:commodity) { create :goods_nomenclature, :with_description }
+
+      before do
+        period = commodity.goods_nomenclature_description.goods_nomenclature_description_period
+        period.validity_start_date = Date.current
+        period.save
+      end
+
+      it 'extracts deltas' do
+        expect { described_class.perform_import }.to change{ Delta.count }.by(1)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.perform_import
+        expect(db[:deltas].first.dig(:productline_suffix)).to eq('80')
+      end
+
+      it 'will flag it as end line' do
+        described_class.perform_import
+        expect(db[:deltas].first.dig(:end_line)).to be true
+      end
+    end
+
+    context 'when the commodity is a header with a current commodity' do
+      let!(:commodity) { create :commodity, :with_description, :with_heading }
+      before do
+        heading = commodity.reload.heading
+        create(:goods_nomenclature_description,
+               goods_nomenclature_sid: heading.goods_nomenclature_sid,
+               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+               validity_start_date: Date.current,
+               validity_end_date: heading.validity_end_date,
+               description: 'Description')
+      end
+
+      it 'extracts a delta' do
+        expect { described_class.perform_import }.to change{ Delta.count }.by(1)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.perform_import
+        expect(db[:deltas].first.dig(:productline_suffix)).to eq('80')
+      end
+
+      it 'will flag it as not end line' do
+        described_class.perform_import
+        expect(db[:deltas].first.dig(:end_line)).to be false
+      end
+    end
+
+    context 'when the commodity has children' do
+      let!(:commodity) { create :commodity, :with_description, :with_heading }
+      before do
+        heading = commodity.heading
+        create(:goods_nomenclature_description,
+               goods_nomenclature_sid: heading.goods_nomenclature_sid,
+               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+               validity_start_date: Date.current,
+               validity_end_date: heading.validity_end_date,
+               description: 'Description')
+      end
+
+      it 'extracts a delta' do
+        expect { described_class.perform_import }.to change{ Delta.count }.by(1)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.perform_import
+        expect(db[:deltas].first.dig(:productline_suffix)).to eq('80')
+      end
+
+      it 'will flag it as not end line' do
+        described_class.perform_import
+        expect(db[:deltas].first.dig(:end_line)).to be false
+      end
+    end
+  end
+end
