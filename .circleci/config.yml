@@ -279,12 +279,12 @@ workflows:
     jobs:
       - linters:
           context: trade-tariff
-      - test:
-           context: trade-tariff
-           filters:
-             branches:
-               ignore:
-                 - master
+      # - test:
+      #      context: trade-tariff
+      #      filters:
+      #        branches:
+      #          ignore:
+      #            - master
       - deploy_dev:
            matrix:
              parameters:
@@ -296,8 +296,8 @@ workflows:
              branches:
                ignore:
                  - master
-           requires:
-             - test
+           # requires:
+           #   - test
       - deploy_staging:
            matrix:
              parameters:
