@@ -51,7 +51,11 @@ module Api
         alias_method :meursing_code, :meursing_code?
 
         def zero_mfn_duty?
-          import_measures.any?(&:zero_mfn?)
+          third_country_measures.size.positive? && third_country_measures.all?(&:zero_mfn?)
+        end
+
+        def third_country_measures
+          import_measures.select(&:third_country?)
         end
 
         def trade_remedies?
