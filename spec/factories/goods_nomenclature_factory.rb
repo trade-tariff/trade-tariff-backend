@@ -29,14 +29,6 @@ FactoryBot.define do
       validity_end_date   { nil }
     end
 
-    trait :fifteen_years do
-      validity_start_date { Date.current.ago(15.years) }
-    end
-
-    trait :twenty_years do
-      validity_start_date { Date.current.ago(20.years) }
-    end
-
     trait :declarable do
       producline_suffix { '80' }
     end
