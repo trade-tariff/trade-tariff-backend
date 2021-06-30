@@ -34,6 +34,20 @@ describe Api::V2::Commodities::CommodityPresenter do
     )
   end
 
+  let(:non_mfn_measure) do
+    create(
+      :measure,
+      :with_measure_components,
+      :with_measure_type,
+    )
+  end
+
+  describe '#third_country_measures' do
+    let(:measures) { [non_mfn_measure, zero_mfn_measure] }
+
+    it { expect(presenter.third_country_measures).to eq([zero_mfn_measure]) }
+  end
+
   describe '#zero_mfn_duty?' do
     context 'when all mfn duties are zero' do
       let(:measures) { [zero_mfn_measure, zero_mfn_measure] }
@@ -49,6 +63,12 @@ describe Api::V2::Commodities::CommodityPresenter do
 
     context 'when no mfn duty is zero' do
       let(:measures) { [non_zero_mfn_measure, non_zero_mfn_measure] }
+
+      it { is_expected.not_to be_zero_mfn_duty }
+    end
+
+    context 'when no mfn duties are passed' do
+      let(:measures) { [] }
 
       it { is_expected.not_to be_zero_mfn_duty }
     end
