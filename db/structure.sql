@@ -7807,6 +7807,14 @@ ALTER TABLE ONLY public.deltas
 
 
 --
+-- Name: deltas deltas_upsert_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.deltas
+    ADD CONSTRAINT deltas_upsert_unique UNIQUE (goods_nomenclature_sid, delta_type, delta_date);
+
+
+--
 -- Name: duty_expression_descriptions_oplog duty_expression_descriptions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -10771,3 +10779,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20210108170325_add_hjid_to
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210112135615_add_new_fields_to_geographical_area_memberships_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210112160504_add_fields_to_geographical_area_memberships_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210610150945_create_deltas.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20210628165555_add_unique_constraint_to_deltas.rb');

@@ -1,4 +1,4 @@
-require 'logger'
+require_relative './delta_tables_generator/logger'
 
 require 'active_support/notifications'
 require 'active_support/log_subscriber'
@@ -6,7 +6,7 @@ require 'active_support/log_subscriber'
 module DeltaTablesGenerator
   extend self
 
-  delegate :instrument, :subscribe, to: ActiveSupport::Notifications
+  delegate :instrument, to: ActiveSupport::Notifications
 
   # Starts the generation of the deltas data.
   def generate(day: Date.current)

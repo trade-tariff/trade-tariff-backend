@@ -50,7 +50,7 @@ describe DeltaTablesGenerator::MeasureEndDated do
                validity_end_date: Date.current - 1.day
       end
 
-      xit 'extracts the commodity and the child commodity as delta' do
+      it 'extracts the commodity and the child commodity as delta' do
         expect { described_class.perform_import }.to change{ Delta.count }.by(4)
       end
 
@@ -59,7 +59,7 @@ describe DeltaTablesGenerator::MeasureEndDated do
         expect(db[:deltas].first.dig(:productline_suffix)).to eq('80')
       end
 
-      xit 'will flag it as not end line' do
+      it 'will flag it as not end line' do
         described_class.perform_import
         expect(db[:deltas].first.dig(:end_line)).to be false
       end
@@ -77,7 +77,7 @@ describe DeltaTablesGenerator::MeasureEndDated do
       end
 
       it 'extracts the commodity and the child commodity as delta' do
-        expect { described_class.perform_import }.to change{ Delta.count }.by(4)
+        expect { described_class.perform_import }.to change{ Delta.count }.by(5)
       end
 
       it 'will extract the correct productline suffix' do

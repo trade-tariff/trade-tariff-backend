@@ -12,7 +12,9 @@ module DeltaTablesGenerator
             ]
           end
         import_records = elements.map { |element| integrate_element(row: element, day: day) }
-        DB[:deltas].import import_fields, import_records
+        DB[:deltas]
+          .insert_conflict(constraint: :deltas_upsert_unique)
+          .import import_fields, import_records
       end
 
       def where_condition(day: Date.current)

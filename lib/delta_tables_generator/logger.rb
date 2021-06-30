@@ -1,34 +1,34 @@
+require 'logger'
+
 module DeltaTablesGenerator
   class Logger < ActiveSupport::LogSubscriber
     def generate(event)
-      message = "Generating the deltas for day #{event.payload[:day]}:\n" \
-                "Started: #{event.time}\n" \
-                "Finished: #{event.end}\n" \
-                "Duration (ms): #{event.duration}\n"
-      info message
-      puts message
+      day_message('', event)
     end
 
     def generate_backlog(event)
-      message = "Generating the deltas for period from #{event.payload[:from]} to #{event.payload[:to]}:\n" \
-                "Started: #{event.time}\n" \
-                "Finished: #{event.end}\n" \
-                "Duration (ms): #{event.duration}\n"
-      info message
-      puts message
+      info "Generating the deltas for period from #{event.payload[:from]} to #{event.payload[:to]}:\n" \
+           "Started: #{event.time}\n" \
+           "Finished: #{event.end}\n" \
+           "Duration (ms): #{event.duration}\n"
     end
 
     def failed_generation(event)
-      message = "Failed generating deltas:\n" \
-                "Exception #{event.payload[:exception].backlog}\n"
-      info message
-      puts message
+      info "Failed generating deltas:\n" \
+           "Exception #{event.payload[:exception].message}\n"
+    end
+
+    def perform_import_commodity_code_started(event)
+      day_message('commodity code started, ', event)
+    end
+
+    def day_message(label, event)
+      info "Generating the deltas for #{label}day #{event.payload[:day]}:\n" \
+           "Started: #{event.time}\n" \
+           "Finished: #{event.end}\n" \
+           "Duration (ms): #{event.duration}\n"
     end
   end
 end
 
 DeltaTablesGenerator::Logger.attach_to :delta_tables_generator
-
-ActiveSupport::Notifications.subscribe('generate.delta_tables_generator')
-ActiveSupport::Notifications.subscribe('generate_backlog.delta_tables_generator')
-ActiveSupport::Notifications.subscribe('failed_generation.delta_tables_generator')
