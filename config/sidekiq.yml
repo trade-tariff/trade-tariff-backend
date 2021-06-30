@@ -20,16 +20,19 @@
   #
   UpdatesSynchronizerWorker:
     cron: "0 2 * * *" # 2AM every day
-    description: "UpdatesSynchronizerWorker will run every day at 10pm."
+    description: "UpdatesSynchronizerWorker will run every day at 2am."
   TaricSequenceCheckWorker:
     cron: "0 14 * * 6" # 14:00 every Saturday
     description: "TaricSequenceCheckWorker will run every Saturday at 14:00."
   ClearCacheWorker:
     cron: "30 2 * * *" # 02:30 every day
-    description: "Clear Rails cache at midnight"
+    description: "Clear Rails cache at 02:30"
   RecacheModelsWorker:
     cron: "30 2 * * *" # 02:30 every day
-    description: "RecacheModelsWorker will run every day at 1am."
+    description: "RecacheModelsWorker will run every day at 02:30."
   ReindexModelsWorker:
     cron: "30 2 * * *" # 02:30 every day
-    description: "ReindexModelsWorker will run every day at 1am."
+    description: "ReindexModelsWorker will run every day at 02:30."
+  GenerateDeltaTablesWorker:
+    cron: "30 4 * * *" # 04:30 every day
+    description: "Generates the deltas table, will run every day at 04:30"

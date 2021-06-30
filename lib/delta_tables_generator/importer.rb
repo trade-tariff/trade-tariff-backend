@@ -7,7 +7,7 @@ module DeltaTablesGenerator
         'item'
       end
 
-      def perform_import(day: Date.current)
+      def perform_import(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument
         raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
@@ -30,7 +30,7 @@ module DeltaTablesGenerator
            delta_date]
       end
 
-      def where_condition(day: Date.current)
+      def where_condition(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument
         'true'
       end
 
@@ -57,9 +57,11 @@ module DeltaTablesGenerator
           suffix = row[:producline_suffix] || row[:productline_suffix]
           return false if suffix.present? && suffix != '80'
 
-          children = siblings&.any? ?
-                       find_children_from_siblings(row: row, siblings: siblings) :
+          children = if siblings&.any?
+                       find_children_from_siblings(row: row, siblings: siblings)
+                     else
                        find_children(row: row, day: day)
+                     end
           children.none?
         end
       end
@@ -97,7 +99,7 @@ module DeltaTablesGenerator
           end
         end
 
-        return children
+        children
       end
 
       def find_children(row:, day: Date.current)
@@ -107,6 +109,8 @@ module DeltaTablesGenerator
           heading_id = "#{item_id[0, 4]}______"
 
           if chapter?(item_id)
+            # using sequel DSL conflicts with Rubocop directives
+            # rubocop:disable all
             return DB[:goods_nomenclatures]
               .left_join(:goods_nomenclature_indents,
                          goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
@@ -116,16 +120,19 @@ module DeltaTablesGenerator
                 (like(goods_nomenclatures__goods_nomenclature_item_id, chapter_id))
               }
               .distinct(:goods_nomenclatures__goods_nomenclature_sid)
-              .select { |row|
+              .select { |result_row|
                 [
-                  row.goods_nomenclatures__goods_nomenclature_item_id,
-                  row.goods_nomenclatures__goods_nomenclature_sid,
-                  row.goods_nomenclatures__producline_suffix,
-                  row.number_indents
+                  result_row.goods_nomenclatures__goods_nomenclature_item_id,
+                  result_row.goods_nomenclatures__goods_nomenclature_sid,
+                  result_row.goods_nomenclatures__producline_suffix,
+                  result_row.number_indents
                 ]
               }
               .all
+            # rubocop:enable all
           elsif heading?(item_id)
+            # using sequel DSL conflicts with Rubocop directives
+            # rubocop:disable all
             return DB[:goods_nomenclatures]
               .left_join(:goods_nomenclature_indents,
                          goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
@@ -135,21 +142,24 @@ module DeltaTablesGenerator
                 (like(goods_nomenclatures__goods_nomenclature_item_id, heading_id))
               }
               .distinct(:goods_nomenclatures__goods_nomenclature_sid)
-              .select { |row|
+              .select { |result_row|
                 [
-                  row.goods_nomenclatures__goods_nomenclature_item_id,
-                  row.goods_nomenclatures__goods_nomenclature_sid,
-                  row.goods_nomenclatures__producline_suffix,
-                  row.number_indents
+                  result_row.goods_nomenclatures__goods_nomenclature_item_id,
+                  result_row.goods_nomenclatures__goods_nomenclature_sid,
+                  result_row.goods_nomenclatures__producline_suffix,
+                  result_row.number_indents,
                 ]
               }
               .all
+            # rubocop:enable all
           else
             goods_nomenclature = GoodsNomenclature.eager(:goods_nomenclature_indents)
                                                   .first(goods_nomenclature_sid: row[:goods_nomenclature_sid])
             productline_suffix = goods_nomenclature.producline_suffix
             indent = goods_nomenclature.goods_nomenclature_indent&.number_indents
 
+            # using sequel DSL conflicts with Rubocop directives
+            # rubocop:disable all
             DB[:goods_nomenclatures]
               .left_join(:goods_nomenclature_indents,
                          goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
@@ -164,15 +174,16 @@ module DeltaTablesGenerator
                 (number_indents > indent)
               }
               .distinct(:goods_nomenclatures__goods_nomenclature_sid)
-              .select { |row|
+              .select { |result_row|
                 [
-                  row.goods_nomenclatures__goods_nomenclature_item_id,
-                  row.goods_nomenclatures__goods_nomenclature_sid,
-                  row.goods_nomenclatures__producline_suffix,
-                  row.number_indents
+                  result_row.goods_nomenclatures__goods_nomenclature_item_id,
+                  result_row.goods_nomenclatures__goods_nomenclature_sid,
+                  result_row.goods_nomenclatures__producline_suffix,
+                  result_row.number_indents,
                 ]
               }
               .all
+            # rubocop:enable all
           end
         end
       end
