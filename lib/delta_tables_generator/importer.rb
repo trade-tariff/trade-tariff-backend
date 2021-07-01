@@ -31,7 +31,7 @@ module DeltaTablesGenerator
       end
 
       def where_condition(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument
-        'true'
+        raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
       def integrate_element(row:, day: Date.current, is_end_line: nil, siblings: nil)
@@ -105,85 +105,13 @@ module DeltaTablesGenerator
       def find_children(row:, day: Date.current)
         TimeMachine.at(day) do
           item_id = row[:goods_nomenclature_item_id]
-          chapter_id = "#{item_id[0, 2]}________"
-          heading_id = "#{item_id[0, 4]}______"
 
           if chapter?(item_id)
-            # using sequel DSL conflicts with Rubocop directives
-            # rubocop:disable all
-            return DB[:goods_nomenclatures]
-              .left_join(:goods_nomenclature_indents,
-                         goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
-              .where {
-                (goods_nomenclatures__validity_start_date <= day) &
-                ((goods_nomenclatures__validity_end_date == nil) | (goods_nomenclatures__validity_end_date >= day)) &
-                (like(goods_nomenclatures__goods_nomenclature_item_id, chapter_id))
-              }
-              .distinct(:goods_nomenclatures__goods_nomenclature_sid)
-              .select { |result_row|
-                [
-                  result_row.goods_nomenclatures__goods_nomenclature_item_id,
-                  result_row.goods_nomenclatures__goods_nomenclature_sid,
-                  result_row.goods_nomenclatures__producline_suffix,
-                  result_row.number_indents
-                ]
-              }
-              .all
-            # rubocop:enable all
+            return chapter_children(row: row, day: day)
           elsif heading?(item_id)
-            # using sequel DSL conflicts with Rubocop directives
-            # rubocop:disable all
-            return DB[:goods_nomenclatures]
-              .left_join(:goods_nomenclature_indents,
-                         goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
-              .where {
-                (goods_nomenclatures__validity_start_date <= day) &
-                ((goods_nomenclatures__validity_end_date == nil) | (goods_nomenclatures__validity_end_date >= day)) &
-                (like(goods_nomenclatures__goods_nomenclature_item_id, heading_id))
-              }
-              .distinct(:goods_nomenclatures__goods_nomenclature_sid)
-              .select { |result_row|
-                [
-                  result_row.goods_nomenclatures__goods_nomenclature_item_id,
-                  result_row.goods_nomenclatures__goods_nomenclature_sid,
-                  result_row.goods_nomenclatures__producline_suffix,
-                  result_row.number_indents,
-                ]
-              }
-              .all
-            # rubocop:enable all
+            return heading_children(row: row, day: day)
           else
-            goods_nomenclature = GoodsNomenclature.eager(:goods_nomenclature_indents)
-                                                  .first(goods_nomenclature_sid: row[:goods_nomenclature_sid])
-            productline_suffix = goods_nomenclature.producline_suffix
-            indent = goods_nomenclature.goods_nomenclature_indent&.number_indents
-
-            # using sequel DSL conflicts with Rubocop directives
-            # rubocop:disable all
-            DB[:goods_nomenclatures]
-              .left_join(:goods_nomenclature_indents,
-                         goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
-              .where {
-                (goods_nomenclatures__validity_start_date <= day) &
-                ((goods_nomenclatures__validity_end_date =~ nil) |
-                 (goods_nomenclatures__validity_end_date >= day)) &
-                (like(goods_nomenclatures__goods_nomenclature_item_id, heading_id)) &
-                ((goods_nomenclatures__goods_nomenclature_item_id > item_id) |
-                 ((goods_nomenclatures__goods_nomenclature_item_id == item_id) &
-                  (goods_nomenclatures__producline_suffix > productline_suffix))) &
-                (number_indents > indent)
-              }
-              .distinct(:goods_nomenclatures__goods_nomenclature_sid)
-              .select { |result_row|
-                [
-                  result_row.goods_nomenclatures__goods_nomenclature_item_id,
-                  result_row.goods_nomenclatures__goods_nomenclature_sid,
-                  result_row.goods_nomenclatures__producline_suffix,
-                  result_row.number_indents,
-                ]
-              }
-              .all
-            # rubocop:enable all
+            return commodity_children(row: row, day: day)
           end
         end
       end
@@ -196,6 +124,97 @@ module DeltaTablesGenerator
 
       def heading?(item_id)
         item_id.ends_with?('000000') && !chapter?(item_id)
+      end
+
+      def chapter_children(row:, day: Date.current)
+        item_id = row[:goods_nomenclature_item_id]
+        chapter_id_regex = "#{item_id[0, 2]}________"
+
+        # using sequel DSL conflicts with Rubocop directives
+        # rubocop:disable all
+        DB[:goods_nomenclatures]
+          .left_join(:goods_nomenclature_indents,
+                     goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
+          .where {
+            (goods_nomenclatures__validity_start_date <= day) &
+            ((goods_nomenclatures__validity_end_date == nil) | (goods_nomenclatures__validity_end_date >= day)) &
+            (like(goods_nomenclatures__goods_nomenclature_item_id, chapter_id_regex))
+          }
+          .distinct(:goods_nomenclatures__goods_nomenclature_sid)
+          .select { |result_row|
+            [
+              result_row.goods_nomenclatures__goods_nomenclature_item_id,
+              result_row.goods_nomenclatures__goods_nomenclature_sid,
+              result_row.goods_nomenclatures__producline_suffix,
+              result_row.number_indents
+            ]
+          }
+          .all
+        # rubocop:enable all
+      end
+
+      def heading_children(row:, day: Date.current)
+        item_id = row[:goods_nomenclature_item_id]
+        heading_id_regex = "#{item_id[0, 4]}______"
+
+        # using sequel DSL conflicts with Rubocop directives
+        # rubocop:disable all
+        return DB[:goods_nomenclatures]
+          .left_join(:goods_nomenclature_indents,
+                     goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
+          .where {
+            (goods_nomenclatures__validity_start_date <= day) &
+            ((goods_nomenclatures__validity_end_date == nil) | (goods_nomenclatures__validity_end_date >= day)) &
+            (like(goods_nomenclatures__goods_nomenclature_item_id, heading_id_regex))
+          }
+          .distinct(:goods_nomenclatures__goods_nomenclature_sid)
+          .select { |result_row|
+            [
+              result_row.goods_nomenclatures__goods_nomenclature_item_id,
+              result_row.goods_nomenclatures__goods_nomenclature_sid,
+              result_row.goods_nomenclatures__producline_suffix,
+              result_row.number_indents,
+            ]
+          }
+          .all
+        # rubocop:enable all
+      end
+
+      def commodity_children(row:, day: Date.current)
+        item_id = row[:goods_nomenclature_item_id]
+        heading_id_regex = "#{item_id[0, 4]}______"
+
+        goods_nomenclature = GoodsNomenclature.eager(:goods_nomenclature_indents)
+                                              .first(goods_nomenclature_sid: row[:goods_nomenclature_sid])
+        productline_suffix = goods_nomenclature.producline_suffix
+        indent = goods_nomenclature.goods_nomenclature_indent&.number_indents || 1
+
+        # using sequel DSL conflicts with Rubocop directives
+        # rubocop:disable all
+        DB[:goods_nomenclatures]
+          .left_join(:goods_nomenclature_indents,
+                     goods_nomenclatures__goods_nomenclature_sid: :goods_nomenclature_indents__goods_nomenclature_sid)
+          .where {
+            (goods_nomenclatures__validity_start_date <= day) &
+            ((goods_nomenclatures__validity_end_date =~ nil) |
+             (goods_nomenclatures__validity_end_date >= day)) &
+            (like(goods_nomenclatures__goods_nomenclature_item_id, heading_id_regex)) &
+            ((goods_nomenclatures__goods_nomenclature_item_id > item_id) |
+             ((goods_nomenclatures__goods_nomenclature_item_id == item_id) &
+              (goods_nomenclatures__producline_suffix > productline_suffix))) &
+            (number_indents > indent)
+          }
+          .distinct(:goods_nomenclatures__goods_nomenclature_sid)
+          .select { |result_row|
+            [
+              result_row.goods_nomenclatures__goods_nomenclature_item_id,
+              result_row.goods_nomenclatures__goods_nomenclature_sid,
+              result_row.goods_nomenclatures__producline_suffix,
+              result_row.number_indents,
+            ]
+          }
+          .all
+        # rubocop:enable all
       end
     end
   end

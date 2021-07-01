@@ -10,46 +10,42 @@ module DeltaTablesGenerator
 
   # Starts the generation of the deltas data.
   def generate(day: Date.current)
-    DeltaTablesBackend.with_redis_lock do
-      instrument('generate.delta_tables_generator', day: day) do
-        [
-          CommodityCodeEndDated,
-          CommodityCodeStarted,
-          CommodityCodeDescriptionChanged,
-          MeasureEndDated,
-          MeasureStarted,
-          MeasureDeleted,
-          MeasureCreatedOrUpdated,
-        ].map do |importer|
-          importer.perform_import(day: day)
-        end
-        return true
-      rescue StandardError => e
-        instrument('failed_generation.delta_tables_generator', exception: e)
-        raise e.original
+    instrument('generate.delta_tables_generator', day: day) do
+      [
+        CommodityCodeEndDated,
+        CommodityCodeStarted,
+        CommodityCodeDescriptionChanged,
+        MeasureEndDated,
+        MeasureStarted,
+        MeasureDeleted,
+        MeasureCreatedOrUpdated,
+      ].map do |importer|
+        importer.perform_import(day: day)
       end
+      return nil
+    rescue StandardError => e
+      instrument('failed_generation.delta_tables_generator', exception: e)
+      raise e.original
     end
   end
 
   def generate_backlog(from: Date.current - 3.months, to: Date.current)
-    DeltaTablesBackend.with_redis_lock do
-      instrument('generate_backlog.delta_tables_generator', from: from, to: to) do
-        [
-          CommodityCodeEndDated,
-          CommodityCodeStarted,
-          CommodityCodeDescriptionChanged,
-          MeasureEndDated,
-          MeasureStarted,
-          MeasureDeleted,
-          MeasureCreatedOrUpdated,
-        ].map do |importer|
-          importer.perform_backlog_import(from: from, to: to)
-        end
-        return true
-      rescue StandardError => e
-        instrument('failed_generation.delta_tables_generator', exception: e)
-        raise e.original
+    instrument('generate_backlog.delta_tables_generator', from: from, to: to) do
+      [
+        CommodityCodeEndDated,
+        CommodityCodeStarted,
+        CommodityCodeDescriptionChanged,
+        MeasureEndDated,
+        MeasureStarted,
+        MeasureDeleted,
+        MeasureCreatedOrUpdated,
+      ].map do |importer|
+        importer.perform_backlog_import(from: from, to: to)
       end
+      return nil
+    rescue StandardError => e
+      instrument('failed_generation.delta_tables_generator', exception: e)
+      raise e.original
     end
   end
 end
