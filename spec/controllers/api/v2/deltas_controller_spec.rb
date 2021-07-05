@@ -1,0 +1,100 @@
+require 'rails_helper'
+
+describe Api::V2::DeltasController do
+  let(:no_changes_response) { { "data" => [] } }
+  let(:goods_nomenclature_item_id) { nil }
+  let(:goods_nomenclature_sid) { nil }
+  let(:productline_suffix) { nil }
+  let(:end_line) { nil }
+  let(:delta_type) { nil }
+  let(:delta_date) { Date.current.strftime('%Y-%m-%d') }
+
+  let(:expected_change_response) {
+    {
+      "data" => [{
+        "id" => goods_nomenclature_sid,
+        "type" => "delta",
+        "attributes" => {
+          "goods_nomenclature_item_id" => goods_nomenclature_item_id,
+          "goods_nomenclature_sid" => goods_nomenclature_sid,
+          "productline_suffix" => productline_suffix,
+          "end_line" => end_line,
+          "delta_date" => delta_date,
+          "delta_type" => delta_type,
+        }
+      }]
+
+    }
+  }
+
+  context '#index' do
+    it 'will be successful' do
+      get :index, format: :json
+
+      expect(response).to be_successful
+    end
+
+    context 'when nothing has changed' do
+      before { get :index, format: :json }
+      let(:json) { JSON.parse(response.body) }
+
+      it 'will return an empty array' do
+        expect(json).to eq(no_changes_response)
+      end
+    end
+
+    context 'when a commodity delta exists for the day' do
+      let!(:delta) { create :delta, delta_date: Date.current }
+      let(:goods_nomenclature_item_id) { delta.goods_nomenclature_item_id }
+      let(:goods_nomenclature_sid) { delta.goods_nomenclature_sid }
+      let(:productline_suffix) { delta.productline_suffix }
+      let(:delta_type) { 'commodity' }
+      let(:end_line) { true }
+
+      context 'on the same day' do
+        before { get :index, format: :json }
+        let(:json) { JSON.parse(response.body) }
+
+        it 'will return the correct code' do
+          expect(json).to eq(expected_change_response)
+        end
+      end
+
+      context 'on the previous day' do
+        before { get :index, params: { as_of: (Date.current - 1.day) }, format: :json }
+        let(:json) { JSON.parse(response.body) }
+
+        it 'will return the expired code' do
+          expect(json).to eq(no_changes_response)
+        end
+      end
+    end
+
+    context 'when a measure delta exists for the day' do
+      let!(:delta) { create :delta_measure, delta_date: Date.current }
+      let(:goods_nomenclature_item_id) { delta.goods_nomenclature_item_id }
+      let(:goods_nomenclature_sid) { delta.goods_nomenclature_sid }
+      let(:productline_suffix) { delta.productline_suffix }
+      let(:delta_type) { 'measure' }
+      let(:end_line) { true }
+
+      context 'on the same day' do
+        before { get :index, format: :json }
+        let(:json) { JSON.parse(response.body) }
+
+        it 'will return the correct code' do
+          expect(json).to eq(expected_change_response)
+        end
+      end
+
+      context 'on the previous day' do
+        before { get :index, params: { as_of: (Date.current - 1.day) }, format: :json }
+        let(:json) { JSON.parse(response.body) }
+
+        it 'will return the expired code' do
+          expect(json).to eq(no_changes_response)
+        end
+      end
+    end
+  end
+end

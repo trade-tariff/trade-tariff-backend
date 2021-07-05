@@ -105,6 +105,8 @@ Rails.application.routes.draw do
 
       resources :exchange_rates, only: [:index]
 
+      get '/deltas(/:as_of)', to: 'deltas#index', as: :deltas, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }
+
       post 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
       get '/headings/:id/tree' => 'headings#tree'
