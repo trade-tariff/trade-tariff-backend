@@ -4,13 +4,9 @@ require 'active_support/notifications'
 require 'active_support/log_subscriber'
 
 module DeltaTablesGenerator
-  extend self # rubocop:disable Style/ModuleFunction
-
-  delegate :instrument, to: ActiveSupport::Notifications
-
   # Starts the generation of the deltas data.
-  def generate(day: Date.current)
-    instrument('generate.delta_tables_generator', day: day) do
+  def self.generate(day: Date.current)
+    ActiveSupport::Notifications.instrument('generate.delta_tables_generator', day: day) do
       [
         CommodityCodeEndDated,
         CommodityCodeStarted,
@@ -24,13 +20,13 @@ module DeltaTablesGenerator
       end
       return nil
     rescue StandardError => e
-      instrument('failed_generation.delta_tables_generator', exception: e)
+      ActiveSupport::Notifications.instrument('failed_generation.delta_tables_generator', exception: e)
       raise e.original
     end
   end
 
-  def generate_backlog(from: Date.current - 3.months, to: Date.current)
-    instrument('generate_backlog.delta_tables_generator', from: from, to: to) do
+  def self.generate_backlog(from: Date.current - 3.months, to: Date.current)
+    ActiveSupport::Notifications.instrument('generate_backlog.delta_tables_generator', from: from, to: to) do
       [
         CommodityCodeEndDated,
         CommodityCodeStarted,
@@ -44,7 +40,7 @@ module DeltaTablesGenerator
       end
       return nil
     rescue StandardError => e
-      instrument('failed_generation.delta_tables_generator', exception: e)
+      ActiveSupport::Notifications.instrument('failed_generation.delta_tables_generator', exception: e)
       raise e.original
     end
   end
