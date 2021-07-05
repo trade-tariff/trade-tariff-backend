@@ -7,5 +7,6 @@ class GenerateDeltaTablesWorker
     logger.info 'Running GenerateDeltaTablesWorker'
     logger.info 'Generating...'
     DeltaTablesGenerator.generate
+    DeltaTablesGenerator.cleanup_outdated
   end
 end

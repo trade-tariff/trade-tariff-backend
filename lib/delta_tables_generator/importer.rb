@@ -12,6 +12,8 @@ module DeltaTablesGenerator
       end
 
       def perform_backlog_import(from: Date.current - 3.months, to: Date.current)
+        from = from.to_date
+        to = to.to_date
         (from..to).each do |day|
           perform_import(day: day)
         end

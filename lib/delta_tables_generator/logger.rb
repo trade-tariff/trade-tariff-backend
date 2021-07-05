@@ -3,7 +3,10 @@ require 'logger'
 module DeltaTablesGenerator
   class Logger < ActiveSupport::LogSubscriber
     def generate(event)
-      day_message('', event)
+      info "Generating the deltas for day #{event.payload[:day]}:\n" \
+           "Started: #{event.time}\n" \
+           "Finished: #{event.end}\n" \
+           "Duration (ms): #{event.duration}\n"
     end
 
     def generate_backlog(event)
@@ -18,12 +21,8 @@ module DeltaTablesGenerator
            "Exception #{event.payload[:exception].message}\n"
     end
 
-    def perform_import_commodity_code_started(event)
-      day_message('commodity code started, ', event)
-    end
-
-    def day_message(label, event)
-      info "Generating the deltas for #{label}day #{event.payload[:day]}:\n" \
+    def cleanup_outdated(event)
+      info "Cleaning up outdated deltas older than #{event.payload[:cleanup_older_than]}:\n" \
            "Started: #{event.time}\n" \
            "Finished: #{event.end}\n" \
            "Duration (ms): #{event.duration}\n"

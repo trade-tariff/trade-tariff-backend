@@ -25,7 +25,7 @@ module DeltaTablesGenerator
     end
   end
 
-  def self.generate_backlog(from: Date.current - 3.months, to: Date.current)
+  def self.generate_backlog(from: Date.current.ago(3.months), to: Date.current)
     ActiveSupport::Notifications.instrument('generate_backlog.delta_tables_generator', from: from, to: to) do
       [
         CommodityCodeEndDated,
@@ -38,6 +38,16 @@ module DeltaTablesGenerator
       ].map do |importer|
         importer.perform_backlog_import(from: from, to: to)
       end
+      return nil
+    rescue StandardError => e
+      ActiveSupport::Notifications.instrument('failed_generation.delta_tables_generator', exception: e)
+      raise e.original
+    end
+  end
+
+  def self.cleanup_outdated(cleanup_older_than: Date.current.ago(3.months))
+    ActiveSupport::Notifications.instrument('cleanup_outdated.delta_tables_generator', cleanup_older_than: cleanup_older_than) do
+      CleanupOutdatedDeltas.run(cleanup_older_than: cleanup_older_than)
       return nil
     rescue StandardError => e
       ActiveSupport::Notifications.instrument('failed_generation.delta_tables_generator', exception: e)
