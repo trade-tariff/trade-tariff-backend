@@ -1,26 +1,26 @@
 require 'rails_helper'
 
-describe Api::V2::DeltasController do
+describe Api::V2::ChangesController do
   let(:no_changes_response) { { "data" => [] } }
   let(:goods_nomenclature_item_id) { nil }
   let(:goods_nomenclature_sid) { nil }
   let(:productline_suffix) { nil }
   let(:end_line) { nil }
-  let(:delta_type) { nil }
-  let(:delta_date) { Date.current.strftime('%Y-%m-%d') }
+  let(:change_type) { nil }
+  let(:change_date) { Date.current.strftime('%Y-%m-%d') }
 
   let(:expected_change_response) {
     {
       "data" => [{
         "id" => goods_nomenclature_sid,
-        "type" => "delta",
+        "type" => "change",
         "attributes" => {
           "goods_nomenclature_item_id" => goods_nomenclature_item_id,
           "goods_nomenclature_sid" => goods_nomenclature_sid,
           "productline_suffix" => productline_suffix,
           "end_line" => end_line,
-          "delta_date" => delta_date,
-          "delta_type" => delta_type,
+          "change_date" => change_date,
+          "change_type" => change_type,
         }
       }]
 
@@ -43,12 +43,12 @@ describe Api::V2::DeltasController do
       end
     end
 
-    context 'when a commodity delta exists for the day' do
-      let!(:delta) { create :delta, delta_date: Date.current }
-      let(:goods_nomenclature_item_id) { delta.goods_nomenclature_item_id }
-      let(:goods_nomenclature_sid) { delta.goods_nomenclature_sid }
-      let(:productline_suffix) { delta.productline_suffix }
-      let(:delta_type) { 'commodity' }
+    context 'when a commodity change exists for the day' do
+      let!(:change) { create :change, change_date: Date.current }
+      let(:goods_nomenclature_item_id) { change.goods_nomenclature_item_id }
+      let(:goods_nomenclature_sid) { change.goods_nomenclature_sid }
+      let(:productline_suffix) { change.productline_suffix }
+      let(:change_type) { 'commodity' }
       let(:end_line) { true }
 
       context 'on the same day' do
@@ -70,12 +70,12 @@ describe Api::V2::DeltasController do
       end
     end
 
-    context 'when a measure delta exists for the day' do
-      let!(:delta) { create :delta_measure, delta_date: Date.current }
-      let(:goods_nomenclature_item_id) { delta.goods_nomenclature_item_id }
-      let(:goods_nomenclature_sid) { delta.goods_nomenclature_sid }
-      let(:productline_suffix) { delta.productline_suffix }
-      let(:delta_type) { 'measure' }
+    context 'when a measure change exists for the day' do
+      let!(:change) { create :change_measure, change_date: Date.current }
+      let(:goods_nomenclature_item_id) { change.goods_nomenclature_item_id }
+      let(:goods_nomenclature_sid) { change.goods_nomenclature_sid }
+      let(:productline_suffix) { change.productline_suffix }
+      let(:change_type) { 'measure' }
       let(:end_line) { true }
 
       context 'on the same day' do
