@@ -1,30 +1,30 @@
 require 'rails_helper'
 
-describe DeltaTablesGenerator do
+describe ChangesTablePopulator do
   let(:db) { Sequel::Model.db }
 
-  describe '#generate' do
+  describe '#populate' do
     context 'with an empty database' do
       before do
         db[:measures].delete
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t extract deltas' do
-        expect { described_class.generate }.not_to change(Delta, :count)
+      it 'doesn\'t extract changes' do
+        expect { described_class.populate }.not_to change(Change, :count)
       end
     end
   end
 
-  describe '#generate_backlog' do
+  describe '#populate_backlog' do
     context 'with an empty database' do
       before do
         db[:measures].delete
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t extract deltas' do
-        expect { described_class.generate_backlog }.not_to change(Delta, :count)
+      it 'doesn\'t extract changes' do
+        expect { described_class.populate_backlog }.not_to change(Change, :count)
       end
     end
   end
@@ -36,8 +36,8 @@ describe DeltaTablesGenerator do
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t change the deltas' do
-        expect { described_class.cleanup_outdated }.not_to change(Delta, :count)
+      it 'doesn\'t change the changes' do
+        expect { described_class.cleanup_outdated }.not_to change(Change, :count)
       end
     end
   end

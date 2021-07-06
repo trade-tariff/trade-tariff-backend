@@ -33,6 +33,6 @@
   ReindexModelsWorker:
     cron: "30 2 * * *" # 02:30 every day
     description: "ReindexModelsWorker will run every day at 02:30."
-  GenerateDeltaTablesWorker:
+  PopulateChangesTableWorker:
     cron: "30 4 * * *" # 04:30 every day
-    description: "Generates the deltas table, will run every day at 04:30"
+    description: "Populates the changes table, will run every day at 04:30"

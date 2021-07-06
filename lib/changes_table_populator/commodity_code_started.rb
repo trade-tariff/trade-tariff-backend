@@ -1,4 +1,4 @@
-module DeltaTablesGenerator
+module ChangesTablePopulator
   class CommodityCodeStarted < Importer
     class << self
       def perform_import(day: Date.current)
@@ -12,8 +12,8 @@ module DeltaTablesGenerator
             ]
           end
         import_records = elements.map { |element| integrate_element(row: element, day: day) }
-        DB[:deltas]
-          .insert_conflict(constraint: :deltas_upsert_unique)
+        DB[:changes]
+          .insert_conflict(constraint: :changes_upsert_unique)
           .import import_fields, import_records
       end
 

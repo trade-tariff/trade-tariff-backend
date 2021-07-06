@@ -1,5 +1,5 @@
-module DeltaTablesGenerator
-  class MeasureStarted < Importer
+module ChangesTablePopulator
+  class MeasureCreatedOrUpdated < Importer
     class << self
       def perform_import(day: Date.current)
         elements = DB[:measures]
@@ -10,22 +10,25 @@ module DeltaTablesGenerator
         elements
           .uniq { |element| element[:goods_nomenclature_sid] }
           .each do |element|
-            DB[:deltas]
-              .insert_conflict(constraint: :deltas_upsert_unique)
+            DB[:changes]
+              .insert_conflict(constraint: :changes_upsert_unique)
               .import import_fields, integrate_and_find_children(row: element, day: day)
           end
       end
 
       def where_condition(day: Date.current)
-        { validity_start_date: day }
+        Sequel.lit('validity_start_date <= ? AND ' \
+                   '(validity_end_date IS NULL OR validity_end_date > ?) AND ' \
+                   'operation IN (\'C\', \'U\') AND ' \
+                   'operation_date = ?', day, day, day)
       end
 
-      def delta_type
+      def change_type
         'measure'
       end
 
       def action
-        'started measures'
+        'created or updated measures'
       end
     end
   end

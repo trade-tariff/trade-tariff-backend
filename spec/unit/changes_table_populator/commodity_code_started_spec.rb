@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe DeltaTablesGenerator::CommodityCodeStarted do
+describe ChangesTablePopulator::CommodityCodeStarted do
   let(:db) { Sequel::Model.db }
 
   describe '#perform_import' do
@@ -9,8 +9,8 @@ describe DeltaTablesGenerator::CommodityCodeStarted do
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t extract deltas' do
-        expect { described_class.perform_import }.not_to change(Delta, :count)
+      it 'doesn\'t extract changes' do
+        expect { described_class.perform_import }.not_to change(Change, :count)
       end
     end
 
@@ -19,8 +19,8 @@ describe DeltaTablesGenerator::CommodityCodeStarted do
         create :goods_nomenclature
       end
 
-      it 'doesn\'t extract deltas' do
-        expect { described_class.perform_import }.not_to change(Delta, :count)
+      it 'doesn\'t extract changes' do
+        expect { described_class.perform_import }.not_to change(Change, :count)
       end
     end
 
@@ -29,18 +29,18 @@ describe DeltaTablesGenerator::CommodityCodeStarted do
         create :goods_nomenclature, validity_start_date: Date.current
       end
 
-      it 'extracts deltas' do
-        expect { described_class.perform_import }.to change(Delta, :count).by(1)
+      it 'extracts changes' do
+        expect { described_class.perform_import }.to change(Change, :count).by(1)
       end
 
       it 'will extract the correct productline suffix' do
         described_class.perform_import
-        expect(db[:deltas].first[:productline_suffix]).to eq('80')
+        expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
       it 'will flag it as end line' do
         described_class.perform_import
-        expect(db[:deltas].first[:end_line]).to be true
+        expect(db[:changes].first[:end_line]).to be true
       end
     end
 
@@ -53,18 +53,18 @@ describe DeltaTablesGenerator::CommodityCodeStarted do
         heading.save
       end
 
-      it 'extracts a delta' do
-        expect { described_class.perform_import }.to change(Delta, :count).by(1)
+      it 'extracts a change' do
+        expect { described_class.perform_import }.to change(Change, :count).by(1)
       end
 
       it 'will extract the correct productline suffix' do
         described_class.perform_import
-        expect(db[:deltas].first[:productline_suffix]).to eq('80')
+        expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
       it 'will flag it as not end line' do
         described_class.perform_import
-        expect(db[:deltas].first[:end_line]).to be false
+        expect(db[:changes].first[:end_line]).to be false
       end
     end
   end

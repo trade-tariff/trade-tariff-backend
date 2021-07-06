@@ -1,4 +1,4 @@
-module DeltaTablesGenerator
+module ChangesTablePopulator
   class Importer
     class << self
       DB = Sequel::Model.db
@@ -28,8 +28,8 @@ module DeltaTablesGenerator
            goods_nomenclature_sid
            productline_suffix
            end_line
-           delta_type
-           delta_date]
+           change_type
+           change_date]
       end
 
       def where_condition(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument

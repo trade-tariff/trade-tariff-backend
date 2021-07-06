@@ -1,28 +1,28 @@
 require 'logger'
 
-module DeltaTablesGenerator
+module ChangesTablePopulator
   class Logger < ActiveSupport::LogSubscriber
-    def generate(event)
-      info "Generating the deltas for day #{event.payload[:day]}:\n" \
+    def populate(event)
+      info "Populating the changes table for day #{event.payload[:day]}:\n" \
            "Started: #{event.time}\n" \
            "Finished: #{event.end}\n" \
            "Duration (ms): #{event.duration}\n"
     end
 
-    def generate_backlog(event)
-      info "Generating the deltas for period from #{event.payload[:from]} to #{event.payload[:to]}:\n" \
+    def populate_backlog(event)
+      info "Populating the changes table for period from #{event.payload[:from]} to #{event.payload[:to]}:\n" \
            "Started: #{event.time}\n" \
            "Finished: #{event.end}\n" \
            "Duration (ms): #{event.duration}\n"
     end
 
-    def failed_generation(event)
-      info "Failed generating deltas:\n" \
+    def populate_failed(event)
+      info "Failed populating changes:\n" \
            "Exception #{event.payload[:exception].message}\n"
     end
 
     def cleanup_outdated(event)
-      info "Cleaning up outdated deltas older than #{event.payload[:cleanup_older_than]}:\n" \
+      info "Cleaning up outdated changes older than #{event.payload[:older_than]}:\n" \
            "Started: #{event.time}\n" \
            "Finished: #{event.end}\n" \
            "Duration (ms): #{event.duration}\n"
@@ -30,4 +30,4 @@ module DeltaTablesGenerator
   end
 end
 
-DeltaTablesGenerator::Logger.attach_to :delta_tables_generator
+ChangesTablePopulator::Logger.attach_to :changes_table_populator
