@@ -3,14 +3,14 @@ require 'rails_helper'
 describe ChangesTablePopulator::MeasureCreatedOrUpdated do
   let(:db) { Sequel::Model.db }
 
-  describe '#perform_import' do
+  describe '#populate' do
     context 'when the database is empty' do
       before do
         db[:measures].delete
       end
 
       it 'doesn\'t extract changes' do
-        expect { described_class.perform_import }.not_to change(Change, :count)
+        expect { described_class.populate }.not_to change(Change, :count)
       end
     end
 
@@ -23,16 +23,16 @@ describe ChangesTablePopulator::MeasureCreatedOrUpdated do
       end
 
       it 'extracts changes' do
-        expect { described_class.perform_import }.to change(Change, :count).by(1)
+        expect { described_class.populate }.to change(Change, :count).by(1)
       end
 
       it 'will extract the correct productline suffix' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
       it 'will flag it as end line' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:end_line]).to be true
       end
     end
@@ -46,16 +46,16 @@ describe ChangesTablePopulator::MeasureCreatedOrUpdated do
       end
 
       it 'extracts changes' do
-        expect { described_class.perform_import }.to change(Change, :count).by(1)
+        expect { described_class.populate }.to change(Change, :count).by(1)
       end
 
       it 'will extract the correct productline suffix' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
       it 'will flag it as end line' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:end_line]).to be true
       end
     end
@@ -73,16 +73,16 @@ describe ChangesTablePopulator::MeasureCreatedOrUpdated do
       end
 
       it 'extracts the commodity and the child commodity as change' do
-        expect { described_class.perform_import }.to change(Change, :count).by(4)
+        expect { described_class.populate }.to change(Change, :count).by(4)
       end
 
       it 'will extract the correct productline suffix' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
       it 'will flag it as not end line' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:end_line]).to be false
       end
     end
@@ -101,16 +101,16 @@ describe ChangesTablePopulator::MeasureCreatedOrUpdated do
       end
 
       it 'extracts the commodity and the child commodity as change' do
-        expect { described_class.perform_import }.to change(Change, :count).by(5)
+        expect { described_class.populate }.to change(Change, :count).by(5)
       end
 
       it 'will extract the correct productline suffix' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
       it 'will flag it as not end line' do
-        described_class.perform_import
+        described_class.populate
         expect(db[:changes].first[:end_line]).to be false
       end
     end

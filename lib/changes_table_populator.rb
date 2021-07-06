@@ -16,7 +16,7 @@ module ChangesTablePopulator
         MeasureDeleted,
         MeasureCreatedOrUpdated,
       ].map do |importer|
-        importer.perform_import(day: day)
+        importer.populate(day: day)
       end
       return nil
     rescue StandardError => e
@@ -36,7 +36,7 @@ module ChangesTablePopulator
         MeasureDeleted,
         MeasureCreatedOrUpdated,
       ].map do |importer|
-        importer.perform_backlog_import(from: from, to: to)
+        importer.populate_backlog(from: from, to: to)
       end
       return nil
     rescue StandardError => e

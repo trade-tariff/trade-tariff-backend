@@ -1,38 +1,47 @@
 module ChangesTablePopulator
   class Importer
     class << self
+      IMPORT_FIELDS = %i[
+        goods_nomenclature_item_id
+        goods_nomenclature_sid
+        productline_suffix
+        end_line
+        change_type
+        change_date
+      ].freeze
       DB = Sequel::Model.db
 
-      def label
-        'item'
+      def populate(day: Date.current)
+        elements = DB[source_table]
+          .where(where_condition(day: day))
+          .select &select_condition
+
+        DB[:changes]
+          .insert_conflict(constraint: :changes_upsert_unique)
+          .import IMPORT_FIELDS, import_records(elements: elements, day: day)
       end
 
-      def perform_import(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument
-        raise NotImplementedError, 'Implement this method in the subclasses'
-      end
-
-      def perform_backlog_import(from: Date.current - 3.months, to: Date.current)
+      def populate_backlog(from: Date.current - 3.months, to: Date.current)
         from = from.to_date
         to = to.to_date
         (from..to).each do |day|
-          perform_import(day: day)
+          populate(day: day)
         end
       end
 
-      def table
-        :goods_nomenclatures
+      def source_table
+        raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
-      def import_fields
-        %i[goods_nomenclature_item_id
-           goods_nomenclature_sid
-           productline_suffix
-           end_line
-           change_type
-           change_date]
+      def select_condition
+        raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
       def where_condition(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument
+        raise NotImplementedError, 'Implement this method in the subclasses'
+      end
+
+      def change_type
         raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
@@ -42,13 +51,9 @@ module ChangesTablePopulator
           row[:goods_nomenclature_sid],
           row[:producline_suffix] || row[:productline_suffix] || '80',
           is_end_line || end_line?(row: row, day: day, siblings: siblings),
-          delta_type,
+          change_type,
           day,
         ]
-      end
-
-      def delta_type
-        'commodity'
       end
 
       def end_line?(row:, day: Date.current, siblings: [])
