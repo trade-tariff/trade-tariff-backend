@@ -843,7 +843,7 @@ ALTER SEQUENCE public.certificates_oid_seq OWNED BY public.certificates_oplog.oi
 CREATE TABLE public.changes (
     id integer NOT NULL,
     goods_nomenclature_item_id text,
-    goods_nomenclature_sid text,
+    goods_nomenclature_sid integer,
     productline_suffix character varying(255),
     end_line boolean,
     change_type character varying(255),

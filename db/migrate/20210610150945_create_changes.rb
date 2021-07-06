@@ -3,7 +3,7 @@ Sequel.migration do
     create_table :changes do
       primary_key :id
       String  :goods_nomenclature_item_id
-      String  :goods_nomenclature_sid
+      Integer :goods_nomenclature_sid
       String  :productline_suffix, size: 255
       Bool    :end_line
       String  :change_type,        size: 255
