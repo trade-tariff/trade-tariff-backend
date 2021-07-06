@@ -1,4 +1,4 @@
-class Change
+class ChangeOld
   attr_accessor :model, :oid, :operation_date, :operation
 
   def initialize(attributes = {})

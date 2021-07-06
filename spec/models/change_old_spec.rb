@@ -1,8 +1,8 @@
 require 'rails_helper'
 
-describe Change do
+describe ChangeOld do
   let!(:measure) { create :measure }
-  let(:change)   do
+  let(:change_old)   do
     described_class.new(
       model: 'Measure',
       oid: measure.source.oid,
@@ -13,13 +13,13 @@ describe Change do
 
   describe '#operation_record' do
     it 'returns relevant models operation record' do
-      expect(change.operation_record).to eq measure.source
+      expect(change_old.operation_record).to eq measure.source
     end
   end
 
   describe '#record' do
     it 'returns model associated with change operation' do
-      expect(change.record.pk).to eq measure.pk
+      expect(change_old.record.pk).to eq measure.pk
     end
   end
 end
