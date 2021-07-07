@@ -12,7 +12,7 @@ describe Api::V2::ChangesController do
   let(:expected_change_response) {
     {
       "data" => [{
-        "id" => goods_nomenclature_sid,
+        "id" => goods_nomenclature_sid.to_s,
         "type" => "change",
         "attributes" => {
           "goods_nomenclature_item_id" => goods_nomenclature_item_id,
