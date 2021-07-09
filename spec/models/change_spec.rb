@@ -1,40 +1,25 @@
 require 'rails_helper'
 
 describe Change do
-  let(:db) { Sequel::Model.db }
+  let!(:measure) { create :measure }
+  let(:change)   do
+    described_class.new(
+      model: 'Measure',
+      oid: measure.source.oid,
+      operation_date: measure.source.operation_date,
+      operation: measure.operation,
+    )
+  end
 
-  describe '#cleanup' do
-    context 'when the database is empty' do
-      before do
-        db[:changes].delete
-      end
-
-      it 'doesn\'t remove changes' do
-        expect { described_class.cleanup }.not_to change(described_class, :count)
-      end
+  describe '#operation_record' do
+    it 'returns relevant models operation record' do
+      expect(change.operation_record).to eq measure.source
     end
+  end
 
-    context 'when there are changes but they\'re not outdated' do
-      before do
-        create :change
-        create :change_measure
-      end
-
-      it 'doesn\'t remove changes' do
-        expect { described_class.cleanup }.not_to change(described_class, :count)
-      end
-    end
-
-    context 'when there are outdated changes' do
-      before do
-        create :change
-        create :change, change_date: Date.current.ago(4.months)
-        create :change_measure
-      end
-
-      it 'remove the outdated change' do
-        expect { described_class.cleanup }.to change(described_class, :count).by(-1)
-      end
+  describe '#record' do
+    it 'returns model associated with change operation' do
+      expect(change.record.pk).to eq measure.pk
     end
   end
 end
