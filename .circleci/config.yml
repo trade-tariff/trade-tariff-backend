@@ -16,7 +16,7 @@ commands:
         type: string
       buildpack_version:
         type: string
-        default: "v1.8.39"
+        default: "v1.8.43"
     steps:
       - checkout
       - run:
@@ -56,7 +56,7 @@ commands:
         type: string
       buildpack_version:
         type: string
-        default: "v1.8.39"
+        default: "v1.8.43"
     steps:
       - checkout
       - run:
@@ -146,7 +146,7 @@ commands:
 jobs:
   linters:
     docker:
-      - image: cimg/ruby:2.7.3
+      - image: cimg/ruby:2.7.4
     resource_class: small
     steps:
       - checkout
@@ -169,7 +169,7 @@ jobs:
           path: brakeman.html
   test:
     docker:
-      - image: cimg/ruby:2.7.3
+      - image: cimg/ruby:2.7.4
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -218,7 +218,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:2.7.3
+      - image: cimg/ruby:2.7.4
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -237,7 +237,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:2.7.3
+      - image: cimg/ruby:2.7.4
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -256,7 +256,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:2.7.3
+      - image: cimg/ruby:2.7.4
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
