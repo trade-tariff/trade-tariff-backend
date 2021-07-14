@@ -7,7 +7,7 @@ describe RollbackWorker, type: :worker do
 
   let(:date) { '01-01-2020' }
 
-  describe '#perfomr' do
+  describe '#perform' do
     context 'for all envs' do
       before do
         allow(PaasConfig).to receive(:space).and_return('test')
