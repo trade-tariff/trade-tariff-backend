@@ -55,6 +55,7 @@ gem 'newrelic_rpm'
 
 group :development do
   gem 'foreman'
+  gem 'github_changelog_generator'
   gem 'letter_opener'
   gem 'rubocop-govuk'
 end
