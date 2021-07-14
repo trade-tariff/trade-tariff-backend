@@ -4,9 +4,7 @@ class PopulateChangesTableWorker
   sidekiq_options queue: :sync, retry: false
 
   def perform
-    logger.info 'Running PopulateChangesTableWorker'
-    logger.info 'Populating...'
-    ChangesTablePopulator.generate
+    ChangesTablePopulator.populate
     ChangesTablePopulator.cleanup_outdated
   end
 end
