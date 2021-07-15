@@ -20,31 +20,27 @@ class QuotaSearchService
     status_value = attributes['status']&.gsub(/[+ ]/, '_')
     status_value = '' unless STATUS_VALUES.include?(status_value)
     @status = ActiveSupport::StringInquirer.new(status_value || '')
-
     @goods_nomenclature_item_id = attributes['goods_nomenclature_item_id']
     @geographical_area_id = attributes['geographical_area_id']
     @order_number = attributes['order_number']
     @critical = attributes['critical']
-    extract_date_or_years(attributes)
     @current_page = current_page
     @per_page = per_page
-
-    @scope = Measure
-      .eager(eager_load_graph)
-      .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id], %i[measures__validity_start_date quota_definitions__validity_start_date]])
-      .distinct(:measures__ordernumber, :measures__validity_start_date)
-      .select(Sequel.expr(:measures).*)
-      .exclude(measures__ordernumber: nil)
-      .order(:measures__ordernumber)
   end
 
-  def perform
+  def call
+    @scope = Measure
+      .actual
+      .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id]])
+      .eager(eager_load_graph)
+      .distinct(:measures__ordernumber, :measures__validity_start_date)
+      .select(Sequel.expr(:measures).*)
+      .order(:measures__ordernumber)
+
     apply_goods_nomenclature_item_id_filter if goods_nomenclature_item_id.present?
     apply_geographical_area_id_filter if geographical_area_id.present?
     apply_order_number_filter if order_number.present?
     apply_critical_filter if critical.present?
-    apply_years_filter if years.present?
-    apply_date_filter if date.present?
     apply_status_filters if status.present?
 
     @scope = scope.paginate(current_page, per_page)
@@ -67,13 +63,6 @@ class QuotaSearchService
     @includes ||= attributes.fetch(:includes, [])
   end
 
-  def extract_date_or_years(attributes)
-    date = Date.parse([attributes['year'], attributes['month'], attributes['day']].join('-'))
-    @date = date
-  rescue Date::Error
-    @years = Array.wrap(attributes['years']).concat(Array.wrap(attributes['year'])).compact.join(', ')
-  end
-
   def apply_goods_nomenclature_item_id_filter
     @scope = scope.where(Sequel.like(:measures__goods_nomenclature_item_id, "#{goods_nomenclature_item_id}%"))
   end
@@ -87,18 +76,7 @@ class QuotaSearchService
   end
 
   def apply_critical_filter
-    @scope = scope
-      .where(quota_definitions__critical_state: critical)
-  end
-
-  def apply_years_filter
-    @scope = scope.where("EXTRACT(YEAR FROM measures.validity_start_date) IN (#{years})")
-  end
-
-  def apply_date_filter
-    @scope = scope.where('(measures.validity_start_date IS NULL OR measures.validity_start_date <= ?)' \
-                         'AND (measures.validity_end_date IS NULL OR measures.validity_end_date >= ?)',
-                         date, date)
+    @scope = scope.where(quota_definitions__critical_state: critical)
   end
 
   def apply_status_filters
