@@ -8,8 +8,18 @@ module Api
 
         set_id :measure_condition_sid
 
-        attributes :condition_code, :condition, :document_code, :requirement, :action, :duty_expression,
-                   :condition_duty_amount, :condition_monetary_unit_code, :monetary_unit_abbreviation, :condition_measurement_unit_code, :condition_measurement_unit_qualifier_code
+        attributes :condition_code,
+                   :condition,
+                   :document_code,
+                   :requirement,
+                   :action,
+                   :action_code,
+                   :duty_expression,
+                   :condition_duty_amount,
+                   :condition_monetary_unit_code,
+                   :monetary_unit_abbreviation,
+                   :condition_measurement_unit_code,
+                   :condition_measurement_unit_qualifier_code
 
         has_many :measure_condition_components, serializer: Api::V2::Measures::MeasureConditionComponentSerializer
       end
