@@ -52,8 +52,8 @@ module Api
 
       def actual_date
         Date.parse([params['year'], params['month'], params['day']].join('-'))
-      rescue ArgumentError # empty date, month and year params means today
-        Date.current
+      rescue ArgumentError # empty date, default to as_of in ApplicationController
+        super
       end
     end
   end
