@@ -11,15 +11,12 @@ module Api
 
       def serialized_quota_definitions
         Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(
-          quotas, serializer_options
+          quota_definitions, serializer_options
         ).serializable_hash
       end
 
-      def quotas
-        # TODO: We've added a filter that does not propagate to related resources (e.g. the definition validity time window). We need to make sure that the as_of functionality we've added propagates to related resources.
-        TimeMachine.now do
-          @quotas = search_service.perform
-        end
+      def quota_definitions
+        search_service.call
       end
 
       def serializer_options
@@ -51,6 +48,12 @@ module Api
 
       def provided_includes
         include_params.presence || []
+      end
+
+      def actual_date
+        Date.parse([params['year'], params['month'], params['day']].join('-'))
+      rescue ArgumentError # empty date, default to as_of in ApplicationController
+        super
       end
     end
   end

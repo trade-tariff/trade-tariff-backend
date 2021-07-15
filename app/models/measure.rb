@@ -12,8 +12,8 @@ class Measure < Sequel::Model
   ].freeze
 
   set_primary_key [:measure_sid]
-  plugin :time_machine, period_start_column: :effective_start_date,
-                        period_end_column: :effective_end_date
+
+  plugin :time_machine
   plugin :oplog, primary_key: :measure_sid
   plugin :conformance_validator
   plugin :national
@@ -393,16 +393,6 @@ class Measure < Sequel::Model
       qon = QuotaOrderNumber.new(quota_order_number_id: ordernumber)
       qon.associations[:quota_definition] = nil
       qon
-    end
-  end
-
-  def quota_definition_or_nil
-    if quota_definition.present?
-      quota_definition
-    elsif ordernumber.present?
-      definition = QuotaDefinition.new(quota_order_number_id: ordernumber, validity_start_date: validity_start_date)
-      definition[:quota_definition_sid] = -rand(100000)
-      definition
     end
   end
 
