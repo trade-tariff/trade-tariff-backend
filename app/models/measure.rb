@@ -396,16 +396,6 @@ class Measure < Sequel::Model
     end
   end
 
-  def quota_definition_or_nil
-    if quota_definition.present?
-      quota_definition
-    elsif ordernumber.present?
-      definition = QuotaDefinition.new(quota_order_number_id: ordernumber, validity_start_date: validity_start_date)
-      definition[:quota_definition_sid] = -rand(100000)
-      definition
-    end
-  end
-
   def relevant_for_country?(country_id)
     return false if measure_excluded_geographical_areas.map(&:excluded_geographical_area).include?(country_id)
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?

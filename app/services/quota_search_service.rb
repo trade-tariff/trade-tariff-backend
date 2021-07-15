@@ -44,7 +44,8 @@ class QuotaSearchService
     apply_status_filters if status.present?
 
     @scope = scope.paginate(current_page, per_page)
-    scope.map(&:quota_definition_or_nil)
+
+    scope.map(&:quota_definition).compact
   end
 
   private
