@@ -6,6 +6,11 @@
 
 **Merged pull requests:**
 
+- Surface action code for the duty calculator [\#116](https://github.com/trade-tariff/trade-tariff-backend/pull/116) ([willfish](https://github.com/willfish))
+- Refactor quota search service [\#115](https://github.com/trade-tariff/trade-tariff-backend/pull/115) ([willfish](https://github.com/willfish))
+- Security patch rails and also unpin aws-sdk-rails, dotenv-rails, factory\_bot\_rails and lograge [\#114](https://github.com/trade-tariff/trade-tariff-backend/pull/114) ([willfish](https://github.com/willfish))
+- Removes unused services [\#113](https://github.com/trade-tariff/trade-tariff-backend/pull/113) ([willfish](https://github.com/willfish))
+- Adds automatically generated CHANGELOG.md [\#112](https://github.com/trade-tariff/trade-tariff-backend/pull/112) ([willfish](https://github.com/willfish))
 - Fix integration in the populate\_changes\_table\_worker [\#111](https://github.com/trade-tariff/trade-tariff-backend/pull/111) ([willfish](https://github.com/willfish))
 - Bump addressable from 2.7.0 to 2.8.0 [\#110](https://github.com/trade-tariff/trade-tariff-backend/pull/110) ([dependabot[bot]](https://github.com/apps/dependabot))
 - Revert "Revert "HOTT-726: create changes API"" [\#109](https://github.com/trade-tariff/trade-tariff-backend/pull/109) ([willfish](https://github.com/willfish))
