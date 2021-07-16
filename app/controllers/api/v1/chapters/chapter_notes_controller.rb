@@ -6,12 +6,12 @@ module Api
         skip_before_action :authenticate_user!, only: [:show]
 
         rescue_from Sequel::RecordNotFound do |exception|
-          render json: {}, status: 404
+          render json: { error: '404 - Not Found' }, status: :not_found
         end
 
         def show
           @chapter = chapter
-          @chapter_note = chapter.chapter_note
+          @chapter_note = chapter&.chapter_note
 
           raise Sequel::RecordNotFound if @chapter_note.blank?
 
