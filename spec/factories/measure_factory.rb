@@ -29,6 +29,7 @@ FactoryBot.define do
     f.geographical_area_id { generate(:geographical_area_id) }
     f.validity_start_date { Date.current.ago(3.years) }
     f.validity_end_date   { nil }
+    f.reduction_indicator { [nil, 1, 2, 3][Random.rand(4)] }
 
     # mandatory valid associations
     f.goods_nomenclature do

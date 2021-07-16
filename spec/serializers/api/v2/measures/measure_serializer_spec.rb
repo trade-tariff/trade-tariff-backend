@@ -4,7 +4,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) { Api::V2::Measures::MeasurePresenter.new(measure, measure.goods_nomenclature) }
-  let(:measure) { create(:measure) }
+  let(:measure) { create(:measure, reduction_indicator: 1) }
 
   let(:expected_pattern) do
     {
@@ -19,6 +19,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           'import' => true,
           'excise' => false,
           'vat' => false,
+          'reduction_indicator' => 1
         },
         'relationships' => {
           'duty_expression' => {
