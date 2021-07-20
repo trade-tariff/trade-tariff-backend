@@ -1,10 +1,12 @@
 class AdditionalCode < Sequel::Model
+  EXCISE_TYPE = 'excise'.freeze
   PREFERENCE_TYPE = 'preference'.freeze
   REMEDY_TYPE = 'remedy'.freeze
   UNKNOWN_TYPE = 'unknown'.freeze
 
   PREFERENCE_TYPE_IDS = %w[2].freeze
   REMEDY_TYPE_IDS = %w[8 A B C].freeze
+  EXCISE_TYPE_IDS = %w[X].freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :additional_code_sid
@@ -52,8 +54,9 @@ class AdditionalCode < Sequel::Model
   end
 
   def type
+    return EXCISE_TYPE if additional_code_type_id.in?(EXCISE_TYPE_IDS)
     return PREFERENCE_TYPE if additional_code_type_id.in?(PREFERENCE_TYPE_IDS)
-    return REMEDY_TYPE if  additional_code_type_id.in?(REMEDY_TYPE_IDS)
+    return REMEDY_TYPE if additional_code_type_id.in?(REMEDY_TYPE_IDS)
 
     UNKNOWN_TYPE
   end

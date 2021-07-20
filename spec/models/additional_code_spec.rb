@@ -108,16 +108,22 @@ describe AdditionalCode do
       it { expect(additional_code.type).to eq('remedy') }
     end
 
-    context 'when the type id is not a remedy or a preference' do
-      let(:additional_code_type_id) { 'X' }
+    context 'when the type id is not currently handled' do
+      let(:additional_code_type_id) { 'Z' }
 
       it { expect(additional_code.type).to eq('unknown') }
+    end
+
+    context 'when the type id is of a excise type' do
+      let(:additional_code_type_id) { 'X' }
+
+      it { expect(additional_code.type).to eq('excise') }
     end
   end
 
   describe '#applicable?' do
     context 'when the type is unknown' do
-      let(:additional_code_type_id) { 'X' }
+      let(:additional_code_type_id) { 'Z' }
 
       it { is_expected.not_to be_applicable }
     end
