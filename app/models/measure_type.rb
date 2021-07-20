@@ -28,6 +28,7 @@ class MeasureType < Sequel::Model
     'C', # Applicable duty
     'D', # Anti-dumping/countervailing measures
     'J', # Countervailing charge
+    'Q', # Excise
   ].freeze
 
   plugin :time_machine, period_start_column: :measure_types__validity_start_date,
