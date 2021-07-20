@@ -33,4 +33,30 @@ describe MeasurementUnit do
       }
     end
   end
+
+  describe '.measurement_units' do
+    let(:units) { described_class.measurement_units }
+
+    it "will return the hash of all measurement units" do
+      expect(units).to be_instance_of Hash
+    end
+
+    it "will include individual units indexed by key" do
+      expect(units).to include("ASV")
+    end
+  end
+
+  describe '.measurement_unit' do
+    context 'with valid measurement unit' do
+      it { expect(MeasurementUnit.measurement_unit('ASV')).to include('unit' => 'percent') }
+    end
+
+    context 'with unknown measurement unit' do
+      it { expect(MeasurementUnit.measurement_unit('UNKNOWN')).to be_nil }
+    end
+
+    context 'without specifying a unit' do
+      it { expect { MeasurementUnit.measurement_unit }.to raise_exception ArgumentError }
+    end
+  end
 end

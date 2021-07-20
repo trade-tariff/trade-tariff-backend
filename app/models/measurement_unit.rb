@@ -13,6 +13,20 @@ class MeasurementUnit < Sequel::Model
 
   delegate :description, to: :measurement_unit_description
 
+  class << self
+    def measurement_units
+      @measurement_units ||=
+        begin
+          file = File.join(::Rails.root, 'db', 'measurement_units.json').freeze
+          JSON.parse(File.read(file))
+        end
+    end
+
+    def measurement_unit(unit_key)
+      measurement_units[unit_key]
+    end
+  end
+
   def to_s
     description
   end
@@ -26,13 +40,5 @@ class MeasurementUnit < Sequel::Model
     measurement_unit_abbreviations.find do |abbreviation|
       abbreviation.measurement_unit_qualifier == measurement_unit_qualifier.try(:measurement_unit_qualifier_code)
     end
-  end
-
-  def self.measurement_units
-    @measurement_units ||=
-      begin
-        file = File.join(::Rails.root, 'db', 'measurement_units.json').freeze
-        JSON.parse(File.read(file))
-      end
   end
 end
