@@ -18,7 +18,7 @@ class ApplicableAdditionalCodeService
   private
 
   def unique_applicable_measures
-    applicable_measures.uniq { |measure| measure.measure_sid }
+    applicable_measures.uniq(&:measure_sid)
   end
 
   def applicable_measures

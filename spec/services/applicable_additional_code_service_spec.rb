@@ -114,7 +114,7 @@ describe ApplicableAdditionalCodeService do
           :measure,
           :with_additional_code,
           measure_type_id: '105',
-          additional_code_type_id: 'X',
+          additional_code_type_id: 'Z',
         )
       end
 
