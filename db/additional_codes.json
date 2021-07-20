@@ -35,6 +35,301 @@
       "code": "2501",
       "overlay": "Your commodity does not belong to this list",
       "hint": ""
+    },
+    "X431": {
+      "code":  "X431" ,
+      "overlay": "431 - Alcoholic beverage with a strength not exceeding 1.2% ABV",
+      "hint": ""
+    },
+    "X440": {
+      "code":  "X440" ,
+      "overlay": "440 - Beer made in the UK – small brewery beer eligible to reduced rates (variable rate, that is, annual production more than 5,000 hectolitres but not exceeding for 60,000 hectolitres)",
+      "hint": ""
+    },
+    "X441": {
+      "code":  "X441" ,
+      "overlay": "441 - Imported beer – small brewery beer eligible to reduced rates (variable rate, that is, annual production more than 5,000 hectolitres but not exceeding for 60,000 hectolitres)",
+      "hint": ""
+    },
+    "X442": {
+      "code":  "X442" ,
+      "overlay": "442 - Beer made in UK – small brewery beer eligible to reduced rates (variable rate, that is, annual production no more than 5,000 hectolitres)",
+      "hint": ""
+    },
+    "X443": {
+      "code":  "X443" ,
+      "overlay": "443 - Imported Beer – small brewery beer eligible to reduced rates (variable rate, that is, annual production no more than 5,000 hectolitres)",
+      "hint": ""
+    },
+    "X444": {
+      "code":  "X444" ,
+      "overlay": "444 - Beer made in UK – reduced rate of general beer duty (applies to beer exceeding 1.2% ABV but not exceeding 2.8% ABV)",
+      "hint": ""
+    },
+    "X445": {
+      "code":  "X445" ,
+      "overlay": "445 - Beer made in UK – High Strength Beer Duty (applies to beer exceeding 7.5% ABV – general beer duty is also due on all UK produced high strength beer)",
+      "hint": ""
+    },
+    "X446": {
+      "code":  "X446" ,
+      "overlay": "446 - Imported beer – reduced rate of general beer duty (applies to beer exceeding 1.2% ABV but not exceeding 2.8% ABV)",
+      "hint": ""
+    },
+    "X447": {
+      "code":  "X447" ,
+      "overlay": "447 - Imported beer – High Strength Beer Duty (applies to beer exceeding 7.5% ABV – general beer duty is also due on all imported high strength beer)",
+      "hint": ""
+    },
+    "X473": {
+      "code":  "X473" ,
+      "overlay": "473 - Imported beer (that is, annual production more than 60,000 hectolitres)",
+      "hint": ""
+    },
+    "X407": {
+      "code":  "X407" ,
+      "overlay": "407 - Beer made in UK (standard rate, that is, annual production more than 60,000 hectolitres)",
+      "hint": ""
+    },
+    "X571": {
+      "code":  "X571" ,
+      "overlay": "571 - Biofuels - Biodiesel to be used as motor fuel off road or in an excepted vehicle",
+      "hint": ""
+    },
+    "X572": {
+      "code":  "X572" ,
+      "overlay": "572 - Biofuels - Biodiesel blended with kerosene for use as heating fuel",
+      "hint": ""
+    },
+    "X589": {
+      "code":  "X589" ,
+      "overlay": "589 - Biofuels - Biodiesel",
+      "hint": ""
+    },
+    "X595": {
+      "code":  "X595" ,
+      "overlay": "595 - Biofuels - Bioethanol",
+      "hint": ""
+    },
+    "X481": {
+      "code":  "X481" ,
+      "overlay": "481 - Cider or perry with an alcoholic strength exceeding 1.2% ABV but not exceeding 5.5% ABV",
+      "hint": ""
+    },
+    "X483": {
+      "code":  "X483" ,
+      "overlay": "483 - Still cider or perry with an alcoholic strength exceeding 7.5% ABV but less than 8.5% ABV",
+      "hint": ""
+    },
+    "X485": {
+      "code":  "X485" ,
+      "overlay": "485 - Sparkling cider or perry with an alcoholic strength exceeding 5.5% ABV but less than 8.5% ABV",
+      "hint": ""
+    },
+    "X487": {
+      "code":  "X487" ,
+      "overlay": "487 - Still cider or perry with an alcoholic strength exceeding 6.9% ABV but less than 7.5% ABV",
+      "hint": ""
+    },
+    "X99A": {
+      "code":  "X99A" ,
+      "overlay": "990 - Climate Change Levy (Tax code 990): solid fuels (coal and lignite, coke and semi-coke of coal or lignite, and petroleum coke)",
+      "hint": ""
+    },
+    "X99B": {
+      "code":  "X99B" ,
+      "overlay": "990 - Climate Change Levy (Tax code 990): any petroleum gas or other gaseous hydrocarbon supplied in a liquid state",
+      "hint": ""
+    },
+    "X99C": {
+      "code":  "X99C" ,
+      "overlay": "990 - Climate Change Levy (Tax code 990): gas supplied by a gas utility or any gas supplied in a gaseous state that is of a kind supplied by a gas utility Great Britain",
+      "hint": ""
+    },
+    "X99D": {
+      "code":  "X99D" ,
+      "overlay": "990 - Climate Change Levy (Tax code 990): electric",
+      "hint": ""
+    },
+    "X540": {
+      "code":  "X540" ,
+      "overlay": "540 - Heavy oil: rebated – other (unmarked) heavy oil (other than kerosene) intended for use as heating fuel, or as fuel for an engine, which would otherwise be eligible for a full rebate",
+      "hint": ""
+    },
+    "X541": {
+      "code":  "X541" ,
+      "overlay": "541 - Heavy oil: unrebated (unmarked, including Diesel Engine Road Vehicle (DERV) or road fuel extender and unmarked kerosene or unmarked gas oil for which no marking waiver has been granted)",
+      "hint": ""
+    },
+    "X542": {
+      "code":  "X542" ,
+      "overlay": "542 - Heavy oil: kerosene to be used as motor fuel off road or in an excepted vehicle",
+      "hint": ""
+    },
+    "X551": {
+      "code":  "X551" ,
+      "overlay": "551 - Heavy oil: kerosene (marked or unmarked under marking waiver, including heavy oil aviation turbine fuel) to be used other than as motor fuel off-road or in an excepted vehicle",
+      "hint": ""
+    },
+    "X556": {
+      "code":  "X556" ,
+      "overlay": "556 - Heavy oil: gas oil (marked or unmarked under marking waiver)",
+      "hint": ""
+    },
+    "X561": {
+      "code":  "X561" ,
+      "overlay": "561 - Heavy oil: fuel oil (unmarked)",
+      "hint": ""
+    },
+    "X570": {
+      "code":  "X570" ,
+      "overlay": "570 - Heavy oil: other (unmarked)",
+      "hint": ""
+    },
+    "X511": {
+      "code":  "X511" ,
+      "overlay": "511 - Light oil: unrebated (unmarked) – aviation gasoline (including light oil aviation turbine fuel)",
+      "hint": ""
+    },
+    "X520": {
+      "code":  "X520" ,
+      "overlay": "520 - Light oil: unrebated (unmarked) – other unrebated light oil",
+      "hint": ""
+    },
+    "X521": {
+      "code":  "X521" ,
+      "overlay": "521 - Light oil: rebated – furnace fuel (marked or unmarked)",
+      "hint": ""
+    },
+    "X522": {
+      "code":  "X522" ,
+      "overlay": "522 - Light oil: rebated – unleaded petrol",
+      "hint": ""
+    },
+    "X591": {
+      "code":  "X591" ,
+      "overlay": "591 - Road Fuel Gas: natural gas (methane content > 80%)",
+      "hint": ""
+    },
+    "X592": {
+      "code":  "X592" ,
+      "overlay": "592 - Road Fuel Gas: other than natural gas",
+      "hint": ""
+    },
+    "X611": {
+      "code":  "X611" ,
+      "overlay": "611 - Cigarettes",
+      "hint": ""
+    },
+    "X615": {
+      "code":  "X615" ,
+      "overlay": "615 - Cigars",
+      "hint": ""
+    },
+    "X619": {
+      "code":  "X619" ,
+      "overlay": "619 - Hand-rolling tobacco",
+      "hint": ""
+    },
+    "X623": {
+      "code":  "X623" ,
+      "overlay": "623 - Other smoking tobacco",
+      "hint": ""
+    },
+    "X627": {
+      "code":  "X627" ,
+      "overlay": "627 - Chewing tobacco",
+      "hint": ""
+    },
+    "X633": {
+      "code":  "X633" ,
+      "overlay": "633 - Tobacco for heating",
+      "hint": ""
+    },
+    "X438": {
+      "code":  "X438" ,
+      "overlay": "438 - Spirits-based beverages exceeding 1.2% ABV but not exceeding 8% ABV",
+      "hint": ""
+    },
+    "X451": {
+      "code":  "X451" ,
+      "overlay": "451 - Spirits other than UK-produced whisky",
+      "hint": ""
+    },
+    "X461": {
+      "code":  "X461" ,
+      "overlay": "461 - UK-produced whisky, wholly malt",
+      "hint": ""
+    },
+    "X462": {
+      "code":  "X462" ,
+      "overlay": "462 - UK-produced whisky, wholly grain",
+      "hint": ""
+    },
+    "X463": {
+      "code":  "X463" ,
+      "overlay": "463 - UK-produced whisky, blended",
+      "hint": ""
+    },
+    "X433": {
+      "code":  "X433" ,
+      "overlay": "433 - Wine or made-wine with an alcoholic strength exceeding 1.2% ABV but not exceeding 4% ABV",
+      "hint": ""
+    },
+    "X435": {
+      "code":  "X435" ,
+      "overlay": "435 - Wine or made-wine with an alcoholic strength exceeding 4% ABV but not exceeding 5.5% ABV",
+      "hint": ""
+    },
+    "X422": {
+      "code":  "X422" ,
+      "overlay": "422 - Sparkling made-wine with an alcoholic strength exceeding 5.5% ABV but less than 8.5% ABV",
+      "hint": ""
+    },
+    "X423": {
+      "code":  "X423" ,
+      "overlay": "423 - Still made-wine with an alcoholic strength exceeding 5.5% ABV but not exceeding 15% ABV",
+      "hint": ""
+    },
+    "X412": {
+      "code":  "X412" ,
+      "overlay": "412 - Sparkling wine of fresh grape with an alcoholic strength exceeding 5.5% ABV but less than 8.5% ABV",
+      "hint": ""
+    },
+    "X413": {
+      "code":  "X413" ,
+      "overlay": "413 - Still wine with an alcoholic strength exceeding 5.5% ABV but not exceeding 15% ABV",
+      "hint": ""
+    },
+    "X421": {
+      "code":  "X421" ,
+      "overlay": "421 - Sparkling made-wine with an alcoholic strength exceeding 8.5% ABV but not exceeding 15% ABV",
+      "hint": ""
+    },
+    "X411": {
+      "code":  "X411" ,
+      "overlay": "411 - Sparkling wine of fresh grape with an alcoholic strength exceeding 8.5% ABV but not exceeding 15% ABV",
+      "hint": ""
+    },
+    "X425": {
+      "code":  "X425" ,
+      "overlay": "425 - Made-wine with an alcoholic strength exceeding 15% ABV but not exceeding 22% ABV",
+      "hint": ""
+    },
+    "X415": {
+      "code":  "X415" ,
+      "overlay": "415 - Still or sparkling wine with an alcoholic strength exceeding 15% ABV but not exceeding 22% ABV",
+      "hint": ""
+    },
+    "X429": {
+      "code":  "X429" ,
+      "overlay": "429 - Made-wine with an alcoholic strength exceeding 22% ABV",
+      "hint": ""
+    },
+    "X419": {
+      "code":  "X419" ,
+      "overlay": "419 - Wine with an alcoholic strength exceeding 22% ABV",
+      "hint": ""
     }
   },
   "headings": {
