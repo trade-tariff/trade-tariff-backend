@@ -51,16 +51,29 @@ describe MeasurementUnit do
       it { expect(MeasurementUnit.measurement_unit('ASV')).to include('unit' => 'percent') }
     end
 
-    context 'with unknown measurement unit' do
-      before { allow(Raven).to receive(:capture_exception).and_return(true) }
+    context 'with missing measurement unit present in database' do
+      before { allow(Raven).to receive(:capture_message).and_return(true) }
+      before { allow(MeasurementUnit).to receive(:measurement_units).and_return({}) }
 
-      subject! { MeasurementUnit.measurement_unit('UNKNOWN') }
+      subject! { MeasurementUnit.measurement_unit(unit_code) }
 
-      it { is_expected.to include('measurement_unit_code' => 'UNKNOWN') }
-      it { is_expected.to include('unit' => '') }
+      let(:unit_code) { measurement_unit.measurement_unit_code }
+      let(:unit_description) { measurement_unit.description }
+
+      it { is_expected.to include('measurement_unit_code' => unit_code) }
+      it { is_expected.to include('unit' => nil) }
       it { is_expected.to include('abbreviation' => '') }
-      it { is_expected.to include('unit_question' => '') }
-      it { expect(Raven).to have_received(:capture_exception) }
+      it { is_expected.to include('unit_question' => "Please enter unit: #{unit_description}") }
+      it { is_expected.to include('unit_hint' => nil) }
+      it { expect(Raven).to have_received(:capture_message) }
+    end
+
+    context 'with measurement unit not in the database' do
+      let(:unit) { MeasurementUnit.measurement_unit('UNKNOWN') }
+
+      it "will raise an InvalidMeasurementUnit exception" do
+        expect { unit }.to raise_exception(MeasurementUnit::InvalidMeasurementUnit)
+      end
     end
 
     context 'without specifying a unit' do

@@ -1,4 +1,10 @@
 class MeasurementUnit < Sequel::Model
+  class InvalidMeasurementUnit < RuntimeError
+    def initialize(unit_key)
+      super "Requested invalid measurement unit: #{unit_key}"
+    end
+  end
+
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
   plugin :conformance_validator
@@ -23,17 +29,23 @@ class MeasurementUnit < Sequel::Model
     end
 
     def measurement_unit(unit_key)
-      measurement_units.fetch(unit_key)
-    rescue KeyError => e
-      Raven.capture_exception(e)
+      measurement_units[unit_key] ||= build_missing_measurement_unit(unit_key)
+    end
+
+    private
+
+    def build_missing_measurement_unit(unit_key)
+      raise InvalidMeasurementUnit, unit_key unless unit = self[unit_key]
+
+      Raven.capture_message("Missing measurement unit in measurement_units.yml: #{unit_key}")
 
       {
-        'measurement_unit_code' => unit_key,
+        'measurement_unit_code' => unit.measurement_unit_code,
         'measurement_unit_qualifier_code' => '',
         'abbreviation' => '',
-        'unit_question' => '',
-        'unit_hint' => '',
-        'unit' => '',
+        'unit_question' => "Please enter unit: #{unit.description}",
+        'unit_hint' => nil,
+        'unit' => nil,
       }
     end
   end
