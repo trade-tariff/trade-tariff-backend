@@ -103,8 +103,6 @@ Rails.application.routes.draw do
         collection { get :search }
       end
 
-      resources :exchange_rates, only: [:index]
-
       get '/changes(/:as_of)', to: 'changes#index', as: :changes, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }
 
       post 'search' => 'search#search'
