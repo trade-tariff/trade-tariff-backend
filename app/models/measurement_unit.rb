@@ -20,6 +20,12 @@ class MeasurementUnit < Sequel::Model
   delegate :description, to: :measurement_unit_description
 
   class << self
+    def measurement_unit(unit_key)
+      measurement_units[unit_key] ||= build_missing_measurement_unit(unit_key)
+    end
+
+    private
+
     def measurement_units
       @measurement_units ||=
         begin
@@ -27,12 +33,6 @@ class MeasurementUnit < Sequel::Model
           JSON.parse(File.read(file))
         end
     end
-
-    def measurement_unit(unit_key)
-      measurement_units[unit_key] ||= build_missing_measurement_unit(unit_key)
-    end
-
-    private
 
     def build_missing_measurement_unit(unit_key)
       raise InvalidMeasurementUnit, unit_key unless unit = self[unit_key]

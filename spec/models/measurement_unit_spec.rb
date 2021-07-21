@@ -35,7 +35,7 @@ describe MeasurementUnit do
   end
 
   describe '.measurement_units' do
-    let(:units) { described_class.measurement_units }
+    let(:units) { described_class.send(:measurement_units) }
 
     it "will return the hash of all measurement units" do
       expect(units).to be_instance_of Hash
