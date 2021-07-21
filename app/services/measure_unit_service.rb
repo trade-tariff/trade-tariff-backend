@@ -11,7 +11,7 @@ class MeasureUnitService
         acc[unit_key]['measure_sids'].add(unit[:measure_sid])
       else
         acc[unit_key] = {}
-        acc[unit_key] = MeasurementUnit.measurement_units[unit_key]
+        acc[unit_key] = MeasurementUnit.measurement_unit(unit_key)
         acc[unit_key]['measure_sids'] = Set.new([unit[:measure_sid]])
       end
     end
