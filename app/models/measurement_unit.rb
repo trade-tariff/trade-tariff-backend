@@ -23,7 +23,18 @@ class MeasurementUnit < Sequel::Model
     end
 
     def measurement_unit(unit_key)
-      measurement_units[unit_key]
+      measurement_units.fetch(unit_key)
+    rescue KeyError => e
+      Raven.capture_exception(e)
+
+      {
+        'measurement_unit_code' => unit_key,
+        'measurement_unit_qualifier_code' => '',
+        'abbreviation' => '',
+        'unit_question' => '',
+        'unit_hint' => '',
+        'unit' => '',
+      }
     end
   end
 

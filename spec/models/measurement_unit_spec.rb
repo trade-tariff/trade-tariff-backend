@@ -52,7 +52,15 @@ describe MeasurementUnit do
     end
 
     context 'with unknown measurement unit' do
-      it { expect(MeasurementUnit.measurement_unit('UNKNOWN')).to be_nil }
+      before { allow(Raven).to receive(:capture_exception).and_return(true) }
+
+      subject! { MeasurementUnit.measurement_unit('UNKNOWN') }
+
+      it { is_expected.to include('measurement_unit_code' => 'UNKNOWN') }
+      it { is_expected.to include('unit' => '') }
+      it { is_expected.to include('abbreviation' => '') }
+      it { is_expected.to include('unit_question' => '') }
+      it { expect(Raven).to have_received(:capture_exception) }
     end
 
     context 'without specifying a unit' do
