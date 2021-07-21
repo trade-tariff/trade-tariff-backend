@@ -14,6 +14,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
           "condition_code": serializable.condition_code,
           "condition": serializable.condition,
           "document_code": serializable.document_code,
+          "certificate_description": serializable.certificate_description,
           "requirement": serializable.requirement,
           "action": nil,
           "action_code": serializable.action_code,
