@@ -6,6 +6,14 @@
 
 **Merged pull requests:**
 
+- Adds certificate\_description to the measure condition serializer [\#125](https://github.com/trade-tariff/trade-tariff-backend/pull/125) ([willfish](https://github.com/willfish))
+- Remove exchange rates [\#124](https://github.com/trade-tariff/trade-tariff-backend/pull/124) ([willfish](https://github.com/willfish))
+- Hott 854 add fallback for missing measurement units [\#123](https://github.com/trade-tariff/trade-tariff-backend/pull/123) ([jebw](https://github.com/jebw))
+- Adds excise overlays [\#121](https://github.com/trade-tariff/trade-tariff-backend/pull/121) ([willfish](https://github.com/willfish))
+- Adds excise type to the applicable additional codes [\#120](https://github.com/trade-tariff/trade-tariff-backend/pull/120) ([willfish](https://github.com/willfish))
+- HOTT-844:  [\#119](https://github.com/trade-tariff/trade-tariff-backend/pull/119) ([cacquani](https://github.com/cacquani))
+- HOTT-781: Add reduction indicator to the commodities API [\#118](https://github.com/trade-tariff/trade-tariff-backend/pull/118) ([cacquani](https://github.com/cacquani))
+- Updated changelog [\#117](https://github.com/trade-tariff/trade-tariff-backend/pull/117) ([willfish](https://github.com/willfish))
 - Surface action code for the duty calculator [\#116](https://github.com/trade-tariff/trade-tariff-backend/pull/116) ([willfish](https://github.com/willfish))
 - Refactor quota search service [\#115](https://github.com/trade-tariff/trade-tariff-backend/pull/115) ([willfish](https://github.com/willfish))
 - Security patch rails and also unpin aws-sdk-rails, dotenv-rails, factory\_bot\_rails and lograge [\#114](https://github.com/trade-tariff/trade-tariff-backend/pull/114) ([willfish](https://github.com/willfish))
