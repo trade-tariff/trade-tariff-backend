@@ -28,8 +28,13 @@ class MeasureType < Sequel::Model
     'C', # Applicable duty
     'D', # Anti-dumping/countervailing measures
     'J', # Countervailing charge
-    'Q', # Excise
-  ].freeze
+  ]
+
+  if TradeTariffBackend.include_excise_measure_units?
+    UNIT_EXPRESSABLE_MEASURES << 'Q' # Excise
+  end
+
+  UNIT_EXPRESSABLE_MEASURES.freeze
 
   plugin :time_machine, period_start_column: :measure_types__validity_start_date,
                         period_end_column: :measure_types__validity_end_date
