@@ -77,7 +77,6 @@ class CachedCommodityService
     { geographical_area: [:geographical_area_descriptions,
                           { contained_geographical_areas: :geographical_area_descriptions }] },
     { additional_code: :additional_code_descriptions },
-    :footnotes,
     :base_regulation,
     :modification_regulation,
     :full_temporary_stop_regulations,

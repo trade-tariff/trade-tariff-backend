@@ -24,7 +24,10 @@ class CachedGeographicalAreaService
   ].freeze
 
   DEFAULT_INCLUDES = [:contained_geographical_areas].freeze
-  GEOGRAPHICAL_AREAS_EAGER_GRAPH = :geographical_area_descriptions
+  GEOGRAPHICAL_AREAS_EAGER_GRAPH = [
+    :geographical_area_descriptions,
+    :contained_geographical_areas,
+  ].freeze
   TTL = 24.hours
 
   def initialize(actual_date, countries = false)
