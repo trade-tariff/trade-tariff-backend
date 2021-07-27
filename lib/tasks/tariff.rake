@@ -10,11 +10,6 @@ namespace :tariff do
     TradeTariffBackend.reindex
   end
 
-  desc 'Pre-warm heavy headings cache'
-  task pre_warm_cache: %w[environment] do
-    TradeTariffBackend.pre_warm_headings_cache
-  end
-
   desc 'Recache relevant entities on ElasticSearch'
   task recache: %w[environment] do
     TradeTariffBackend.recache
@@ -46,21 +41,21 @@ namespace :tariff do
     end
   end
 
-  desc 'Download and apply Taric and CHIEF data'
+  desc 'Download and apply Taric data'
   task sync: %w[environment sync:apply]
 
   namespace :sync do
-    desc 'Update database by downloading and then applying CHIEF and TARIC updates via worker'
+    desc 'Update database by downloading and then applying TARIC updates via worker'
     task update: %i[environment class_eager_load] do
       UpdatesSynchronizerWorker.perform_async
     end
 
-    desc 'Download pending Taric and CHIEF update files, Update tariff_updates table'
+    desc 'Download pending Taric update files, Update tariff_updates table'
     task download: %i[environment class_eager_load] do
       TariffSynchronizer.download
     end
 
-    desc 'Apply pending updates Taric and CHIEF'
+    desc 'Apply pending updates Taric'
     task apply: %i[environment class_eager_load] do
       TariffSynchronizer.apply
     end

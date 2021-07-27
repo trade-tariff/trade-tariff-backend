@@ -1,5 +1,5 @@
 module TariffSynchronizer
-  # Download pending updates for TARIC, CHIEF and CDS data
+  # Download pending updates for TARIC and CDS data
   class TariffDownloader
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 

@@ -12,7 +12,7 @@ module TradeTariffBackend
   class << self
     SERVICE_CURRENCIES = {
       'uk' => 'GBP',
-      'xi' => 'EUR'
+      'xi' => 'EUR',
     }.freeze
 
     def configure
@@ -26,7 +26,7 @@ module TradeTariffBackend
     end
 
     def log_formatter
-      Proc.new {|severity, time, progname, msg| "#{time.strftime('%Y-%m-%dT%H:%M:%S.%L %z')} #{sprintf('%5s', severity)} #{msg}\n" }
+      proc { |severity, time, _progname, msg| "#{time.strftime('%Y-%m-%dT%H:%M:%S.%L %z')} #{sprintf('%5s', severity)} #{msg}\n" }
     end
 
     # Email of the user who receives all info/error notifications
@@ -67,14 +67,6 @@ module TradeTariffBackend
       PaasConfig.space
     end
 
-    def govuk_app_name
-      ENV['GOVUK_APP_NAME']
-    end
-
-    def production?
-      ENV['GOVUK_APP_DOMAIN'] == 'tariff-backend-production.cloudapps.digital'
-    end
-
     def currency
       SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
@@ -88,7 +80,7 @@ module TradeTariffBackend
     end
 
     def with_redis_lock(lock_name = db_lock_key, &block)
-      lock = Redlock::Client.new([ RedisLockDb.redis ])
+      lock = Redlock::Client.new([RedisLockDb.redis])
       lock.lock!(lock_name, 5000, &block)
     end
 
@@ -98,29 +90,16 @@ module TradeTariffBackend
 
     def reindex(indexer = search_client)
       TimeMachine.with_relevant_validity_periods do
-        begin
-          indexer.update
-        rescue StandardError => e
-          Mailer.reindex_exception(e).deliver_now
-        end
-      end
-    end
-
-    def recache(indexer = cache_client)
-      begin
         indexer.update
       rescue StandardError => e
         Mailer.reindex_exception(e).deliver_now
       end
     end
 
-    def pre_warm_headings_cache
-      actual_date = Date.yesterday
-      TimeMachine.at(actual_date) do
-        Heading.dataset.each do |heading|
-          ::HeadingService::HeadingSerializationService.new(heading, actual_date).serializable_hash
-        end
-      end
+    def recache(indexer = cache_client)
+      indexer.update
+    rescue StandardError => e
+      Mailer.reindex_exception(e).deliver_now
     end
 
     # Number of changes to fetch for Commodity/Heading/Chapter
@@ -137,7 +116,7 @@ module TradeTariffBackend
         Elasticsearch::Client.new,
         indexed_models: indexed_models,
         index_page_size: 500,
-        search_operation_options: search_operation_options
+        search_operation_options: search_operation_options,
       )
     end
 
@@ -147,14 +126,14 @@ module TradeTariffBackend
         namespace: 'cache',
         indexed_models: cached_models,
         index_page_size: 5,
-        search_operation_options: search_operation_options
+        search_operation_options: search_operation_options,
       )
     end
 
     def search_namespace
       @search_namespace ||= 'tariff'
     end
-    attr_writer :search_namespace
+    attr_writer :search_namespace, :search_operation_options
 
     # Returns search index instance for given model instance or
     # model class instance
@@ -167,14 +146,24 @@ module TradeTariffBackend
     def search_operation_options
       @search_operation_options || {}
     end
-    attr_writer :search_operation_options
 
     def indexed_models
-      [Chapter, Commodity, Heading, SearchReference, Section]
+      [
+        Chapter,
+        Commodity,
+        Heading,
+        SearchReference,
+        Section,
+      ]
     end
 
     def cached_models
-      [Heading, Certificate, AdditionalCode, Footnote]
+      [
+        Heading,
+        Certificate,
+        AdditionalCode,
+        Footnote,
+      ]
     end
 
     def clearable_models
@@ -192,9 +181,9 @@ module TradeTariffBackend
     end
 
     def search_indexes
-      indexed_models.map { |model|
+      indexed_models.map do |model|
         "::Search::#{model}Index".constantize.new(search_namespace)
-      }
+      end
     end
 
     def model_serializer_for(namespace, model)

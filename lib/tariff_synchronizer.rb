@@ -28,11 +28,6 @@ module TariffSynchronizer
 
   extend self
 
-  # 1 - logs all created measures during CHIEF import
-  #   - logs all failed measures during CHIEF import
-  mattr_accessor :measures_logger_enabled
-  self.measures_logger_enabled = (ENV['TARIFF_MEASURES_LOGGER'].to_i == 1)
-
   # 1 - does not raise an exception when record does not exist on TARIC DESTROY operation
   #   - does not raise an exception when record does not exist on TARIC UPDATE operation
   #   - creates new record when record does not exist on TARIC UPDATE operation
@@ -62,13 +57,13 @@ module TariffSynchronizer
 
   # Initial dump date + 1 day
   mattr_accessor :taric_initial_update_date
-  self.taric_initial_update_date = Date.new(2012,6,6)
+  self.taric_initial_update_date = Date.new(2012, 6, 6)
 
   # TODO:
   # set initial update date
   # Initial dump date + 1 day
   mattr_accessor :cds_initial_update_date
-  self.cds_initial_update_date = Date.new(2020,9,1)
+  self.cds_initial_update_date = Date.new(2020, 9, 1)
 
   # Times to retry downloading update before giving up
   mattr_accessor :retry_count
@@ -92,7 +87,7 @@ module TariffSynchronizer
 
   delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
-  # Download pending updates for TARIC, CHIEF and CDS data
+  # Download pending updates for TARIC and CDS data
   # Gets latest downloaded file present in (inbox/failbox/processed) and tries
   # to download any further updates to current day.
   def download
@@ -100,12 +95,10 @@ module TariffSynchronizer
 
     TradeTariffBackend.with_redis_lock do
       instrument('download.tariff_synchronizer') do
-        begin
-          [TaricUpdate].map(&:sync)
-        rescue TariffUpdatesRequester::DownloadException => exception
-          instrument('failed_download.tariff_synchronizer', exception: exception)
-          raise exception.original
-        end
+        TaricUpdate.sync
+      rescue TariffUpdatesRequester::DownloadException => e
+        instrument('failed_download.tariff_synchronizer', exception: e)
+        raise e.original
       end
     end
   end
@@ -117,12 +110,10 @@ module TariffSynchronizer
 
     TradeTariffBackend.with_redis_lock do
       instrument('download.tariff_synchronizer') do
-        begin
-          CdsUpdate.sync
-        rescue TariffUpdatesRequester::DownloadException => exception
-          instrument('failed_download.tariff_synchronizer', exception: exception)
-          raise exception.original
-        end
+        CdsUpdate.sync
+      rescue TariffUpdatesRequester::DownloadException => e
+        instrument('failed_download.tariff_synchronizer', exception: e)
+        raise e.original
       end
     end
   end
@@ -140,12 +131,11 @@ module TariffSynchronizer
       # Updates could be modifying primary keys so unrestricted it for all models.
       Sequel::Model.subclasses.each(&:unrestrict_primary_key)
 
-      subscribe /conformance_error/ do |*args|
+      subscribe(/conformance_error/) do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
         unconformant_records << event.payload[:record]
       end
 
-      # TARIC updates should be applied before CHIEF
       date_range = date_range_since_last_pending_update
       date_range.each do |day|
         applied_updates << perform_update(TaricUpdate, day)
@@ -176,11 +166,10 @@ module TariffSynchronizer
     # The sync task is run on multiple machines to avoid more than on process
     # running the apply task it is wrapped with a redis lock
     TradeTariffBackend.with_redis_lock do
-
       # Updates could be modifying primary keys so unrestricted it for all models.
       Sequel::Model.subclasses.each(&:unrestrict_primary_key)
 
-      subscribe /conformance_error/ do |*args|
+      subscribe(/conformance_error/) do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
         unconformant_records << event.payload[:record]
       end
@@ -199,9 +188,8 @@ module TariffSynchronizer
 
       if applied_updates.any? && BaseUpdate.pending_or_failed.none?
         instrument('apply.tariff_synchronizer',
-          update_names: applied_updates.map(&:filename),
-          unconformant_records: unconformant_records
-        )
+                   update_names: applied_updates.map(&:filename),
+                   unconformant_records: unconformant_records)
       end
     end
   rescue Redlock::LockError
@@ -226,9 +214,8 @@ module TariffSynchronizer
             # Rollback TARIC
             TariffSynchronizer::TaricUpdate.applied_or_failed.where { issue_date > date_for_rollback }.each do |taric_update|
               instrument('rollback_update.tariff_synchronizer',
-                update_type: :taric,
-                filename: taric_update.filename
-              )
+                         update_type: :taric,
+                         filename: taric_update.filename)
 
               taric_update.mark_as_pending
               taric_update.clear_applied_at
@@ -240,9 +227,8 @@ module TariffSynchronizer
             # Rollback TARIC
             TariffSynchronizer::TaricUpdate.where { issue_date > date_for_rollback }.each do |taric_update|
               instrument('rollback_update.tariff_synchronizer',
-                update_type: :taric,
-                filename: taric_update.filename
-              )
+                         update_type: :taric,
+                         filename: taric_update.filename)
 
               # delete presence errors
               taric_update.presence_errors_dataset.destroy
@@ -272,9 +258,8 @@ module TariffSynchronizer
               end
 
               instrument('rollback_update.tariff_synchronizer',
-                update_type: :cds,
-                filename: cds_update.filename
-              )
+                         update_type: :cds,
+                         filename: cds_update.filename)
 
               cds_update.mark_as_pending
               cds_update.clear_applied_at
@@ -290,9 +275,8 @@ module TariffSynchronizer
               end
 
               instrument('rollback_update.tariff_synchronizer',
-                update_type: :cds,
-                filename: cds_update.filename
-              )
+                         update_type: :cds,
+                         filename: cds_update.filename)
 
               # delete cds errors
               cds_update.cds_errors_dataset.destroy
@@ -319,9 +303,8 @@ module TariffSynchronizer
     updates = update_type.pending_at(day).to_a
     updates.map do |update|
       instrument('perform_update.tariff_synchronizer',
-        filename: update.filename,
-        update_type: update_type
-      )
+                 filename: update.filename,
+                 update_type: update_type)
 
       BaseUpdateImporter.perform(update)
     end
@@ -331,6 +314,7 @@ module TariffSynchronizer
   def date_range_since_last_pending_update
     last_pending_update = BaseUpdate.last_pending
     return [] if last_pending_update.blank?
+
     (last_pending_update.issue_date..update_to)
   end
 
@@ -343,9 +327,9 @@ module TariffSynchronizer
   end
 
   def oplog_based_models
-    Sequel::Model.subclasses.select { |model|
+    Sequel::Model.subclasses.select do |model|
       model.plugins.include?(Sequel::Plugins::Oplog)
-    }
+    end
   end
 
   def check_tariff_updates_failures

@@ -128,8 +128,7 @@ module TariffSynchronizer
     end
 
     # We missed three update files in a row
-    # Might be okay for Taric, but most likely not ok for CHIEF
-    # this is precautionary measure
+    # Might be okay for Taric. This is a precautionary measure
     def missing_updates(event)
       warn "Missing #{event.payload[:count]} updates in a row for #{event.payload[:update_type].to_s.upcase}"
 
