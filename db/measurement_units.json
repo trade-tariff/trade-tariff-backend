@@ -447,6 +447,14 @@
     "unit_hint": "Enter the number of pairs",
     "unit": "pairs"
   },
+  "RET": {
+    "measurement_unit_code": "RET",
+    "measurement_unit_qualifier_code": "",
+    "abbreviation": "GBP",
+    "unit_question": "What is the retail price of the goods you will be importing?",
+    "unit_hint": "Enter the value in pounds",
+    "unit": "£"
+  },
   "TJO": {
     "measurement_unit_code": "TJO",
     "measurement_unit_qualifier_code": "",
