@@ -76,8 +76,8 @@ These are run hourly by a background worker UpdatesSynchronizerWorker.
 ### Sync process
 
 - checking failures (check tariff_synchronizer.rb) - if any of updates failed in the past, sync process will not proceed
-- downloading missing files up to Date.today (check base_update.rb and download methods in taric_update.rb and chief_update.rb)
-- applying downloaded files (applying measures, etc. TARIC first, then CHIEF)
+- downloading missing files up to Date.today (check base_update.rb and download methods in taric_update.rb)
+- applying downloaded files
 
 Updates are performed in portions and protected by redis lock (see TariffSynchronizer#apply).
 
