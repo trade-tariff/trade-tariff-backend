@@ -467,15 +467,9 @@ class Measure < Sequel::Model
 
   def condition_units
     measure_conditions.each_with_object([]) do |condition, acc|
-      next unless condition.condition_measurement_unit_code
+      next unless condition.expresses_unit?
 
-      unit = {
-        measure_sid: measure_sid,
-        measurement_unit_code: condition.condition_measurement_unit_code,
-        measurement_unit_qualifier_code: condition.condition_measurement_unit_qualifier_code,
-      }
-
-      acc << unit
+      acc.concat(condition.units)
     end
   end
 end

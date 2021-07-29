@@ -53,4 +53,16 @@ class MeasureConditionComponent < Sequel::Model
       excise: measure_condition.measure.excise?,
     )
   end
+
+  def expresses_unit?
+    measurement_unit_code
+  end
+
+  def unit(measure_sid:)
+    {
+      measure_sid: measure_sid,
+      measurement_unit_code: measurement_unit_code,
+      measurement_unit_qualifier_code: measurement_unit_qualifier_code,
+    }
+  end
 end
