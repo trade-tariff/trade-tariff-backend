@@ -4,20 +4,32 @@ module Api
       class MeasureLegalActPresenter < SimpleDelegator
         alias_method :regulation, :__getobj__
 
+        EXCLUDED_REGULATION_IDS = %w[IYY99990].freeze
+
         def published_date
           regulation&.published_date
         end
 
         def regulation_code
-          ApplicationHelper.regulation_code(regulation)
+          show_full_info? ? ApplicationHelper.regulation_code(regulation) : ''
         end
 
         def regulation_url
-          ApplicationHelper.regulation_url(regulation)
+          show_full_info? ? ApplicationHelper.regulation_url(regulation) : ''
         end
 
         def description
-          information_text
+          show_full_info? ? information_text : nil
+        end
+
+      private
+
+        def show_full_info?
+          !excluded_regulation?
+        end
+
+        def excluded_regulation?
+          EXCLUDED_REGULATION_IDS.include? regulation.regulation_id
         end
       end
     end

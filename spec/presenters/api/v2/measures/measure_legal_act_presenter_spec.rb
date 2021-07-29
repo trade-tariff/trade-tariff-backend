@@ -42,4 +42,12 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
       expect(presenter.description).to eql(regulation.information_text)
     end
   end
+
+  context "when showing reduced information" do
+    let(:regulation) { create(:base_regulation, base_regulation_id: 'IYY99990') }
+
+    it { is_expected.to have_attributes(regulation_code: '') }
+    it { is_expected.to have_attributes(regulation_url: '') }
+    it { is_expected.to have_attributes(description: nil) }
+  end
 end
