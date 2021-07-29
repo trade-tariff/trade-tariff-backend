@@ -15,9 +15,9 @@ module Api
                    :monetary_unit_code,
                    :monetary_unit_abbreviation,
                    :measurement_unit_code,
+                   :measurement_unit_qualifier_code,
                    :duty_expression_description,
-                   :duty_expression_abbreviation,
-                   :measurement_unit_qualifier_code
+                   :duty_expression_abbreviation
       end
     end
   end

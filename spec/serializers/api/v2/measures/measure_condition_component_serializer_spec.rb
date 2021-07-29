@@ -1,9 +1,9 @@
 require 'rails_helper'
 
-describe Api::V2::Measures::MeasureComponentSerializer do
-  let(:measure_component) do
+RSpec.describe Api::V2::Measures::MeasureConditionComponentSerializer do
+  let(:measure_condition_component) do
     create(
-      :measure_component,
+      :measure_condition_component,
       duty_expression_id: duty_expression.duty_expression_id,
       duty_amount: 10.0,
       monetary_unit_code: 'foo',
@@ -17,8 +17,8 @@ describe Api::V2::Measures::MeasureComponentSerializer do
   let(:expected_pattern) do
     {
       data: {
-        id: measure_component.pk.join('-'),
-        type: :measure_component,
+        id: measure_condition_component.pk.join('-'),
+        type: :measure_condition_component,
         attributes: {
           duty_expression_id: duty_expression.duty_expression_id,
           duty_amount: 10.0,
@@ -35,7 +35,7 @@ describe Api::V2::Measures::MeasureComponentSerializer do
 
   describe '#serializable_hash' do
     it 'serializes the correct attributes' do
-      actual = described_class.new(measure_component).serializable_hash
+      actual = described_class.new(measure_condition_component).serializable_hash
       expect(actual).to include(expected_pattern)
     end
   end
