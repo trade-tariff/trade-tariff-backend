@@ -22,6 +22,10 @@ module Api
         attribute :regulation_url do |regulation|
           ApplicationHelper.regulation_url(regulation)
         end
+
+        attribute :description do |regulation|
+          regulation.information_text
+        end
       end
     end
   end
