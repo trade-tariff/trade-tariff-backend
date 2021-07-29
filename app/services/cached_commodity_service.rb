@@ -63,9 +63,9 @@ class CachedCommodityService
         { measure_condition_code: :measure_condition_code_description },
         {
           measure_condition_components: [
+            { duty_expression: :duty_expression_description },
             { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
             :measure_condition,
-            :duty_expression,
             :monetary_unit,
             :measurement_unit_qualifier,
           ],
