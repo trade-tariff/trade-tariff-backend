@@ -30,7 +30,7 @@ RSpec.describe UkRegulationParser do
 
     it "should raise an exception" do
       expect { parser }.to \
-        raise_exception(UkRegulationParser::NonUkRegulationText)
+        raise_exception(described_class::InvalidUkRegulationText)
     end
   end
 
@@ -39,7 +39,7 @@ RSpec.describe UkRegulationParser do
 
     it "should raise an exception" do
       expect { parser }.to \
-        raise_exception(UkRegulationParser::NonUkRegulationText)
+        raise_exception(described_class::InvalidUkRegulationText)
     end
   end
 
@@ -48,7 +48,7 @@ RSpec.describe UkRegulationParser do
 
     it "should raise an exception" do
       expect { parser }.to \
-        raise_exception(UkRegulationParser::NonUkRegulationText)
+        raise_exception(described_class::InvalidUkRegulationText)
     end
   end
 end

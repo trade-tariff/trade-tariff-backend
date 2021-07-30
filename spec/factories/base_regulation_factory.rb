@@ -28,7 +28,7 @@ FactoryBot.define do
         end
       end
 
-      information_text { [uk_description, uk_regulation_code, uk_regulation_url].join("\xC2\xA0") }
+      information_text { [uk_description, uk_regulation_code, uk_regulation_url].compact.join("\xC2\xA0") }
     end
   end
 end
