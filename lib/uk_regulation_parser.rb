@@ -1,25 +1,19 @@
 class UkRegulationParser
   DELIMITER = "\xC2\xA0".freeze
+  attr_reader :regulation_code, :regulation_url, :description
 
   def initialize(information_text)
     @original_text = information_text
+    @description, @regulation_code, @regulation_url = parse_information_text
   end
 
-  def regulation_code
-    parsed[1]
-  end
-
-  def regulation_url
-    parsed[2]
-  end
-
-  def description
-    parsed[0]
-  end
+  class NonUkRegulationText < ::RuntimeError; end
 
 private
 
-  def parsed
-    @parsed ||= @original_text.split(DELIMITER)
+  def parse_information_text
+    @original_text&.split(DELIMITER).tap do |parts|
+      raise NonUkRegulationText unless parts&.length == 3
+    end
   end
 end

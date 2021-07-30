@@ -24,4 +24,31 @@ RSpec.describe UkRegulationParser do
 
     it { is_expected.to eql('The Leghold Trap and Pelt Imports (Amendment etc.) (EU Exit) Regulations 2019') }
   end
+
+  context "with null text" do
+    let(:information_text) { nil }
+
+    it "should raise an exception" do
+      expect { parser }.to \
+        raise_exception(UkRegulationParser::NonUkRegulationText)
+    end
+  end
+
+  context "with incomplete text" do
+    let(:information_text) { "First\xC2\xA0Second" }
+
+    it "should raise an exception" do
+      expect { parser }.to \
+        raise_exception(UkRegulationParser::NonUkRegulationText)
+    end
+  end
+
+  context "with unexpected text format" do
+    let(:information_text) { "First\xC2\xA0Second\xC2\xA0Third\xC2\xA0Fourth" }
+
+    it "should raise an exception" do
+      expect { parser }.to \
+        raise_exception(UkRegulationParser::NonUkRegulationText)
+    end
+  end
 end
