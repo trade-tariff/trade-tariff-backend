@@ -3,6 +3,9 @@ module Api
     module Measures
       class MeasureLegalActPresenter < SimpleDelegator
         alias_method :regulation, :__getobj__
+        delegate :uk?, to: TradeTariffBackend
+        delegate :regulation_url, :regulation_code, :description,
+                 to: :uk_regulation, prefix: :uk
 
         EXCLUDED_REGULATION_IDS = %w[IYY99990].freeze
 
@@ -11,25 +14,43 @@ module Api
         end
 
         def regulation_code
-          show_full_info? ? ApplicationHelper.regulation_code(regulation) : ''
+          return '' if show_reduced_info?
+
+          uk? ? uk_regulation_code : xi_regulation_code
         end
 
         def regulation_url
-          show_full_info? ? ApplicationHelper.regulation_url(regulation) : ''
+          return '' if show_reduced_info?
+
+          uk? ? uk_regulation_url : xi_regulation_url
         end
 
         def description
-          show_full_info? ? information_text : nil
+          return nil if show_reduced_info?
+
+          uk? ? uk_description : information_text
         end
 
       private
 
-        def show_full_info?
-          !excluded_regulation?
+        def show_reduced_info?
+          excluded_regulation?
         end
 
         def excluded_regulation?
           EXCLUDED_REGULATION_IDS.include? regulation.regulation_id
+        end
+
+        def xi_regulation_code
+          ApplicationHelper.regulation_code(regulation)
+        end
+
+        def xi_regulation_url
+          ApplicationHelper.regulation_url(regulation)
+        end
+
+        def uk_regulation
+          @uk_regulation ||= UkRegulationParser.new(regulation.information_text)
         end
       end
     end
