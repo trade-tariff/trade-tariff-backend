@@ -68,7 +68,9 @@ module Api
         end
 
         def legal_acts
-          measure.legal_acts.map(&Api::V2::Measures::MeasureLegalActPresenter.method(:new))
+          measure.legal_acts.map do |legal_act|
+            Api::V2::Measures::MeasureLegalActPresenter.new legal_act, @measure
+          end
         end
 
         def order_number_id

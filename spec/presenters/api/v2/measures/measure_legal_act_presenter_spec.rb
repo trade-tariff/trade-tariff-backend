@@ -1,9 +1,10 @@
 require 'rails_helper'
 
 describe Api::V2::Measures::MeasureLegalActPresenter do
-  subject(:presenter) { described_class.new(regulation) }
+  subject(:presenter) { described_class.new(regulation, measure) }
 
   let(:regulation) { create(:base_regulation, base_regulation_id: "1234567") }
+  let(:measure) { create(:measure) }
 
   describe "#regulation_id" do
     it "should map to the models internal id" do
@@ -92,10 +93,28 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
   end
 
   context "when showing reduced information" do
-    let(:regulation) { create(:base_regulation, base_regulation_id: 'IYY99990') }
+    context "with regulation id of IVY99990" do
+      let(:regulation) { create(:base_regulation, base_regulation_id: 'IYY99990') }
 
-    it { is_expected.to have_attributes(regulation_code: '') }
-    it { is_expected.to have_attributes(regulation_url: '') }
-    it { is_expected.to have_attributes(description: nil) }
+      it { is_expected.to have_attributes(regulation_code: '') }
+      it { is_expected.to have_attributes(regulation_url: '') }
+      it { is_expected.to have_attributes(description: nil) }
+    end
+
+    context "with measure type 305" do
+      let(:measure) { create(:measure, measure_type_id: '305') }
+
+      it { is_expected.to have_attributes(regulation_code: '') }
+      it { is_expected.to have_attributes(regulation_url: '') }
+      it { is_expected.to have_attributes(description: nil) }
+    end
+
+    context "with measure type 306" do
+      let(:measure) { create(:measure, measure_type_id: '306') }
+
+      it { is_expected.to have_attributes(regulation_code: '') }
+      it { is_expected.to have_attributes(regulation_url: '') }
+      it { is_expected.to have_attributes(description: nil) }
+    end
   end
 end

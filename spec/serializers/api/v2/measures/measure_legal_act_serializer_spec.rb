@@ -3,8 +3,9 @@ require 'rails_helper'
 RSpec.describe Api::V2::Measures::MeasureLegalActSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
-  let(:serializable) { Api::V2::Measures::MeasureLegalActPresenter.new(regulation) }
+  let(:serializable) { Api::V2::Measures::MeasureLegalActPresenter.new(regulation, measure) }
   let(:regulation) { create(:base_regulation, base_regulation_id: "1234567") }
+  let(:measure) { create(:measure) }
 
   let(:generated_url) do
     MeasureService::CouncilRegulationUrlGenerator.new(regulation).generate
