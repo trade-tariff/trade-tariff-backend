@@ -40,4 +40,42 @@ describe MeasureConditionComponent do
       it { is_expected.not_to be_ad_valorem }
     end
   end
+
+  describe '#expresses_unit?' do
+    subject(:measure_condition_component) { build(:measure_condition_component, measurement_unit_code: measurement_unit_code) }
+
+    context 'when the measure condition component specifies a measurement unit code' do
+      let(:measurement_unit_code) { 'TNE' }
+
+      it { is_expected.to be_expresses_unit }
+    end
+
+    context 'when the measure condition component does not specify a measurement unit code' do
+      let(:measurement_unit_code) { nil }
+
+      it { is_expected.not_to be_expresses_unit }
+    end
+  end
+
+  describe '#unit' do
+    subject(:measure_condition_component) do
+      build(
+        :measure_condition_component,
+        measurement_unit_code: 'TNE',
+        measurement_unit_qualifier_code: 'I',
+      )
+    end
+
+    let(:measure_sid) { 'foo' }
+
+    it 'returns the properly formatted unit' do
+      actual = measure_condition_component.unit(measure_sid: measure_sid)
+
+      expect(actual).to eq(
+        measure_sid: 'foo',
+        measurement_unit_code: 'TNE',
+        measurement_unit_qualifier_code: 'I',
+      )
+    end
+  end
 end

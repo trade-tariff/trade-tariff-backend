@@ -72,7 +72,7 @@ class MeasureCondition < Sequel::Model
     measure_condition_components.map { |mcc| mcc.pk.join('-') }
   end
 
-  # TODO presenter?
+  # TODO: presenter?
   def requirement
     case requirement_type
     when :document
@@ -90,7 +90,7 @@ class MeasureCondition < Sequel::Model
       measurement_unit: measurement_unit,
       formatted_measurement_unit_qualifier: formatted_measurement_unit_qualifier,
       currency: TradeTariffBackend.currency,
-      formatted: true
+      formatted: true,
     )
   end
 
@@ -120,5 +120,25 @@ class MeasureCondition < Sequel::Model
 
   def entry_price_system?
     condition_code == MeasureConditionCode::ENTRY_PRICE_SYSTEM_CODE
+  end
+
+  def expresses_unit?
+    condition_measurement_unit_code || measure_condition_components.any?(&:expresses_unit?)
+  end
+
+  def units
+    if condition_measurement_unit_code
+      [
+        {
+          measure_sid: measure_sid,
+          measurement_unit_code: condition_measurement_unit_code,
+          measurement_unit_qualifier_code: condition_measurement_unit_qualifier_code,
+        },
+      ]
+    else
+      measure_condition_components.map do |measure_condition_component|
+        measure_condition_component.unit(measure_sid: measure_sid)
+      end
+    end
   end
 end
