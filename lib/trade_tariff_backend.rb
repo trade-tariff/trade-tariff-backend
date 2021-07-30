@@ -71,10 +71,6 @@ module TradeTariffBackend
       SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
 
-    def currency_conversion_enabled?
-      ENV.fetch('CURRENCY_CONVERSION_ENABLED', 'false') == 'true'
-    end
-
     def data_migration_path
       File.join(Rails.root, 'db', 'data_migrations')
     end

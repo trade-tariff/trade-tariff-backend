@@ -5,7 +5,7 @@ class DutyExpressionFormatter
         float,
         minimum_decimal_points: 2,
         precision: 4,
-        strip_insignificant_zeros: true
+        strip_insignificant_zeros: true,
       )
     end
 
@@ -19,22 +19,6 @@ class DutyExpressionFormatter
       measurement_unit_qualifier = opts[:measurement_unit_qualifier]
       measurement_unit_abbreviation = measurement_unit.try :abbreviation,
                                                            measurement_unit_qualifier: measurement_unit_qualifier
-      if TradeTariffBackend.currency_conversion_enabled?
-        currency = opts[:currency] || TradeTariffBackend.currency
-        excise = opts[:excise]
-
-        if !excise && duty_amount.present? && currency.present? && monetary_unit.present? && monetary_unit != currency
-          period = MonetaryExchangePeriod.actual.last(parent_monetary_unit_code: 'EUR')
-          if period.present?
-            rate = MonetaryExchangeRate.last(monetary_exchange_period_sid: period.monetary_exchange_period_sid, child_monetary_unit_code: monetary_unit == 'EUR' ? currency : monetary_unit)
-            if rate.present?
-              duty_amount = (monetary_unit == 'EUR' ? (rate.exchange_rate * duty_amount.to_d).to_f : (duty_amount.to_d / rate.exchange_rate).to_f).round(2)
-              monetary_unit = currency
-            end
-          end
-        end
-      end
-
       output = []
       case duty_expression_id
       when '99'
