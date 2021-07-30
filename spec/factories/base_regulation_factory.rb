@@ -17,6 +17,9 @@ FactoryBot.define do
     end
 
     trait :uk_concatenated_regulation do
+      officialjournal_number { "1" }
+      officialjournal_page { 1 }
+
       transient do
         uk_regulation_code { 'S.I. 2019/16' }
         uk_regulation_url { 'https://www.legislation.gov.uk/uksi/2019/16' }

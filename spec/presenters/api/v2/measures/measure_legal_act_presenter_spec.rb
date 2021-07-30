@@ -50,22 +50,44 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
   context "for UK service" do
     before { allow(TradeTariffBackend).to receive(:service).and_return('uk') }
 
-    let(:regulation) { create(:base_regulation, :uk_concatenated_regulation) }
+    context "if before 01 Jan 2021" do
+      describe "#regulation_code" do
+        let(:formatted_regulation_code) { "14567/23" }
 
-    describe "#regulation_code" do
-      it { expect(presenter.regulation_code).to eql('S.I. 2019/16') }
+        it { expect(presenter.regulation_code).to eql(formatted_regulation_code) }
+      end
+
+      describe "regulation_url" do
+        let(:eu_regulation_url) { "http://eur-lex.europa.eu/search.html?" }
+
+        it { expect(presenter.regulation_url).to start_with(eu_regulation_url) }
+      end
+
+      describe "#description" do
+        it "should map to the regulations information text" do
+          expect(presenter.description).to eql(regulation.information_text)
+        end
+      end
     end
 
-    describe "#regulation_url" do
-      let(:uk_regulation_url) { 'https://www.legislation.gov.uk/uksi/2019/16' }
+    context "if after 01 Jan 2021" do
+      let(:regulation) { create(:base_regulation, :uk_concatenated_regulation) }
 
-      it { expect(presenter.regulation_url).to eql(uk_regulation_url) }
-    end
+      describe "#regulation_code" do
+        it { expect(presenter.regulation_code).to eql('S.I. 2019/16') }
+      end
 
-    describe "#description" do
-      let(:uk_description) { 'The Leghold Trap and Pelt Imports (Amendment etc.) (EU Exit) Regulations 2019' }
+      describe "#regulation_url" do
+        let(:uk_regulation_url) { 'https://www.legislation.gov.uk/uksi/2019/16' }
 
-      it { expect(presenter.description).to eql(uk_description) }
+        it { expect(presenter.regulation_url).to eql(uk_regulation_url) }
+      end
+
+      describe "#description" do
+        let(:uk_description) { 'The Leghold Trap and Pelt Imports (Amendment etc.) (EU Exit) Regulations 2019' }
+
+        it { expect(presenter.description).to eql(uk_description) }
+      end
     end
   end
 
