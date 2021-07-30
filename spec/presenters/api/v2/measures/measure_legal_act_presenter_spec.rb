@@ -3,7 +3,7 @@ require 'rails_helper'
 describe Api::V2::Measures::MeasureLegalActPresenter do
   subject(:presenter) { described_class.new(regulation, measure) }
 
-  let(:regulation) { create(:base_regulation, base_regulation_id: "1234567") }
+  let(:regulation) { create(:base_regulation, base_regulation_id: '1234567') }
   let(:measure) { create(:measure) }
 
   let(:eu_regulation_code) { '14567/23' }
@@ -87,7 +87,9 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
 
     context "if after 01 Jan 2021 with null information_text field" do
       let(:regulation) do
-        create(:base_regulation, :uk_concatenated_regulation, information_text: nil)
+        create(:base_regulation, :uk_concatenated_regulation,
+                                  base_regulation_id: "1234567",
+                                  information_text: nil)
       end
 
       describe "#regulation_code" do
@@ -105,7 +107,9 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
 
     context "if after 01 Jan 2021 with invalid information_text field" do
       let(:regulation) do
-        create(:base_regulation, :uk_concatenated_regulation, uk_regulation_code: nil )
+        create(:base_regulation, :uk_concatenated_regulation,
+                                  base_regulation_id: "1234567",
+                                  uk_regulation_code: nil )
       end
 
       describe "#regulation_code" do

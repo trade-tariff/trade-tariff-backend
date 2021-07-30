@@ -23,18 +23,24 @@ module Api
           return '' if show_reduced_info?
 
           uk? ? uk_regulation_code : eu_regulation_code
+        rescue UkRegulationParser::InvalidUkRegulationText
+          eu_regulation_code
         end
 
         def regulation_url
           return '' if show_reduced_info?
 
           uk? ? uk_regulation_url : eu_regulation_url
+        rescue UkRegulationParser::InvalidUkRegulationText
+          ''
         end
 
         def description
           return nil if show_reduced_info?
 
           uk? ? uk_description : information_text
+        rescue UkRegulationParser::InvalidUkRegulationText
+          nil
         end
 
       private
