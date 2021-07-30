@@ -212,4 +212,54 @@ describe MeasureCondition do
       it { is_expected.not_to be_entry_price_system }
     end
   end
+
+  describe '#expresses_unit?' do
+    context 'when the measure condition has a condition measurement unit code' do
+      subject(:measure_condition) do
+        create(
+          :measure_condition,
+          condition_measurement_unit_code: 'TNE',
+        )
+      end
+
+      it { is_expected.to be_expresses_unit }
+    end
+
+    context 'when the measure condition has no condition measurement unit code' do
+      subject(:measure_condition) do
+        create(
+          :measure_condition,
+          condition_measurement_unit_code: nil,
+        )
+      end
+
+      it { is_expected.not_to be_expresses_unit }
+    end
+
+    context 'when the measure condition has measure condition components that express units' do
+      subject(:measure_condition) do
+        create(
+          :measure_condition,
+          :with_measure_condition_components,
+          condition_measurement_unit_code: nil,
+          measurement_unit_code: 'TNE',
+        )
+      end
+
+      it { is_expected.to be_expresses_unit }
+    end
+
+    context 'when the measure condition has measure condition components that do not express units' do
+      subject(:measure_condition) do
+        create(
+          :measure_condition,
+          :with_measure_condition_components,
+          condition_measurement_unit_code: nil,
+          measurement_unit_code: nil,
+        )
+      end
+
+      it { is_expected.not_to be_expresses_unit }
+    end
+  end
 end

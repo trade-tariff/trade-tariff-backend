@@ -1,7 +1,6 @@
 FactoryBot.define do
   sequence(:measure_sid) { |n| n }
   sequence(:measure_type_id) { |n| n }
-  sequence(:measure_condition_sid) { |n| n }
 
   factory :measure do |f|
     transient do
@@ -117,7 +116,7 @@ FactoryBot.define do
 
     trait :with_measure_components do
       after(:build) do |measure, evaluator|
-        FactoryBot.create_list(
+        create_list(
           :measure_component,
           evaluator.measure_components_count,
           measure_sid: measure.measure_sid,
@@ -132,14 +131,14 @@ FactoryBot.define do
 
     trait :with_measure_conditions do
       after(:build) do |measure, evaluator|
-        condition = FactoryBot.create(
+        condition = create(
           :measure_condition,
           measure_sid: measure.measure_sid,
           condition_measurement_unit_code: evaluator.measurement_unit_code,
           condition_measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
         )
 
-        FactoryBot.create(
+        create(
           :measure_condition_component,
           measure_condition_sid: condition.measure_condition_sid,
           duty_amount: evaluator.duty_amount,
@@ -155,7 +154,7 @@ FactoryBot.define do
       measure_generating_regulation_role { 4 }
 
       after(:build) do |measure, _evaluator|
-        FactoryBot.create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
+        create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
       end
     end
 
@@ -163,8 +162,8 @@ FactoryBot.define do
       measure_generating_regulation_role { 4 }
 
       after(:build) do |measure, _evaluator|
-        base_regulation = FactoryBot.create(:base_regulation, :abrogated)
-        FactoryBot.create(:modification_regulation,
+        base_regulation = create(:base_regulation, :abrogated)
+        create(:modification_regulation,
                           modification_regulation_id: measure.measure_generating_regulation_id,
                           modification_regulation_role: measure.measure_generating_regulation_role,
                           base_regulation_id: base_regulation.base_regulation_id,
@@ -183,7 +182,7 @@ FactoryBot.define do
       end
 
       after(:build) do |measure, evaluator|
-        adco = FactoryBot.create(
+        adco = create(
           :additional_code,
           :with_description,
           additional_code_type_id: measure.additional_code_type_id,
@@ -199,20 +198,20 @@ FactoryBot.define do
 
     trait :with_additional_code_type do
       after(:build) do |measure, _evaluator|
-        FactoryBot.create(:additional_code_type, additional_code_type_id: measure.additional_code_type_id)
+        create(:additional_code_type, additional_code_type_id: measure.additional_code_type_id)
       end
     end
 
     trait :with_related_additional_code_type do
       after(:build) do |measure, _evaluator|
-        FactoryBot.create(:additional_code_type_measure_type, additional_code_type_id: measure.additional_code_type_id,
+        create(:additional_code_type_measure_type, additional_code_type_id: measure.additional_code_type_id,
                                                               measure_type_id: measure.measure_type_id)
       end
     end
 
     trait :with_quota_order_number do
       after(:build) do |measure, _evaluator|
-        FactoryBot.create(:quota_order_number, quota_order_number_id: measure.ordernumber)
+        create(:quota_order_number, quota_order_number_id: measure.ordernumber)
       end
     end
   end
@@ -251,11 +250,11 @@ FactoryBot.define do
     end
 
     after(:build) do |measure_type, _evaluator|
-      FactoryBot.create(:measure_type_series, measure_type_series_id: measure_type.measure_type_series_id)
+      create(:measure_type_series, measure_type_series_id: measure_type.measure_type_series_id)
     end
 
     after(:build) do |measure_type, evaluator|
-      FactoryBot.create(
+      create(
         :measure_type_description,
         measure_type_id: measure_type.measure_type_id,
         description: evaluator.measure_type_description,
@@ -266,19 +265,5 @@ FactoryBot.define do
   factory :measure_type_description do
     measure_type_id { generate(:measure_type_id) }
     description { Forgery(:basic).text }
-  end
-
-  factory :measure_condition do
-    measure_condition_sid { generate(:measure_condition_sid) }
-    measure_sid { generate(:measure_sid) }
-    condition_code { Forgery(:basic).text(exactly: 2) }
-    component_sequence_number { Forgery(:basic).number }
-    condition_duty_amount { Forgery(:basic).number }
-    condition_monetary_unit_code { Forgery(:basic).text(exactly: 3) }
-    condition_measurement_unit_code { Forgery(:basic).text(exactly: 3) }
-    sequence(:condition_measurement_unit_qualifier_code, LoopingSequence.lower_a_to_upper_z, &:value)
-    sequence(:action_code, LoopingSequence.lower_a_to_upper_z, &:value)
-    sequence(:certificate_type_code, LoopingSequence.lower_a_to_upper_z, &:value)
-    certificate_code { Forgery(:basic).text(exactly: 3) }
   end
 end

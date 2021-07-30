@@ -99,7 +99,7 @@ describe MeasureType do
   end
 
   describe '#expresses_unit?' do
-    shared_examples "an expressable measure" do |type_series_id|
+    shared_examples 'an expressable measure' do |type_series_id|
       context "when measure_type has measure_type_series_id of #{type_series_id}" do
         let(:measure_type) { build :measure_type, measure_type_series_id: type_series_id }
 
@@ -109,10 +109,10 @@ describe MeasureType do
       end
     end
 
-    it_behaves_like "an expressable measure", "C"
-    it_behaves_like "an expressable measure", "D"
-    it_behaves_like "an expressable measure", "J"
-    it_behaves_like "an expressable measure", "Q"
+    it_behaves_like 'an expressable measure', 'C'
+    it_behaves_like 'an expressable measure', 'D'
+    it_behaves_like 'an expressable measure', 'J'
+    it_behaves_like 'an expressable measure', 'Q'
 
     context 'when measure_type has measure_type_series_id that does not express units' do
       let(:measure_type) { build :measure_type, measure_type_series_id: 'X' }
