@@ -262,4 +262,52 @@ describe MeasureCondition do
       it { is_expected.not_to be_expresses_unit }
     end
   end
+
+  describe '#units' do
+    context 'when the condition defines the unit' do
+      subject(:measure_condition) do
+        build(
+          :measure_condition,
+          condition_measurement_unit_code: 'TNE',
+          condition_measurement_unit_qualifier_code: 'I',
+        )
+      end
+
+      it 'returns the properly formatted unit' do
+        expect(measure_condition.units).to eq(
+          [
+            {
+              measure_sid: measure_condition.measure_sid,
+              measurement_unit_code: 'TNE',
+              measurement_unit_qualifier_code: 'I',
+            },
+          ],
+        )
+      end
+    end
+
+    context 'when the condition component defines the unit' do
+      subject(:measure_condition) do
+        create(
+          :measure_condition,
+          :with_measure_condition_components,
+          condition_measurement_unit_code: nil,
+          measurement_unit_code: 'TNE',
+          measurement_unit_qualifier_code: 'R',
+        )
+      end
+
+      it 'returns the properly formatted unit' do
+        expect(measure_condition.units).to eq(
+          [
+            {
+              measure_sid: measure_condition.measure_sid,
+              measurement_unit_code: 'TNE',
+              measurement_unit_qualifier_code: 'R',
+            },
+          ],
+        )
+      end
+    end
+  end
 end

@@ -4,6 +4,7 @@ FactoryBot.define do
   factory :measure_condition do
     transient do
       measurement_unit_code {}
+      measurement_unit_qualifier_code {}
     end
 
     measure_condition_sid { generate(:measure_condition_sid) }
@@ -25,6 +26,7 @@ FactoryBot.define do
         :measure_condition_component,
         measure_condition_sid: measure_condition.measure_condition_sid,
         measurement_unit_code: evaluator.measurement_unit_code,
+        measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
       )
 
       measure_condition.reload
