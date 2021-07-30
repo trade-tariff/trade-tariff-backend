@@ -46,7 +46,11 @@ class DutyExpressionFormatter
                       prettify(duty_amount).to_s
                     end
         end
-        output << monetary_unit.presence || '%'
+        output << if monetary_unit.present?
+                    monetary_unit
+                  else
+                    '%'
+                  end
         if measurement_unit_abbreviation.present?
           output << if opts[:formatted]
                       "/ <abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
