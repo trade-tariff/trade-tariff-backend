@@ -2,8 +2,7 @@ module Api
   module V2
     module Measures
       class MeasureLegalActPresenter < SimpleDelegator
-        alias_method :regulation, :__getobj__
-        attr_reader :measure
+        attr_reader :regulation, :measure
         delegate :regulation_url, :regulation_code, :description,
                  to: :uk_regulation_data, prefix: :uk
 
@@ -11,7 +10,9 @@ module Api
         EXCLUDED_MEASURE_TYPE_IDS = %w[305 306].freeze
 
         def initialize(regulation, measure)
+          @regulation = regulation
           @measure = measure
+
           super(regulation)
         end
 
