@@ -3,6 +3,7 @@ module Api
     module Measures
       class MeasureLegalActPresenter < SimpleDelegator
         attr_reader :regulation, :measure
+
         delegate :regulation_url, :regulation_code, :description,
                  to: :uk_regulation_data, prefix: :uk
 
@@ -48,7 +49,7 @@ module Api
 
         def uk?
           TradeTariffBackend.uk? &&
-            regulation.officialjournal_number == "1" &&
+            regulation.officialjournal_number == '1' &&
             regulation.officialjournal_page == 1
         end
 

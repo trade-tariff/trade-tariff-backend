@@ -7,7 +7,7 @@ FactoryBot.define do
     validity_start_date { Date.current.ago(3.years) }
     validity_end_date   { nil }
     effective_end_date  { nil }
-    information_text { "This is some explanatory information text" }
+    information_text { 'This is some explanatory information text' }
 
     trait :abrogated do
       after(:build) do |br, _evaluator|
@@ -17,7 +17,7 @@ FactoryBot.define do
     end
 
     trait :uk_concatenated_regulation do
-      officialjournal_number { "1" }
+      officialjournal_number { '1' }
       officialjournal_page { 1 }
 
       transient do
