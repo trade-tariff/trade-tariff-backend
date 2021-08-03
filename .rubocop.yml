@@ -24,6 +24,12 @@ Metrics/BlockLength:
   Enabled: false
 Metrics/ModuleLength:
   Enabled: false
+RSpec/ContextWording:
+  Prefixes:
+    - when
+    - with
+    - without
+    - for
 RSpec/ExampleLength:
   Enabled: false
 RSpec/NestedGroups:

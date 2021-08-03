@@ -4,6 +4,9 @@ module Api
       class MeasurePresenter < SimpleDelegator
         attr_reader :measure, :duty_expression, :geographical_areas, :national_measurement_units
 
+        delegate :id, to: :duty_expression, prefix: true
+        delegate :geographical_area, :geographical_area_id, to: :measure
+
         def initialize(measure, declarable, geographical_areas = [])
           super(measure)
           @measure = measure
@@ -21,18 +24,6 @@ module Api
 
         def vat
           measure.vat?
-        end
-
-        def duty_expression_id
-          duty_expression.id
-        end
-
-        def geographical_area
-          measure.geographical_area
-        end
-
-        def geographical_area_id
-          measure.geographical_area_id
         end
 
         def additional_code
@@ -65,6 +56,12 @@ module Api
 
         def legal_act_ids
           measure.legal_acts.map(&:regulation_id)
+        end
+
+        def legal_acts
+          measure.legal_acts.map do |legal_act|
+            Api::V2::Measures::MeasureLegalActPresenter.new legal_act, @measure
+          end
         end
 
         def order_number_id
