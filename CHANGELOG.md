@@ -6,9 +6,18 @@
 
 **Merged pull requests:**
 
+- Run rubocop just for changed files [\#133](https://github.com/trade-tariff/trade-tariff-backend/pull/133) ([jebw](https://github.com/jebw))
+- HOTT-866 extend legal act node [\#132](https://github.com/trade-tariff/trade-tariff-backend/pull/132) ([jebw](https://github.com/jebw))
+- Fix n + 1 issue due to inverse load of measure via the measure condition [\#131](https://github.com/trade-tariff/trade-tariff-backend/pull/131) ([willfish](https://github.com/willfish))
+- Handle units that belong to measure condition components [\#130](https://github.com/trade-tariff/trade-tariff-backend/pull/130) ([willfish](https://github.com/willfish))
+- Surface description and abbreviation for consistency [\#129](https://github.com/trade-tariff/trade-tariff-backend/pull/129) ([willfish](https://github.com/willfish))
+- Tidy up some outstanding chief stuff [\#128](https://github.com/trade-tariff/trade-tariff-backend/pull/128) ([willfish](https://github.com/willfish))
+- Hott 720 eager loading fixes [\#127](https://github.com/trade-tariff/trade-tariff-backend/pull/127) ([jebw](https://github.com/jebw))
+- Updates changelog [\#126](https://github.com/trade-tariff/trade-tariff-backend/pull/126) ([willfish](https://github.com/willfish))
 - Adds certificate\_description to the measure condition serializer [\#125](https://github.com/trade-tariff/trade-tariff-backend/pull/125) ([willfish](https://github.com/willfish))
 - Remove exchange rates [\#124](https://github.com/trade-tariff/trade-tariff-backend/pull/124) ([willfish](https://github.com/willfish))
 - Hott 854 add fallback for missing measurement units [\#123](https://github.com/trade-tariff/trade-tariff-backend/pull/123) ([jebw](https://github.com/jebw))
+- Add Excise to the types which may express a unit [\#122](https://github.com/trade-tariff/trade-tariff-backend/pull/122) ([jebw](https://github.com/jebw))
 - Adds excise overlays [\#121](https://github.com/trade-tariff/trade-tariff-backend/pull/121) ([willfish](https://github.com/willfish))
 - Adds excise type to the applicable additional codes [\#120](https://github.com/trade-tariff/trade-tariff-backend/pull/120) ([willfish](https://github.com/willfish))
 - HOTT-844:  [\#119](https://github.com/trade-tariff/trade-tariff-backend/pull/119) ([cacquani](https://github.com/cacquani))
