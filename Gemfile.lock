@@ -468,7 +468,7 @@ DEPENDENCIES
   elasticsearch (= 7.9.0)
   elasticsearch-extensions (= 0.0.31)
   factory_bot_rails
-  fakefs (~> 0.18.0)
+  fakefs
   foreman
   forgery
   gds-sso
