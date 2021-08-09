@@ -1,7 +1,9 @@
 require 'csv'
 
 class MeasureTypeExclusion
-  DEFAULT_SOURCE = Rails.root.join('db/measure_type_exclusions.csv').freeze
+  DEFAULT_SOURCE = Rails.root.join(
+    "db/#{TradeTariffBackend.service}_measure_type_exclusions.csv",
+  ).freeze
 
   class_attribute :exclusions
   self.exclusions = nil
@@ -26,7 +28,7 @@ class MeasureTypeExclusion
     end
 
     def find(measure_type_id, geographical_area_id)
-      load_from_string if exclusions.nil?
+      load_from_file if exclusions.nil?
 
       exclusions[[measure_type_id.to_s, geographical_area_id.to_s]] || []
     end
@@ -36,8 +38,9 @@ class MeasureTypeExclusion
     def load_row(row)
       row_key = row.values_at('measure_type_id', 'geographical_area_id')
 
-      exclusions[row_key] ||= []
-      exclusions[row_key] << row['excluded_country']
+      self.exclusions ||= {}
+      self.exclusions[row_key] ||= []
+      self.exclusions[row_key] << row['excluded_country']
     end
   end
 end
