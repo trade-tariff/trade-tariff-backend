@@ -19,20 +19,14 @@
   # Online converter: https://crontab.guru/#0_22_*_*_*
   #
   UpdatesSynchronizerWorker:
-    cron: "0 2 * * *" # 2AM every day
-    description: "UpdatesSynchronizerWorker will run every day at 2am."
+    cron: "30 4 * * *"
+    description: "UpdatesSynchronizerWorker"
   TaricSequenceCheckWorker:
-    cron: "0 14 * * 6" # 14:00 every Saturday
-    description: "TaricSequenceCheckWorker will run every Saturday at 14:00."
+    cron: "0 14 * * 6" 
+    description: "TaricSequenceCheckWorker"
   ClearCacheWorker:
-    cron: "30 2 * * *" # 02:30 every day
-    description: "Clear Rails cache at 02:30"
-  RecacheModelsWorker:
-    cron: "30 2 * * *" # 02:30 every day
-    description: "RecacheModelsWorker will run every day at 02:30."
-  ReindexModelsWorker:
-    cron: "30 2 * * *" # 02:30 every day
-    description: "ReindexModelsWorker will run every day at 02:30."
+    cron: "0 5 * * *" 
+    description: "Clear Rails cache"
   PopulateChangesTableWorker:
-    cron: "30 4 * * *" # 04:30 every day
-    description: "Populates the changes table, will run every day at 04:30"
+    cron: "30 4 * * *" 
+    description: "Populates the changes table"
