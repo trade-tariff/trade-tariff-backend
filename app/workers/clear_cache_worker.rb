@@ -7,5 +7,8 @@ class ClearCacheWorker
     logger.info 'Clearing Rails cache'
     Rails.cache.clear
     logger.info 'Clearing Rails cache completed'
+
+    Sidekiq::Client.enqueue(RecacheModelsWorker)
+    Sidekiq::Client.enqueue(ReindexModelsWorker)
   end
 end
