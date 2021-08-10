@@ -35,4 +35,30 @@ RSpec.describe MeasureTypeExclusion do
       it { is_expected.to eql [] }
     end
   end
+
+  describe '.find_geographical_areas' do
+    subject { described_class.find_geographical_areas('735', '1008') }
+
+    before { described_class.load_from_file(test_csv_file) }
+
+    context 'with known countries' do
+      let!(:gb) { create(:geographical_area, geographical_area_id: 'GB') }
+      let!(:je) { create(:geographical_area, geographical_area_id: 'JE') }
+      let!(:gg) { create(:geographical_area, geographical_area_id: 'GG') }
+
+      it { is_expected.to eql [gb, je, gg] }
+    end
+
+    context 'with unknown areas' do
+      let!(:gb) { create(:geographical_area, geographical_area_id: 'GB') }
+
+      it { is_expected.to eql [gb] }
+    end
+
+    context 'with known key' do
+      subject { described_class.find_geographical_areas('738', '1008') }
+
+      it { is_expected.to eql [] }
+    end
+  end
 end

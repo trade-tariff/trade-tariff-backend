@@ -67,6 +67,23 @@ module Api
         def order_number_id
           measure.order_number&.quota_order_number_id
         end
+
+        def excluded_countries
+          measure.excluded_geographical_areas + measure_type_exclusions
+        end
+
+        def excluded_country_ids
+          excluded_countries.map(&:id)
+        end
+
+      private
+
+        def measure_type_exclusions
+          @measure_type_exclusions ||= MeasureTypeExclusion.find_geographical_areas(
+            measure.measure_type_id,
+            measure.geographical_area_id,
+          )
+        end
       end
     end
   end

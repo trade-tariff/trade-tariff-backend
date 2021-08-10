@@ -33,6 +33,13 @@ class MeasureTypeExclusion
       exclusions[[measure_type_id.to_s, geographical_area_id.to_s]] || []
     end
 
+    def find_geographical_areas(measure_type_id, geographical_area_id)
+      country_codes = find(measure_type_id, geographical_area_id)
+      return [] if country_codes.empty?
+
+      GeographicalArea.where(geographical_area_id: country_codes).all
+    end
+
   private
 
     def load_row(row)

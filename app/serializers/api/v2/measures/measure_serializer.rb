@@ -21,8 +21,7 @@ module Api
         has_many :measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer
         has_many :national_measurement_units, serializer: Api::V2::Measures::NationalMeasurementUnitSerializer
         has_one :geographical_area, serializer: Api::V2::Measures::GeographicalAreaSerializer
-        has_many :excluded_geographical_areas, key: :excluded_countries,
-                                               record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
+        has_many :excluded_countries, record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
         has_many :footnotes, serializer: Api::V2::Measures::FootnoteSerializer
         has_one :additional_code, if: proc { |measure| measure.additional_code.present? }, serializer: Api::V2::AdditionalCodeSerializer
         has_one :order_number, serializer: Api::V2::Quotas::OrderNumber::QuotaOrderNumberSerializer
