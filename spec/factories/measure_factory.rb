@@ -1,6 +1,8 @@
 FactoryBot.define do
   sequence(:measure_sid) { |n| n }
-  sequence(:measure_type_id) { |n| n }
+  # offset sequence id to avoid conflicting with special casing of certain measure
+  # types in the code base
+  sequence(:measure_type_id, 10_000) { |n| n }
 
   factory :measure do |f|
     transient do
@@ -64,7 +66,7 @@ FactoryBot.define do
     end
 
     trait :invalidated do
-      invalidated_at { Time.now }
+      invalidated_at { Time.zone.now }
     end
 
     trait :with_goods_nomenclature do
@@ -164,10 +166,10 @@ FactoryBot.define do
       after(:build) do |measure, _evaluator|
         base_regulation = create(:base_regulation, :abrogated)
         create(:modification_regulation,
-                          modification_regulation_id: measure.measure_generating_regulation_id,
-                          modification_regulation_role: measure.measure_generating_regulation_role,
-                          base_regulation_id: base_regulation.base_regulation_id,
-                          base_regulation_role: base_regulation.base_regulation_role)
+               modification_regulation_id: measure.measure_generating_regulation_id,
+               modification_regulation_role: measure.measure_generating_regulation_role,
+               base_regulation_id: base_regulation.base_regulation_id,
+               base_regulation_role: base_regulation.base_regulation_role)
       end
     end
 
@@ -205,7 +207,7 @@ FactoryBot.define do
     trait :with_related_additional_code_type do
       after(:build) do |measure, _evaluator|
         create(:additional_code_type_measure_type, additional_code_type_id: measure.additional_code_type_id,
-                                                              measure_type_id: measure.measure_type_id)
+                                                   measure_type_id: measure.measure_type_id)
       end
     end
 
