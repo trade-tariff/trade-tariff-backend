@@ -9,14 +9,6 @@ class MeasureTypeExclusion
   self.exclusions = nil
 
   class << self
-    def load_from_string(data)
-      init_data
-
-      CSV.parse(data, headers: true, &method(:load_row))
-
-      self
-    end
-
     def load_from_file(file = DEFAULT_SOURCE)
       init_data
 

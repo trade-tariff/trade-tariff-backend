@@ -14,14 +14,6 @@ RSpec.describe MeasureTypeExclusion do
     it { is_expected.to eql(%w[735 1008] => %w[GB JE GG]) }
   end
 
-  describe '.load_from_string' do
-    subject { described_class.load_from_file(test_csv_file).exclusions }
-
-    let(:data) { File.read(test_csv_file) }
-
-    it { is_expected.to eql(%w[735 1008] => %w[GB JE GG]) }
-  end
-
   describe '.find' do
     subject { described_class.find('735', '1008') }
 
