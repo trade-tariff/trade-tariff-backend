@@ -10,7 +10,7 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
     {
       code: '14567/23',
       url: 'http://eur-lex.europa.eu/search.html?',
-      description: regulation.information_text,
+      description: 'This is some explanatory information text',
     }
   end
 
@@ -79,7 +79,7 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
       end
 
       describe '#regulation_url' do
-        it { expect(presenter.regulation_url).to eql(eu_regulation[:url]) }
+        it { expect(presenter.regulation_url).to match(eu_regulation[:url]) }
       end
 
       describe '#description' do
@@ -162,21 +162,44 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
     end
 
     context 'with regulation without an information_text field' do
-      let(:regulation) do
-        create(:measure_partial_temporary_stop,
-               partial_temporary_stop_regulation_id: '1234567')
+      context 'for date from 01 Jan 2021' do
+        let(:regulation) do
+          create(:measure_partial_temporary_stop,
+                 partial_temporary_stop_regulation_id: '1234567')
+        end
+
+        describe '#regulation_code' do
+          it { expect(presenter.regulation_code).to eql(eu_regulation[:code]) }
+        end
+
+        describe '#regulation_url' do
+          it { expect(presenter.regulation_url).to match(eu_regulation[:url]) }
+        end
+
+        describe '#description' do
+          it { expect(presenter.description).to be_nil }
+        end
       end
 
-      describe '#regulation_code' do
-        it { expect(presenter.regulation_code).to eql(eu_regulation[:code]) }
-      end
+      context 'for date 01 Jan 2021' do
+        let(:regulation) do
+          create(:measure_partial_temporary_stop,
+                 partial_temporary_stop_regulation_id: '1234567',
+                 partial_temporary_stop_regulation_officialjournal_number: '1',
+                 partial_temporary_stop_regulation_officialjournal_page: 1)
+        end
 
-      describe '#regulation_url' do
-        it { expect(presenter.regulation_url).to eql('') }
-      end
+        describe '#regulation_code' do
+          it { expect(presenter.regulation_code).to eql(eu_regulation[:code]) }
+        end
 
-      describe '#description' do
-        it { expect(presenter.description).to be_nil }
+        describe '#regulation_url' do
+          it { expect(presenter.regulation_url).to eql('') }
+        end
+
+        describe '#description' do
+          it { expect(presenter.description).to be_nil }
+        end
       end
     end
   end
