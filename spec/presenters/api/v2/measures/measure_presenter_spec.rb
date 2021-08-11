@@ -5,7 +5,7 @@ describe Api::V2::Measures::MeasurePresenter do
 
   let(:measure) { create(:measure) }
 
-  describe '#legal_acts' do
+  xdescribe '#legal_acts' do
     it 'will be mapped through the MeasureLegalActPresenter' do
       expect(presenter.legal_acts.first).to \
         be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
