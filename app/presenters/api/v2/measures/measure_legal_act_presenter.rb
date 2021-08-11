@@ -18,7 +18,7 @@ module Api
         end
 
         def published_date
-          regulation&.published_date
+          regulation.try(:published_date)
         end
 
         def regulation_code
