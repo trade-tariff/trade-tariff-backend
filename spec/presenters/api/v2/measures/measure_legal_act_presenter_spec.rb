@@ -67,6 +67,25 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
     describe '#description' do
       it { expect(presenter.description).to eql(eu_regulation[:description]) }
     end
+
+    context 'with regulation without an information_text field' do
+      let(:regulation) do
+        create(:measure_partial_temporary_stop,
+               partial_temporary_stop_regulation_id: '1234567')
+      end
+
+      describe '#regulation_code' do
+        it { expect(presenter.regulation_code).to eql(eu_regulation[:code]) }
+      end
+
+      describe '#regulation_url' do
+        it { expect(presenter.regulation_url).to eql(eu_regulation[:url]) }
+      end
+
+      describe '#description' do
+        it { expect(presenter.description).to be_nil }
+      end
+    end
   end
 
   context 'for UK service' do
@@ -127,6 +146,25 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
         create(:base_regulation, :uk_concatenated_regulation,
                base_regulation_id: '1234567',
                uk_regulation_code: nil)
+      end
+
+      describe '#regulation_code' do
+        it { expect(presenter.regulation_code).to eql(eu_regulation[:code]) }
+      end
+
+      describe '#regulation_url' do
+        it { expect(presenter.regulation_url).to eql('') }
+      end
+
+      describe '#description' do
+        it { expect(presenter.description).to be_nil }
+      end
+    end
+
+    context 'with regulation without an information_text field' do
+      let(:regulation) do
+        create(:measure_partial_temporary_stop,
+               partial_temporary_stop_regulation_id: '1234567')
       end
 
       describe '#regulation_code' do
