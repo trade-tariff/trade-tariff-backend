@@ -40,7 +40,7 @@ module Api
         def description
           return nil if show_reduced_info?
 
-          uk? ? uk_description : information_text
+          uk? ? uk_description : regulation.try(:information_text)
         rescue UkRegulationParser::InvalidUkRegulationText
           nil
         end
