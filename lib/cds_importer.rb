@@ -1,6 +1,6 @@
 require 'zip'
 # It's important to require mappers before xml_parser and entity_mapper to load all descendants
-Dir[File.join(Rails.root, 'lib', 'cds_importer/entity_mapper/*.rb')].each { |f| require f }
+Dir[Rails.root.join('lib/cds_importer/entity_mapper/*.rb')].sort.each { |f| require f }
 require 'cds_importer/xml_parser'
 require 'cds_importer/entity_mapper'
 
@@ -8,7 +8,7 @@ class CdsImporter
   class ImportException < StandardError
     attr_reader :original
 
-    def initialize(msg = 'CdsImporter::ImportException', original = $!)
+    def initialize(msg = 'CdsImporter::ImportException', original = $ERROR_INFO)
       super(msg)
       @original = original
     end
