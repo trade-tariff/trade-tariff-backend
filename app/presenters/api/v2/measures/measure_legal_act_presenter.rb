@@ -74,7 +74,7 @@ module Api
         end
 
         def uk_regulation_data
-          @uk_regulation_data ||= UkRegulationParser.new(regulation.information_text)
+          @uk_regulation_data ||= UkRegulationParser.new(regulation.try(:information_text))
         end
       end
     end
