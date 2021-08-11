@@ -6,6 +6,98 @@ orbs:
   slack: circleci/slack@4.3.0
 
 commands:
+  cf_deploy_docker:
+    parameters:
+      dev-release:
+        default: false
+        type: boolean
+      space:
+        type: string
+      service:
+        type: string
+      environment_key:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker" -p deploy_manifest.yml
+      - run:
+          name: "Push new app in dark mode"
+          command: |
+            export IMAGE=enginetransformation/tariff-backend
+            export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+
+            # Push as "dark" instance
+            cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+            # Map dark route
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+
+            # Attach precreated autoscaling policy
+            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" config/autoscaling/<< parameters.space >>-policy.json
+
+            # Enable routing from this frontend to backend applications which are private
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --protocol tcp --port 8080
+
+      - run:
+          name: "Verify new version is working on dark URL."
+          command: |
+            sleep 15
+            # Verify new version is working on dark URL.
+            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+
+            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
+
+            if [ "$HTTPCODE" -ne 200 ];then
+              echo "dark route not available, failing deploy ($HTTPCODE)"
+              cf logs "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --recent
+              cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+              exit 1
+            fi
+      - run:
+          name: "Switch dark app to live"
+          command: |
+            # Send "real" url to new version
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+
+            # Start sending traffic to new version
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+
+            # Stop sending traffic to previous version
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+
+            # stop previous version
+            cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+
+            # delete previous version
+            cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker" -f
+
+            # Switch name of "dark" version to claim correct name
+            cf rename "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          channel: deployments
+          event: pass
+          template: basic_success_1
+
   cf_deploy_worker:
     parameters:
       space:
@@ -262,9 +354,10 @@ jobs:
           space: "development"
           domain_prefix: "dev"
           service: << parameters.service >>
-      - cf_blue_green_deploy:
+      - cf_deploy_docker:
+          dev-release: true
           space: "development"
-          domain_prefix: "dev"
+          environment_key: "dev"
           service: << parameters.service >>
       - sentry-release
 
@@ -326,6 +419,8 @@ workflows:
             branches:
               ignore:
                 - master
+          requires:
+            - test
       - deploy_dev:
            matrix:
              parameters:
@@ -339,7 +434,7 @@ workflows:
                  - master
                  - /^dependabot\/.*/
            requires:
-             - test
+             - build_dev
       - deploy_staging:
            matrix:
              parameters:
