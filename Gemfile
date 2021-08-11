@@ -3,7 +3,6 @@ source 'https://rubygems.org'
 ruby File.read('.ruby-version')
 
 # Server
-gem 'mimemagic'
 gem 'puma', '~> 5.3.1'
 gem 'rails', '>= 6.0.3.4'
 
