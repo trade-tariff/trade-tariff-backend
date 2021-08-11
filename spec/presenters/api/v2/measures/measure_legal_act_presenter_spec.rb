@@ -33,13 +33,23 @@ describe Api::V2::Measures::MeasureLegalActPresenter do
     subject { presenter.published_date }
 
     context 'without regulation present' do
-      let(:legal_act) { nil }
+      let(:regulation) { nil }
 
       it { is_expected.to be_nil }
     end
 
     context 'with legal act' do
-      it { is_expected.to eql(regulation.published_date) }
+      let(:regulation) do
+        create(:base_regulation, published_date: Date.yesterday)
+      end
+
+      it { is_expected.to eql(Date.yesterday) }
+    end
+
+    context 'with legal act without published_date field' do
+      let(:regulation) { create(:measure_partial_temporary_stop) }
+
+      it { is_expected.to be_nil }
     end
   end
 
