@@ -20,7 +20,6 @@ RUN bundle config set without 'development test'
 COPY .ruby-version Gemfile Gemfile.lock /app/
 RUN bundle install --jobs=4 --no-binstubs
 
-
 # Copy all files to /app (except what is defined in .dockerignore)
 COPY . /app/
 
@@ -37,7 +36,7 @@ RUN rm -rf node_modules log tmp && \
 # Build runtime image
 FROM ruby:2.7.4-alpine3.13 as production
 
-RUN apk add --update --no-cache tzdata && \
+RUN apk add --update --no-cache postgresql-dev curl-dev shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 
@@ -51,3 +50,4 @@ COPY --from=builder /app /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+

@@ -171,6 +171,35 @@ jobs:
           path: test-results/brakeman/
       - store_artifacts:
           path: brakeman.html
+
+  build:
+    environment:
+      IMAGE_NAME: enginetransformation/tariff-backend
+    parameters:
+      dev-build:
+        default: false
+        type: boolean
+    docker:
+      - image: cimg/ruby:2.7.4
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.2
+          docker_layer_caching: false
+      - run:
+          name: "Build Docker image"
+          command: |
+            export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
+            echo $GIT_NEW_REVISION >REVISION
+            docker build -t $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1} .
+      - run:
+          name: "Push image"
+          command: |
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}
+
+
+
   test:
     docker:
       - image: cimg/ruby:2.7.4
@@ -289,6 +318,14 @@ workflows:
              branches:
                ignore:
                  - master
+      - build:
+          name: build_dev
+          context: trade-tariff
+          dev-build: true
+          filters:
+            branches:
+              ignore:
+                - master
       - deploy_dev:
            matrix:
              parameters:
