@@ -22,9 +22,6 @@ Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
 # require models and serializers
 require 'clearable'
-Dir[Rails.root.join('app/models/*.rb')].sort.each { |f| require f }
-# Dir[Rails.root.join('app/models/concerns/*rb')].each { |f| require concern }
-Dir[Rails.root.join('app/serializers/*.rb')].sort.each { |f| require f }
 
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
