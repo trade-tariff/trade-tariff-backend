@@ -151,7 +151,7 @@ commands:
         type: string
       buildpack_version:
         type: string
-        default: "v1.8.43"
+        default: "v1.8.44"
     steps:
       - checkout
       - run:
@@ -192,7 +192,7 @@ commands:
         type: string
       buildpack_version:
         type: string
-        default: "v1.8.43"
+        default: "v1.8.44"
     steps:
       - checkout
       - run:
@@ -282,7 +282,7 @@ commands:
 jobs:
   linters:
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.0.2
     resource_class: small
     steps:
       - checkout
@@ -338,7 +338,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.0.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -387,7 +387,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.0.2
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -408,7 +408,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.0.2
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -427,7 +427,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.0.2
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
