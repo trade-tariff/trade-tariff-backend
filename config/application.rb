@@ -15,7 +15,6 @@ module TradeTariffBackend
     config.load_defaults 6.0
     require 'trade_tariff_backend'
 
-    # lib directory to be autoloadable.
     config.eager_load_paths << Rails.root.join('lib')
 
     config.generators do |g|

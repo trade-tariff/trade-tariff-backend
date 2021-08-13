@@ -7,9 +7,9 @@ gem 'puma', '~> 5.3.1'
 gem 'rails', '>= 6.0.3.4'
 
 # DB
-gem 'pg', '~> 1.1', '>= 1.1.3'
-gem 'sequel', '~> 5.22.0'
-gem 'sequel-rails', '~> 1.0.0'
+gem 'pg', '~> 1.2.3'
+gem 'sequel', '~> 5.47.0'
+gem 'sequel-rails', '~> 1.1.1'
 
 # File uploads and AWS
 gem 'aws-sdk-rails'
