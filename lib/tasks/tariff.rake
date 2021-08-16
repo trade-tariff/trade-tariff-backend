@@ -239,7 +239,6 @@ namespace :tariff do
   namespace :support do
     desc 'Create failed measures report'
     task failed_measures_report: %w[environment] do
-      require 'csv'
       items = []
       CSV.open('data/failed-measures-report.csv', 'wb', col_sep: ';') do |csv|
         csv << ['Goods Nomenclature', 'Measure Type', 'Update File', 'Errors', 'Candidate Measure', 'Notes']
@@ -291,7 +290,6 @@ namespace :tariff do
 
     desc 'Check codes on EU website, put your codes in `codes` array'
     task check_codes_on_eu: %w[environment] do
-      require 'net/http'
       codes = []
       not_on_eu = []
       codes.each do |code|

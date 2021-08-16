@@ -1,9 +1,7 @@
-require 'goods_nomenclature_mapper'
-
 module Api
   module V2
     class ChaptersController < ApiController
-      before_action :find_chapter, only: [:show, :changes]
+      before_action :find_chapter, only: %i[show changes]
 
       def index
         @chapters = Chapter.eager(:chapter_note).all
@@ -26,9 +24,9 @@ module Api
       def changes
         key = "chapter-#{@chapter.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}/changes"
         @changes = Rails.cache.fetch(key, expires_at: actual_date.end_of_day) do
-          ChangeLog.new(@chapter.changes.where { |o|
+          ChangeLog.new(@chapter.changes.where do |o|
             o.operation_date <= actual_date
-          })
+          end)
         end
 
         options = {}

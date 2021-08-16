@@ -1,5 +1,3 @@
-require 'csv'
-
 class SearchAnalyzer
   attr_reader :filename, :searches
 

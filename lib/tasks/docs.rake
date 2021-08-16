@@ -1,6 +1,3 @@
-require 'open-uri'
-require 'json'
-
 namespace :doc do
   desc 'Collect live API responses for docs'
   task api: 'environment' do

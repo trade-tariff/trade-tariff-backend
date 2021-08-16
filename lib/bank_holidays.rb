@@ -1,19 +1,14 @@
-require 'net/http'
-require 'json'
-
 module BankHolidays
-  def self.last(n)
-    [weekends(n), holidays(n)].flatten.compact.uniq.sort.last(n)
+  def self.last(number_of_days)
+    [weekends(number_of_days), holidays(number_of_days)].flatten.compact.uniq.sort.last(number_of_days)
   end
 
-  private
-
-  def self.weekends(n)
-    ((Date.current - n + 1)..Date.current).to_a.select{ |d| d.saturday? || d.sunday? }
+  def self.weekends(number_of_days)
+    ((Date.current - number_of_days + 1)..Date.current).to_a.select { |d| d.saturday? || d.sunday? }
   end
 
-  def self.holidays(n)
-    Holidays.between(Date.current - n, Date.current, :be_nl, :gb)
-            .map{ |h| h[:date] }
+  def self.holidays(number_of_days)
+    Holidays.between(Date.current - number_of_days, Date.current, :be_nl, :gb)
+            .map { |h| h[:date] }
   end
 end

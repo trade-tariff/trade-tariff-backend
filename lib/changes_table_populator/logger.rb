@@ -1,5 +1,3 @@
-require 'logger'
-
 module ChangesTablePopulator
   class Logger < ActiveSupport::LogSubscriber
     def populate(event)

@@ -1,5 +1,3 @@
-require 'mailer_environment'
-
 module TariffSynchronizer
   class Mailer < ActionMailer::Base
     include MailerEnvironment

@@ -1,8 +1,3 @@
-require_relative './changes_table_populator/logger'
-
-require 'active_support/notifications'
-require 'active_support/log_subscriber'
-
 module ChangesTablePopulator
   # Starts the generation of the changes data.
   def self.populate(day: Date.current)

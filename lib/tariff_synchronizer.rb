@@ -1,30 +1,5 @@
-require 'date'
-require 'logger'
-require 'fileutils'
-require 'ring_buffer'
-require 'active_support/notifications'
-require 'active_support/log_subscriber'
-
-require 'bank_holidays'
-require 'taric_importer'
-require 'cds_importer'
-require 'tariff_synchronizer/base_update'
-require 'tariff_synchronizer/base_update_importer'
-require 'tariff_synchronizer/cds_update_downloader'
-require 'tariff_synchronizer/file_service'
-require 'tariff_synchronizer/logger'
-require 'tariff_synchronizer/taric_file_name_generator'
-require 'tariff_synchronizer/taric_update_downloader'
-require 'tariff_synchronizer/tariff_downloader'
-require 'tariff_synchronizer/tariff_updates_requester'
-require 'tariff_synchronizer/response'
-
 module TariffSynchronizer
   class FailedUpdatesError < StandardError; end
-
-  autoload :Mailer,        'tariff_synchronizer/mailer'
-  autoload :TaricUpdate,   'tariff_synchronizer/taric_update'
-  autoload :CdsUpdate,     'tariff_synchronizer/cds_update'
 
   extend self
 
@@ -59,7 +34,6 @@ module TariffSynchronizer
   mattr_accessor :taric_initial_update_date
   self.taric_initial_update_date = Date.new(2012, 6, 6)
 
-  # TODO:
   # set initial update date
   # Initial dump date + 1 day
   mattr_accessor :cds_initial_update_date
@@ -199,6 +173,7 @@ module TariffSynchronizer
   # Restore database to specific date in the past
   #
   # NOTE: this does not remove records from initial seed
+  # rubocop:disable Style/OptionalBooleanParameter
   def rollback(rollback_date, keep = false)
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)
@@ -292,6 +267,7 @@ module TariffSynchronizer
   rescue Redlock::LockError
     instrument('rollback_lock_error.tariff_synchronizer', date: rollback_date, keep: keep)
   end
+  # rubocop:enable Style/OptionalBooleanParameter
 
   def initial_update_date_for(update_type)
     send("#{update_type}_initial_update_date")

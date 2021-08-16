@@ -1,5 +1,3 @@
-require 'csv'
-
 class ImportSearchReferences
   SPLIT_REGEX = /or|OR/.freeze
 
@@ -7,7 +5,7 @@ class ImportSearchReferences
   CHAPTER_IDENTITY_REGEX = /Chapter (\d{1,2})|Ch (\d{1,2})|^\s{0,}\d{1,2}\s{0,}$/.freeze
   SECTION_IDENTITY_REGEX = /Section\s{1,}(\d{1,2})|section\s{1,}(\d{1,2})/.freeze
 
-  def self.reload(from_file = File.join(Rails.root, 'db', 'green-pages.csv'))
+  def self.reload(from_file = Rails.root.join('db/green-pages.csv'))
     SearchReference.truncate
 
     new(from_file).run
@@ -33,7 +31,7 @@ class ImportSearchReferences
 
   def create_record(title, reference)
     SearchReference.create({
-      title: title.downcase
+      title: title.downcase,
     }.merge(associated_entity(reference)))
   end
 
@@ -47,18 +45,18 @@ class ImportSearchReferences
     case reference
     when HEADING_IDENTITY_REGEX
       {
-        referenced_id: Heading.by_code("#{$1}#{$2}").first_or_null.short_code,
-        referenced_class: 'Heading'
+        referenced_id: Heading.by_code("#{Regexp.last_match(1)}#{Regexp.last_match(2)}").first_or_null.short_code,
+        referenced_class: 'Heading',
       }
     when CHAPTER_IDENTITY_REGEX
       {
-        referenced_id: Chapter.by_code($1).first_or_null.short_code,
-        referenced_class: 'Chapter'
+        referenced_id: Chapter.by_code(Regexp.last_match(1)).first_or_null.short_code,
+        referenced_class: 'Chapter',
       }
     when SECTION_IDENTITY_REGEX
       {
-        referenced_id: Section.where(position: $1).first_or_null.id,
-        referenced_class: 'Section'
+        referenced_id: Section.where(position: Regexp.last_match(1)).first_or_null.id,
+        referenced_class: 'Section',
       }
     else
       {}

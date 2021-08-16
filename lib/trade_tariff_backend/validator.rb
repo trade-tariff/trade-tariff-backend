@@ -1,6 +1,3 @@
-require 'trade_tariff_backend/validator/validation_definer'
-require 'trade_tariff_backend/validator/validation_error'
-
 module TradeTariffBackend
   class Validator
     def self.validations
@@ -17,27 +14,31 @@ module TradeTariffBackend
     end
 
     def validate(record)
-      relevant_validations_for(record).select { |validation|
+      validations = relevant_validations_for(record).select do |validation|
         validation.operations.include?(record.operation)
-      }.each { |validation|
+      end
+
+      validations.each do |validation|
         record.conformance_errors.add(validation.identifiers, validation.to_s) unless validation.valid?(record)
-      }
+      end
     end
 
     def validate_for_operations(record, *operations)
-      relevant_validations_for(record).select { |validation|
+      validations = relevant_validations_for(record).select do |validation|
         (validation.operations & operations).any?
-      }.each { |validation|
+      end
+
+      validations.each do |validation|
         record.conformance_errors.add(validation.identifiers, validation.to_s) unless validation.valid?(record)
-      }
+      end
     end
 
   private
 
     def relevant_validations_for(record)
-      validations.select { |validation|
+      validations.select do |validation|
         validation.relevant_for?(record)
-      }
+      end
     end
   end
 end

@@ -1,6 +1,4 @@
 namespace :sidekiq do
-  require 'sidekiq/api'
-
   desc "Get status of batch. You must supply a :bid (batch id), e.g. `rake sidekiq:status['BYUxWr4GbojwaQ']`. Batch ID may be found in the Sidekiq::Worker, e.g., `rake sidekiq:workers`"
   task :status, [:bid] do |_task, args|
     exit unless args[:bid]

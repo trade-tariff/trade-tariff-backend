@@ -1,5 +1,3 @@
-require 'goods_nomenclature_mapper'
-
 module Api
   module Admin
     class ChaptersController < ApiController
@@ -13,7 +11,7 @@ module Api
 
       def show
         options = { is_collection: false }
-        options[:include] = [:chapter_note, :headings, :section]
+        options[:include] = %i[chapter_note headings section]
 
         render json: Api::Admin::Chapters::ChapterSerializer.new(@chapter, options).serializable_hash
       end

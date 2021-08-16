@@ -1,9 +1,7 @@
-require 'goods_nomenclature_mapper'
-
 module Api
   module V2
     class HeadingsController < ApiController
-      before_action :find_heading, only: [:show, :changes]
+      before_action :find_heading, only: %i[show changes]
 
       def show
         service = ::HeadingService::HeadingSerializationService.new(@heading, actual_date)
@@ -13,9 +11,9 @@ module Api
       def changes
         key = "heading-#{@heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}/changes"
         @changes = Rails.cache.fetch(key, expires_at: actual_date.end_of_day) do
-          ChangeLog.new(@heading.changes.where { |o|
+          ChangeLog.new(@heading.changes.where do |o|
             o.operation_date <= actual_date
-          })
+          end)
         end
 
         options = {}

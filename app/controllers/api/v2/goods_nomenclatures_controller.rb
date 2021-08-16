@@ -1,5 +1,3 @@
-require 'csv'
-
 module Api
   module V2
     class GoodsNomenclaturesController < ApiController

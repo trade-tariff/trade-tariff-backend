@@ -1,16 +1,8 @@
-require 'nokogiri'
-
-require 'tariff_importer/logger'
-require 'taric_importer/transaction'
-require 'taric_importer/record_processor'
-require 'taric_importer/xml_parser'
-require 'taric_importer/helpers/string_helper'
-
 class TaricImporter
   class ImportException < StandardError
     attr_reader :original
 
-    def initialize(msg = 'TaricImporter::ImportException', original=$!)
+    def initialize(msg = 'TaricImporter::ImportException', original = $ERROR_INFO)
       super(msg)
       @original = original
     end
@@ -40,14 +32,13 @@ class TaricImporter
     end
 
     def process_xml_node(hash_from_node)
-      begin
-        transaction = Transaction.new(hash_from_node, @issue_date)
-        transaction.persist
-        transaction.validate if @validate
-      rescue StandardError => exception
-        ActiveSupport::Notifications.instrument('taric_failed.tariff_importer', exception: exception, hash: hash_from_node)
-        raise ImportException.new
-      end
+      transaction = Transaction.new(hash_from_node, @issue_date)
+      transaction.persist
+      transaction.validate if @validate
+    rescue StandardError => e
+      ActiveSupport::Notifications.instrument('taric_failed.tariff_importer', exception: e, hash: hash_from_node)
+
+      raise ImportException
     end
   end
 
@@ -56,11 +47,12 @@ class TaricImporter
   def proceed_with_import?(filename)
     return true unless TradeTariffBackend.use_cds?
 
-    !TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).present?
+    TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).blank?
   end
 
   def post_import(file_path:, filename:)
     create_update_entry(file_path: file_path, filename: filename) if TradeTariffBackend.use_cds?
+
     ActiveSupport::Notifications.instrument('taric_imported.tariff_importer', filename: @taric_update.filename)
   end
 
@@ -72,8 +64,8 @@ class TaricImporter
       issue_date: issue_date,
       filesize: file_size,
       state: 'A',
-      applied_at: Time.now,
-      updated_at: Time.now
+      applied_at: Time.zone.now,
+      updated_at: Time.zone.now,
     )
   end
 

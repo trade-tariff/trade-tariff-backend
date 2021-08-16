@@ -1,6 +1,5 @@
-require 'mailer_environment'
-
 module TradeTariffBackend
+  # rubocop:disable Rails/ApplicationMailer
   class Mailer < ActionMailer::Base
     include MailerEnvironment
 
@@ -13,4 +12,5 @@ module TradeTariffBackend
       mail subject: "#{subject_prefix(:error)} Trade Tariff reindex failure"
     end
   end
+  # rubocop:enable Rails/ApplicationMailer
 end

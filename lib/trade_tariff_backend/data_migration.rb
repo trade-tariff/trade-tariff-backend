@@ -1,19 +1,12 @@
-require 'forwardable'
-
-require 'trade_tariff_backend/data_migration/block_accessor'
-require 'trade_tariff_backend/data_migration/dependency'
-require 'trade_tariff_backend/data_migration/runner'
-require 'trade_tariff_backend/data_migration/null_runner'
-require 'trade_tariff_backend/data_migration/log_entry'
-
 module TradeTariffBackend
   class DataMigration
     attr_accessor :name, :desc
 
     def initialize(&block)
-      instance_eval &block if block_given?
+      instance_eval(&block) if block_given?
     end
 
+    # rubocop:disable Lint/DuplicateMethods
     def name(name = '')
       if name.present?
         @name = name
@@ -29,6 +22,7 @@ module TradeTariffBackend
         @desc
       end
     end
+    # rubocop:enable Lint/DuplicateMethods
 
     # If called with block set up migration runner
     # Otherwise return the preset runner
@@ -65,13 +59,13 @@ module TradeTariffBackend
     private
 
     def define_up_runner(&block)
-      raise ArgumentError.new('#define_up_runner expects block to be passed in') unless block_given?
+      raise ArgumentError, '#define_up_runner expects block to be passed in' unless block_given?
 
       @up_runner = Runner.new(self, :up, &block)
     end
 
     def define_down_runner(&block)
-      raise ArgumentError.new('#define_down_runner expects block to be passed in') unless block_given?
+      raise ArgumentError, '#define_down_runner expects block to be passed in' unless block_given?
 
       @down_runner = Runner.new(self, :down, &block)
     end

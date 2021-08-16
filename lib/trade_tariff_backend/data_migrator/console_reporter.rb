@@ -1,12 +1,10 @@
-require 'ansi/code'
-
 module TradeTariffBackend
   class DataMigrator
     module ConsoleReporter
       module_function
 
       def status(migration)
-        puts "[#{migration_state(migration)}] #{[migration.name, migration.desc].compact.join(": ")}"
+        puts "[#{migration_state(migration)}] #{[migration.name, migration.desc].compact.join(': ')}"
       end
 
       def applied(migration)
@@ -18,7 +16,7 @@ module TradeTariffBackend
       end
 
       def migration_state(migration)
-        (migration.can_rollup?) ? ANSI.red('pending'.upcase) : ANSI.green('applied'.upcase)
+        migration.can_rollup? ? ANSI.red('pending'.upcase) : ANSI.green('applied'.upcase)
       end
     end
   end

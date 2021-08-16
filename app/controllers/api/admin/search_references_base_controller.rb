@@ -28,7 +28,7 @@ module Api
 
       def create
         @search_reference = SearchReference.new(
-          search_reference_params[:attributes].merge(search_reference_resource_association_hash)
+          search_reference_params[:attributes].merge(search_reference_resource_association_hash),
         )
 
         if @search_reference.save
@@ -47,7 +47,7 @@ module Api
       def update
         @search_reference = search_reference_resource
         @search_reference.set(
-          search_reference_params[:attributes]
+          search_reference_params[:attributes],
         )
         @search_reference.save
 
@@ -84,7 +84,7 @@ module Api
       end
 
       def search_reference_collection
-        raise ArgumentError.new('#search_reference_collection should be overriden by inheriting classes')
+        raise ArgumentError, '#search_reference_collection should be overriden by inheriting classes'
       end
 
       def search_reference_resource
@@ -92,7 +92,7 @@ module Api
       end
 
       def search_reference_resource_association_hash
-        raise ArgumentError.new('#search_reference_resource_association_hash should be overriden by inheriting classes')
+        raise ArgumentError, '#search_reference_resource_association_hash should be overriden by inheriting classes'
       end
 
       def set_pagination_headers
@@ -101,8 +101,8 @@ module Api
             total: search_reference_collection.count,
             offset: page * per_page,
             page: page,
-            per_page: per_page
-          }
+            per_page: per_page,
+          },
         }.to_json
       end
     end

@@ -1,5 +1,3 @@
-require 'zip'
-
 namespace :tariff do
   namespace :download do
     desc 'Download all Taric files from production AWS S3'
@@ -16,8 +14,8 @@ namespace :tariff do
           end
         end
 
-        if TradeTariffBackend.use_cds?
-          extract_file(filename(key)) if key.include?('.zip')
+        if TradeTariffBackend.use_cds? && key.include?('.zip')
+          extract_file(filename(key))
         end
       end
     end
