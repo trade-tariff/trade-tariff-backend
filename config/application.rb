@@ -17,8 +17,6 @@ module TradeTariffBackend
     # lib directory to be autoloadable.
     config.eager_load_paths << Rails.root.join('lib')
 
-    config.autoloader = :classic
-
     config.generators do |g|
       g.view_specs     false
       g.helper_specs   false
