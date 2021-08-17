@@ -75,11 +75,6 @@ namespace :tariff do
   end
 
   namespace :install do
-    desc 'Load Green Page (SearchReference) entities from reference file'
-    task green_pages: :environment do
-      ImportSearchReferences.reload
-    end
-
     namespace :taric do
       desc 'Add Sections and associate to Chapters'
       task sections: :environment do
