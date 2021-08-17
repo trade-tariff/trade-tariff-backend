@@ -1,6 +1,5 @@
 class QuotaCriticalEvent < Sequel::Model
   plugin :oplog, primary_key: %i[quota_definition_sid occurrence_timestamp]
-  plugin :conformance_validator
 
   set_primary_key %i[quota_definition_sid occurrence_timestamp]
 

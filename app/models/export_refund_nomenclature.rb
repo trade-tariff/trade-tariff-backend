@@ -2,7 +2,6 @@ class ExportRefundNomenclature < Sequel::Model
   plugin :time_machine, period_start_column: :export_refund_nomenclatures__validity_start_date,
                         period_end_column:   :export_refund_nomenclatures__validity_end_date
   plugin :oplog, primary_key: :export_refund_nomenclature_sid
-  plugin :conformance_validator
 
   set_dataset order(Sequel.asc(:export_refund_nomenclatures__goods_nomenclature_item_id))
 

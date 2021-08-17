@@ -3,7 +3,6 @@ class FootnoteAssociationGoodsNomenclature < Sequel::Model
   plugin :oplog, primary_key: %i[footnote_id
                                  footnote_type
                                  goods_nomenclature_sid]
-  plugin :conformance_validator
 
   set_primary_key %i[footnote_id footnote_type goods_nomenclature_sid]
 

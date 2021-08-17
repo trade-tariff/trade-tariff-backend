@@ -78,13 +78,6 @@ describe AdditionalCode do
     end
   end
 
-  describe 'validations' do
-    # ACN1
-    it { is_expected.to validate_uniqueness.of(%i[additional_code additional_code_type_id validity_start_date]) }
-    # ACN3
-    it { is_expected.to validate_validity_dates }
-  end
-
   describe '#code' do
     let(:additional_code) { build :additional_code }
 

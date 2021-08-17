@@ -10,7 +10,7 @@ class TaricImporter
   class ImportException < StandardError
     attr_reader :original
 
-    def initialize(msg = 'TaricImporter::ImportException', original=$!)
+    def initialize(msg = 'TaricImporter::ImportException', original = $ERROR_INFO)
       super(msg)
       @original = original
     end
@@ -23,31 +23,27 @@ class TaricImporter
     @taric_update = taric_update
   end
 
-  def import(validate: true)
+  def import
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
 
-    handler = XmlProcessor.new(@taric_update.issue_date, validate)
+    handler = XmlProcessor.new(@taric_update.issue_date)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     XmlParser::Reader.new(file, 'record', handler).parse
     post_import(file_path: @taric_update.file_path, filename: filename)
   end
 
   class XmlProcessor
-    def initialize(issue_date, validate)
+    def initialize(issue_date)
       @issue_date = issue_date
-      @validate = validate
     end
 
     def process_xml_node(hash_from_node)
-      begin
-        transaction = Transaction.new(hash_from_node, @issue_date)
-        transaction.persist
-        transaction.validate if @validate
-      rescue StandardError => exception
-        ActiveSupport::Notifications.instrument('taric_failed.tariff_importer', exception: exception, hash: hash_from_node)
-        raise ImportException.new
-      end
+      transaction = Transaction.new(hash_from_node, @issue_date)
+      transaction.persist
+    rescue StandardError => e
+      ActiveSupport::Notifications.instrument('taric_failed.tariff_importer', exception: e, hash: hash_from_node)
+      raise ImportException
     end
   end
 
@@ -56,7 +52,7 @@ class TaricImporter
   def proceed_with_import?(filename)
     return true unless TradeTariffBackend.use_cds?
 
-    !TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).present?
+    TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).blank?
   end
 
   def post_import(file_path:, filename:)
@@ -72,8 +68,8 @@ class TaricImporter
       issue_date: issue_date,
       filesize: file_size,
       state: 'A',
-      applied_at: Time.now,
-      updated_at: Time.now
+      applied_at: Time.zone.now,
+      updated_at: Time.zone.now,
     )
   end
 

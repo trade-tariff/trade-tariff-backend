@@ -1,5 +1,8 @@
 require 'rails_helper'
 
+# rubocop:disable RSpec/MultipleExpectations
+# rubocop:disable RSpec/InstanceVariable
+# rubocop:disable RSpec/MultipleMemoizedHelpers
 describe TaricImporter do
   describe '#import' do
     let(:example_date) { Date.new(2013, 8, 2) }
@@ -13,7 +16,7 @@ describe TaricImporter do
         .and_return('spec/fixtures/taric_samples/unknown_record.xml')
     end
 
-    context 'on parsing error' do
+    context 'when importing a record that triggers an error' do
       before do
         allow(taric_update).to receive(:file_path)
           .and_return('spec/fixtures/taric_samples/broken_insert_record.xml')
@@ -34,7 +37,7 @@ describe TaricImporter do
       end
     end
 
-    context 'on a complex record like measure' do
+    context 'when importing a complex record' do
       let(:taric_file_path) { 'spec/fixtures/taric_samples/create_measure.xml' }
       let(:taric_update_path) { 'spec/fixtures/taric_samples/update_measure.xml' }
 
@@ -82,17 +85,6 @@ describe TaricImporter do
         expect(update).to be_present
         expect(update.validity_end_date).to be_present
       end
-
-      it 'emits conformance errors as ActiveSupport notifications' do
-        bogus_records = []
-        ActiveSupport::Notifications.subscribe(/conformance_error/) do |*args|
-          event = ActiveSupport::Notifications::Event.new(*args)
-          bogus_records << event.payload[:record]
-        end
-
-        described_class.new(taric_update).import
-        expect(bogus_records.size).to eq 1
-      end
     end
 
     context 'when provided with valid taric file' do
@@ -125,3 +117,6 @@ describe TaricImporter do
     end
   end
 end
+# rubocop:enable RSpec/InstanceVariable
+# rubocop:enable RSpec/MultipleExpectations
+# rubocop:enable RSpec/MultipleMemoizedHelpers

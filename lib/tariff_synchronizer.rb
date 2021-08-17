@@ -122,7 +122,6 @@ module TariffSynchronizer
     check_tariff_updates_failures
 
     applied_updates = []
-    unconformant_records = []
     import_warnings = []
 
     # The sync task is run on multiple machines to avoid more than on process
@@ -130,11 +129,6 @@ module TariffSynchronizer
     TradeTariffBackend.with_redis_lock do
       # Updates could be modifying primary keys so unrestricted it for all models.
       Sequel::Model.subclasses.each(&:unrestrict_primary_key)
-
-      subscribe(/conformance_error/) do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        unconformant_records << event.payload[:record]
-      end
 
       date_range = date_range_since_last_pending_update
       date_range.each do |day|
@@ -147,7 +141,6 @@ module TariffSynchronizer
         instrument(
           'apply.tariff_synchronizer',
           update_names: applied_updates.map(&:filename),
-          unconformant_records: unconformant_records,
           import_warnings: import_warnings,
         )
       end
@@ -160,7 +153,6 @@ module TariffSynchronizer
     check_tariff_updates_failures
 
     applied_updates = []
-    unconformant_records = []
     import_warnings = []
 
     # The sync task is run on multiple machines to avoid more than on process
@@ -168,11 +160,6 @@ module TariffSynchronizer
     TradeTariffBackend.with_redis_lock do
       # Updates could be modifying primary keys so unrestricted it for all models.
       Sequel::Model.subclasses.each(&:unrestrict_primary_key)
-
-      subscribe(/conformance_error/) do |*args|
-        event = ActiveSupport::Notifications::Event.new(*args)
-        unconformant_records << event.payload[:record]
-      end
 
       subscribe 'apply.import_warnings' do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
@@ -188,8 +175,7 @@ module TariffSynchronizer
 
       if applied_updates.any? && BaseUpdate.pending_or_failed.none?
         instrument('apply.tariff_synchronizer',
-                   update_names: applied_updates.map(&:filename),
-                   unconformant_records: unconformant_records)
+                   update_names: applied_updates.map(&:filename))
       end
     end
   rescue Redlock::LockError

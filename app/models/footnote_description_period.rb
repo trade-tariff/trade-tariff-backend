@@ -3,7 +3,6 @@ class FootnoteDescriptionPeriod < Sequel::Model
   plugin :oplog, primary_key: %i[footnote_id
                                  footnote_type_id
                                  footnote_description_period_sid]
-  plugin :conformance_validator
 
   set_primary_key %i[footnote_id footnote_type_id footnote_description_period_sid]
 

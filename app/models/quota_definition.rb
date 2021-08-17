@@ -1,7 +1,6 @@
 class QuotaDefinition < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: :quota_definition_sid
-  plugin :conformance_validator
 
   set_primary_key [:quota_definition_sid]
 

@@ -1,19 +1,27 @@
 require 'rails_helper'
 
+# rubocop:disable RSpec/InstanceVariable
+# rubocop:disable RSpec/MultipleExpectations
 describe TariffSynchronizer::BaseUpdateImporter do
   let(:taric_update) { create :taric_update, :pending }
   let(:base_update_importer) { described_class.new(taric_update) }
 
   describe '#apply', truncation: true do
     it 'calls the import! method to the object' do
-      expect(taric_update).to receive(:import!).and_return(true)
+      allow(taric_update).to receive(:import!)
+
       base_update_importer.apply
+
+      expect(taric_update).to have_received(:import!)
     end
 
     it 'do not call the import! method to the object if is not pending' do
+      allow(taric_update).to receive(:import!)
+
       taric_update.mark_as_failed
 
-      expect(taric_update).not_to receive(:import!)
+      expect(taric_update).not_to have_received(:import!)
+
       base_update_importer.apply
     end
 
@@ -33,12 +41,14 @@ describe TariffSynchronizer::BaseUpdateImporter do
     end
 
     it 'subscribes to all events' do
+      allow(ActiveSupport::Notifications).to receive(:subscribe)
       allow(taric_update).to receive(:import!).and_return(true)
-      expect(ActiveSupport::Notifications).to receive(:subscribe).with(/sql\.sequel/)
-      expect(ActiveSupport::Notifications).to receive(:subscribe).with(/conformance_error/)
-      expect(ActiveSupport::Notifications).to receive(:subscribe).with(/presence_error/)
-      expect(ActiveSupport::Notifications).to receive(:subscribe).with(/cds_error/)
+
       base_update_importer.apply
+
+      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/sql\.sequel/)
+      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/presence_error/)
+      expect(ActiveSupport::Notifications).to have_received(:subscribe).with(/cds_error/)
     end
 
     it 'logs error message and sends an email' do
@@ -56,4 +66,6 @@ describe TariffSynchronizer::BaseUpdateImporter do
       expect(email.encoded).to include('(Sequel::Postgres::Database) ROLLBACK')
     end
   end
+  # rubocop:enable RSpec/MultipleExpectations
+  # rubocop:enable RSpec/InstanceVariable
 end

@@ -39,7 +39,6 @@ class MeasureType < Sequel::Model
   plugin :time_machine, period_start_column: :measure_types__validity_start_date,
                         period_end_column: :measure_types__validity_end_date
   plugin :oplog, primary_key: :measure_type_id
-  plugin :conformance_validator
 
   set_primary_key [:measure_type_id]
 

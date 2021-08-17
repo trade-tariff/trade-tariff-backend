@@ -15,7 +15,6 @@ class Measure < Sequel::Model
 
   plugin :time_machine
   plugin :oplog, primary_key: :measure_sid
-  plugin :conformance_validator
   plugin :national
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
@@ -287,10 +286,6 @@ class Measure < Sequel::Model
 
   def national?
     national
-  end
-
-  def validate!
-    model.validate(self)
   end
 
   def validity_date_justified?
