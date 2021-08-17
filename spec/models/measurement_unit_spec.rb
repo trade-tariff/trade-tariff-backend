@@ -30,12 +30,12 @@ describe MeasurementUnit do
   describe '.measurement_units' do
     let(:units) { described_class.send(:measurement_units) }
 
-    it "will return the hash of all measurement units" do
+    it 'will return the hash of all measurement units' do
       expect(units).to be_instance_of Hash
     end
 
-    it "will include individual units indexed by key" do
-      expect(units).to include("ASV")
+    it 'will include individual units indexed by key' do
+      expect(units).to include('ASV')
     end
   end
 
@@ -45,10 +45,11 @@ describe MeasurementUnit do
     end
 
     context 'with missing measurement unit present in database' do
-      before { allow(Raven).to receive(:capture_message).and_return(true) }
-      before { allow(MeasurementUnit).to receive(:measurement_units).and_return({}) }
-
       subject! { MeasurementUnit.measurement_unit(unit_code) }
+
+      before { allow(Raven).to receive(:capture_message).and_return(true) }
+
+      before { allow(MeasurementUnit).to receive(:measurement_units).and_return({}) }
 
       let(:unit_code) { measurement_unit.measurement_unit_code }
       let(:unit_description) { measurement_unit.description }
@@ -64,7 +65,7 @@ describe MeasurementUnit do
     context 'with measurement unit not in the database' do
       let(:unit) { MeasurementUnit.measurement_unit('UNKNOWN') }
 
-      it "will raise an InvalidMeasurementUnit exception" do
+      it 'will raise an InvalidMeasurementUnit exception' do
         expect { unit }.to raise_exception(MeasurementUnit::InvalidMeasurementUnit)
       end
     end

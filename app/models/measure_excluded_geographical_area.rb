@@ -7,5 +7,5 @@ class MeasureExcludedGeographicalArea < Sequel::Model
                        primary_key: :measure_sid
 
   one_to_one :geographical_area, key: :geographical_area_sid,
-                       primary_key: :geographical_area_sid
+                                 primary_key: :geographical_area_sid
 end

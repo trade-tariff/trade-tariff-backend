@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 describe AdditionalCodeType do
-
   describe '#export_refund_agricultural?' do
     let!(:ern_agricultural) { create :additional_code_type, :ern_agricultural }
     let!(:non_ern_agricultural) { create :additional_code_type, application_code: '1' }

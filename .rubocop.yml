@@ -42,6 +42,8 @@ Rails/FilePath:
   Enabled: false
 Style/Documentation:
   Enabled: false
+Style/FormatString:
+  Enabled: false
 Style/FrozenStringLiteralComment:
   Enabled: false
 Style/GuardClause:

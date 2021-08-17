@@ -61,7 +61,7 @@ class GeographicalArea < Sequel::Model
     def countries
       where(geographical_code: COUNTRIES_CODES)
     end
-    
+
     def areas
       where(geographical_code: AREAS_CODES)
     end

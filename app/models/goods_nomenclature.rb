@@ -5,12 +5,12 @@ class GoodsNomenclature < Sequel::Model
   set_primary_key [:goods_nomenclature_sid]
 
   plugin :time_machine, period_start_column: Sequel.qualify(:goods_nomenclatures, :validity_start_date),
-                        period_end_column:   Sequel.qualify(:goods_nomenclatures, :validity_end_date)
+                        period_end_column: Sequel.qualify(:goods_nomenclatures, :validity_end_date)
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :nullable
   plugin :active_model
 
-  plugin :sti, class_determinator: ->(record) {
+  plugin :sti, class_determinator: lambda { |record|
     gono_id = record[:goods_nomenclature_item_id].to_s
 
     if gono_id.ends_with?('00000000')

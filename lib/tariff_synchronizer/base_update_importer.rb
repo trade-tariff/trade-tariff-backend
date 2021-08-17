@@ -40,17 +40,17 @@ module TariffSynchronizer
       @sql_subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
 
-        binds = unless event.payload.fetch(:binds, []).blank?
-                  event.payload[:binds].map do |column, value|
+        binds = if event.payload.fetch(:binds, []).present?
+                  event.payload[:binds].map { |column, value|
                     [column.name, value]
-                  end.inspect
+                  }.inspect
                 end
 
         @database_queries.push(
           format('(%{class_name}) %{sql} %{binds}',
                  class_name: event.payload[:name],
                  sql: event.payload[:sql].squeeze(' '),
-                 binds: binds)
+                 binds: binds),
         )
       end
     end
@@ -63,7 +63,7 @@ module TariffSynchronizer
         TariffSynchronizer::TariffUpdatePresenceError.create(
           base_update: @base_update,
           model_name: klass,
-          details: details.to_json
+          details: details.to_json,
         )
       end
     end
@@ -82,8 +82,8 @@ module TariffSynchronizer
             errors: record.errors,
             xml_key: xml_key,
             xml_node: xml_node,
-            exception: exception.class.to_s + ': ' + exception.message.to_s
-          }.to_json
+            exception: exception.class.to_s + ': ' + exception.message.to_s,
+          }.to_json,
         )
       end
     end
@@ -99,7 +99,7 @@ module TariffSynchronizer
         'failed_update.tariff_synchronizer',
         exception: exception,
         update: @base_update,
-        database_queries: @database_queries
+        database_queries: @database_queries,
       )
     end
   end

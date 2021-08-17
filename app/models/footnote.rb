@@ -37,20 +37,20 @@ class Footnote < Sequel::Model
   many_to_many :goods_nomenclatures, join_table: :footnote_association_goods_nomenclatures,
                                      left_key: %i[footnote_type footnote_id],
                                      right_key: [:goods_nomenclature_sid]
-  
+
   one_to_many :footnote_association_erns, key: %i[footnote_type footnote_id],
                                           primary_key: %i[footnote_type_id footnote_id]
   many_to_many :export_refund_nomenclatures, join_table: :footnote_association_erns,
-                                     left_key: %i[footnote_type footnote_id],
-                                     right_key: [:export_refund_nomenclature_sid]
+                                             left_key: %i[footnote_type footnote_id],
+                                             right_key: [:export_refund_nomenclature_sid]
   one_to_many :footnote_association_additional_codes, key: %i[footnote_type_id footnote_id],
                                                       primary_key: %i[footnote_id footnote_type_id]
   many_to_many :additional_codes, join_table: :footnote_association_additional_codes,
                                   left_key: %i[footnote_type_id footnote_id],
                                   right_key: [:additional_code_sid]
   many_to_many :meursing_headings, join_table: :footnote_association_meursing_headings,
-                                  left_key: %i[footnote_type footnote_id],
-                                  right_key: %i[meursing_table_plan_id meursing_heading_number]
+                                   left_key: %i[footnote_type footnote_id],
+                                   right_key: %i[meursing_table_plan_id meursing_heading_number]
 
   delegate :description, :formatted_description, to: :footnote_description
 
@@ -60,18 +60,18 @@ class Footnote < Sequel::Model
     end
   end
 
-    # FO4
-    # length_of :footnote_description_periods, minimum: 1
-    # # FO4
-    # associated :footnote_description_periods, ensure: :first_footnote_description_period_is_valid
-    # # FO5, FO6, FO7, FO9, FO10
-    # associated [:measures,
-    #             :goods_nomenclatures,
-    #             :export_refund_nomenclatures,
-    #             :additional_codes,
-    #             :meursing_headings], ensure: :spans_validity_period_of_associations
-    # # FO17
-    # associated :footnote_type, ensure: :footnote_type_validity_period_spans_validity_periods
+  # FO4
+  # length_of :footnote_description_periods, minimum: 1
+  # # FO4
+  # associated :footnote_description_periods, ensure: :first_footnote_description_period_is_valid
+  # # FO5, FO6, FO7, FO9, FO10
+  # associated [:measures,
+  #             :goods_nomenclatures,
+  #             :export_refund_nomenclatures,
+  #             :additional_codes,
+  #             :meursing_headings], ensure: :spans_validity_period_of_associations
+  # # FO17
+  # associated :footnote_type, ensure: :footnote_type_validity_period_spans_validity_periods
 
   def code
     "#{footnote_type_id}#{footnote_id}"

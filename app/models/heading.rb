@@ -4,26 +4,26 @@ class Heading < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
 
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '____000000').
-              filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '__00______').
-              order(Sequel.asc(:goods_nomenclature_item_id))
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '____000000')
+              .filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '__00______')
+              .order(Sequel.asc(:goods_nomenclature_item_id))
 
   set_primary_key [:goods_nomenclature_sid]
 
-  one_to_many :commodities, dataset: -> {
+  one_to_many :commodities, dataset: lambda {
     actual_or_relevant(Commodity)
              .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
              .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
   }
 
-  one_to_one :chapter, dataset: -> {
+  one_to_one :chapter, dataset: lambda {
     actual_or_relevant(Chapter).filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
   }
 
   one_to_many :search_references, key: :referenced_id, primary_key: :short_code, reciprocal: :referenced, conditions: { referenced_class: 'Heading' },
-    adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Heading') },
-    remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-    clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
+                                  adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Heading') },
+                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
+                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
 
   dataset_module do
     def by_code(code = '')
@@ -64,7 +64,7 @@ class Heading < GoodsNomenclature
   end
 
   def uptree
-    [self, self.chapter].compact
+    [self, chapter].compact
   end
 
   def non_grouping?
@@ -77,7 +77,7 @@ class Heading < GoodsNomenclature
                                       .where('goods_nomenclature_item_id > ?', goods_nomenclature_item_id)
                                       .none?
   end
-  alias :declarable? :declarable
+  alias_method :declarable?, :declarable
 
   def changes(depth = 1)
     operation_klass.select(
@@ -85,16 +85,16 @@ class Heading < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(pk_hash)
      .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_commodities, '____000000']))
      .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_commodities]))
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
-       # if Heading did not come from initial seed, filter by its
-       # create/update date
-      criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
+      # if Heading did not come from initial seed, filter by its
+      # create/update date
+      criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
@@ -106,7 +106,7 @@ class Heading < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(conditions)
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last))
