@@ -13,7 +13,6 @@ module TariffSynchronizer
       return unless @base_update.pending?
 
       track_latest_sql_queries
-      keep_record_of_conformance_errors
       keep_record_of_presence_errors
       keep_record_of_cds_errors
 
@@ -31,7 +30,6 @@ module TariffSynchronizer
       raise Sequel::Rollback
     ensure
       ActiveSupport::Notifications.unsubscribe(@sql_subscriber)
-      ActiveSupport::Notifications.unsubscribe(@conformance_errors_subscriber)
       ActiveSupport::Notifications.unsubscribe(@presence_errors_subscriber)
       ActiveSupport::Notifications.unsubscribe(@cds_errors_subscriber)
     end
@@ -53,19 +51,6 @@ module TariffSynchronizer
                  class_name: event.payload[:name],
                  sql: event.payload[:sql].squeeze(' '),
                  binds: binds)
-        )
-      end
-    end
-
-    def keep_record_of_conformance_errors
-      @conformance_errors_subscriber = ActiveSupport::Notifications.subscribe(/conformance_error/) do |*args|
-        record = ActiveSupport::Notifications::Event.new(*args).payload[:record]
-        TariffUpdateConformanceError.create(
-          base_update: @base_update,
-          model_name: record.class.to_s,
-          model_primary_key: record.pk,
-          model_values: record.values,
-          model_conformance_errors: record.conformance_errors
         )
       end
     end

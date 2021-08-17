@@ -2,7 +2,6 @@ class GeographicalAreaDescription < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: %i[geographical_area_description_period_sid
                                  geographical_area_sid]
-  plugin :conformance_validator
 
   set_primary_key %i[geographical_area_description_period_sid geographical_area_sid]
 

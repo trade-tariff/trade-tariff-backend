@@ -4,7 +4,6 @@ class GoodsNomenclatureIndent < Sequel::Model
   plugin :oplog, primary_key: :goods_nomenclature_indent_sid
   plugin :time_machine, period_start_column: :goods_nomenclature_indents__validity_start_date,
                         period_end_column:   :goods_nomenclature_indents__validity_end_date
-  plugin :conformance_validator
 
   set_primary_key [:goods_nomenclature_indent_sid]
 end

@@ -10,7 +10,7 @@ module Api
       private
 
       def collection
-        @collection ||= TariffSynchronizer::BaseUpdate.eager(:conformance_errors, :presence_errors)
+        @collection ||= TariffSynchronizer::BaseUpdate.eager(:presence_errors)
           .descending
           .exclude(update_type: 'TariffSynchronizer::ChiefUpdate')
           .paginate(current_page, per_page)
