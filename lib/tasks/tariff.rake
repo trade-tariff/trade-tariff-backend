@@ -75,16 +75,11 @@ namespace :tariff do
   end
 
   namespace :install do
-    desc 'Load Green Page (SearchReference) entities from reference file'
-    task green_pages: :environment do
-      ImportSearchReferences.reload
-    end
-
     namespace :taric do
       desc 'Add Sections and associate to Chapters'
       task sections: :environment do
         ENV['RUNNING_TASK'] = 'enabled'
-        load(File.join(Rails.root, 'db', 'import_sections.rb'))
+        load(Rails.root.join('db/import_sections.rb'))
         ENV.delete('RUNNING_TASK')
       end
 
@@ -104,7 +99,7 @@ namespace :tariff do
 
       desc 'Load Section notes into database'
       task section_notes: :environment do
-        Dir[Rails.root.join('db', 'notes', 'sections', '*')].each do |file|
+        Dir[Rails.root.join('db/notes/sections/*')].each do |file|
           note = YAML.safe_load(File.read(file), [Symbol])
           section_note = SectionNote.find(section_id: note[:section]) || SectionNote.new(section_id: note[:section])
           section_note.content = note[:content]
@@ -131,7 +126,7 @@ namespace :tariff do
 
       desc 'Load Chapter notes into database'
       task chapter_notes: :environment do
-        Dir[Rails.root.join('db', 'notes', 'chapters', '*')].each do |file|
+        Dir[Rails.root.join('db/notes/chapters/*')].each do |file|
           note = YAML.safe_load(File.read(file), [Symbol])
           chapter_note = ChapterNote.find(section_id: note[:section],
                                           chapter_id: note[:chapter].to_s) || ChapterNote.new(section_id: note[:section], chapter_id: note[:chapter].to_s)
