@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 require 'taric_importer/transaction'
 
 describe TaricImporter::Transaction do

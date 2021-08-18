@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe HeadingService::CachedHeadingService do
   let(:heading) do
     create :heading, :non_grouping,

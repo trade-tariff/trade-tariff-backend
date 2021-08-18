@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Rollback do
   describe 'validations' do
     context 'with correct info' do

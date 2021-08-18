@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe AdditionalCodeSearchService do
   describe 'additional code search' do
     around do |example|

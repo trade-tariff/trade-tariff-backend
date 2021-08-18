@@ -111,18 +111,18 @@ FactoryBot.define do
         # Add another intermediate level
         FactoryBot.create(:commodity,
                           :with_indent,
-                          goods_nomenclature_item_id: "#{item_id + 1}",
+                          goods_nomenclature_item_id: (item_id + 1).to_s,
                           producline_suffix: '10',
                           indents: 2)
 
         # Add two leaf commodities
         FactoryBot.create(:commodity,
                           :with_indent,
-                          goods_nomenclature_item_id: "#{item_id + 1}",
+                          goods_nomenclature_item_id: (item_id + 1).to_s,
                           indents: 3)
         FactoryBot.create(:commodity,
                           :with_indent,
-                          goods_nomenclature_item_id: "#{item_id + 2}",
+                          goods_nomenclature_item_id: (item_id + 2).to_s,
                           indents: 3)
         commodity.reload
       end

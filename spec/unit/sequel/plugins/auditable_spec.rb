@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe 'Auditable sequel plugin' do
   let(:model_with_plugin) { create :section_note, content: 'first content' }
 

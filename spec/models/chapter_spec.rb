@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Chapter do
   describe 'associations' do
     describe 'headings' do

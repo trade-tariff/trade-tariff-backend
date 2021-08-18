@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Section do
   describe 'associations' do
     describe 'chapters' do

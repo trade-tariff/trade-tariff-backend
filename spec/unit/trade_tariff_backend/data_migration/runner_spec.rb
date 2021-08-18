@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend::DataMigration::Runner do
   let(:migration) { double('Data migration', some_test_method: true) }
 

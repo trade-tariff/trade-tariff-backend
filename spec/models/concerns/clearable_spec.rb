@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Clearable do
   let(:mocked_model) do
     Struct.new('Commodity') do

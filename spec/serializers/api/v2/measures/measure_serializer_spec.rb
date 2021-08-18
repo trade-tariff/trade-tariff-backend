@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::Measures::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
@@ -19,7 +17,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           'import' => true,
           'excise' => false,
           'vat' => false,
-          'reduction_indicator' => 1
+          'reduction_indicator' => 1,
         },
         'relationships' => {
           'duty_expression' => {

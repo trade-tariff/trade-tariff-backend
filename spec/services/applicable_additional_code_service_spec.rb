@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'rspec/json_expectations'
 
 describe ApplicableAdditionalCodeService do

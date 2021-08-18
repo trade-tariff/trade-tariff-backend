@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe 'get a 404 response (in JSON) from unmatched route', type: :request do
   it 'when the request is for HTML' do
     get '/foo'

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe QuotaSearchService do
   subject(:service) { described_class.new(filter, current_page, per_page) }
 

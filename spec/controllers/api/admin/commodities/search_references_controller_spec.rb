@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::Admin::Commodities::SearchReferencesController do
   it_behaves_like 'v2 search references controller' do
     let(:search_reference_parent)  { create :commodity, :declarable }

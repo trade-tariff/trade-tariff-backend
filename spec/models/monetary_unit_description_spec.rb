@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MonetaryUnitDescription do
   describe '#abbreviation' do
     context 'abbreviation present for monetary unit code' do

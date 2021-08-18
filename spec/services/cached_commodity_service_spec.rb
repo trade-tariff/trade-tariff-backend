@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe CachedCommodityService do
   subject(:service) { described_class.new(commodity.reload, actual_date, filter_params) }
 

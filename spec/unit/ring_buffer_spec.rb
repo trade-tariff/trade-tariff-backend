@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe RingBuffer do
   describe '#push' do
     let(:ring_buffer) { described_class.new(2) }

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::Measures::MeasurePresenter do
   subject(:presenter) { described_class.new(measure, measure.goods_nomenclature) }
 

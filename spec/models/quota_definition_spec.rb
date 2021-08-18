@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe QuotaDefinition do
   describe '#status' do
     it 'returns Open if quota definition is not in critical state' do

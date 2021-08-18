@@ -1,7 +1,5 @@
-require 'rails_helper'
-
 describe Api::V2::ChangesController do
-  let(:no_changes_response) { { "data" => [] } }
+  let(:no_changes_response) { { 'data' => [] } }
   let(:goods_nomenclature_item_id) { nil }
   let(:goods_nomenclature_sid) { nil }
   let(:productline_suffix) { nil }
@@ -9,25 +7,25 @@ describe Api::V2::ChangesController do
   let(:change_type) { nil }
   let(:change_date) { Date.current.strftime('%Y-%m-%d') }
 
-  let(:expected_change_response) {
+  let(:expected_change_response) do
     {
-      "data" => [{
-        "id" => goods_nomenclature_sid.to_s,
-        "type" => "change",
-        "attributes" => {
-          "goods_nomenclature_item_id" => goods_nomenclature_item_id,
-          "goods_nomenclature_sid" => goods_nomenclature_sid,
-          "productline_suffix" => productline_suffix,
-          "end_line" => end_line,
-          "change_date" => change_date,
-          "change_type" => change_type,
-        }
-      }]
+      'data' => [{
+        'id' => goods_nomenclature_sid.to_s,
+        'type' => 'change',
+        'attributes' => {
+          'goods_nomenclature_item_id' => goods_nomenclature_item_id,
+          'goods_nomenclature_sid' => goods_nomenclature_sid,
+          'productline_suffix' => productline_suffix,
+          'end_line' => end_line,
+          'change_date' => change_date,
+          'change_type' => change_type,
+        },
+      }],
 
     }
-  }
+  end
 
-  context '#index' do
+  describe '#index' do
     it 'will be successful' do
       get :index, format: :json
 
@@ -36,6 +34,7 @@ describe Api::V2::ChangesController do
 
     context 'when nothing has changed' do
       before { get :index, format: :json }
+
       let(:json) { JSON.parse(response.body) }
 
       it 'will return an empty array' do
@@ -53,6 +52,7 @@ describe Api::V2::ChangesController do
 
       context 'on the same day' do
         before { get :index, format: :json }
+
         let(:json) { JSON.parse(response.body) }
 
         it 'will return the correct code' do
@@ -62,6 +62,7 @@ describe Api::V2::ChangesController do
 
       context 'on the previous day' do
         before { get :index, params: { as_of: (Date.current - 1.day) }, format: :json }
+
         let(:json) { JSON.parse(response.body) }
 
         it 'will return the expired code' do
@@ -80,6 +81,7 @@ describe Api::V2::ChangesController do
 
       context 'on the same day' do
         before { get :index, format: :json }
+
         let(:json) { JSON.parse(response.body) }
 
         it 'will return the correct code' do
@@ -89,6 +91,7 @@ describe Api::V2::ChangesController do
 
       context 'on the previous day' do
         before { get :index, params: { as_of: (Date.current - 1.day) }, format: :json }
+
         let(:json) { JSON.parse(response.body) }
 
         it 'will return the expired code' do

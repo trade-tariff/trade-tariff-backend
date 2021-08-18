@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 shared_examples_for 'Base Update' do
   describe '.sync' do
     include BankHolidaysHelper

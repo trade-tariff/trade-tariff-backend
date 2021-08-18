@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::Admin::FootnotesController, 'GET to #index' do
   render_views
 

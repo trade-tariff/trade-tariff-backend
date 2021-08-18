@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::Measures::MeasureConditionComponentSerializer do
   let(:measure_condition_component) do
     create(

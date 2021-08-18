@@ -4,7 +4,6 @@ FactoryBot.define do
   sequence(:meursing_additional_code_sid) { |n| n }
 
   factory :additional_code do
-
     additional_code_sid     { generate(:additional_code_sid) }
     additional_code_type_id { generate(:additional_code_type_id) }
     additional_code         { Forgery(:basic).text(exactly: 3) }

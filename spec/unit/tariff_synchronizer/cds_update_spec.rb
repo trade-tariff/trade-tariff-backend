@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'tariff_synchronizer'
 
 describe TariffSynchronizer::CdsUpdate do

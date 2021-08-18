@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleMemoizedHelpers

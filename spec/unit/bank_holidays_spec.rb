@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'bank_holidays'
 
 describe BankHolidays do

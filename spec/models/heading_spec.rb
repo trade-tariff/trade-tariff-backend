@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Heading do
   describe '#to_param' do
     let(:heading) { create :heading }

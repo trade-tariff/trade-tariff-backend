@@ -1,8 +1,6 @@
-require 'rails_helper'
-
 describe ChangeOld do
   let!(:measure) { create :measure }
-  let(:change_old)   do
+  let(:change_old) do
     described_class.new(
       model: 'Measure',
       oid: measure.source.oid,

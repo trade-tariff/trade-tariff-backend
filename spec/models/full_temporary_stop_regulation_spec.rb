@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe FullTemporaryStopRegulation do
   let(:fts_regulation) { build :fts_regulation, effective_enddate: Date.current }
 

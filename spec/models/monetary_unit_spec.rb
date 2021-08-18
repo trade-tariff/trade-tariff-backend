@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MonetaryUnit do
   let(:monetary_unit) { create :monetary_unit }
 

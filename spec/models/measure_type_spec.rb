@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MeasureType do
   describe 'constants' do
     before do

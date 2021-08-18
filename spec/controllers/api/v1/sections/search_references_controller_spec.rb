@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::Sections::SearchReferencesController do
   it_behaves_like 'v1 search references controller' do
     let(:search_reference_parent)  { create :section }

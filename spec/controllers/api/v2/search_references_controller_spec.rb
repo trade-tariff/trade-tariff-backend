@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::SearchReferencesController, 'GET to #index' do
   render_views
 

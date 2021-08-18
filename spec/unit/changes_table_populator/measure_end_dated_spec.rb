@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe ChangesTablePopulator::MeasureEndDated do
   let(:db) { Sequel::Model.db }
 

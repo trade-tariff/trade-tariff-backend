@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend::DataMigration do
   describe 'migration definition' do
     describe '.desc' do

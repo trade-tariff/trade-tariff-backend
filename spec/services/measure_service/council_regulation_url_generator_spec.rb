@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MeasureService::CouncilRegulationUrlGenerator do
   let(:target_regulation) { create(:measure_partial_temporary_stop) }
   let(:service) { described_class.new(target_regulation) }

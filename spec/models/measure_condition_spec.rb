@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MeasureCondition do
   describe 'associations' do
     describe 'monetary unit' do

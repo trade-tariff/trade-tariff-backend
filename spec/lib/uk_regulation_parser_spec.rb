@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe UkRegulationParser do
   subject(:parser) { described_class.new(information_text) }
 

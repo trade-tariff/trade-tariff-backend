@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe DutyExpressionDescription do
   describe '#abbreviation' do
     context 'abbreviation present for duty expression id' do

@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'tariff_synchronizer'
 require 'taric_importer'
 

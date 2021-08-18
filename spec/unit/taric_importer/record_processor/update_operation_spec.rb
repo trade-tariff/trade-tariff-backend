@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TaricImporter::RecordProcessor::UpdateOperation do
   describe '#call' do
   end

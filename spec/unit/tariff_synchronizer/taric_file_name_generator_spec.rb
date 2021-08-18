@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'tariff_synchronizer/taric_file_name_generator'
 
 describe TariffSynchronizer::TaricFileNameGenerator do

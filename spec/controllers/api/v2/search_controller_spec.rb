@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::SearchController, 'POST #search' do
   describe 'exact matching' do
     let(:chapter) { create :chapter }

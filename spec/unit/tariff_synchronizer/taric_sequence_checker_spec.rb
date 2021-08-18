@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'tariff_synchronizer/taric_sequence_checker'
 require 'tariff_synchronizer/tariff_updates_requester'
 require 'tariff_synchronizer/file_service'

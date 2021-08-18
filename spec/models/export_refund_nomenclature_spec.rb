@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe ExportRefundNomenclature do
   describe 'associations' do
     describe 'export refund nomenclature indent' do

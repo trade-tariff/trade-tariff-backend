@@ -1,4 +1,3 @@
-require 'rails_helper'
 require 'description_trim_formatter'
 
 describe DescriptionTrimFormatter do

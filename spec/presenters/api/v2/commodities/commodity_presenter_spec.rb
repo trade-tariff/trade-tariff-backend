@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::Commodities::CommodityPresenter do
   subject(:presenter) { described_class.new(commodity.reload, measures) }
 

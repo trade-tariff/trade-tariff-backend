@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend::DataMigrator do
   before do
     TradeTariffBackend::DataMigrator.migrations = []

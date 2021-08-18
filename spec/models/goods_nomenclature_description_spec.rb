@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe GoodsNomenclatureDescription do
   describe '#description' do
     subject(:goods_nomenclature_description) { build :goods_nomenclature_description, description: description }

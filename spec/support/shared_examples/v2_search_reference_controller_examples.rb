@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 shared_examples_for 'v2 search references controller' do
   before { login_as_api_user }
 

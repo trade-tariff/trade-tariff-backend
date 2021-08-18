@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesController.class do
   render_views
 

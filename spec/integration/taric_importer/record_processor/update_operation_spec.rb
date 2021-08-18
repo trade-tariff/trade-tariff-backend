@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TaricImporter::RecordProcessor::UpdateOperation do
   let(:record_hash) do
     { 'transaction_id' => '31946',

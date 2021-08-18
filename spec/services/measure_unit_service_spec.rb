@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe MeasureUnitService do
   subject(:service) { described_class.new(measures) }
 

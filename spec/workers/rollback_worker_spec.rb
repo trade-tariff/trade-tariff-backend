@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe RollbackWorker, type: :worker do
   before do
     allow($stdout).to receive(:write)
