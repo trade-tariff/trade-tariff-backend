@@ -69,7 +69,7 @@ group :test do
   gem 'brakeman'
   gem 'database_cleaner-sequel'
   gem 'factory_bot_rails', require: false
-  gem 'fakefs', '~> 0.18.0', require: 'fakefs/safe'
+  gem 'fakefs', '~> 1.3.2', require: 'fakefs/safe'
   gem 'forgery'
   gem 'json_expressions', '~> 0.9.0'
   gem 'rspec-json_expectations'
