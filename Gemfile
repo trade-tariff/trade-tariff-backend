@@ -3,7 +3,7 @@ source 'https://rubygems.org'
 ruby File.read('.ruby-version')
 
 # Server
-gem 'puma', '~> 5.3.1'
+gem 'puma', '~> 5.4.0'
 gem 'rails', '>= 6.0.3.4'
 
 # DB
