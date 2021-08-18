@@ -1,5 +1,5 @@
 # Build compilation image
-FROM ruby:2.7.4-alpine3.13 as builder
+FROM ruby:3.0.2-alpine3.13 as builder
 
 # The application runs from /app
 WORKDIR /app
@@ -34,7 +34,7 @@ RUN rm -rf node_modules log tmp && \
       find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:2.7.4-alpine3.13 as production
+FROM ruby:3.0.2-alpine3.13 as production
 
 RUN apk add --update --no-cache postgresql-dev curl curl-dev shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
