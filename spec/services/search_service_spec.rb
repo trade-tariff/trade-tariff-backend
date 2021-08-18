@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe SearchService do
   def commodity_pattern(item)
     {
@@ -543,7 +541,7 @@ describe SearchService do
         create :search_reference,
                referenced: heading2,
                title: 'other kind of oil'
-      end # not 'acid oil'
+      end
 
       let(:heading_pattern) do
         {

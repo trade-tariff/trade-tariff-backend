@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe SearchReference do
   describe '#referenced' do
     context 'matching heading regexp' do

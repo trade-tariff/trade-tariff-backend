@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TimeMachine do
   let!(:commodity1) do
     create :commodity, validity_start_date: Time.now.ago(1.day),

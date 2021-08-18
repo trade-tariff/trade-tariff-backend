@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe MeasureTypeExclusion do
   before do
     allow(described_class).to receive(:exclusions).and_return(test_exclusions)

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::RollbacksController, 'POST to #create' do
   render_views
 

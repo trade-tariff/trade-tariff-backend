@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
   let(:db) { Sequel::Model.db }
 

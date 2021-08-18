@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe GeographicalArea do
   describe 'associations' do
     describe 'geographical area description' do

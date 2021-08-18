@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::MonetaryExchangeRatesController, 'GET to #index' do
   render_views
   context 'Expected results' do

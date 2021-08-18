@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe NullGoodsNomenclature do
   let(:subject) { described_class.new }
 

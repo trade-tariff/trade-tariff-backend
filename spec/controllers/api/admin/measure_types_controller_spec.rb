@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::Admin::MeasureTypesController do
   render_views
 

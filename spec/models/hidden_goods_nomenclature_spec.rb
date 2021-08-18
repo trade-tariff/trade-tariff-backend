@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe HiddenGoodsNomenclature do
   it 'validates presence of goods_nomenclature_item_id' do
     hidden_goods_nomenclature = build :hidden_goods_nomenclature, goods_nomenclature_item_id: nil

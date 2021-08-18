@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::Quotas::Definition::QuotaDefinitionSerializer do
   subject(:serializer) { described_class.new(serializable, options) }
 

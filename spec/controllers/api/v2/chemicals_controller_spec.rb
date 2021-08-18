@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::ChemicalsController, type: :controller do
   let(:chemical1) { create :chemical, :with_name }
   let(:goods_nomenclature) { create :goods_nomenclature }

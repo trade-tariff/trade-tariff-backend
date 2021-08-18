@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe BuildIndexPageWorker, type: :worker do
   describe '#methods' do
     describe 'build index page' do

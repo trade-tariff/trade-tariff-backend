@@ -1,4 +1,3 @@
-require 'tariff_synchronizer'
 
 FactoryBot.define do
   sequence(:sid) { |n| n }

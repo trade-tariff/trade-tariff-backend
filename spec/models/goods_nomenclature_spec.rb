@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe GoodsNomenclature do
   describe 'associations' do
     describe 'goods nomenclature indent' do
@@ -302,9 +300,9 @@ describe GoodsNomenclature do
   end
 
   describe '#bti_url' do
-    let(:bti_url) {
+    let(:bti_url) do
       'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
-    }
+    end
 
     let(:gono) { create(:goods_nomenclature) }
 

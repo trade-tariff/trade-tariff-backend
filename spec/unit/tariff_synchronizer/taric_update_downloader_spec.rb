@@ -1,5 +1,3 @@
-require 'rails_helper'
-require 'tariff_synchronizer/tariff_downloader'
 
 describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }

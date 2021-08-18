@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::Chapters::ChapterNotesController, 'GET #show' do
   render_views
 

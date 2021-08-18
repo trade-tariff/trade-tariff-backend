@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::Measures::MeasureLegalActSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
@@ -24,7 +22,7 @@ RSpec.describe Api::V2::Measures::MeasureLegalActSerializer do
           'regulation_code' => '14567/23',
           'regulation_url' => generated_url,
           'description' => regulation.information_text,
-        }
+        },
       },
     }.as_json
   end

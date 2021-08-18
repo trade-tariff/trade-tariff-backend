@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MeasurementUnit do
   let(:measurement_unit) { create :measurement_unit, :with_description }
 

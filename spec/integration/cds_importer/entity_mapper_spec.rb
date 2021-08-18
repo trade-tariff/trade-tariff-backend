@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe CdsImporter::EntityMapper do
   let(:xml_node) do
     {

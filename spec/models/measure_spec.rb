@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Measure do
   describe '#id' do
     let(:measure) { build :measure }

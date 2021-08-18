@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Certificate do
   describe 'associations' do
     describe 'certificate description' do

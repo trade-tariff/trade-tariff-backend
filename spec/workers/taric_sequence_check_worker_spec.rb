@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TaricSequenceCheckWorker, type: :worker do
   before do
     allow($stdout).to receive(:write)

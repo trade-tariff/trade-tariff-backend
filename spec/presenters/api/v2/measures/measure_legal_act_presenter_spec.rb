@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::Measures::MeasureLegalActPresenter do
   subject(:presenter) { described_class.new(regulation, measure) }
 

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::UpdatesController, 'GET #index' do
   render_views
 

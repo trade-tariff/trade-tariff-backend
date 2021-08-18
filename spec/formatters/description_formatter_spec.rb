@@ -1,5 +1,3 @@
-require 'rails_helper'
-require 'description_formatter'
 
 describe DescriptionFormatter do
   describe '.format' do

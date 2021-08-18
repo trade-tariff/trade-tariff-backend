@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::UpdatesController, 'GET #latest' do
   render_views
 

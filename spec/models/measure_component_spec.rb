@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe MeasureComponent do
   describe 'associations' do
     describe 'duty expression' do

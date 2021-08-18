@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Search::ChapterSerializer do
   describe '#to_json' do
     let!(:chapter) do

@@ -1,5 +1,3 @@
-require 'rails_helper'
-require 'tariff_synchronizer'
 
 describe TariffSynchronizer::Logger, truncation: true do
   include BankHolidaysHelper

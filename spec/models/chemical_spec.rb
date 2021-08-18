@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Chemical do
   describe 'associations' do
     let!(:goods_nomenclature) { create(:goods_nomenclature) }

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ExchangeRateService do
   subject(:service) { described_class.new }
 

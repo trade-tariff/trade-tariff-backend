@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe CertificateSearchService do
   describe 'certificate search' do
     around do |example|

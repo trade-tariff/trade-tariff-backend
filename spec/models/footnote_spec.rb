@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Footnote do
   describe 'associations' do
     describe 'additional code description' do

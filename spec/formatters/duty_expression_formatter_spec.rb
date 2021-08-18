@@ -1,5 +1,3 @@
-require 'rails_helper'
-require 'duty_expression_formatter'
 
 describe DutyExpressionFormatter do
   describe '.format' do

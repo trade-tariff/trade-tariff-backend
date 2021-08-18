@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend do
   describe '.reindex' do
     context 'when successful' do

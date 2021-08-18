@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend::DataMigration::Dependency do
   describe '#applicable?' do
     context 'one dependency did not meet' do

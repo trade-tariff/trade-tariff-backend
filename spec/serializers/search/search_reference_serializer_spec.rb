@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Search::SearchReferenceSerializer do
   describe '#to_json' do
     context 'when there is a valid referenced object' do

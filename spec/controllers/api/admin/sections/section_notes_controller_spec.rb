@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::Admin::Sections::SectionNotesController, 'GET #show' do
   render_views
 

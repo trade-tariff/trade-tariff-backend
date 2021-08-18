@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe ApplicationHelper do
   describe '#regulation_url' do
     context 'for base_regulation' do

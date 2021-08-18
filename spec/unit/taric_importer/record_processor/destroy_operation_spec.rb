@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TaricImporter::RecordProcessor::DestroyOperation do
   let(:empty_operation) do
     TaricImporter::RecordProcessor::DestroyOperation.new(nil, nil)

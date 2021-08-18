@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::GeographicalAreasController, 'GET #countries' do
   render_views
 

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe ApplicableVatOptionsService do
   subject(:service) { described_class.new(measures) }
 

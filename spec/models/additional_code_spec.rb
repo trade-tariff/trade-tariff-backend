@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe AdditionalCode do
   subject(:additional_code) do
     build(

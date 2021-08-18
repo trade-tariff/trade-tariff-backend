@@ -1,4 +1,3 @@
-require 'fileutils'
 
 module SynchronizerHelper
   def create_taric_file(date = Date.current)

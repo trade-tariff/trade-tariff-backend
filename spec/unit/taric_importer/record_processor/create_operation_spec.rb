@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TaricImporter::RecordProcessor::CreateOperation do
   describe '#to_oplog_operation' do
     let(:empty_operation) do

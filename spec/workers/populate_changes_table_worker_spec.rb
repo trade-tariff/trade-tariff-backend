@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe PopulateChangesTableWorker, type: :worker do
   subject(:worker) { described_class.new }
 

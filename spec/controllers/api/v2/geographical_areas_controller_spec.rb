@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::GeographicalAreasController, 'GET #countries' do
   let!(:geographical_area1) do
     create :geographical_area,

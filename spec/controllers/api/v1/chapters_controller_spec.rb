@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V1::ChaptersController, 'GET #show' do
   render_views
 

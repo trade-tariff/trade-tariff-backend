@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::AdditionalCodesController, type: :controller do
   render_views
 

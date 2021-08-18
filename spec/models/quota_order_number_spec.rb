@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe QuotaOrderNumber do
   context 'with an existing QuotaOrderNumber' do
     let(:quota_order_number) { create(:quota_order_number) }

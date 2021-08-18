@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Api::V2::QuotasController, type: :controller do
   describe 'GET /quotas/search.json' do
     let(:validity_start_date) { Date.new(Date.current.year, 1, 1) }

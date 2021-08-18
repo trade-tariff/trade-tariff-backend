@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
 describe TariffSynchronizer::BaseUpdateImporter do

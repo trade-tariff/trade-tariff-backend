@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe QuotaBalanceEvent do
   describe '.status' do
     it "returns 'open' string" do

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::Commodities::CommoditySerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 

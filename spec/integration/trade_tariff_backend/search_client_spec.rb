@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend::SearchClient do
   describe '#search' do
     let(:commodity) do

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Cache::HeadingSerializer do
   describe '#as_json' do
     let(:heading) do

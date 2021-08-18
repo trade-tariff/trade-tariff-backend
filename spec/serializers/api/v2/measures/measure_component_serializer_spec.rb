@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Api::V2::Measures::MeasureComponentSerializer do
   let(:measure_component) do
     create(

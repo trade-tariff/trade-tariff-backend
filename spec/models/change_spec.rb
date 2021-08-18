@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe Change do
   let(:db) { Sequel::Model.db }
 

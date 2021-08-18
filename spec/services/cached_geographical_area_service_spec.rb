@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe CachedGeographicalAreaService do
   subject(:service) { described_class.new(actual_date, countries) }
 

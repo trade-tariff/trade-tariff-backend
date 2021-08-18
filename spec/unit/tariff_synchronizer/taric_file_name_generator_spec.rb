@@ -1,5 +1,3 @@
-require 'rails_helper'
-require 'tariff_synchronizer/taric_file_name_generator'
 
 describe TariffSynchronizer::TaricFileNameGenerator do
   let(:example_date) { Date.new(2010, 1, 1) }

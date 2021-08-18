@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe ExportRefundNomenclatureIndent do
   let(:erni) { build :export_refund_nomenclature_indent }
 

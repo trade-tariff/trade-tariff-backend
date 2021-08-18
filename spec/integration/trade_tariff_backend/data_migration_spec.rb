@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 describe TradeTariffBackend::DataMigration do
   describe 'migrating up' do
     let(:measure) { create :measure }
