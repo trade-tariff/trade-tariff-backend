@@ -8,7 +8,6 @@ class GoodsNomenclature < Sequel::Model
                         period_end_column:   Sequel.qualify(:goods_nomenclatures, :validity_end_date)
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :nullable
-  plugin :conformance_validator
   plugin :active_model
 
   plugin :sti, class_determinator: ->(record) {

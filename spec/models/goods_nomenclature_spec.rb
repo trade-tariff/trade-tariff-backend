@@ -282,11 +282,6 @@ describe GoodsNomenclature do
     end
   end
 
-  describe 'validations' do
-    # NIG4 The start date of the goods nomenclature must be less than or equal to the end date.
-    it { is_expected.to validate_validity_dates }
-  end
-
   describe '.declarable' do
     let(:gono_80) { create(:goods_nomenclature, producline_suffix: '80') }
     let(:gono_10) { create(:goods_nomenclature, producline_suffix: '10') }

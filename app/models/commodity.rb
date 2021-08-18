@@ -2,7 +2,6 @@ class Commodity < GoodsNomenclature
   include Declarable
 
   plugin :oplog, primary_key: :goods_nomenclature_sid
-  plugin :conformance_validator
   plugin :elasticsearch
 
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000').

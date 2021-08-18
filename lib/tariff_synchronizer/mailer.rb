@@ -54,9 +54,8 @@ module TariffSynchronizer
       mail subject: "#{subject_prefix(:error)} Update fetch failed: cannot write update file to file system"
     end
 
-    def applied(update_names, conformance_errors, import_warnings)
+    def applied(update_names, import_warnings)
       @update_names = update_names
-      @conformance_errors = conformance_errors
       @import_warnings = import_warnings
       # if 'presence errors' are ignored during tariff update then we can display them in email body
       if TariffSynchronizer.ignore_presence_errors

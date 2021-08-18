@@ -3,8 +3,7 @@ module Api
     class UpdatesController < ApiController
       before_action :collection, only: :index
 
-      def index
-      end
+      def index; end
 
       def latest
         @updates = TariffSynchronizer::BaseUpdate.latest_applied_of_both_kinds
@@ -15,7 +14,7 @@ module Api
       private
 
       def collection
-        @collection ||= TariffSynchronizer::BaseUpdate.eager(:conformance_errors, :presence_errors)
+        @collection ||= TariffSynchronizer::BaseUpdate.eager(:presence_errors)
           .descending
           .exclude(update_type: 'TariffSynchronizer::ChiefUpdate')
           .paginate(current_page, per_page)

@@ -1,6 +1,5 @@
 class DutyExpressionDescription < Sequel::Model
   plugin :oplog, primary_key: :duty_expression_id
-  plugin :conformance_validator
 
   set_primary_key [:duty_expression_id]
 

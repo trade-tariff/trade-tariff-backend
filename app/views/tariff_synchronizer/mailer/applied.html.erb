@@ -12,52 +12,6 @@
   <% end %>
 </ul>
 
-<% if @conformance_errors.any? %>
-  <table>
-    <thead>
-      <tr>
-        <th>Model</th>
-        <th>Primary Key</th>
-        <th>Details</th>
-        <th>Errors</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @conformance_errors.each do |record| %>
-        <tr>
-          <td>
-            <strong><%= record.class %></strong>
-          </td>
-          <td>
-            <%= record.pk.inspect %>
-          </td>
-          <td>
-            <%= record.values.inspect %>
-          </td>
-          <td>
-            <ul>
-              <% record.conformance_errors.each do |error_type, error_messages| %>
-                <li>
-                  <strong><%= error_type %></strong><br />
-                </li>
-                <% error_messages.each do |error_message| %>
-                  <li>
-                    <%= error_message %>
-                  </li>
-                <% end %>
-              <% end %>
-            </ul>
-          <td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-<% else %>
-  <p>
-    <strong>No conformance errors found.</strong>
-  </p>
-<% end %>
-
 <% if @presence_errors.to_a.any? %>
   <table>
     <thead>

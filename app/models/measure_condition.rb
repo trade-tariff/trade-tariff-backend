@@ -4,7 +4,6 @@ class MeasureCondition < Sequel::Model
   plugin :time_machine
   plugin :national
   plugin :oplog, primary_key: :measure_condition_sid
-  plugin :conformance_validator
 
   set_primary_key [:measure_condition_sid]
 

@@ -2,7 +2,6 @@ class FullTemporaryStopRegulation < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: %i[full_temporary_stop_regulation_id
                                  full_temporary_stop_regulation_role]
-  plugin :conformance_validator
 
   set_primary_key %i[full_temporary_stop_regulation_id full_temporary_stop_regulation_role]
 

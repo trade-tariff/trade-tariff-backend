@@ -3,7 +3,6 @@ class MeasureComponent < Sequel::Model
 
   plugin :time_machine
   plugin :oplog, primary_key: %i[measure_sid duty_expression_id]
-  plugin :conformance_validator
 
   set_primary_key %i[measure_sid duty_expression_id]
 

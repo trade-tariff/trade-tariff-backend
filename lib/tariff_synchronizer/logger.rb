@@ -18,10 +18,8 @@ module TariffSynchronizer
     # Apply all pending Taric updates
     def apply(event)
       info 'Finished applying updates'
-
       Mailer.applied(
         event.payload[:update_names],
-        event.payload.fetch(:unconformant_records, []),
         event.payload.fetch(:import_warnings, []),
       ).deliver_now
     end
