@@ -1,5 +1,10 @@
 class SearchService
   class FuzzySearch < BaseSearch
+    autoload :FuzzyQuery,             'search_service/fuzzy_search/fuzzy_query'
+    autoload :FuzzySearchResult,      'search_service/fuzzy_search/fuzzy_search_result'
+    autoload :GoodsNomenclatureQuery, 'search_service/fuzzy_search/goods_nomenclature_query'
+    autoload :ReferenceQuery,         'search_service/fuzzy_search/reference_query'
+
     def search!
       begin
         @results ||= begin

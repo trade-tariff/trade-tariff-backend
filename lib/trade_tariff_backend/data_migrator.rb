@@ -1,15 +1,22 @@
+require 'singleton'
+require 'forwardable'
+
 module TradeTariffBackend
   class DataMigrator
+    autoload :ConsoleReporter, 'trade_tariff_backend/data_migrator/console_reporter'
+    autoload :NullReporter,    'trade_tariff_backend/data_migrator/null_reporter'
+
     MIGRATION_FILE_PATTERN = /\A(\d+)_.+\.rb\z/i.freeze
 
     include Singleton
     extend SingleForwardable
 
     def_delegators :instance, :migrations, :migrations=,
-                   :migrate, :migration, :rollback,
-                   :status, :reporter=, :redo, :repeat
+                              :migrate, :migration, :rollback,
+                              :status, :reporter=, :redo, :repeat
 
-    attr_writer :migrations, :reporter
+    attr_writer :migrations
+    attr_writer :reporter
 
     def self.load_migration_files
       pending_migration_files.each { |file| load file }
@@ -19,9 +26,9 @@ module TradeTariffBackend
     def migration(&block)
       @migrations ||= []
 
-      TradeTariffBackend::DataMigration.new(&block).tap do |migration|
+      TradeTariffBackend::DataMigration.new(&block).tap { |migration|
         @migrations << migration
-      end
+      }
     end
 
     def report_with
@@ -46,10 +53,10 @@ module TradeTariffBackend
 
         # apply migration if can be rolled UP
         if migration.can_rollup?
-          Sequel::Model.db.transaction(savepoint: true) do
+          Sequel::Model.db.transaction(savepoint: true) {
             migration.up.apply
             report_with.applied(migration)
-          end
+          }
         end
         # create log entry in data migrations table
         TradeTariffBackend::DataMigration::LogEntry.log!(file)
@@ -72,10 +79,10 @@ module TradeTariffBackend
 
       # apply migration if can be rolled DOWN
       if migration.can_rolldown?
-        Sequel::Model.db.transaction(savepoint: true) do
+        Sequel::Model.db.transaction(savepoint: true) {
           migration.down.apply
           report_with.rollback(migration)
-        end
+        }
       end
       # destroy log entry from data migrations table
       entry.destroy
@@ -89,28 +96,28 @@ module TradeTariffBackend
     def repeat(timestamp)
       entry = TradeTariffBackend::DataMigration::LogEntry.where("filename LIKE '%#{timestamp}%'").last
       return unless entry
-
       # load migration
       load entry.filename
       # migration class will be loaded to @migrations
       migration = @migrations.last
       return unless migration
-
       # apply migration if can be rolled UP
       if migration.can_rollup?
-        Sequel::Model.db.transaction(savepoint: true) do
+        Sequel::Model.db.transaction(savepoint: true) {
           migration.up.apply
           report_with.applied(migration)
-        end
+        }
       end
     end
 
     # Display data migration status
     def status
-      migrations.each do |migration|
+      migrations.each { |migration|
         report_with.status(migration)
-      end
+      }
     end
+
+  private
 
     def self.migration_files
       files = []
@@ -122,9 +129,9 @@ module TradeTariffBackend
         files << File.join(directory, file)
       end
 
-      files.sort_by do |f|
+      files.sort_by { |f|
         MIGRATION_FILE_PATTERN.match(File.basename(f))[1].to_i
-      end
+      }
     end
 
     def self.pending_migration_files
