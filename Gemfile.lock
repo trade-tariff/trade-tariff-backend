@@ -149,7 +149,7 @@ GEM
       elasticsearch-transport (= 7.9.0)
     elasticsearch-api (7.9.0)
       multi_json
-    elasticsearch-extensions (0.0.31)
+    elasticsearch-extensions (0.0.33)
       ansi
       elasticsearch
     elasticsearch-transport (7.9.0)
@@ -473,7 +473,7 @@ DEPENDENCIES
   database_cleaner-sequel
   dotenv-rails
   elasticsearch (= 7.9.0)
-  elasticsearch-extensions (= 0.0.31)
+  elasticsearch-extensions (= 0.0.33)
   factory_bot_rails
   fakefs (~> 1.3.2)
   foreman
