@@ -37,7 +37,7 @@ gem 'lograge', '>= 0.3.6'
 gem 'logstash-event'
 gem 'nokogiri', '>= 1.10.9'
 gem 'ox', '>= 2.8.1'
-gem 'plek', '~> 1.11'
+gem 'plek', '~> 4.0'
 gem 'rack-timeout', '~> 0.4'
 gem 'sentry-raven'
 
