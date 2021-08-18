@@ -17,7 +17,6 @@ require 'fakefs/spec_helpers'
 require 'sidekiq/testing'
 require 'elasticsearch/extensions/test/cluster'
 
-require Rails.root.join('spec/support/tariff_validation_matcher.rb')
 Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
 # require models and serializers

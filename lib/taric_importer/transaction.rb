@@ -18,14 +18,6 @@ class TaricImporter
       @record = RecordProcessor.new(@transaction, @issue_date).process!
     end
 
-    def validate
-      return unless @record
-
-      unless @record.conformant_for?(@record.operation)
-        instrument('conformance_error.taric_importer', record: @record)
-      end
-    end
-
   private
 
     def verify_transaction

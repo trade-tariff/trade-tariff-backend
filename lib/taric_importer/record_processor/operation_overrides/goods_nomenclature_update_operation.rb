@@ -7,13 +7,11 @@ class TaricImporter
         goods_nomenclature.save
 
         ::Measure.where(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
-               .national
-               .non_invalidated.each do |measure|
-          unless measure.conformant?
-            measure.invalidated_by = record.transaction_id
-            measure.invalidated_at = Time.now
-            measure.save
-          end
+          .national
+          .non_invalidated.each do |measure|
+          measure.invalidated_by = record.transaction_id
+          measure.invalidated_at = Time.now
+          measure.save
         end
 
         goods_nomenclature
