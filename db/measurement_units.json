@@ -413,7 +413,7 @@
     "abbreviation": "1,000 kWh",
     "unit_question": "What is the unit of energy of the items you will be importing?",
     "unit_hint": "Enter the value in 1,000 kilowatt hours (kWh)",
-    "unit": "1,000 kilowatt hours (kWh)"
+    "unit": "x 1,000 kilowatt hours (kWh)"
   },
   "NAR": {
     "measurement_unit_code": "NAR",
