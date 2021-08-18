@@ -1,6 +1,6 @@
 class TaricImporter
   class RecordProcessor
-    class OperationOverrides
+    module OperationOverrides
       class GoodsNomenclatureUpdateOperation < UpdateOperation
         def call
           goods_nomenclature = record.klass.filter(attributes.slice(*record.primary_key).symbolize_keys).take
