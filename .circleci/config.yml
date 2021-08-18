@@ -33,7 +33,7 @@ commands:
       - run:
           name: "Fetch existing manifest"
           command: |
-            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker" -p deploy_manifest.yml
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
       - run:
           name: "Push new app in dark mode"
           command: |
@@ -41,53 +41,53 @@ commands:
             export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
 
             # Push as "dark" instance
-            cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+            cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
             # Map dark route
-            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
             # Attach precreated autoscaling policy
-            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" config/autoscaling/<< parameters.space >>-policy.json
+            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" config/autoscaling/<< parameters.space >>-policy.json
 
             # Enable routing from this frontend to backend applications which are private
-            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
 
       - run:
           name: "Verify new version is working on dark URL."
           command: |
             sleep 15
             # Verify new version is working on dark URL.
-            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
             HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
 
             if [ "$HTTPCODE" -ne 200 ];then
               echo "dark route not available, failing deploy ($HTTPCODE)"
-              cf logs "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" --recent
-              cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+              cf logs "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --recent
+              cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
               exit 1
             fi
       - run:
           name: "Switch dark app to live"
           command: |
             # Send "real" url to new version
-            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark"
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
             # Start sending traffic to new version
-            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
 
             # Stop sending traffic to previous version
-            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
 
             # stop previous version
-            cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+            cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
 
             # delete previous version
-            cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker" -f
+            cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -f
 
             # Switch name of "dark" version to claim correct name
-            cf rename "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker-dark" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-docker"
+            cf rename "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
 
       - slack/notify:
           channel: deployments
@@ -125,18 +125,18 @@ commands:
       - run:
           name: "Fetch existing manifest"
           command: |
-            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" -p deploy_manifest.yml
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p deploy_manifest.yml
       - run:
           name: "Push Worker"
           command: |
             export IMAGE=enginetransformation/tariff-backend
             export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
-            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" --command "rake db:migrate" --name "db-migrate"
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" --command "rake db:data:migrate" --name "db-data-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:data:migrate" --name "db-data-migrate"
 
 
   # Legacy deployers
