@@ -1,7 +1,5 @@
 require_relative 'boot'
 
-require_relative '../lib/object'
-
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
 # require "sprockets/railtie"
@@ -43,4 +41,8 @@ module TradeTariffBackend
       Sequel::Model.db.extension :auto_literal_strings
     end
   end
+
+  # Special snowflake monkey patched namespacing and just use normal requires in ruby
+  Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
+  require_relative '../lib/core_ext/object'
 end

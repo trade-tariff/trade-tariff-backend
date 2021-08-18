@@ -71,7 +71,7 @@ class TaricImporter
   private
 
     def processor_for(record_class, operation_class)
-      operation_override_class = "TaricImporter::RecordProcessor::#{record_class}#{operation_class.to_s.demodulize}"
+      operation_override_class = "TaricImporter::RecordProcessor::OperationOverrides::#{record_class}#{operation_class.to_s.demodulize}"
       if Object.const_defined?(operation_override_class)
         operation_override_class.constantize
       else
