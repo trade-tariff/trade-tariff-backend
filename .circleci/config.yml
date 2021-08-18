@@ -464,6 +464,7 @@ workflows:
             branches:
               ignore:
                 - master
+                - /^dependabot\/.*/
           requires:
             - test
       - deploy_dev:
