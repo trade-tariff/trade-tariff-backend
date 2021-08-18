@@ -25,7 +25,7 @@ gem 'sidekiq'
 gem 'sidekiq-scheduler'
 
 # Elasticsearch
-gem 'elasticsearch'
+gem 'elasticsearch', '~> 7.9.0'
 gem 'elasticsearch-extensions'
 
 # Helpers
