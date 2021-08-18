@@ -21,9 +21,9 @@ require 'taric_importer/record_processor/create_operation'
 #       operations should inherit from CreateOperation and destroy
 #       operations should inherit from DestroyOperation
 
-Dir[File.join(Rails.root, 'lib', 'taric_importer', 'record_processor', 'operation_overrides', '*.rb')].each { |file|
+Dir[Rails.root.join('lib/taric_importer/record_processor/operation_overrides/*.rb')].sort.each do |file|
   require file
-}
+end
 
 class TaricImporter
   class RecordProcessor
@@ -34,7 +34,7 @@ class TaricImporter
     OPERATION_MAP = {
       '1' => UpdateOperation,
       '2' => DestroyOperation,
-      '3' => CreateOperation
+      '3' => CreateOperation,
     }.freeze
 
     # Instance of Record, containing extracted primary key, attributes etc
@@ -57,11 +57,11 @@ class TaricImporter
     end
 
     def operation_class=(operation)
-      @operation_class = OPERATION_MAP.fetch(operation) {
+      @operation_class = OPERATION_MAP.fetch(operation) do
         instrument('taric_unexpected_update_type.tariff_importer', record: record)
 
-        raise TaricImporter::UnknownOperationError.new
-      }
+        raise TaricImporter::UnknownOperationError
+      end
     end
 
     def process!
