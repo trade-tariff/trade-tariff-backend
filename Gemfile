@@ -26,7 +26,7 @@ gem 'sidekiq-scheduler', '~> 3.0.1'
 
 # Elasticsearch
 gem 'elasticsearch', '7.9.0'
-gem 'elasticsearch-extensions', '0.0.31'
+gem 'elasticsearch-extensions', '0.0.33'
 
 # Helpers
 gem 'bootsnap', require: false
