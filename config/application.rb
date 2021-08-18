@@ -1,6 +1,6 @@
 require_relative 'boot'
 
-require_relative '../lib/core_ext/object'
+require_relative '../lib/object'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
