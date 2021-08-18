@@ -98,6 +98,49 @@ commands:
           event: pass
           template: basic_success_1
 
+  cf_deploy_docker_worker:
+    parameters:
+      dev-release:
+        default: false
+        type: boolean
+      space:
+        type: string
+      service:
+        type: string
+      environment_key:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" -p deploy_manifest.yml
+      - run:
+          name: "Push Worker"
+          command: |
+            export IMAGE=enginetransformation/tariff-backend
+            export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+      - run:
+          name: "Run Migrations"
+          command: |
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>-docker" --command "rake db:data:migrate" --name "db-data-migrate"
+
+
+  # Legacy deployers
+
   cf_deploy_worker:
     parameters:
       space:
@@ -137,6 +180,7 @@ commands:
           command: |
             cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
             cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
+
 
   cf_blue_green_deploy:
     parameters:
@@ -350,9 +394,10 @@ jobs:
       service:
         type: string
     steps:
-      - cf_deploy_worker:
+      - cf_deploy_docker_worker:
+          dev-release: true
           space: "development"
-          domain_prefix: "dev"
+          environment_key: "dev"
           service: << parameters.service >>
       - cf_deploy_docker:
           dev-release: true
