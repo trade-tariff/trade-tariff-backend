@@ -409,7 +409,7 @@ GEM
       faraday (> 0.8, < 2.0)
     sentry-raven (3.1.2)
       faraday (>= 1.0)
-    sequel (5.22.0)
+    sequel (5.47.0)
     sequel-rails (1.0.1)
       actionpack (>= 4.0.0)
       activemodel (>= 4.0.0)
@@ -507,7 +507,7 @@ DEPENDENCIES
   rubocop-govuk
   rubyzip (>= 2.3.0)
   sentry-raven
-  sequel (~> 5.22.0)
+  sequel (~> 5.47.0)
   sequel-rails (~> 1.0.0)
   sidekiq (< 7)
   sidekiq-scheduler (~> 3.0.1)
