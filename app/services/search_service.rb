@@ -10,11 +10,6 @@
 # classes respectively.
 
 class SearchService
-  autoload :BaseSearch,  'search_service/base_search'
-  autoload :ExactSearch, 'search_service/exact_search'
-  autoload :FuzzySearch, 'search_service/fuzzy_search'
-  autoload :NullSearch,  'search_service/null_search'
-
   INDEX_SIZE_MAX = 10000 # ElasticSearch does default pagination for 10 entries
                          # per page. We do not do pagination when displaying
                          # results so have a constant much bigger than possible
