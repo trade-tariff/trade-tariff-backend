@@ -1,4 +1,3 @@
-
 describe TariffSynchronizer::Logger, truncation: true do
   include BankHolidaysHelper
 
@@ -36,7 +35,7 @@ describe TariffSynchronizer::Logger, truncation: true do
     before do
       expect(TradeTariffBackend).to receive(
         :with_redis_lock,
-      ).and_raise(Redlock::LockError)
+      ).and_raise(Redlock::LockError, 'foo')
 
       TariffSynchronizer.rollback(Date.current, true)
     end
@@ -51,7 +50,7 @@ describe TariffSynchronizer::Logger, truncation: true do
     before do
       expect(TradeTariffBackend).to receive(
         :with_redis_lock,
-      ).and_raise(Redlock::LockError)
+      ).and_raise(Redlock::LockError, 'foo')
 
       TariffSynchronizer.apply
     end

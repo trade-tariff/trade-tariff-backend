@@ -344,7 +344,7 @@ GEM
       redis-store (>= 1.2, < 2)
     redis-store (1.9.0)
       redis (>= 4, < 5)
-    redlock (1.1.0)
+    redlock (1.2.1)
       redis (>= 3.0.0, < 5.0)
     regexp_parser (2.1.1)
     request_store (1.5.0)
@@ -499,7 +499,7 @@ DEPENDENCIES
   rack-timeout (~> 0.4)
   rails (>= 6.0.3.4)
   redis-rails
-  redlock (~> 1.1.0)
+  redlock (~> 1.2.1)
   responders (~> 3.0.0)
   rspec-json_expectations
   rspec-rails

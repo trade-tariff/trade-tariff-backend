@@ -20,7 +20,7 @@ gem 'rubyzip', '>= 2.3.0'
 
 # Background jobs
 gem 'redis-rails'
-gem 'redlock', '~> 1.1.0'
+gem 'redlock', '~> 1.2.1'
 gem 'sidekiq', '< 7'
 gem 'sidekiq-scheduler', '~> 3.0.1'
 
