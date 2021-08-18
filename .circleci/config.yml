@@ -377,7 +377,9 @@ jobs:
           name: "Check ElasticSearch for availability"
           command: |
             curl "http://localhost:9200/_cat/health"
-      - ruby/rspec-test
+      - ruby/rspec-test:
+          parameters:
+            out-path: ~/test-results/rspec/
       - store_artifacts:
           path: coverage
       - slack/notify:
