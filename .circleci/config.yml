@@ -6,6 +6,141 @@ orbs:
   slack: circleci/slack@4.3.0
 
 commands:
+  cf_deploy_docker:
+    parameters:
+      dev-release:
+        default: false
+        type: boolean
+      space:
+        type: string
+      service:
+        type: string
+      environment_key:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
+      - run:
+          name: "Push new app in dark mode"
+          command: |
+            export IMAGE=enginetransformation/tariff-backend
+            export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+
+            # Push as "dark" instance
+            cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+            # Map dark route
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+
+            # Attach precreated autoscaling policy
+            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" config/autoscaling/<< parameters.space >>-policy.json
+
+            # Enable routing from this frontend to backend applications which are private
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+
+      - run:
+          name: "Verify new version is working on dark URL."
+          command: |
+            sleep 15
+            # Verify new version is working on dark URL.
+            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+
+            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
+
+            if [ "$HTTPCODE" -ne 200 ];then
+              echo "dark route not available, failing deploy ($HTTPCODE)"
+              cf logs "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --recent
+              cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+              exit 1
+            fi
+      - run:
+          name: "Switch dark app to live"
+          command: |
+            # Send "real" url to new version
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+
+            # Start sending traffic to new version
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+
+            # Stop sending traffic to previous version
+            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+
+            # stop previous version
+            cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+
+            # delete previous version
+            cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -f
+
+            # Switch name of "dark" version to claim correct name
+            cf rename "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          channel: deployments
+          event: pass
+          template: basic_success_1
+
+  cf_deploy_docker_worker:
+    parameters:
+      dev-release:
+        default: false
+        type: boolean
+      space:
+        type: string
+      service:
+        type: string
+      environment_key:
+        type: string
+    steps:
+      - checkout
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p deploy_manifest.yml
+      - run:
+          name: "Push Worker"
+          command: |
+            export IMAGE=enginetransformation/tariff-backend
+            export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+      - run:
+          name: "Run Migrations"
+          command: |
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:data:migrate" --name "db-data-migrate"
+
+
+  # Legacy deployers
+
   cf_deploy_worker:
     parameters:
       space:
@@ -45,6 +180,7 @@ commands:
           command: |
             cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:migrate" --name "db-migrate"
             cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.domain_prefix >>" --command "rake db:data:migrate" --name "db-data-migrate"
+
 
   cf_blue_green_deploy:
     parameters:
@@ -171,6 +307,35 @@ jobs:
           path: test-results/brakeman/
       - store_artifacts:
           path: brakeman.html
+
+  build:
+    environment:
+      IMAGE_NAME: enginetransformation/tariff-backend
+    parameters:
+      dev-build:
+        default: false
+        type: boolean
+    docker:
+      - image: cimg/ruby:2.7.4
+    steps:
+      - checkout
+      - setup_remote_docker:
+          version: 20.10.2
+          docker_layer_caching: false
+      - run:
+          name: "Build Docker image"
+          command: |
+            export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
+            echo $GIT_NEW_REVISION >REVISION
+            docker build -t $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1} .
+      - run:
+          name: "Push image"
+          command: |
+            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+            docker push $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}
+
+
+
   test:
     docker:
       - image: cimg/ruby:2.7.4
@@ -229,13 +394,15 @@ jobs:
       service:
         type: string
     steps:
-      - cf_deploy_worker:
+      - cf_deploy_docker_worker:
+          dev-release: true
           space: "development"
-          domain_prefix: "dev"
+          environment_key: "dev"
           service: << parameters.service >>
-      - cf_blue_green_deploy:
+      - cf_deploy_docker:
+          dev-release: true
           space: "development"
-          domain_prefix: "dev"
+          environment_key: "dev"
           service: << parameters.service >>
       - sentry-release
 
@@ -289,6 +456,16 @@ workflows:
              branches:
                ignore:
                  - master
+      - build:
+          name: build_dev
+          context: trade-tariff
+          dev-build: true
+          filters:
+            branches:
+              ignore:
+                - master
+          requires:
+            - test
       - deploy_dev:
            matrix:
              parameters:
@@ -302,7 +479,7 @@ workflows:
                  - master
                  - /^dependabot\/.*/
            requires:
-             - test
+             - build_dev
       - deploy_staging:
            matrix:
              parameters:
