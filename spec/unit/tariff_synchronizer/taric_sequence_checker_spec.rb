@@ -1,7 +1,3 @@
-require 'tariff_synchronizer/taric_sequence_checker'
-require 'tariff_synchronizer/tariff_updates_requester'
-require 'tariff_synchronizer/file_service'
-require 'tariff_synchronizer/response'
 
 describe TariffSynchronizer::TaricSequenceChecker do
   subject { described_class.new(with_email) }

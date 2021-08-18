@@ -1,5 +1,3 @@
-require 'rspec/json_expectations'
-
 describe ApplicableAdditionalCodeService do
   subject(:service) { described_class.new(measures) }
 

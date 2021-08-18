@@ -1,4 +1,3 @@
-require 'tariff_synchronizer'
 
 describe TariffSynchronizer::Response do
   describe '#terminated?' do

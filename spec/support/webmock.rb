@@ -1,5 +1,3 @@
-require 'webmock'
-require 'webmock/rspec'
 
 def webmock_setup_defaults
   allowed = []

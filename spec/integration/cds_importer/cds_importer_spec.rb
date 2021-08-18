@@ -1,4 +1,3 @@
-require 'fileutils'
 
 describe CdsImporter do
   let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20201004T235959.gzip') }

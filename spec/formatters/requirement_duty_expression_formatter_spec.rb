@@ -1,4 +1,3 @@
-require 'requirement_duty_expression_formatter'
 
 describe RequirementDutyExpressionFormatter do
   describe '.format' do

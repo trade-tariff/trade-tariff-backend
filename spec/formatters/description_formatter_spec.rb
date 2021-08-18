@@ -1,4 +1,3 @@
-require 'description_formatter'
 
 describe DescriptionFormatter do
   describe '.format' do

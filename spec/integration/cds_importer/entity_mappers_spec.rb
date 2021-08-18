@@ -1,5 +1,3 @@
-require 'cds_importer/entity_mapper/additional_code_mapper'
-require 'cds_importer/entity_mapper'
 require_dependency 'cds_importer/entity_mapper/goods_nomenclature_mapper'
 
 describe CdsImporter::EntityMapper do

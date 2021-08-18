@@ -1,4 +1,3 @@
-require 'tariff_synchronizer'
 
 describe TariffSynchronizer::CdsUpdate do
   let(:example_date) { Date.new(2020, 10, 10) }

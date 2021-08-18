@@ -1,4 +1,3 @@
-require 'bank_holidays'
 
 describe BankHolidays do
   include BankHolidaysHelper

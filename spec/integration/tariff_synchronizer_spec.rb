@@ -1,5 +1,3 @@
-require 'tariff_synchronizer'
-require 'taric_importer'
 
 describe TariffSynchronizer do
   describe '#apply', truncation: true do
