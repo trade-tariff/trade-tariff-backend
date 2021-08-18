@@ -163,7 +163,7 @@ GEM
     factory_bot_rails (6.2.0)
       factory_bot (~> 6.2.0)
       railties (>= 5.0.0)
-    fakefs (0.18.1)
+    fakefs (1.3.2)
     faraday (1.7.0)
       faraday-em_http (~> 1.0)
       faraday-em_synchrony (~> 1.0)
@@ -475,7 +475,7 @@ DEPENDENCIES
   elasticsearch (= 7.9.0)
   elasticsearch-extensions (= 0.0.31)
   factory_bot_rails
-  fakefs (~> 0.18.0)
+  fakefs (~> 1.3.2)
   foreman
   forgery
   gds-sso
