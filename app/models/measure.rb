@@ -432,7 +432,11 @@ class Measure < Sequel::Model
   end
 
   def units
-    component_units + condition_units
+    all_components.each_with_object([]) do |component, acc|
+      next unless component.expresses_unit?
+
+      acc << component.unit
+    end
   end
 
   def entry_price_system?
@@ -441,30 +445,12 @@ class Measure < Sequel::Model
 
   private
 
+  def all_components
+    measure_conditions.flat_map(&:measure_condition_components) + measure_components
+  end
+
   def ad_valorem_resource?(resource)
     public_send(resource).count == 1 &&
       public_send(resource).first.ad_valorem?
-  end
-
-  def component_units
-    measure_components.each_with_object([]) do |component, acc|
-      next unless component.measurement_unit_code
-
-      unit = {
-        measure_sid: measure_sid,
-        measurement_unit_code: component.measurement_unit_code,
-        measurement_unit_qualifier_code: component.measurement_unit_qualifier_code,
-      }
-
-      acc << unit
-    end
-  end
-
-  def condition_units
-    measure_conditions.each_with_object([]) do |condition, acc|
-      next unless condition.expresses_unit?
-
-      acc.concat(condition.units)
-    end
   end
 end

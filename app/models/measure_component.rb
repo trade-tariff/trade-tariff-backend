@@ -58,6 +58,18 @@ class MeasureComponent < Sequel::Model
       monetary_unit_code.nil?
   end
 
+  def expresses_unit?
+    measurement_unit_code
+  end
+
+  def unit
+    {
+      component_id: pk.join('-'),
+      measurement_unit_code: measurement_unit_code,
+      measurement_unit_qualifier_code: measurement_unit_qualifier_code,
+    }
+  end
+
   private
 
   def duty_expression_formatter_options

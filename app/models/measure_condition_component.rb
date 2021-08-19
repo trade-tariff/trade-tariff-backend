@@ -37,6 +37,10 @@ class MeasureConditionComponent < Sequel::Model
       measurement_unit_code.nil?
   end
 
+  def zero_duty?
+    duty_amount&.zero?
+  end
+
   def formatted_duty_expression
     DutyExpressionFormatter.format(
       duty_expression_id: duty_expression_id,
@@ -56,9 +60,9 @@ class MeasureConditionComponent < Sequel::Model
     measurement_unit_code
   end
 
-  def unit(measure_sid:)
+  def unit
     {
-      measure_sid: measure_sid,
+      condition_component_id: pk.join('-'),
       measurement_unit_code: measurement_unit_code,
       measurement_unit_qualifier_code: measurement_unit_qualifier_code,
     }
