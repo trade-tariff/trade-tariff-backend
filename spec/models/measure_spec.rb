@@ -959,16 +959,19 @@ describe Measure do
       subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions) }
 
       let(:expected_units) do
+        condition_component_id = measure.measure_conditions.flat_map(&:measure_condition_components).first.pk.join('-')
+        component_id = measure.measure_components.first.pk.join('-')
+
         [
           {
-            measure_sid: measure.measure_sid,
-            measurement_unit_code: measure.measure_components.first.measurement_unit_code,
-            measurement_unit_qualifier_code: measure.measure_components.first.measurement_unit_qualifier_code,
+            condition_component_id: condition_component_id,
+            measurement_unit_code: 'DTN',
+            measurement_unit_qualifier_code: 'R',
           },
           {
-            measure_sid: measure.measure_sid,
-            measurement_unit_code: measure.measure_conditions.first.condition_measurement_unit_code,
-            measurement_unit_qualifier_code: measure.measure_conditions.first.condition_measurement_unit_qualifier_code,
+            component_id: component_id,
+            measurement_unit_code: 'DTN',
+            measurement_unit_qualifier_code: 'R',
           },
         ]
       end
@@ -982,11 +985,13 @@ describe Measure do
       subject(:measure) { create(:measure, :with_measure_components) }
 
       let(:expected_units) do
+        component_id = measure.measure_components.first.pk.join('-')
+
         [
           {
-            measure_sid: measure.measure_sid,
-            measurement_unit_code: measure.measure_components.first.measurement_unit_code,
-            measurement_unit_qualifier_code: measure.measure_components.first.measurement_unit_qualifier_code,
+            component_id: component_id,
+            measurement_unit_code: 'DTN',
+            measurement_unit_qualifier_code: 'R',
           },
         ]
       end
@@ -1000,11 +1005,13 @@ describe Measure do
       subject(:measure) { create(:measure, :with_measure_conditions) }
 
       let(:expected_units) do
+        condition_component_id = measure.measure_conditions.flat_map(&:measure_condition_components).first.pk.join('-')
+
         [
           {
-            measure_sid: measure.measure_sid,
-            measurement_unit_code: measure.measure_conditions.first.condition_measurement_unit_code,
-            measurement_unit_qualifier_code: measure.measure_conditions.first.condition_measurement_unit_qualifier_code,
+            condition_component_id: condition_component_id,
+            measurement_unit_code: 'DTN',
+            measurement_unit_qualifier_code: 'R',
           },
         ]
       end

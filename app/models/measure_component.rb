@@ -34,13 +34,13 @@ class MeasureComponent < Sequel::Model
   delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
   def formatted_duty_expression
-    return '' if measure.measure_type_id.in?(%w(DDA DDJ))
+    return '' if measure.measure_type_id.in?(%w[DDA DDJ])
 
     DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
   end
 
   def duty_expression_str
-    return '' if measure.measure_type_id.in?(%w(DDA DDJ))
+    return '' if measure.measure_type_id.in?(%w[DDA DDJ])
 
     DutyExpressionFormatter.format(duty_expression_formatter_options)
   end
@@ -56,6 +56,18 @@ class MeasureComponent < Sequel::Model
   def ad_valorem?
     measurement_unit_code.nil? &&
       monetary_unit_code.nil?
+  end
+
+  def expresses_unit?
+    measurement_unit_code
+  end
+
+  def unit
+    {
+      component_id: pk.join('-'),
+      measurement_unit_code: measurement_unit_code,
+      measurement_unit_qualifier_code: measurement_unit_qualifier_code,
+    }
   end
 
   private
