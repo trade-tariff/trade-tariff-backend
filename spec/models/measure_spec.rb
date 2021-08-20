@@ -959,17 +959,12 @@ describe Measure do
       subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions) }
 
       let(:expected_units) do
-        condition_component_id = measure.measure_conditions.flat_map(&:measure_condition_components).first.pk.join('-')
-        component_id = measure.measure_components.first.pk.join('-')
-
         [
           {
-            condition_component_id: condition_component_id,
             measurement_unit_code: 'DTN',
             measurement_unit_qualifier_code: 'R',
           },
           {
-            component_id: component_id,
             measurement_unit_code: 'DTN',
             measurement_unit_qualifier_code: 'R',
           },
@@ -985,11 +980,8 @@ describe Measure do
       subject(:measure) { create(:measure, :with_measure_components) }
 
       let(:expected_units) do
-        component_id = measure.measure_components.first.pk.join('-')
-
         [
           {
-            component_id: component_id,
             measurement_unit_code: 'DTN',
             measurement_unit_qualifier_code: 'R',
           },
