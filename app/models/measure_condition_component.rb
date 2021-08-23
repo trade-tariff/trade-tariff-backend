@@ -62,7 +62,6 @@ class MeasureConditionComponent < Sequel::Model
 
   def unit
     {
-      condition_component_id: pk.join('-'),
       measurement_unit_code: measurement_unit_code,
       measurement_unit_qualifier_code: measurement_unit_qualifier_code,
     }

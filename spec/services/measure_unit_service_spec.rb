@@ -22,8 +22,6 @@ RSpec.describe MeasureUnitService do
         )
       end
       let(:expected_applicable_units) do
-        condition_component_id = measure.measure_conditions.flat_map(&:measure_condition_components).first.pk.join('-')
-        component_id = measure.measure_components.first.pk.join('-')
         {
           'DTNR' => {
             'measurement_unit_code' => 'DTN',
@@ -32,8 +30,6 @@ RSpec.describe MeasureUnitService do
             'unit_question' => 'What is the weight net of the standard quality of the goods you will be importing?',
             'unit_hint' => 'Enter the value in decitonnes (100kg)',
             'unit' => 'x 100 kg',
-            'component_ids' => Set.new([component_id]),
-            'condition_component_ids' => Set.new([condition_component_id]),
           },
         }
       end

@@ -41,10 +41,7 @@ shared_examples_for 'a component' do |type|
     end
 
     it 'returns the properly formatted unit' do
-      identifier_key = type == :measure_condition_component ? :condition_component_id : :component_id
-
       expect(component.unit).to eq(
-        identifier_key => component.pk.join('-'),
         measurement_unit_code: 'TNE',
         measurement_unit_qualifier_code: 'I',
       )

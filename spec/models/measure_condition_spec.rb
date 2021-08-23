@@ -188,7 +188,6 @@ describe MeasureCondition do
         expect(measure_condition.units).to eq(
           [
             {
-              condition_component_id: measure_condition.measure_condition_components.first.pk.join('-'),
               measurement_unit_code: 'TNE',
               measurement_unit_qualifier_code: 'R',
             },
