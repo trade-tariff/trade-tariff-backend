@@ -40,7 +40,7 @@ describe MeasurementUnit do
     end
 
     context 'with missing measurement unit present in database' do
-      subject { described_class.measurement_unit(unit_code, unit_key) }
+      subject(:result) { described_class.measurement_unit(unit_code, unit_key) }
 
       before do
         measurement_unit
@@ -58,7 +58,11 @@ describe MeasurementUnit do
       it { is_expected.to include('abbreviation' => measurement_unit.abbreviation) }
       it { is_expected.to include('unit_question' => "Please enter unit: #{unit_description}") }
       it { is_expected.to include('unit_hint' =>  "Please correctly enter unit: #{unit_description}") }
-      it { expect(Raven).to have_received(:capture_message) }
+
+      it 'sends a message to Sentry' do
+        result
+        expect(Raven).to have_received(:capture_message)
+      end
     end
 
     context 'with measurement unit not in the database' do
