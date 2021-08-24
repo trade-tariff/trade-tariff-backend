@@ -1,57 +1,61 @@
-
 describe TariffSynchronizer::TaricSequenceChecker do
-  subject { described_class.new(with_email) }
-
-  let(:response) { TariffSynchronizer::Response.new(200, "abc\ndef.xml") }
-  let(:with_email) { false }
-  let(:mail) { double }
-
-  before do
-    allow_any_instance_of(described_class).to receive(:interval).and_return(Date.new(2020, 0o1, 0o1)..Date.new(2020, 0o1, 0o1))
-    allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).and_return(response)
-    allow(TariffSynchronizer::Mailer).to receive(:failed_taric_sequence).and_return(mail)
-    allow(mail).to receive(:deliver_now)
-  end
+  subject(:checker) { described_class.new }
 
   describe '#perform' do
-    it 'increases retry limit' do
-      expect(TariffSynchronizer).to receive(:retry_count=).with(5000)
-      expect(TariffSynchronizer).to receive(:exception_retry_count=).with(2500)
-      subject.send(:increase_retry_limit)
+    before do
+      allow(TariffSynchronizer).to receive(:exception_retry_count=).and_call_original
+      allow(TariffSynchronizer).to receive(:retry_count=).and_call_original
+      allow(TariffSynchronizer::FileService).to receive(:file_exists?).and_return(files_exist)
+      allow(TariffSynchronizer::Mailer).to receive(:failed_taric_sequence).and_call_original
+      allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform).and_return(response)
     end
 
-    it 'sets back retry limit' do
-      expect(TariffSynchronizer).to receive(:retry_count=).with(1)
-      expect(TariffSynchronizer).to receive(:exception_retry_count=).with(1)
-      subject.send(:restore_retry_limit)
+    let(:files_exist) { false }
+    let(:response) { TariffSynchronizer::Response.new(200, "abc\ndef.xml") }
+
+    # rubocop:disable RSpec/MultipleExpectations
+    it 'sets TariffSynchronizer.retry_count correctly' do
+      checker.perform
+      expect(TariffSynchronizer).to have_received(:retry_count=).ordered.with(5000)
+      expect(TariffSynchronizer).to have_received(:retry_count=).ordered.with(1)
     end
 
-    context 'when there are NO missing files' do
-      before do
-        allow(TariffSynchronizer::FileService).to receive(:file_exists?).and_return(true)
-      end
+    it 'sets TariffSynchronizer.exception_retry_count correctly' do
+      checker.perform
+      expect(TariffSynchronizer).to have_received(:exception_retry_count=).ordered.with(2500)
+      expect(TariffSynchronizer).to have_received(:exception_retry_count=).ordered.with(1)
+    end
+    # rubocop:enable RSpec/MultipleExpectations
 
-      it 'returns empty array' do
-        expect(subject.perform).to eq([])
+    context 'when no updates are missing' do
+      let(:files_exist) { true }
+
+      it { expect(checker.perform).to eq([]) }
+
+      it 'does not call Mailer failed_taric_sequence' do
+        checker.perform
+        expect(TariffSynchronizer::Mailer).not_to have_received(:failed_taric_sequence)
       end
     end
 
-    context 'when there are missing files' do
-      before do
-        allow(TariffSynchronizer::FileService).to receive(:file_exists?).and_return(false)
+    context 'when updates are missing' do
+      let(:files_exist) { false }
+      let(:today) { Time.zone.today }
+
+      let(:expected_files) do
+        end_date = Time.zone.today
+        start_date = end_date - 2.years
+        range = start_date..end_date
+        range.map do |day|
+          "#{day.iso8601}_def.xml"
+        end
       end
 
-      it 'returns array with only xml files' do
-        expect(subject.perform).to eq(['2020-01-01_def.xml'])
-      end
-    end
-
-    context 'with email' do
-      let(:with_email) { true }
+      it { expect(checker.perform).to eq(expected_files) }
 
       it 'calls Mailer failed_taric_sequence' do
-        expect(TariffSynchronizer::Mailer).to receive(:failed_taric_sequence).with(['2020-01-01_def.xml'])
-        subject.perform
+        checker.perform
+        expect(TariffSynchronizer::Mailer).to have_received(:failed_taric_sequence).with(expected_files)
       end
     end
   end

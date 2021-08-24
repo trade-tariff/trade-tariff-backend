@@ -7,6 +7,6 @@ class TaricSequenceCheckWorker
     return if TradeTariffBackend.uk?
 
     logger.info 'Running TARIC files sequence check'
-    TariffSynchronizer::TaricSequenceChecker.new(with_email: true).perform
+    TariffSynchronizer::TaricSequenceChecker.new.perform
   end
 end

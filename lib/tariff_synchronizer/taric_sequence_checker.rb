@@ -1,8 +1,7 @@
 module TariffSynchronizer
-  # Class checks tarif update files for current and previous year
+  # Class checks tariff update files for current and previous year
   class TaricSequenceChecker
-    def initialize(with_email: false)
-      @with_email = with_email
+    def initialize
       @old_retry = TariffSynchronizer.retry_count
       @old_exception_retry = TariffSynchronizer.exception_retry_count
       @missing_updates = []
@@ -24,7 +23,7 @@ module TariffSynchronizer
 
       @missing_updates.select! { |file| file.include?('.xml') }
 
-      if @with_email && @missing_updates.any?
+      if @missing_updates.any?
         Mailer.failed_taric_sequence(@missing_updates).deliver_now
       end
 
@@ -38,9 +37,9 @@ module TariffSynchronizer
     private
 
     def interval
-      today = Time.zone.today
-      end_date = today
-      start_date = Date.new(today.year - 1, 1, 1)
+      end_date = Time.zone.today
+      start_date = end_date - 2.years
+
       start_date..end_date
     end
 
