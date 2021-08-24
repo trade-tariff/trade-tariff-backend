@@ -1,5 +1,6 @@
 module RulesOfOrigin
   class SchemeSet
+    class_attribute :current
     attr_reader :base_path, :links
 
     def initialize(source_file)
@@ -37,6 +38,8 @@ module RulesOfOrigin
     class InvalidSchemesFile < RuntimeError; end
 
     class SchemeNotFound < RuntimeError; end
+
+    class CurrentSetAlreadyAssigned < RuntimeError; end
 
     private
 
