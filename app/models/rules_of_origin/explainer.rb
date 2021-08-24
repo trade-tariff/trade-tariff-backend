@@ -6,7 +6,7 @@ module RulesOfOrigin
 
     class << self
       def new_with_check(attrs = {})
-        return unless attrs[:text].present? && attrs[:url].present?
+        return unless attrs['text'].present? && attrs['url'].present?
 
         new(attrs)
       end

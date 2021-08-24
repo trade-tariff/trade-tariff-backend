@@ -7,7 +7,9 @@ RSpec.describe RulesOfOrigin::Explainer do
   end
 
   describe '.new' do
-    subject { described_class.new text: 'More information', url: 'explanation.md' }
+    subject do
+      described_class.new 'text' => 'More information', 'url' => 'explanation.md'
+    end
 
     it { is_expected.to have_attributes text: 'More information' }
     it { is_expected.to have_attributes url: 'explanation.md' }
@@ -17,19 +19,19 @@ RSpec.describe RulesOfOrigin::Explainer do
     subject(:explainer) { described_class.new_with_check data }
 
     context 'with valid' do
-      let(:data) { { text: 'GovUK', url: 'govuk.md' } }
+      let(:data) { { 'text' => 'GovUK', 'url' => 'govuk.md' } }
 
       it { is_expected.to be_instance_of described_class }
     end
 
     context 'with partially valid' do
-      let(:data) { { text: 'GovUK', url: '' } }
+      let(:data) { { 'text' => 'GovUK', 'url' => '' } }
 
       it { is_expected.to be_nil }
     end
 
     context 'with invalid' do
-      let(:data) { { text: '', url: '' } }
+      let(:data) { { 'text' => '', 'url' => '' } }
 
       it { is_expected.to be_nil }
     end

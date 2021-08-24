@@ -16,15 +16,15 @@ RSpec.describe RulesOfOrigin::Scheme do
   describe '#links=' do
     subject(:links) { instance.links }
 
-    before { instance.links = links_data }
+    before { instance.links = data }
 
     let(:instance) { described_class.new }
 
-    let(:links_data) do
+    let(:data) do
       [
-        { text: 'HMRC', url: 'https://www.hmrc.gov.uk' },
-        { text: 'GovUK', url: 'https://www.gov.uk' },
-        { text: '', url: '' },
+        { 'text' => 'HMRC', 'url' => 'https://www.hmrc.gov.uk' },
+        { 'text' => 'GovUK', 'url' => 'https://www.gov.uk' },
+        { 'text' => '', 'url' => '' },
       ]
     end
 
@@ -32,5 +32,26 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to all be_instance_of RulesOfOrigin::Link }
     it { expect(links.first).to have_attributes text: 'HMRC' }
     it { expect(links.first).to have_attributes url: 'https://www.hmrc.gov.uk' }
+  end
+
+  describe '#explainers=' do
+    subject(:explainers) { instance.explainers }
+
+    before { instance.explainers = data }
+
+    let(:instance) { described_class.new }
+
+    let(:data) do
+      [
+        { 'text' => 'HMRC', 'url' => 'hmrc.md' },
+        { 'text' => 'GovUK', 'url' => 'govuk.md' },
+        { 'text' => '', 'url' => '' },
+      ]
+    end
+
+    it { is_expected.to have_attributes length: 2 }
+    it { is_expected.to all be_instance_of RulesOfOrigin::Explainer }
+    it { expect(explainers.first).to have_attributes text: 'HMRC' }
+    it { expect(explainers.first).to have_attributes url: 'hmrc.md' }
   end
 end

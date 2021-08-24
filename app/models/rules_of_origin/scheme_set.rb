@@ -1,6 +1,6 @@
 module RulesOfOrigin
   class SchemeSet
-    attr_reader :base_path
+    attr_reader :base_path, :links
 
     def initialize(source_file)
       data = JSON.parse read_file(source_file)
@@ -9,6 +9,7 @@ module RulesOfOrigin
         raise ScopeDoesNotMatch
       end
 
+      @links = data['links'].map(&Link.method(:new_with_check)).compact.freeze
       @_schemes = data['schemes'].map(&Scheme.method(:new))
                                  .index_by(&:scheme_code)
                                  .freeze

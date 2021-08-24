@@ -7,7 +7,7 @@ RSpec.describe RulesOfOrigin::Link do
   end
 
   describe '.new' do
-    subject { described_class.new text: 'GovUK', url: 'https://www.gov.uk' }
+    subject { described_class.new 'text' => 'GovUK', 'url' => 'https://www.gov.uk' }
 
     it { is_expected.to have_attributes text: 'GovUK' }
     it { is_expected.to have_attributes url: 'https://www.gov.uk' }
@@ -17,19 +17,19 @@ RSpec.describe RulesOfOrigin::Link do
     subject(:link) { described_class.new_with_check data }
 
     context 'with valid' do
-      let(:data) { { text: 'GovUK', url: 'https://www.gov.uk' } }
+      let(:data) { { 'text' => 'GovUK', 'url' => 'https://www.gov.uk' } }
 
       it { is_expected.to be_instance_of described_class }
     end
 
     context 'with partially valid' do
-      let(:data) { { text: 'GovUK', url: '' } }
+      let(:data) { { 'text' => 'GovUK', 'url' => '' } }
 
       it { is_expected.to be_nil }
     end
 
     context 'with invalid' do
-      let(:data) { { text: '', url: '' } }
+      let(:data) { { 'text' => '', 'url' => '' } }
 
       it { is_expected.to be_nil }
     end

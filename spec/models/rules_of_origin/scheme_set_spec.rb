@@ -9,6 +9,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     it { is_expected.to respond_to :schemes }
     it { is_expected.to respond_to :countries }
     it { is_expected.to respond_to :base_path }
+    it { is_expected.to respond_to :links }
   end
 
   describe '#initialize' do
@@ -81,5 +82,12 @@ RSpec.describe RulesOfOrigin::SchemeSet do
       it { is_expected.to include have_attributes(scheme_code: 'kenya') }
       it { is_expected.to include have_attributes(scheme_code: 'gsp') }
     end
+  end
+
+  describe '#links' do
+    subject { scheme_set.links }
+
+    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to all be_instance_of RulesOfOrigin::Link }
   end
 end
