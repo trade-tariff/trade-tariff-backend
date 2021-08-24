@@ -3,7 +3,9 @@ module RulesOfOrigin
     include ActiveModel::Model
 
     attr_accessor :scheme_code, :title, :introductory_notes_file, :fta_intro_file,
-                  :links, :explainers, :countries, :rule_offset, :footnote
+                  :countries, :rule_offset, :footnote
+
+    attr_reader :links, :explainers
 
     class << self
       def load_from_file(file)
@@ -53,5 +55,17 @@ module RulesOfOrigin
     class ScopeDoesNotMatch < RuntimeError; end
 
     class InvalidSchemesFile < RuntimeError; end
+
+    def links=(links_data)
+      @links = Array.wrap(links_data)
+                    .map(&Link.method(:new_with_check))
+                    .compact
+    end
+
+    def explainers=(explainers_data)
+      @explainers = Array.wrap(explainers_data)
+                         .map(&Explainer.method(:new_with_check))
+                         .compact
+    end
   end
 end

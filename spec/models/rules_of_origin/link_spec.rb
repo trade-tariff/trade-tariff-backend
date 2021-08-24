@@ -1,0 +1,37 @@
+require 'rails_helper'
+
+RSpec.describe RulesOfOrigin::Link do
+  describe 'attributes' do
+    it { is_expected.to respond_to :text }
+    it { is_expected.to respond_to :url }
+  end
+
+  describe '.new' do
+    subject { described_class.new text: 'GovUK', url: 'https://www.gov.uk' }
+
+    it { is_expected.to have_attributes text: 'GovUK' }
+    it { is_expected.to have_attributes url: 'https://www.gov.uk' }
+  end
+
+  describe '.new_with_check' do
+    subject(:link) { described_class.new_with_check data }
+
+    context 'with valid' do
+      let(:data) { { text: 'GovUK', url: 'https://www.gov.uk' } }
+
+      it { is_expected.to be_instance_of described_class }
+    end
+
+    context 'with partially valid' do
+      let(:data) { { text: 'GovUK', url: '' } }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with invalid' do
+      let(:data) { { text: '', url: '' } }
+
+      it { is_expected.to be_nil }
+    end
+  end
+end
