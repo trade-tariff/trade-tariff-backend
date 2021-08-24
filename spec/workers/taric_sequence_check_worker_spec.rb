@@ -1,20 +1,30 @@
 describe TaricSequenceCheckWorker, type: :worker do
   before do
-    allow($stdout).to receive(:write)
-    allow_any_instance_of(TariffSynchronizer::TaricSequenceChecker).to receive(:perform)
+    allow(TariffSynchronizer::TaricSequenceChecker).to receive(:new).and_return(taric_sequence_checker)
+    allow(TradeTariffBackend).to receive(:service).and_return(service)
   end
 
-  describe '#perfomr' do
-    it 'creates an instance of TaricSequenceCheck' do
-      expect(TariffSynchronizer::TaricSequenceChecker).to receive(:new).with(true).and_call_original
+  let(:taric_sequence_checker) { instance_double(TariffSynchronizer::TaricSequenceChecker, perform: 'foo') }
 
-      described_class.new.perform
+  describe '#perform' do
+    context 'when on the uk service' do
+      let(:service) { 'uk' }
+
+      it 'does not call perform on the instance of TaricSequenceChecker' do
+        silence { described_class.new.perform }
+
+        expect(taric_sequence_checker).not_to have_received(:perform)
+      end
     end
 
-    it 'calls perform for the instance of TaricSequenceCheck' do
-      expect_any_instance_of(TariffSynchronizer::TaricSequenceChecker).to receive(:perform)
+    context 'when on the xi service' do
+      let(:service) { 'xi' }
 
-      described_class.new.perform
+      it 'calls perform on the instance of TaricSequenceChecker' do
+        silence { described_class.new.perform }
+
+        expect(taric_sequence_checker).to have_received(:perform)
+      end
     end
   end
 end

@@ -1,7 +1,7 @@
 module TariffSynchronizer
   # Class checks tarif update files for current and previous year
   class TaricSequenceChecker
-    def initialize(with_email = false)
+    def initialize(with_email: false)
       @with_email = with_email
       @old_retry = TariffSynchronizer.retry_count
       @old_exception_retry = TariffSynchronizer.exception_retry_count
@@ -38,7 +38,7 @@ module TariffSynchronizer
     private
 
     def interval
-      today = Date.today
+      today = Time.zone.today
       end_date = today
       start_date = Date.new(today.year - 1, 1, 1)
       start_date..end_date
