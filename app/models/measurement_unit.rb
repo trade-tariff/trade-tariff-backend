@@ -19,8 +19,8 @@ class MeasurementUnit < Sequel::Model
   delegate :description, to: :measurement_unit_description
 
   class << self
-    def measurement_unit(unit_key)
-      measurement_units[unit_key] ||= build_missing_measurement_unit(unit_key)
+    def measurement_unit(unit_code, unit_key)
+      measurement_units[unit_key] ||= build_missing_measurement_unit(unit_code, unit_key)
     end
 
     private
@@ -33,17 +33,21 @@ class MeasurementUnit < Sequel::Model
         end
     end
 
-    def build_missing_measurement_unit(unit_key)
-      raise InvalidMeasurementUnit, unit_key unless unit = self[unit_key]
+    def build_missing_measurement_unit(unit_code, unit_key)
+      unit = find(measurement_unit_code: unit_code)
+
+      qualifier_code = unit_key.length == 4 ? unit_key[3..] : ''
+
+      raise InvalidMeasurementUnit, unit_key unless unit
 
       Raven.capture_message("Missing measurement unit in measurement_units.yml: #{unit_key}")
 
       {
         'measurement_unit_code' => unit.measurement_unit_code,
-        'measurement_unit_qualifier_code' => '',
-        'abbreviation' => '',
+        'measurement_unit_qualifier_code' => qualifier_code,
+        'abbreviation' => unit.abbreviation,
         'unit_question' => "Please enter unit: #{unit.description}",
-        'unit_hint' => nil,
+        'unit_hint' => "Please correctly enter unit: #{unit.description}",
         'unit' => nil,
       }
     end
