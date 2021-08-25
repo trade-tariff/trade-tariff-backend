@@ -4,7 +4,7 @@ module Api
       include JSONAPI::Serializer
 
       set_type :search_suggestion
-      
+
       attribute :value
     end
   end

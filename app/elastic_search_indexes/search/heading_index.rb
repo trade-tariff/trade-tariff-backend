@@ -3,7 +3,7 @@ module Search
     def goods_nomenclature?
       true
     end
-    
+
     def definition
       {
         mappings: {

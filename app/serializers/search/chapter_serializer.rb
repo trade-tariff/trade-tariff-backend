@@ -15,7 +15,7 @@ module Search
           }
         end
       }
-      
+
       if section.present?
         chapter_attributes[:section] = {
           numeral: section.numeral,
@@ -23,7 +23,7 @@ module Search
           position: section.position
         }
       end
-      
+
       chapter_attributes
     end
   end

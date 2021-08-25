@@ -7,7 +7,7 @@ module Api
         set_type :section
 
         set_id :id
-        
+
         attributes :numeral, :title, :position
       end
     end

@@ -74,7 +74,7 @@ class ExportRefundNomenclature < Sequel::Model
   def code
     additional_code
   end
-  
+
   def formatted_description
     ''
   end
