@@ -97,7 +97,6 @@ commands:
           channel: deployments
           event: pass
           template: basic_success_1
-
   cf_deploy_docker_worker:
     parameters:
       dev-release:
@@ -139,8 +138,8 @@ commands:
             cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:data:migrate" --name "db-data-migrate"
 
 
-  # Legacy deployers
 
+  # Legacy deployers
   cf_deploy_worker:
     parameters:
       space:
@@ -334,8 +333,6 @@ jobs:
             echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
             docker push $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}
 
-
-
   test:
     docker:
       - image: cimg/ruby:3.0.2
@@ -415,13 +412,13 @@ jobs:
       service:
         type: string
     steps:
-      - cf_deploy_worker:
+      - cf_deploy_docker_worker:
           space: "staging"
-          domain_prefix: "staging"
+          environment_key: "staging"
           service: << parameters.service >>
-      - cf_blue_green_deploy:
+      - cf_deploy_docker:
           space: "staging"
-          domain_prefix: "staging"
+          environment_key: "staging"
           service: << parameters.service >>
       - sentry-release
 
@@ -481,6 +478,13 @@ workflows:
                  - /^dependabot\/.*/
            requires:
              - build_dev
+      - build:
+          name: build_live
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - master
       - deploy_staging:
            matrix:
              parameters:
@@ -488,10 +492,8 @@ workflows:
                  - xi
                  - uk
            context: trade-tariff
-           filters:
-             branches:
-               only:
-                 - master
+           requires:
+             - build_live
       - hold_production:
            type: approval
            filters:
