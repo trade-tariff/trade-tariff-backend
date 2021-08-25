@@ -1,4 +1,3 @@
-
 describe DescriptionFormatter do
   describe '.format' do
     it 'corrects inconsistent newlines in lists' do

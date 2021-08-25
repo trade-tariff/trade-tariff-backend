@@ -23,7 +23,7 @@ module Api
           section_note.save(raise_on_failure: false)
 
           respond_with section_note,
-            location: api_section_section_note_url(section.id)
+                       location: api_section_section_note_url(section.id)
         end
 
         def update

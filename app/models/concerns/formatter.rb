@@ -33,7 +33,7 @@ module Formatter
 
   def result_of_attribute_or_method_call(field_name)
     self[field_name.to_s].presence ||
-    (send(field_name) if respond_to?(field_name)).presence ||
-    ''
+      (send(field_name) if respond_to?(field_name)).presence ||
+      ''
   end
 end

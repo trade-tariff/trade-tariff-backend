@@ -37,10 +37,10 @@ class Section < Sequel::Model
   one_to_one :section_note
 
   one_to_many :search_references, key: Sequel.cast_numeric(:referenced_id), key_method: :referenced_id_number,
-              reciprocal: :referenced, conditions: { referenced_class: 'Section' },
-    adder: proc { |search_reference| search_reference.update(referenced_id: id, referenced_class: 'Section') },
-    remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-    clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
+                                  reciprocal: :referenced, conditions: { referenced_class: 'Section' },
+                                  adder: proc { |search_reference| search_reference.update(referenced_id: id, referenced_class: 'Section') },
+                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
+                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
 
   def first_chapter
     chapters.first || NullObject.new

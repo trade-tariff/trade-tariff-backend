@@ -3,10 +3,10 @@
 module Sequel
   module Plugins
     module Sti
-      def self.configure(model, opts={})
+      def self.configure(model, opts = {})
         model.instance_eval do
           @class_determinator = opts[:class_determinator]
-          dataset.with_row_proc(lambda{ |r| model.sti_load(r) })
+          dataset.with_row_proc(lambda { |r| model.sti_load(r) })
         end
       end
 
@@ -25,7 +25,7 @@ module Sequel
           subclass.instance_eval do
             dataset.with_row_proc(rp)
             @class_determinator = cd
-            dataset.with_row_proc(lambda{ |r| model.sti_load(r) })
+            dataset.with_row_proc(lambda { |r| model.sti_load(r) })
           end
         end
 

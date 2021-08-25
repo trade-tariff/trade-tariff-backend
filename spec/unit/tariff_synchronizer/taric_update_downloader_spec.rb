@@ -1,4 +1,3 @@
-
 describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }
 

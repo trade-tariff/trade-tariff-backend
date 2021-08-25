@@ -29,7 +29,7 @@ class CdsImporter
         def mapping_keys_to_parse
           mapping_with_key_as_array.keys.reject { |key|
             key.size == 1 ||
-            key[0] == METAINFO
+              key[0] == METAINFO
           }
         end
       end
@@ -48,7 +48,7 @@ class CdsImporter
       }.freeze
 
       def initialize(values)
-        @values = values.slice(*entity_mapping_key_as_array.keys.map{ |k| k[0] }.uniq)
+        @values = values.slice(*entity_mapping_key_as_array.keys.map { |k| k[0] }.uniq)
       end
 
       # Sometimes we have array as a mapping path value,
@@ -78,7 +78,7 @@ class CdsImporter
         end
         # creating instances for all expanded values
         if mapping_path.present?
-          expanded.select!{ |values| values.dig(*mapping_path.split(PATH_SEPARATOR)).present? }
+          expanded.select! { |values| values.dig(*mapping_path.split(PATH_SEPARATOR)).present? }
         end
         expanded.map { |values| create_instance(values) }
       end

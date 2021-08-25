@@ -12,9 +12,9 @@ class CdsImporter
       self.exclude_mapping = ['metainfo.origin', 'validityStartDate', 'validityEndDate'].freeze
 
       self.entity_mapping = base_mapping.merge(
-          'sid' => :quota_definition_sid,
-          "#{mapping_path}.occurrenceTimestamp" => :occurrence_timestamp,
-          "#{mapping_path}.unsuspensionDate" => :unsuspension_date
+        'sid' => :quota_definition_sid,
+        "#{mapping_path}.occurrenceTimestamp" => :occurrence_timestamp,
+        "#{mapping_path}.unsuspensionDate" => :unsuspension_date
       ).freeze
 
       self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze

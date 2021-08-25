@@ -1,4 +1,3 @@
-
 describe TariffSynchronizer::BaseUpdate do
   include BankHolidaysHelper
 

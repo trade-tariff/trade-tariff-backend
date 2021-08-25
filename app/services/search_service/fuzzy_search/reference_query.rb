@@ -66,7 +66,8 @@ class SearchService
                   }
                 }
               }
-            }, size: INDEX_SIZE_MAX
+            },
+            size: INDEX_SIZE_MAX
           }
         }
       end

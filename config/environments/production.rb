@@ -30,7 +30,6 @@ Rails.application.configure do
   # config.assets.js_compressor = :uglifier
   # config.assets.css_compressor = :sass
 
-
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   # config.assets.compile = false
 
@@ -64,11 +63,12 @@ Rails.application.configure do
 
   # Rails cache store
   # PaasConfig returns url and db
-  config.cache_store = :redis_store, PaasConfig.redis.merge({
-    expires_in: 1.day,
-    namespace:  ENV['GOVUK_APP_DOMAIN'],
-    pool_size:  Integer(ENV['MAX_THREADS'] || 5)
-  })
+  config.cache_store = :redis_store,
+                       PaasConfig.redis.merge({
+                         expires_in: 1.day,
+                         namespace: ENV['GOVUK_APP_DOMAIN'],
+                         pool_size: Integer(ENV['MAX_THREADS'] || 5)
+                       })
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.action_controller.asset_host = 'http://assets.example.com'
 

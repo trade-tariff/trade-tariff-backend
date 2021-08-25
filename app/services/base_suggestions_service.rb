@@ -15,7 +15,7 @@ class BaseSuggestionsService
           .select(:id, :title)
           .distinct
           .order(Sequel.desc(:title))
-          .map { |search_reference| handle_search_reference_record(search_reference)}
+          .map { |search_reference| handle_search_reference_record(search_reference) }
 
     chemicals = Chemical
           .select(:id, :cas)

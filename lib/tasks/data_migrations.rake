@@ -23,7 +23,7 @@ namespace :db do
     end
 
     desc 'Applies data migration one more time by timestamp'
-    task :repeat, [:timestamp]  => :environment do |_task, args|
+    task :repeat, [:timestamp] => :environment do |_task, args|
       TradeTariffBackend::DataMigrator.repeat(args[:timestamp])
     end
 

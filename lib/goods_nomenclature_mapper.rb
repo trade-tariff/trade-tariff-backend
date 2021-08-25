@@ -46,7 +46,7 @@ class GoodsNomenclatureMapper
   alias :detect :find
 
   def for_goods_nomenclature(ref_goods_nomenclature)
-    detect{|goods_nomenclature| goods_nomenclature.goods_nomenclature_sid == ref_goods_nomenclature.goods_nomenclature_sid }
+    detect { |goods_nomenclature| goods_nomenclature.goods_nomenclature_sid == ref_goods_nomenclature.goods_nomenclature_sid }
   end
 
   private
@@ -72,7 +72,7 @@ class GoodsNomenclatureMapper
   def map_goods_nomenclatures(primary, secondary)
     if (heading_map?(primary.reload, secondary.reload) &&
        (primary.producline_suffix < secondary.producline_suffix)) ||
-       (primary.number_indents < secondary.number_indents)
+        (primary.number_indents < secondary.number_indents)
 
       primary.children << secondary unless primary.children.include?(secondary)
 
@@ -82,8 +82,8 @@ class GoodsNomenclatureMapper
       secondary.ancestors << primary
     elsif (heading_map?(primary, secondary) &&
           (primary.producline_suffix == secondary.producline_suffix)) ||
-          (!heading_map?(primary, secondary) &&
-           primary.number_indents == secondary.number_indents)
+        (!heading_map?(primary, secondary) &&
+         primary.number_indents == secondary.number_indents)
 
       if primary.parent.present? # if primary is not directly under heading
         primary.parent.children << secondary unless primary.parent.children.include?(secondary)
@@ -94,18 +94,18 @@ class GoodsNomenclatureMapper
       end
     else (heading_map?(primary, secondary) &&
           (primary.producline_suffix > secondary.producline_suffix)) ||
-         (primary.number_indents > secondary.number_indents)
+      (primary.number_indents > secondary.number_indents)
 
-      parent = nth_parent(primary, secondary.number_indents)
+         parent = nth_parent(primary, secondary.number_indents)
 
-      if parent.present?
-        parent.children << secondary unless parent.children.include?(secondary)
+         if parent.present?
+           parent.children << secondary unless parent.children.include?(secondary)
 
-        parent_map[secondary.id] = parent
-        secondary.parent = parent
-        secondary.ancestors += parent.ancestors
-        secondary.ancestors << parent
-      end
+           parent_map[secondary.id] = parent
+           secondary.parent = parent
+           secondary.ancestors += parent.ancestors
+           secondary.ancestors << parent
+         end
     end
   end
 

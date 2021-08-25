@@ -17,7 +17,7 @@ module TariffImporter
     end
 
     def cds_failed(event)
-      "Cds import failed: #{event.payload[:exception]}".tap {|message|
+      "Cds import failed: #{event.payload[:exception]}".tap { |message|
         message << "\n Failed object: #{event.payload[:key]}\n #{event.payload[:hash]}"
         message << "\n Backtrace:\n #{event.payload[:exception].backtrace.join("\n")}"
         error message

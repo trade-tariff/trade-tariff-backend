@@ -8,41 +8,41 @@ module Search
       {
         mappings: {
           properties: {
-            id: {type: 'long'},
+            id: { type: 'long' },
             chapter: {
               dynamic: true,
               properties: {
-                description: {type: 'text'},
-                validity_start_date: {type: 'date', format: 'date_optional_time'},
-                producline_suffix: {type: 'keyword'},
-                goods_nomenclature_sid: {type: 'long'},
-                goods_nomenclature_item_id: {type: 'keyword'}
+                description: { type: 'text' },
+                validity_start_date: { type: 'date', format: 'date_optional_time' },
+                producline_suffix: { type: 'keyword' },
+                goods_nomenclature_sid: { type: 'long' },
+                goods_nomenclature_item_id: { type: 'keyword' }
               }
             },
-            validity_end_date: {format: 'date_optional_time', type: 'date'},
-            number_indents: {type: 'long'},
-            description: {type: 'text', analyzer: 'snowball'},
-            validity_start_date: {type: 'date', format: 'date_optional_time'},
-            producline_suffix: {type: 'keyword'},
-            goods_nomenclature_item_id: {type: 'keyword'},
+            validity_end_date: { format: 'date_optional_time', type: 'date' },
+            number_indents: { type: 'long' },
+            description: { type: 'text', analyzer: 'snowball' },
+            validity_start_date: { type: 'date', format: 'date_optional_time' },
+            producline_suffix: { type: 'keyword' },
+            goods_nomenclature_item_id: { type: 'keyword' },
             section: {
               dynamic: true,
               properties: {
-                position: {type: 'long'},
-                title: {type: 'text'},
-                numeral: {type: 'keyword'}
+                position: { type: 'long' },
+                title: { type: 'text' },
+                numeral: { type: 'keyword' }
               }
             },
             heading: {
               dynamic: true,
               properties: {
-                validity_end_date: {type: 'date', format: 'date_optional_time'},
-                number_indents: {type: 'long'},
-                description: {type: 'text'},
-                validity_start_date: {type: 'date', format: 'date_optional_time'},
-                producline_suffix: {type: 'keyword'},
-                goods_nomenclature_sid: {type: 'long'},
-                goods_nomenclature_item_id: {type: 'keyword'}
+                validity_end_date: { type: 'date', format: 'date_optional_time' },
+                number_indents: { type: 'long' },
+                description: { type: 'text' },
+                validity_start_date: { type: 'date', format: 'date_optional_time' },
+                producline_suffix: { type: 'keyword' },
+                goods_nomenclature_sid: { type: 'long' },
+                goods_nomenclature_item_id: { type: 'keyword' }
               }
             }
           }
@@ -51,4 +51,3 @@ module Search
     end
   end
 end
-

@@ -1,7 +1,7 @@
 module Search
   class SearchReferenceSerializer < ::Serializer
     def referenced
-      TradeTariffBackend.model_serializer_for('search',__getobj__.referenced.class).new(__getobj__.referenced)
+      TradeTariffBackend.model_serializer_for('search', __getobj__.referenced.class).new(__getobj__.referenced)
     end
 
     def serializable_hash(_opts = {})

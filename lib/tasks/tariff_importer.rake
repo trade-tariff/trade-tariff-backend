@@ -39,11 +39,12 @@ namespace :importer do
       # - load shared data (sections, notes, etc.)
       # - upload initial update files to S3
       files = TariffSynchronizer::FileService.bucket.objects.to_a
-                                                    .select{ |o| o.key.include? 'data/cds/tariff' }
-                                                    .map{ |f| f.key.split('/').last }
+                                                    .select { |o| o.key.include? 'data/cds/tariff' }
+                                                    .map { |f| f.key.split('/').last }
       files.each do |file|
         u = TariffSynchronizer::CdsUpdate.where(filename: file).first
         next if u.present?
+
         u = TariffSynchronizer::CdsUpdate.new
         u.filename = file
         u.issue_date = Date.parse file[-20..-13]

@@ -4,12 +4,12 @@ cache @heading_cache_key, expires_at: actual_date.end_of_day
 attributes :goods_nomenclature_item_id, :description, :bti_url,
            :formatted_description
 
-  footnotes = @heading.footnotes
-  if footnotes.any?
-    child(footnotes) {
-      attributes :code, :description, :formatted_description
-    }
-  end
+footnotes = @heading.footnotes
+if footnotes.any?
+  child(footnotes) {
+    attributes :code, :description, :formatted_description
+  }
+end
 
 if @heading.declarable?
   attributes :basic_duty_rate
@@ -18,10 +18,10 @@ if @heading.declarable?
 else
   child :chapter do
     attributes :goods_nomenclature_item_id, :description, :formatted_description
-    node(:chapter_note, if: lambda {|chapter| chapter.chapter_note.present? }) do |chapter|
+    node(:chapter_note, if: lambda { |chapter| chapter.chapter_note.present? }) do |chapter|
       chapter.chapter_note.content
     end
-    child(:guides, if: lambda {|chapter| chapter.guides.present? }) do
+    child(:guides, if: lambda { |chapter| chapter.guides.present? }) do
       attributes :title, :url
     end
   end

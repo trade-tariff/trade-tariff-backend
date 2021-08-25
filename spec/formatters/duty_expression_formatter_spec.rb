@@ -1,4 +1,3 @@
-
 describe DutyExpressionFormatter do
   describe '.format' do
     let(:measurement_unit) do

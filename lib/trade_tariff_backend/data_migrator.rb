@@ -12,8 +12,8 @@ module TradeTariffBackend
     extend SingleForwardable
 
     def_delegators :instance, :migrations, :migrations=,
-                              :migrate, :migration, :rollback,
-                              :status, :reporter=, :redo, :repeat
+                   :migrate, :migration, :rollback,
+                   :status, :reporter=, :redo, :repeat
 
     attr_writer :migrations
     attr_writer :reporter
@@ -96,11 +96,13 @@ module TradeTariffBackend
     def repeat(timestamp)
       entry = TradeTariffBackend::DataMigration::LogEntry.where("filename LIKE '%#{timestamp}%'").last
       return unless entry
+
       # load migration
       load entry.filename
       # migration class will be loaded to @migrations
       migration = @migrations.last
       return unless migration
+
       # apply migration if can be rolled UP
       if migration.can_rollup?
         Sequel::Model.db.transaction(savepoint: true) {

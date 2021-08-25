@@ -3,7 +3,6 @@ module Sequel
 
   module Plugins
     module Take
-
       module DatasetMethods
         def take
           first.presence || (raise Sequel::RecordNotFound)

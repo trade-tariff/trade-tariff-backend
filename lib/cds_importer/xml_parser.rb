@@ -28,11 +28,13 @@ class CdsImporter
         end
         @depth += 1
         return unless @in_target
+
         @stack << @node = {}
       end
 
       def text(val)
         return unless @in_target
+
         @node[:__content__] = val
       end
 

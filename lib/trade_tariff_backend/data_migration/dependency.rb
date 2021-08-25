@@ -2,7 +2,7 @@ module TradeTariffBackend
   class DataMigration
     class Dependency
       def self.[](*migrations)
-         new(migrations)
+        new(migrations)
       end
 
       def initialize(migrations)
