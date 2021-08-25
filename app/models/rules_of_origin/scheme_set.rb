@@ -3,18 +3,24 @@ module RulesOfOrigin
     class_attribute :current
     attr_reader :base_path, :links
 
-    def initialize(source_file)
-      data = JSON.parse read_file(source_file)
+    class << self
+      def from_file(file)
+        source_file = Pathname.new(file)
+        unless source_file.extname == '.json' && source_file.file? && source_file.exist?
+          raise InvalidSchemesFile, 'Requires a path to a JSON file'
+        end
 
-      unless data['scope'] == TradeTariffBackend.service
-        raise ScopeDoesNotMatch
+        new(source_file.dirname, source_file.read)
       end
+    end
 
-      @links = data['links'].map(&Link.method(:new_with_check)).compact.freeze
-      @_schemes = data['schemes'].map(&Scheme.method(:new))
-                                 .index_by(&:scheme_code)
-                                 .freeze
-      @_countries = rebuild_countries_to_schemes_index.freeze
+    def initialize(base_path, source_data)
+      @base_path = base_path
+      data = JSON.parse(source_data)
+
+      @links = build_links(data['links']).freeze
+      @_schemes = build_schemes(data['schemes']).freeze
+      @_countries = build_countries_to_schemes_index.freeze
     end
 
     def schemes
@@ -33,33 +39,29 @@ module RulesOfOrigin
       @_schemes.values_at(*(@_countries[country_code] || []))
     end
 
-    class ScopeDoesNotMatch < RuntimeError; end
-
     class InvalidSchemesFile < RuntimeError; end
 
     class SchemeNotFound < RuntimeError; end
 
     class CurrentSetAlreadyAssigned < RuntimeError; end
 
-    private
+  private
 
-    def read_file(file)
-      @source_file = Pathname.new(file)
-      unless @source_file.extname == '.json' && @source_file.file? && @source_file.exist?
-        raise InvalidSchemesFile, 'Requires a path to a JSON file'
-      end
-
-      @base_path = @source_file.dirname
-      @source_file.read
-    end
-
-    def rebuild_countries_to_schemes_index
+    def build_countries_to_schemes_index
       @_schemes.each.with_object({}) do |(scheme_code, scheme), countries|
         scheme.countries.each do |country_code|
           countries[country_code] ||= Set.new
           countries[country_code] << scheme_code
         end
       end
+    end
+
+    def build_links(links)
+      links.map(&Link.method(:new_with_check)).compact
+    end
+
+    def build_schemes(schemes)
+      schemes.map(&Scheme.method(:new)).index_by(&:scheme_code)
     end
   end
 end

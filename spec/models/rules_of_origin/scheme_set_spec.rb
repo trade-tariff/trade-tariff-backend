@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe RulesOfOrigin::SchemeSet do
-  subject(:scheme_set) { described_class.new test_file }
+  subject(:scheme_set) { described_class.from_file test_file }
 
   let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_uk.json') }
 
@@ -12,7 +12,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     it { is_expected.to respond_to :links }
   end
 
-  describe '#initialize' do
+  describe '.from_file' do
     context 'with valid file' do
       it { is_expected.to be_instance_of described_class }
       it { is_expected.to have_attributes schemes: include('EU') }
@@ -34,17 +34,13 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     context 'for XI service' do
       before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 
-      it { expect { scheme_set }.to raise_exception described_class::ScopeDoesNotMatch }
+      let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_xi.json') }
 
-      context 'with XI file' do
-        let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_xi.json') }
-
-        it { is_expected.to be_instance_of described_class }
-      end
+      it { is_expected.to be_instance_of described_class }
     end
   end
 
-  describe '.scheme' do
+  describe '#scheme' do
     subject(:scheme) { scheme_set.scheme(scheme_code) }
 
     context 'for known scheme' do
@@ -60,7 +56,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     end
   end
 
-  describe '.schemes_for_country' do
+  describe '#schemes_for_country' do
     subject(:schemes) { scheme_set.schemes_for_country(country_code) }
 
     context 'with matching scheme' do
