@@ -7,7 +7,7 @@ module Api
         set_type :heading
 
         set_id :goods_nomenclature_sid
-        
+
         attributes :goods_nomenclature_item_id, :validity_start_date,
                    :validity_end_date, :description
 

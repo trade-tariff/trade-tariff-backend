@@ -37,7 +37,7 @@ class Footnote < Sequel::Model
   many_to_many :goods_nomenclatures, join_table: :footnote_association_goods_nomenclatures,
                                      left_key: %i[footnote_type footnote_id],
                                      right_key: [:goods_nomenclature_sid]
-  
+
   one_to_many :footnote_association_erns, key: %i[footnote_type footnote_id],
                                           primary_key: %i[footnote_type_id footnote_id]
   many_to_many :export_refund_nomenclatures, join_table: :footnote_association_erns,

@@ -10,7 +10,7 @@ module Search
         description: formatted_description,
         number_indents: number_indents,
       }
-      
+
       if chapter.present?
         heading_attributes[:chapter] = {
           goods_nomenclature_sid: chapter.goods_nomenclature_sid,
@@ -26,7 +26,7 @@ module Search
             }
           end
         }
-        
+
         if section.present?
           heading_attributes[:section] = {
             numeral: section.numeral,
@@ -35,7 +35,7 @@ module Search
           }
         end
       end
-      
+
       heading_attributes
     end
   end

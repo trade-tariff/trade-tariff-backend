@@ -2,7 +2,7 @@ class BaseSuggestionsService
   def to_json(_config = {})
     perform.to_json
   end
-  
+
   def perform
     commodities = Commodity
           .select(:goods_nomenclature_sid, :goods_nomenclature_item_id)
@@ -10,7 +10,7 @@ class BaseSuggestionsService
           .distinct
           .order(Sequel.desc(:goods_nomenclature_item_id))
           .map { |commodity| handle_commodity_record(commodity) }
-  
+
     search_references = SearchReference
           .select(:id, :title)
           .distinct

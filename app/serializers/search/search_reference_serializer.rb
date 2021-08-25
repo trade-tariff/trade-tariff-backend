@@ -3,7 +3,7 @@ module Search
     def referenced
       TradeTariffBackend.model_serializer_for('search',__getobj__.referenced.class).new(__getobj__.referenced)
     end
-    
+
     def serializable_hash(_opts = {})
       if referenced.blank?
         {}

@@ -83,7 +83,7 @@ class SearchService
         gns = c.goods_nomenclatures.map do |gn|
           ExactSearch.new(gn.goods_nomenclature_item_id, date).search!.results
         end
-  
+
         # Each Chemical should map to only one Goods Nomenclaure,
         # but the database includes two chemicals that belong to more than one GN
         # These "chemicals" are probably placeholders and are not really correct

@@ -7,7 +7,7 @@ module Api
         set_type :search_reference
 
         set_id :id
-  
+
         attributes :title, :referenced_id, :referenced_class
       end
     end

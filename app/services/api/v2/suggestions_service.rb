@@ -2,7 +2,7 @@ module Api
   module V2
     class SuggestionsService < ::BaseSuggestionsService
       protected
-      
+
       def handle_commodity_record(commodity)
         Api::V2::SuggestionPresenter.new(commodity.goods_nomenclature_sid, commodity.goods_nomenclature_item_id)
       end

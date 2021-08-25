@@ -6,7 +6,7 @@ module RedisLockDb
     end
 
     def redis
-      @redis ||= Sidekiq.redis { |conn| conn } 
+      @redis ||= Sidekiq.redis { |conn| conn }
     end
 
   end

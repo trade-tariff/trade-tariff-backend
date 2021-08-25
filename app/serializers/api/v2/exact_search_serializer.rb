@@ -4,7 +4,7 @@ module Api
       include JSONAPI::Serializer
 
       set_type :exact_search
-      
+
       attributes :type, :entry
     end
   end

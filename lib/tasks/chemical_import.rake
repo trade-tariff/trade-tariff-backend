@@ -5,7 +5,7 @@ namespace :chemical do
 
     filepath = File.join(Rails.root, 'db', 'Annex_6.csv')
     ods = File.open(filepath, 'r')
-    
+
     ods.each do |r|
       row = r.gsub(/["\n]/, '').split(',', 3)
       params = {
