@@ -1,6 +1,9 @@
+# frozen_string_literal: true
+
 module RulesOfOrigin
   class SchemeSet
-    class_attribute :current
+    DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
+
     attr_reader :base_path, :links
 
     class << self
@@ -11,6 +14,10 @@ module RulesOfOrigin
         end
 
         new(source_file.dirname, source_file.read)
+      end
+
+      def from_default_file(service)
+        from_file DEFAULT_SOURCE_PATH.join("roo_schemes_#{service}.json")
       end
     end
 

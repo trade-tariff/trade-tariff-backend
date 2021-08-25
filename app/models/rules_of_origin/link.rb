@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RulesOfOrigin
   class Link
     include ActiveModel::Model

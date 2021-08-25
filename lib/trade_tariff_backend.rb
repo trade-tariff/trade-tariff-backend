@@ -72,7 +72,7 @@ module TradeTariffBackend
     end
 
     def data_migration_path
-      File.join(Rails.root, 'db', 'data_migrations')
+      Rails.root.join('db/data_migrations')
     end
 
     def with_redis_lock(lock_name = db_lock_key, &block)
@@ -192,6 +192,11 @@ module TradeTariffBackend
 
     def error_serializer(request)
       "Api::V#{api_version(request)}::ErrorSerializationService".constantize.new
+    end
+
+    def rules_of_origin_schemes
+      @rules_of_origin_schemes ||=
+        RulesOfOrigin::SchemeSet.from_default_file(service)
     end
   end
 end
