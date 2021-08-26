@@ -28,11 +28,8 @@ class MeasureType < Sequel::Model
     'C', # Applicable duty
     'D', # Anti-dumping/countervailing measures
     'J', # Countervailing charge
-  ]
-
-  if TradeTariffBackend.include_excise_measure_units?
-    UNIT_EXPRESSABLE_MEASURES << 'Q' # Excise
-  end
+    'Q', # Excise
+  ].freeze
 
   UNIT_EXPRESSABLE_MEASURES.freeze
 
