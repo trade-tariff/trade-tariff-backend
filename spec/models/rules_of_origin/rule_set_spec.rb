@@ -16,13 +16,13 @@ RSpec.describe RulesOfOrigin::RuleSet do
         Rails.root.join(file_fixture_path).join 'rules_of_origin/random.json'
       end
 
-      it { expect { rule_set }.to raise_exception described_class::InvalidRulesFile }
+      it { expect { rule_set }.to raise_exception described_class::InvalidFile }
     end
 
     context 'with non-CSV file' do
       let(:test_file) { file_fixture 'rules_of_origin/invalid.json' }
 
-      it { expect { rule_set }.to raise_exception described_class::InvalidRulesFile }
+      it { expect { rule_set }.to raise_exception described_class::InvalidFile }
     end
   end
 
@@ -49,7 +49,7 @@ RSpec.describe RulesOfOrigin::RuleSet do
     subject { imported_rules.rule(id_rule) }
 
     context 'with known rule' do
-      let(:id_rule) { '20000001' }
+      let(:id_rule) { 20_000_001 }
 
       it { is_expected.to be_instance_of RulesOfOrigin::Rule }
       it { is_expected.to have_attributes id_rule: id_rule }
@@ -72,7 +72,7 @@ RSpec.describe RulesOfOrigin::RuleSet do
     context 'with invalid rows' do
       let(:test_file) { file_fixture 'rules_of_origin/invalid_rules.csv' }
 
-      it { is_expected.to include have_attributes(id_rule: '20000011') }
+      it { is_expected.to include have_attributes(id_rule: 20_000_011) }
     end
   end
 end

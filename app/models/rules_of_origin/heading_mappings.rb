@@ -3,9 +3,9 @@
 require 'csv'
 
 module RulesOfOrigin
-  class RuleSet
+  class HeadingMappings
     def initialize(source_file)
-      @rules = nil
+      @mappings = nil
 
       @source_file = Pathname.new(source_file)
       unless @source_file.extname == '.csv' && @source_file.file? && @source_file.exist?
@@ -14,33 +14,25 @@ module RulesOfOrigin
     end
 
     def import
-      raise AlreadyImported if @rules
+      raise AlreadyImported if @mappings
 
-      @rules = {}
+      @mappings = {}
+      count = 0
 
       CSV.foreach(@source_file, headers: true) do |row|
+        count += 1
+
         next unless row['scope'] == TradeTariffBackend.service
-
-        @rules[row['id_rule'].to_i] = row.to_h.without('scope', 'id_rule')
-      end
-
-      @rules.length
-    end
-
-    def rule(id_rule)
-      rule = @rules[id_rule.to_i]
-
-      Rule.new rule.merge(id_rule: id_rule.to_i) if rule
-    end
-
-    def invalid_rules
-      [].tap do |invalid|
-        @rules.each do |id_rule, rule|
-          rule = Rule.new rule.merge(id_rule: id_rule)
-
-          invalid << rule if rule.invalid?
+        if row['id_rule'].blank? || row['sub_heading'].blank? || row['scheme_code'].blank?
+          raise InvalidFile, "Row #{count} is invalid - sub_heading or id_rule are blank"
         end
+
+        @mappings[row['sub_heading']] ||= {}
+        @mappings[row['sub_heading']][row['scheme_code']] ||= []
+        @mappings[row['sub_heading']][row['scheme_code']] << row['id_rule'].to_i
       end
+
+      @mappings.values.map(&:length).sum
     end
 
     class InvalidFile < RuntimeError; end
