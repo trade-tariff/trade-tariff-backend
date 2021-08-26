@@ -43,10 +43,6 @@ module TradeTariffBackend
       ENV['CDS'] == 'true'
     end
 
-    def include_excise_measure_units?
-      ENV.fetch('INCLUDE_EXCISE_MEASURE_UNITS', 'false') == 'true'
-    end
-
     def uk?
       service == 'uk'
     end
