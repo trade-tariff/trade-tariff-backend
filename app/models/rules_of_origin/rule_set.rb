@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'csv'
+
 module RulesOfOrigin
   class RuleSet
     include ActiveModel::Model
@@ -31,6 +33,16 @@ module RulesOfOrigin
       rule = @rules[id_rule]
 
       Rule.new rule.merge(id_rule: id_rule) if rule
+    end
+
+    def invalid_rules
+      [].tap do |invalid|
+        @rules.each do |id_rule, rule|
+          rule = Rule.new rule.merge(id_rule: id_rule)
+
+          invalid << rule if rule.invalid?
+        end
+      end
     end
 
     class InvalidRulesFile < RuntimeError; end

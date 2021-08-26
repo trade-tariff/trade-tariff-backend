@@ -61,4 +61,18 @@ RSpec.describe RulesOfOrigin::RuleSet do
       it { is_expected.to be_nil }
     end
   end
+
+  describe '#invalid_rules' do
+    subject { imported_rules.invalid_rules }
+
+    context 'with valid file' do
+      it { is_expected.to be_empty }
+    end
+
+    context 'with invalid rows' do
+      let(:test_file) { file_fixture 'rules_of_origin/invalid_rules.csv' }
+
+      it { is_expected.to include have_attributes(id_rule: '20000011') }
+    end
+  end
 end
