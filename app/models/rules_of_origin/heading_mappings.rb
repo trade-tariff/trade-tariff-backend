@@ -35,6 +35,13 @@ module RulesOfOrigin
       @mappings.values.map(&:length).sum
     end
 
+    def for_heading_and_schemes(heading, scheme_codes)
+      schemes = @mappings[heading]
+      return [] if schemes.nil?
+
+      schemes.slice(*scheme_codes)
+    end
+
     class InvalidFile < RuntimeError; end
 
     class AlreadyImported < RuntimeError; end

@@ -44,4 +44,30 @@ RSpec.describe RulesOfOrigin::HeadingMappings do
       end
     end
   end
+
+  describe '.for_heading_and_schemes' do
+    subject(:rules) do
+      imported_mappings.for_heading_and_schemes heading, [scheme_code]
+    end
+
+    let(:scheme_code) { 'albania' }
+    let(:heading)     { '010121' }
+
+    context 'with known heading and scheme code' do
+      it { is_expected.to include 'albania' }
+      it { expect(rules['albania']).to include 282_566 }
+    end
+
+    context 'with unknown scheme code' do
+      let(:scheme_code) { 'unknown' }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'with unknown heading' do
+      let(:heading) { '111111' }
+
+      it { is_expected.to be_empty }
+    end
+  end
 end
