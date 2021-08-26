@@ -1,0 +1,37 @@
+"scope","id_rule","scheme_code","heading","description","quota_amount","quota_unit","rule","alternate_rule"
+uk,20000000,eu,"01.01-01.06",Chapter 1: Live animals,,,All animals of Chapter 1 are wholly obtained.,
+uk,10000000,eu,"01.01-01.06",Chapter 1: Live animals,,,All animals of Chapter 1 are wholly obtained.,
+uk,20000001,eu,"02.01-02.10",Chapter 2: Meat and edible meat offal,,,Production in which all the materials of Chapters 1 and 2 used are wholly obtained.,
+uk,10000001,eu,"02.01-02.10",Chapter 2: Meat and edible meat offal,,,Production in which all the materials of Chapters 1 and 2 used are wholly obtained.,
+uk,20000002,eu,"03.01-03.08","Chapter 3: Fish and crustaceans, molluscs and other aquatic invertebrates",,,Production in which all the materials of Chapter 3 used are wholly obtained.,
+uk,10000002,eu,"03.01-03.08","Chapter 3: Fish and crustaceans, molluscs and other aquatic invertebrates",,,Production in which all the materials of Chapter 3 used are wholly obtained.,
+uk,10000003,eu,"04.01-04.10","Chapter 4: Dairy produce; birds'eggs; natural honey; edible products of animal origin, not elsewhere specified or included",,,"Production in which:
+all the materials of Chapter 4 used are wholly obtained _and_
+the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000003,eu,"04.01-04.10","Chapter 4: Dairy produce; birds'eggs; natural honey; edible products of animal origin, not elsewhere specified or included",,,"Production in which:
+- all the materials of Chapter 4 used are wholly obtained _and_
+- the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000004,eu,"05.01-05.11","Chapter 5: Products of animal origin, not elsewhere specified or included",,,Production from non-originating materials of any heading.,
+uk,10000004,eu,"05.01-05.11","Chapter 5: Products of animal origin, not elsewhere specified or included",,,Production from non-originating materials of any heading.,
+uk,10000005,eu,"06.01-06.04","Chapter 6: Live trees and other plants; bulbs, roots and the like; cut flowers and ornamental foliage",,,Production in which all the materials of Chapter 6 used are wholly obtained.,
+uk,20000005,eu,"06.01-06.04","Chapter 6: Live trees and other plants; bulbs, roots and the like; cut flowers and ornamental foliage",,,Production in which all the materials of Chapter 6 used are wholly obtained.,
+uk,20000006,eu,"07.01-07.14",Chapter 7: Edible vegetables and certain roots and tubers,,,Production in which all the materials of Chapter 7 used are wholly obtained.,
+uk,10000006,eu,"07.01-07.14",Chapter 7: Edible vegetables and certain roots and tubers,,,Production in which all the materials of Chapter 7 used are wholly obtained.,
+uk,10000007,eu,"08.01-08.14",Chapter 8: Edible fruit and nuts; peel of citrus fruit or melons,,,"Production in which:
+all the materials of Chapter 8 used are wholly obtained _and_
+the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000007,eu,"08.01-08.14",Chapter 8: Edible fruit and nuts; peel of citrus fruit or melons,,,"Production in which:
+- all the materials of Chapter 8 used are wholly obtained _and_
+- the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000008,eu,"09.01-09.10","Chapter 9: Coffee, tea, maté and spices",,,Production from non-originating materials of any heading.,
+uk,10000008,eu,"09.01-09.10","Chapter 9: Coffee, tea, maté and spices",,,Production from non-originating materials of any heading.,
+uk,10000009,eu,"10.01-10.08",Chapter 10: Cereals,,,Production in which all the materials of Chapter 10 used are wholly obtained.,
+uk,20000009,eu,"10.01-10.08",Chapter 10: Cereals,,,Production in which all the materials of Chapter 10 used are wholly obtained.,
+uk,20000010,eu,"11.01-11.09",Chapter 11: Products of the milling industry; malt; starches; inulin; wheat gluten,,,"Production in which all materials of Chapters 10 and 11, headings 07.01, 07.14, 23.02 to 23.03 or subheading 0710.10 used are wholly obtained.",
+uk,10000010,eu,"11.01-11.09",Chapter 11: Products of the milling industry; malt; starches; inulin; wheat gluten,,,"Production in which all materials of Chapters 10 and 11, headings 07.01, 07.14, 23.02 to 23.03 or subheading 0710.10 used are wholly obtained.",
+uk,10000011,eu,"12.01-12.14","Chapter 12: Oil seeds and oleaginous fruits; miscellaneous grains, seeds and fruit; industrial or medicinal plants; straw and fodder",,,CTH,
+uk,20000011,,"12.01-12.14","Chapter 12: Oil seeds and oleaginous fruits; miscellaneous grains, seeds and fruit; industrial or medicinal plants; straw and fodder",,,CTH,
+uk,20000012,eu,"13.01-13.02","Chapter 13: Lac; gums, resins and other vegetable saps and extracts",,,Production from non-originating materials of any heading in which the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.,
+uk,10000012,eu,,"Chapter 13: Lac; gums, resins and other vegetable saps and extracts",,,Production from non-originating materials of any heading in which the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.,
+uk,10000013,eu,"14.01-14.04",Chapter 14: Vegetable plaiting materials; vegetable products not elsewhere specified or included,,,Production from non-originating materials of any heading.,
+uk,20000013,eu,"14.01-14.04",Chapter 14: Vegetable plaiting materials; vegetable products not elsewhere specified or included,,,Production from non-originating materials of any heading.,
