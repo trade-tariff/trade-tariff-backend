@@ -70,4 +70,31 @@ RSpec.describe RulesOfOrigin::HeadingMappings do
       it { is_expected.to be_empty }
     end
   end
+
+  describe '#invalid_mappings' do
+    subject { mappings.invalid_mappings }
+
+    context 'with valid file' do
+      it { is_expected.to be_empty }
+    end
+
+    context 'with invalid rows' do
+      let(:test_file) { file_fixture 'rules_of_origin/invalid_mappings.csv' }
+
+      context 'with errors in scheme codes' do
+        it { is_expected.to include 19 => ['scheme_code: cannot be blank'] }
+        it { is_expected.to include 5 => ['scheme_code: invalid format'] }
+      end
+
+      context 'with errors in id_rules' do
+        it { is_expected.to include 14 => ['id_rule: cannot be blank'] }
+        it { is_expected.to include 25 => ['id_rule: is not numeric'] }
+      end
+
+      context 'with errors in sub_headings' do
+        it { is_expected.to include 9 => ['sub_heading: cannot be blank'] }
+        it { is_expected.to include 11 => ['sub_heading: is not numeric'] }
+      end
+    end
+  end
 end
