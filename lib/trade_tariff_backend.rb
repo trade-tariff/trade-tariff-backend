@@ -199,5 +199,10 @@ module TradeTariffBackend
       @rules_of_origin_rules ||=
         RulesOfOrigin::RuleSet.from_default_file.tap(&:import)
     end
+
+    def rules_of_origin_mappings
+      @rules_of_origin_mappings ||=
+        RulesOfOrigin::HeadingMappings.from_default_file.tap(&:import)
+    end
   end
 end
