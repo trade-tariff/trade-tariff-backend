@@ -4,6 +4,15 @@ require 'csv'
 
 module RulesOfOrigin
   class RuleSet
+    DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
+    DEFAULT_FILE = 'rules_of_origin_210728.csv'
+
+    class << self
+      def from_default_file
+        new DEFAULT_SOURCE_PATH.join(DEFAULT_FILE)
+      end
+    end
+
     def initialize(source_file)
       @rules = nil
 

@@ -194,5 +194,10 @@ module TradeTariffBackend
       @rules_of_origin_schemes ||=
         RulesOfOrigin::SchemeSet.from_default_file(service)
     end
+
+    def rules_of_origin_rules
+      @rules_of_origin_rules ||=
+        RulesOfOrigin::RuleSet.from_default_file.tap(&:import)
+    end
   end
 end
