@@ -1,4 +1,3 @@
-
 describe TariffSynchronizer::CdsUpdateDownloader do
   let(:example_date) { Date.new(2020, 10, 10) }
   let(:downloader) { described_class.new(example_date) }

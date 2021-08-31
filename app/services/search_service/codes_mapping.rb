@@ -20,7 +20,7 @@ class SearchService
         file = File.join(Rails.root, 'db', 'codes-mapping-2016-to-2017.csv')
         lines = CSV.read(file, col_sep: ';')
         # O(n) solution
-        lines.group_by{ |l| l[0] }.select{ |_, v| v.length == 1 }.map{ |_, v| v[0] }.to_h
+        lines.group_by { |l| l[0] }.select { |_, v| v.length == 1 }.map { |_, v| v[0] }.to_h
       end
     end
   end

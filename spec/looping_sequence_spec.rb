@@ -1,4 +1,3 @@
-
 RSpec.describe LoopingSequence do
   it 'progresses from the first value to the last then loops back' do
     sequence = described_class.new('a'..'z')

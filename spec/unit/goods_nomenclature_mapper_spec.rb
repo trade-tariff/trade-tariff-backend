@@ -1,4 +1,3 @@
-
 describe GoodsNomenclatureMapper do
   describe 'mapping' do
     # E.g.

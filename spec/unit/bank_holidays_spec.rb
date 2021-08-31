@@ -1,4 +1,3 @@
-
 describe BankHolidays do
   include BankHolidaysHelper
 

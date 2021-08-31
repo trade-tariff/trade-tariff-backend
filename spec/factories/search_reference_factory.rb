@@ -1,4 +1,3 @@
-
 FactoryBot.define do
   sequence(:sid) { |n| n }
 

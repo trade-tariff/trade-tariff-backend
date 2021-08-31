@@ -1,4 +1,3 @@
-
 def webmock_setup_defaults
   allowed = []
 

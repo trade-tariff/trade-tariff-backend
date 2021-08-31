@@ -83,7 +83,7 @@ child(order_number: :order_number) do
 
     node(:measurement_unit) { |qd| qd.formatted_measurement_unit }
     node(:monetary_unit) { |qd| qd.monetary_unit_code }
-    node(:measurement_unit_qualifier ) { |qd| qd.measurement_unit_qualifier_code }
+    node(:measurement_unit_qualifier) { |qd| qd.measurement_unit_qualifier_code }
     node(:balance) { |qd| qd.balance }
     node(:last_allocation_date) { |qd| qd.last_balance_event.try(:occurrence_timestamp) }
     node(:suspension_period_start_date) { |qd| qd.last_suspension_period.try(:suspension_start_date) }

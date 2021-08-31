@@ -12,10 +12,12 @@ class BuildIndexPageWorker
     index = TradeTariffBackend.search_index_for(namespace, model)
 
     client.bulk(
-                  body: serialize_for(
-                    :index,
-                    index,
-                    model.dataset.paginate(page_number, page_size)))
+      body: serialize_for(
+        :index,
+        index,
+        model.dataset.paginate(page_number, page_size)
+      )
+    )
   end
 
   private

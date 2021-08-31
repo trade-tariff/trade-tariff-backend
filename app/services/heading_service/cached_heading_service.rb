@@ -28,7 +28,7 @@ module HeadingService
     def fetch_result
       search_client = ::TradeTariffBackend.cache_client
       index = ::Cache::HeadingIndex.new(TradeTariffBackend.search_namespace).name
-      result = search_client.search index: index, body: {query: {match: {_id: heading.goods_nomenclature_sid}}}
+      result = search_client.search index: index, body: { query: { match: { _id: heading.goods_nomenclature_sid } } }
       result&.hits&.hits&.first&._source
     end
 
@@ -111,7 +111,7 @@ module HeadingService
     def build_commodities_tree
       @parent_map = {}
       @commodity_index = result.commodities.each_with_index.map do |commodity, index|
-        {commodity.goods_nomenclature_sid => index}
+        { commodity.goods_nomenclature_sid => index }
       end.reduce({}, :merge)
       traverse(result.commodities.first)
     end

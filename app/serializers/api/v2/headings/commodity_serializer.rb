@@ -13,8 +13,7 @@ module Api
                    :producline_suffix, :parent_sid
 
         has_many :overview_measures, record_type: :measure,
-                 serializer: Api::V2::Measures::OverviewMeasureSerializer
-
+                                     serializer: Api::V2::Measures::OverviewMeasureSerializer
       end
     end
   end

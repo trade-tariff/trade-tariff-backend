@@ -20,7 +20,7 @@ namespace :chemical do
         c = Chemical.find_or_create(cas: params[:cas])
 
         # create chemical name with :name
-        c.add_chemical_name({name: params[:name]})
+        c.add_chemical_name({ name: params[:name] })
 
         # create chemical <<-MTM->> goods_nomenclature association
         puts "#{c.id}--#{gn.goods_nomenclature_sid}"

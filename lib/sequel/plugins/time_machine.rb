@@ -3,7 +3,7 @@ require 'date'
 module Sequel
   module Plugins
     module TimeMachine
-      def self.configure(model, opts={})
+      def self.configure(model, opts = {})
         model.period_start_date_column = opts[:period_start_column]
         model.period_end_date_column = opts[:period_end_column]
 
@@ -50,9 +50,9 @@ module Sequel
         # to parent record.
         def actual_or_relevant(klass)
           if self.class.point_in_time.present?
-            klass.filter{|o| o.<=(self.class.period_start_date_column, self.class.point_in_time) & (o.>=(self.class.period_end_date_column, self.class.point_in_time) | ({self.class.period_end_date_column => nil})) }
+            klass.filter { |o| o.<=(self.class.period_start_date_column, self.class.point_in_time) & (o.>=(self.class.period_end_date_column, self.class.point_in_time) | ({ self.class.period_end_date_column => nil })) }
           elsif self.class.relevant_query?
-            klass.filter{|o| o.<=(klass.period_start_date_column, self.send(self.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, self.send(self.class.period_end_date_column.column)) | ({klass.period_end_date_column => nil})) }
+            klass.filter { |o| o.<=(klass.period_start_date_column, self.send(self.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, self.send(self.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
           else
             klass
           end
@@ -72,7 +72,7 @@ module Sequel
         #
         def actual
           if model.point_in_time.present?
-            filter{|o| o.<=(model.period_start_date_column, model.point_in_time) & (o.>=(model.period_end_date_column, model.point_in_time) | ({model.period_end_date_column => nil})) }
+            filter { |o| o.<=(model.period_start_date_column, model.point_in_time) & (o.>=(model.period_end_date_column, model.point_in_time) | ({ model.period_end_date_column => nil })) }
           else
             self
           end
@@ -95,9 +95,9 @@ module Sequel
 
           # TODO: to review after sequel upgrade. code: !parent.instance_of?(Class)
           if parent && !parent.instance_of?(Class) && klass.relevant_query?
-            filter{|o| o.<=(klass.period_start_date_column, parent.send(parent.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, parent.send(parent.class.period_end_date_column.column)) | ({klass.period_end_date_column => nil})) }
+            filter { |o| o.<=(klass.period_start_date_column, parent.send(parent.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, parent.send(parent.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
           elsif klass.point_in_time.present?
-            filter{|o| o.<=(klass.period_start_date_column, klass.point_in_time) & (o.>=(klass.period_end_date_column, klass.point_in_time) | ({klass.period_end_date_column => nil})) }
+            filter { |o| o.<=(klass.period_start_date_column, klass.point_in_time) & (o.>=(klass.period_end_date_column, klass.point_in_time) | ({ klass.period_end_date_column => nil })) }
           else
             self
           end

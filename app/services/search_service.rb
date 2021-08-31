@@ -16,9 +16,9 @@ class SearchService
   autoload :NullSearch,  'search_service/null_search'
 
   INDEX_SIZE_MAX = 10000 # ElasticSearch does default pagination for 10 entries
-                         # per page. We do not do pagination when displaying
-                         # results so have a constant much bigger than possible
-                         # index size for size value.
+  # per page. We do not do pagination when displaying
+  # results so have a constant much bigger than possible
+  # index size for size value.
 
   include ActiveModel::Validations
   include ActiveModel::Conversion
@@ -46,10 +46,10 @@ class SearchService
   def as_of=(date)
     date ||= Date.current.to_s
     @as_of = begin
-               Date.parse(date)
-             rescue StandardError
-               Date.current
-             end
+      Date.parse(date)
+    rescue StandardError
+      Date.current
+    end
   end
 
   def q=(term)
@@ -87,7 +87,7 @@ class SearchService
   def perform
     @result = if q.present?
                 ExactSearch.new(q, as_of).search!.presence ||
-                FuzzySearch.new(q, as_of).search!.presence
+                  FuzzySearch.new(q, as_of).search!.presence
               end
 
     @result ||= NullSearch.new(q, as_of)

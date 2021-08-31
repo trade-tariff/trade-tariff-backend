@@ -2,8 +2,8 @@ class Chapter < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
 
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000').
-              order(Sequel.asc(:goods_nomenclature_item_id))
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000')
+              .order(Sequel.asc(:goods_nomenclature_item_id))
 
   set_primary_key [:goods_nomenclature_sid]
 
@@ -19,9 +19,9 @@ class Chapter < GoodsNomenclature
   one_to_one :chapter_note, primary_key: :to_param
 
   one_to_many :search_references, key: :referenced_id, primary_key: :short_code, reciprocal: :referenced, conditions: { referenced_class: 'Chapter' },
-    adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Chapter') },
-    remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-    clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
+                                  adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Chapter') },
+                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
+                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
 
   many_to_many :guides, left_key: :goods_nomenclature_sid,
                         join_table: :chapters_guides
@@ -96,8 +96,8 @@ class Chapter < GoodsNomenclature
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
-       # if Chapter did not come from initial seed, filter by its
-       # create/update date
+      # if Chapter did not come from initial seed, filter by its
+      # create/update date
       criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
     }
      .limit(TradeTariffBackend.change_count)

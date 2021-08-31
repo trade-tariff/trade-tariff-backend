@@ -8,10 +8,10 @@ module Search
       {
         mappings: {
           properties: {
-            position: {type: 'long'},
-            id: {type: 'long'},
-            title: {type: 'text', analyzer: 'snowball'},
-            numeral: {type: 'keyword'}
+            position: { type: 'long' },
+            id: { type: 'long' },
+            title: { type: 'text', analyzer: 'snowball' },
+            numeral: { type: 'keyword' }
           }
         }
       }

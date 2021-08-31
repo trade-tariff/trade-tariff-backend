@@ -1,4 +1,3 @@
-
 describe DescriptionTrimFormatter do
   describe '.format' do
     it 'replaces | with empty space' do

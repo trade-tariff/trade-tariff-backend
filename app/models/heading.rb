@@ -4,9 +4,9 @@ class Heading < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
 
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '____000000').
-              filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '__00______').
-              order(Sequel.asc(:goods_nomenclature_item_id))
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '____000000')
+              .filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '__00______')
+              .order(Sequel.asc(:goods_nomenclature_item_id))
 
   set_primary_key [:goods_nomenclature_sid]
 
@@ -21,9 +21,9 @@ class Heading < GoodsNomenclature
   }
 
   one_to_many :search_references, key: :referenced_id, primary_key: :short_code, reciprocal: :referenced, conditions: { referenced_class: 'Heading' },
-    adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Heading') },
-    remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-    clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
+                                  adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Heading') },
+                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
+                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
 
   dataset_module do
     def by_code(code = '')
@@ -92,8 +92,8 @@ class Heading < GoodsNomenclature
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
-       # if Heading did not come from initial seed, filter by its
-       # create/update date
+      # if Heading did not come from initial seed, filter by its
+      # create/update date
       criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
     }
      .limit(TradeTariffBackend.change_count)

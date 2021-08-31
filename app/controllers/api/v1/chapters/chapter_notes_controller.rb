@@ -23,7 +23,7 @@ module Api
           chapter_note.save(raise_on_failure: false)
 
           respond_with chapter_note,
-            location: api_chapter_chapter_note_url(chapter)
+                       location: api_chapter_chapter_note_url(chapter)
         end
 
         def update

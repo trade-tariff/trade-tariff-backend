@@ -1,6 +1,5 @@
 module RedisLockDb
   class << self
-
     def redis= redis
       @redis = redis
     end
@@ -8,6 +7,5 @@ module RedisLockDb
     def redis
       @redis ||= Sidekiq.redis { |conn| conn }
     end
-
   end
 end

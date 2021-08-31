@@ -7,7 +7,7 @@ module Api
 
       def index
         @commodities = GoodsNomenclature.actual
-        response.set_header('Date', @as_of.httpdate )
+        response.set_header('Date', @as_of.httpdate)
         @class_determinator = GoodsNomenclature.class_determinator
 
         respond_to do |format|
@@ -35,6 +35,7 @@ module Api
       def api_path_builder(object)
         gnid = object.goods_nomenclature_item_id
         return nil unless gnid
+
         case @class_determinator.call(object)
         when 'Chapter'
           "/v1/chapters/#{gnid.first(2)}.json"
@@ -44,7 +45,7 @@ module Api
           "/v1/commodities/#{gnid.first(10)}.json"
         else
           "/v1/commodities/#{gnid.first(10)}.json"
-       end
+        end
       end
       helper_method :api_path_builder
     end

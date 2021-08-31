@@ -8,17 +8,17 @@ module Search
       {
         mappings: {
           properties: {
-            id: {type: 'long'},
-            description: {type: 'text', analyzer: 'snowball'},
-            validity_start_date: {type: 'date', format: 'date_optional_time'},
-            producline_suffix: {type: 'keyword'},
-            goods_nomenclature_item_id: {type: 'keyword'},
+            id: { type: 'long' },
+            description: { type: 'text', analyzer: 'snowball' },
+            validity_start_date: { type: 'date', format: 'date_optional_time' },
+            producline_suffix: { type: 'keyword' },
+            goods_nomenclature_item_id: { type: 'keyword' },
             section: {
               dynamic: true,
               properties: {
-                position: {type: 'long'},
-                title: {type: 'text'},
-                numeral: {type: 'keyword'}
+                position: { type: 'long' },
+                title: { type: 'text' },
+                numeral: { type: 'keyword' }
               }
             }
           }

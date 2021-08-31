@@ -33,14 +33,14 @@ child @commodity.chapter do |chapter|
 end
 
 child(@commodity.ancestors => :ancestors) {
-    attributes :producline_suffix,
-               :description,
-               :number_indents,
-               :goods_nomenclature_item_id,
-               :leaf,
-               :uk_vat_rate,
-               :formatted_description,
-               :description_plain
+  attributes :producline_suffix,
+             :description,
+             :number_indents,
+             :goods_nomenclature_item_id,
+             :leaf,
+             :uk_vat_rate,
+             :formatted_description,
+             :description_plain
 }
 
 node(:_response_info) do

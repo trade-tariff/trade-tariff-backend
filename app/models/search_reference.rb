@@ -6,67 +6,67 @@ class SearchReference < Sequel::Model
   plugin :auditable
 
   many_to_one :referenced, reciprocal: :search_references, reciprocal_type: :many_to_one,
-    setter: (proc do |referenced|
-      if referenced.present?
-        self.set(
-          referenced_id: referenced.to_param,
-          referenced_class: referenced.class.name
-        )
-      end
-    end),
-    dataset: (proc do
-      klass = referenced_class.constantize
+                           setter: (proc do |referenced|
+                                      if referenced.present?
+                                        self.set(
+                                          referenced_id: referenced.to_param,
+                                          referenced_class: referenced.class.name
+                                        )
+                                      end
+                                    end),
+                           dataset: (proc do
+                                       klass = referenced_class.constantize
 
-      case klass.name
-      when 'Section'
-        klass.where(klass.primary_key => referenced_id)
-      when 'Chapter'
-        klass.where(
-          Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => chapter_id
-        )
-      when 'Heading'
-        klass.where(
-          Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => heading_id
-        )
-      when 'Commodity'
-        klass.where(
-          Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => commodity_id
-        )
-      end
-    end),
-    eager_loader: (proc do |eo|
-      id_map = {}
-      eo[:rows].each do |search_reference|
-        search_reference.associations[:referenced] = nil
-        ((id_map[search_reference.referenced_class] ||= {})[search_reference.referenced_id] ||= []) << search_reference
-      end
-      id_map.each do |klass_name, id_map|
-        klass = klass_name.constantize
-        if klass_name == 'Section'
-          klass.where(klass.primary_key => id_map.keys).all do |ref|
-            id_map[ref.pk.to_s].each do |search_reference|
-              search_reference.associations[:referenced] = ref
-            end
-          end
-        else
+                                       case klass.name
+                                       when 'Section'
+                                         klass.where(klass.primary_key => referenced_id)
+                                       when 'Chapter'
+                                         klass.where(
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => chapter_id
+                                         )
+                                       when 'Heading'
+                                         klass.where(
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => heading_id
+                                         )
+                                       when 'Commodity'
+                                         klass.where(
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => commodity_id
+                                         )
+                                       end
+                                     end),
+                           eager_loader: (proc do |eo|
+                                            id_map = {}
+                                            eo[:rows].each do |search_reference|
+                                              search_reference.associations[:referenced] = nil
+                                              ((id_map[search_reference.referenced_class] ||= {})[search_reference.referenced_id] ||= []) << search_reference
+                                            end
+                                            id_map.each do |klass_name, id_map|
+                                              klass = klass_name.constantize
+                                              if klass_name == 'Section'
+                                                klass.where(klass.primary_key => id_map.keys).all do |ref|
+                                                  id_map[ref.pk.to_s].each do |search_reference|
+                                                    search_reference.associations[:referenced] = ref
+                                                  end
+                                                end
+                                              else
 
-          pattern = case klass_name
-                    when 'Chapter'
-                      id_map.keys.map { |key| "#{key}________" }.join('|')
-                    when 'Heading'
-                      id_map.keys.map { |key| "#{key}______" }.join('|')
-                    when 'Commodity'
-                      id_map.keys.join('|')
-                    end
+                                                pattern = case klass_name
+                                                          when 'Chapter'
+                                                            id_map.keys.map { |key| "#{key}________" }.join('|')
+                                                          when 'Heading'
+                                                            id_map.keys.map { |key| "#{key}______" }.join('|')
+                                                          when 'Commodity'
+                                                            id_map.keys.join('|')
+                                                          end
 
-          klass.where("goods_nomenclatures.goods_nomenclature_item_id SIMILAR TO '#{pattern}'").all do |ref|
-            id_map[ref.short_code].each do |search_reference|
-              search_reference.associations[:referenced] = ref
-            end
-          end
-        end
-      end
-    end)
+                                                klass.where("goods_nomenclatures.goods_nomenclature_item_id SIMILAR TO '#{pattern}'").all do |ref|
+                                                  id_map[ref.short_code].each do |search_reference|
+                                                    search_reference.associations[:referenced] = ref
+                                                  end
+                                                end
+                                              end
+                                            end
+                                          end)
 
   many_to_one :section do |_ds|
     referenced
@@ -139,7 +139,7 @@ class SearchReference < Sequel::Model
 
   def heading_id=(heading_id)
     self.referenced = Heading.by_code(heading_id).take if heading_id.present?
- end
+  end
 
   def section_id=(section_id)
     self.referenced = Section.with_pk(section_id) if section_id.present?

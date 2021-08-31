@@ -1,4 +1,3 @@
-
 module SynchronizerHelper
   def create_taric_file(date = Date.current)
     date = Date.parse(date.to_s)

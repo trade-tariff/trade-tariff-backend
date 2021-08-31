@@ -6,6 +6,7 @@ class FootnoteDescriptionPeriod < Sequel::Model
 
   set_primary_key %i[footnote_id footnote_type_id footnote_description_period_sid]
 
-  one_to_one :footnote_description, key: %i[footnote_id footnote_type_id
+  one_to_one :footnote_description, key: %i[footnote_id
+                                            footnote_type_id
                                             footnote_description_period_sid]
 end

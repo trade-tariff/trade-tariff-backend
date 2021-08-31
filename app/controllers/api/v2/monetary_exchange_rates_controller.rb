@@ -6,7 +6,7 @@ module Api
         @rates = MonetaryExchangeRate.eager(:monetary_exchange_period)
                                      .join_table(:inner, :monetary_exchange_periods, monetary_exchange_period_sid: :monetary_exchange_period_sid)
                                      .where(child_monetary_unit_code: 'GBP')
-                                     .where{ validity_start_date >= jan_five_back }
+                                     .where { validity_start_date >= jan_five_back }
                                      .order(Sequel.asc(:validity_start_date))
                                      .all
 

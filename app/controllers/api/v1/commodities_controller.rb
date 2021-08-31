@@ -12,7 +12,7 @@ module Api
                                    { measurement_unit: :measurement_unit_description },
                                    :monetary_unit,
                                    :measurement_unit_qualifier] },
-            { measure_conditions: [{ measure_action: :measure_action_description},
+            { measure_conditions: [{ measure_action: :measure_action_description },
                                    { certificate: :certificate_descriptions },
                                    { certificate_type: :certificate_type_description },
                                    { measurement_unit: :measurement_unit_description },
@@ -23,9 +23,7 @@ module Api
                                                                     :duty_expression,
                                                                     :measurement_unit,
                                                                     :monetary_unit,
-                                                                    :measurement_unit_qualifier]
-                                   }]
-            },
+                                                                    :measurement_unit_qualifier] }] },
             { quota_order_number: :quota_definition },
             { excluded_geographical_areas: :geographical_area_descriptions },
             { geographical_area: [:geographical_area_descriptions,

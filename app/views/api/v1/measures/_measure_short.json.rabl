@@ -1,6 +1,6 @@
 attributes :id
 
-node(:vat)    { |measure| measure.vat? }
+node(:vat) { |measure| measure.vat? }
 
 node(:measure_type) { |measure|
   {

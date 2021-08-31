@@ -4,10 +4,10 @@ class Commodity < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
 
-  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000').
-              order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
-                    Sequel.asc(:goods_nomenclatures__producline_suffix),
-                    Sequel.asc(:goods_nomenclatures__goods_nomenclature_sid))
+  set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000')
+              .order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
+                     Sequel.asc(:goods_nomenclatures__producline_suffix),
+                     Sequel.asc(:goods_nomenclatures__goods_nomenclature_sid))
 
   set_primary_key [:goods_nomenclature_sid]
 
@@ -57,22 +57,22 @@ class Commodity < GoodsNomenclature
       .eager(:goods_nomenclature_indents,
              :goods_nomenclature_descriptions)
       .join_table(:inner,
-        GoodsNomenclatureIndent
-                 .select(:goods_nomenclature_indents__goods_nomenclature_sid,
-                         :goods_nomenclature_indents__goods_nomenclature_item_id,
-                         :goods_nomenclature_indents__number_indents)
-                 .with_actual(GoodsNomenclature)
-                 .join(:goods_nomenclatures, goods_nomenclature_indents__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
-                 .where('goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
-                 .where('goods_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
-                 .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date),
-                        Sequel.desc(:goods_nomenclature_indents__goods_nomenclature_item_id))
-                 .from_self
-                 .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
-                 .from_self
-                 .where('number_indents < ?', goods_nomenclature_indent.number_indents),
-         t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
-          t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
+                  GoodsNomenclatureIndent
+                           .select(:goods_nomenclature_indents__goods_nomenclature_sid,
+                                   :goods_nomenclature_indents__goods_nomenclature_item_id,
+                                   :goods_nomenclature_indents__number_indents)
+                           .with_actual(GoodsNomenclature)
+                           .join(:goods_nomenclatures, goods_nomenclature_indents__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
+                           .where('goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
+                           .where('goods_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
+                           .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date),
+                                  Sequel.desc(:goods_nomenclature_indents__goods_nomenclature_item_id))
+                           .from_self
+                           .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
+                           .from_self
+                           .where('number_indents < ?', goods_nomenclature_indent.number_indents),
+                  t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
+                  t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
       .order(Sequel.desc(:goods_nomenclatures__goods_nomenclature_item_id))
       .all
       .group_by(&:number_indents)
@@ -94,17 +94,16 @@ class Commodity < GoodsNomenclature
   def children
     func = Proc.new {
       GoodsNomenclatureMapper.new(
-        heading.commodities_dataset.
-                eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions).
-                all
-      ).all.
-        detect do |item|
+        heading.commodities_dataset
+                .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions)
+                .all
+      ).all
+        .detect do |item|
         item.goods_nomenclature_sid == goods_nomenclature_sid
       end.try(:children) || []
     }
 
     func.call
-
   end
 
   def to_param
@@ -140,13 +139,13 @@ class Commodity < GoodsNomenclature
        Measure.changes_for(
          depth + 1,
          Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id
-)
+       )
      )
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
-       # if Commodity did not come from initial seed, filter by its
-       # create/update date
+      # if Commodity did not come from initial seed, filter by its
+      # create/update date
       criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
     }
      .limit(TradeTariffBackend.change_count)

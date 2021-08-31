@@ -1,4 +1,3 @@
-
 describe TariffSynchronizer::TaricFileNameGenerator do
   let(:example_date) { Date.new(2010, 1, 1) }
   let(:name_generator) { TariffSynchronizer::TaricFileNameGenerator.new(example_date) }

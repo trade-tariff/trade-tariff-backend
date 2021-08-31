@@ -16,7 +16,6 @@ module Api
         options[:include] = [:chapters, 'chapters.guides']
         render json: Api::V2::Sections::SectionSerializer.new(@section, options).serializable_hash
       end
-
     end
   end
 end

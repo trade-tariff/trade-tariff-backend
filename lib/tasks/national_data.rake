@@ -14,7 +14,7 @@ namespace :tariff do
     filename = "#{Date.today}-national.sql"
 
     # create dump
-    `pg_dump -d tariff_development --data-only -O -x -t #{ tables.map { |t| "national_#{t}" }.join(' -t ') } -f #{filename}`
+    `pg_dump -d tariff_development --data-only -O -x -t #{tables.map { |t| "national_#{t}" }.join(' -t ')} -f #{filename}`
 
     # change table names
     `sed -i '' -e 's/national_//g' #{filename}`

@@ -7,6 +7,7 @@ module Cache
 
     def goods_nomenclature_attributes(goods_nomenclature)
       return nil unless goods_nomenclature.present?
+
       {
         goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
         goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,

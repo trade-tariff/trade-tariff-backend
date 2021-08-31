@@ -1,4 +1,3 @@
-
 describe TaricImporter::Transaction do
   let(:record) do
     { 'transaction_id' => '31946',

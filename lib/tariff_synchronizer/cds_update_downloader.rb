@@ -1,6 +1,5 @@
 module TariffSynchronizer
   class CdsUpdateDownloader
-
     class AuthorisationError < StandardError; end
 
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
@@ -23,6 +22,7 @@ module TariffSynchronizer
       range.each do |date|
         file = daily_files.find { |df| df['filename'][23..30] == date.strftime('%Y%m%d') }
         next unless file
+
         TariffDownloader.new(file['filename'], file['downloadURL'], date, TariffSynchronizer::CdsUpdate).perform
       end
     end
