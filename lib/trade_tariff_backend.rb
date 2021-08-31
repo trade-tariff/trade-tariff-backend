@@ -190,6 +190,10 @@ module TradeTariffBackend
       "Api::V#{api_version(request)}::ErrorSerializationService".constantize.new
     end
 
+    def rules_of_origin_enabled?
+      ENV['ENABLE_RULES_OF_ORIGIN'].to_s == 'true'
+    end
+
     def rules_of_origin_schemes
       @rules_of_origin_schemes ||=
         RulesOfOrigin::SchemeSet.from_default_file(service)
