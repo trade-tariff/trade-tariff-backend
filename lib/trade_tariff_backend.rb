@@ -206,7 +206,9 @@ module TradeTariffBackend
 
     def rules_of_origin_mappings
       @rules_of_origin_mappings ||=
-        RulesOfOrigin::HeadingMappings.from_default_file.tap(&:import)
+        RulesOfOrigin::HeadingMappings.from_default_file.tap do |importer|
+          importer.import(skip_invalid_rows: true)
+        end
     end
   end
 end

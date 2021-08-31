@@ -24,18 +24,20 @@ module RulesOfOrigin
       end
     end
 
-    def import
+    def import(skip_invalid_rows: false)
       raise AlreadyImported if @mappings
 
       @mappings = {}
-      count = 0
+      count = 1
 
       CSV.foreach(@source_file, headers: true) do |row|
         count += 1
-
         next unless row['scope'] == TradeTariffBackend.service
+
         if row['id_rule'].blank? || row['sub_heading'].blank? || row['scheme_code'].blank?
-          raise InvalidFile, "Row #{count} is invalid - sub_heading or id_rule are blank"
+          next if skip_invalid_rows
+
+          raise InvalidFile, "Row #{count} is invalid - sub_heading, scheme_code or id_rule are blank"
         end
 
         @mappings[row['sub_heading']] ||= {}
