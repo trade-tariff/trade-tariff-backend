@@ -25,15 +25,20 @@ module RulesOfOrigin
     def import
       raise AlreadyImported if @rules
 
-      @rules = {}
+      @rules ||= {}
 
       CSV.foreach(@source_file, headers: true) do |row|
         next unless row['scope'] == TradeTariffBackend.service
 
-        @rules[row['id_rule'].to_i] = row.to_h.without('scope', 'id_rule')
+        add_rule row['id_rule'].to_i, row.to_h.without('scope', 'id_rule')
       end
 
       @rules.length
+    end
+
+    def add_rule(id_rule, rule_data)
+      @rules ||= {}
+      @rules[id_rule] = rule_data
     end
 
     def rule(id_rule)
