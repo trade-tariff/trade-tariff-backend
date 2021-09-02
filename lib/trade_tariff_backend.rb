@@ -190,9 +190,25 @@ module TradeTariffBackend
       "Api::V#{api_version(request)}::ErrorSerializationService".constantize.new
     end
 
+    def rules_of_origin_enabled?
+      ENV['ENABLE_RULES_OF_ORIGIN'].to_s == 'true'
+    end
+
     def rules_of_origin_schemes
       @rules_of_origin_schemes ||=
         RulesOfOrigin::SchemeSet.from_default_file(service)
+    end
+
+    def rules_of_origin_rules
+      @rules_of_origin_rules ||=
+        RulesOfOrigin::RuleSet.from_default_file.tap(&:import)
+    end
+
+    def rules_of_origin_mappings
+      @rules_of_origin_mappings ||=
+        RulesOfOrigin::HeadingMappings.from_default_file.tap do |importer|
+          importer.import(skip_invalid_rows: true)
+        end
     end
   end
 end

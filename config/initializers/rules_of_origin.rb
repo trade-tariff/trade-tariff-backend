@@ -1,5 +1,8 @@
-unless Rails.env.test?
+if TradeTariffBackend.rules_of_origin_enabled? && !Rails.env.test?
   Rails.application.reloader.to_prepare do
-    TradeTariffBackend.rules_of_origin_schemes # trigger loading at boot
+    # trigger loading at boot
+    TradeTariffBackend.rules_of_origin_schemes
+    TradeTariffBackend.rules_of_origin_rules
+    TradeTariffBackend.rules_of_origin_mappings
   end
 end

@@ -1,0 +1,99 @@
+"scope","id_rule","scheme_code","heading","description","quota_amount","quota_unit","rule","alternate_rule"
+uk,20000000,eu,"01.01-01.06",Chapter 1: Live animals,,,All animals of Chapter 1 are wholly obtained.,
+uk,10000000,eu,"01.01-01.06",Chapter 1: Live animals,,,All animals of Chapter 1 are wholly obtained.,
+uk,20000001,eu,"02.01-02.10",Chapter 2: Meat and edible meat offal,,,Production in which all the materials of Chapters 1 and 2 used are wholly obtained.,
+uk,10000001,eu,"02.01-02.10",Chapter 2: Meat and edible meat offal,,,Production in which all the materials of Chapters 1 and 2 used are wholly obtained.,
+uk,20000002,eu,"03.01-03.08","Chapter 3: Fish and crustaceans, molluscs and other aquatic invertebrates",,,Production in which all the materials of Chapter 3 used are wholly obtained.,
+uk,10000002,eu,"03.01-03.08","Chapter 3: Fish and crustaceans, molluscs and other aquatic invertebrates",,,Production in which all the materials of Chapter 3 used are wholly obtained.,
+uk,10000003,eu,"04.01-04.10","Chapter 4: Dairy produce; birds'eggs; natural honey; edible products of animal origin, not elsewhere specified or included",,,"Production in which:
+all the materials of Chapter 4 used are wholly obtained _and_
+the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000003,eu,"04.01-04.10","Chapter 4: Dairy produce; birds'eggs; natural honey; edible products of animal origin, not elsewhere specified or included",,,"Production in which:
+- all the materials of Chapter 4 used are wholly obtained _and_
+- the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000004,eu,"05.01-05.11","Chapter 5: Products of animal origin, not elsewhere specified or included",,,Production from non-originating materials of any heading.,
+uk,10000004,eu,"05.01-05.11","Chapter 5: Products of animal origin, not elsewhere specified or included",,,Production from non-originating materials of any heading.,
+uk,10000005,eu,"06.01-06.04","Chapter 6: Live trees and other plants; bulbs, roots and the like; cut flowers and ornamental foliage",,,Production in which all the materials of Chapter 6 used are wholly obtained.,
+uk,20000005,eu,"06.01-06.04","Chapter 6: Live trees and other plants; bulbs, roots and the like; cut flowers and ornamental foliage",,,Production in which all the materials of Chapter 6 used are wholly obtained.,
+uk,20000006,eu,"07.01-07.14",Chapter 7: Edible vegetables and certain roots and tubers,,,Production in which all the materials of Chapter 7 used are wholly obtained.,
+uk,10000006,eu,"07.01-07.14",Chapter 7: Edible vegetables and certain roots and tubers,,,Production in which all the materials of Chapter 7 used are wholly obtained.,
+uk,10000007,eu,"08.01-08.14",Chapter 8: Edible fruit and nuts; peel of citrus fruit or melons,,,"Production in which:
+all the materials of Chapter 8 used are wholly obtained _and_
+the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000007,eu,"08.01-08.14",Chapter 8: Edible fruit and nuts; peel of citrus fruit or melons,,,"Production in which:
+- all the materials of Chapter 8 used are wholly obtained _and_
+- the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.",
+uk,20000008,eu,"09.01-09.10","Chapter 9: Coffee, tea, maté and spices",,,Production from non-originating materials of any heading.,
+uk,10000008,eu,"09.01-09.10","Chapter 9: Coffee, tea, maté and spices",,,Production from non-originating materials of any heading.,
+uk,10000009,eu,"10.01-10.08",Chapter 10: Cereals,,,Production in which all the materials of Chapter 10 used are wholly obtained.,
+uk,20000009,eu,"10.01-10.08",Chapter 10: Cereals,,,Production in which all the materials of Chapter 10 used are wholly obtained.,
+uk,20000010,eu,"11.01-11.09",Chapter 11: Products of the milling industry; malt; starches; inulin; wheat gluten,,,"Production in which all materials of Chapters 10 and 11, headings 07.01, 07.14, 23.02 to 23.03 or subheading 0710.10 used are wholly obtained.",
+uk,10000010,eu,"11.01-11.09",Chapter 11: Products of the milling industry; malt; starches; inulin; wheat gluten,,,"Production in which all materials of Chapters 10 and 11, headings 07.01, 07.14, 23.02 to 23.03 or subheading 0710.10 used are wholly obtained.",
+uk,10000011,eu,"12.01-12.14","Chapter 12: Oil seeds and oleaginous fruits; miscellaneous grains, seeds and fruit; industrial or medicinal plants; straw and fodder",,,CTH,
+uk,20000011,eu,"12.01-12.14","Chapter 12: Oil seeds and oleaginous fruits; miscellaneous grains, seeds and fruit; industrial or medicinal plants; straw and fodder",,,CTH,
+uk,20000012,eu,"13.01-13.02","Chapter 13: Lac; gums, resins and other vegetable saps and extracts",,,Production from non-originating materials of any heading in which the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.,
+uk,10000012,eu,"13.01-13.02","Chapter 13: Lac; gums, resins and other vegetable saps and extracts",,,Production from non-originating materials of any heading in which the total weight of non-originating materials of headings 17.01 and 17.02 does not exceed 20% of the weight of the product.,
+uk,10000013,eu,"14.01-14.04",Chapter 14: Vegetable plaiting materials; vegetable products not elsewhere specified or included,,,Production from non-originating materials of any heading.,
+uk,20000013,eu,"14.01-14.04",Chapter 14: Vegetable plaiting materials; vegetable products not elsewhere specified or included,,,Production from non-originating materials of any heading.,
+uk,20000014,eu,"15.01-15.04","Heading 1501: Lard; other pig fat and poultry fat, rendered, whether or not pressed or solvent-extracted
+Heading 1502: Fats of bovine animals, sheep or goats, raw or rendered, whether or not pressed or solvent-extracted
+Heading 1503: Lard stearin, lard oil, oleostearin, oleo-oil and tallow oil, not emulsified or mixed or otherwise prepared
+Heading 1504: Fats and oils and their fractions, of fish or marine mammals, whether or not refined, but not chemically modified",,,CTH,
+uk,10000014,eu,"15.01-15.04","Heading 1501: Lard; other pig fat and poultry fat, rendered, whether or not pressed or solvent-extracted
+Heading 1502: Fats of bovine animals, sheep or goats, raw or rendered, whether or not pressed or solvent-extracted
+Heading 1503: Lard stearin, lard oil, oleostearin, oleo-oil and tallow oil, not emulsified or mixed or otherwise prepared
+Heading 1504: Fats and oils and their fractions, of fish or marine mammals, whether or not refined, but not chemically modified",,,CTH,
+uk,10000015,eu,"15.05-15.06","Heading 1505: Wool grease and fatty substances derived therefrom (including lanolin)
+Heading 1506: Other animal fats and oils and their fractions, whether or not refined, but not chemically modified",,,Production from non-originating materials of any heading.,
+uk,20000015,eu,"15.05-15.06","Heading 1505: Wool grease and fatty substances derived therefrom (including lanolin)
+Heading 1506: Other animal fats and oils and their fractions, whether or not refined, but not chemically modified",,,Production from non-originating materials of any heading.,
+uk,20000016,eu,"15.07-15.08","Heading 1507: Soya-bean oil and its fractions, whether or not refined, but not chemically modified
+Heading 1508: Groundnut oil and its fractions, whether or not refined, but not chemically modified",,,CTSH,
+uk,10000016,eu,"15.07-15.08","Heading 1507: Soya-bean oil and its fractions, whether or not refined, but not chemically modified
+Heading 1508: Groundnut oil and its fractions, whether or not refined, but not chemically modified",,,CTSH,
+uk,10000017,eu,"15.09-15.10","Heading 1509: Olive oil and its fractions, whether or not refined, but not chemically modified
+Heading 1510: Other oils and their fractions, obtained solely from olives, whether or not refined, but not chemically modified, including blends of these oils or fractions with oils or fractions of heading no 1509",,,Production in which all the vegetable materials used are wholly obtained.,
+uk,20000017,eu,"15.09-15.10","Heading 1509: Olive oil and its fractions, whether or not refined, but not chemically modified
+Heading 1510: Other oils and their fractions, obtained solely from olives, whether or not refined, but not chemically modified, including blends of these oils or fractions with oils or fractions of heading no 1509",,,Production in which all the vegetable materials used are wholly obtained.,
+uk,20000018,eu,"15.11-15.15","Heading 1511: Palm oil and its fractions, whether or not refined, but not chemically modified
+Heading 1512: Sunflower-seed, safflower or cotton-seed oil and fractions thereof, whether or not refined, but not chemically modified
+Heading 1513: Coconut (copra), palm kernel or babassu oil and fractions thereof, whether or not refined, but not chemically modified
+Heading 1514: Rape, colza or mustard oil and fractions thereof, whether or not refined, but not chemically modified
+Heading 1515: Other fixed vegetable fats and oils (including jojoba oil) and their fractions, whether or not refined, but not chemically modified",,,CTSH,
+uk,10000018,eu,"15.11-15.15","Heading 1511: Palm oil and its fractions, whether or not refined, but not chemically modified
+Heading 1512: Sunflower-seed, safflower or cotton-seed oil and fractions thereof, whether or not refined, but not chemically modified
+Heading 1513: Coconut (copra), palm kernel or babassu oil and fractions thereof, whether or not refined, but not chemically modified
+Heading 1514: Rape, colza or mustard oil and fractions thereof, whether or not refined, but not chemically modified
+Heading 1515: Other fixed vegetable fats and oils (including jojoba oil) and their fractions, whether or not refined, but not chemically modified",,,CTSH,
+uk,10000019,eu,"15.16-15.17","Heading 1516: Animal or vegetable fats and oils and their fractions, partly or wholly hydrogenated, inter-esterified, re-esterified or elaidinised, whether or not refined, but not further prepared
+Heading 1517: Margarine; edible mixtures or preparations of animal or vegetable fats or oils or of fractions of different fats or oils of this chapter, other than edible fats or oils or their fractions of heading 1516",,,CTH,
+uk,20000019,eu,"15.16-15.17","Heading 1516: Animal or vegetable fats and oils and their fractions, partly or wholly hydrogenated, inter-esterified, re-esterified or elaidinised, whether or not refined, but not further prepared
+Heading 1517: Margarine; edible mixtures or preparations of animal or vegetable fats or oils or of fractions of different fats or oils of this chapter, other than edible fats or oils or their fractions of heading 1516",,,CTH,
+uk,20000020,eu,"15.18-15.19","Heading 1518: Animal or vegetable fats and oils and their fractions, boiled, oxidised, dehydrated, sulphurised, blown, polymerised by heat in vacuum or in inert gas or otherwise chemically modified, excluding those of heading no 1516; inedible mixtures or preparations of animal or vegetable fats or oils or of fractions of different fats or oils of this chapter, not elsewhere specified or included
+Heading 1519: Industrial monocarboxylic fatty acids; acid oils from refining; industrial fatty alcohols",,,CTSH,
+uk,10000020,eu,"15.18-15.19","Heading 1518: Animal or vegetable fats and oils and their fractions, boiled, oxidised, dehydrated, sulphurised, blown, polymerised by heat in vacuum or in inert gas or otherwise chemically modified, excluding those of heading no 1516; inedible mixtures or preparations of animal or vegetable fats or oils or of fractions of different fats or oils of this chapter, not elsewhere specified or included
+Heading 1519: Industrial monocarboxylic fatty acids; acid oils from refining; industrial fatty alcohols",,,CTSH,
+uk,10000022,eu,"15.21-15.22","Heading 1521: Vegetable waxes (other than triglycerides), beeswax, other insect waxes and spermaceti, whether or not refined or coloured
+Heading 1522: Degras; residues resulting from the treatment of fatty substances or animal or vegetable waxes",,,CTSH,
+uk,20000022,eu,"15.21-15.22","Heading 1521: Vegetable waxes (other than triglycerides), beeswax, other insect waxes and spermaceti, whether or not refined or coloured
+Heading 1522: Degras; residues resulting from the treatment of fatty substances or animal or vegetable waxes",,,CTSH,
+uk,20000021,eu,"1520","Heading 1520: Glycerol (glycerine), whether or not pure; glycerol waters and glycerol lyes",,,Production from non-originating materials of any heading.,
+uk,10000021,eu,"1520","Heading 1520: Glycerol (glycerine), whether or not pure; glycerol waters and glycerol lyes",,,Production from non-originating materials of any heading.,
+uk,10000023,eu,"1601.00-1604.18","ex Chapter 16: Preparations of meat, of fish or of crustaceans, molluscs or other aquatic invertebrates",,,"Production in which all the materials of Chapters 1, 2, 3 and 16 used are wholly obtained88.",
+uk,20000023,eu,"1601.00-1604.18","Heading 1601: Sausages and similar products, of meat, meat offal or blood; food preparations based on these products
+Heading 1602: Other prepared or preserved meat, meat offal or blood
+Heading 1603: Extracts and juices of meat, fish or crustaceans, molluscs or other aquatic invertebrates
+ex. Heading 1604: Missing description",,,"Production in which all the materials of Chapters 1, 2, 3 and 16 used are wholly obtained.",
+uk,20000027,eu,"1604.31-1605.69","1604.31: Caviar and caviar substitutes
+Heading 1605: Crustaceans, molluscs and other aquatic invertebrates, prepared or preserved",,,Production in which all the materials of Chapters 3 and 16 used are wholly obtained.,
+uk,10000027,eu,"1604.31-1605.69","ex. Heading 1604: Missing description
+Heading 1605: Crustaceans, molluscs and other aquatic invertebrates, prepared or preserved",,,Production in which all the materials of Chapters 3 and 16 used are wholly obtained.,
+uk,10000024,eu,"160419","1604.19: Other",,,CC,
+uk,20000024,eu,"160419","1604.19: Other",,,CC,
+uk,20000026,eu,"160420","1604.20: Other prepared or preserved fish
+Others",,,Production in which all the materials of Chapters 3 and 16 used are wholly obtained.,
+uk,20000025,eu,"160420","1604.20: Other prepared or preserved fish
+Preparations of surimi",,,CC,
+uk,10000026,eu,"160420","1604.20: Other prepared or preserved fish
+- Others",,,Production in which all the materials of Chapters 3 and 16 used are wholly obtained.,
+
