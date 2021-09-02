@@ -40,12 +40,17 @@ module RulesOfOrigin
           raise InvalidFile, "Row #{count} is invalid - sub_heading, scheme_code or id_rule are blank"
         end
 
-        @mappings[row['sub_heading']] ||= {}
-        @mappings[row['sub_heading']][row['scheme_code']] ||= []
-        @mappings[row['sub_heading']][row['scheme_code']] << row['id_rule'].to_i
+        add_mapping row['sub_heading'], row['scheme_code'], row['id_rule']
       end
 
       @mappings.values.map(&:length).sum
+    end
+
+    def add_mapping(sub_heading, scheme_code, id_rule)
+      @mappings ||= {}
+      @mappings[sub_heading] ||= {}
+      @mappings[sub_heading][scheme_code] ||= []
+      @mappings[sub_heading][scheme_code] << id_rule.to_i
     end
 
     def for_heading_and_schemes(heading, scheme_codes)
