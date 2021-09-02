@@ -21,5 +21,11 @@ module RulesOfOrigin
     validates :scheme_code, presence: true, format: SCHEME_CODE_FORMAT
     validates :heading, presence: true
     validates :rule, presence: true
+
+    def ==(other)
+      id_rule.present? &&
+        other.respond_to?(:id_rule) &&
+        other.id_rule == id_rule
+    end
   end
 end
