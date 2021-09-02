@@ -8,6 +8,7 @@ module RulesOfOrigin
 
     class << self
       def new_with_check(attrs = {})
+        attrs = attrs.stringify_keys
         return unless attrs['text'].present? && attrs['url'].present?
 
         new(attrs)

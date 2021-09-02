@@ -34,6 +34,22 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { expect(links.first).to have_attributes url: 'https://www.hmrc.gov.uk' }
   end
 
+  describe '#links' do
+    subject { scheme.links }
+
+    context 'with links' do
+      let(:scheme) { build :rules_of_origin_scheme, :with_links }
+
+      it { is_expected.to have_attributes length: 2 }
+    end
+
+    context 'without links' do
+      let(:scheme) { build :rules_of_origin_scheme }
+
+      it { is_expected.to have_attributes length: 0 }
+    end
+  end
+
   describe '#explainers=' do
     subject(:explainers) { instance.explainers }
 
@@ -53,5 +69,21 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to all be_instance_of RulesOfOrigin::Explainer }
     it { expect(explainers.first).to have_attributes text: 'HMRC' }
     it { expect(explainers.first).to have_attributes url: 'hmrc.md' }
+  end
+
+  describe '#explainers' do
+    subject { scheme.explainers }
+
+    context 'with explainers' do
+      let(:scheme) { build :rules_of_origin_scheme, :with_explainers }
+
+      it { is_expected.to have_attributes length: 2 }
+    end
+
+    context 'without explainers' do
+      let(:scheme) { build :rules_of_origin_scheme }
+
+      it { is_expected.to have_attributes length: 0 }
+    end
   end
 end

@@ -41,6 +41,10 @@ module RulesOfOrigin
       @rules[id_rule] = rule_data
     end
 
+    def id_rules
+      @rules.keys
+    end
+
     def rule(id_rule)
       rule = @rules[id_rule.to_i]
 

@@ -53,9 +53,13 @@ module RulesOfOrigin
       @mappings[sub_heading][scheme_code] << id_rule.to_i
     end
 
+    def heading_codes
+      @mappings.keys
+    end
+
     def for_heading_and_schemes(heading, scheme_codes)
       schemes = @mappings[heading]
-      return [] if schemes.nil?
+      return {} if schemes.nil?
 
       schemes.slice(*scheme_codes)
     end

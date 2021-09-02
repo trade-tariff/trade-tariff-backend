@@ -61,13 +61,13 @@ RSpec.describe RulesOfOrigin::HeadingMappings do
     context 'with unknown scheme code' do
       let(:scheme_code) { 'unknown' }
 
-      it { is_expected.to be_empty }
+      it { is_expected.to eq({}) }
     end
 
     context 'with unknown heading' do
       let(:heading) { '111111' }
 
-      it { is_expected.to be_empty }
+      it { is_expected.to eq({}) }
     end
   end
 
