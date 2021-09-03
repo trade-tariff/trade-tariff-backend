@@ -26,4 +26,14 @@ RSpec.describe RulesOfOrigin::Rule do
     it { is_expected.to have_attributes rule: attrs[:rule] }
     it { is_expected.to have_attributes alternate_rule: attrs[:alternate_rule] }
   end
+
+  describe '#==' do
+    subject(:rule) { build :rules_of_origin_rule }
+
+    let(:matching) { build :rules_of_origin_rule, id_rule: rule.id_rule }
+    let(:different) { build :rules_of_origin_rule }
+
+    it { is_expected.to eq matching }
+    it { is_expected.not_to eq different }
+  end
 end
