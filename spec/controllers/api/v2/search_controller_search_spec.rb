@@ -1,12 +1,13 @@
-describe Api::V2::SearchController, '#search' do
+describe Api::V2::SearchController do
   describe 'GET /search' do
-    it 'responds to GET' do
-      create :chapter
-      get :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date }
+    subject(:response) { get :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date } }
 
-      expect(response).to have_http_status(:ok)
-    end
+    let(:chapter) { create :chapter }
 
+    it { expect(response).to have_http_status(:ok) }
+  end
+
+  describe 'POST /search' do
     context 'when an exact match' do
       before do
         post :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date }
