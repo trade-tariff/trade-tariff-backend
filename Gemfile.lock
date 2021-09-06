@@ -410,7 +410,7 @@ GEM
       faraday (> 0.8, < 2.0)
     sentry-raven (3.1.2)
       faraday (>= 1.0)
-    sequel (5.47.0)
+    sequel (5.48.0)
     sequel-rails (1.1.1)
       actionpack (>= 4.0.0)
       activemodel (>= 4.0.0)
