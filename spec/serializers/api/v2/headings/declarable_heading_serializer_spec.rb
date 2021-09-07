@@ -27,7 +27,7 @@ describe Api::V2::Headings::DeclarableHeadingSerializer do
         'id' => heading.goods_nomenclature_sid.to_s,
         'type' => 'heading',
         'attributes' => {
-          'validity_start_date' => '2019-09-03T00:00:00.000Z',
+          'validity_start_date' => heading.validity_start_date.iso8601(3),
           'validity_end_date' => nil,
           'goods_nomenclature_item_id' => heading.goods_nomenclature_item_id,
           'description' => heading.description,
