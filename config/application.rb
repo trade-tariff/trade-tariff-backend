@@ -1,5 +1,4 @@
 require_relative 'boot'
-require_relative '../lib/core_ext/object'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
@@ -16,6 +15,8 @@ module TradeTariffBackend
     require 'trade_tariff_backend'
 
     config.eager_load_paths << Rails.root.join('lib')
+
+    config.autoloader = :classic
 
     config.generators do |g|
       g.view_specs     false
@@ -40,7 +41,5 @@ module TradeTariffBackend
       Sequel::Model.db.extension :server_block
       Sequel::Model.db.extension :auto_literal_strings
     end
-
-    Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
   end
 end

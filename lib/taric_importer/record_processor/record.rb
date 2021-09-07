@@ -1,3 +1,5 @@
+require 'taric_importer/record_processor/attribute_mutator'
+
 # Can also mutate attributes for all record operations, e.g.:
 #
 #  class LanguageAttributeMutator < AttributeMutator
@@ -6,6 +8,10 @@
 #      attributes   # do not forget to return it
 #    end
 #  end
+
+Dir[File.join(Rails.root, 'lib', 'taric_importer', 'record_processor', 'attribute_mutator_overrides', '*.rb')].each {|file|
+  require file
+}
 
 class TaricImporter
   class RecordProcessor
@@ -40,12 +46,12 @@ class TaricImporter
 
       def default_attributes
         klass.columns.reduce({}) do |memo, column_name|
-          memo.merge!({ column_name.to_s => nil })
+          memo.merge!({column_name.to_s => nil})
         end
       end
 
       def mutate_attributes(attributes)
-        mutator_class = "TaricImporter::RecordProcessor::AttributeMutatorOverrides::#{klass}AttributeMutator"
+        mutator_class = "TaricImporter::RecordProcessor::#{klass}AttributeMutator"
         if Object.const_defined?(mutator_class)
           mutator_class.constantize.mutate(attributes)
         else
