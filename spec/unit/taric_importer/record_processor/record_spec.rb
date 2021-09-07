@@ -12,7 +12,9 @@ describe TaricImporter::RecordProcessor::Record do
   end
 
   describe 'initialization' do
-    subject(:record) { described_class.new(record_hash) }
+    let(:record) do
+      TaricImporter::RecordProcessor::Record.new(record_hash)
+    end
 
     it 'assigns transaction id' do
       expect(record.transaction_id).to eq '31946'
@@ -32,9 +34,11 @@ describe TaricImporter::RecordProcessor::Record do
   end
 
   describe '#attributes=' do
-    subject(:record) { described_class.new(record_hash) }
+    let(:record) do
+      TaricImporter::RecordProcessor::Record.new(record_hash)
+    end
 
-    context 'when not ovverriding mutations' do
+    context 'no mutations' do
       it 'assigns attributes unmutated' do
         record.attributes = { 'foo' => 'bar' }
 
@@ -42,9 +46,9 @@ describe TaricImporter::RecordProcessor::Record do
       end
     end
 
-    context 'when ovverriding mutated attributes' do
+    context 'mutated attributes' do
       before do
-        ovverriding_mutator_class = Class.new do
+        class MockMutator
           def self.mutate(attributes)
             attributes['foo_id'] = attributes.delete('foo')
             attributes
@@ -52,8 +56,8 @@ describe TaricImporter::RecordProcessor::Record do
         end
 
         stub_const(
-          'TaricImporter::RecordProcessor::AttributeMutatorOverrides::LanguageDescriptionAttributeMutator',
-          ovverriding_mutator_class,
+          'TaricImporter::RecordProcessor::LanguageDescriptionAttributeMutator',
+          MockMutator,
         )
       end
 
