@@ -1,10 +1,8 @@
 describe Search::ChapterSerializer do
   describe '#to_json' do
-    let!(:chapter) do
-      described_class.new(
-        create(:chapter, :with_section, :with_description),
-      )
-    end
+    let(:serializer) { described_class.new(chapter) }
+    let(:chapter) { create(:chapter, :with_section, :with_description) }
+
     let(:pattern) do
       {
         goods_nomenclature_item_id: chapter.goods_nomenclature_item_id,
@@ -13,7 +11,7 @@ describe Search::ChapterSerializer do
     end
 
     it 'returns json representation for ElasticSearch' do
-      expect(chapter.to_json).to match_json_expression pattern
+      expect(serializer.to_json).to match_json_expression pattern
     end
   end
 end

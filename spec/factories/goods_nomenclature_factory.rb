@@ -129,6 +129,7 @@ FactoryBot.define do
     end
   end
 
+  # WIP
   factory :heading, parent: :goods_nomenclature, class: 'Heading' do
     # +1 is needed to avoid creating heading with gono id in form of
     # xx00xxxxxx which is a Chapter

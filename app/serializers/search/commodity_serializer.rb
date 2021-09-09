@@ -9,6 +9,7 @@ module Search
         validity_end_date: validity_end_date,
         description: formatted_description,
         number_indents: number_indents,
+        declarable: declarable?,
       }
 
       if heading.present?
@@ -19,7 +20,7 @@ module Search
           validity_start_date: heading.validity_start_date,
           validity_end_date: heading.validity_end_date,
           description: heading.formatted_description,
-          number_indents: heading.number_indents
+          number_indents: heading.number_indents,
         }
 
         if chapter.present?
@@ -33,16 +34,16 @@ module Search
             guides: chapter.guides.map do |guide|
               {
                 title: guide.title,
-                url: guide.url
+                url: guide.url,
               }
-            end
+            end,
           }
 
           if section.present?
             commodity_attributes[:section] = {
               numeral: section.numeral,
               title: section.title,
-              position: section.position
+              position: section.position,
             }
           end
         end
