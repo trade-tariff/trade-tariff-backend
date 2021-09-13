@@ -15,12 +15,9 @@ module TradeTariffBackend
       end
     end
 
-    attr_reader :indexed_models
-    attr_reader :index_page_size
-    attr_reader :search_operation_options
-    attr_reader :namespace
+    attr_reader :indexed_models, :index_page_size, :search_operation_options, :namespace
 
-    delegate :search_index_for, to: TradeTariffBackend
+    delegate :search_index_for, :model_serializer_for, to: TradeTariffBackend
 
     def initialize(search_client, options = {})
       @indexed_models = options.fetch(:indexed_models, [])
@@ -78,7 +75,7 @@ module TradeTariffBackend
         super({
           index: model_index.name,
           id: model.id,
-          body: TradeTariffBackend.model_serializer_for(namespace, model_index.model).new(model).as_json
+          body: model_serializer_for(namespace, model_index.model).new(model).as_json,
         }.merge(search_operation_options))
       end
     end
@@ -87,7 +84,7 @@ module TradeTariffBackend
       search_index_for(namespace, model.class).tap do |model_index|
         super({
           index: model_index.name,
-          id: model.id
+          id: model.id,
         }.merge(search_operation_options))
       end
     end
