@@ -7,6 +7,7 @@ describe Search::ChapterSerializer do
     let(:pattern) do
       {
         goods_nomenclature_item_id: chapter.goods_nomenclature_item_id,
+        declarable: false,
         section: Hash,
       }.ignore_extra_keys!
     end

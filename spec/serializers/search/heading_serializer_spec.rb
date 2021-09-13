@@ -29,9 +29,7 @@ describe Search::HeadingSerializer do
         }.ignore_extra_keys!
       end
 
-      it 'returns json representation for ElasticSearch' do
-        expect(serializer.to_json).to match_json_expression pattern
-      end
+      it { expect(serializer.to_json).to match_json_expression pattern }
     end
   end
 end
