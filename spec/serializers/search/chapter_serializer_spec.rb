@@ -1,6 +1,7 @@
 describe Search::ChapterSerializer do
+  subject(:serializer) { described_class.new(chapter) }
+
   describe '#to_json' do
-    let(:serializer) { described_class.new(chapter) }
     let(:chapter) { create(:chapter, :with_section, :with_description) }
 
     let(:pattern) do

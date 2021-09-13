@@ -1,7 +1,7 @@
 describe Search::HeadingSerializer do
-  describe '#to_json' do
-    let(:serializer) { described_class.new(heading) }
+  subject(:serializer) { described_class.new(heading) }
 
+  describe '#to_json' do
     context 'when heading is declarable' do
       let(:heading) { create :heading, :declarable }
 

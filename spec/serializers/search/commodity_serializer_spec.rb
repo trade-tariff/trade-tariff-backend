@@ -1,7 +1,7 @@
 describe Search::CommoditySerializer do
-  describe '#to_json' do
-    let(:serializer) { described_class.new(commodity) }
+  subject(:serializer) { described_class.new(commodity) }
 
+  describe '#to_json' do
     context 'when commodity is declarable' do
       let(:commodity) { build :commodity, :declarable, :with_children, :with_heading }
 
