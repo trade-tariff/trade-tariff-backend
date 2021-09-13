@@ -16,8 +16,8 @@ module Search
                 validity_start_date: { type: 'date', format: 'date_optional_time' },
                 producline_suffix: { type: 'keyword' },
                 goods_nomenclature_sid: { type: 'long' },
-                goods_nomenclature_item_id: { type: 'keyword' }
-              }
+                goods_nomenclature_item_id: { type: 'keyword' },
+              },
             },
             validity_end_date: { format: 'date_optional_time', type: 'date' },
             number_indents: { type: 'long' },
@@ -30,8 +30,8 @@ module Search
               properties: {
                 position: { type: 'long' },
                 title: { type: 'text' },
-                numeral: { type: 'keyword' }
-              }
+                numeral: { type: 'keyword' },
+              },
             },
             heading: {
               dynamic: true,
@@ -42,11 +42,12 @@ module Search
                 validity_start_date: { type: 'date', format: 'date_optional_time' },
                 producline_suffix: { type: 'keyword' },
                 goods_nomenclature_sid: { type: 'long' },
-                goods_nomenclature_item_id: { type: 'keyword' }
-              }
-            }
-          }
-        }
+                goods_nomenclature_item_id: { type: 'keyword' },
+              },
+            },
+            declarable: { type: 'boolean' },
+          },
+        },
       }
     end
   end

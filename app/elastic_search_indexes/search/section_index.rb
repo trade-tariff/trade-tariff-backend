@@ -11,7 +11,8 @@ module Search
             position: { type: 'long' },
             id: { type: 'long' },
             title: { type: 'text', analyzer: 'snowball' },
-            numeral: { type: 'keyword' }
+            numeral: { type: 'keyword' },
+            declarable: { type: 'boolean' },
           }
         }
       }

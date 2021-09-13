@@ -20,7 +20,8 @@ module Search
                 title: { type: 'text' },
                 numeral: { type: 'keyword' }
               }
-            }
+            },
+            declarable: { type: 'boolean' },
           }
         }
       }

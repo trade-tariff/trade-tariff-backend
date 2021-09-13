@@ -5,8 +5,8 @@ module Search
         id: id,
         numeral: numeral,
         title: title,
-        declarable: false,
         position: position,
+        declarable: false,
       }
     end
   end
