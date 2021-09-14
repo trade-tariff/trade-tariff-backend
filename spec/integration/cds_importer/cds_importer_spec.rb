@@ -17,15 +17,26 @@ RSpec.describe CdsImporter do
       expect_any_instance_of(CdsImporter::XmlParser::Reader).to receive(:parse)
       importer.import
     end
+
+    it 'returns hash of inserted records' do
+      expect(importer.import).to eql({})
+    end
   end
 
   describe 'XmlProcessor' do
     let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename) }
 
-    it 'invokes EntityMapper' do
-      expect(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
-      expect_any_instance_of(CdsImporter::EntityMapper).to receive(:import)
-      processor.process_xml_node('AdditionalCode', {})
+    context 'with valid import file' do
+      before do
+        allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
+        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
+      end
+
+      it 'invokes EntityMapper' do
+        expect(processor.process_xml_node('AdditionalCode', {})).to eql({
+          'AdditionalCode::Operation' => 1,
+        })
+      end
     end
 
     context 'when some error appears' do

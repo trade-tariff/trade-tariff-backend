@@ -35,22 +35,39 @@ class CdsImporter
         ActiveSupport::Notifications.instrument('cds_imported.tariff_importer', filename: @cds_update.filename)
       end
     end
+
+    handler.oplog_inserts
   end
 
   class XmlProcessor
+    attr_reader :oplog_inserts
+
     def initialize(filename)
       @filename = filename
+      @oplog_inserts = {}
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
-      CdsImporter::EntityMapper.new(key, hash_from_node).import
+      entity_mapper = CdsImporter::EntityMapper.new(key, hash_from_node)
+      append_oplog_inserts(entity_mapper.import)
     rescue StandardError => e
       ActiveSupport::Notifications.instrument(
         'cds_failed.tariff_importer',
         exception: e, hash: hash_from_node, key: key,
       )
       raise ImportException
+    end
+
+  private
+
+    def append_oplog_inserts(extra_inserts)
+      extra_inserts.each do |identifier, count|
+        @oplog_inserts[identifier] ||= 0
+        @oplog_inserts[identifier] += count
+      end
+
+      extra_inserts
     end
   end
 end
