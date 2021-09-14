@@ -18,21 +18,25 @@ describe CdsImporter::EntityMapper do
   end
   let(:mapper) { described_class.new('AdditionalCode', xml_node) }
 
-  before do
-    stub_const(
-      'CdsImporter::EntityMapper::ALL_MAPPERS',
-      [
-        CdsImporter::EntityMapper::MeasureMapper,
-        CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper,
-        CdsImporter::EntityMapper::AdditionalCodeMapper,
-        CdsImporter::EntityMapper::GeographicalAreaMapper,
-        CdsImporter::EntityMapper::GeographicalAreaMembershipMapper,
-      ],
-    )
+  describe '::ALL_MAPPERS' do
+    subject { described_class::ALL_MAPPERS }
+
+    it { is_expected.not_to be_empty }
   end
 
   describe '#import' do
     before do
+      stub_const(
+        'CdsImporter::EntityMapper::ALL_MAPPERS',
+        [
+          CdsImporter::EntityMapper::MeasureMapper,
+          CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper,
+          CdsImporter::EntityMapper::AdditionalCodeMapper,
+          CdsImporter::EntityMapper::GeographicalAreaMapper,
+          CdsImporter::EntityMapper::GeographicalAreaMembershipMapper,
+        ],
+      )
+
       create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
     end
 
