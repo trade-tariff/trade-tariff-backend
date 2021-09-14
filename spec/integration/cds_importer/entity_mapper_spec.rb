@@ -264,6 +264,12 @@ RSpec.describe CdsImporter::EntityMapper do
       end
     end
 
+    it 'records INSERTs performed' do
+      expect(mapper.import).to eql({
+        'AdditionalCode::Operation' => 1,
+      })
+    end
+
     it 'selects mappers by mapping root' do
       expect_any_instance_of(CdsImporter::EntityMapper::AdditionalCodeMapper).to receive(:parse).and_call_original
       mapper.import
