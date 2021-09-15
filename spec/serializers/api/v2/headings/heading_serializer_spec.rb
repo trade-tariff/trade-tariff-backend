@@ -33,7 +33,6 @@ describe Api::V2::Headings::HeadingSerializer do
           'description' => heading.description,
           'bti_url' => 'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code',
           'formatted_description' => heading.formatted_description,
-          'declarable' => false,
         },
         'relationships' => {
           'footnotes' => { 'data' => [] },

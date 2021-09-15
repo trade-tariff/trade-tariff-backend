@@ -8,14 +8,8 @@ module Api
 
         set_id :goods_nomenclature_sid
 
-        attributes :validity_start_date,
-                   :validity_end_date,
-                   :goods_nomenclature_item_id,
-                   :description,
-                   :bti_url,
-                   :formatted_description,
-                   :basic_duty_rate,
-                   :meursing_code
+        attributes :validity_start_date, :validity_end_date, :goods_nomenclature_item_id, :description, :bti_url,
+                   :formatted_description, :basic_duty_rate, :meursing_code
 
         attribute :declarable do
           true

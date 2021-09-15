@@ -22,7 +22,6 @@ RSpec.describe Api::V2::Commodities::CommoditySerializer do
           'consigned_from' => nil,
           'basic_duty_rate' => nil,
           'meursing_code' => false,
-          'declarable' => true,
         },
         'relationships' => {
           'footnotes' => { 'data' => [] },
