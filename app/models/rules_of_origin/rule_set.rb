@@ -51,6 +51,10 @@ module RulesOfOrigin
       Rule.new rule.merge(id_rule: id_rule.to_i) if rule
     end
 
+    def rules_for_ids(id_rules)
+      id_rules.map(&method(:rule)).compact
+    end
+
     def invalid_rules
       [].tap do |invalid|
         @rules.each do |id_rule, rule|

@@ -12,7 +12,9 @@ module RulesOfOrigin
 
     def rules
       schemes_and_their_id_rules.transform_values do |id_rules|
-        id_rules.map(&rule_set.method(:rule))
+        # convert the id_rules from the mapping to Rule instances loaded from
+        # the RuleSet
+        rule_set.rules_for_ids(id_rules)
       end
     end
 

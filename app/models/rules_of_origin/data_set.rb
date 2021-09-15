@@ -28,7 +28,7 @@ module RulesOfOrigin
       # FIXME: Mocked data - to be removed once data loading is turned on
 
       def load_mocked
-        new mocked_scheme_set, mocked_rule_set, mocked_mappings
+        new(mocked_scheme_set, mocked_rule_set, mocked_mappings)
       end
 
       def mocked_scheme_set

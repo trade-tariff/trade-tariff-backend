@@ -27,12 +27,14 @@ RSpec.describe Api::V2::RulesOfOriginController do
       let(:heading_code) { '010101' }
 
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes media_type: /json/ }
     end
 
     context 'without matching country' do
       let(:country_code) { 'ES' }
 
       it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes media_type: /json/ }
     end
   end
 end
