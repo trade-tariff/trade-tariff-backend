@@ -134,7 +134,7 @@ commands:
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:migrate" --name "db-migrate" --wait
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && rake db:migrate" --name "db-migrate" --wait
 
   sentry-release:
     steps:
