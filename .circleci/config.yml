@@ -22,7 +22,7 @@ commands:
       - run:
           name: "Setup CF CLI"
           command: |
-            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.3.0&source=github-rel'
             sudo dpkg -i cf.deb
             cf -v
             cf api "$CF_ENDPOINT"
@@ -113,7 +113,7 @@ commands:
       - run:
           name: "Setup CF CLI"
           command: |
-            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.2.0&source=github-rel'
+            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.3.0&source=github-rel'
             sudo dpkg -i cf.deb
             cf -v
             cf api "$CF_ENDPOINT"
@@ -134,7 +134,7 @@ commands:
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "rake db:migrate" --name "db-migrate"
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && rake db:migrate" --name "db-migrate" --wait
 
   sentry-release:
     steps:

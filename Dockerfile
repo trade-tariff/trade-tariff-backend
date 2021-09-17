@@ -46,7 +46,7 @@ WORKDIR /app
 ENV RAILS_ENV=production
 
 # Copy files generated in the builder image
-COPY --from=builder /app /app
+COPY --from=builder /app/ /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
