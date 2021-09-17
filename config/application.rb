@@ -41,5 +41,8 @@ module TradeTariffBackend
       Sequel::Model.db.extension :server_block
       Sequel::Model.db.extension :auto_literal_strings
     end
+
+    config.sequel.allow_missing_migration_files = \
+      (ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true')
   end
 end
