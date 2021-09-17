@@ -11,7 +11,11 @@ module RulesOfOrigin
     end
 
     def rules
-      id_rules.map(&rule_set.method(:rule))
+      schemes_and_their_id_rules.transform_values do |id_rules|
+        # convert the id_rules from the mapping to Rule instances loaded from
+        # the RuleSet
+        rule_set.rules_for_ids(id_rules)
+      end
     end
 
     def schemes
@@ -27,10 +31,6 @@ module RulesOfOrigin
     end
 
     private
-
-    def id_rules
-      schemes_and_their_id_rules.values.flatten.uniq
-    end
 
     def schemes_and_their_id_rules
       @schemes_and_their_id_rules ||=

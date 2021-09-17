@@ -56,9 +56,22 @@ RSpec.describe RulesOfOrigin::RuleSet do
     end
 
     context 'with unknown rule' do
-      let(:id_rule) { '1' }
+      let(:id_rule) { 1 }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#rules_for_ids' do
+    subject(:rules) { imported_rules.rules_for_ids(id_rules) }
+
+    let(:id_rules) { [20_000_001, 1] }
+
+    context 'with mix of known and unknown rules' do
+      it { is_expected.to be_instance_of Array }
+      it { is_expected.to all be_instance_of RulesOfOrigin::Rule }
+      it { is_expected.to have_attributes length: 1 }
+      it { expect(rules.first).to have_attributes id_rule: 20_000_001 }
     end
   end
 

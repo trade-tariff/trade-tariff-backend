@@ -38,6 +38,8 @@ RSpec.configure do |config|
   config.include CodesMappingHelper
   config.include ActiveSupport::Testing::TimeHelpers
 
+  config.include_context 'with fake global rules of origin data'
+
   redis = Redis.new(db: 15)
   RedisLockDb.redis = redis
 

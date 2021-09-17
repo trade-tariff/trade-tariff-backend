@@ -1,0 +1,26 @@
+{
+  "scope": "uk",
+  "links": [
+    {
+      "text": "Gov UK",
+      "url": "https://www.gov.uk/"
+    },
+    {
+      "text": "HMRC",
+      "url": "http://www.hmrc.gov.uk/"
+    }
+  ],
+  "schemes": [
+    {
+      "scheme_code": "EU",
+      "title": "Mocked scheme data",
+      "countries": [
+        "FR",
+        "ES",
+        "IT"
+      ],
+      "footnote": "This is a mocked footnote"
+    }
+  ]
+}
+
