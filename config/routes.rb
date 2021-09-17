@@ -18,6 +18,10 @@ Rails.application.routes.draw do
       resources :measure_types, only: %i[index show update]
       resources :search_references, only: [:index]
 
+      if TradeTariffBackend.uk?
+        resources :news_items, only: %i[index show create update destroy]
+      end
+
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
         scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
           resource :chapter_note, only: %i[show create update destroy]
