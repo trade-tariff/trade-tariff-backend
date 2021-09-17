@@ -38,7 +38,6 @@ gem 'logstash-event'
 gem 'nokogiri'
 gem 'ox'
 gem 'plek'
-gem 'rack-timeout'
 gem 'sentry-raven'
 
 # API related
@@ -77,4 +76,8 @@ group :test do
   gem 'rspec-rails'
   gem 'simplecov', require: false
   gem 'webmock'
+end
+
+group :production do
+  gem 'rack-timeout'
 end
