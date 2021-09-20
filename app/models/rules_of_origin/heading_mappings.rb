@@ -4,10 +4,10 @@ require 'csv'
 
 module RulesOfOrigin
   class HeadingMappings
-    SERVICES = %w[uk xi].freeze
+    SERVICES = %w[uk xi both].freeze
     SUB_HEADING_FORMAT = %r{\A\d{6}\z}.freeze
     DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
-    DEFAULT_FILE = 'rules_to_commodities_210728.csv'
+    DEFAULT_FILE = 'rules_to_commodities_210923.csv'
 
     class << self
       def from_default_file
@@ -32,7 +32,7 @@ module RulesOfOrigin
 
       CSV.foreach(@source_file, headers: true) do |row|
         count += 1
-        next unless row['scope'] == TradeTariffBackend.service
+        next unless row['scope'] == 'both' || row['scope'] == TradeTariffBackend.service
 
         if row['id_rule'].blank? || row['sub_heading'].blank? || row['scheme_code'].blank?
           next if skip_invalid_rows

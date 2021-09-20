@@ -5,7 +5,7 @@ require 'csv'
 module RulesOfOrigin
   class RuleSet
     DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
-    DEFAULT_FILE = 'rules_of_origin_210728.csv'
+    DEFAULT_FILE = 'rules_of_origin_210923.csv'
 
     class << self
       def from_default_file
@@ -28,7 +28,7 @@ module RulesOfOrigin
       @rules ||= {}
 
       CSV.foreach(@source_file, headers: true) do |row|
-        next unless row['scope'] == TradeTariffBackend.service
+        next unless row['scope'] == 'both' || row['scope'] == TradeTariffBackend.service
 
         add_rule row['id_rule'].to_i, row.to_h.without('scope', 'id_rule')
       end
