@@ -1,7 +1,7 @@
 # SearchService is responsible for issuing search queries
 # it tries to do ExactSearch first in case search term consists
 # of numerical values. We can guess if that was a Section, Chapter,
-# Heading ir Commodity code and redirect the user straight there.
+# Heading or Commodity code and redirect the user straight there.
 #
 # Otherwise it issues FuzzySearch that searches for results inside
 # green pages (synonyms) index as well as the main goods nomenclature
@@ -15,7 +15,7 @@ class SearchService
   autoload :FuzzySearch, 'search_service/fuzzy_search'
   autoload :NullSearch,  'search_service/null_search'
 
-  INDEX_SIZE_MAX = 10000 # ElasticSearch does default pagination for 10 entries
+  INDEX_SIZE_MAX = 10_000 # ElasticSearch does default pagination for 10 entries
   # per page. We do not do pagination when displaying
   # results so have a constant much bigger than possible
   # index size for size value.
@@ -27,15 +27,14 @@ class SearchService
   class EmptyQuery < StandardError
   end
 
-  attr_accessor :q
-  attr_reader :result, :as_of, :data_serializer
+  attr_reader :q, :result, :as_of, :data_serializer
 
   delegate :serializable_hash, to: :result
 
   def initialize(data_serializer, params = {})
     if params.present?
       params.each do |name, value|
-        if self.respond_to?(:"#{name}=")
+        if respond_to?(:"#{name}=")
           send(:"#{name}=", value)
         end
       end
@@ -57,7 +56,7 @@ class SearchService
     # if search term has no letters extract the digits
     # and perform search with just the digits (i.e., `no_alpha_regex`)
     # otherwise, ignore [ and ] characters to avoid range searches
-    @q = if m = cas_number_regex.match(term)
+    @q = if (m = cas_number_regex.match(term))
            m[2]
          elsif no_alpha_regex.match?(term) && digit_regex.match?(term)
            term.scan(/\d+/).join
@@ -86,10 +85,16 @@ class SearchService
 
   def perform
     @result = if q.present?
-                ExactSearch.new(q, as_of).search!.presence ||
-                  FuzzySearch.new(q, as_of).search!.presence
-              end
+                exact_search.presence || fuzzy_search.presence
+              end || NullSearch.new(q, as_of)
+    @result
+  end
 
-    @result ||= NullSearch.new(q, as_of)
+  def exact_search
+    ExactSearch.new(q, as_of).search!
+  end
+
+  def fuzzy_search
+    FuzzySearch.new(q, as_of).search!
   end
 end
