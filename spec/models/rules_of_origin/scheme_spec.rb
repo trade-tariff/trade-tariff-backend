@@ -11,6 +11,9 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :countries }
     it { is_expected.to respond_to :rule_offset }
     it { is_expected.to respond_to :footnote }
+    it { is_expected.to respond_to :adopted_by_uk }
+    it { is_expected.to respond_to :country_code }
+    it { is_expected.to respond_to :notes }
   end
 
   describe '#links=' do

@@ -5,7 +5,8 @@ module RulesOfOrigin
     include ActiveModel::Model
 
     attr_accessor :scheme_code, :title, :introductory_notes_file, :fta_intro_file,
-                  :countries, :rule_offset, :footnote
+                  :countries, :rule_offset, :footnote, :adopted_by_uk,
+                  :country_code, :notes
 
     def links=(links_data)
       @links = Array.wrap(links_data)
