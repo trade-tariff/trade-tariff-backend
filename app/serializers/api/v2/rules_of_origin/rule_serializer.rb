@@ -8,7 +8,7 @@ module Api
 
         set_id :id_rule
 
-        attributes :id_rule, :heading, :description, :rule
+        attributes :id_rule, :heading, :description, :rule, :alternate_rule
       end
     end
   end
