@@ -1,15 +1,17 @@
 RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   subject { serializer.serializable_hash }
 
-  let(:serializer) { described_class.new(presented_scheme, include: %i[rules]) }
-  let(:scheme) { build :rules_of_origin_scheme }
+  let(:scheme_set) { build :rules_of_origin_scheme_set, links: [], schemes: [] }
+  let(:scheme) { build :rules_of_origin_scheme, scheme_set: scheme_set }
 
   let(:rules) do
     build_list :rules_of_origin_rule, 3, scheme_code: scheme.scheme_code
   end
 
-  let(:presented_scheme) do
-    Api::V2::RulesOfOrigin::SchemePresenter.new scheme, rules
+  let :serializer do
+    described_class.new \
+      Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules),
+      include: %i[rules]
   end
 
   let :expected do
@@ -22,6 +24,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           title: scheme.title,
           countries: scheme.countries,
           footnote: scheme.footnote,
+          fta_intro: scheme.fta_intro,
         },
         relationships: {
           rules: {
