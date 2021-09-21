@@ -93,7 +93,7 @@ RSpec.describe RulesOfOrigin::Scheme do
   describe '#fta_intro' do
     subject(:scheme) do
       build :rules_of_origin_scheme,
-            fta_intro_file: 'intro.md',
+            fta_intro_file: intro_file,
             scheme_set: scheme_set
     end
 
@@ -103,10 +103,17 @@ RSpec.describe RulesOfOrigin::Scheme do
                            .and_return('fta intro content')
     end
 
+    let(:intro_file) { 'intro.md' }
     let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
 
     it 'will read the referenced file' do
       expect(scheme).to have_attributes fta_intro: 'fta intro content'
+    end
+
+    context 'with blank file' do
+      let(:intro_file) { '' }
+
+      it { expect(scheme).to have_attributes fta_intro: '' }
     end
   end
 end

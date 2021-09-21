@@ -31,7 +31,11 @@ module RulesOfOrigin
     end
 
     def fta_intro
-      @fta_intro ||= scheme_set.read_referenced_file(fta_intro_file)
+      @fta_intro ||= begin
+        return '' if fta_intro_file.blank?
+
+        scheme_set.read_referenced_file(fta_intro_file)
+      end
     end
   end
 end
