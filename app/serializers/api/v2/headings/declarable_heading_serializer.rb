@@ -15,8 +15,6 @@ module Api
                    :formatted_description,
                    :producline_suffix,
                    :validity_end_date,
-                   :consigned,
-                   :consigned_from,
                    :bti_url,
                    :basic_duty_rate,
                    :meursing_code
