@@ -19,7 +19,8 @@
         "ES",
         "IT"
       ],
-      "footnote": "This is a mocked footnote"
+      "footnote": "This is a mocked footnote",
+      "fta_intro_file": "mocked_fta_intro.md"
     }
   ]
 }
