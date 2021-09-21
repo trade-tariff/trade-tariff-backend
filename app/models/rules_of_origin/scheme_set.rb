@@ -13,7 +13,9 @@ module RulesOfOrigin
           raise InvalidSchemesFile, 'Requires a path to a JSON file'
         end
 
-        new(source_file.dirname, source_file.read)
+        base_path = source_file.dirname.join source_file.basename(source_file.extname)
+
+        new(base_path, source_file.read)
       end
 
       def from_default_file(service)
@@ -46,11 +48,21 @@ module RulesOfOrigin
       @_schemes.values_at(*(@_countries[country_code] || []))
     end
 
+    def read_referenced_file(filename)
+      unless valid_referenced_file?(filename)
+        raise InvalidReferencedFile, filename
+      end
+
+      base_path.join(filename).read
+    end
+
     class InvalidSchemesFile < RuntimeError; end
 
     class SchemeNotFound < RuntimeError; end
 
     class CurrentSetAlreadyAssigned < RuntimeError; end
+
+    class InvalidReferencedFile < RuntimeError; end
 
   private
 
@@ -67,8 +79,18 @@ module RulesOfOrigin
       links.map(&Link.method(:new_with_check)).compact
     end
 
-    def build_schemes(schemes)
-      schemes.map(&Scheme.method(:new)).index_by(&:scheme_code)
+    def build_schemes(schemes_data)
+      schemes_data.map(&method(:build_scheme)).index_by(&:scheme_code)
+    end
+
+    def build_scheme(scheme_data)
+      Scheme.new scheme_data.merge(scheme_set: self)
+    end
+
+    def valid_referenced_file?(filename)
+      return false if filename.match?(/\.\.+/)
+
+      filename.match?(/\A[a-zA-Z0-9\-_.]+\z/)
     end
   end
 end

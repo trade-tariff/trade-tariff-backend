@@ -86,4 +86,36 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     it { is_expected.to have_attributes length: 1 }
     it { is_expected.to all be_instance_of RulesOfOrigin::Link }
   end
+
+  describe '#read_referenced_file' do
+    subject(:read_file) { scheme_set.read_referenced_file file_name }
+
+    context 'with valid file' do
+      let(:file_name) { 'eu.md' }
+
+      it { is_expected.to match 'EU Trade and Co-operation Agreement' }
+    end
+
+    context 'with odd filename' do
+      let(:file_name) { 'odd?name' }
+
+      it 'will trigger exception' do
+        expect { read_file }.to raise_exception described_class::InvalidReferencedFile
+      end
+    end
+
+    context 'with tree traversal filename' do
+      let(:file_name) { '..' }
+
+      it 'will trigger exception' do
+        expect { read_file }.to raise_exception described_class::InvalidReferencedFile
+      end
+    end
+
+    context 'with unknown file' do
+      let(:file_name) { 'unknown.md' }
+
+      it { expect { read_file }.to raise_exception Errno::ENOENT }
+    end
+  end
 end

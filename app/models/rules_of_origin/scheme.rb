@@ -4,9 +4,9 @@ module RulesOfOrigin
   class Scheme
     include ActiveModel::Model
 
-    attr_accessor :scheme_code, :title, :introductory_notes_file, :fta_intro_file,
-                  :countries, :rule_offset, :footnote, :adopted_by_uk,
-                  :country_code, :notes
+    attr_accessor :scheme_set, :scheme_code, :title, :introductory_notes_file,
+                  :fta_intro_file, :countries, :rule_offset, :footnote,
+                  :adopted_by_uk, :country_code, :notes
 
     def links=(links_data)
       @links = Array.wrap(links_data)
@@ -28,6 +28,10 @@ module RulesOfOrigin
 
     def explainers
       @explainers || []
+    end
+
+    def fta_intro
+      @fta_intro ||= scheme_set.read_referenced_file(fta_intro_file)
     end
   end
 end

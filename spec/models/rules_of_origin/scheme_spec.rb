@@ -89,4 +89,24 @@ RSpec.describe RulesOfOrigin::Scheme do
       it { is_expected.to have_attributes length: 0 }
     end
   end
+
+  describe '#fta_intro' do
+    subject(:scheme) do
+      build :rules_of_origin_scheme,
+            fta_intro_file: 'intro.md',
+            scheme_set: scheme_set
+    end
+
+    before do
+      allow(scheme_set).to receive(:read_referenced_file)
+                           .with('intro.md')
+                           .and_return('fta intro content')
+    end
+
+    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
+
+    it 'will read the referenced file' do
+      expect(scheme).to have_attributes fta_intro: 'fta intro content'
+    end
+  end
 end
