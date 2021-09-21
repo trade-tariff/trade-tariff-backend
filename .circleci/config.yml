@@ -319,12 +319,12 @@ workflows:
     jobs:
       - linters:
           context: trade-tariff
-      - test:
-           context: trade-tariff
-           filters:
-             branches:
-               ignore:
-                 - master
+      # - test:
+      #      context: trade-tariff
+      #      filters:
+      #        branches:
+      #          ignore:
+      #            - master
       - build:
           name: build_dev
           context: trade-tariff
@@ -334,8 +334,8 @@ workflows:
               ignore:
                 - master
                 - /^dependabot\/.*/
-          requires:
-            - test
+          # requires:
+          #   - test
       - deploy_dev:
            matrix:
              parameters:
