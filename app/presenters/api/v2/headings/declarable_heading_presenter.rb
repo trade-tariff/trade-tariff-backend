@@ -17,7 +17,7 @@ module Api
           @export_measures = measures.select(&:export).map do |measure|
             Api::V2::Measures::MeasurePresenter.new(measure, heading)
           end
-          @unit_measures = @import_measures.select(&:expresses_unit?)
+          @unit_measures = import_measures.select(&:expresses_unit?)
           @third_country_measures = import_measures.select(&:third_country?)
         end
 
