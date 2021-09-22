@@ -14,6 +14,6 @@ class ApiConstraints
   end
 
   def default
-    ENV.fetch('DEFAULT_VERSION', 1)
+    ENV.fetch('DEFAULT_API_VERSION', 1)
   end
 end
