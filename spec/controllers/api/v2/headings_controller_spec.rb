@@ -108,6 +108,18 @@ describe Api::V2::HeadingsController, type: :controller do
             footnotes: Hash,
             section: Hash,
           },
+          meta: {
+            duty_calculator: {
+              applicable_additional_codes: Hash,
+              applicable_measure_units: Hash,
+              applicable_vat_options: Hash,
+              entry_price_system: false,
+              meursing_code: false,
+              source: 'uk',
+              trade_defence: false,
+              zero_mfn_duty: false,
+            },
+          },
         },
       }.ignore_extra_keys!
     end

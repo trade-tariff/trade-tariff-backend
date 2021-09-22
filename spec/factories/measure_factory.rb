@@ -116,6 +116,10 @@ FactoryBot.define do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end
 
+    trait :trade_remedy do
+      measure_type_id { '551' }
+    end
+
     trait :with_measure_components do
       after(:build) do |measure, evaluator|
         create_list(
@@ -131,13 +135,30 @@ FactoryBot.define do
       end
     end
 
+    trait :with_meursing do
+      transient do
+        duty_expression_id { 12 }
+      end
+    end
+
+    trait :without_meursing do
+      transient do
+        duty_expression_id { 4 }
+      end
+    end
+
     trait :with_measure_conditions do
+      transient do
+        condition_code { 'B' }
+      end
+
       after(:build) do |measure, evaluator|
         condition = create(
           :measure_condition,
           measure_sid: measure.measure_sid,
           condition_measurement_unit_code: evaluator.measurement_unit_code,
           condition_measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
+          condition_code: evaluator.condition_code
         )
 
         create(
@@ -149,6 +170,18 @@ FactoryBot.define do
           measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
+      end
+    end
+
+    trait :with_entry_price_system do
+      transient do
+        condition_code { 'V' }
+      end
+    end
+
+    trait :without_entry_price_system do
+      transient do
+        condition_code { 'B' }
       end
     end
 
