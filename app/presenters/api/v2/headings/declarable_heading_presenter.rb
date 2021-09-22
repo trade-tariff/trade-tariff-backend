@@ -2,7 +2,11 @@ module Api
   module V2
     module Headings
       class DeclarableHeadingPresenter < SimpleDelegator
-        attr_reader :heading, :import_measures, :export_measures, :unit_measures
+        attr_reader :heading,
+                    :import_measures,
+                    :export_measures,
+                    :unit_measures,
+                    :third_country_measures
 
         def initialize(heading, measures)
           super(heading)
@@ -14,6 +18,7 @@ module Api
             Api::V2::Measures::MeasurePresenter.new(measure, heading)
           end
           @unit_measures = @import_measures.select(&:expresses_unit?)
+          @third_country_measures = import_measures.select(&:third_country?)
         end
 
         def import_measure_ids
@@ -39,10 +44,6 @@ module Api
 
         def zero_mfn_duty?
           third_country_measures.size.positive? && third_country_measures.all?(&:zero_mfn?)
-        end
-
-        def third_country_measures
-          import_measures.select(&:third_country?)
         end
 
         def trade_remedies?
