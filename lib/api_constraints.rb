@@ -1,14 +1,27 @@
 class ApiConstraints
-  def initialize(options)
-    @version = options[:version]
-    @default = options[:default]
+  def initialize(version:)
+    @version = version
   end
 
   def matches?(req)
-    # API versioning isn't something that we've made a decision on yet, so this might be subject
-    # to change.
-    # Currently the only client of the API is TradeTariffWebApp and we are free to evolve both the
-    # server and the client in lockstep.
-    @default || req.headers['Accept'].include?("application/vnd.uktt.v#{@version}")
+    is_default? || req.headers['Accept'].include?("application/vnd.uktt.v#{@version}")
+  end
+
+  private
+
+  def is_default?
+    if Rails.env.production?
+      production_default?
+    else
+      development_default?
+    end
+  end
+
+  def development_default?
+    @version == 2
+  end
+
+  def production_default?
+    @version == 1
   end
 end
