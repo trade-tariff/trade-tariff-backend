@@ -43,7 +43,7 @@ Rails.application.routes.draw do
     # How (or even if) API versioning will be implemented is still an open question. We can defer
     # the choice until we need to expose the API to clients which we don't control.
 
-    scope module: :v2, constraints: ApiConstraints.new(version: 2, default: false) do
+    scope module: :v2, constraints: ApiConstraints.new(version: 2) do
       resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         collection do
           get :tree
@@ -119,7 +119,7 @@ Rails.application.routes.draw do
       get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
     end
 
-    scope module: :v1, constraints: ApiConstraints.new(version: 1, default: true) do
+    scope module: :v1, constraints: ApiConstraints.new(version: 1) do
       resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         collection do
           get :tree
