@@ -24,4 +24,31 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
     it { is_expected.to all be_instance_of described_class }
     it { expect(presenters[0].rules).to have_attributes length: 1 }
   end
+
+  describe '.links' do
+    subject(:presented_link_ids) { presenter.links.map(&:id) }
+
+    context 'without scheme_set' do
+      it { is_expected.to have_attributes length: 2 }
+      it { is_expected.to include scheme.links.first.id }
+    end
+
+    context 'with scheme_set with extra links' do
+      let(:scheme_set) { build :rules_of_origin_scheme_set }
+
+      let(:scheme) do
+        build :rules_of_origin_scheme, :with_links, scheme_set: scheme_set
+      end
+
+      it { is_expected.to have_attributes length: 3 }
+
+      it 'includes links from scheme set' do
+        expect(presented_link_ids).to include scheme_set.links.first.id
+      end
+
+      it 'includes links from scheme itself' do
+        expect(presented_link_ids).to include scheme.links.first.id
+      end
+    end
+  end
 end
