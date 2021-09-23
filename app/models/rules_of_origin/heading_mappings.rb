@@ -58,10 +58,10 @@ module RulesOfOrigin
     end
 
     def for_heading_and_schemes(heading, scheme_codes)
-      schemes = @mappings[heading]
-      return {} if schemes.nil?
+      rules_for_heading_grouped_by_scheme_code = @mappings[heading]
+      return {} if rules_for_heading_grouped_by_scheme_code.nil?
 
-      schemes.slice(*scheme_codes)
+      rules_for_heading_grouped_by_scheme_code.slice(*scheme_codes)
     end
 
     def invalid_mappings

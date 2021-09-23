@@ -15,7 +15,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
   describe '.from_file' do
     context 'with valid file' do
       it { is_expected.to be_instance_of described_class }
-      it { is_expected.to have_attributes schemes: include('EU') }
+      it { is_expected.to have_attributes schemes: include('eu') }
       it { is_expected.to have_attributes countries: include('FR') }
     end
 
@@ -44,9 +44,9 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     subject(:scheme) { scheme_set.scheme(scheme_code) }
 
     context 'for known scheme' do
-      let(:scheme_code) { 'EU' }
+      let(:scheme_code) { 'eu' }
 
-      it { is_expected.to have_attributes scheme_code: 'EU' }
+      it { is_expected.to have_attributes scheme_code: 'eu' }
     end
 
     context 'for unknown scheme' do
@@ -63,7 +63,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
       let(:country_code) { 'FR' }
 
       it { is_expected.to have_attributes length: 1 }
-      it { is_expected.to include have_attributes(scheme_code: 'EU') }
+      it { is_expected.to include have_attributes(scheme_code: 'eu') }
     end
 
     context 'with no matching scheme' do
