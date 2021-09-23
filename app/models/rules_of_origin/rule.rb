@@ -20,7 +20,6 @@ module RulesOfOrigin
     validates :id_rule, presence: true, format: ID_RULE_FORMAT
     validates :scheme_code, presence: true, format: SCHEME_CODE_FORMAT
     validates :heading, presence: true
-    validates :rule, presence: true
 
     def ==(other)
       id_rule.present? &&
