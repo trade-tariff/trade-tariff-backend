@@ -2,7 +2,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   subject { serializer.serializable_hash }
 
   let(:scheme_set) { build :rules_of_origin_scheme_set, links: [], schemes: [] }
-  let(:scheme) { build :rules_of_origin_scheme, scheme_set: scheme_set }
+  let(:scheme) { build :rules_of_origin_scheme, :with_links, scheme_set: scheme_set }
 
   let(:rules) do
     build_list :rules_of_origin_rule, 3, scheme_code: scheme.scheme_code
@@ -11,7 +11,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   let :serializer do
     described_class.new \
       Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules),
-      include: %i[rules]
+      include: %i[links rules]
   end
 
   let :expected do
@@ -27,6 +27,18 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           fta_intro: scheme.fta_intro,
         },
         relationships: {
+          links: {
+            data: [
+              {
+                id: scheme.links[0].id,
+                type: :rules_of_origin_link,
+              },
+              {
+                id: scheme.links[1].id,
+                type: :rules_of_origin_link,
+              },
+            ],
+          },
           rules: {
             data: [
               {
@@ -46,6 +58,22 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
         },
       },
       included: [
+        {
+          id: scheme.links[0].id,
+          type: :rules_of_origin_link,
+          attributes: {
+            text: scheme.links[0].text,
+            url: scheme.links[0].url,
+          },
+        },
+        {
+          id: scheme.links[1].id,
+          type: :rules_of_origin_link,
+          attributes: {
+            text: scheme.links[1].text,
+            url: scheme.links[1].url,
+          },
+        },
         {
           id: rules[0].id_rule.to_s,
           type: :rules_of_origin_rule,

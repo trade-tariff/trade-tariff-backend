@@ -20,7 +20,13 @@
         "IT"
       ],
       "footnote": "This is a mocked footnote",
-      "fta_intro_file": "mocked_fta_intro.md"
+      "fta_intro_file": "mocked_fta_intro.md",
+      "links": [
+        {
+          "text": "HMRC",
+          "url": "http://www.hmrc.gov.uk/"
+        }
+      ]
     }
   ]
 }

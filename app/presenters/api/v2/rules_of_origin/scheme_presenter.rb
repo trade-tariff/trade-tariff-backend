@@ -21,6 +21,10 @@ module Api
         def rule_ids
           @rule_ids ||= rules.map(&:id_rule)
         end
+
+        def link_ids
+          @link_ids ||= links.map(&:id)
+        end
       end
     end
   end
