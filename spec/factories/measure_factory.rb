@@ -158,7 +158,7 @@ FactoryBot.define do
           measure_sid: measure.measure_sid,
           condition_measurement_unit_code: evaluator.measurement_unit_code,
           condition_measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
-          condition_code: evaluator.condition_code
+          condition_code: evaluator.condition_code,
         )
 
         create(
