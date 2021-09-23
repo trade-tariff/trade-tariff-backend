@@ -8,7 +8,7 @@ module Api
 
         set_id :scheme_code
 
-        attributes :scheme_code, :title, :countries, :footnote
+        attributes :scheme_code, :title, :countries, :footnote, :fta_intro
 
         has_many :rules, serializer: Api::V2::RulesOfOrigin::RuleSerializer
       end
