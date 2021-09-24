@@ -6,7 +6,7 @@ inherit_gem:
 require: rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 2.7.1
+  TargetRubyVersion: 3.0.2
   Exclude:
     - 'db/schema.rb'
     - 'vendor/**/*'
