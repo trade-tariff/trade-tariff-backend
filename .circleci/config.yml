@@ -1,6 +1,7 @@
 version: 2.1
 
 orbs:
+  aws-cli: circleci/aws-cli@2.0.3
   ruby: circleci/ruby@1.1.2
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
@@ -37,11 +38,12 @@ commands:
       - run:
           name: "Push new app in dark mode"
           command: |
-            export IMAGE=enginetransformation/tariff-backend
-            export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+            export DOCKER_IMAGE=tariff-backend
+            export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
 
             # Push as "dark" instance
-            cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
+
             # Map dark route
             cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
@@ -128,9 +130,9 @@ commands:
       - run:
           name: "Push Worker"
           command: |
-            export IMAGE=enginetransformation/tariff-backend
-            export DOCKER_IMAGE=${IMAGE}:<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
-            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$DOCKER_IMAGE"
+            export DOCKER_IMAGE=tariff-backend
+            export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
       - run:
           name: "Run Migrations"
           command: |
@@ -180,7 +182,7 @@ jobs:
 
   build:
     environment:
-      IMAGE_NAME: enginetransformation/tariff-backend
+      IMAGE_NAME: tariff-backend
     parameters:
       dev-build:
         default: false
@@ -192,17 +194,23 @@ jobs:
       - setup_remote_docker:
           version: 20.10.2
           docker_layer_caching: false
+      - aws-cli/install
+      - run:
+          name: "Set docker tag"
+          command: |
+            echo "export DOCKER_TAG=<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}" >> $BASH_ENV
       - run:
           name: "Build Docker image"
           command: |
             export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
             echo $GIT_NEW_REVISION >REVISION
-            docker build -t $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1} .
+            docker build -t $IMAGE_NAME:$DOCKER_TAG .
       - run:
           name: "Push image"
           command: |
-            echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
-            docker push $IMAGE_NAME:<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}
+            aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $ECR_REPO
+            docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
+            docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
 
 
   test:
