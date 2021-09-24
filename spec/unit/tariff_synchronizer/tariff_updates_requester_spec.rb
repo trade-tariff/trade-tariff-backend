@@ -1,4 +1,4 @@
-describe TariffSynchronizer::TariffUpdatesRequester do
+RSpec.describe TariffSynchronizer::TariffUpdatesRequester do
   describe '.perform' do
     let(:url) { 'http://example/test' }
 

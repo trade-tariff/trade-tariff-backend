@@ -1,4 +1,4 @@
-describe ChangesTablePopulator::CommodityCodeEndDated do
+RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do

@@ -1,4 +1,4 @@
-describe RollbackWorker, type: :worker do
+RSpec.describe RollbackWorker, type: :worker do
   before do
     allow($stdout).to receive(:write)
   end

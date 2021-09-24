@@ -1,4 +1,4 @@
-describe Api::V2::MonetaryExchangeRatesController, 'GET to #index' do
+RSpec.describe Api::V2::MonetaryExchangeRatesController, 'GET to #index' do
   render_views
   context 'Expected results' do
     let!(:gbp_unit) { create(:monetary_unit, monetary_unit_code: 'GBP', validity_start_date: Date.current.ago(10.years)) }

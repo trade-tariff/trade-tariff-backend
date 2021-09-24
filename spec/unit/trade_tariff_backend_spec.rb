@@ -1,4 +1,4 @@
-describe TradeTariffBackend do
+RSpec.describe TradeTariffBackend do
   describe '.reindex' do
     context 'when successful' do
       let(:stub_indexer) { double(update: true) }

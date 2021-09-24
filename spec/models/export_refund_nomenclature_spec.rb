@@ -1,4 +1,4 @@
-describe ExportRefundNomenclature do
+RSpec.describe ExportRefundNomenclature do
   describe 'associations' do
     describe 'export refund nomenclature indent' do
       let!(:export_refund_nomenclature)                { create :export_refund_nomenclature }

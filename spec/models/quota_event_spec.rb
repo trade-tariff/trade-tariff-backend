@@ -1,4 +1,4 @@
-describe QuotaEvent do
+RSpec.describe QuotaEvent do
   let!(:quota_definition) { create :quota_definition }
   let!(:balance_event)    do
     create :quota_balance_event, quota_definition: quota_definition,

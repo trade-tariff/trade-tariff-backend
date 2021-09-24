@@ -1,4 +1,4 @@
-describe Api::V2::Measures::MeasureLegalActPresenter do
+RSpec.describe Api::V2::Measures::MeasureLegalActPresenter do
   subject(:presenter) { described_class.new(regulation, measure) }
 
   let(:regulation) { create(:base_regulation, base_regulation_id: '1234567') }

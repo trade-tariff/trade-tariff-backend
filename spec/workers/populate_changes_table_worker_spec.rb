@@ -1,4 +1,4 @@
-describe PopulateChangesTableWorker, type: :worker do
+RSpec.describe PopulateChangesTableWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   before do

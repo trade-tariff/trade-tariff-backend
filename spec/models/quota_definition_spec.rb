@@ -1,4 +1,4 @@
-describe QuotaDefinition do
+RSpec.describe QuotaDefinition do
   describe '#status' do
     it 'returns Open if quota definition is not in critical state' do
       quota_definition = build :quota_definition, critical_state: 'N'

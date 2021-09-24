@@ -1,4 +1,4 @@
-describe QuotaSearchService do
+RSpec.describe QuotaSearchService do
   subject(:service) { described_class.new(filter, current_page, per_page) }
 
   around do |example|

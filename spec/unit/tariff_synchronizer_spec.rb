@@ -1,7 +1,7 @@
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/AnyInstance
-describe TariffSynchronizer, truncation: true do
+RSpec.describe TariffSynchronizer, truncation: true do
   describe '.initial_update_date_for' do
     # helper method where update type is a param
     it 'returns initial update date for specific update type taric' do

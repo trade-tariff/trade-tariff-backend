@@ -1,4 +1,4 @@
-describe TaricImporter::Transaction do
+RSpec.describe TaricImporter::Transaction do
   let(:record) do
     { 'transaction_id' => '31946',
       'record_code' => '130',

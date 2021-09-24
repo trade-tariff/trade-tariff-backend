@@ -1,4 +1,4 @@
-describe Api::V1::SearchController, 'POST #search' do
+RSpec.describe Api::V1::SearchController, 'POST #search' do
   describe 'exact matching' do
     let(:chapter) { create :chapter }
     let(:pattern) do
@@ -72,7 +72,7 @@ describe Api::V1::SearchController, 'POST #search' do
   end
 end
 
-describe Api::V1::SearchController, 'GET #suggestions' do
+RSpec.describe Api::V1::SearchController, 'GET #suggestions' do
   render_views
 
   let!(:commodity1) { create :commodity }

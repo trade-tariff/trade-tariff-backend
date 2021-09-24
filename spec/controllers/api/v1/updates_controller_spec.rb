@@ -1,4 +1,4 @@
-describe Api::V1::UpdatesController, 'GET #index' do
+RSpec.describe Api::V1::UpdatesController, 'GET #index' do
   render_views
 
   let(:pattern) do
@@ -34,7 +34,7 @@ describe Api::V1::UpdatesController, 'GET #index' do
   end
 end
 
-describe Api::V1::UpdatesController, 'GET #latest' do
+RSpec.describe Api::V1::UpdatesController, 'GET #latest' do
   render_views
 
   let(:pattern) do

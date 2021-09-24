@@ -1,4 +1,4 @@
-describe Api::Admin::MeasureTypesController do
+RSpec.describe Api::Admin::MeasureTypesController do
   render_views
 
   before { login_as_api_user }

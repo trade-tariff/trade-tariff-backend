@@ -1,4 +1,4 @@
-describe Section do
+RSpec.describe Section do
   describe 'associations' do
     describe 'chapters' do
       let!(:chapter) { create(:chapter, :with_section) }

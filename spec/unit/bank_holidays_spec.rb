@@ -1,4 +1,4 @@
-describe BankHolidays do
+RSpec.describe BankHolidays do
   include BankHolidaysHelper
 
   before do

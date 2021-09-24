@@ -1,4 +1,4 @@
-describe Change do
+RSpec.describe Change do
   let(:db) { Sequel::Model.db }
 
   describe '#cleanup' do

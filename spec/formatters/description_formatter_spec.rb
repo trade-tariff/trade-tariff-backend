@@ -1,4 +1,4 @@
-describe DescriptionFormatter do
+RSpec.describe DescriptionFormatter do
   describe '.format' do
     it 'corrects inconsistent newlines in lists' do
       description = '-| bread -| butter'

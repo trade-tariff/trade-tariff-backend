@@ -1,4 +1,4 @@
-describe GoodsNomenclatureMapper do
+RSpec.describe GoodsNomenclatureMapper do
   describe 'mapping' do
     # E.g.
     # (1) 0101000010 -

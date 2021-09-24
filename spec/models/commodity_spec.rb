@@ -1,4 +1,4 @@
-describe Commodity do
+RSpec.describe Commodity do
   it 'has primary key set to goods_nomenclature_sid' do
     expect(subject.primary_key).to eq :goods_nomenclature_sid
   end

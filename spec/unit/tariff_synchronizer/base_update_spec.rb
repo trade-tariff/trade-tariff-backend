@@ -1,4 +1,4 @@
-describe TariffSynchronizer::BaseUpdate do
+RSpec.describe TariffSynchronizer::BaseUpdate do
   include BankHolidaysHelper
 
   before do

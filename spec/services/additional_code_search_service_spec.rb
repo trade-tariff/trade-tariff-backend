@@ -1,4 +1,4 @@
-describe AdditionalCodeSearchService do
+RSpec.describe AdditionalCodeSearchService do
   describe 'additional code search' do
     around do |example|
       TimeMachine.now { example.run }

@@ -1,4 +1,4 @@
-describe FullTemporaryStopRegulation do
+RSpec.describe FullTemporaryStopRegulation do
   let(:fts_regulation) { build :fts_regulation, effective_enddate: Date.current }
 
   describe '#regulation_id' do

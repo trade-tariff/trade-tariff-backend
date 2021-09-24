@@ -1,4 +1,4 @@
-describe NullGoodsNomenclature do
+RSpec.describe NullGoodsNomenclature do
   let(:subject) { described_class.new }
 
   describe '#description' do

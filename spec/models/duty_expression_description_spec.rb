@@ -1,4 +1,4 @@
-describe DutyExpressionDescription do
+RSpec.describe DutyExpressionDescription do
   describe '#abbreviation' do
     context 'abbreviation present for duty expression id' do
       let(:duty_expression_description) { build :duty_expression_description, duty_expression_id: '37' }

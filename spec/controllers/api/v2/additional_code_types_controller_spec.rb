@@ -1,4 +1,4 @@
-describe Api::V2::AdditionalCodeTypesController, type: :controller do
+RSpec.describe Api::V2::AdditionalCodeTypesController, type: :controller do
   render_views
 
   describe '#index' do

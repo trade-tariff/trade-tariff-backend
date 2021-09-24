@@ -1,4 +1,4 @@
-describe ChangeOld do
+RSpec.describe ChangeOld do
   let!(:measure) { create :measure }
   let(:change_old) do
     described_class.new(

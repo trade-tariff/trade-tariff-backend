@@ -1,4 +1,4 @@
-describe Api::V2::FootnoteTypesController, type: :controller do
+RSpec.describe Api::V2::FootnoteTypesController, type: :controller do
   render_views
 
   describe '#index' do

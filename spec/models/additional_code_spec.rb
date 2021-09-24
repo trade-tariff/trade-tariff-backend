@@ -1,4 +1,4 @@
-describe AdditionalCode do
+RSpec.describe AdditionalCode do
   subject(:additional_code) do
     build(
       :additional_code,

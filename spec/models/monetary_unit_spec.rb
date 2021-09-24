@@ -1,4 +1,4 @@
-describe MonetaryUnit do
+RSpec.describe MonetaryUnit do
   let(:monetary_unit) { create :monetary_unit }
 
   describe '#to_s' do

@@ -1,4 +1,4 @@
-describe TaricImporter::RecordProcessor::DestroyOperation do
+RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
   let(:empty_operation) do
     TaricImporter::RecordProcessor::DestroyOperation.new(nil, nil)
   end

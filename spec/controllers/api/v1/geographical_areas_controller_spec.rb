@@ -1,4 +1,4 @@
-describe Api::V1::GeographicalAreasController, 'GET #countries' do
+RSpec.describe Api::V1::GeographicalAreasController, 'GET #countries' do
   render_views
 
   let!(:geographical_area1) do

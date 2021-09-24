@@ -1,4 +1,4 @@
-describe Api::Admin::UpdatesController, 'GET #index' do
+RSpec.describe Api::Admin::UpdatesController, 'GET #index' do
   render_views
 
   let(:pattern) do

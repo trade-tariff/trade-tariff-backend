@@ -1,4 +1,4 @@
-describe CdsImporter::EntityMapper do
+RSpec.describe CdsImporter::EntityMapper do
   let(:xml_node) do
     {
       'sid' => '3084',

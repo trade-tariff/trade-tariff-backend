@@ -1,4 +1,4 @@
-describe Api::V2::AdditionalCodesController, type: :controller do
+RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
   render_views
 
   context 'additional codes search' do

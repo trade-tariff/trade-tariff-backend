@@ -1,4 +1,4 @@
-describe Search::ChapterSerializer do
+RSpec.describe Search::ChapterSerializer do
   describe '#to_json' do
     let!(:chapter) do
       described_class.new(

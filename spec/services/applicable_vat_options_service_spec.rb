@@ -1,4 +1,4 @@
-describe ApplicableVatOptionsService do
+RSpec.describe ApplicableVatOptionsService do
   subject(:service) { described_class.new(measures) }
 
   describe '#call' do

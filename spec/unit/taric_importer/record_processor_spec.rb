@@ -4,7 +4,7 @@ require 'taric_importer'
 require 'taric_importer/record_processor'
 require 'taric_importer/record_processor/create_operation'
 
-describe TaricImporter::RecordProcessor do
+RSpec.describe TaricImporter::RecordProcessor do
   subject(:record_processor) { described_class.new(record_hash, Date.new(2013, 8, 1)) }
 
   let(:record_hash) do

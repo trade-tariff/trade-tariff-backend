@@ -1,4 +1,4 @@
-describe TradeTariffBackend::DataMigration do
+RSpec.describe TradeTariffBackend::DataMigration do
   describe 'migration definition' do
     describe '.desc' do
       let!(:example_migration) do

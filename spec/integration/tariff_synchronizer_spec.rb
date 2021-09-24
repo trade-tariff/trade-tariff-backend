@@ -1,4 +1,4 @@
-describe TariffSynchronizer do
+RSpec.describe TariffSynchronizer do
   describe '#apply', truncation: true do
     let!(:taric_update) { create :taric_update, example_date: example_date }
 

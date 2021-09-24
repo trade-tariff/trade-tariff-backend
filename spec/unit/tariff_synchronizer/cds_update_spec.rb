@@ -1,4 +1,4 @@
-describe TariffSynchronizer::CdsUpdate do
+RSpec.describe TariffSynchronizer::CdsUpdate do
   let(:example_date) { Date.new(2020, 10, 10) }
 
   it_behaves_like 'Base Update'

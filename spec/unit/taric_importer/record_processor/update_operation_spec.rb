@@ -1,4 +1,4 @@
-describe TaricImporter::RecordProcessor::UpdateOperation do
+RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
   describe '#call' do
   end
 

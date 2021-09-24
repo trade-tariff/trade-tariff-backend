@@ -1,4 +1,4 @@
-describe MeasurementUnit do
+RSpec.describe MeasurementUnit do
   subject(:measurement_unit) { create :measurement_unit, :with_description }
 
   describe '#to_s' do

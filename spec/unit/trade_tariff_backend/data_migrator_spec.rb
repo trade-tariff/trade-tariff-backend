@@ -1,4 +1,4 @@
-describe TradeTariffBackend::DataMigrator do
+RSpec.describe TradeTariffBackend::DataMigrator do
   before do
     TradeTariffBackend::DataMigrator.migrations = []
     allow(TradeTariffBackend).to receive(:data_migration_path).and_return(

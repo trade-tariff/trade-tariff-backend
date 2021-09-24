@@ -1,5 +1,5 @@
 # rubocop:disable RSpec/MultipleMemoizedHelpers
-describe MeasureCondition do
+RSpec.describe MeasureCondition do
   subject(:measure_condition) { create :measure_condition }
 
   it_is_associated 'one to one to', :monetary_unit do

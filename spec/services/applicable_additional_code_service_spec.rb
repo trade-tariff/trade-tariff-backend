@@ -1,4 +1,4 @@
-describe ApplicableAdditionalCodeService do
+RSpec.describe ApplicableAdditionalCodeService do
   subject(:service) { described_class.new(measures) }
 
   describe '#call' do

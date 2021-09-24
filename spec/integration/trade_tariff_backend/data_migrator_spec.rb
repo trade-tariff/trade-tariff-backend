@@ -1,4 +1,4 @@
-describe TradeTariffBackend::DataMigrator do
+RSpec.describe TradeTariffBackend::DataMigrator do
   before do
     allow(TradeTariffBackend).to receive(:data_migration_path).and_return(
       File.join(Rails.root, 'spec', 'fixtures', 'data_migration_samples'),

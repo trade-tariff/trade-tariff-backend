@@ -1,4 +1,4 @@
-describe GoodsNomenclature do
+RSpec.describe GoodsNomenclature do
   describe 'associations' do
     describe 'goods nomenclature indent' do
       context 'fetching with absolute date' do

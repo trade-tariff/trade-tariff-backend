@@ -1,4 +1,4 @@
-describe Api::V2::CommoditiesController, 'GET #show' do
+RSpec.describe Api::V2::CommoditiesController, 'GET #show' do
   let!(:commodity) do
     create :commodity, :with_indent,
            :with_chapter,
@@ -134,7 +134,7 @@ describe Api::V2::CommoditiesController, 'GET #show' do
   end
 end
 
-describe Api::V2::CommoditiesController, 'GET #changes' do
+RSpec.describe Api::V2::CommoditiesController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do

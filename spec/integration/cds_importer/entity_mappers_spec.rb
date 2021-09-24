@@ -1,6 +1,6 @@
 require_dependency 'cds_importer/entity_mapper/goods_nomenclature_mapper'
 
-describe CdsImporter::EntityMapper do
+RSpec.describe CdsImporter::EntityMapper do
   describe '#process!' do
     before do
       # allow setting primary keys
