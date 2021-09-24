@@ -54,6 +54,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             heading: rules[0].heading,
             description: rules[0].description,
             rule: rules[0].rule,
+            alternate_rule: nil,
           },
         },
         {
@@ -64,6 +65,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             heading: rules[1].heading,
             description: rules[1].description,
             rule: rules[1].rule,
+            alternate_rule: nil,
           },
         },
         {
@@ -74,6 +76,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             heading: rules[2].heading,
             description: rules[2].description,
             rule: rules[2].rule,
+            alternate_rule: nil,
           },
         },
       ],

@@ -29,12 +29,12 @@ RSpec.describe RulesOfOrigin::RuleSet do
   describe '#import' do
     subject { rule_set.import }
 
-    it('will return the number of imported rows') { is_expected.to be 55 }
+    it('will return the number of imported rows') { is_expected.to be 54 }
 
     context 'with rows for different scopes' do
       before { allow(TradeTariffBackend).to receive(:service).and_return('xi') }
 
-      it('will skip those rows') { is_expected.to be 0 }
+      it('will skip those rows') { is_expected.to be 3 }
     end
 
     context 'when already imported' do

@@ -6,7 +6,8 @@ RSpec.describe Api::V2::RulesOfOrigin::RuleSerializer do
       id_rule: 1,
       heading: 'Heading 1',
       description: 'The description',
-      rule: 'The rule'
+      rule: 'The rule',
+      alternate_rule: 'or something else'
   end
 
   let :expected do
@@ -19,6 +20,7 @@ RSpec.describe Api::V2::RulesOfOrigin::RuleSerializer do
           heading: 'Heading 1',
           description: 'The description',
           rule: 'The rule',
+          alternate_rule: 'or something else',
         },
       },
     }

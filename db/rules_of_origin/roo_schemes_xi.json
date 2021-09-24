@@ -20,7 +20,7 @@
     ],
     "schemes": [
         {
-            "scheme_code": "EU",
+            "scheme_code": "eu",
             "adopted_by_uk": false,
             "title": "UK / EU Trade and Co-operation Agreement",
             "introductory_notes_file": "eu_intro.md",

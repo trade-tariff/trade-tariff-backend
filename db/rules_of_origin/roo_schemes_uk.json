@@ -8,7 +8,7 @@
     ],
     "schemes": [
         {
-            "scheme_code": "EU",
+            "scheme_code": "eu",
             "country_code": "EU",
             "rule_offset": 10000000,
             "title": "UK / EU Trade and Co-operation Agreement",

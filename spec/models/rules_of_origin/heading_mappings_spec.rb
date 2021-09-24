@@ -29,12 +29,12 @@ RSpec.describe RulesOfOrigin::HeadingMappings do
   describe '#import' do
     subject { mappings.import }
 
-    it('will return the number of imported rows') { is_expected.to be 99 }
+    it('will return the number of imported rows') { is_expected.to be 97 }
 
     context 'with rows for different scopes' do
       before { allow(TradeTariffBackend).to receive(:service).and_return('xi') }
 
-      it('will skip those rows') { is_expected.to be 0 }
+      it('will skip those rows') { is_expected.to be 3 }
     end
 
     context 'when already imported' do
