@@ -85,7 +85,6 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
           resources = parsed_body['included']
           commodities = resources.select { |resource| resource['type'] == 'commodity' }
           actual_commodity_codes = commodities.map { |commodity| commodity['attributes']['goods_nomenclature_item_id'] }
-          require 'pry'; binding.pry
 
           expect(actual_commodity_codes).not_to include(hidden_goods_nomenclature.goods_nomenclature_item_id)
         end
