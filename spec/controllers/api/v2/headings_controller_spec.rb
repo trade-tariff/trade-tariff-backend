@@ -2,7 +2,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
   describe '#show' do
     subject(:do_response) { get :show, params: { id: id } }
 
-    let(:id) { heading.goods_nomenclature_item_id.first(4) }
+    let(:id) { heading.short_code }
 
     let(:heading) do
       create(
@@ -13,8 +13,8 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       )
     end
 
-    context 'when the heading short code does not exist' do
-      let(:id) { heading.goods_nomenclature_item_id.first(4) + 1 }
+    context 'when the heading does not exist' do
+      let(:id) { heading.short_code.to_i + 1 }
 
       it { expect(do_response).to have_http_status(:not_found) }
     end
@@ -58,31 +58,41 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         it { expect(do_response.body).to match_json_expression(pattern) }
       end
 
-      #  context 'when heading is present and commodity has hidden commodities' do
-      #    let(:unhidden_commodity) { create :commodity, :with_description, goods_nomenclature_item_id: "#{heading.short_code}010000" }
-      #    let(:hidden_commodity) { create :commodity, :with_description, goods_nomenclature_item_id: "#{heading.short_code}020000" }
-      #    let(:hidden_goods_nomenclature) { create :hidden_goods_nomenclature, goods_nomenclature_item_id: hidden_commodity.goods_nomenclature_item_id }
+      context 'when heading is present and commodity has hidden commodities' do
+        let(:heading) { create(:heading, :non_declarable, :with_description) }
 
-      #    let(:included_commodity_sids) do
-      #      parsed_body = JSON.parse(do_response.body)
-      #      resources = parsed_body['included']
-      #      commodities = resources.select { |resource| resource['type'] == 'commodity' }
-      #      commodities.map { |commodity| commodity['attributes']['goods_nomenclature_sid'] }
-      #    end
+        let(:hidden_commodity) do
+          create(
+            :commodity,
+            :with_description,
+            goods_nomenclature_item_id: "#{heading.short_code}020000",
+          )
+        end
 
-      #    before do
-      #      unhidden_commodity
-      #      hidden_commodity
-      #      hidden_goods_nomenclature
-      #    end
+        let(:hidden_goods_nomenclature) do
+          create(
+            :hidden_goods_nomenclature,
+            goods_nomenclature_item_id: hidden_commodity.goods_nomenclature_item_id,
+          )
+        end
 
-      #    it 'returns only the unhidden commodity' do
-      #      expect(included_commodity_sids).to eq([unhidden_commodity.goods_nomenclature_sid])
-      #    end
-      #  end
+        before do
+          hidden_goods_nomenclature
+        end
+
+        it 'does not return the hidden commodity' do
+          parsed_body = JSON.parse(do_response.body)
+          resources = parsed_body['included']
+          commodities = resources.select { |resource| resource['type'] == 'commodity' }
+          actual_commodity_codes = commodities.map { |commodity| commodity['attributes']['goods_nomenclature_item_id'] }
+          require 'pry'; binding.pry
+
+          expect(actual_commodity_codes).not_to include(hidden_goods_nomenclature.goods_nomenclature_item_id)
+        end
+      end
 
       context 'when the record is not present' do
-        let(:id) { heading.goods_nomenclature_item_id.first(4).to_i + 1 }
+        let(:id) { heading.short_code.to_i + 1 }
 
         it { expect(do_response).to have_http_status(:not_found) }
       end
@@ -134,23 +144,34 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
 
         it { expect(do_response.body).to match_json_expression(pattern) }
       end
-
-      context 'when record is hidden' do
-        let!(:hidden_goods_nomenclature) { create :hidden_goods_nomenclature, goods_nomenclature_item_id: heading.goods_nomenclature_item_id }
-      end
     end
   end
 
   describe 'GET #changes' do
-    context 'when changes happened after chapter creation' do
-      let(:heading) do
-        create :heading, :non_grouping,
-               :non_declarable,
-               :with_description,
-               :with_chapter,
-               operation_date: Date.current
-      end
+    subject(:do_response) { get :changes, params: params }
 
+    let(:params) do
+      {
+        id: heading.short_code,
+        as_of: as_of,
+      }
+    end
+
+    let(:as_of) { Time.zone.today.iso8601 }
+
+    let(:heading) do
+      create(
+        :heading, :non_grouping,
+        :non_declarable,
+        :with_description,
+        :with_chapter,
+        operation_date: heading_operation_date
+      )
+    end
+
+    let(:heading_operation_date) { Time.zone.today }
+
+    context 'when changes happened after chapter creation' do
       let(:pattern) do
         {
           data: [
@@ -188,52 +209,37 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         }
       end
 
-      it 'returns heading changes' do
-        get :changes, params: { id: heading }, format: :json
-
-        expect(response.body).to match_json_expression pattern
-      end
+      it { expect(do_response.body).to match_json_expression(pattern) }
     end
 
     context 'when changes happened before requested date' do
-      let(:heading) do
-        create :heading, :non_grouping,
-               :non_declarable,
-               :with_description,
-               :with_chapter,
-               operation_date: Date.current
-      end
+      let(:heading_operation_date) { Time.zone.today }
+      let(:as_of) { Time.zone.yesterday.iso8601 }
 
-      let!(:pattern) do
+      let(:pattern) do
         {
           data: [],
           included: [],
         }
       end
 
-      it 'does not include change records' do
-        get :changes, params: { id: heading, as_of: Date.yesterday }, format: :json
-
-        expect(response.body).to match_json_expression pattern
-      end
+      it { expect(do_response.body).to match_json_expression(pattern) }
     end
 
+    # rubocop:disable RSpec/MultipleMemoizedHelpers
     context 'when changes include deleted record' do
-      let(:heading) do
-        create :heading, :non_grouping,
-               :non_declarable,
-               :with_description,
-               :with_chapter,
-               operation_date: Date.current
+      before { measure.destroy }
+
+      let(:measure) do
+        create(
+          :measure,
+          :with_measure_type,
+          goods_nomenclature_sid: heading.goods_nomenclature_sid,
+          goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+          operation_date: heading_operation_date,
+        )
       end
-      let!(:measure) do
-        create :measure,
-               :with_measure_type,
-               goods_nomenclature: heading,
-               goods_nomenclature_sid: heading.goods_nomenclature_sid,
-               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-               operation_date: Date.current
-      end
+
       let(:pattern) do
         {
           data: [
@@ -321,13 +327,8 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         }
       end
 
-      before { measure.destroy }
-
-      it 'renders record attributes' do
-        get :changes, params: { id: heading }, format: :json
-
-        expect(response.body).to match_json_expression pattern
-      end
+      it { expect(do_response.body).to match_json_expression(pattern) }
     end
+    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 end
