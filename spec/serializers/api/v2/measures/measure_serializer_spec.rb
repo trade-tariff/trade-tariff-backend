@@ -2,7 +2,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) { Api::V2::Measures::MeasurePresenter.new(measure, measure.goods_nomenclature) }
-  let(:measure) { create(:measure, reduction_indicator: 1) }
+  let(:measure) { create(:measure, :with_goods_nomenclature, reduction_indicator: 1) }
 
   let(:expected_pattern) do
     {
@@ -20,31 +20,16 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           'reduction_indicator' => 1,
         },
         'relationships' => {
-          'duty_expression' => {
-            'data' => {
-              'id' => "#{measure.id}-duty_expression",
-              'type' => 'duty_expression',
-            },
-          },
-          'measure_type' => {
-            'data' => {
-              'id' => measure.measure_type_id,
-              'type' => 'measure_type',
-            },
-          },
-          'legal_acts' => { 'data' => [] },
-          'measure_conditions' => { 'data' => [] },
-          'measure_components' => { 'data' => [] },
-          'national_measurement_units' => { 'data' => [] },
-          'geographical_area' => {
-            'data' => {
-              'id' => measure.geographical_area_id,
-              'type' => 'geographical_area',
-            },
-          },
-          'excluded_countries' => { 'data' => [] },
-          'footnotes' => { 'data' => [] },
-          'order_number' => { 'data' => nil },
+          'duty_expression' => {},
+          'measure_type' => {},
+          'legal_acts' => {},
+          'measure_conditions' => {},
+          'measure_components' => {},
+          'national_measurement_units' => {},
+          'geographical_area' => {},
+          'excluded_countries' => {},
+          'footnotes' => {},
+          'order_number' => {},
         },
         'meta' => {
           'duty_calculator' => {
