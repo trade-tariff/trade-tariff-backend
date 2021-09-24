@@ -10,7 +10,7 @@ class Chapter < GoodsNomenclature
   many_to_many :sections, left_key: :goods_nomenclature_sid,
                           join_table: :chapters_sections
 
-  one_to_many :headings, dataset: -> {
+  one_to_many :headings, dataset: lambda {
     Heading.actual
            .filter("goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE '__00______'", relevant_headings)
            .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
@@ -45,8 +45,8 @@ class Chapter < GoodsNomenclature
   end
 
   # See oplog sequel plugin
-  def operation=(op)
-    self[:operation] = op.to_s.first.upcase
+  def operation=(operation)
+    self[:operation] = operation.to_s.first.upcase
   end
 
   def short_code
@@ -88,7 +88,7 @@ class Chapter < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(pk_hash)
      .union(Heading.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_headings, '__00______']))
      .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_commodities, '____000000']))
@@ -98,10 +98,14 @@ class Chapter < GoodsNomenclature
      .tap! { |criteria|
       # if Chapter did not come from initial seed, filter by its
       # create/update date
-      criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
+      criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
+  end
+
+  def uptree
+    [self]
   end
 
   private

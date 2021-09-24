@@ -10,7 +10,7 @@ class GoodsNomenclature < Sequel::Model
   plugin :nullable
   plugin :active_model
 
-  plugin :sti, class_determinator: ->(record) {
+  plugin :sti, class_determinator: lambda { |record|
     gono_id = record[:goods_nomenclature_item_id].to_s
 
     if gono_id.ends_with?('00000000')
@@ -30,10 +30,6 @@ class GoodsNomenclature < Sequel::Model
       .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date))
   end
 
-  def goods_nomenclature_indent
-    goods_nomenclature_indents.first
-  end
-
   many_to_many :goods_nomenclature_descriptions, join_table: :goods_nomenclature_description_periods,
                                                  left_primary_key: :goods_nomenclature_sid,
                                                  left_key: :goods_nomenclature_sid,
@@ -43,20 +39,12 @@ class GoodsNomenclature < Sequel::Model
       .order(Sequel.desc(:goods_nomenclature_description_periods__validity_start_date))
   end
 
-  def goods_nomenclature_description
-    goods_nomenclature_descriptions.first || NullGoodsNomenclature.new
-  end
-
   many_to_many :footnotes, join_table: :footnote_association_goods_nomenclatures,
                            left_primary_key: :goods_nomenclature_sid,
                            left_key: :goods_nomenclature_sid,
                            right_key: %i[footnote_type footnote_id],
                            right_primary_key: %i[footnote_type_id footnote_id] do |ds|
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
-  end
-
-  def footnote
-    footnotes.first
   end
 
   one_to_one :national_measurement_unit_set, key: :cmdty_code,
@@ -105,6 +93,18 @@ class GoodsNomenclature < Sequel::Model
     end
   end
 
+  def goods_nomenclature_indent
+    goods_nomenclature_indents.first
+  end
+
+  def goods_nomenclature_description
+    goods_nomenclature_descriptions.first || NullGoodsNomenclature.new
+  end
+
+  def footnote
+    footnotes.first
+  end
+
   def id
     goods_nomenclature_sid
   end
@@ -127,5 +127,16 @@ class GoodsNomenclature < Sequel::Model
 
   def bti_url
     'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
+  end
+
+  # This method is safer than `constantize`
+  # which is considered dangeros by `brakeman` (a static analyzer)
+  def self.constantize_class_name(klass_name)
+    [
+      Commodity,
+      Heading,
+      Chapter,
+      GoodsNomenclature,
+    ].find { |klass| klass.to_s == klass_name }
   end
 end
