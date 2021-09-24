@@ -4,6 +4,7 @@ class AdditionalCode < Sequel::Model
   REMEDY_TYPE = 'remedy'.freeze
   UNKNOWN_TYPE = 'unknown'.freeze
 
+  MEURSING_TYPE_IDS = %w[7].freeze
   PREFERENCE_TYPE_IDS = %w[2].freeze
   REMEDY_TYPE_IDS = %w[8 A B C].freeze
   EXCISE_TYPE_IDS = %w[X].freeze

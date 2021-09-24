@@ -44,6 +44,8 @@ Rails.application.routes.draw do
     # the choice until we need to expose the API to clients which we don't control.
 
     scope module: :v2, constraints: ApiConstraints.new(version: 2) do
+      resources :meursing_measures, only: %i[index]
+
       resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         collection do
           get :tree

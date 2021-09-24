@@ -8,7 +8,7 @@ class Measure < Sequel::Model
     BASE_REGULATION_ROLE, # Base regulation
     PROVISIONAL_ANTIDUMPING_ROLE, # Provisional anti-dumping/countervailing duty
     DEFINITIVE_ANTIDUMPING_ROLE, # Definitive anti-dumping/countervailing duty
-    MODIFICATION_REGULATION_ROLE # Modification
+    MODIFICATION_REGULATION_ROLE, # Modification
   ].freeze
 
   set_primary_key [:measure_sid]
@@ -163,6 +163,20 @@ class Measure < Sequel::Model
   end
 
   dataset_module do
+    def by_sid(sid)
+      actual
+        .filter(measure_sid: sid)
+        .eager(
+          measure_components: [
+            { duty_expression: :duty_expression_description },
+            { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
+            :monetary_unit,
+            :measurement_unit_qualifier,
+          ],
+        )
+        .take
+    end
+
     def with_base_regulations
       query = if model.point_in_time.present?
                 distinct(:measure_generating_regulation_id, :measure_type_id, :goods_nomenclature_sid, :geographical_area_id, :geographical_area_sid, :additional_code_type_id, :additional_code_id, :ordernumber).select(Sequel.expr(:measures).*)
@@ -191,10 +205,10 @@ class Measure < Sequel::Model
 
     def actual_for_base_regulations
       if model.point_in_time.present?
-        filter { |o|
+        filter do |o|
           o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
             (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        }
+        end
       else
         self
       end
@@ -202,10 +216,10 @@ class Measure < Sequel::Model
 
     def actual_for_modifications_regulations
       if model.point_in_time.present?
-        filter { |o|
+        filter do |o|
           o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
             (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        }
+        end
       else
         self
       end
@@ -384,7 +398,7 @@ class Measure < Sequel::Model
     if quota_order_number.present?
       quota_order_number
     elsif ordernumber.present?
-      # TODO refactor if possible
+      # TODO: refactor if possible
       qon = QuotaOrderNumber.new(quota_order_number_id: ordernumber)
       qon.associations[:quota_definition] = nil
       qon
@@ -405,7 +419,7 @@ class Measure < Sequel::Model
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(conditions)
      .where { |o| o.<=(:validity_start_date, point_in_time) }
      .limit(TradeTariffBackend.change_count)
@@ -414,6 +428,14 @@ class Measure < Sequel::Model
 
   def meursing?
     measure_components.any?(&:meursing?)
+  end
+
+  def meursing_measures(additional_code)
+    MeursingMeasure.where(
+      additional_code_id: additional_code,
+      geographical_area_id: geographical_area_id,
+      reduction_indicator: reduction_indicator,
+    ).actual
   end
 
   def zero_mfn?

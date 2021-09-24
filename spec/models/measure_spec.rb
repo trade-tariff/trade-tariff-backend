@@ -1018,4 +1018,28 @@ RSpec.describe Measure do
       end
     end
   end
+
+  describe '#meursing_measures' do
+    context 'when there are matching meursing measures' do
+      let(:measure) do
+        create(
+          :measure,
+          :with_meursing_measure,
+          meursing_additional_code: additional_code_id,
+        )
+      end
+
+      let(:additional_code_id) { '000' }
+
+      it { expect(measure.meursing_measures(additional_code_id).count).to eq(1) }
+    end
+
+    context 'when there are no matching meursing measures' do
+      let(:measure) { create(:measure) }
+
+      let(:additional_code_id) { '000' }
+
+      it { expect(measure.meursing_measures(additional_code_id).count).to be_zero }
+    end
+  end
 end
