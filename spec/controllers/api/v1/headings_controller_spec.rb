@@ -1,4 +1,4 @@
-describe Api::V1::HeadingsController, 'GET #show' do
+RSpec.describe Api::V1::HeadingsController, 'GET #show' do
   render_views
 
   context 'non-declarable heading' do
@@ -111,7 +111,7 @@ describe Api::V1::HeadingsController, 'GET #show' do
   end
 end
 
-describe Api::V1::HeadingsController, 'GET #changes' do
+RSpec.describe Api::V1::HeadingsController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do

@@ -1,4 +1,4 @@
-describe Api::V1::ChaptersController, 'GET #show' do
+RSpec.describe Api::V1::ChaptersController, 'GET #show' do
   render_views
 
   let!(:chapter) { create :chapter, :with_description, :with_section, goods_nomenclature_item_id: '1100000000' }
@@ -44,7 +44,7 @@ describe Api::V1::ChaptersController, 'GET #show' do
   end
 end
 
-describe Api::V1::ChaptersController, 'GET #index' do
+RSpec.describe Api::V1::ChaptersController, 'GET #index' do
   render_views
 
   let!(:chapter1) { create :chapter, :with_section, :with_note }
@@ -64,7 +64,7 @@ describe Api::V1::ChaptersController, 'GET #index' do
   end
 end
 
-describe Api::V1::ChaptersController, 'GET #changes' do
+RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
   render_views
 
   context 'changes happened after chapter creation' do

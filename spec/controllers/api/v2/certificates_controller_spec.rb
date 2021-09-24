@@ -1,4 +1,4 @@
-describe Api::V2::CertificatesController, type: :controller do
+RSpec.describe Api::V2::CertificatesController, type: :controller do
   render_views
 
   context 'certificates search' do

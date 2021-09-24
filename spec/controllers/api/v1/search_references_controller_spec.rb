@@ -1,4 +1,4 @@
-describe Api::V1::SearchReferencesController, 'GET to #index' do
+RSpec.describe Api::V1::SearchReferencesController, 'GET to #index' do
   render_views
 
   let(:heading) { create :heading }

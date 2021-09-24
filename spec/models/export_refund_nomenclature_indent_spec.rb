@@ -1,4 +1,4 @@
-describe ExportRefundNomenclatureIndent do
+RSpec.describe ExportRefundNomenclatureIndent do
   let(:erni) { build :export_refund_nomenclature_indent }
 
   describe '#number_indents' do

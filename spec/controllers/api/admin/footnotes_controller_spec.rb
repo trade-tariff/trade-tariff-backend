@@ -1,4 +1,4 @@
-describe Api::Admin::FootnotesController, 'GET to #index' do
+RSpec.describe Api::Admin::FootnotesController, 'GET to #index' do
   render_views
 
   let!(:non_national_footnote) { create :footnote, :non_national }
@@ -37,7 +37,7 @@ describe Api::Admin::FootnotesController, 'GET to #index' do
   end
 end
 
-describe Api::Admin::FootnotesController, 'GET to #show' do
+RSpec.describe Api::Admin::FootnotesController, 'GET to #show' do
   render_views
 
   before { login_as_api_user }
@@ -73,7 +73,7 @@ describe Api::Admin::FootnotesController, 'GET to #show' do
   end
 end
 
-describe Api::Admin::FootnotesController, 'PUT to #update' do
+RSpec.describe Api::Admin::FootnotesController, 'PUT to #update' do
   render_views
 
   before { login_as_api_user }

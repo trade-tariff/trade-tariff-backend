@@ -1,4 +1,4 @@
-describe TariffSynchronizer::Response do
+RSpec.describe TariffSynchronizer::Response do
   describe '#terminated?' do
     it 'Returns true if response_code is 200 or 404' do
       response = build(:response, response_code: 200)

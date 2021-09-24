@@ -1,4 +1,4 @@
-describe Api::V2::SectionsController, 'GET #show' do
+RSpec.describe Api::V2::SectionsController, 'GET #show' do
   render_views
 
   let(:heading) { create :heading, :with_chapter }
@@ -84,7 +84,7 @@ describe Api::V2::SectionsController, 'GET #show' do
   end
 end
 
-describe Api::V2::SectionsController, 'GET #index' do
+RSpec.describe Api::V2::SectionsController, 'GET #index' do
   render_views
 
   let!(:chapter1) { create :chapter, :with_section }

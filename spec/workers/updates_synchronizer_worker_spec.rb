@@ -1,4 +1,4 @@
-describe UpdatesSynchronizerWorker, type: :worker do
+RSpec.describe UpdatesSynchronizerWorker, type: :worker do
   before do
     allow($stdout).to receive(:write)
     allow(TariffSynchronizer).to receive(:download)

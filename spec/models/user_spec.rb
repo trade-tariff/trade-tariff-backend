@@ -1,6 +1,6 @@
 require 'gds-sso/lint/user_spec'
 
-describe User do
+RSpec.describe User do
   describe 'gds-sso' do
     it_behaves_like 'a gds-sso user class'
   end

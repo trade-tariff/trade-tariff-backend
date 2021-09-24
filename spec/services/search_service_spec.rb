@@ -1,4 +1,4 @@
-describe SearchService do
+RSpec.describe SearchService do
   def commodity_pattern(item)
     {
       type: 'exact_match',

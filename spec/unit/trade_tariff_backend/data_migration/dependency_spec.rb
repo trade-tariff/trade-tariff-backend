@@ -1,4 +1,4 @@
-describe TradeTariffBackend::DataMigration::Dependency do
+RSpec.describe TradeTariffBackend::DataMigration::Dependency do
   describe '#applicable?' do
     context 'one dependency did not meet' do
       let(:dep1) { double('Dependency 1', applicable: false) }

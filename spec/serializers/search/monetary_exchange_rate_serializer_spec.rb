@@ -1,4 +1,4 @@
-describe Search::MonetaryExchangeRateSerializer do
+RSpec.describe Search::MonetaryExchangeRateSerializer do
   describe '#to_json' do
     let!(:gbp_unit) { create(:monetary_unit, monetary_unit_code: 'GBP', validity_start_date: Date.current.ago(10.years)) }
     let!(:eur_unit) { create(:monetary_unit, monetary_unit_code: 'EUR', validity_start_date: Date.current.ago(10.years)) }

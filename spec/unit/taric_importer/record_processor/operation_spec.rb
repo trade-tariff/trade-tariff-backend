@@ -1,4 +1,4 @@
-describe TaricImporter::RecordProcessor::Operation do
+RSpec.describe TaricImporter::RecordProcessor::Operation do
   describe '#call' do
     let(:empty_operation) do
       TaricImporter::RecordProcessor::Operation.new(nil, nil)

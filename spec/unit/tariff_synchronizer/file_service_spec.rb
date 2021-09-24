@@ -1,4 +1,4 @@
-describe TariffSynchronizer::FileService do
+RSpec.describe TariffSynchronizer::FileService do
   let(:base_update) { create :base_update }
 
   context 'in development' do

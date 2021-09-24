@@ -1,4 +1,4 @@
-describe TradeTariffBackend::SearchClient do
+RSpec.describe TradeTariffBackend::SearchClient do
   describe '#search' do
     let(:commodity) do
       create :commodity, :with_description, description: 'test description'

@@ -1,4 +1,4 @@
-describe Api::Admin::Sections::SearchReferencesController do
+RSpec.describe Api::Admin::Sections::SearchReferencesController do
   it_behaves_like 'v2 search references controller' do
     let(:search_reference_parent)  { create :section }
     let(:search_reference)         { create :search_reference, referenced: search_reference_parent }

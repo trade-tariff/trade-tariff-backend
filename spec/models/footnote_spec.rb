@@ -1,4 +1,4 @@
-describe Footnote do
+RSpec.describe Footnote do
   describe 'associations' do
     describe 'additional code description' do
       let!(:footnote) { create :footnote }

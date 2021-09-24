@@ -1,4 +1,4 @@
-describe CachedCommodityService do
+RSpec.describe CachedCommodityService do
   subject(:service) { described_class.new(commodity.reload, actual_date, filter_params) }
 
   let(:actual_date) { Time.zone.today }

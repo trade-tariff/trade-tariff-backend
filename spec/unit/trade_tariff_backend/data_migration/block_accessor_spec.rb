@@ -1,4 +1,4 @@
-describe TradeTariffBackend::DataMigration::BlockAccessor do
+RSpec.describe TradeTariffBackend::DataMigration::BlockAccessor do
   let(:mock_class) do
     Class.new do
       include TradeTariffBackend::DataMigration::BlockAccessor

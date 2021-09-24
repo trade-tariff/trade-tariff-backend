@@ -1,4 +1,4 @@
-describe Api::V2::SearchController do
+RSpec.describe Api::V2::SearchController do
   describe 'GET /search_suggestions' do
     subject(:response) { get :suggestions, params: params }
 

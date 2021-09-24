@@ -1,4 +1,4 @@
-describe Certificate do
+RSpec.describe Certificate do
   describe 'associations' do
     describe 'certificate description' do
       let!(:certificate)                { create :certificate }

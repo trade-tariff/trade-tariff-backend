@@ -1,4 +1,4 @@
-describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesController.class do
+RSpec.describe Api::V2::GoodsNomenclaturesController, Api::V2::GoodsNomenclaturesController.class do
   render_views
 
   let!(:goods_nomenclature) do

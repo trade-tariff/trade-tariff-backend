@@ -1,4 +1,4 @@
-describe CertificateSearchService do
+RSpec.describe CertificateSearchService do
   describe 'certificate search' do
     around do |example|
       TimeMachine.now { example.run }

@@ -1,4 +1,4 @@
-describe TariffSynchronizer::Logger, truncation: true do
+RSpec.describe TariffSynchronizer::Logger, truncation: true do
   include BankHolidaysHelper
 
   before(:all) { WebMock.disable_net_connect! }

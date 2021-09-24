@@ -1,4 +1,4 @@
-describe TariffSynchronizer::TaricSequenceChecker do
+RSpec.describe TariffSynchronizer::TaricSequenceChecker do
   subject(:checker) { described_class.new }
 
   describe '#perform' do

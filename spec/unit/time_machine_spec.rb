@@ -1,4 +1,4 @@
-describe TimeMachine do
+RSpec.describe TimeMachine do
   let!(:commodity1) do
     create :commodity, validity_start_date: Time.now.ago(1.day),
                        validity_end_date: Time.now.in(1.day)

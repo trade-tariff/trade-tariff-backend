@@ -1,7 +1,7 @@
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleMemoizedHelpers
-describe TaricImporter do
+RSpec.describe TaricImporter do
   describe '#import' do
     let(:example_date) { Date.new(2013, 8, 2) }
     let(:example_date2) { Date.new(2014, 8, 2) }

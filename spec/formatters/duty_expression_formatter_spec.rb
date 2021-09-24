@@ -1,4 +1,4 @@
-describe DutyExpressionFormatter do
+RSpec.describe DutyExpressionFormatter do
   describe '.format' do
     let(:measurement_unit) do
       measurement_unit_abbreviation.measurement_unit

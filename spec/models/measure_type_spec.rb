@@ -1,4 +1,4 @@
-describe MeasureType do
+RSpec.describe MeasureType do
   describe 'constants' do
     before do
       allow(TradeTariffBackend).to receive(:service).and_return(service)

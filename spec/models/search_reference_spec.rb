@@ -1,4 +1,4 @@
-describe SearchReference do
+RSpec.describe SearchReference do
   describe '#referenced' do
     context 'matching heading regexp' do
       let(:heading) { create :heading, goods_nomenclature_item_id: '1212000000' }

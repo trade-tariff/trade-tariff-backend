@@ -1,4 +1,4 @@
-describe ApplicationHelper do
+RSpec.describe ApplicationHelper do
   describe '#regulation_url' do
     context 'for base_regulation' do
       context 'for Official Journal - C (Information and Notices) seria' do

@@ -1,4 +1,4 @@
-describe Chapter do
+RSpec.describe Chapter do
   describe 'associations' do
     describe 'headings' do
       let!(:chapter)  { create :chapter }

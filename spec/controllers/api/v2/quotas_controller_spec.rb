@@ -1,4 +1,4 @@
-describe Api::V2::QuotasController, type: :controller do
+RSpec.describe Api::V2::QuotasController, type: :controller do
   describe 'GET /quotas/search.json' do
     let(:validity_start_date) { Date.new(Date.current.year, 1, 1) }
     let(:quota_order_number) { create :quota_order_number }

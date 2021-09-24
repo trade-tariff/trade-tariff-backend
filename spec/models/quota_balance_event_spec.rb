@@ -1,4 +1,4 @@
-describe QuotaBalanceEvent do
+RSpec.describe QuotaBalanceEvent do
   describe '.status' do
     it "returns 'open' string" do
       expect(described_class.status).to eq('Open')

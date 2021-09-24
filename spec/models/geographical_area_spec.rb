@@ -1,4 +1,4 @@
-describe GeographicalArea do
+RSpec.describe GeographicalArea do
   describe 'associations' do
     describe 'geographical area description' do
       let!(:geographical_area)                { create :geographical_area }

@@ -1,4 +1,4 @@
-describe TariffSynchronizer::TaricUpdateDownloader do
+RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }
 
   describe '#perform' do

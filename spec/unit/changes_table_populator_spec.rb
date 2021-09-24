@@ -1,4 +1,4 @@
-describe ChangesTablePopulator do
+RSpec.describe ChangesTablePopulator do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do

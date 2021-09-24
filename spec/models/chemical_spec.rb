@@ -1,4 +1,4 @@
-describe Chemical do
+RSpec.describe Chemical do
   describe 'associations' do
     let!(:goods_nomenclature) { create(:goods_nomenclature) }
     let!(:goods_nomenclature_alt) { create(:goods_nomenclature) }

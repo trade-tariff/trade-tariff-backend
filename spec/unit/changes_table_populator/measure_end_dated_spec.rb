@@ -1,4 +1,4 @@
-describe ChangesTablePopulator::MeasureEndDated do
+RSpec.describe ChangesTablePopulator::MeasureEndDated do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do

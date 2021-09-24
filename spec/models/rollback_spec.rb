@@ -1,4 +1,4 @@
-describe Rollback do
+RSpec.describe Rollback do
   describe 'validations' do
     context 'with correct info' do
       let(:rollback) { build :rollback }

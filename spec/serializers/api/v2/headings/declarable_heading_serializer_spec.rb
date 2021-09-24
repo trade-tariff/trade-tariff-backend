@@ -1,4 +1,4 @@
-describe Api::V2::Headings::DeclarableHeadingSerializer do
+RSpec.describe Api::V2::Headings::DeclarableHeadingSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) do

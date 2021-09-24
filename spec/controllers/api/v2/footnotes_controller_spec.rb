@@ -1,4 +1,4 @@
-describe Api::V2::FootnotesController, type: :controller do
+RSpec.describe Api::V2::FootnotesController, type: :controller do
   render_views
 
   context 'footnotes search' do

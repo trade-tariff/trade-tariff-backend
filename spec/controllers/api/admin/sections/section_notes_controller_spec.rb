@@ -1,4 +1,4 @@
-describe Api::Admin::Sections::SectionNotesController, 'GET #show' do
+RSpec.describe Api::Admin::Sections::SectionNotesController, 'GET #show' do
   render_views
 
   let(:pattern) do
@@ -37,7 +37,7 @@ describe Api::Admin::Sections::SectionNotesController, 'GET #show' do
   end
 end
 
-describe Api::Admin::Sections::SectionNotesController, 'POST to #create' do
+RSpec.describe Api::Admin::Sections::SectionNotesController, 'POST to #create' do
   let(:section) { create :section }
 
   before { login_as_api_user }
@@ -94,7 +94,7 @@ describe Api::Admin::Sections::SectionNotesController, 'POST to #create' do
   end
 end
 
-describe Api::Admin::Sections::SectionNotesController, 'PUT to #update' do
+RSpec.describe Api::Admin::Sections::SectionNotesController, 'PUT to #update' do
   let(:section) { create :section, :with_note }
 
   before { login_as_api_user }
@@ -138,7 +138,7 @@ describe Api::Admin::Sections::SectionNotesController, 'PUT to #update' do
   end
 end
 
-describe Api::Admin::Sections::SectionNotesController, 'DELETE to #destroy' do
+RSpec.describe Api::Admin::Sections::SectionNotesController, 'DELETE to #destroy' do
   before { login_as_api_user }
 
   context 'deletiong succeeded' do

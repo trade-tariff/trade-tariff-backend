@@ -1,4 +1,4 @@
-describe TaricSequenceCheckWorker, type: :worker do
+RSpec.describe TaricSequenceCheckWorker, type: :worker do
   before do
     allow(TariffSynchronizer::TaricSequenceChecker).to receive(:new).and_return(taric_sequence_checker)
     allow(TradeTariffBackend).to receive(:service).and_return(service)

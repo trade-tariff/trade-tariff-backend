@@ -1,4 +1,4 @@
-describe Api::V1::Chapters::ChapterNotesController, 'GET #show' do
+RSpec.describe Api::V1::Chapters::ChapterNotesController, 'GET #show' do
   render_views
 
   let(:pattern) do
@@ -33,7 +33,7 @@ describe Api::V1::Chapters::ChapterNotesController, 'GET #show' do
   end
 end
 
-describe Api::V1::Chapters::ChapterNotesController, 'POST to #create' do
+RSpec.describe Api::V1::Chapters::ChapterNotesController, 'POST to #create' do
   let(:chapter) { create :chapter }
 
   before { login_as_api_user }
@@ -86,7 +86,7 @@ describe Api::V1::Chapters::ChapterNotesController, 'POST to #create' do
   end
 end
 
-describe Api::V1::Chapters::ChapterNotesController, 'PUT to #update' do
+RSpec.describe Api::V1::Chapters::ChapterNotesController, 'PUT to #update' do
   let(:chapter) { create :chapter, :with_note }
 
   before { login_as_api_user }
@@ -130,7 +130,7 @@ describe Api::V1::Chapters::ChapterNotesController, 'PUT to #update' do
   end
 end
 
-describe Api::V1::Chapters::ChapterNotesController, 'DELETE to #destroy' do
+RSpec.describe Api::V1::Chapters::ChapterNotesController, 'DELETE to #destroy' do
   before { login_as_api_user }
 
   context 'deletiong succeeded' do

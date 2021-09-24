@@ -1,4 +1,4 @@
-describe Api::Admin::RollbacksController, 'POST to #create' do
+RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
   render_views
 
   before { login_as_api_user }
@@ -43,7 +43,7 @@ describe Api::Admin::RollbacksController, 'POST to #create' do
   end
 end
 
-describe Api::Admin::RollbacksController, 'GET to #index' do
+RSpec.describe Api::Admin::RollbacksController, 'GET to #index' do
   render_views
 
   before do

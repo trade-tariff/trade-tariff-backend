@@ -1,4 +1,4 @@
-describe Cache::HeadingSerializer do
+RSpec.describe Cache::HeadingSerializer do
   describe '#as_json' do
     let(:heading) do
       create :heading, :non_grouping,

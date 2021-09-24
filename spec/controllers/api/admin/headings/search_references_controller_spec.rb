@@ -1,4 +1,4 @@
-describe Api::Admin::Headings::SearchReferencesController do
+RSpec.describe Api::Admin::Headings::SearchReferencesController do
   it_behaves_like 'v2 search references controller' do
     let(:search_reference_parent)  { create :heading }
     let(:search_reference)         { create :search_reference, heading_id: search_reference_parent.short_code }

@@ -1,4 +1,4 @@
-describe Api::V2::SearchController do
+RSpec.describe Api::V2::SearchController do
   describe 'GET /search' do
     subject(:response) { get :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date } }
 

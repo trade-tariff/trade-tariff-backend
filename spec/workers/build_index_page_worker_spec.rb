@@ -1,4 +1,4 @@
-describe BuildIndexPageWorker, type: :worker do
+RSpec.describe BuildIndexPageWorker, type: :worker do
   describe '#methods' do
     describe 'build index page' do
       let(:commodity) do

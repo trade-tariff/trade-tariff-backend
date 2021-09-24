@@ -1,4 +1,4 @@
-describe TradeTariffBackend::DataMigration::Runner do
+RSpec.describe TradeTariffBackend::DataMigration::Runner do
   let(:migration) { double('Data migration', some_test_method: true) }
 
   let(:runner) { described_class.new(migration, :up) }

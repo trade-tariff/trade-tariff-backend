@@ -1,4 +1,4 @@
-describe TariffSynchronizer::TaricUpdate do
+RSpec.describe TariffSynchronizer::TaricUpdate do
   let(:example_date) { Date.new(2010, 1, 1) }
 
   it_behaves_like 'Base Update'
