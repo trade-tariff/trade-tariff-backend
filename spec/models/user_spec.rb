@@ -12,7 +12,7 @@ RSpec.describe User do
     end
 
     before do
-      user.update_attributes(attrs)
+      user.update(attrs)
       user.reload
     end
 

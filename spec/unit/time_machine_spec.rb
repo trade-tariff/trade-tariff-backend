@@ -1,11 +1,11 @@
 RSpec.describe TimeMachine do
   let!(:commodity1) do
-    create :commodity, validity_start_date: Time.now.ago(1.day),
-                       validity_end_date: Time.now.in(1.day)
+    create :commodity, validity_start_date: Time.zone.now.ago(1.day),
+                       validity_end_date: Time.zone.now.in(1.day)
   end
   let!(:commodity2) do
-    create :commodity, validity_start_date: Time.now.ago(20.days),
-                       validity_end_date: Time.now.ago(10.days)
+    create :commodity, validity_start_date: Time.zone.now.ago(20.days),
+                       validity_end_date: Time.zone.now.ago(10.days)
   end
 
   describe '.at' do
@@ -24,7 +24,7 @@ RSpec.describe TimeMachine do
     end
 
     it 'parses and sets valid date from argument' do
-      described_class.at(Time.now.ago(15.days).to_s) do
+      described_class.at(Time.zone.now.ago(15.days).to_s) do
         expect(Commodity.actual.all).not_to include commodity1
         expect(Commodity.actual.all).to     include commodity2
       end

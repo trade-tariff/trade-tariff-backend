@@ -1,6 +1,6 @@
 RSpec.describe TariffSynchronizer::TaricFileNameGenerator do
   let(:example_date) { Date.new(2010, 1, 1) }
-  let(:name_generator) { TariffSynchronizer::TaricFileNameGenerator.new(example_date) }
+  let(:name_generator) { described_class.new(example_date) }
 
   describe '#url' do
     it 'returns the expected url to have the taric file for a specific date' do

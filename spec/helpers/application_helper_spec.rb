@@ -101,7 +101,7 @@ RSpec.describe ApplicationHelper do
         let!(:measure_partial_temporary_stop) do
           create(:measure_partial_temporary_stop, measure_sid: measure.measure_sid,
                                                   partial_temporary_stop_regulation_id: 'R0912150',
-                                                  validity_start_date: DateTime.parse('2010-01-04T00:00:00.000Z'),
+                                                  validity_start_date: Time.parse('2010-01-04T00:00:00.000Z'),
                                                   officialjournal_number: 'L 328',
                                                   officialjournal_page: 6)
         end

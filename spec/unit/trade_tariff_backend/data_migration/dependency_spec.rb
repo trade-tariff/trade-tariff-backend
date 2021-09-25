@@ -5,7 +5,7 @@ RSpec.describe TradeTariffBackend::DataMigration::Dependency do
       let(:dep2) { double('Dependency 2', applicable: true) }
 
       it 'returns false' do
-        expect(described_class[dep1, dep2].applicable?).to be_falsy
+        expect(described_class[dep1, dep2]).not_to be_applicable
       end
     end
 
@@ -14,7 +14,7 @@ RSpec.describe TradeTariffBackend::DataMigration::Dependency do
       let(:dep2) { double('Dependency 2', applicable: true) }
 
       it 'returns true' do
-        expect(described_class[dep1, dep2].applicable?).to be_truthy
+        expect(described_class[dep1, dep2]).to be_applicable
       end
     end
   end

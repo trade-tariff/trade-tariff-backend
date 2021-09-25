@@ -48,9 +48,9 @@ RSpec.describe Measure do
       expect(Commodity.by_code('0805201005').first.measures.count).to eq 3
       # In TimeMachine we should only see vaild/the correct measure (with start date within the time range)
       # expect(TimeMachine.at(DateTime.parse("2016-07-21")){ Measure.with_modification_regulations.with_actual(ModificationRegulation).all.count }).to eq 1
-      expect(TimeMachine.at(DateTime.parse('2016-07-21')) { described_class.with_modification_regulations.with_actual(ModificationRegulation).all.first.measure_sid }).to eq 3_445_396
-      expect(TimeMachine.at(DateTime.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.count }).to eq 1
-      expect(TimeMachine.at(DateTime.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.first.measure_sid }).to eq 3_445_396
+      expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { described_class.with_modification_regulations.with_actual(ModificationRegulation).all.first.measure_sid }).to eq 3_445_396
+      expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.count }).to eq 1
+      expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.first.measure_sid }).to eq 3_445_396
     end
   end
 

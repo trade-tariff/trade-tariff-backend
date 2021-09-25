@@ -18,7 +18,7 @@ RSpec.describe TaricImporter::RecordProcessor::CreateOperation do
     end
 
     let(:operation) do
-      TaricImporter::RecordProcessor::CreateOperation.new(record, operation_date)
+      described_class.new(record, operation_date)
     end
 
     before do

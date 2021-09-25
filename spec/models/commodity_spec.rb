@@ -298,15 +298,15 @@ RSpec.describe Commodity do
     describe 'measures and base_regulations' do
       let!(:commodity) do
         create :commodity, :with_indent,
-               validity_start_date: Time.now.ago(10.years)
+               validity_start_date: Time.zone.now.ago(10.years)
       end
       let!(:measure_type)    { create :measure_type }
-      let!(:base_regulation) { create :base_regulation, effective_end_date: Time.now.ago(1.month) }
+      let!(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.now.ago(1.month) }
       let!(:measure1)        do
         create :measure, measure_generating_regulation_id: base_regulation.base_regulation_id,
-                         validity_end_date: Time.now.ago(30.months),
+                         validity_end_date: Time.zone.now.ago(30.months),
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         validity_start_date: Time.now.ago(10.years),
+                         validity_start_date: Time.zone.now.ago(10.years),
                          measure_type_id: measure_type.measure_type_id,
                          geographical_area_sid: 1
       end
@@ -314,31 +314,31 @@ RSpec.describe Commodity do
         create :measure, measure_generating_regulation_id: base_regulation.base_regulation_id,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          measure_type_id: measure_type.measure_type_id,
-                         validity_start_date: Time.now.ago(10.years),
-                         validity_end_date: Time.now.ago(18.months),
+                         validity_start_date: Time.zone.now.ago(10.years),
+                         validity_end_date: Time.zone.now.ago(18.months),
                          geographical_area_sid: 2
       end
       let!(:measure3) do
         create :measure, measure_generating_regulation_id: base_regulation.base_regulation_id,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          measure_type_id: measure_type.measure_type_id,
-                         validity_start_date: Time.now.ago(10.years),
+                         validity_start_date: Time.zone.now.ago(10.years),
                          validity_end_date: nil,
                          geographical_area_sid: 3
       end
 
       it 'measure validity date superseeds regulation validity date' do
-        measures = TimeMachine.at(Time.now.ago(1.year)) { described_class.actual.first.measures }.map(&:measure_sid)
+        measures = TimeMachine.at(Time.zone.now.ago(1.year)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).not_to include measure2.measure_sid
         expect(measures).not_to include measure1.measure_sid
 
-        measures = TimeMachine.at(Time.now.ago(2.years)) { described_class.actual.first.measures }.map(&:measure_sid)
+        measures = TimeMachine.at(Time.zone.now.ago(2.years)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).to     include measure2.measure_sid
         expect(measures).not_to include measure1.measure_sid
 
-        measures = TimeMachine.at(Time.now.ago(3.years)) { described_class.actual.first.measures }.map(&:measure_sid)
+        measures = TimeMachine.at(Time.zone.now.ago(3.years)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).to     include measure2.measure_sid
         expect(measures).to     include measure1.measure_sid
@@ -348,15 +348,15 @@ RSpec.describe Commodity do
     describe 'measures and modification_regulations' do
       let!(:commodity) do
         create :commodity, :with_indent,
-               validity_start_date: Time.now.ago(10.years)
+               validity_start_date: Time.zone.now.ago(10.years)
       end
       let!(:measure_type) { create :measure_type }
-      let!(:modification_regulation) { create :modification_regulation, effective_end_date: Time.now.ago(1.month) }
+      let!(:modification_regulation) { create :modification_regulation, effective_end_date: Time.zone.now.ago(1.month) }
       let!(:measure1) do
         create :measure, measure_generating_regulation_id: modification_regulation.modification_regulation_id,
-                         validity_end_date: Time.now.ago(30.months),
+                         validity_end_date: Time.zone.now.ago(30.months),
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         validity_start_date: Time.now.ago(10.years),
+                         validity_start_date: Time.zone.now.ago(10.years),
                          measure_type_id: measure_type.measure_type_id,
                          geographical_area_sid: 1
       end
@@ -364,31 +364,31 @@ RSpec.describe Commodity do
         create :measure, measure_generating_regulation_id: modification_regulation.modification_regulation_id,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          measure_type_id: measure_type.measure_type_id,
-                         validity_start_date: Time.now.ago(10.years),
-                         validity_end_date: Time.now.ago(18.months),
+                         validity_start_date: Time.zone.now.ago(10.years),
+                         validity_end_date: Time.zone.now.ago(18.months),
                          geographical_area_sid: 2
       end
       let!(:measure3) do
         create :measure, measure_generating_regulation_id: modification_regulation.modification_regulation_id,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          measure_type_id: measure_type.measure_type_id,
-                         validity_start_date: Time.now.ago(10.years),
+                         validity_start_date: Time.zone.now.ago(10.years),
                          validity_end_date: nil,
                          geographical_area_sid: 3
       end
 
       it 'measure validity date superseeds regulation validity date' do
-        measures = TimeMachine.at(Time.now.ago(1.year)) { described_class.actual.first.measures }.map(&:measure_sid)
+        measures = TimeMachine.at(Time.zone.now.ago(1.year)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).not_to include measure2.measure_sid
         expect(measures).not_to include measure1.measure_sid
 
-        measures = TimeMachine.at(Time.now.ago(2.years)) { described_class.actual.first.measures }.map(&:measure_sid)
+        measures = TimeMachine.at(Time.zone.now.ago(2.years)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).to     include measure2.measure_sid
         expect(measures).not_to include measure1.measure_sid
 
-        measures = TimeMachine.at(Time.now.ago(3.years)) { described_class.actual.first.measures }.map(&:measure_sid)
+        measures = TimeMachine.at(Time.zone.now.ago(3.years)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).to     include measure2.measure_sid
         expect(measures).to     include measure1.measure_sid

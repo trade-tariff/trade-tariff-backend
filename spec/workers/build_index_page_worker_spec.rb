@@ -12,7 +12,7 @@ RSpec.describe BuildIndexPageWorker, type: :worker do
       end
 
       it 'bulk indexes all model entries' do
-        BuildIndexPageWorker.new.perform(
+        described_class.new.perform(
           'search',
           commodity.class.name,
           1,

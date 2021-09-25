@@ -4,7 +4,7 @@ RSpec.describe TradeTariffBackend::DataMigration do
 
     context 'migration applicable' do
       let(:migration) do
-        TradeTariffBackend::DataMigration.new do
+        described_class.new do
           up do
             applicable   { Measure.dataset.one? }
             apply        { Measure.dataset.destroy }
@@ -21,7 +21,7 @@ RSpec.describe TradeTariffBackend::DataMigration do
 
     context 'migration not applicable' do
       let(:migration) do
-        TradeTariffBackend::DataMigration.new do
+        described_class.new do
           up do
             applicable   { Measure.dataset.count == 42 }
             apply        { Measure.dataset.destroy }
@@ -42,7 +42,7 @@ RSpec.describe TradeTariffBackend::DataMigration do
 
     context 'migration applicable' do
       let(:migration) do
-        TradeTariffBackend::DataMigration.new do
+        described_class.new do
           down do
             applicable   { Measure.dataset.one? }
             apply        { Measure.dataset.destroy }
@@ -59,7 +59,7 @@ RSpec.describe TradeTariffBackend::DataMigration do
 
     context 'migration not applicable' do
       let(:migration) do
-        TradeTariffBackend::DataMigration.new do
+        described_class.new do
           down do
             applicable   { Measure.dataset.count == 42 }
             apply        { Measure.dataset.destroy }

@@ -28,7 +28,7 @@ RSpec.describe TariffSynchronizer::TariffUpdatesRequester do
 
       it 'returns retry_count_exceeded? as true when not valid request' do
         response = described_class.perform('http://example/test')
-        expect(response.retry_count_exceeded?).to be_truthy
+        expect(response).to be_retry_count_exceeded
       end
 
       it 'logs an info event' do
