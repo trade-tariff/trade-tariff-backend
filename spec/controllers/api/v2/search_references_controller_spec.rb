@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::SearchReferencesController, 'GET to #index' do
-  render_views
-
   let(:heading) { create :heading }
   let!(:search_reference_heading) do
     create :search_reference, heading: heading, heading_id: heading.to_param, title: 'aa'

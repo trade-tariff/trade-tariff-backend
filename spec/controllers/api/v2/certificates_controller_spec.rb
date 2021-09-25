@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::CertificatesController, type: :controller do
-  render_views
-
   context 'certificates search' do
     let!(:certificate) { create :certificate }
     let!(:certificate_description) do

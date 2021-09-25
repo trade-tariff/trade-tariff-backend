@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::ChaptersController, 'GET #show' do
-  render_views
-
   let(:heading) { create :heading, :with_chapter }
   let(:chapter) { heading.reload.chapter }
   let!(:section) { chapter.section }
@@ -119,8 +117,6 @@ RSpec.describe Api::V2::ChaptersController, 'GET #show' do
 end
 
 RSpec.describe Api::V2::ChaptersController, 'GET #index' do
-  render_views
-
   let!(:chapter1) { create :chapter, :with_section, :with_note }
   let!(:chapter2) { create :chapter, :with_section, :with_note }
 
@@ -155,8 +151,6 @@ RSpec.describe Api::V2::ChaptersController, 'GET #index' do
 end
 
 RSpec.describe Api::V2::ChaptersController, 'GET #changes' do
-  render_views
-
   context 'changes happened after chapter creation' do
     let(:chapter) do
       create :chapter, :with_section, :with_note,

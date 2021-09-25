@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::AdditionalCodeTypesController, type: :controller do
-  render_views
-
   describe '#index' do
     let!(:additional_code_type_1) { create :additional_code_type }
     let!(:additional_code_type_description_1) { create :additional_code_type_description, additional_code_type_id: additional_code_type_1.additional_code_type_id }

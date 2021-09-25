@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::FootnotesController, type: :controller do
-  render_views
-
   context 'footnotes search' do
     let!(:footnote) { create :footnote, :national }
     let!(:footnote_description) { create :footnote_description, :with_period, footnote_type_id: footnote.footnote_type_id, footnote_id: footnote.footnote_id }

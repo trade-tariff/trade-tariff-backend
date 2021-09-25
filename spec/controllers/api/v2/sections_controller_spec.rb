@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::SectionsController, 'GET #show' do
-  render_views
-
   let(:heading) { create :heading, :with_chapter }
   let(:chapter) { heading.reload.chapter }
   let(:chapter_guide) { chapter.guides.first }
@@ -85,8 +83,6 @@ RSpec.describe Api::V2::SectionsController, 'GET #show' do
 end
 
 RSpec.describe Api::V2::SectionsController, 'GET #index' do
-  render_views
-
   let!(:chapter1) { create :chapter, :with_section }
   let!(:chapter2) { create :chapter, :with_section }
   let(:section1)  { chapter1.section }

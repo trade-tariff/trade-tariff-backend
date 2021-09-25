@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
-  render_views
-
   context 'additional codes search' do
     let!(:additional_code) { create :additional_code }
     let!(:additional_code_description) { create :additional_code_description, :with_period, additional_code_sid: additional_code.additional_code_sid }

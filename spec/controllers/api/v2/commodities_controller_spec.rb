@@ -135,8 +135,6 @@ RSpec.describe Api::V2::CommoditiesController, 'GET #show' do
 end
 
 RSpec.describe Api::V2::CommoditiesController, 'GET #changes' do
-  render_views
-
   context 'changes happened after chapter creation' do
     let!(:commodity) do
       create :commodity, :with_indent,
