@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::UpdatesController, 'GET #latest' do
-  render_views
-
   let(:pattern) do
     {
       data: [

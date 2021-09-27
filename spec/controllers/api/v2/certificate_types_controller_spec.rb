@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::CertificateTypesController, type: :controller do
-  render_views
-
   describe '#index' do
     let!(:certificate_type_1) { create :certificate_type }
     let!(:certificate_type_description_1) { create :certificate_type_description, certificate_type_code: certificate_type_1.certificate_type_code }

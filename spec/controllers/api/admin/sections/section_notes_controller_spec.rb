@@ -1,6 +1,4 @@
 RSpec.describe Api::Admin::Sections::SectionNotesController, 'GET #show' do
-  render_views
-
   let(:pattern) do
     {
       data: {

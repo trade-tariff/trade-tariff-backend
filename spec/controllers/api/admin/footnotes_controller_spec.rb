@@ -1,6 +1,4 @@
 RSpec.describe Api::Admin::FootnotesController, 'GET to #index' do
-  render_views
-
   let!(:non_national_footnote) { create :footnote, :non_national }
   let(:response_pattern) do
     {
@@ -38,8 +36,6 @@ RSpec.describe Api::Admin::FootnotesController, 'GET to #index' do
 end
 
 RSpec.describe Api::Admin::FootnotesController, 'GET to #show' do
-  render_views
-
   before { login_as_api_user }
 
   let!(:non_national_footnote) { create :footnote, :non_national }
@@ -74,8 +70,6 @@ RSpec.describe Api::Admin::FootnotesController, 'GET to #show' do
 end
 
 RSpec.describe Api::Admin::FootnotesController, 'PUT to #update' do
-  render_views
-
   before { login_as_api_user }
 
   let!(:non_national_footnote) { create :footnote, :non_national }

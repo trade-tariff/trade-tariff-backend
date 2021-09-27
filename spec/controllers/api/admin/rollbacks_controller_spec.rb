@@ -1,6 +1,4 @@
 RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
-  render_views
-
   before { login_as_api_user }
 
   let(:rollback_attributes) { attributes_for :rollback }
@@ -44,8 +42,6 @@ RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
 end
 
 RSpec.describe Api::Admin::RollbacksController, 'GET to #index' do
-  render_views
-
   before do
     login_as_api_user
   end

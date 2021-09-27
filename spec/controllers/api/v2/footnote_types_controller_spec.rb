@@ -1,6 +1,4 @@
 RSpec.describe Api::V2::FootnoteTypesController, type: :controller do
-  render_views
-
   describe '#index' do
     let!(:footnote_type_1) { create :footnote_type }
     let!(:footnote_type_description_1) { create :footnote_type_description, footnote_type_id: footnote_type_1.footnote_type_id }
