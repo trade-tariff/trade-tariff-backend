@@ -2,7 +2,7 @@ RSpec.describe Api::V2::Measures::MeursingMeasureSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) { Api::V2::Measures::MeursingMeasurePresenter.new(meursing_measure) }
-  let(:meursing_measure) { create(:measure, :with_meursing_measure) }
+  let(:meursing_measure) { create(:meursing_measure) }
 
   let(:expected_pattern) do
     {

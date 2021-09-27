@@ -1,29 +1,35 @@
 RSpec.describe Api::V2::MeursingMeasuresController do
   describe 'GET :index' do
-    subject(:do_response) { get :index, params: { filter: { measure_sid: measure_sid, additional_code_id: '000' } } }
+    subject(:do_response) { get :index, params: { filter: { measure_sid: measure_sid, additional_code_id: additional_code_id } } }
+
+    before { meursing_measure }
 
     let(:measure_sid) { root_measure.measure_sid }
+    let(:additional_code_id) { '000' }
 
-    let(:root_measure) do
+    let(:root_measure) { create(:measure) }
+
+    let(:meursing_measure) do
       create(
-        :measure,
-        :with_meursing_measure,
-        meursing_additional_code: additional_code_id,
+        :meursing_measure,
+        root_measure: root_measure,
+        additional_code_id: '000',
       )
     end
 
     let(:expected_serialized_hash) do
-      meursing_measure = MeursingMeasure.find(additional_code_id: '000')
-      presented_meursing_measure = Api::V2::Measures::MeursingMeasurePresenter.new(meursing_measure)
+      presented_meursing_measure = Api::V2::Measures::MeursingMeasurePresenter.new(meursing_measure.reload)
 
       Api::V2::Measures::MeursingMeasureSerializer.new(
         [presented_meursing_measure],
-        include: [
-          'measure_type',
-          'additional_code',
-          'measure_components',
-          'measure_components.duty_expression',
+        include: %w[
+          additional_code
+          geographical_area
+          measure_components
+          measure_components.duty_expression
+          measure_type
         ],
+        meta: { resolved_duty_expression: '' },
       ).serializable_hash.as_json
     end
 
@@ -39,9 +45,7 @@ RSpec.describe Api::V2::MeursingMeasuresController do
     context 'when the additional code id does not belong to a meursing measure' do
       let(:additional_code_id) { 'foo' }
 
-      let(:expected_body) { { 'data' => [], 'included' => [] } }
-
-      it { expect(JSON.parse(do_response.body)).to eq(expected_body) }
+      it { expect(JSON.parse(do_response.body)).to eq('data' => [], 'included' => [], 'meta' => { 'resolved_duty_expression' => '' }) }
     end
   end
 end

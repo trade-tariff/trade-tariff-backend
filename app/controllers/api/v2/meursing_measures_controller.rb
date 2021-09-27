@@ -22,7 +22,7 @@ module Api
       def serializer_options
         {
           include: DEFAULT_INCLUDES,
-          meta: { duty_expression: resolved_duty_expression },
+          meta: { resolved_duty_expression: resolved_duty_expression },
         }
       end
 

@@ -18,7 +18,7 @@ FactoryBot.define do
       monetary_unit_code { nil }
       measure_type_series_id { 'S' }
       meursing_additional_code { '000' }
-      base_regulation_effective_end_date  { nil }
+      base_regulation_effective_end_date { nil }
     end
 
     f.measure_sid { generate(:measure_sid) }
@@ -34,7 +34,16 @@ FactoryBot.define do
     f.validity_end_date   { nil }
     f.reduction_indicator { [nil, 1, 2, 3].sample }
 
-    # mandatory valid associations
+    f.goods_nomenclature do
+      create(
+        :goods_nomenclature,
+        validity_start_date: validity_start_date - 1.day,
+        goods_nomenclature_item_id: goods_nomenclature_item_id,
+        goods_nomenclature_sid: goods_nomenclature_sid,
+        producline_suffix: gono_producline_suffix,
+        indents: gono_number_indents,
+      )
+    end
 
     f.measure_type do
       create :measure_type, measure_type_id: measure_type_id,
@@ -137,12 +146,6 @@ FactoryBot.define do
       measure_type_id { '674' }
     end
 
-    trait :with_meursing_measure do
-      after(:build) do |measure, evaluator|
-        create(:measure, :meursing_measure, root_measure: measure, additional_code_id: evaluator.meursing_additional_code)
-      end
-    end
-
     trait :with_measure_components do
       after(:build) do |measure, evaluator|
         create_list(
@@ -155,16 +158,6 @@ FactoryBot.define do
           measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
-      end
-    end
-
-    trait :with_meursing_measure do
-      transient do
-        duty_expression_id { 12 }
-      end
-
-      after(:build) do |root_measure, _evaluator|
-        create(:meursing_measure, measure: root_measure)
       end
     end
 
@@ -347,6 +340,7 @@ FactoryBot.define do
 
     additional_code_id { '000' }
     additional_code_type_id { '7' }
+    goods_nomenclature { nil }
     goods_nomenclature_item_id { nil }
     goods_nomenclature_sid { nil }
     measure_type_id { '672' }

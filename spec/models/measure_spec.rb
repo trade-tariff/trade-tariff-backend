@@ -1023,9 +1023,8 @@ RSpec.describe Measure do
     context 'when there are matching meursing measures' do
       let(:measure) do
         create(
-          :measure,
-          :with_meursing_measure,
-          meursing_additional_code: additional_code_id,
+          :meursing_measure,
+          additional_code_id: additional_code_id,
         )
       end
 
