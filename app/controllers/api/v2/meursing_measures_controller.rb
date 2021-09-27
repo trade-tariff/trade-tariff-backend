@@ -13,9 +13,7 @@ module Api
       private
 
       def serialized_meursing_measures
-        Api::V2::Measures::MeasureSerializer.new(
-          meursing_measures, serializer_options
-        ).serializable_hash
+        Api::V2::Measures::MeasureSerializer.new(meursing_measures, serializer_options).serializable_hash
       end
 
       def serializer_options
@@ -23,11 +21,16 @@ module Api
       end
 
       def meursing_measures
-        measure.meursing_measures(additional_code_id)
+        root_measure.meursing_measures(additional_code_id)
       end
 
-      def measure
-        Measure.by_sid(measure_sid)
+      def root_measure
+        @root_measure = Measure
+          .actual
+          .filter(measure_sid: measure_sid)
+          .take
+
+        raise Sequel::RecordNotFound if @root_measure.blank?
       end
 
       def measure_sid

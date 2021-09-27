@@ -163,20 +163,6 @@ class Measure < Sequel::Model
   end
 
   dataset_module do
-    def by_sid(sid)
-      actual
-        .filter(measure_sid: sid)
-        .eager(
-          measure_components: [
-            { duty_expression: :duty_expression_description },
-            { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
-            :monetary_unit,
-            :measurement_unit_qualifier,
-          ],
-        )
-        .take
-    end
-
     def with_base_regulations
       query = if model.point_in_time.present?
                 distinct(:measure_generating_regulation_id, :measure_type_id, :goods_nomenclature_sid, :geographical_area_id, :geographical_area_sid, :additional_code_type_id, :additional_code_id, :ordernumber).select(Sequel.expr(:measures).*)

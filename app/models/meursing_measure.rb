@@ -1,4 +1,6 @@
 class MeursingMeasure < Measure
+  set_primary_key [:measure_sid]
+
   set_dataset(
     where(goods_nomenclature_item_id: nil)
       .where(measure_type_id: MeasureType::MEURSING_MEASURES)
