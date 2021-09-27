@@ -416,12 +416,12 @@ class Measure < Sequel::Model
     measure_components.any?(&:meursing?)
   end
 
-  def meursing_measures(additional_code)
-    MeursingMeasure.where(
+  def meursing_measures_for(additional_code)
+    MeursingMeasure.filter(
       additional_code_id: additional_code,
       geographical_area_id: geographical_area_id,
       reduction_indicator: reduction_indicator,
-    ).actual
+    )
   end
 
   def zero_mfn?

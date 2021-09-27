@@ -51,7 +51,7 @@ FactoryBot.define do
     f.base_regulation do
       create(:base_regulation, base_regulation_id: measure_generating_regulation_id,
                                base_regulation_role: measure_generating_regulation_role,
-                               effective_end_date: Date.current.in(10.years))
+                               effective_end_date: base_regulation_effective_end_date || Date.current.in(10.years))
     end
 
     trait :national do
@@ -132,7 +132,7 @@ FactoryBot.define do
 
     trait :with_measure_components do
       after(:build) do |measure, evaluator|
-        create(
+        create_list(
           :measure_component,
           evaluator.measure_components_count,
           measure_sid: measure.measure_sid,
@@ -322,21 +322,23 @@ FactoryBot.define do
     description { Forgery(:basic).text }
   end
 
-  trait :meursing_measure do
+  factory :meursing_measure, parent: :measure, class: 'MeursingMeasure' do
     transient do
       root_measure {}
       duty_amount { 0.0 }
       duty_expression_id { '01' }
       measurement_unit_code { 'DTN' }
       monetary_unit_code { 'EUR' }
+      base_regulation_effective_end_date { nil }
     end
 
-    additional_code { '000' }
+    additional_code_id { '000' }
     additional_code_type_id { '7' }
     goods_nomenclature_item_id { nil }
     goods_nomenclature_sid { nil }
     measure_type_id { '672' }
     reduction_indicator { '1' }
+    validity_end_date { nil }
 
     after(:build) do |meursing_measure, evaluator|
       root_measure = evaluator.root_measure
