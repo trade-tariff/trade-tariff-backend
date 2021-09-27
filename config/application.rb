@@ -16,7 +16,7 @@ module TradeTariffBackend
 
     config.eager_load_paths << Rails.root.join('lib')
 
-    # config.autoloader = :classic
+    config.autoloader = :classic
 
     config.generators do |g|
       g.view_specs     false
