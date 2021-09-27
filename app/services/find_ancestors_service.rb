@@ -16,10 +16,7 @@ class FindAncestorsService
   end
 
   def goods_nomenclature_class
-    klass_name = GoodsNomenclature.class_determinator
-                                  .call(goods_nomenclature_item_id: goods_nomenclature_item_id)
-
-    GoodsNomenclature.constantize_class_name(klass_name)
+    GoodsNomenclature.sti_load(goods_nomenclature_item_id: goods_nomenclature_item_id).class
   end
 
   def goods_nomenclature_item_id
