@@ -37,5 +37,13 @@ module RulesOfOrigin
         scheme_set.read_referenced_file('fta_intro', fta_intro_file)
       end
     end
+
+    def introductory_notes
+      @introductory_notes ||= begin
+        return '' if introductory_notes_file.blank?
+
+        scheme_set.read_referenced_file('introductory_notes', introductory_notes_file)
+      end
+    end
   end
 end
