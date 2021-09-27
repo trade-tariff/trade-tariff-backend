@@ -31,19 +31,20 @@ module RulesOfOrigin
     end
 
     def fta_intro
-      @fta_intro ||= begin
-        return '' if fta_intro_file.blank?
-
-        scheme_set.read_referenced_file('fta_intro', fta_intro_file)
-      end
+      @fta_intro ||= if fta_intro_file.present?
+                       scheme_set.read_referenced_file('fta_intro', fta_intro_file)
+                     else
+                       ''
+                     end
     end
 
     def introductory_notes
-      @introductory_notes ||= begin
-        return '' if introductory_notes_file.blank?
-
-        scheme_set.read_referenced_file('introductory_notes', introductory_notes_file)
-      end
+      @introductory_notes ||= if introductory_notes_file.present?
+                                scheme_set.read_referenced_file('introductory_notes',
+                                                                introductory_notes_file)
+                              else
+                                ''
+                              end
     end
   end
 end
