@@ -43,9 +43,9 @@ class QuotaSearchService
     apply_critical_filter if critical.present?
     apply_status_filters if status.present?
 
-    @scope = scope.paginate(current_page, per_page)
+    @scope = @scope.paginate(current_page, per_page)
 
-    scope.map(&:quota_definition).compact
+    @scope.map(&:quota_definition).compact
   end
 
   private
@@ -65,7 +65,13 @@ class QuotaSearchService
   end
 
   def apply_goods_nomenclature_item_id_filter
-    @scope = scope.where(Sequel.like(:measures__goods_nomenclature_item_id, "#{goods_nomenclature_item_id}%"))
+    ancestors = FindAncestorsService.new(goods_nomenclature_item_id).call
+
+    @scope = if ancestors.present?
+               @scope.where(goods_nomenclature_item_id: ancestors)
+             else
+               @scope.where(Sequel.like(:measures__goods_nomenclature_item_id, "#{goods_nomenclature_item_id}%"))
+             end
   end
 
   def apply_geographical_area_id_filter

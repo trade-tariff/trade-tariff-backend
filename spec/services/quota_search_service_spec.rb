@@ -1,4 +1,5 @@
-RSpec.describe QuotaSearchService do
+# rubocop:disable RSpec/MultipleMemoizedHelpers
+describe QuotaSearchService do
   subject(:service) { described_class.new(filter, current_page, per_page) }
 
   around do |example|
@@ -52,8 +53,16 @@ RSpec.describe QuotaSearchService do
   end
 
   describe '#call' do
-    context 'when filtering by the goods_nomenclature_item_id' do
+    context 'when filtering by a fully-qualified goods_nomenclature_item_id' do
       let(:filter) { { 'goods_nomenclature_item_id' => measure1.goods_nomenclature_item_id } }
+
+      it 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_definition1])
+      end
+    end
+
+    context 'when filtering by a NOT fully-qualified goods_nomenclature_item_id' do
+      let(:filter) { { 'goods_nomenclature_item_id' => measure1.goods_nomenclature_item_id[0..6] } }
 
       it 'returns the correct quota definition' do
         expect(service.call).to eq([quota_definition1])
@@ -87,7 +96,7 @@ RSpec.describe QuotaSearchService do
     context 'when filtering by status exhausted' do
       let(:filter) { { 'status' => 'exhausted' } }
 
-      let!(:quota_exhaustion_event) do
+      before do
         create :quota_exhaustion_event, quota_definition: quota_definition1
       end
 
@@ -99,7 +108,7 @@ RSpec.describe QuotaSearchService do
     context 'when filtering by status not exhausted' do
       let(:filter) { { 'status' => 'not_exhausted' } }
 
-      let!(:quota_exhaustion_event) do
+      before do
         create :quota_exhaustion_event, quota_definition: quota_definition1
       end
 
@@ -111,7 +120,7 @@ RSpec.describe QuotaSearchService do
     context 'when filtering by status blocked' do
       let(:filter) { { 'status' => 'blocked' } }
 
-      let!(:quota_blocking_period) do
+      before do
         create :quota_blocking_period,
                quota_definition_sid: quota_definition1.quota_definition_sid,
                blocking_start_date: Date.current,
@@ -126,7 +135,7 @@ RSpec.describe QuotaSearchService do
     context 'when filtering by status not blocked' do
       let(:filter) { { 'status' => 'not_blocked' } }
 
-      let!(:quota_blocking_period) do
+      before do
         create :quota_blocking_period,
                quota_definition_sid: quota_definition1.quota_definition_sid,
                blocking_start_date: Date.current,
@@ -139,3 +148,4 @@ RSpec.describe QuotaSearchService do
     end
   end
 end
+# rubocop:enable RSpec/MultipleMemoizedHelpers
