@@ -88,7 +88,9 @@ RSpec.describe RulesOfOrigin::SchemeSet do
   end
 
   describe '#read_referenced_file' do
-    subject(:read_file) { scheme_set.read_referenced_file file_name }
+    subject :read_file do
+      scheme_set.read_referenced_file('fta_intro', file_name)
+    end
 
     context 'with valid file' do
       let(:file_name) { 'eu.md' }

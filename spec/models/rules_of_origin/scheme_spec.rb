@@ -99,7 +99,7 @@ RSpec.describe RulesOfOrigin::Scheme do
 
     before do
       allow(scheme_set).to receive(:read_referenced_file)
-                           .with('intro.md')
+                           .with('fta_intro', 'intro.md')
                            .and_return('fta intro content')
     end
 

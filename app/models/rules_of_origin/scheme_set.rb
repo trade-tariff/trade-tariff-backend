@@ -48,12 +48,12 @@ module RulesOfOrigin
       @_schemes.values_at(*(@_countries[country_code] || []))
     end
 
-    def read_referenced_file(filename)
-      unless valid_referenced_file?(filename)
-        raise InvalidReferencedFile, filename
+    def read_referenced_file(folder, filename)
+      unless valid_referenced_file?(folder) && valid_referenced_file?(filename)
+        raise InvalidReferencedFile, "#{folder}/#{filename}"
       end
 
-      base_path.join(filename).read
+      base_path.join(folder).join(filename).read
     end
 
     class InvalidSchemesFile < RuntimeError; end
