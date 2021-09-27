@@ -128,15 +128,4 @@ class GoodsNomenclature < Sequel::Model
   def bti_url
     'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
   end
-
-  # This method is safer than `constantize`
-  # which is considered dangeros by `brakeman` (a static analyzer)
-  def self.constantize_class_name(klass_name)
-    [
-      Commodity,
-      Heading,
-      Chapter,
-      GoodsNomenclature,
-    ].find { |klass| klass.to_s == klass_name }
-  end
 end
