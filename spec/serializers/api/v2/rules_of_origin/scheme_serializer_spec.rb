@@ -25,6 +25,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           countries: scheme.countries,
           footnote: scheme.footnote,
           fta_intro: scheme.fta_intro,
+          introductory_notes: scheme.introductory_notes,
         },
         relationships: {
           links: {

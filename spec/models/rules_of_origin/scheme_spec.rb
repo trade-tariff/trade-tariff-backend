@@ -99,7 +99,7 @@ RSpec.describe RulesOfOrigin::Scheme do
 
     before do
       allow(scheme_set).to receive(:read_referenced_file)
-                           .with('intro.md')
+                           .with('fta_intro', 'intro.md')
                            .and_return('fta intro content')
     end
 
@@ -114,6 +114,34 @@ RSpec.describe RulesOfOrigin::Scheme do
       let(:intro_file) { '' }
 
       it { expect(scheme).to have_attributes fta_intro: '' }
+    end
+  end
+
+  describe '#introductory_notes' do
+    subject(:scheme) do
+      build :rules_of_origin_scheme,
+            introductory_notes_file: notes_file,
+            scheme_set: scheme_set
+    end
+
+    before do
+      allow(scheme_set).to receive(:read_referenced_file)
+                           .with('introductory_notes', 'notes.md')
+                           .and_return('introductory notes content')
+    end
+
+    let(:notes_file) { 'notes.md' }
+    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
+
+    it 'will read the referenced file' do
+      expect(scheme).to \
+        have_attributes introductory_notes: 'introductory notes content'
+    end
+
+    context 'with blank file' do
+      let(:notes_file) { '' }
+
+      it { expect(scheme).to have_attributes introductory_notes: '' }
     end
   end
 end
