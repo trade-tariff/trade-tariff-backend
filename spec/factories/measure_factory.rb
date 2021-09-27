@@ -18,6 +18,7 @@ FactoryBot.define do
       monetary_unit_code { nil }
       measure_type_series_id { 'S' }
       meursing_additional_code { '000' }
+      base_regulation_effective_end_date  { nil }
     end
 
     f.measure_sid { generate(:measure_sid) }
@@ -122,6 +123,18 @@ FactoryBot.define do
 
     trait :trade_remedy do
       measure_type_id { '551' }
+    end
+
+    trait :flour do
+      measure_type_id { '672' }
+    end
+
+    trait :sugar do
+      measure_type_id { '673' }
+    end
+
+    trait :agricultural do
+      measure_type_id { '674' }
     end
 
     trait :with_meursing_measure do

@@ -22,8 +22,16 @@ module Api
       def serializer_options
         {
           include: DEFAULT_INCLUDES,
-          meta: { duty_expression:  MeursingMeasureComponentFormatterService.new(root_measure, meursing_measures).call },
+          meta: { duty_expression: resolved_duty_expression },
         }
+      end
+
+      def resolved_duty_expression
+        resolved_measure_components.map(&:formatted_duty_expression).join(' ')
+      end
+
+      def resolved_measure_components
+        MeursingMeasureComponentResolverService.new(root_measure, meursing_measures).call
       end
 
       def presented_meursing_measures

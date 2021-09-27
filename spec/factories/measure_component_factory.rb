@@ -12,4 +12,13 @@ FactoryBot.define do
     monetary_unit_code { nil }
     measurement_unit_code { nil }
   end
+
+  trait :with_duty_expression do
+    after(:build) do |measure_component, _evaluator|
+      create(
+        :duty_expression,
+        duty_expression_id: measure_component.duty_expression_id,
+      )
+    end
+  end
 end
