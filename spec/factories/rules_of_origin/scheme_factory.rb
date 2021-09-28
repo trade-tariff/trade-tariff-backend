@@ -8,21 +8,15 @@ FactoryBot.define do
     footnote                { 'This scheme may be expanded in the future' }
 
     trait :with_links do
-      links do
-        [
-          attributes_for(:rules_of_origin_link),
-          attributes_for(:rules_of_origin_link),
-        ]
-      end
+      links { attributes_for_list :rules_of_origin_link, 2 }
     end
 
     trait :with_explainers do
-      explainers do
-        [
-          attributes_for(:rules_of_origin_explainer),
-          attributes_for(:rules_of_origin_explainer),
-        ]
-      end
+      explainers { attributes_for_list :rules_of_origin_explainer, 2 }
+    end
+
+    trait :with_proofs do
+      proofs { attributes_for_list :rules_of_origin_proof, 2 }
     end
   end
 end
