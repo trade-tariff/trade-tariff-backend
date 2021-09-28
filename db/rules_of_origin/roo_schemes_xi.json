@@ -251,7 +251,7 @@
         {
             "scheme_code": "esa",
             "adopted_by_uk": true,
-            "title": "ESA-UK economic partnership agreement (EPA)",
+            "title": "ESA-EU economic partnership agreement (EPA)",
             "introductory_notes_file": "esa_intro.md",
             "fta_intro_file": "esa.md",
             "links": [
@@ -274,7 +274,7 @@
         {
             "scheme_code": "central-america",
             "adopted_by_uk": true,
-            "title": "UK-Central America association agreement",
+            "title": "EU-Central America association agreement",
             "introductory_notes_file": "central_america_intro.md",
             "fta_intro_file": "central_america.md",
             "links": [
@@ -300,7 +300,7 @@
         {
             "scheme_code": "andean",
             "adopted_by_uk": true,
-            "title": "UK-Andean countries trade agreement",
+            "title": "EU-Andean countries trade agreement",
             "introductory_notes_file": "andean_intro.md",
             "fta_intro_file": "andean.md",
             "links": [
@@ -323,12 +323,12 @@
         {
             "scheme_code": "cameroon",
             "adopted_by_uk": true,
-            "title": "UK-Cameroon Economic Partnership Agreement",
+            "title": "EU-Cameroon Interim Economic Partnership Agreement",
             "introductory_notes_file": "cameroon_intro.md",
             "fta_intro_file": "cameroon.md",
             "links": [
                 {
-                    "text": "EU-Cameroon Economic Partnership Agreement",
+                    "text": "EU-Cameroon Interim Economic Partnership Agreement",
                     "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=OJ%3AL%3A2009%3A057%3ATOC"
                 },
                 {
@@ -343,7 +343,7 @@
         {
             "scheme_code": "cariforum",
             "adopted_by_uk": true,
-            "title": "CARIFORUM-UK economic partnership agreement",
+            "title": "CARIFORUM-EU economic partnership agreement",
             "introductory_notes_file": "cariforum_intro.md",
             "fta_intro_file": "cariforum.md",
             "links": [
@@ -490,20 +490,21 @@
             ]
         },
         {
-            "scheme_code": "iceland-norway - come back to this one !!!!",
+            "scheme_code": "iceland-norway",
             "adopted_by_uk": true,
-            "title": "Agreement on trade in goods between Iceland, Norway and the UK",
-            "introductory_notes_file": "iceland-norway_intro.md",
-            "fta_intro_file": "iceland-norway.md",
+            "title": "European Economic Area (EEA) Agreement",
+            "introductory_notes_file": "eea_intro.md",
+            "fta_intro_file": "eea.md",
             "links": [
                 {
-                    "text": "Agreement on trade in goods between Iceland, Norway and the UK",
-                    "url": ""
+                    "text": "European Economic Area (EEA) Agreement",
+                    "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement"
                 }
             ],
             "countries": [
                 "IS",
-                "NO"
+                "NO",
+                "LI"
             ]
         },
         {
@@ -590,7 +591,7 @@
         {
             "scheme_code": "mexico",
             "adopted_by_uk": true,
-            "title": " UK-Mexico Trade Continuity Agreement ",
+            "title": "EU-Mexico Trade Agreement",
             "introductory_notes_file": "mexico_intro.md",
             "fta_intro_file": "mexico.md",
             "links": [
@@ -610,7 +611,7 @@
         {
             "scheme_code": "switzerland-liechtenstein",
             "adopted_by_uk": true,
-            "title": "UK-Switzerland-Liechtenstein Trade Agreement",
+            "title": "EU-Switzerland Free Trade Agreement",
             "introductory_notes_file": "switzerland_intro.md",
             "fta_intro_file": "switzerland.md",
             "links": [
@@ -625,22 +626,6 @@
             ],
             "countries": [
                 "CH"
-            ]
-        },
-        {
-            "scheme_code": "liechtenstein - come back to this one",
-            "adopted_by_uk": true,
-            "title": "UK-Switzerland-Liechtenstein Trade Agreement",
-            "introductory_notes_file": "switzerland-liechtenstein_intro.md",
-            "fta_intro_file": "switzerland-liechtenstein.md",
-            "links": [
-                {
-                    "text": "UK-Switzerland-Liechtenstein Trade Agreement",
-                    "url": ""
-                }
-            ],
-            "countries": [
-                "LI"
             ]
         },
         {
@@ -702,7 +687,7 @@
         {
             "scheme_code": "north-macedonia",
             "adopted_by_uk": true,
-            "title": "UK-North Macedonia Partnership, Trade and Cooperation agreement",
+            "title": "EU-North Macedonia Stabilisation and Association Agreement",
             "introductory_notes_file": "north-macedonia_intro.md",
             "fta_intro_file": "north-macedonia.md",
             "links": [
@@ -740,7 +725,7 @@
         {
             "scheme_code": "palestinian-authority",
             "adopted_by_uk": true,
-            "title": "UK-Palestinian Authority political, trade and partnership agreement",
+            "title": "EU-Palestinian Authority Interim Association Agreement",
             "introductory_notes_file": "palestinian-authority_intro.md",
             "fta_intro_file": "palestinian-authority.md",
             "links": [
@@ -820,7 +805,7 @@
         {
             "scheme_code": "tunisia",
             "adopted_by_uk": true,
-            "title": "UK-Tunisia association agreement",
+            "title": "EU-Tunisia association agreement",
             "introductory_notes_file": "tunisia_intro.md",
             "fta_intro_file": "tunisia.md",
             "links": [
@@ -974,3 +959,4 @@
         }
     ]
 }
+
