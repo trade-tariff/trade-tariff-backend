@@ -14,6 +14,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :adopted_by_uk }
     it { is_expected.to respond_to :country_code }
     it { is_expected.to respond_to :notes }
+    it { is_expected.to respond_to :proofs }
   end
 
   describe '#links=' do
@@ -79,6 +80,36 @@ RSpec.describe RulesOfOrigin::Scheme do
 
     context 'with explainers' do
       let(:scheme) { build :rules_of_origin_scheme, :with_explainers }
+
+      it { is_expected.to have_attributes length: 2 }
+    end
+
+    context 'without explainers' do
+      let(:scheme) { build :rules_of_origin_scheme }
+
+      it { is_expected.to have_attributes length: 0 }
+    end
+  end
+
+  describe '#proofs=' do
+    subject(:proofs) { instance.proofs }
+
+    before { instance.proofs = attributes_for_list(:rules_of_origin_proof, 2) }
+
+    let(:instance) { described_class.new }
+
+    it { is_expected.to have_attributes length: 2 }
+    it { is_expected.to all be_instance_of RulesOfOrigin::Proof }
+    it { expect(proofs.first).to have_attributes summary: proofs.first.summary }
+    it { expect(proofs.first).to have_attributes detail: proofs.first.detail }
+    it { expect(proofs.first).to have_attributes scheme: instance }
+  end
+
+  describe '#proofs' do
+    subject { scheme.proofs }
+
+    context 'with proofs' do
+      let(:scheme) { build :rules_of_origin_scheme, :with_proofs }
 
       it { is_expected.to have_attributes length: 2 }
     end

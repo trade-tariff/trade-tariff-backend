@@ -4,7 +4,7 @@ module RulesOfOrigin
   class SchemeSet
     DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
 
-    attr_reader :base_path, :links
+    attr_reader :base_path, :links, :proof_urls
 
     class << self
       def from_file(file)
@@ -28,6 +28,7 @@ module RulesOfOrigin
       data = JSON.parse(source_data)
 
       @links = build_links(data['links']).freeze
+      @proof_urls = data['proof_urls'] || {}
       @_schemes = build_schemes(data['schemes']).freeze
       @_countries = build_countries_to_schemes_index.freeze
     end

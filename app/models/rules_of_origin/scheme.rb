@@ -30,6 +30,16 @@ module RulesOfOrigin
       @explainers || []
     end
 
+    def proofs=(proofs_data)
+      @proofs = Array.wrap(proofs_data)
+                     .map(&method(:new_proof))
+                     .freeze
+    end
+
+    def proofs
+      @proofs || []
+    end
+
     def fta_intro
       @fta_intro ||= if fta_intro_file.present?
                        scheme_set.read_referenced_file('fta_intro', fta_intro_file)
@@ -45,6 +55,12 @@ module RulesOfOrigin
                               else
                                 ''
                               end
+    end
+
+  private
+
+    def new_proof(proof_attrs)
+      Proof.new proof_attrs.merge(scheme: self)
     end
   end
 end
