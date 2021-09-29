@@ -1,6 +1,4 @@
 class MeasureCondition < Sequel::Model
-  include Formatter
-
   plugin :time_machine
   plugin :national
   plugin :oplog, primary_key: :measure_condition_sid

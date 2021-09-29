@@ -1,6 +1,4 @@
 class MeasureComponent < Sequel::Model
-  include Formatter
-
   plugin :time_machine
   plugin :oplog, primary_key: %i[measure_sid duty_expression_id]
 

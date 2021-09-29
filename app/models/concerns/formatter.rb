@@ -2,19 +2,21 @@ module Formatter
   extend ActiveSupport::Concern
 
   module ClassMethods
-    def format(attribute, options)
+    def custom_format(attribute, options)
       options.assert_valid_keys :with, :using, :defaults
 
-      formatter, using, defaults = options.values_at(:with,
-                                                     :using,
-                                                     :defaults)
+      formatter = options[:with]
+      using = options[:using]
+
       mod = Module.new do
         define_method(attribute) do
           opts = {}
 
-          [using].flatten.each do |field|
-            opts[field] = result_of_attribute_or_method_call(field)
-          end if using.present?
+          if using.present?
+            [using].flatten.each do |field|
+              opts[field] = result_of_attribute_or_method_call(field)
+            end
+          end
 
           formatter.format(opts)
         end

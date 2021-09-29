@@ -14,9 +14,9 @@ class GoodsNomenclatureDescription < Sequel::Model
 
   delegate :validity_start_date, :validity_end_date, to: :goods_nomenclature_description_period
 
-  format :description_plain, with: DescriptionTrimFormatter,
+  custom_format :description_plain, with: DescriptionTrimFormatter,
                              using: :description
-  format :formatted_description, with: DescriptionFormatter,
+  custom_format :formatted_description, with: DescriptionFormatter,
                                  using: :description
 
   def description
