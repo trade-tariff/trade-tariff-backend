@@ -119,11 +119,7 @@ class Measure < Sequel::Model
                                         measure_generating_regulation_role]
 
   def validity_start_date
-    if self[:validity_start_date].present?
-      self[:validity_start_date]
-    else
-      generating_regulation.validity_start_date
-    end
+    self[:validity_start_date].presence || generating_regulation.validity_start_date
   end
 
   def validity_end_date
@@ -416,12 +412,19 @@ class Measure < Sequel::Model
     measure_components.any?(&:meursing?)
   end
 
-  def meursing_measures_for(additional_code)
-    MeursingMeasure.filter(
-      additional_code_id: additional_code,
-      geographical_area_id: geographical_area_id,
-      reduction_indicator: reduction_indicator,
-    )
+  alias_method :meursing, :meursing?
+
+  def resolved_duty_expression_for(additional_code_id)
+    if meursing?
+      meursing_measures = meursing_measures_for(additional_code_id)
+
+      components = MeursingMeasureComponentResolverService.new(self, meursing_measures).call
+
+      # Handle bugs in the data where one or more of the meursing measures are missing or missing their corresponding component
+      unless components.any?(&:nil?)
+        components.map(&:formatted_duty_expression).join(' ')
+      end
+    end
   end
 
   def zero_mfn?
@@ -452,6 +455,24 @@ class Measure < Sequel::Model
   end
 
   private
+
+  def meursing_measures_for(additional_code_id)
+    MeursingMeasure.filter(
+      additional_code_id: additional_code_id,
+      geographical_area_id: geographical_area_id,
+      reduction_indicator: reduction_indicator,
+    )
+      .actual
+      .eager(
+        :additional_code,
+        :geographical_area,
+        :measure_components,
+        :measure_type,
+        measure_components: [:duty_expression],
+      )
+      .all
+      .select(&:current?)
+  end
 
   def all_components
     measure_conditions.flat_map(&:measure_condition_components) + measure_components

@@ -8,8 +8,23 @@ module Api
 
         set_id :measure_sid
 
-        attributes :id, :origin, :effective_start_date, :effective_end_date, :import,
-                   :excise, :vat, :reduction_indicator
+        attributes :id,
+                   :origin,
+                   :effective_start_date,
+                   :effective_end_date,
+                   :import,
+                   :excise,
+                   :vat,
+                   :reduction_indicator,
+                   :meursing
+
+        attribute :resolved_duty_expression do |root_measure, params|
+          additional_code_id = params[:meursing_additional_code_id]
+
+          if additional_code_id.present?
+            root_measure.resolved_duty_expression_for(additional_code_id)
+          end
+        end
 
         has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer
         has_one :measure_type, serializer: Api::V2::Measures::MeasureTypeSerializer
