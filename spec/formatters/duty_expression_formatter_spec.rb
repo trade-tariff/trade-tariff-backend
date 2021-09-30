@@ -225,9 +225,10 @@ RSpec.describe DutyExpressionFormatter do
           duty_amount: 100,
           duty_expression_abbreviation: '+',
           formatted: true,
+          resolved_meursing: true,
         )
 
-        expect(formatted).to eq('+ <span>100.00</span> %')
+        expect(formatted).to eq('<strong>+ <span>100.00</span> %</strong>')
       end
     end
   end
