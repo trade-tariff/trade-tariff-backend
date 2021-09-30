@@ -10,6 +10,7 @@ RSpec.describe MeursingMeasureComponentResolverService do
     before do
       root_measure_components
       meursing_agricultural_measure_component
+      meursing_agricultural_measure.reload
     end
 
     let(:root_measure) { create(:measure, :third_country) }
@@ -25,8 +26,6 @@ RSpec.describe MeursingMeasureComponentResolverService do
         measurement_unit_code: 'DTN',
         measure_sid: meursing_agricultural_measure.measure_sid,
       )
-
-      meursing_agricultural_measure.reload
     end
 
     let(:root_measure_components) do
