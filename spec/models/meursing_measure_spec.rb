@@ -23,7 +23,7 @@ RSpec.describe MeursingMeasure do
       let(:measures) { [regular_measure, meursing_measure] }
 
       it 'returns only meursing measures' do
-        expect(described_class.all).to eq([meursing_measure])
+        expect(described_class.all.map(&:measure_sid)).to eq([meursing_measure.measure_sid])
       end
     end
 
