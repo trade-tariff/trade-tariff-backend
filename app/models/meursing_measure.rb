@@ -1,5 +1,7 @@
 class MeursingMeasure < Measure
-  initial_dataset = where(goods_nomenclature_item_id: nil).where(measure_type_id: MeasureType::MEURSING_MEASURES).where(additional_code_type_id: AdditionalCode::MEURSING_TYPE_IDS)
+  initial_dataset = filter(goods_nomenclature_item_id: nil)
+    .filter(measure_type_id: MeasureType::MEURSING_MEASURES)
+    .filter(additional_code_type_id: AdditionalCode::MEURSING_TYPE_IDS)
 
   set_dataset(initial_dataset, inherited: true)
 
