@@ -12,6 +12,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
   it { is_expected.to have_attributes rules: rules }
   it { is_expected.to have_attributes rule_ids: rules.map(&:id_rule) }
   it { is_expected.to have_attributes link_ids: scheme.links.map(&:id) }
+  it { is_expected.to have_attributes proof_ids: scheme.proofs.map(&:id) }
 
   describe '.for_many' do
     subject(:presenters) { described_class.for_many query.schemes, query.rules }

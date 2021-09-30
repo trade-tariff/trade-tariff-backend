@@ -26,6 +26,10 @@ module Api
         def link_ids
           @link_ids ||= links.map(&:id)
         end
+
+        def proof_ids
+          @proof_ids ||= proofs.map(&:id)
+        end
       end
     end
   end
