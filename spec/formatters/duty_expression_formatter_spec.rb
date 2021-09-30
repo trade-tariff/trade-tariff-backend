@@ -217,6 +217,19 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
     end
+
+    context 'when resolved_meursing is `true`' do
+      it 'returns a formatted result surrounded by strong tags' do
+        formatted = described_class.format(
+          duty_expression_id: '04',
+          duty_amount: 100,
+          duty_expression_abbreviation: '+',
+          formatted: true,
+        )
+
+        expect(formatted).to eq('+ <span>100.00</span> %')
+      end
+    end
   end
 
   describe '.prettify' do
