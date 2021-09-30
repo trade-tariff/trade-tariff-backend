@@ -19,6 +19,8 @@ class DutyExpressionFormatter
       measurement_unit_qualifier = opts[:measurement_unit_qualifier]
       measurement_unit_abbreviation = measurement_unit.try :abbreviation,
                                                            measurement_unit_qualifier: measurement_unit_qualifier
+      resolved_meursing_component = opts[:resolved_meursing]
+
       output = []
       case duty_expression_id
       when '99'
@@ -28,10 +30,38 @@ class DutyExpressionFormatter
                     measurement_unit_abbreviation.to_s
                   end
       when '12', '14', '37', '40', '41', '42', '43', '44', '21', '25', '27', '29'
-        if duty_expression_abbreviation.present?
-          output << duty_expression_abbreviation
-        elsif duty_expression_description.present?
-          output << duty_expression_description
+        if resolved_meursing_component 
+          if duty_expression_abbreviation.present?
+            output << duty_expression_abbreviation
+          elsif duty_expression_description.present?
+            output << duty_expression_description
+          end
+          if duty_amount.present?
+            output << if opts[:formatted]
+                        html_formatted_duty_expression(duty_amount)
+            else
+              prettify(duty_amount).to_s
+            end
+          end
+          output << if monetary_unit.present?
+                      monetary_unit
+          else
+            '%'
+          end
+          if measurement_unit_abbreviation.present?
+            output << if opts[:formatted]
+                        "/ <abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
+            else
+              "/ #{measurement_unit_abbreviation}"
+            end
+          end
+        else
+
+          if duty_expression_abbreviation.present?
+            output << duty_expression_abbreviation
+          elsif duty_expression_description.present?
+            output << duty_expression_description
+          end
         end
       when '02', '04', '15', '17', '19', '20', '36'
         if duty_expression_abbreviation.present?
@@ -84,7 +114,14 @@ class DutyExpressionFormatter
                     end
         end
       end
-      output.join(' ').html_safe
+
+      result = output.join(' ').html_safe
+
+      if resolved_meursing_component
+        "<strong>#{result}</strong>"
+      else
+        result
+      end
     end
 
     private

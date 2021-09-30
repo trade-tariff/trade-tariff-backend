@@ -69,8 +69,6 @@ class MeasureComponent < Sequel::Model
     }
   end
 
-  private
-
   def duty_expression_formatter_options
     {
       duty_expression_id: duty_expression_id,

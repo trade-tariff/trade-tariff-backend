@@ -20,8 +20,15 @@ class MeursingMeasureComponentResolverService
   attr_reader :root_measure, :meursing_measures
 
   def meursing_component_for(root_measure_component)
-    meursing_measures.find do |meursing_measure|
+    measure = meursing_measures.find do |meursing_measure|
       meursing_measure.measure_type_id == root_measure_component.duty_expression.meursing_measure_type_id
     end
+
+    return nil unless measure
+
+    # Meursing measures only ever have a single component
+    component = measure.measure_components.first
+
+    Api::V2::Measures::MeursingMeasureComponentPresenter.new(component)
   end
 end
