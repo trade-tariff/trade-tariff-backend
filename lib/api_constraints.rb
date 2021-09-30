@@ -1,6 +1,6 @@
 class ApiConstraints
   def initialize(version:)
-    @version = version
+    @version = version.to_s
   end
 
   def matches?(req)
@@ -14,6 +14,6 @@ class ApiConstraints
   end
 
   def default
-    ENV.fetch('DEFAULT_API_VERSION', 1)
+    ENV.fetch('DEFAULT_API_VERSION', '1')
   end
 end
