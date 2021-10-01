@@ -23,7 +23,8 @@ commands:
       - run:
           name: "Setup CF CLI"
           command: |
-            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.3.0&source=github-rel'
+            curl -L -o cf.deb --retry 3 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.3.0&source=github-rel'
+            file cf.deb
             sudo dpkg -i cf.deb
             cf -v
             cf api "$CF_ENDPOINT"
@@ -115,7 +116,8 @@ commands:
       - run:
           name: "Setup CF CLI"
           command: |
-            curl -L -o cf.deb 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.3.0&source=github-rel'
+            curl -L -o cf.deb --retry 3 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.3.0&source=github-rel'
+            file cf.deb
             sudo dpkg -i cf.deb
             cf -v
             cf api "$CF_ENDPOINT"
