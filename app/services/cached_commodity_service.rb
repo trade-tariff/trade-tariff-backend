@@ -136,11 +136,7 @@ class CachedCommodityService
   end
 
   def cache_key
-    key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}"
-
-    return key unless filter_by_country_id?
-
-    "#{key}-#{filtering_country&.geographical_area_id}"
+    "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{filtering_country&.geographical_area_id}-#{filter_params[:meursing_additional_code_id]}"
   end
 
   def filtering_country
