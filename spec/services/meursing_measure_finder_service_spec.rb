@@ -1,13 +1,16 @@
 RSpec.describe MeursingMeasureFinderService do
   subject(:service) { described_class.new(root_measure, additional_code_id) }
 
-  let(:root_measure) { create(:measure, additional_code_id: additional_code_id) }
+  let(:root_measure) { create(:measure) }
 
   let(:additional_code_id) { '000' }
 
   describe '#call' do
+    before do
+      meursing_measure # Running factories within an around callback does not trigger the database cleaner
+    end
+
     around do |example|
-      meursing_measure
       TimeMachine.now { example.run }
     end
 

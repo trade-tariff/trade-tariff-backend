@@ -6,7 +6,7 @@ class MeursingMeasureFinderService
 
   def call
     MeursingMeasure.filter(
-      additional_code_id: root_measure.additional_code_id,
+      additional_code_id: additional_code_id,
       geographical_area_id: root_measure.geographical_area_id,
       reduction_indicator: root_measure.reduction_indicator,
     )
