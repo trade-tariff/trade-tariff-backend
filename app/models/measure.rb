@@ -461,7 +461,7 @@ class Measure < Sequel::Model
   private
 
   def meursing_measures_for(additional_code_id)
-    MeursingMeasureFinderService.new(self, additional_code_id)
+    MeursingMeasureFinderService.new(self, additional_code_id).call
   end
 
   def all_components
