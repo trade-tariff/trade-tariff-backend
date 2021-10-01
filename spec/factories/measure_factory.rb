@@ -17,7 +17,6 @@ FactoryBot.define do
       measurement_unit_qualifier_code { 'R' }
       monetary_unit_code { nil }
       measure_type_series_id { 'S' }
-      meursing_additional_code { '000' }
       base_regulation_effective_end_date { nil }
     end
 
