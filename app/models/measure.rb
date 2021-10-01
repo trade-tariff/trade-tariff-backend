@@ -8,7 +8,7 @@ class Measure < Sequel::Model
     BASE_REGULATION_ROLE, # Base regulation
     PROVISIONAL_ANTIDUMPING_ROLE, # Provisional anti-dumping/countervailing duty
     DEFINITIVE_ANTIDUMPING_ROLE, # Definitive anti-dumping/countervailing duty
-    MODIFICATION_REGULATION_ROLE, # Modification
+    MODIFICATION_REGULATION_ROLE # Modification
   ].freeze
 
   set_primary_key [:measure_sid]
@@ -119,7 +119,11 @@ class Measure < Sequel::Model
                                         measure_generating_regulation_role]
 
   def validity_start_date
-    self[:validity_start_date].presence || generating_regulation.validity_start_date
+    if self[:validity_start_date].present?
+      self[:validity_start_date]
+    else
+      generating_regulation.validity_start_date
+    end
   end
 
   def validity_end_date
@@ -187,10 +191,10 @@ class Measure < Sequel::Model
 
     def actual_for_base_regulations
       if model.point_in_time.present?
-        filter do |o|
+        filter { |o|
           o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
             (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        end
+        }
       else
         self
       end
@@ -198,10 +202,10 @@ class Measure < Sequel::Model
 
     def actual_for_modifications_regulations
       if model.point_in_time.present?
-        filter do |o|
+        filter { |o|
           o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
             (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        end
+        }
       else
         self
       end
@@ -380,7 +384,7 @@ class Measure < Sequel::Model
     if quota_order_number.present?
       quota_order_number
     elsif ordernumber.present?
-      # TODO: refactor if possible
+      # TODO refactor if possible
       qon = QuotaOrderNumber.new(quota_order_number_id: ordernumber)
       qon.associations[:quota_definition] = nil
       qon
@@ -401,7 +405,7 @@ class Measure < Sequel::Model
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth),
+      Sequel.as(depth, :depth)
     ).where(conditions)
      .where { |o| o.<=(:validity_start_date, point_in_time) }
      .limit(TradeTariffBackend.change_count)
@@ -413,19 +417,6 @@ class Measure < Sequel::Model
   end
 
   alias_method :meursing, :meursing?
-
-  def resolved_duty_expression_for(additional_code_id)
-    if meursing?
-      meursing_measures = meursing_measures_for(additional_code_id)
-
-      components = MeursingMeasureComponentResolverService.new(self, meursing_measures).call
-
-      # Handle bugs in the data where one or more of the meursing measures are missing or missing their corresponding component
-      unless components.any?(&:nil?)
-        components.map(&:formatted_duty_expression).join(' ')
-      end
-    end
-  end
 
   def zero_mfn?
     return false unless third_country?
@@ -452,6 +443,19 @@ class Measure < Sequel::Model
 
   def entry_price_system?
     measure_conditions && measure_conditions.any?(&:entry_price_system?)
+  end
+
+  def resolved_duty_expression_for(additional_code_id)
+    if meursing?
+      meursing_measures = meursing_measures_for(additional_code_id)
+
+      components = MeursingMeasureComponentResolverService.new(self, meursing_measures).call
+
+      # Handle bugs in the data where one or more of the meursing measures are missing or missing their corresponding component
+      unless components.any?(&:nil?)
+        components.map(&:formatted_duty_expression).join(' ')
+      end
+    end
   end
 
   private

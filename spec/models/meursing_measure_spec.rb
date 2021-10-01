@@ -7,13 +7,13 @@ RSpec.describe MeursingMeasure do
     let(:meursing_measure) do
       create(
         :measure,
-        additional_code_id: '000', # Meursing measures have an additional code
-        additional_code_type_id: '7', # Meursing additional code type
-        goods_nomenclature: nil, # Meursing measures have no goods nomenclature
-        goods_nomenclature_item_id: nil, # Meursing measures have no goods nomenclature
-        goods_nomenclature_sid: nil, # Meursing measures have no goods nomenclature
-        measure_type_id: '672', # Meursing measures have there own measure types
-        reduction_indicator: '1', # Meursing measures match the reduction indicator of the root measures
+        additional_code_id: '000',
+        additional_code_type_id: '7',
+        goods_nomenclature: nil,
+        goods_nomenclature_item_id: nil,
+        goods_nomenclature_sid: nil,
+        measure_type_id: '672',
+        reduction_indicator: '1',
       )
     end
 
@@ -27,7 +27,7 @@ RSpec.describe MeursingMeasure do
       end
     end
 
-    context 'when there no meursing measures' do
+    context 'when there are no meursing measures' do
       let(:measures) { [regular_measure] }
 
       it 'returns only meursing measures' do
