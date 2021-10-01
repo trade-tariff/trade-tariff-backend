@@ -262,6 +262,27 @@ jobs:
           event: fail
           template: basic_fail_1
 
+  smoketest_dev: &smoketest
+    docker:
+      - image: 'cypress/base:latest'
+    environment:
+      CYPRESS_BASE_URL: https://dev.trade-tariff.service.gov.uk
+    steps:
+      - run:
+          name: "Checkout tests repo"
+          command: git clone --depth=1 "https://github.com/trade-tariff/trade-tariff-testing/"
+      - run:
+          name: "Check environment being tested"
+          command: 'echo "Testing: ${CYPRESS_BASE_URL}"'
+      - run:
+          name: "Cypress Smoke tests"
+          command: 'cd trade-tariff-testing && yarn install && yarn run cypress run --spec "/*/**/HOTT-Shared/smokeTestTradeTariff.spec.js"'
+
+  smoketest_staging:
+    <<: *smoketest
+    environment:
+      CYPRESS_BASE_URL: https://staging.trade-tariff.service.gov.uk
+
   deploy_dev:
     docker:
       - image: cimg/ruby:3.0.2
@@ -358,6 +379,16 @@ workflows:
                  - /^dependabot\/.*/
            requires:
              - build_dev
+      - smoketest_dev:
+          name: smoketest_dev
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - master
+                - /^dependabot\/.*/
+          requires:
+            - deploy_dev
       - build:
           name: build_live
           context: trade-tariff
@@ -374,6 +405,15 @@ workflows:
            context: trade-tariff
            requires:
              - build_live
+      - smoketest_staging:
+          name: smoketest_staging
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - master
+          requires:
+            - deploy_staging
       - hold_production:
            type: approval
            filters:
