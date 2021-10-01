@@ -35,7 +35,7 @@ module Api
       end
 
       def filter_params
-        params.require(:filter).permit(:geographical_area_id) if params[:filter].present?
+        params.require(:filter).permit(:geographical_area_id, :meursing_additional_code_id) if params[:filter].present?
       end
     end
   end

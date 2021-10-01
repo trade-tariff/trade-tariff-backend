@@ -17,6 +17,7 @@ FactoryBot.define do
       measurement_unit_qualifier_code { 'R' }
       monetary_unit_code { nil }
       measure_type_series_id { 'S' }
+      base_regulation_effective_end_date { nil }
     end
 
     f.measure_sid { generate(:measure_sid) }
@@ -30,15 +31,17 @@ FactoryBot.define do
     f.geographical_area_id { generate(:geographical_area_id) }
     f.validity_start_date { Date.current.ago(3.years) }
     f.validity_end_date   { nil }
-    f.reduction_indicator { [nil, 1, 2, 3][Random.rand(4)] }
+    f.reduction_indicator { [nil, 1, 2, 3].sample }
 
-    # mandatory valid associations
     f.goods_nomenclature do
-      create :goods_nomenclature, validity_start_date: validity_start_date - 1.day,
-                                  goods_nomenclature_item_id: goods_nomenclature_item_id,
-                                  goods_nomenclature_sid: goods_nomenclature_sid,
-                                  producline_suffix: gono_producline_suffix,
-                                  indents: gono_number_indents
+      create(
+        :goods_nomenclature,
+        validity_start_date: validity_start_date - 1.day,
+        goods_nomenclature_item_id: goods_nomenclature_item_id,
+        goods_nomenclature_sid: goods_nomenclature_sid,
+        producline_suffix: gono_producline_suffix,
+        indents: gono_number_indents,
+      )
     end
 
     f.measure_type do
@@ -57,7 +60,7 @@ FactoryBot.define do
     f.base_regulation do
       create(:base_regulation, base_regulation_id: measure_generating_regulation_id,
                                base_regulation_role: measure_generating_regulation_role,
-                               effective_end_date: Date.current.in(10.years))
+                               effective_end_date: base_regulation_effective_end_date || Date.current.in(10.years))
     end
 
     trait :national do
@@ -70,6 +73,16 @@ FactoryBot.define do
     end
 
     trait :with_goods_nomenclature do
+      goods_nomenclature do
+        create(
+          :goods_nomenclature,
+          validity_start_date: validity_start_date - 1.day,
+          goods_nomenclature_item_id: goods_nomenclature_item_id,
+          goods_nomenclature_sid: goods_nomenclature_sid,
+          producline_suffix: gono_producline_suffix,
+          indents: gono_number_indents,
+        )
+      end
       # noop
     end
 
@@ -118,6 +131,18 @@ FactoryBot.define do
 
     trait :trade_remedy do
       measure_type_id { '551' }
+    end
+
+    trait :flour do
+      measure_type_id { '672' }
+    end
+
+    trait :sugar do
+      measure_type_id { '673' }
+    end
+
+    trait :agricultural do
+      measure_type_id { '674' }
     end
 
     trait :with_measure_components do
@@ -300,5 +325,36 @@ FactoryBot.define do
   factory :measure_type_description do
     measure_type_id { generate(:measure_type_id) }
     description { Forgery(:basic).text }
+  end
+
+  factory :meursing_measure, parent: :measure, class: 'MeursingMeasure' do
+    transient do
+      root_measure {}
+      duty_amount { 0.0 }
+      duty_expression_id { '01' }
+      measurement_unit_code { 'DTN' }
+      monetary_unit_code { 'EUR' }
+      base_regulation_effective_end_date { nil }
+    end
+
+    additional_code_id { '000' }
+    additional_code_type_id { '7' }
+    goods_nomenclature { nil }
+    goods_nomenclature_item_id { nil }
+    goods_nomenclature_sid { nil }
+    measure_type_id { '672' }
+    reduction_indicator { '1' }
+    validity_end_date { nil }
+
+    after(:build) do |meursing_measure, evaluator|
+      root_measure = evaluator.root_measure
+
+      if root_measure
+        meursing_measure.reduction_indicator = root_measure.reduction_indicator
+        meursing_measure.geographical_area_id = root_measure.geographical_area_id
+
+        meursing_measure.save
+      end
+    end
   end
 end

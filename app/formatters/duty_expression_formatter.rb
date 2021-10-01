@@ -19,10 +19,14 @@ class DutyExpressionFormatter
       measurement_unit_qualifier = opts[:measurement_unit_qualifier]
       measurement_unit_abbreviation = measurement_unit.try :abbreviation,
                                                            measurement_unit_qualifier: measurement_unit_qualifier
+      resolved_meursing_component = opts[:resolved_meursing]
+      formatted = opts[:formatted]
+
+
       output = []
       case duty_expression_id
       when '99'
-        output << if opts[:formatted]
+        output << if formatted
                     "<abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
                   else
                     measurement_unit_abbreviation.to_s
@@ -40,7 +44,7 @@ class DutyExpressionFormatter
           output << duty_expression_description
         end
         if duty_amount.present?
-          output << if opts[:formatted]
+          output << if formatted
                       html_formatted_duty_expression(duty_amount)
                     else
                       prettify(duty_amount).to_s
@@ -52,7 +56,7 @@ class DutyExpressionFormatter
                     '%'
                   end
         if measurement_unit_abbreviation.present?
-          output << if opts[:formatted]
+          output << if formatted
                       "/ <abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
                     else
                       "/ #{measurement_unit_abbreviation}"
@@ -60,7 +64,7 @@ class DutyExpressionFormatter
         end
       else
         if duty_amount.present?
-          output << if opts[:formatted]
+          output << if formatted
                       html_formatted_duty_expression(duty_amount)
                     else
                       prettify(duty_amount).to_s
@@ -77,14 +81,21 @@ class DutyExpressionFormatter
           output << monetary_unit
         end
         if measurement_unit_abbreviation.present?
-          output << if opts[:formatted]
+          output << if formatted
                       "/ <abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
                     else
                       "/ #{measurement_unit_abbreviation}"
                     end
         end
       end
-      output.join(' ').html_safe
+
+      result = output.join(' ').html_safe
+
+      if resolved_meursing_component
+        "<strong>#{result}</strong>"
+      else
+        result
+      end
     end
 
     private

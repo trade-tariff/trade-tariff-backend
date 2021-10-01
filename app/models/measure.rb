@@ -416,6 +416,8 @@ class Measure < Sequel::Model
     measure_components.any?(&:meursing?)
   end
 
+  alias_method :meursing, :meursing?
+
   def zero_mfn?
     return false unless third_country?
     return false unless measure_components.count == 1
@@ -443,7 +445,24 @@ class Measure < Sequel::Model
     measure_conditions && measure_conditions.any?(&:entry_price_system?)
   end
 
+  def resolved_duty_expression_for(additional_code_id)
+    if meursing?
+      meursing_measures = meursing_measures_for(additional_code_id)
+
+      components = MeursingMeasureComponentResolverService.new(self, meursing_measures).call
+
+      # Handle bugs in the data where one or more of the meursing measures are missing or missing their corresponding component
+      unless components.any?(&:nil?)
+        components.map(&:formatted_duty_expression).join(' ')
+      end
+    end
+  end
+
   private
+
+  def meursing_measures_for(additional_code_id)
+    MeursingMeasureFinderService.new(self, additional_code_id).call
+  end
 
   def all_components
     measure_conditions.flat_map(&:measure_condition_components) + measure_components

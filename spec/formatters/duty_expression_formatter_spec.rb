@@ -6,25 +6,14 @@ RSpec.describe DutyExpressionFormatter do
     let(:unit) do
       measurement_unit.abbreviation(measurement_unit_qualifier: measurement_unit_qualifier)
     end
-    let!(:measurement_unit_abbreviation) do
+    let(:measurement_unit_abbreviation) do
       create(:measurement_unit_abbreviation, :with_measurement_unit, :include_qualifier)
     end
-    let!(:measurement_unit_qualifier) do
+    let(:measurement_unit_qualifier) do
       create(:measurement_unit_qualifier, measurement_unit_qualifier_code: measurement_unit_abbreviation.measurement_unit_qualifier)
     end
 
-    context 'for excise measure' do
-      it 'does not fetch exchange rates' do
-        expect(MonetaryExchangePeriod).not_to receive(:actual)
-        expect(MonetaryExchangeRate).not_to receive(:last)
-        described_class.format(duty_expression_id: '99',
-                               measurement_unit: measurement_unit,
-                               measurement_unit_qualifier: measurement_unit_qualifier,
-                               excise: true)
-      end
-    end
-
-    context 'for duty expression 99' do
+    context 'when duty expression 99' do
       describe 'with qualifier' do
         it 'return the measurement unit' do
           expect(
@@ -36,7 +25,7 @@ RSpec.describe DutyExpressionFormatter do
       end
 
       describe 'without qualifier' do
-        let!(:measurement_unit_abbreviation) do
+        let(:measurement_unit_abbreviation) do
           create(:measurement_unit_abbreviation, :with_measurement_unit)
         end
         let(:measurement_unit_qualifier) { nil }
@@ -50,8 +39,8 @@ RSpec.describe DutyExpressionFormatter do
       end
     end
 
-    context 'for duty expressions 12 14 37 40 41 42 43 44 21 25 27 29' do
-      context 'duty expression abbreviation present' do
+    context 'when duty expressions 12 14 37 40 41 42 43 44 21 25 27 29' do
+      context 'when expression abbreviation present' do
         it 'returns duty expression abbreviation' do
           expect(
             described_class.format(duty_expression_id: '12',
@@ -61,7 +50,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'duty expression abbreviation missing' do
+      context 'when expression abbreviation missing' do
         it 'returns duty expression description' do
           expect(
             described_class.format(duty_expression_id: '12',
@@ -71,8 +60,8 @@ RSpec.describe DutyExpressionFormatter do
       end
     end
 
-    context 'for duty expressions 15 17 19 20' do
-      context 'duty expression abbreviation present' do
+    context 'when duty expressions 15 17 19 20' do
+      context 'when expression abbreviation present' do
         it 'result includes duty expression abbreviation' do
           expect(
             described_class.format(duty_expression_id: '15',
@@ -81,7 +70,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'duty expression abbreviation missing' do
+      context 'when expression abbreviation missing' do
         it 'result includes duty expression abbreviation' do
           expect(
             described_class.format(duty_expression_id: '15',
@@ -90,7 +79,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'monetary unit present' do
+      context 'when monetary unit present' do
         it 'result includes monetary unit' do
           expect(
             described_class.format(duty_expression_id: '15',
@@ -100,7 +89,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'monetary unit missing' do
+      context 'when monetary unit missing' do
         it 'result includes percent sign' do
           expect(
             described_class.format(duty_expression_id: '15',
@@ -109,7 +98,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'measurement unit and measurement unit qualifier present' do
+      context 'when measurement unit and measurement unit qualifier present' do
         it 'result includes measurement unit and measurement unit qualifier' do
           expect(
             described_class.format(duty_expression_id: '15',
@@ -120,8 +109,8 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'just measurement unit present' do
-        let!(:measurement_unit_abbreviation) do
+      context 'when just measurement unit present' do
+        let(:measurement_unit_abbreviation) do
           create(:measurement_unit_abbreviation, :with_measurement_unit)
         end
         let(:measurement_unit_qualifier) { nil }
@@ -136,8 +125,8 @@ RSpec.describe DutyExpressionFormatter do
       end
     end
 
-    context 'for all other duty expression types' do
-      context 'duty amount present' do
+    context 'when all other duty expression types' do
+      context 'when amount present' do
         it 'result includes duty amount' do
           expect(described_class.format(duty_expression_id: '66',
                                         duty_expression_description: 'abc',
@@ -145,7 +134,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'duty expression abbreviation present and monetary unit missing' do
+      context 'when expression abbreviation present and monetary unit missing' do
         it 'result includes duty expression abbreviation' do
           expect(
             described_class.format(duty_expression_id: '66',
@@ -155,7 +144,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'duty expression description present and monetary unit missing' do
+      context 'when expression description present and monetary unit missing' do
         it 'result includes duty expression abbreviation' do
           expect(
             described_class.format(duty_expression_id: '66',
@@ -165,7 +154,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'duty expression description missing' do
+      context 'when expression description missing' do
         it 'result includes duty expression abbreviation' do
           expect(
             described_class.format(duty_expression_id: '66',
@@ -174,7 +163,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'monetary unit present' do
+      context 'when monetary unit present' do
         let(:options) do
           {
             duty_amount: 0.52,
@@ -202,7 +191,7 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'measurement unit and measurement unit qualifier present' do
+      context 'when measurement unit and measurement unit qualifier present' do
         it 'result includes measurement unit and measurement unit qualifier' do
           expect(
             described_class.format(duty_expression_id: '66',
@@ -213,8 +202,8 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'measurement unit present' do
-        let!(:measurement_unit_abbreviation) do
+      context 'when measurement unit present' do
+        let(:measurement_unit_abbreviation) do
           create(:measurement_unit_abbreviation, :with_measurement_unit)
         end
         let(:measurement_unit_qualifier) { nil }
@@ -228,16 +217,30 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
     end
+
+    context 'when resolved_meursing is `true`' do
+      it 'returns a formatted result surrounded by strong tags' do
+        formatted = described_class.format(
+          duty_expression_id: '04',
+          duty_amount: 100,
+          duty_expression_abbreviation: '+',
+          formatted: true,
+          resolved_meursing: true,
+        )
+
+        expect(formatted).to eq('<strong>+ <span>100.00</span> %</strong>')
+      end
+    end
   end
 
   describe '.prettify' do
-    context 'has less than 4 decimal places' do
+    context 'when has less than 4 decimal places' do
       it 'returns number with insignificant zeros stripped up to 2 decimal points' do
         expect(described_class.prettify(1.2)).to eq '1.20'
       end
     end
 
-    context 'has 4 or more decimal places' do
+    context 'when has 4 or more decimal places' do
       it 'returns formatted number with 4 decimal places' do
         expect(described_class.prettify(1.23456)).to eq '1.2346'
       end

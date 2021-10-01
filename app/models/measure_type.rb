@@ -24,6 +24,12 @@ class MeasureType < Sequel::Model
     '696', # Additional duties (safeguard)
   ].freeze
 
+  MEURSING_MEASURES = [
+    '672', # Amount of additional duty on flour (shortened to ADSZ [Sucre Zucker])
+    '673', # Amount of additional duty on sugar (shortened to ADFM [Farine Mehl])
+    '674', # Agricultural component (shortened to EA {Élément agricole])
+  ].freeze
+
   UNIT_EXPRESSABLE_MEASURES = [
     'C', # Applicable duty
     'D', # Anti-dumping/countervailing measures

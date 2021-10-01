@@ -112,10 +112,12 @@ class CachedCommodityService
   end
 
   def options
-    {
-      is_collection: false,
-      include: DEFAULT_INCLUDES,
-    }
+    {}.tap do |opts|
+      opts[:is_collection] = false
+      opts[:include] = DEFAULT_INCLUDES
+      opts[:params] = {}
+      opts[:params][:meursing_additional_code_id] = filter_params[:meursing_additional_code_id] if filter_meursing_measures?
+    end
   end
 
   def measures
@@ -127,6 +129,10 @@ class CachedCommodityService
 
   def filter_by_country_id?
     filter_params && filter_params[:geographical_area_id].present?
+  end
+
+  def filter_meursing_measures?
+    filter_params && filter_params[:meursing_additional_code_id].present?
   end
 
   def cache_key
