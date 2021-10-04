@@ -37,7 +37,7 @@ class MeasureTypeExclusion
       country_codes = find(measure_type_id, geographical_area_id)
       return [] if country_codes.empty?
 
-      GeographicalArea.where(geographical_area_id: country_codes).all
+      GeographicalArea.where(geographical_area_id: country_codes).order(:geographical_area_id).all
     end
 
   private
