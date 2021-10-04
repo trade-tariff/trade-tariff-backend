@@ -10,10 +10,10 @@ RSpec.describe DutyExpression do
 
     it_behaves_like 'a meursing duty expression', '12', '674'
     it_behaves_like 'a meursing duty expression', '14', '674'
-    it_behaves_like 'a meursing duty expression', '21', '673'
-    it_behaves_like 'a meursing duty expression', '25', '673'
-    it_behaves_like 'a meursing duty expression', '27', '672'
-    it_behaves_like 'a meursing duty expression', '29', '672'
+    it_behaves_like 'a meursing duty expression', '21', '672'
+    it_behaves_like 'a meursing duty expression', '25', '672'
+    it_behaves_like 'a meursing duty expression', '27', '673'
+    it_behaves_like 'a meursing duty expression', '29', '673'
     it_behaves_like 'a meursing duty expression', 'foo', nil
   end
 end
