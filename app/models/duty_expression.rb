@@ -4,10 +4,10 @@ class DutyExpression < Sequel::Model
   MEURSING_DUTY_EXPRESSION_IDS_MEASURE_TYPE_MAPPING = {
     '12' => '674', # + agricultural component
     '14' => '674', # + reduced agricultural component
-    '21' => '673', # + additional duty on sugar
-    '25' => '673', # + reduced additional duty on sugar
-    '27' => '672', # + additional duty on flour
-    '29' => '672', # + reduced additional duty on flour
+    '21' => '672', # + additional duty on sugar
+    '25' => '672', # + reduced additional duty on sugar
+    '27' => '673', # + additional duty on flour
+    '29' => '673', # + reduced additional duty on flour
   }.freeze
 
   plugin :time_machine

@@ -15,7 +15,13 @@ RSpec.describe MeursingMeasureFinderService do
     end
 
     context 'when there are matching meursing measures' do
-      let(:meursing_measure) { create(:meursing_measure, root_measure: root_measure) }
+      let(:meursing_measure) do
+        create(
+          :meursing_measure,
+          root_measure: root_measure,
+          geographical_area_id: GeographicalArea::ERGA_OMNES_ID, # Implicitly validates extensive measure contained geographical area filtering
+        )
+      end
 
       it { expect(service.call.map(&:pk)).to eq([meursing_measure.pk]) }
     end

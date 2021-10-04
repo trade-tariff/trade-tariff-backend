@@ -22,7 +22,6 @@ class DutyExpressionFormatter
       resolved_meursing_component = opts[:resolved_meursing]
       formatted = opts[:formatted]
 
-
       output = []
       case duty_expression_id
       when '99'
