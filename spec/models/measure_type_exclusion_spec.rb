@@ -36,7 +36,7 @@ RSpec.describe MeasureTypeExclusion do
       let!(:je) { create(:geographical_area, geographical_area_id: 'JE') }
       let!(:gg) { create(:geographical_area, geographical_area_id: 'GG') }
 
-      it { is_expected.to eql [gb, je, gg] }
+      it { is_expected.to eql [gb, gg, je] }
     end
 
     context 'with unknown areas' do

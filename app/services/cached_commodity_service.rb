@@ -88,7 +88,7 @@ class CachedCommodityService
   def initialize(commodity, actual_date, filter_params)
     @commodity = commodity
     @actual_date = actual_date
-    @filter_params = filter_params
+    @filter_params = filter_params || {}
   end
 
   def call
