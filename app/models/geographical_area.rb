@@ -59,11 +59,11 @@ class GeographicalArea < Sequel::Model
     end
 
     def countries
-      where(geographical_code: COUNTRIES_CODES)
+      where(geographical_code: COUNTRIES_CODES).order(:geographical_area_id)
     end
 
     def areas
-      where(geographical_code: AREAS_CODES)
+      where(geographical_code: AREAS_CODES).order(:geographical_area_id)
     end
   end
 
