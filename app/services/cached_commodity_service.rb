@@ -116,27 +116,28 @@ class CachedCommodityService
       opts[:is_collection] = false
       opts[:include] = DEFAULT_INCLUDES
       opts[:params] = {}
-      opts[:params][:meursing_additional_code_id] = filter_params[:meursing_additional_code_id] if filter_meursing_measures?
+
+      opts[:params][:meursing_additional_code_id] = meursing_additional_code_id if meursing_additional_code_id.present?
     end
   end
 
   def measures
     measures = commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
-    return measures unless filter_by_country_id? && filtering_country.present?
+    return measures unless geographical_area_id.present? && filtering_country.present?
 
     apply_filter(measures, filtering_country)
   end
 
-  def filter_by_country_id?
-    filter_params && filter_params[:geographical_area_id].present?
+  def geographical_area_id
+    filter_params[:geographical_area_id]
   end
 
-  def filter_meursing_measures?
-    filter_params && filter_params[:meursing_additional_code_id].present?
+  def meursing_additional_code_id
+    filter_params[:meursing_additional_code_id]
   end
 
   def cache_key
-    "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{filtering_country&.geographical_area_id}-#{filter_params[:meursing_additional_code_id]}"
+    "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
   end
 
   def filtering_country

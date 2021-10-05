@@ -7,11 +7,8 @@ RSpec.describe CachedCommodityService do
   let!(:commodity) do
     create(
       :commodity,
-      :with_indent,
       :with_chapter,
       :with_heading,
-      :with_description,
-      :declarable,
     )
   end
 
@@ -99,20 +96,19 @@ RSpec.describe CachedCommodityService do
       }
     end
 
-    let(:geographical_area) { create(:geographical_area, :country) }
-    let(:measure) { create(:measure) }
+    let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'RO') }
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
-
-      geographical_area.geographical_area_id = 'RO'
-      geographical_area.save
-
-      measure.goods_nomenclature_item_id = commodity.goods_nomenclature_item_id
-      measure.goods_nomenclature_sid = commodity.goods_nomenclature_sid
-      measure.geographical_area_sid = geographical_area.geographical_area_sid
-      measure.geographical_area_id = geographical_area.geographical_area_id
-      measure.save
+      measure = create(
+        :measure,
+        goods_nomenclature: commodity,
+        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        geographical_area_id: 'RO',
+        geographical_area_sid: geographical_area.geographical_area_sid,
+      )
+      measure.reload
     end
 
     it 'returns a correctly serialized hash' do
