@@ -43,6 +43,24 @@ RSpec.describe MeasureType do
     end
   end
 
+  describe '#meursing?' do
+    shared_examples_for 'a meursing measure type' do |measure_type_id|
+      subject(:measure_type) { build(:measure_type, measure_type_id: measure_type_id) }
+
+      it { is_expected.to be_meursing }
+    end
+
+    it_behaves_like 'a meursing measure type', '672'
+    it_behaves_like 'a meursing measure type', '673'
+    it_behaves_like 'a meursing measure type', '674'
+
+    context 'when not a meursing measure type' do
+      subject(:measure_type) { build(:measure_type, measure_type_id: '142') }
+
+      it { is_expected.not_to be_meursing }
+    end
+  end
+
   describe '#third_country?' do
     context 'when measure_type has measure_type_id of 103' do
       let(:measure_type) { build :measure_type, measure_type_id: '103' }

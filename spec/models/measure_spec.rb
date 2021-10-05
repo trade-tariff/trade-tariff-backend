@@ -810,6 +810,14 @@ RSpec.describe Measure do
       end
     end
 
+    context 'when the measure has a meursing measure type and its geographical area is the world' do
+      subject(:measure) { create(:measure, :flour, geographical_area_id: '1011') }
+
+      it 'returns true' do
+        expect(measure.relevant_for_country?('foo')).to eq(true)
+      end
+    end
+
     context 'when the measure has no geographical area' do
       subject(:measure) { create(:measure, geographical_area_sid: nil, geographical_area_id: nil) }
 
