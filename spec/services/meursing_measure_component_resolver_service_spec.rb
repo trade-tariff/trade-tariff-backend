@@ -18,14 +18,14 @@ RSpec.describe MeursingMeasureComponentResolverService do
       create(
         :measure_component,
         :with_duty_expression,
-        measure_sid: root_measure.measure_sid,
+        measure_sid: measure.measure_sid,
         duty_expression_id: '01',
       )
       # Placeholder meursing measure component - agricultural component
       create(
         :measure_component,
         :with_duty_expression,
-        measure_sid: root_measure.measure_sid,
+        measure_sid: measure.measure_sid,
         duty_expression_id: '12',
       )
 
