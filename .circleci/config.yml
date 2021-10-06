@@ -5,6 +5,7 @@ orbs:
   ruby: circleci/ruby@1.1.2
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
+  queue: eddiewebb/queue@1.6.1
 
 commands:
   cf_deploy_docker:
@@ -294,6 +295,10 @@ jobs:
       service:
         type: string
     steps:
+      - queue/until_front_of_line:
+          time: '10'
+          consider-branch: false
+          dont-quit: true
       - cf_deploy_docker_worker:
           dev-release: true
           space: "development"
@@ -315,6 +320,9 @@ jobs:
       service:
         type: string
     steps:
+      - queue/until_front_of_line:
+          time: '10'
+          dont-quit: true
       - cf_deploy_docker_worker:
           space: "staging"
           environment_key: "staging"
@@ -334,6 +342,9 @@ jobs:
       service:
         type: string
     steps:
+      - queue/until_front_of_line:
+          time: '10'
+          dont-quit: true
       - cf_deploy_docker_worker:
           space: "production"
           environment_key: "production"
