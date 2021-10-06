@@ -18,7 +18,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
     end
 
     let(:operation) do
-      TaricImporter::RecordProcessor::DestroyOperation.new(record, operation_date)
+      described_class.new(record, operation_date)
     end
 
     context 'record present for destroy' do

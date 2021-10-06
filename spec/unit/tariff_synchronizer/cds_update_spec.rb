@@ -9,7 +9,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       expect(TariffSynchronizer::CdsUpdateDownloader).to receive(:new)
         .with(example_date)
         .and_return(downlader)
-      TariffSynchronizer::CdsUpdate.download(example_date)
+      described_class.download(example_date)
     end
   end
 

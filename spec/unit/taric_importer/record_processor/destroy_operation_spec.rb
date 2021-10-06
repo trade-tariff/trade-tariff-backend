@@ -1,6 +1,6 @@
 RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
   let(:empty_operation) do
-    TaricImporter::RecordProcessor::DestroyOperation.new(nil, nil)
+    described_class.new(nil, nil)
   end
 
   let(:record_hash) do
@@ -20,7 +20,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
   end
 
   let(:operation) do
-    TaricImporter::RecordProcessor::DestroyOperation.new(record, Date.current)
+    described_class.new(record, Date.current)
   end
 
   describe '#to_oplog_operation' do

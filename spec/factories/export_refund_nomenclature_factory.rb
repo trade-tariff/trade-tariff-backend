@@ -41,7 +41,7 @@ FactoryBot.define do
     transient do
       validity_start_date { Date.current.ago(3.years) }
       validity_end_date { nil }
-      valid_at { Time.now.ago(2.years) }
+      valid_at { Time.zone.now.ago(2.years) }
       valid_to { nil }
     end
 

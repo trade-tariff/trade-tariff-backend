@@ -76,7 +76,7 @@ RSpec.describe TaricImporter::RecordProcessor do
         custom_create_operation_class = double('LanguageDescriptionCreateOperation', new: custom_operation_instance)
         stub_const('TaricImporter::RecordProcessor::LanguageDescriptionCreateOperation', custom_create_operation_class)
 
-        record_processor = TaricImporter::RecordProcessor.new(record_hash, Date.new(2013, 8, 1))
+        record_processor = described_class.new(record_hash, Date.new(2013, 8, 1))
         record_processor.process!
 
         expect(custom_create_operation_class).to have_received :new

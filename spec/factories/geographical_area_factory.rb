@@ -51,7 +51,7 @@ FactoryBot.define do
 
   factory :geographical_area_description do
     transient do
-      valid_at { Time.now.ago(2.years) }
+      valid_at { Time.zone.now.ago(2.years) }
       valid_to { nil }
     end
 

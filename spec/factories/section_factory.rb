@@ -4,8 +4,8 @@ FactoryBot.define do
     sequence(:id) { |n| n }
     numeral       { %w[I II III].sample }
     title         { Forgery(:basic).text }
-    created_at    { Time.now }
-    updated_at    { Time.now }
+    created_at    { Time.zone.now }
+    updated_at    { Time.zone.now }
 
     trait :with_note do
       after(:create) do |section, _evaluator|

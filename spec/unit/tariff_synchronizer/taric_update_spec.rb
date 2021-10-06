@@ -9,7 +9,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
       expect(TariffSynchronizer::TaricUpdateDownloader).to receive(:new)
         .with(example_date)
         .and_return(downlader)
-      TariffSynchronizer::TaricUpdate.download(example_date)
+      described_class.download(example_date)
     end
   end
 

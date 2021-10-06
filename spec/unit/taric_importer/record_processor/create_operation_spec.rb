@@ -1,7 +1,7 @@
 RSpec.describe TaricImporter::RecordProcessor::CreateOperation do
   describe '#to_oplog_operation' do
     let(:empty_operation) do
-      TaricImporter::RecordProcessor::CreateOperation.new(nil, nil)
+      described_class.new(nil, nil)
     end
 
     it 'identifies as create operation' do

@@ -3080,7 +3080,7 @@ RSpec.describe CdsImporter::EntityMapper do
     expect(entity).to be_a(QuotaUnblockingEvent)
     expect(entity).to be_valid
     expect(entity.quota_definition_sid.to_s).to eq(values['sid'])
-    expect(entity.occurrence_timestamp).to eq(Time.parse(values['quotaUnblockingEvent']['occurrenceTimestamp']))
+    expect(entity.occurrence_timestamp).to eq(Time.zone.parse(values['quotaUnblockingEvent']['occurrenceTimestamp']))
     expect(entity.unblocking_date).to eq(Date.parse(values['quotaUnblockingEvent']['unblockingDate']))
     expect(entity.operation).to eq(:update)
     expect(entity.operation_date).to eq(Date.parse(values['quotaUnblockingEvent']['metainfo']['transactionDate']))

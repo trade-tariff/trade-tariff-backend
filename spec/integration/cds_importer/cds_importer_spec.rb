@@ -1,6 +1,6 @@
 RSpec.describe CdsImporter do
   let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20201004T235959.gzip') }
-  let(:importer) { CdsImporter.new(cds_update) }
+  let(:importer) { described_class.new(cds_update) }
 
   before(:all) do
     FileUtils.mkpath('tmp/data/cds')

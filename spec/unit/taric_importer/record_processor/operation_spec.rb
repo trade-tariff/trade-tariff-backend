@@ -1,7 +1,7 @@
 RSpec.describe TaricImporter::RecordProcessor::Operation do
   describe '#call' do
     let(:empty_operation) do
-      TaricImporter::RecordProcessor::Operation.new(nil, nil)
+      described_class.new(nil, nil)
     end
 
     it 'must be implemented by subclasses' do
@@ -11,7 +11,7 @@ RSpec.describe TaricImporter::RecordProcessor::Operation do
 
   describe '#to_oplog_operation' do
     let(:empty_operation) do
-      TaricImporter::RecordProcessor::Operation.new(nil, nil)
+      described_class.new(nil, nil)
     end
 
     it 'must be implemented by subclasses' do
