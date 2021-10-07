@@ -1,4 +1,5 @@
 require_relative 'boot'
+require_relative '../lib/core_ext/object'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
@@ -15,8 +16,6 @@ module TradeTariffBackend
     require 'trade_tariff_backend'
 
     config.eager_load_paths << Rails.root.join('lib')
-
-    config.autoloader = :classic
 
     config.generators do |g|
       g.view_specs     false
@@ -44,5 +43,7 @@ module TradeTariffBackend
 
     config.sequel.allow_missing_migration_files = \
       (ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true')
+
+    Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
   end
 end

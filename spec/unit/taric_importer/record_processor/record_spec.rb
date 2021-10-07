@@ -12,9 +12,7 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
   end
 
   describe 'initialization' do
-    let(:record) do
-      described_class.new(record_hash)
-    end
+    subject(:record) { described_class.new(record_hash) }
 
     it 'assigns transaction id' do
       expect(record.transaction_id).to eq '31946'
@@ -34,11 +32,9 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
   end
 
   describe '#attributes=' do
-    let(:record) do
-      described_class.new(record_hash)
-    end
+    subject(:record) { described_class.new(record_hash) }
 
-    context 'no mutations' do
+    context 'when not ovverriding mutations' do
       it 'assigns attributes unmutated' do
         record.attributes = { 'foo' => 'bar' }
 
@@ -46,9 +42,9 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
       end
     end
 
-    context 'mutated attributes' do
+    context 'when ovverriding mutated attributes' do
       before do
-        class MockMutator
+        ovverriding_mutator_class = Class.new do
           def self.mutate(attributes)
             attributes['foo_id'] = attributes.delete('foo')
             attributes
@@ -56,8 +52,8 @@ RSpec.describe TaricImporter::RecordProcessor::Record do
         end
 
         stub_const(
-          'TaricImporter::RecordProcessor::LanguageDescriptionAttributeMutator',
-          MockMutator,
+          'TaricImporter::RecordProcessor::AttributeMutatorOverrides::LanguageDescriptionAttributeMutator',
+          ovverriding_mutator_class,
         )
       end
 
