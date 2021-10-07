@@ -32,7 +32,7 @@ RSpec.describe CdsImporter do
         allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
       end
 
-      it 'invokes EntityMapper' do
+      xit 'invokes EntityMapper' do
         expect(processor.process_xml_node('AdditionalCode', {})).to eql({
           'AdditionalCode::Operation' => 1,
         })
