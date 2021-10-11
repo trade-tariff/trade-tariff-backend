@@ -2,16 +2,20 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   subject { serializer.serializable_hash }
 
   let(:scheme_set) { build :rules_of_origin_scheme_set, links: [], schemes: [] }
-  let(:scheme) { build :rules_of_origin_scheme, :with_links, scheme_set: scheme_set }
 
-  let(:rules) do
+  let :scheme do
+    build :rules_of_origin_scheme, :with_links, :with_proofs,
+          scheme_set: scheme_set
+  end
+
+  let :rules do
     build_list :rules_of_origin_rule, 3, scheme_code: scheme.scheme_code
   end
 
   let :serializer do
     described_class.new \
       Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules),
-      include: %i[links rules]
+      include: %i[links proofs rules]
   end
 
   let :expected do
@@ -37,6 +41,18 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
               {
                 id: scheme.links[1].id,
                 type: :rules_of_origin_link,
+              },
+            ],
+          },
+          proofs: {
+            data: [
+              {
+                id: scheme.proofs[0].id,
+                type: :rules_of_origin_proof,
+              },
+              {
+                id: scheme.proofs[1].id,
+                type: :rules_of_origin_proof,
               },
             ],
           },
@@ -73,6 +89,24 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           attributes: {
             text: scheme.links[1].text,
             url: scheme.links[1].url,
+          },
+        },
+        {
+          id: scheme.proofs[0].id,
+          type: :rules_of_origin_proof,
+          attributes: {
+            summary: scheme.proofs[0].summary,
+            url: scheme.proofs[0].url,
+            subtext: scheme.proofs[0].subtext,
+          },
+        },
+        {
+          id: scheme.proofs[1].id,
+          type: :rules_of_origin_proof,
+          attributes: {
+            summary: scheme.proofs[1].summary,
+            url: scheme.proofs[0].url,
+            subtext: scheme.proofs[0].subtext,
           },
         },
         {
