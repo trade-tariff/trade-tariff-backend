@@ -7,12 +7,14 @@ FactoryBot.define do
       scope { 'uk' }
       links { [attributes_for(:rules_of_origin_link)] }
       schemes { [attributes_for(:rules_of_origin_scheme, :with_links)] }
+      proof_urls { { 'origin-declaration' => 'https://www.gov.uk/' } }
 
       scheme_data do
         {
           'scope' => scope,
           'links' => links,
           'schemes' => schemes,
+          'proof_urls' => proof_urls,
         }
       end
     end

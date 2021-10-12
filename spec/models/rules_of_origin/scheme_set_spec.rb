@@ -10,6 +10,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     it { is_expected.to respond_to :countries }
     it { is_expected.to respond_to :base_path }
     it { is_expected.to respond_to :links }
+    it { is_expected.to respond_to :proof_urls }
   end
 
   describe '.from_file' do
@@ -17,6 +18,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
       it { is_expected.to be_instance_of described_class }
       it { is_expected.to have_attributes schemes: include('eu') }
       it { is_expected.to have_attributes countries: include('FR') }
+      it { is_expected.to have_attributes proof_urls: include('origin-declaration') }
     end
 
     context 'with non existant file' do

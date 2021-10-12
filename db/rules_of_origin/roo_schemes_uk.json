@@ -9,7 +9,21 @@
     "schemes": [
         {
             "scheme_code": "eu",
-            "country_code": "EU",
+            "country_code": "eu",
+            "proofs": [
+                {
+                    "summary": "Statement on origin",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "statement-on-origin.md"
+                },
+                {
+                    "summary": "Importer's knowledge",
+                    "subtext": "",
+                    "proof_class": "importers-knowledge",
+                    "detail": "importers-knowledge.md"
+                }
+            ],
             "rule_offset": 10000000,
             "title": "UK / EU Trade and Co-operation Agreement",
             "introductory_notes_file": "eu_intro.md",
@@ -64,12 +78,25 @@
         {
             "scheme_code": "japan",
             "country_code": "JP",
+            "proofs": [
+                {
+                    "summary": "Statement on origin",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "statement-on-origin.md"
+                },
+                {
+                    "summary": "Importer's knowledge",
+                    "subtext": "",
+                    "proof_class": "importers-knowledge",
+                    "detail": "importers-knowledge.md"
+                }
+            ],
             "rule_offset": 13000000,
             "title": "Comprehensive Economic Partnership Agreement UK Japan",
             "introductory_notes_file": "japan_intro.md",
             "fta_intro_file": "japan.md",
             "links": [
-                
                 {
                     "text": "UK/Japan: Agreement for a Comprehensive Economic Partnership",
                     "url": "https://www.gov.uk/government/publications/ukjapan-agreement-for-a-comprehensive-economic-partnership-cs-japan-no12020"
@@ -159,6 +186,20 @@
         },
         {
             "scheme_code": "albania",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                }
+            ],
             "title": "UK-Albania partnership, Trade and Cooperation Agreement",
             "introductory_notes_file": "albania_intro.md",
             "fta_intro_file": "albania.md",
@@ -178,6 +219,14 @@
         },
         {
             "scheme_code": "canada",
+            "proofs": [
+                {
+                    "summary": "Statement on origin",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "statement-on-origin.md"
+                }
+            ],
             "country_code": "CA",
             "title": "UK-Canada Trade Continuity Agreement",
             "introductory_notes_file": "canada_intro.md",
@@ -199,6 +248,14 @@
         {
             "scheme_code": "south-korea",
             "country_code": "KR",
+            "proofs": [
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                }
+            ],
             "rule_offset": 11000000,
             "title": "UK-South Korea trade agreement",
             "introductory_notes_file": "south-korea_intro.md",
@@ -223,6 +280,20 @@
         },
         {
             "scheme_code": "kenya",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "Comprehensive Economic Partnership Agreement UK Kenya",
             "footnote": "This agreement is open to accession by other members of East African Community.",
             "introductory_notes_file": "kenya_intro.md",
@@ -243,6 +314,20 @@
         },
         {
             "scheme_code": "esa",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "ESA-UK economic partnership agreement (EPA)",
             "introductory_notes_file": "esa_intro.md",
             "fta_intro_file": "esa.md",
@@ -264,6 +349,20 @@
         },
         {
             "scheme_code": "central-america",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Central America association agreement",
             "introductory_notes_file": "central_america_intro.md",
             "fta_intro_file": "central_america.md",
@@ -289,6 +388,20 @@
         },
         {
             "scheme_code": "andean",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Andean countries trade agreement",
             "introductory_notes_file": "andean_intro.md",
             "fta_intro_file": "andean.md",
@@ -311,6 +424,20 @@
         },
         {
             "scheme_code": "cameroon",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Cameroon Economic Partnership Agreement",
             "introductory_notes_file": "cameroon_intro.md",
             "fta_intro_file": "cameroon.md",
@@ -330,6 +457,20 @@
         },
         {
             "scheme_code": "cariforum",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "CARIFORUM-UK economic partnership agreement",
             "introductory_notes_file": "cariforum_intro.md",
             "fta_intro_file": "cariforum.md",
@@ -362,6 +503,20 @@
         },
         {
             "scheme_code": "chile",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Chile association agreement",
             "introductory_notes_file": "chile_intro.md",
             "fta_intro_file": "chile.md",
@@ -381,6 +536,20 @@
         },
         {
             "scheme_code": "cotedivoire",
+            "proofs": [
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                },
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                }
+            ],
             "title": "UK-Côte d’Ivoire Stepping Stone Economic Partnership Agreement",
             "introductory_notes_file": "cotedivoire_intro.md",
             "fta_intro_file": "cotedivoire.md",
@@ -400,6 +569,20 @@
         },
         {
             "scheme_code": "egypt",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Egypt Association Agreement",
             "introductory_notes_file": "egypt_intro.md",
             "fta_intro_file": "egypt.md",
@@ -419,6 +602,20 @@
         },
         {
             "scheme_code": "faroe-islands",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Faroe Islands free trade agreement (FTA)",
             "introductory_notes_file": "faroe-islands_intro.md",
             "fta_intro_file": "faroe-islands.md",
@@ -438,6 +635,20 @@
         },
         {
             "scheme_code": "georgia",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Georgia strategic partnership and cooperation agreement",
             "introductory_notes_file": "georgia_intro.md",
             "fta_intro_file": "georgia.md",
@@ -457,6 +668,20 @@
         },
         {
             "scheme_code": "ghana",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Ghana Interim Trade Partnership Agreement",
             "introductory_notes_file": "ghana_intro.md",
             "fta_intro_file": "ghana.md",
@@ -476,6 +701,20 @@
         },
         {
             "scheme_code": "iceland-norway",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "Agreement on trade in goods between Iceland, Norway and the UK",
             "introductory_notes_file": "iceland-norway_intro.md",
             "fta_intro_file": "iceland-norway.md",
@@ -496,6 +735,20 @@
         },
         {
             "scheme_code": "israel",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Israel trade and partnership agreement",
             "introductory_notes_file": "israel_intro.md",
             "fta_intro_file": "israel.md",
@@ -515,6 +768,20 @@
         },
         {
             "scheme_code": "kosovo",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Kosovo partnership, trade and cooperation agreement",
             "introductory_notes_file": "kosovo_intro.md",
             "fta_intro_file": "kosovo.md",
@@ -534,6 +801,7 @@
         },
         {
             "scheme_code": "jordan",
+            "proofs": [],
             "title": "UK-Kosovo partnership, trade and cooperation agreement",
             "introductory_notes_file": "jordan_intro.md",
             "fta_intro_file": "jordan.md",
@@ -553,6 +821,20 @@
         },
         {
             "scheme_code": "lebanon",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Lebanon association agreement",
             "introductory_notes_file": "lebanon_intro.md",
             "fta_intro_file": "lebanon.md",
@@ -572,6 +854,20 @@
         },
         {
             "scheme_code": "mexico",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Mexico Trade Continuity Agreement",
             "introductory_notes_file": "mexico_intro.md",
             "fta_intro_file": "mexico.md",
@@ -591,6 +887,20 @@
         },
         {
             "scheme_code": "switzerland-liechtenstein",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Switzerland-Liechtenstein Trade Agreement",
             "introductory_notes_file": "switzerland-liechtenstein_intro.md",
             "fta_intro_file": "switzerland-liechtenstein.md",
@@ -611,6 +921,20 @@
         },
         {
             "scheme_code": "moldova",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Moldova Strategic Partnership, Trade and Cooperation Agreement",
             "introductory_notes_file": "moldova_intro.md",
             "fta_intro_file": "moldova.md",
@@ -630,6 +954,20 @@
         },
         {
             "scheme_code": "morocco",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Morocco association agreement",
             "introductory_notes_file": "morocco_intro.md",
             "fta_intro_file": "morocco.md",
@@ -649,6 +987,20 @@
         },
         {
             "scheme_code": "north-macedonia",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-North Macedonia Partnership, Trade and Cooperation agreement",
             "introductory_notes_file": "north-macedonia_intro.md",
             "fta_intro_file": "north-macedonia.md",
@@ -668,6 +1020,20 @@
         },
         {
             "scheme_code": "pacific",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Pacific Economic Partnership Agreement (EPA)",
             "footnote": "Samoa and the Solomon Islands have not yet acceded to the Pacific States-UK Interim Economic Partnership Agreement (pending a decision on their accession), however preferences under the agreement took effect on 1 January 2021 through a Memorandum of Understanding.",
             "introductory_notes_file": "pacific_intro.md",
@@ -690,6 +1056,20 @@
         },
         {
             "scheme_code": "palestinian-authority",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Palestinian Authority political, trade and partnership agreement",
             "introductory_notes_file": "palestinian-authority_intro.md",
             "fta_intro_file": "palestinian-authority.md",
@@ -710,6 +1090,20 @@
         {
             "scheme_code": "singapore",
             "country_code": "SG",
+            "proofs": [
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                },
+                {
+                    "summary": "Approved exporter for consignments with a value over £5500 / 6000 euros",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "approved-exporter.md"
+                }
+            ],
             "rule_offset": 14000000,
             "title": "UK-Singapore Trade Agreement",
             "introductory_notes_file": "singapore_intro.md",
@@ -730,6 +1124,20 @@
         },
         {
             "scheme_code": "serbia",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": " UK-Serbia partnership, trade and cooperation agreement ",
             "introductory_notes_file": "serbia_intro.md",
             "fta_intro_file": "serbia.md",
@@ -749,6 +1157,20 @@
         },
         {
             "scheme_code": "sacum",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "SACUM-UK economic partnership agreement (EPA)",
             "introductory_notes_file": "sacum_intro.md",
             "fta_intro_file": "sacum.md",
@@ -772,6 +1194,20 @@
         },
         {
             "scheme_code": "tunisia",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Tunisia association agreement",
             "introductory_notes_file": "tunisia_intro.md",
             "fta_intro_file": "tunisia.md",
@@ -792,6 +1228,14 @@
         {
             "scheme_code": "turkey",
             "country_code": "TR",
+            "proofs": [
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                }
+            ],
             "rule_offset": 12000000,
             "title": "UK-Turkey trade agreement",
             "introductory_notes_file": "turkey_intro.md",
@@ -812,6 +1256,20 @@
         },
         {
             "scheme_code": "ukraine",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
             "title": "UK-Ukraine political, free trade and strategic partnership agreement",
             "introductory_notes_file": "ukraine_intro.md",
             "fta_intro_file": "ukraine.md",
@@ -831,6 +1289,20 @@
         },
         {
             "scheme_code": "vietnam",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                }
+            ],
             "title": "UK-Vietnam Free Trade Agreement",
             "introductory_notes_file": "vietnam_intro.md",
             "fta_intro_file": "vietnam.md",
@@ -850,6 +1322,20 @@
         },
         {
             "scheme_code": "gsp",
+            "proofs": [
+                {
+                    "summary": "Generalised Scheme of Preferences form A",
+                    "subtext": "",
+                    "proof_class": "gsp-form-a",
+                    "detail": "gsp.md"
+                },
+                {
+                    "summary": "Invoice declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                }
+            ],
             "title": "Generalised Scheme of Preferences (GSP)",
             "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
             "introductory_notes_file": "gsp_intro.md",
@@ -934,5 +1420,11 @@
                 "VN"
             ]
         }
-    ]
+    ],
+    "proof_urls": {
+        "origin-declaration": "https://www.gov.uk/guidance/get-proof-of-origin-for-your-goods#origin-declaration",
+        "eur1-eur-med": "https://www.gov.uk/guidance/get-proof-of-origin-for-your-goods#eur1-and-eur-med-movement-certificates",
+        "importers-knowledge": "https://www.gov.uk/guidance/get-proof-of-origin-for-your-goods#importers-knowledge",
+        "gsp-form-a": "http://www.google.com"
+    }
 }
