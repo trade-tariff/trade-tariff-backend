@@ -26,7 +26,7 @@ module Api
                               .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions, :footnotes)
                               .take
 
-        raise Sequel::RecordNotFound if @commodity.children.any?
+        raise Sequel::RecordNotFound if commodity_has_children?
         raise Sequel::RecordNotFound if @commodity.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
       end
 
@@ -36,6 +36,14 @@ module Api
 
       def filter_params
         params.require(:filter).permit(:geographical_area_id, :meursing_additional_code_id) if params[:filter].present?
+      end
+
+      def commodity_has_children?
+        cache_key = "commodity-#{@commodity.goods_nomenclature_sid}-#{actual_date}-has-children?"
+
+        Rails.cache.fetch(cache_key, expires_in: CachedCommodityService::TTL) do
+          @commodity.children.any?
+        end
       end
     end
   end
