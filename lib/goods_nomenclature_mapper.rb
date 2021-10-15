@@ -70,7 +70,7 @@ class GoodsNomenclatureMapper
   end
 
   def map_goods_nomenclatures(primary, secondary)
-    if (heading_map?(primary.reload, secondary.reload) &&
+    if (heading_map?(primary, secondary) &&
        (primary.producline_suffix < secondary.producline_suffix)) ||
         (primary.number_indents < secondary.number_indents)
 
