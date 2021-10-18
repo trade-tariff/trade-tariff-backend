@@ -77,8 +77,6 @@ class CachedGeographicalAreaService
   end
 
   def excluded_geographical_area_ids
-    return %w[XU] if TradeTariffBackend.xi?
-
-    %w[GB XU XI]
+    TradeTariffBackend.xi? ? %w[XU XI] : %w[GB XU XI]
   end
 end
