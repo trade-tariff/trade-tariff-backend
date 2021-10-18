@@ -280,6 +280,11 @@ jobs:
       - run:
           name: "Cypress Smoke tests"
           command: 'cd trade-tariff-testing && yarn install && yarn run cypress run --spec "/*/**/HOTT-Shared/smokeTestCI.spec.js"'
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
+
 
   smoketest_staging:
     <<: *smoketest
