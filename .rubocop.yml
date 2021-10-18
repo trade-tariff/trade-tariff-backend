@@ -32,13 +32,13 @@ RSpec/ContextWording:
     - for
 RSpec/ExampleLength:
   Enabled: false
+RSpec/FilePath:
+  Enabled: false
 RSpec/NestedGroups:
   Enabled: false
 Rails/SaveBang:
   Enabled: false
 Rails/UniqueValidationWithoutIndex:
-  Enabled: false
-Rails/FilePath:
   Enabled: false
 Style/Documentation:
   Enabled: false
