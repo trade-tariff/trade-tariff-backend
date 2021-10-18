@@ -30,7 +30,7 @@ class CachedGeographicalAreaService
   ].freeze
   TTL = 24.hours
 
-  def initialize(actual_date, countries = false)
+  def initialize(actual_date, countries: false)
     @countries = countries
     @actual_date = actual_date
   end
