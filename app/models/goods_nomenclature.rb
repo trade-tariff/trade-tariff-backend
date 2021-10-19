@@ -6,6 +6,7 @@ class GoodsNomenclature < Sequel::Model
 
   plugin :time_machine, period_start_column: Sequel.qualify(:goods_nomenclatures, :validity_start_date),
                         period_end_column: Sequel.qualify(:goods_nomenclatures, :validity_end_date)
+
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :nullable
   plugin :active_model
@@ -69,9 +70,6 @@ class GoodsNomenclature < Sequel::Model
                                             primary_key: :goods_nomenclature_sid do |ds|
     ds.with_actual(ExportRefundNomenclature)
   end
-
-  one_to_many :measures, key: :goods_nomenclature_sid,
-                         foreign_key: :goods_nomenclature_sid
 
   many_to_many :chemicals, join_table: :chemicals_goods_nomenclatures, left_key: :goods_nomenclature_sid, right_key: :chemical_id
 
