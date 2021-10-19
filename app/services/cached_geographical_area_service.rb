@@ -30,7 +30,7 @@ class CachedGeographicalAreaService
   ].freeze
   TTL = 24.hours
 
-  def initialize(actual_date, countries = false)
+  def initialize(actual_date, countries: false)
     @countries = countries
     @actual_date = actual_date
   end
@@ -77,8 +77,6 @@ class CachedGeographicalAreaService
   end
 
   def excluded_geographical_area_ids
-    return %w[XU] if TradeTariffBackend.xi?
-
-    %w[GB XU XI]
+    TradeTariffBackend.xi? ? %w[XU XI] : %w[GB XU XI]
   end
 end

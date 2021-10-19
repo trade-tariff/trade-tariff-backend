@@ -1,4 +1,5 @@
-RSpec.describe Api::V2::GeographicalAreasController, 'GET #countries' do
+RSpec.describe Api::V2::GeographicalAreasController, '#index' do
+  # rubocop:disable RSpec/LetSetup, RSpec/MultipleMemoizedHelpers
   let!(:geographical_area1) do
     create :geographical_area,
            :with_description,
@@ -36,7 +37,7 @@ RSpec.describe Api::V2::GeographicalAreasController, 'GET #countries' do
   it 'calls the CachedGeographicalAreaService' do
     get :countries, format: :json
 
-    expect(CachedGeographicalAreaService).to have_received(:new).with(actual_date, true)
+    expect(CachedGeographicalAreaService).to have_received(:new).with(actual_date, { countries: true })
   end
 
   it 'caches the serialized countries' do
@@ -253,4 +254,5 @@ RSpec.describe Api::V2::GeographicalAreasController, 'GET #countries' do
       expect(response.body).to match_json_expression pattern
     end
   end
+  # rubocop:enable RSpec/LetSetup, RSpec/MultipleMemoizedHelpers
 end

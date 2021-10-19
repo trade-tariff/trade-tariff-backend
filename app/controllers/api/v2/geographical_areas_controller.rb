@@ -6,7 +6,7 @@ module Api
       end
 
       def countries
-        render json: CachedGeographicalAreaService.new(actual_date, true).call
+        render json: CachedGeographicalAreaService.new(actual_date, countries: true).call
       end
     end
   end
