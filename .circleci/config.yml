@@ -279,7 +279,7 @@ jobs:
           command: 'echo "Testing: ${CYPRESS_BASE_URL}"'
       - run:
           name: "Cypress Smoke tests"
-          command: 'cd trade-tariff-testing && yarn install && yarn run cypress run --spec "/*/**/HOTT-Shared/smokeTestCI.spec.js"'
+          command: 'cd trade-tariff-testing && yarn install && yarn run cypress run --spec "/*/**/HOTT-Shared/devSmokeTestCI.spec.js"'
 
   smoketest_staging:
     <<: *smoketest
