@@ -141,6 +141,36 @@ commands:
           command: |
             cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && rake db:migrate" --name "db-migrate" --wait
 
+  smoketest:
+    parameters:
+      url:
+        type: string
+    steps:
+      - run:
+          name: "Checkout tests repo"
+          command: git clone --depth=1 "https://github.com/trade-tariff/trade-tariff-testing/"
+      - run:
+          name: "Check environment being tested"
+          environment:
+            CYPRESS_BASE_URL: '<< parameters.url >>'
+          command: 'echo "Testing: ${CYPRESS_BASE_URL}"'
+      - restore_cache:
+          keys:
+            - v2-smoketest-deps-{{ checksum "trade-tariff-testing/yarn.lock" }}
+      - run:
+          name: "Install NPM packages"
+          command: 'cd trade-tariff-testing && yarn install'
+      - save_cache:
+          key: v2-smoketest-deps-{{ checksum "trade-tariff-testing/yarn.lock" }}
+          paths:
+            - trade-tariff-testing/node_modules
+            - /root/.cache/Cypress
+      - run:
+          name: "Cypress Smoke tests"
+          environment:
+            CYPRESS_BASE_URL: '<< parameters.url >>'
+          command: 'cd trade-tariff-testing && yarn run cypress run --spec "/*/**/HOTT-Shared/devSmokeTestCI.spec.js"'
+
   sentry-release:
     steps:
       - checkout
@@ -265,26 +295,19 @@ jobs:
           event: fail
           template: basic_fail_1
 
-  smoketest_dev: &smoketest
+  smoketest_dev:
     docker:
       - image: 'cypress/base:latest'
-    environment:
-      CYPRESS_BASE_URL: https://dev.trade-tariff.service.gov.uk
     steps:
-      - run:
-          name: "Checkout tests repo"
-          command: git clone --depth=1 "https://github.com/trade-tariff/trade-tariff-testing/"
-      - run:
-          name: "Check environment being tested"
-          command: 'echo "Testing: ${CYPRESS_BASE_URL}"'
-      - run:
-          name: "Cypress Smoke tests"
-          command: 'cd trade-tariff-testing && yarn install && yarn run cypress run --spec "/*/**/HOTT-Shared/devSmokeTestCI.spec.js"'
+      - smoketest:
+          url: https://dev.trade-tariff.service.gov.uk
 
   smoketest_staging:
-    <<: *smoketest
-    environment:
-      CYPRESS_BASE_URL: https://staging.trade-tariff.service.gov.uk
+    docker:
+      - image: 'cypress/base:latest'
+    steps:
+      - smoketest:
+          url: https://staging.trade-tariff.service.gov.uk
 
   deploy_dev:
     docker:
