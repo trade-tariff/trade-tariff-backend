@@ -1340,6 +1340,7 @@
             "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
             "introductory_notes_file": "gsp_intro.md",
             "fta_intro_file": "gsp.md",
+            "unilateral": true,
             "links": [
                 {
                     "text": "GSP - Least Developed Countries Framework",

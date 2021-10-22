@@ -6,6 +6,7 @@ FactoryBot.define do
     fta_intro_file          { 'fta_intro.md' }
     countries               { %w[FR ES IT DE] }
     footnote                { 'This scheme may be expanded in the future' }
+    unilateral              { nil }
 
     trait :with_links do
       links { attributes_for_list :rules_of_origin_link, 2 }
