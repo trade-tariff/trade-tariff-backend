@@ -20,18 +20,18 @@ class CdsImporter
       mappers = ALL_MAPPERS.select  { |m| m.mapping_root == key }
                            .sort_by { |m| m.mapping_path ? m.mapping_path.length : 0 }
 
-      mappers.each do |mapper|
+      mappers.each.with_object({}) do |mapper, oplog_inserts_performed|
         remove_excluded_geographical_areas! if mapper == CdsImporter::EntityMapper::MeasureMapper
 
         transform! if mapper == CdsImporter::EntityMapper::GeographicalAreaMembershipMapper
 
         instances = mapper.new(xml_node).parse
         instances.each do |i|
-          if TariffSynchronizer.cds_logger_enabled
-            save_record(i)
-          else
-            save_record!(i)
-          end
+          oplog_inserts_performed[i.operation_klass.to_s] ||= 0
+
+          oplog_oid = logger_enabled? ? save_record(i) : save_record!(i)
+
+          oplog_inserts_performed[i.operation_klass.to_s] += 1 if oplog_oid
         end
       end
     end
@@ -109,6 +109,10 @@ class CdsImporter
 
     def instrument_warning(message, xml_node)
       instrument('apply.import_warnings', message: message, xml_node: xml_node)
+    end
+
+    def logger_enabled?
+      TariffSynchronizer.cds_logger_enabled
     end
   end
 end
