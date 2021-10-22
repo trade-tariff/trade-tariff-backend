@@ -5,7 +5,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
 
   let :scheme do
     build :rules_of_origin_scheme, :with_links, :with_proofs,
-          scheme_set: scheme_set
+          scheme_set: scheme_set, unilateral: true
   end
 
   let :rules do
@@ -28,6 +28,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           title: scheme.title,
           countries: scheme.countries,
           footnote: scheme.footnote,
+          unilateral: true,
           fta_intro: scheme.fta_intro,
           introductory_notes: scheme.introductory_notes,
         },
