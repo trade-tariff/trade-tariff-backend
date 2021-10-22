@@ -216,6 +216,14 @@ module TradeTariffBackend
       ]
     end
 
+    def check_query_count?
+      excess_query_threshold.positive?
+    end
+
+    def excess_query_threshold
+      @excess_query_threshold ||= ENV['EXCESS_QUERY_THRESHOLD'].presence&.to_i || 0
+    end
+
     def api_version(request)
       request.headers['Accept']&.scan(/application\/vnd.uktt.v(\d+)/)&.flatten&.first || '1'
     end
