@@ -885,6 +885,7 @@
             "title": "Generalised Scheme of Preferences (GSP)",
             "introductory_notes_file": "gsp_intro.md",
             "fta_intro_file": "gsp.md",
+            "unilateral": true,
             "links": [
                 {
                     "text": "GSP - Least Developed Countries Framework",
