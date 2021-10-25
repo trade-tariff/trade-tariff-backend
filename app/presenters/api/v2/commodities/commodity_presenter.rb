@@ -63,6 +63,8 @@ module Api
         end
 
         def entry_price_system?
+          return false if TradeTariffBackend.uk?
+
           import_measures.any?(&:entry_price_system?)
         end
 
