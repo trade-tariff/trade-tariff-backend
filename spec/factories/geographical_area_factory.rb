@@ -28,6 +28,10 @@ FactoryBot.define do
       geographical_code { '1' }
     end
 
+    trait :region do
+      geographical_code { '2' }
+    end
+
     after(:build) do |geographical_area, _evaluator|
       FactoryBot.create(:geographical_area_description, :with_period,
                         geographical_area_id: geographical_area.geographical_area_id,
