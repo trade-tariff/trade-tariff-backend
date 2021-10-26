@@ -152,4 +152,22 @@ RSpec.describe Api::V2::GeographicalAreasController do
       it { expect(do_response.body).to match_json_expression(pattern) }
     end
   end
+
+  describe 'GET show' do
+    subject(:do_response) { get :show, params: { id: country_geographical_area.geographical_area_id } }
+
+    let(:pattern) do
+      {
+        data: {
+          id: String,
+          type: String,
+          attributes: { id: String, description: String, geographical_area_id: String },
+          relationships: { children_geographical_areas: { data: [] } },
+        },
+        included: Array,
+      }
+    end
+
+    it { expect(do_response.body).to match_json_expression(pattern) }
+  end
 end
