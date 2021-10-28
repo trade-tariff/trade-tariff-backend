@@ -6,10 +6,6 @@ module Api
 
         set_type :measure_component
 
-        set_id do |obj|
-          obj.pk.join('-')
-        end
-
         attributes :duty_expression_id,
                    :duty_amount,
                    :monetary_unit_code,
