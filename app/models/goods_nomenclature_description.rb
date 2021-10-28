@@ -15,16 +15,16 @@ class GoodsNomenclatureDescription < Sequel::Model
   delegate :validity_start_date, :validity_end_date, to: :goods_nomenclature_description_period
 
   custom_format :description_plain, with: DescriptionTrimFormatter,
-                             using: :description
+                                    using: :description
   custom_format :formatted_description, with: DescriptionFormatter,
-                                 using: :description
+                                        using: :description
 
   def description
-    super.gsub(%r/( ?<br> ?){2,}/, '<br>')
+    super.try(:gsub, %r/( ?<br> ?){2,}/, '<br>') || ''
   end
 
   def formatted_description
-    super.mb_chars.downcase.to_s.gsub(/^(.)/) { $1.capitalize }
+    super.mb_chars.downcase.to_s.gsub(/^(.)/) { Regexp.last_match(1).capitalize }
   end
 
   def to_s
