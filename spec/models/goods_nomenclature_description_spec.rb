@@ -2,6 +2,12 @@ RSpec.describe GoodsNomenclatureDescription do
   describe '#description' do
     subject(:goods_nomenclature_description) { build :goods_nomenclature_description, description: description }
 
+    context 'when the description value is nil' do
+      let(:description) { nil }
+
+      it { expect(goods_nomenclature_description.description).to eq('') }
+    end
+
     context 'when the description value has multiple chained <br><br><br>tags' do
       let(:description) do
         'Additives containing<br> <br><br><br>- overbased magnesium (C20-C24) alkylbenzenesulphonates (CAS RN 231297-75-9) and<br> <br><br><br>- by weight more than 25 % but not more than 50 % of mineral oils,<br>having a total base number of more than 350, but not more than 450, for use in the manufacture of lubricating oils'
