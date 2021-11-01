@@ -25,21 +25,21 @@ RSpec.describe Api::V2::Headings::HeadingSerializer do
 
   let(:expected_pattern) do
     {
-      'data' => {
-        'id' => heading.goods_nomenclature_sid.to_s,
-        'type' => 'heading',
-        'attributes' => {
-          'goods_nomenclature_item_id' => heading.goods_nomenclature_item_id,
-          'description' => heading.description,
-          'bti_url' => 'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code',
-          'formatted_description' => heading.formatted_description,
-          'declarable' => false,
+      data: {
+        id: heading.goods_nomenclature_sid.to_s,
+        type: 'heading',
+        attributes: {
+          goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
+          description: heading.description,
+          bti_url: 'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code',
+          formatted_description: heading.formatted_description,
+          declarable: false,
         },
-        'relationships' => {
-          'footnotes' => { 'data' => [] },
-          'section' => { 'data' => nil },
-          'chapter' => { 'data' => nil },
-          'commodities' => { 'data' => [{ 'id' => heading.commodities.first.goods_nomenclature_sid.to_s, 'type' => 'commodity' }] },
+        relationships: {
+          footnotes: { data: [] },
+          section: { data: nil },
+          chapter: { data: nil },
+          commodities: { data: [{ id: heading.commodities.first.goods_nomenclature_sid.to_s, type: 'commodity' }] },
         },
       },
     }
