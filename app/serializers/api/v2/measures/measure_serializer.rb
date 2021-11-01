@@ -18,12 +18,12 @@ module Api
                    :reduction_indicator,
                    :meursing
 
-        attribute :resolved_duty_expression do |root_measure, params|
-          additional_code_id = params[:meursing_additional_code_id]
+        attribute :resolved_duty_expression do |measure, params|
+          measure.resolved_duty_expression_for(params[:meursing_additional_code_id])
+        end
 
-          if additional_code_id.present?
-            root_measure.resolved_duty_expression_for(additional_code_id)
-          end
+        has_many :resolved_measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer do |measure, params|
+          measure.resolved_components_for(params[:meursing_additional_code_id])
         end
 
         has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer
@@ -34,6 +34,7 @@ module Api
                                         if: proc { |measure| !measure.national && measure.suspended? }
         has_many :measure_conditions, serializer: Api::V2::Measures::MeasureConditionSerializer
         has_many :measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer
+
         has_many :national_measurement_units, serializer: Api::V2::Measures::NationalMeasurementUnitSerializer
         has_one :geographical_area, serializer: Api::V2::Measures::GeographicalAreaSerializer
         has_many :excluded_countries, record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer

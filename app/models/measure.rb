@@ -8,7 +8,7 @@ class Measure < Sequel::Model
     BASE_REGULATION_ROLE, # Base regulation
     PROVISIONAL_ANTIDUMPING_ROLE, # Provisional anti-dumping/countervailing duty
     DEFINITIVE_ANTIDUMPING_ROLE, # Definitive anti-dumping/countervailing duty
-    MODIFICATION_REGULATION_ROLE # Modification
+    MODIFICATION_REGULATION_ROLE, # Modification
   ].freeze
 
   set_primary_key [:measure_sid]
@@ -384,7 +384,7 @@ class Measure < Sequel::Model
     if quota_order_number.present?
       quota_order_number
     elsif ordernumber.present?
-      # TODO refactor if possible
+      # TODO: refactor if possible
       qon = QuotaOrderNumber.new(quota_order_number_id: ordernumber)
       qon.associations[:quota_definition] = nil
       qon
@@ -406,7 +406,7 @@ class Measure < Sequel::Model
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(conditions)
      .where { |o| o.<=(:validity_start_date, point_in_time) }
      .limit(TradeTariffBackend.change_count)
@@ -448,22 +448,27 @@ class Measure < Sequel::Model
 
   def resolved_duty_expression_for(additional_code_id)
     if meursing?
-      meursing_measures = meursing_measures_for(additional_code_id)
-
-      components = MeursingMeasureComponentResolverService.new(self, meursing_measures).call
-
-      # Handle bugs in the data where one or more of the meursing measures are missing or missing their corresponding component
-      unless components.any?(&:nil?)
-        components.map(&:formatted_duty_expression).join(' ')
-      end
+      resolved_components_for(additional_code_id).map(&:formatted_duty_expression).join(' ')
+    else
+      ''
     end
   end
 
-  private
+  def resolved_components_for(additional_code_id)
+    @resolved_components_for ||= if meursing? && additional_code_id.present?
+                                   meursing_measures = meursing_measures_for(additional_code_id)
+
+                                   MeursingMeasureComponentResolverService.new(self, meursing_measures).call
+                                 else
+                                   []
+                                 end
+  end
 
   def meursing_measures_for(additional_code_id)
     MeursingMeasureFinderService.new(self, additional_code_id).call
   end
+
+  private
 
   def all_components
     measure_conditions.flat_map(&:measure_condition_components) + measure_components

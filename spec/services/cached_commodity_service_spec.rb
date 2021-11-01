@@ -89,6 +89,7 @@ RSpec.describe CachedCommodityService do
               excluded_countries: Hash,
               footnotes: Hash,
               order_number: Hash,
+              resolved_measure_components: Hash,
             },
             meta: { duty_calculator: { source: 'uk' } },
           },

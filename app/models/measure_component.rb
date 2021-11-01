@@ -31,6 +31,10 @@ class MeasureComponent < Sequel::Model
   delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
   delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
+  def id
+    pk.join('-')
+  end
+
   def formatted_duty_expression
     return '' if measure.measure_type_id.in?(%w[DDA DDJ])
 

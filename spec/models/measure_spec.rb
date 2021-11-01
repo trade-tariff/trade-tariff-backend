@@ -1027,6 +1027,66 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#resolved_components_for' do
+    subject(:measure) { create(:measure) }
+
+    before do
+      allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: meursing_measures))
+      allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: resolved_components))
+    end
+
+    let(:meursing_measures) { [] }
+    let(:resolved_components) { [] }
+
+    let(:additional_code_id) { '000' }
+
+    let(:ad_valorem_component) do
+      create(
+        :measure_component,
+        :ad_valorem,
+        :with_duty_expression,
+        duty_amount: 28,
+        measure_sid: measure.measure_sid,
+      )
+    end
+
+    let(:agricultural_component) do
+      Api::V2::Measures::MeursingMeasureComponentPresenter.new(
+        create(
+          :measure_component,
+          :agricultural_meursing,
+          :with_duty_expression,
+          duty_amount: 100,
+          measurement_unit_code: 'DTN',
+          monetary_unit_code: 'EUR',
+          measure_sid: measure.measure_sid,
+        ),
+      )
+    end
+
+    context 'when the measure is not meursing' do
+      subject(:measure) { create(:measure, :with_measure_components, :without_meursing) }
+
+      it { expect(measure.resolved_components_for(additional_code_id)).to eq([]) }
+    end
+
+    context 'when no resolved components are returned' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
+
+      let(:resolved_components) { [] }
+
+      it { expect(measure.resolved_components_for(additional_code_id)).to eq([]) }
+    end
+
+    context 'when all of the resolved components are valid components' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
+
+      let(:resolved_components) { [ad_valorem_component, agricultural_component] }
+
+      it { expect(measure.resolved_components_for(additional_code_id)).to eq(resolved_components) }
+    end
+  end
+
   describe '#resolved_duty_expression_for' do
     subject(:measure) { create(:measure) }
 
@@ -1040,50 +1100,84 @@ RSpec.describe Measure do
 
     let(:additional_code_id) { '000' }
 
+    let(:ad_valorem_component) do
+      create(
+        :measure_component,
+        :ad_valorem,
+        :with_duty_expression,
+        duty_amount: 28,
+        measure_sid: measure.measure_sid,
+      )
+    end
+
+    let(:agricultural_component) do
+      Api::V2::Measures::MeursingMeasureComponentPresenter.new(
+        create(
+          :measure_component,
+          :agricultural_meursing,
+          :with_duty_expression,
+          duty_amount: 100,
+          measurement_unit_code: 'DTN',
+          monetary_unit_code: 'EUR',
+          measure_sid: measure.measure_sid,
+        ),
+      )
+    end
+
     context 'when the measure is not meursing' do
       subject(:measure) { create(:measure, :with_measure_components, :without_meursing) }
 
-      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to be_nil }
+      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq('') }
     end
 
-    context 'when any of the resolved components are nil' do
+    context 'when no resolved components are returned' do
       subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
 
-      let(:resolved_components) { [nil] }
+      let(:resolved_components) { [] }
 
-      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to be_nil }
+      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq('') }
     end
 
     context 'when all of the resolved components are valid components' do
       subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
 
-      let(:ad_valorem_component) do
-        create(
-          :measure_component,
-          :ad_valorem,
-          :with_duty_expression,
-          duty_amount: 28,
-          measure_sid: measure.measure_sid,
-        )
-      end
-
-      let(:agricultural_component) do
-        Api::V2::Measures::MeursingMeasureComponentPresenter.new(
-          create(
-            :measure_component,
-            :agricultural_meursing,
-            :with_duty_expression,
-            duty_amount: 100,
-            measurement_unit_code: 'DTN',
-            monetary_unit_code: 'EUR',
-            measure_sid: measure.measure_sid,
-          ),
-        )
-      end
-
       let(:resolved_components) { [ad_valorem_component, agricultural_component] }
 
       it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq("<span>28.00</span> #{ad_valorem_component.duty_expression_description} <strong>+ <span>100.00</span> EUR</strong>") }
     end
+
+    context 'when the additional_code_id is nil' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
+
+      let(:additional_code_id) { nil }
+      let(:resolved_components) { [ad_valorem_component, agricultural_component] }
+
+      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq('') }
+    end
+  end
+
+  describe '#meursing_measures_for' do
+    subject(:measure) { create(:measure) }
+
+    before { allow(MeursingMeasureFinderService).to receive(:new).and_return(finder_service) }
+
+    let(:meursing_measures) { [] }
+
+    let(:finder_service) do
+      instance_double(
+        'MeursingMeasureFinderService',
+        call: meursing_measures,
+      )
+    end
+
+    let(:additional_code_id) { '000' }
+
+    it 'calls the MeursingMeasureFinderService with the correct inputs' do
+      measure.meursing_measures_for(additional_code_id)
+
+      expect(MeursingMeasureFinderService).to have_received(:new).with(measure, additional_code_id)
+    end
+
+    it { expect(measure.meursing_measures_for(additional_code_id)).to eq(meursing_measures) }
   end
 end
