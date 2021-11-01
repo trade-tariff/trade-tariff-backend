@@ -11,17 +11,17 @@ RSpec.describe Api::V2::Measures::MeasureLegalActSerializer do
 
   let(:expected_pattern) do
     {
-      'data' => {
-        'id' => regulation.regulation_id.to_s,
-        'type' => 'legal_act',
-        'attributes' => {
-          'validity_start_date' => regulation.validity_start_date,
-          'validity_end_date' => regulation.validity_end_date,
-          'officialjournal_number' => regulation.officialjournal_number,
-          'officialjournal_page' => regulation.officialjournal_page,
-          'regulation_code' => '14567/23',
-          'regulation_url' => generated_url,
-          'description' => regulation.information_text,
+      data: {
+        id: regulation.regulation_id.to_s,
+        type: 'legal_act',
+        attributes: {
+          validity_start_date: regulation.validity_start_date,
+          validity_end_date: regulation.validity_end_date,
+          officialjournal_number: regulation.officialjournal_number,
+          officialjournal_page: regulation.officialjournal_page,
+          regulation_code: '14567/23',
+          regulation_url: generated_url,
+          description: regulation.information_text,
         },
       },
     }.as_json

@@ -5,27 +5,27 @@ RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
 
   let(:expected_pattern) do
     {
-      "data": {
-        "id": serializable.measure_condition_sid.to_s,
-        "type": 'measure_condition',
-        "attributes": {
-          "condition_code": serializable.condition_code,
-          "condition": serializable.condition,
-          "document_code": serializable.document_code,
-          "certificate_description": serializable.certificate_description,
-          "requirement": serializable.requirement,
-          "action": nil,
-          "action_code": serializable.action_code,
-          "duty_expression": '',
-          "condition_duty_amount": serializable.condition_duty_amount,
-          "condition_monetary_unit_code": serializable.condition_monetary_unit_code,
-          "monetary_unit_abbreviation": nil,
-          "condition_measurement_unit_code": serializable.condition_measurement_unit_code,
-          "condition_measurement_unit_qualifier_code": serializable.condition_measurement_unit_qualifier_code,
+      data: {
+        id: serializable.measure_condition_sid.to_s,
+        type: 'measure_condition',
+        attributes: {
+          condition_code: serializable.condition_code,
+          condition: serializable.condition,
+          document_code: serializable.document_code,
+          certificate_description: serializable.certificate_description,
+          requirement: serializable.requirement,
+          action: nil,
+          action_code: serializable.action_code,
+          duty_expression: '',
+          condition_duty_amount: serializable.condition_duty_amount,
+          condition_monetary_unit_code: serializable.condition_monetary_unit_code,
+          monetary_unit_abbreviation: nil,
+          condition_measurement_unit_code: serializable.condition_measurement_unit_code,
+          condition_measurement_unit_qualifier_code: serializable.condition_measurement_unit_qualifier_code,
         },
-        "relationships": {
-          "measure_condition_components": {
-            "data": [],
+        relationships: {
+          measure_condition_components: {
+            data: [],
           },
         },
       },
