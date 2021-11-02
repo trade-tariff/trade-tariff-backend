@@ -140,15 +140,11 @@ RSpec.describe CachedCommodityService do
       end
     end
 
-    context 'when the filter specifies a meursing_additional_code_id' do
-      let(:filter_params) do
-        ActionController::Parameters.new(
-          meursing_additional_code_id: 'foo',
-        ).permit!
-      end
+    context 'when the current Thread specifies a meursing_additional_code_id' do
+      include_context 'with meursing additional code id', 'foo'
 
       it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}--foo"
+        expected_key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-foo"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end

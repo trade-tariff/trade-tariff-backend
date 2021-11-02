@@ -59,8 +59,10 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
   describe '#serializable_hash' do
     it { is_expected.to include_json(expected_pattern) }
 
-    context 'when passing a meursing additional code' do
-      let(:options) { { params: { meursing_additional_code_id: '000' }, include: %w[measure_components] } }
+    context 'when a meursing additional code is specified' do
+      include_context 'with meursing additional code id', '000'
+
+      let(:options) { { include: %w[measure_components] } }
       let(:meursing_agricultural_measure) { create(:measure, :agricultural) }
 
       let(:expected_pattern) do

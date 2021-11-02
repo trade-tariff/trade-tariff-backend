@@ -13,6 +13,10 @@ FactoryBot.define do
     measurement_unit_code { nil }
   end
 
+  trait :with_measure_unit do
+    measurement_unit_code { 'DTN' }
+  end
+
   trait :with_duty_expression do
     after(:build) do |measure_component, _evaluator|
       create(

@@ -850,29 +850,39 @@ RSpec.describe Measure do
 
   describe '#expresses_unit?' do
     context 'when the measure type is one that expresses the unit' do
-      context 'when the measure is an ad_valorem measure' do
-        subject(:measure) { create(:measure, :with_measure_components, :ad_valorem, :expresses_units) }
-
-        it 'returns false' do
-          expect(measure).not_to be_expresses_unit
-        end
-      end
-
-      context 'when the measure is not ad_valorem measure' do
+      context 'when the measure has measure components with units' do
         subject(:measure) { create(:measure, :with_measure_components, :no_ad_valorem, :expresses_units) }
 
-        it 'returns true' do
-          expect(measure).to be_expresses_unit
+        it { expect(measure).to be_expresses_unit }
+      end
+
+      context 'when the measure has measure conditions with units' do
+        subject(:measure) { create(:measure, :with_measure_conditions, :no_ad_valorem, :expresses_units) }
+
+        it { expect(measure).to be_expresses_unit }
+      end
+
+      context 'when the measure has resolved measure components with units' do
+        subject(:measure) { create(:measure, :expresses_units) }
+
+        before do
+          measure_unit_component = create(
+            :measure_component,
+            :with_measure_unit,
+            measure_sid: measure.measure_sid,
+          )
+          allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: []))
+          allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: [measure_unit_component]))
         end
+
+        it { expect(measure).to be_expresses_unit }
       end
     end
 
     context 'when the measure type is one that does not express units' do
       subject(:measure) { create(:measure, :with_measure_components, :no_expresses_units) }
 
-      it 'returns false' do
-        expect(measure).not_to be_expresses_unit
-      end
+      it { expect(measure).not_to be_expresses_unit }
     end
   end
 
@@ -880,25 +890,42 @@ RSpec.describe Measure do
     context 'when there are ad valorem conditions' do
       subject(:measure) { create(:measure, :with_measure_conditions, :ad_valorem) }
 
-      it 'returns true' do
-        expect(measure).to be_ad_valorem
-      end
+      it { expect(measure).to be_ad_valorem }
     end
 
     context 'when there are ad valorem components' do
       subject(:measure) { create(:measure, :with_measure_components, :ad_valorem) }
 
-      it 'returns true' do
-        expect(measure).to be_ad_valorem
+      it { expect(measure).to be_ad_valorem }
+    end
+
+    context 'when there are ad valorem resolved components' do
+      subject(:measure) { create(:measure) }
+
+      before do
+        ad_valorem_component = create(
+          :measure_component,
+          :ad_valorem,
+          :with_duty_expression,
+          duty_amount: 28,
+          measure_sid: measure.measure_sid,
+        )
+        allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: []))
+        allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(
+          instance_double(
+            'MeursingMeasureComponentResolverService',
+            call: [ad_valorem_component],
+          ),
+        )
       end
+
+      it { expect(measure).to be_ad_valorem }
     end
 
     context 'when there are no ad valorem conditions or components' do
       subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions, :no_ad_valorem) }
 
-      it 'returns false' do
-        expect(measure).not_to be_ad_valorem
-      end
+      it { expect(measure).not_to be_ad_valorem }
     end
   end
 
@@ -1027,7 +1054,7 @@ RSpec.describe Measure do
     end
   end
 
-  describe '#resolved_components_for' do
+  describe '#resolved_measure_components' do
     subject(:measure) { create(:measure) }
 
     before do
@@ -1035,10 +1062,10 @@ RSpec.describe Measure do
       allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: resolved_components))
     end
 
+    include_context 'with meursing additional code id', '000'
+
     let(:meursing_measures) { [] }
     let(:resolved_components) { [] }
-
-    let(:additional_code_id) { '000' }
 
     let(:ad_valorem_component) do
       create(
@@ -1067,7 +1094,7 @@ RSpec.describe Measure do
     context 'when the measure is not meursing' do
       subject(:measure) { create(:measure, :with_measure_components, :without_meursing) }
 
-      it { expect(measure.resolved_components_for(additional_code_id)).to eq([]) }
+      it { expect(measure.resolved_measure_components).to eq([]) }
     end
 
     context 'when no resolved components are returned' do
@@ -1075,7 +1102,7 @@ RSpec.describe Measure do
 
       let(:resolved_components) { [] }
 
-      it { expect(measure.resolved_components_for(additional_code_id)).to eq([]) }
+      it { expect(measure.resolved_measure_components).to eq([]) }
     end
 
     context 'when all of the resolved components are valid components' do
@@ -1083,12 +1110,14 @@ RSpec.describe Measure do
 
       let(:resolved_components) { [ad_valorem_component, agricultural_component] }
 
-      it { expect(measure.resolved_components_for(additional_code_id)).to eq(resolved_components) }
+      it { expect(measure.resolved_measure_components).to eq(resolved_components) }
     end
   end
 
-  describe '#resolved_duty_expression_for' do
+  describe '#resolved_duty_expression' do
     subject(:measure) { create(:measure) }
+
+    include_context 'with meursing additional code id', '000'
 
     before do
       allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: meursing_measures))
@@ -1097,8 +1126,6 @@ RSpec.describe Measure do
 
     let(:meursing_measures) { [] }
     let(:resolved_components) { [] }
-
-    let(:additional_code_id) { '000' }
 
     let(:ad_valorem_component) do
       create(
@@ -1127,7 +1154,7 @@ RSpec.describe Measure do
     context 'when the measure is not meursing' do
       subject(:measure) { create(:measure, :with_measure_components, :without_meursing) }
 
-      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq('') }
+      it { expect(measure.resolved_duty_expression).to eq('') }
     end
 
     context 'when no resolved components are returned' do
@@ -1135,7 +1162,7 @@ RSpec.describe Measure do
 
       let(:resolved_components) { [] }
 
-      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq('') }
+      it { expect(measure.resolved_duty_expression).to eq('') }
     end
 
     context 'when all of the resolved components are valid components' do
@@ -1143,23 +1170,26 @@ RSpec.describe Measure do
 
       let(:resolved_components) { [ad_valorem_component, agricultural_component] }
 
-      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq("<span>28.00</span> #{ad_valorem_component.duty_expression_description} <strong>+ <span>100.00</span> EUR</strong>") }
+      it { expect(measure.resolved_duty_expression).to eq("<span>28.00</span> #{ad_valorem_component.duty_expression_description} <strong>+ <span>100.00</span> EUR</strong>") }
     end
 
     context 'when the additional_code_id is nil' do
       subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
 
-      let(:additional_code_id) { nil }
+      include_context 'with meursing additional code id', nil
+
       let(:resolved_components) { [ad_valorem_component, agricultural_component] }
 
-      it { expect(measure.resolved_duty_expression_for(additional_code_id)).to eq('') }
+      it { expect(measure.resolved_duty_expression).to eq('') }
     end
   end
 
-  describe '#meursing_measures_for' do
+  describe '#meursing_measures' do
     subject(:measure) { create(:measure) }
 
     before { allow(MeursingMeasureFinderService).to receive(:new).and_return(finder_service) }
+
+    include_context 'with meursing additional code id', '000'
 
     let(:meursing_measures) { [] }
 
@@ -1170,14 +1200,12 @@ RSpec.describe Measure do
       )
     end
 
-    let(:additional_code_id) { '000' }
-
     it 'calls the MeursingMeasureFinderService with the correct inputs' do
-      measure.meursing_measures_for(additional_code_id)
+      measure.meursing_measures
 
-      expect(MeursingMeasureFinderService).to have_received(:new).with(measure, additional_code_id)
+      expect(MeursingMeasureFinderService).to have_received(:new).with(measure, '000')
     end
 
-    it { expect(measure.meursing_measures_for(additional_code_id)).to eq(meursing_measures) }
+    it { expect(measure.meursing_measures).to eq(meursing_measures) }
   end
 end

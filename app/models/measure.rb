@@ -427,11 +427,11 @@ class Measure < Sequel::Model
   end
 
   def expresses_unit?
-    measure_type.expresses_unit? && !ad_valorem?
+    measure_type.expresses_unit? && components_express_unit?
   end
 
   def ad_valorem?
-    ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions)
+    ad_valorem_resource?(:measure_components) || ad_valorem_resource?(:measure_conditions) || ad_valorem_resource?(:resolved_measure_components)
   end
 
   def units
@@ -446,32 +446,42 @@ class Measure < Sequel::Model
     measure_conditions && measure_conditions.any?(&:entry_price_system?)
   end
 
-  def resolved_duty_expression_for(additional_code_id)
-    if meursing?
-      resolved_components_for(additional_code_id).map(&:formatted_duty_expression).join(' ')
+  def resolved_duty_expression
+    if resolves_meursing_measures?
+      resolved_measure_components.map(&:formatted_duty_expression).join(' ')
     else
       ''
     end
   end
 
-  def resolved_components_for(additional_code_id)
-    @resolved_components_for ||= if meursing? && additional_code_id.present?
-                                   meursing_measures = meursing_measures_for(additional_code_id)
-
-                                   MeursingMeasureComponentResolverService.new(self, meursing_measures).call
-                                 else
-                                   []
-                                 end
+  def resolved_measure_components
+    @resolved_measure_components ||= if resolves_meursing_measures?
+                                       MeursingMeasureComponentResolverService.new(self, meursing_measures).call
+                                     else
+                                       []
+                                     end
   end
 
-  def meursing_measures_for(additional_code_id)
-    MeursingMeasureFinderService.new(self, additional_code_id).call
+  def meursing_measures
+    MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
 
   private
 
+  def resolves_meursing_measures?
+    meursing? && meursing_additional_code_id.present?
+  end
+
+  def components_express_unit?
+    measure_components.any?(&:expresses_unit?) || measure_conditions.any?(&:expresses_unit?) || resolved_measure_components.any?(&:expresses_unit?)
+  end
+
+  def meursing_additional_code_id
+    Thread.current[:meursing_additional_code_id]
+  end
+
   def all_components
-    measure_conditions.flat_map(&:measure_condition_components) + measure_components
+    measure_conditions.flat_map(&:measure_condition_components) + measure_components + resolved_measure_components
   end
 
   def ad_valorem_resource?(resource)
