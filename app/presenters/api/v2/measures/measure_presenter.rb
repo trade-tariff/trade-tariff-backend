@@ -27,7 +27,7 @@ module Api
         end
 
         def additional_code
-          export_refund_nomenclature || additional_code
+          export_refund_nomenclature || super
         end
 
         def additional_code_id
