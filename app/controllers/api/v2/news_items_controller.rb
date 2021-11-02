@@ -12,6 +12,14 @@ module Api
 
         render json: serializer.serializable_hash
       end
+
+      def show
+        news_item = NewsItem.for_today.with_pk!(params[:id])
+
+        serializer = Api::V2::NewsItemSerializer.new(news_item)
+
+        render json: serializer.serializable_hash
+      end
     end
   end
 end

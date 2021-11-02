@@ -115,6 +115,7 @@ Rails.application.routes.draw do
                 only: %i[index]
 
       if TradeTariffBackend.uk?
+        get '/news_items/:id', constraints: { id: /\d+/ }, to: 'news_items#show', as: :news_item
         get '/news_items(/:service(/:target))', to: 'news_items#index', as: :news_items
       end
 

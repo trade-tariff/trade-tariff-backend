@@ -65,4 +65,17 @@ RSpec.describe Api::V2::NewsItemsController do
       end
     end
   end
+
+  describe 'GET #show' do
+    subject(:rendered) { make_request && response }
+
+    let(:news_item) { create :news_item }
+
+    let :make_request do
+      get api_news_item_path(news_item.id, format: :json),
+          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+    end
+
+    it_behaves_like 'a successful jsonapi response'
+  end
 end
