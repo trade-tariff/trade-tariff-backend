@@ -13,28 +13,18 @@ RSpec.describe Api::V2::RulesOfOriginController do
           headers: { 'Accept' => 'application/vnd.uktt.v2' }
     end
 
-    it { is_expected.to have_http_status :success }
-    it { is_expected.to have_attributes media_type: /json/ }
-
-    context 'with respond json' do
-      subject { JSON.parse rendered.body }
-
-      it { is_expected.to include 'data' }
-      it { is_expected.to include 'included' }
-    end
+    it_behaves_like 'a successful jsonapi response'
 
     context 'without match heading' do
       let(:heading_code) { '010101' }
 
-      it { is_expected.to have_http_status :success }
-      it { is_expected.to have_attributes media_type: /json/ }
+      it_behaves_like 'a successful jsonapi response'
     end
 
     context 'without matching country' do
       let(:country_code) { 'ES' }
 
-      it { is_expected.to have_http_status :success }
-      it { is_expected.to have_attributes media_type: /json/ }
+      it_behaves_like 'a successful jsonapi response'
     end
   end
 end
