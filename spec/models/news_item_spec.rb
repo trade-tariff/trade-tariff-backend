@@ -35,4 +35,101 @@ RSpec.describe NewsItem do
       it { is_expected.to include(content: ['is not present']) }
     end
   end
+
+  describe 'scopes' do
+    describe 'for_service' do
+      subject(:results) { described_class.for_service(service_name) }
+
+      let(:uk_page) { create :news_item, show_on_uk: true, show_on_xi: false }
+      let(:xi_page) { create :news_item, show_on_uk: false, show_on_xi: true }
+      let(:both_page) { create :news_item, show_on_uk: true, show_on_xi: true }
+      let(:neither_page) { create :news_item, show_on_uk: false, show_on_xi: false }
+
+      context 'without service name' do
+        let(:service_name) { nil }
+
+        it { is_expected.to include uk_page }
+        it { is_expected.to include xi_page }
+        it { is_expected.to include both_page }
+        it { is_expected.to include neither_page }
+      end
+
+      context 'with uk' do
+        let(:service_name) { 'uk' }
+
+        it { is_expected.to include uk_page }
+        it { is_expected.not_to include xi_page }
+        it { is_expected.to include both_page }
+        it { is_expected.not_to include neither_page }
+      end
+
+      context 'with xi' do
+        let(:service_name) { 'xi' }
+
+        it { is_expected.to include xi_page }
+        it { is_expected.not_to include uk_page }
+        it { is_expected.to include both_page }
+        it { is_expected.not_to include neither_page }
+      end
+
+      context 'with an invalid service' do
+        let(:service_name) { 'invalid' }
+
+        it { expect { results }.to raise_exception Sequel::RecordNotFound }
+      end
+    end
+
+    describe 'for target' do
+      subject(:results) { described_class.for_target(target) }
+
+      let :home_page do
+        create :news_item, show_on_home_page: true, show_on_updates_page: false
+      end
+
+      let :updates_page do
+        create :news_item, show_on_home_page: false, show_on_updates_page: true
+      end
+
+      let :both_page do
+        create :news_item, show_on_home_page: true, show_on_updates_page: true
+      end
+
+      let :neither_page do
+        create :news_item, show_on_home_page: false, show_on_updates_page: false
+      end
+
+      context 'without target' do
+        let(:target) { nil }
+
+        it { is_expected.to include home_page }
+        it { is_expected.to include updates_page }
+        it { is_expected.to include both_page }
+        it { is_expected.to include neither_page }
+      end
+
+      context 'with home' do
+        let(:target) { 'home' }
+
+        it { is_expected.to include home_page }
+        it { is_expected.not_to include updates_page }
+        it { is_expected.to include both_page }
+        it { is_expected.not_to include neither_page }
+      end
+
+      context 'with updates' do
+        let(:target) { 'updates' }
+
+        it { is_expected.to include updates_page }
+        it { is_expected.not_to include home_page }
+        it { is_expected.to include both_page }
+        it { is_expected.not_to include neither_page }
+      end
+
+      context 'with an invalid target' do
+        let(:target) { 'invalid' }
+
+        it { expect { results }.to raise_exception Sequel::RecordNotFound }
+      end
+    end
+  end
 end
