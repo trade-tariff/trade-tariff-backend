@@ -156,5 +156,14 @@ RSpec.describe NewsItem do
       it { is_expected.not_to include tomorrows }
       it { is_expected.to include indefinite }
     end
+
+    describe '#descending' do
+      subject { described_class.descending.to_a }
+
+      let!(:published_today) { create :news_item, start_date: Time.zone.today }
+      let!(:published_yesterday) { create :news_item, start_date: Time.zone.yesterday }
+
+      it { is_expected.to eql [published_today, published_yesterday] }
+    end
   end
 end

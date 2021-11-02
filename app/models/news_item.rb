@@ -6,7 +6,7 @@ class NewsItem < Sequel::Model
 
   dataset_module do
     def descending
-      order(Sequel.desc(:id))
+      order(Sequel.desc(:start_date), Sequel.desc(:id))
     end
 
     def for_today
