@@ -9,6 +9,11 @@ class NewsItem < Sequel::Model
       order(Sequel.desc(:id))
     end
 
+    def for_today
+      where { start_date <= Time.zone.today }
+      .where { (end_date >= Time.zone.today) | { end_date: nil } }
+    end
+
     def for_service(service_name)
       case service_name.to_s
       when 'uk' then where(show_on_uk: true)

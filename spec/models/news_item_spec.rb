@@ -37,7 +37,7 @@ RSpec.describe NewsItem do
   end
 
   describe 'scopes' do
-    describe 'for_service' do
+    describe '#for_service' do
       subject(:results) { described_class.for_service(service_name) }
 
       let(:uk_page) { create :news_item, show_on_uk: true, show_on_xi: false }
@@ -79,7 +79,7 @@ RSpec.describe NewsItem do
       end
     end
 
-    describe 'for target' do
+    describe '#for_target' do
       subject(:results) { described_class.for_target(target) }
 
       let :home_page do
@@ -130,6 +130,31 @@ RSpec.describe NewsItem do
 
         it { expect { results }.to raise_exception Sequel::RecordNotFound }
       end
+    end
+
+    describe '#for_today' do
+      subject { described_class.for_today }
+
+      let :yesterdays do
+        create :news_item, start_date: Time.zone.yesterday, end_date: Time.zone.yesterday
+      end
+
+      let :todays do
+        create :news_item, start_date: Time.zone.today, end_date: Time.zone.today
+      end
+
+      let :tomorrows do
+        create :news_item, start_date: Time.zone.tomorrow, end_date: Time.zone.tomorrow
+      end
+
+      let :indefinite do
+        create :news_item, start_date: Time.zone.today, end_date: nil
+      end
+
+      it { is_expected.not_to include yesterdays }
+      it { is_expected.to include todays }
+      it { is_expected.not_to include tomorrows }
+      it { is_expected.to include indefinite }
     end
   end
 end

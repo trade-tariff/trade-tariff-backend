@@ -4,6 +4,7 @@ module Api
       def index
         news_items = NewsItem.for_service(params[:service])
                              .for_target(params[:target])
+                             .for_today
                              .paginate(current_page, per_page)
                              .descending
 
