@@ -46,6 +46,9 @@ RSpec/FilePath:
 RSpec/NestedGroups:
   Enabled: false
 
+Rails/ActiveRecordAliases:
+  Enabled: false
+
 Rails/CreateTableWithTimestamps:
   Enabled: false # doesn't recognise
 

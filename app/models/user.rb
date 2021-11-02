@@ -15,7 +15,7 @@ class User < Sequel::Model
     user_params = user_params_from_auth_hash(auth_hash)
 
     # update details of existing user
-    if user = find(uid: auth_hash['uid'])
+    if (user = find(uid: auth_hash['uid']))
       user.update_attributes(user_params)
     else # Create a new user.
       create(user_params)
@@ -52,7 +52,9 @@ class User < Sequel::Model
 
   def update!(options)
     options.each do |key, value|
+      # rubocop:disable Rails/SkipsModelValidations
       update_attribute(key, value)
+      # rubocop:enable Rails/SkipsModelValidations
     end
   end
 
@@ -63,5 +65,11 @@ class User < Sequel::Model
   def update_attributes(attributes)
     update(attributes)
     self
+  end
+
+  # ActiveRecord compatibility - #save! is called when automatically creating
+  # a mock user
+  def save!
+    save || raise(Sequel::Error, 'Failed to save the record')
   end
 end
