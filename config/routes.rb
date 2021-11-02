@@ -18,10 +18,6 @@ Rails.application.routes.draw do
       resources :measure_types, only: %i[index show update]
       resources :search_references, only: [:index]
 
-      if TradeTariffBackend.uk?
-        resources :news_items, only: %i[index show create update destroy]
-      end
-
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
         scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
           resource :chapter_note, only: %i[show create update destroy]
@@ -39,6 +35,13 @@ Rails.application.routes.draw do
         scope module: 'commodities', constraints: { commodity_id: /\d{10}/, id: /\d+/ } do
           resources :search_references, only: %i[show index destroy create update]
         end
+      end
+    end
+
+    # avoid admin named routes clashing with public api named routes
+    namespace :admin, path: '' do
+      if TradeTariffBackend.uk?
+        resources :news_items, only: %i[index show create update destroy]
       end
     end
   end

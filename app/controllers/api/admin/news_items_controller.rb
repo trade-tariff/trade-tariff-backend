@@ -18,7 +18,7 @@ module Api
 
         if news_item.valid? && news_item.save
           render json: serialize(news_item),
-                 location: api_news_item_url(news_item.id),
+                 location: api_admin_news_item_url(news_item.id),
                  status: :created
         else
           render json: serialize_errors(news_item.errors),
@@ -32,7 +32,7 @@ module Api
 
         if news_item.valid? && news_item.save
           render json: serialize(news_item),
-                 location: api_news_item_url(news_item.id),
+                 location: api_admin_news_item_url(news_item.id),
                  status: :ok
         else
           render json: serialize_errors(news_item.errors),
