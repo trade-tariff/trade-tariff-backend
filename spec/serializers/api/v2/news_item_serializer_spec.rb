@@ -9,6 +9,7 @@ RSpec.describe Api::V2::NewsItemSerializer do
         id: news_item.id.to_s,
         type: :news_item,
         attributes: {
+          id: news_item.id,
           title: news_item.title,
           content: news_item.content,
           display_style: news_item.display_style,

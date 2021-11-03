@@ -37,7 +37,7 @@ RSpec.describe NewsItem do
   end
 
   describe 'scopes' do
-    describe '#for_service' do
+    describe '.for_service' do
       subject(:results) { described_class.for_service(service_name) }
 
       let(:uk_page) { create :news_item, show_on_uk: true, show_on_xi: false }
@@ -79,7 +79,7 @@ RSpec.describe NewsItem do
       end
     end
 
-    describe '#for_target' do
+    describe '.for_target' do
       subject(:results) { described_class.for_target(target) }
 
       let :home_page do
@@ -132,7 +132,7 @@ RSpec.describe NewsItem do
       end
     end
 
-    describe '#for_today' do
+    describe '.for_today' do
       subject { described_class.for_today }
 
       let :yesterdays do
@@ -157,7 +157,7 @@ RSpec.describe NewsItem do
       it { is_expected.to include indefinite }
     end
 
-    describe '#descending' do
+    describe '.descending' do
       subject { described_class.descending.to_a }
 
       let!(:published_today) { create :news_item, start_date: Time.zone.today }
