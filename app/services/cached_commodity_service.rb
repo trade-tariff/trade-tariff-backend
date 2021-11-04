@@ -117,9 +117,6 @@ class CachedCommodityService
     {}.tap do |opts|
       opts[:is_collection] = false
       opts[:include] = DEFAULT_INCLUDES
-      opts[:params] = {}
-
-      opts[:params][:meursing_additional_code_id] = meursing_additional_code_id if meursing_additional_code_id.present?
     end
   end
 
@@ -135,7 +132,7 @@ class CachedCommodityService
   end
 
   def meursing_additional_code_id
-    filter_params[:meursing_additional_code_id]
+    Thread.current[:meursing_additional_code_id]
   end
 
   def cache_key

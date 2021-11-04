@@ -56,12 +56,11 @@ class MeasureComponent < Sequel::Model
   end
 
   def ad_valorem?
-    measurement_unit_code.nil? &&
-      monetary_unit_code.nil?
+    measurement_unit_code.blank?
   end
 
   def expresses_unit?
-    measurement_unit_code
+    measurement_unit_code.present?
   end
 
   def unit

@@ -39,7 +39,11 @@ module Api
         end
 
         def measure_component_ids
-          measure.measure_components.map { |component| component.pk.join('-') }
+          measure_components.map(&:id)
+        end
+
+        def resolved_measure_component_ids
+          resolved_measure_components.map(&:id)
         end
 
         def national_measurement_unit_ids

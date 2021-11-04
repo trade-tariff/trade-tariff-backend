@@ -16,15 +16,8 @@ module Api
                    :excise,
                    :vat,
                    :reduction_indicator,
-                   :meursing
-
-        attribute :resolved_duty_expression do |measure, params|
-          measure.resolved_duty_expression_for(params[:meursing_additional_code_id])
-        end
-
-        has_many :resolved_measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer do |measure, params|
-          measure.resolved_components_for(params[:meursing_additional_code_id])
-        end
+                   :meursing,
+                   :resolved_duty_expression
 
         has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer
         has_one :measure_type, serializer: Api::V2::Measures::MeasureTypeSerializer
@@ -34,6 +27,7 @@ module Api
                                         if: proc { |measure| !measure.national && measure.suspended? }
         has_many :measure_conditions, serializer: Api::V2::Measures::MeasureConditionSerializer
         has_many :measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer
+        has_many :resolved_measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer
 
         has_many :national_measurement_units, serializer: Api::V2::Measures::NationalMeasurementUnitSerializer
         has_one :geographical_area, serializer: Api::V2::Measures::GeographicalAreaSerializer

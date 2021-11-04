@@ -2,6 +2,7 @@ module Api
   module V2
     class CommoditiesController < ApiController
       before_action :find_commodity, only: %i[show changes]
+      before_action :set_meursing_additional_code, only: :show
 
       def show
         render json: cached_commodity
@@ -35,7 +36,10 @@ module Api
       end
 
       def filter_params
-        params.require(:filter).permit(:geographical_area_id, :meursing_additional_code_id) if params[:filter].present?
+        params.fetch(:filter, {}).permit(
+          :geographical_area_id,
+          :meursing_additional_code_id,
+        )
       end
 
       def commodity_has_children?
@@ -44,6 +48,10 @@ module Api
         Rails.cache.fetch(cache_key, expires_in: CachedCommodityService::TTL) do
           @commodity.children.any?
         end
+      end
+
+      def set_meursing_additional_code
+        Thread.current[:meursing_additional_code_id] = filter_params[:meursing_additional_code_id]
       end
     end
   end
