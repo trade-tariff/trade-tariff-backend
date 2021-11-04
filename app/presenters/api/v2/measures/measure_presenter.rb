@@ -19,23 +19,23 @@ module Api
         end
 
         def excise
-          measure.excise?
+          excise?
         end
 
         def vat
-          measure.vat?
+          vat?
         end
 
         def additional_code
-          measure.export_refund_nomenclature || measure.additional_code
+          export_refund_nomenclature || super
         end
 
         def additional_code_id
-          measure.export_refund_nomenclature_sid || measure.additional_code_sid
+          export_refund_nomenclature_sid || additional_code_sid
         end
 
         def measure_condition_ids
-          measure.measure_conditions.pluck(:measure_condition_sid)
+          measure_conditions.pluck(:measure_condition_sid)
         end
 
         def measure_component_ids
@@ -51,11 +51,11 @@ module Api
         end
 
         def excluded_geographical_area_ids
-          measure.excluded_geographical_areas.pluck(:geographical_area_id)
+          excluded_geographical_areas.pluck(:geographical_area_id)
         end
 
         def footnote_ids
-          measure.footnotes&.map(&:code)
+          footnotes&.map(&:code)
         end
 
         def legal_act_ids
@@ -63,17 +63,17 @@ module Api
         end
 
         def legal_acts
-          measure.legal_acts.map do |legal_act|
+          super.map do |legal_act|
             Api::V2::Measures::MeasureLegalActPresenter.new legal_act, @measure
           end
         end
 
         def order_number_id
-          measure.order_number&.quota_order_number_id
+          order_number&.quota_order_number_id
         end
 
         def excluded_countries
-          measure.excluded_geographical_areas + measure_type_exclusions
+          excluded_geographical_areas + measure_type_exclusions
         end
 
         def excluded_country_ids
@@ -84,8 +84,8 @@ module Api
 
         def measure_type_exclusions
           @measure_type_exclusions ||= MeasureTypeExclusion.find_geographical_areas(
-            measure.measure_type_id,
-            measure.geographical_area_id,
+            measure_type_id,
+            geographical_area_id,
           )
         end
       end
