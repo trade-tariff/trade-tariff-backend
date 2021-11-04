@@ -25,7 +25,7 @@ Other related projects:
 
 ### Setup
 
-Please go through this updated [setup document](https://github.com/trade-tariff/trade-tariff-backend/blob/master/SETUP.md)
+Please go through this updated [setup document](https://github.com/trade-tariff/trade-tariff-backend/blob/main/SETUP.md)
 
 1. Setup your environment, by doing the following:
 
@@ -135,7 +135,7 @@ To create or update autoscaling policy for your application run:
     cf attach-autoscaling-policy APP_NAME ./policy.json
 
 
-Current autosscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/blob/master/config/autoscale).
+Current autosscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/blob/main/config/autoscale).
 
 
 ## Notes
@@ -146,9 +146,9 @@ Current autosscaling policy files are [here](https://github.com/trade-tariff/tra
 
 ## Contributing
 
-Please check out the [Contributing guide](https://github.com/trade-tariff/trade-tariff-backend/blob/master/CONTRIBUTING.md)
+Please check out the [Contributing guide](https://github.com/trade-tariff/trade-tariff-backend/blob/main/CONTRIBUTING.md)
 
 
 ## Licence
 
-Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/master/LICENCE.txt)
+Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/main/LICENCE.txt)
