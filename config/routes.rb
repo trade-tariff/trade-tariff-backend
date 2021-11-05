@@ -114,6 +114,11 @@ Rails.application.routes.draw do
                 controller: 'rules_of_origin',
                 only: %i[index]
 
+      if TradeTariffBackend.uk?
+        get '/news_items/:id', constraints: { id: /\d+/ }, to: 'news_items#show', as: :news_item
+        get '/news_items(/:service(/:target))', to: 'news_items#index', as: :news_items
+      end
+
       get '/changes(/:as_of)', to: 'changes#index', as: :changes, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }
 
       post 'search' => 'search#search'
