@@ -14,37 +14,58 @@ AllCops:
     - 'db/**/*'
     - 'tmp/**/*'
     - 'config/puma.rb'
+
 Layout/LineLength:
   Max: 120
+
 Layout/AccessModifierIndentation:
   Enabled: false
+
 Metrics/AbcSize:
   Max: 20
+
 Metrics/BlockLength:
   Enabled: false
+
 Metrics/ModuleLength:
   Enabled: false
+
 RSpec/ContextWording:
   Prefixes:
     - when
     - with
     - without
     - for
+
 RSpec/ExampleLength:
   Enabled: false
+
 RSpec/FilePath:
   Enabled: false
+
 RSpec/NestedGroups:
   Enabled: false
+
+Rails/ActiveRecordAliases:
+  Enabled: false
+
+Rails/CreateTableWithTimestamps:
+  Enabled: false # doesn't recognise
+
 Rails/SaveBang:
   Enabled: false
+
 Rails/UniqueValidationWithoutIndex:
   Enabled: false
+
 Style/Documentation:
   Enabled: false
+
 Style/FrozenStringLiteralComment:
   Enabled: false
+
 Style/GuardClause:
   MinBodyLength: 2
+
 Style/StringLiterals:
   EnforcedStyle: single_quotes
