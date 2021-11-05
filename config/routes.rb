@@ -137,8 +137,7 @@ Rails.application.routes.draw do
           get :tree
         end
         scope module: 'sections', constraints: { section_id: /\d{1,2}/, id: /\d+/ } do
-          resource :section_note, only: %i[show create update destroy]
-          resources :search_references, only: %i[show index destroy create update]
+          resource :section_note, only: %i[show]
         end
       end
 
@@ -148,8 +147,7 @@ Rails.application.routes.draw do
         end
 
         scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
-          resource :chapter_note, only: %i[show create update destroy]
-          resources :search_references, only: %i[show index destroy create update]
+          resource :chapter_note, only: %i[show]
         end
       end
 
@@ -157,19 +155,11 @@ Rails.application.routes.draw do
         member do
           get :changes
         end
-
-        scope module: 'headings', constraints: { heading_id: /\d{4}/, id: /\d+/ } do
-          resources :search_references, only: %i[show index destroy create update]
-        end
       end
 
       resources :commodities, only: [:show], constraints: { id: /\d{10}/, as_of: /.*/ } do
         member do
           get :changes
-        end
-
-        scope module: 'commodities', constraints: { commodity_id: /\d{10}/, id: /\d+/ } do
-          resources :search_references, only: %i[show index destroy create update]
         end
       end
 
@@ -188,10 +178,6 @@ Rails.application.routes.draw do
       post 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
       get '/headings/:id/tree' => 'headings#tree'
-
-      resources :rollbacks, only: %i[create index]
-      resources :footnotes, only: %i[index show update]
-      resources :measure_types, only: %i[index show update]
     end
   end
 
