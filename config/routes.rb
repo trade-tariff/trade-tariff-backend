@@ -163,20 +163,6 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :geographical_areas, only: [:countries] do
-        collection { get :countries }
-      end
-
-      resources :monetary_exchange_rates, only: [:index]
-
-      resources :updates, only: [:index] do
-        collection { get :latest }
-      end
-
-      resources :search_references, only: [:index]
-
-      post 'search' => 'search#search'
-      get 'search_suggestions' => 'search#suggestions'
       get '/headings/:id/tree' => 'headings#tree'
     end
   end
