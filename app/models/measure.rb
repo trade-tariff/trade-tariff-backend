@@ -463,13 +463,13 @@ class Measure < Sequel::Model
   end
 
   def meursing_measures
-    MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
+    @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
 
   private
 
   def resolves_meursing_measures?
-    meursing? && meursing_additional_code_id.present?
+    meursing? && meursing_additional_code_id.present? && meursing_measures.present?
   end
 
   def components_express_unit?
