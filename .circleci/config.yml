@@ -297,14 +297,14 @@ jobs:
 
   smoketest_dev:
     docker:
-      - image: 'cypress/base:latest'
+      - image: 'cypress/base:16.5.0'
     steps:
       - smoketest:
           url: https://dev.trade-tariff.service.gov.uk
 
   smoketest_staging:
     docker:
-      - image: 'cypress/base:latest'
+      - image: 'cypress/base:16.5.0'
     steps:
       - smoketest:
           url: https://staging.trade-tariff.service.gov.uk
