@@ -1064,7 +1064,7 @@ RSpec.describe Measure do
 
     include_context 'with meursing additional code id', '000'
 
-    let(:meursing_measures) { [] }
+    let(:meursing_measures) { [build(:measure)] }
     let(:resolved_components) { [] }
 
     let(:ad_valorem_component) do
@@ -1112,6 +1112,14 @@ RSpec.describe Measure do
 
       it { expect(measure.resolved_measure_components).to eq(resolved_components) }
     end
+
+    context 'when there are no meursing measures for our additional code' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
+
+      let(:meursing_measures) { [] }
+
+      it { expect(measure.resolved_measure_components).to eq([]) }
+    end
   end
 
   describe '#resolved_duty_expression' do
@@ -1124,7 +1132,7 @@ RSpec.describe Measure do
       allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: resolved_components))
     end
 
-    let(:meursing_measures) { [] }
+    let(:meursing_measures) { [build(:measure)] }
     let(:resolved_components) { [] }
 
     let(:ad_valorem_component) do
@@ -1171,6 +1179,14 @@ RSpec.describe Measure do
       let(:resolved_components) { [ad_valorem_component, agricultural_component] }
 
       it { expect(measure.resolved_duty_expression).to eq("<span>28.00</span> #{ad_valorem_component.duty_expression_description} <strong>+ <span>100.00</span> EUR</strong>") }
+    end
+
+    context 'when there are no meursing measures for our additional code' do
+      subject(:measure) { create(:measure, :with_measure_components, :with_meursing) }
+
+      let(:meursing_measures) { [] }
+
+      it { expect(measure.resolved_duty_expression).to eq('') }
     end
 
     context 'when the additional_code_id is nil' do
