@@ -44,7 +44,7 @@ RSpec.describe MeasurementUnit do
 
       before do
         measurement_unit
-        allow(Raven).to receive(:capture_message).and_return(true)
+        allow(Raven).to receive(:capture_message).and_call_original
         allow(described_class).to receive(:measurement_units).and_return({})
       end
 
@@ -66,10 +66,23 @@ RSpec.describe MeasurementUnit do
     end
 
     context 'with measurement unit not in the database' do
-      let(:unit) { described_class.measurement_unit('UNKNOWN', 'UNKNOWN') }
+      subject(:result) { described_class.measurement_unit('FC1', 'FC1X') }
 
-      it 'will raise an InvalidMeasurementUnit exception' do
-        expect { unit }.to raise_exception(MeasurementUnit::InvalidMeasurementUnit)
+      before do
+        allow(Raven).to receive(:capture_message).and_call_original
+        allow(described_class).to receive(:measurement_units).and_return({})
+      end
+
+      it { is_expected.to include('measurement_unit_code' => 'FC1') }
+      it { is_expected.to include('measurement_unit_qualifier_code' => 'X') }
+      it { is_expected.to include('unit' => nil) }
+      it { is_expected.to include('abbreviation' => nil) }
+      it { is_expected.to include('unit_question' => 'Please enter unit: FC1') }
+      it { is_expected.to include('unit_hint' =>  'Please correctly enter unit: FC1') }
+
+      it 'sends a message to Sentry' do
+        result
+        expect(Raven).to have_received(:capture_message)
       end
     end
   end

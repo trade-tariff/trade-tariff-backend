@@ -1,10 +1,4 @@
 class MeasurementUnit < Sequel::Model
-  class InvalidMeasurementUnit < RuntimeError
-    def initialize(unit_key)
-      super "Requested invalid measurement unit: #{unit_key}"
-    end
-  end
-
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
 
@@ -38,16 +32,18 @@ class MeasurementUnit < Sequel::Model
 
       qualifier_code = unit_key.length == 4 ? unit_key[3..] : ''
 
-      raise InvalidMeasurementUnit, unit_key unless unit
-
-      Raven.capture_message("Missing measurement unit in measurement_units.yml: #{unit_key}")
+      if unit.present?
+        Raven.capture_message("Missing measurement unit in database for measurement unit key: #{unit_key}")
+      else
+        Raven.capture_message("Missing measurement unit in measurement_units.yml: #{unit_key}")
+      end
 
       {
-        'measurement_unit_code' => unit.measurement_unit_code,
+        'measurement_unit_code' => unit&.measurement_unit_code || unit_code,
         'measurement_unit_qualifier_code' => qualifier_code,
-        'abbreviation' => unit.abbreviation,
-        'unit_question' => "Please enter unit: #{unit.description}",
-        'unit_hint' => "Please correctly enter unit: #{unit.description}",
+        'abbreviation' => unit&.abbreviation,
+        'unit_question' => "Please enter unit: #{unit&.description || unit_code}",
+        'unit_hint' => "Please correctly enter unit: #{unit&.description || unit_code}",
         'unit' => nil,
       }
     end
