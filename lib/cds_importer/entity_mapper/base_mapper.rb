@@ -2,6 +2,7 @@ class CdsImporter
   class EntityMapper
     class BaseMapper
       class << self
+        delegate :instrument, :subscribe, to: ActiveSupport::Notifications
         # entity_class    - model
         # entity_mapping  - attributes mapping
         # entity_mapping_key_as_array  - attributes mapping
@@ -10,6 +11,10 @@ class CdsImporter
         # exclude_mapping - list of excluded attributes
         attr_accessor :entity_class, :entity_mapping, :mapping_path, :mapping_root, :exclude_mapping,
                       :entity_mapping_key_as_array, :entity_mapping_keys_to_parse
+
+        def before_oplog_inserts_callbacks
+          @before_oplog_inserts_callbacks ||= []
+        end
 
         def base_mapping
           BASE_MAPPING.except(*exclude_mapping).keys.inject({}) do |memo, key|
@@ -31,6 +36,16 @@ class CdsImporter
             key.size == 1 ||
               key[0] == METAINFO
           }
+        end
+
+        def instrument_warning(message, xml_node)
+          instrument('apply.import_warnings', message: message, xml_node: xml_node)
+        end
+
+        protected
+
+        def before_oplog_inserts(&block)
+          before_oplog_inserts_callbacks << block
         end
       end
 

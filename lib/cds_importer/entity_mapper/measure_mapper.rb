@@ -22,15 +22,22 @@ class CdsImporter
         'additionalCode.additionalCodeCode' => :additional_code_id,
         'additionalCode.sid' => :additional_code_sid,
         'reductionIndicator' => :reduction_indicator,
-        'exportRefundNomenclature.sid' => :export_refund_nomenclature_sid
-        # "" => :tariff_measure_number,
-        # "" => :invalidated_by,
-        # "" => :invalidated_at
+        'exportRefundNomenclature.sid' => :export_refund_nomenclature_sid,
       ).freeze
 
       self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
 
       self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
+
+      before_oplog_inserts do |xml_node|
+        if xml_node['sid'].blank?
+          message = 'Skipping removal of measure geographical exclusions due to missing measure sid.'
+
+          instrument_warning(message, xml_node)
+        else
+          MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
+        end
+      end
     end
   end
 end
