@@ -30,13 +30,11 @@ class CdsImporter
       self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
 
       before_oplog_inserts do |xml_node|
-        if xml_node['sid'].blank?
-          message = 'Skipping removal of measure geographical exclusions due to missing measure sid.'
+        MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
+      end
 
-          instrument_warning(message, xml_node)
-        else
-          MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
-        end
+      before_oplog_inserts do |xml_node|
+        FootnoteAssociationMeasure.operation_klass.where(measure_sid: xml_node['sid']).delete
       end
     end
   end

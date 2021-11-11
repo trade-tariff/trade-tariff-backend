@@ -26,18 +26,49 @@ RSpec.describe CdsImporter::EntityMapper do
 
   describe '#import' do
     before do
-      stub_const(
-        'CdsImporter::EntityMapper::ALL_MAPPERS',
-        [
-          CdsImporter::EntityMapper::MeasureMapper,
-          CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper,
-          CdsImporter::EntityMapper::AdditionalCodeMapper,
-          CdsImporter::EntityMapper::GeographicalAreaMapper,
-          CdsImporter::EntityMapper::GeographicalAreaMembershipMapper,
-        ],
-      )
-
       create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
+    end
+
+    context 'when the node is associated to an existing measure that has a footnote' do
+      subject(:mapper) { described_class.new('Measure', xml_node) }
+
+      let(:measure) { create(:measure, measure_sid: '12348') }
+
+      let(:xml_node) do
+        {
+          'sid' => '12348',
+          'metainfo' => {
+            'opType' => 'U',
+            'origin' => 'N',
+            'transactionDate' => '2017-06-29T20:04:37',
+          },
+        }
+      end
+
+      before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
+
+      it { expect { mapper.import }.to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }.by(-1) }
+    end
+
+    context 'when the node is not associated to an existing measure that has a footnote' do
+      subject(:mapper) { described_class.new('Measure', xml_node) }
+
+      let(:measure) { create(:measure) } # Missing associated measure sid
+
+      let(:xml_node) do
+        {
+          'sid' => '12348',
+          'metainfo' => {
+            'opType' => 'U',
+            'origin' => 'N',
+            'transactionDate' => '2017-06-29T20:04:37',
+          },
+        }
+      end
+
+      before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
+
+      it { expect { mapper.import }.not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count } }
     end
 
     context 'when the node is a GeographicalArea with multiple members' do
@@ -325,44 +356,6 @@ RSpec.describe CdsImporter::EntityMapper do
         mapper.import
 
         expect(MeasureExcludedGeographicalArea[measure_sid: other_exclusion.measure_sid]).to be_present
-      end
-
-      context 'when the xml node is missing the root sid for the measure' do
-        before do
-          allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
-          xml_node.delete('sid')
-        end
-
-        let(:expected_message) do
-          'Skipping removal of measure geographical exclusions due to missing measure sid.'
-        end
-
-        let(:expected_xml_node) do
-          {
-            'validityStartDate' => '2021-01-01T00:00:00',
-            'metainfo' => {
-              'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-02-01T17:42:46'
-            },
-            'measureExcludedGeographicalArea' => [
-              {
-                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-02-01T17:42:46' },
-                'geographicalArea' => { 'hjid' => '23808', 'sid' => '439', 'geographicalAreaId' => 'CN', 'validityStartDate' => '1984-01-01T00:00:00' },
-              },
-            ],
-          }
-        end
-
-        it 'does not mutate the xml node' do
-          expect { mapper.import }.not_to change { xml_node }
-        end
-
-        it 'instruments a message about the missing sid' do
-          mapper.import
-
-          expect(ActiveSupport::Notifications).to have_received(:instrument).with(
-            'apply.import_warnings', message: expected_message, xml_node: expected_xml_node
-          )
-        end
       end
 
       context 'when there is an existing exclusion for this measure' do

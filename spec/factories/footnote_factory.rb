@@ -6,6 +6,7 @@ FactoryBot.define do
       valid_at { Date.current.ago(2.years) }
       valid_to { nil }
       goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
+      measure_sid { generate(:measure_sid) }
     end
 
     footnote_id      { Forgery(:basic).text(exactly: 3) }
@@ -31,6 +32,17 @@ FactoryBot.define do
                                                                     footnote_type: ftn.footnote_type_id,
                                                                     validity_start_date: evaluator.valid_at,
                                                                     validity_end_date: evaluator.valid_to)
+      end
+    end
+
+    trait :with_measure_association do
+      after(:create) do |footnote, evaluator|
+        create(
+          :footnote_association_measure,
+          measure_sid: evaluator.measure_sid,
+          footnote_id: footnote.footnote_id,
+          footnote_type_id: footnote.footnote_type_id,
+        )
       end
     end
 
