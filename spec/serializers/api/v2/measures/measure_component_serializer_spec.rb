@@ -27,6 +27,11 @@ RSpec.describe Api::V2::Measures::MeasureComponentSerializer do
           duty_expression_abbreviation: nil,
           measurement_unit_qualifier_code: 'a',
         },
+        relationships: {
+          measurement_unit: {
+            data: { id: 'bar', type: :measurement_unit },
+          },
+        },
       },
     }
   end
@@ -34,6 +39,7 @@ RSpec.describe Api::V2::Measures::MeasureComponentSerializer do
   describe '#serializable_hash' do
     it 'serializes the correct attributes' do
       actual = described_class.new(measure_component).serializable_hash
+
       expect(actual).to include(expected_pattern)
     end
   end

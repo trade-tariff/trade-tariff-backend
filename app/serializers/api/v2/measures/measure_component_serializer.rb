@@ -14,6 +14,8 @@ module Api
                    :measurement_unit_qualifier_code,
                    :duty_expression_description,
                    :duty_expression_abbreviation
+
+        has_one :measurement_unit, serializer: Api::V2::Measures::MeasurementUnitSerializer
       end
     end
   end
