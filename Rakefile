@@ -5,12 +5,3 @@
 require_relative 'config/application'
 
 Rails.application.load_tasks
-
-if Rails.env.development?
-  require 'github_changelog_generator/task'
-
-  GitHubChangelogGenerator::RakeTask.new :changelog do |config|
-    config.user = 'trade-tariff'
-    config.project = 'trade-tariff-backend'
-  end
-end

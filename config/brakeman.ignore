@@ -6,7 +6,7 @@
       "fingerprint": "1f76d3d777c6aff125e9a1f44f36e574471f0d3498c5f5d81bb43e8a7c0e3c51",
       "check_name": "SQL",
       "message": "Possible SQL injection",
-      "file": "lib/trade_tariff_backend/data_migrator.rb",
+      "file": "app/lib/trade_tariff_backend/data_migrator.rb",
       "line": 97,
       "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
       "code": "TradeTariffBackend::DataMigration::LogEntry.where(\"filename LIKE '%#{timestamp}%'\")",
