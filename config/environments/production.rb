@@ -1,3 +1,5 @@
+require_relative '../../app/lib/paas_config'
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
