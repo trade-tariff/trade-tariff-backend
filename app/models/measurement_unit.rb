@@ -10,6 +10,8 @@ class MeasurementUnit < Sequel::Model
   one_to_many :measurement_unit_abbreviations, primary_key: :measurement_unit_code,
                                                key: :measurement_unit_code
 
+  alias_method :id, :measurement_unit_code
+
   delegate :description, to: :measurement_unit_description
 
   class << self

@@ -35,6 +35,8 @@ class MeasureComponent < Sequel::Model
     pk.join('-')
   end
 
+  alias_method :measurement_unit_id, :measurement_unit_code
+
   def formatted_duty_expression
     return '' if measure.measure_type_id.in?(%w[DDA DDJ])
 
