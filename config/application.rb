@@ -1,5 +1,5 @@
 require_relative 'boot'
-require_relative '../app/lib/core_ext/object'
+require_relative '../lib/core_ext/object'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
@@ -37,5 +37,5 @@ module TradeTariffBackend
       (ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true')
   end
 
-  Rails.autoloaders.main.ignore(Rails.root.join('app/lib/core_ext'))
+  Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
 end
