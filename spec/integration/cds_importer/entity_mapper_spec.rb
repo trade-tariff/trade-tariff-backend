@@ -47,7 +47,55 @@ RSpec.describe CdsImporter::EntityMapper do
 
       before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
 
-      it { expect { mapper.import }.to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }.by(-1) }
+      it { expect { mapper.import }.to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }.from(1).to(0) }
+    end
+
+    context 'when the node is associated to an existing measure that has a footnote that is also in the xml node' do
+      subject(:mapper) { described_class.new('Measure', xml_node) }
+
+      let(:measure) { create(:measure, measure_sid: '12348') }
+
+      let(:xml_node) do
+        {
+          'sid' => '12348',
+          'metainfo' => {
+            'opType' => 'U',
+            'origin' => 'N',
+            'transactionDate' => '2017-06-29T20 =>04:37',
+          },
+          'footnoteAssociationMeasure' => [
+            {
+              'hjid' => '11169585',
+              'metainfo' => {
+                'opType' => 'C',
+                'origin' => 'T',
+                'status' => 'L',
+                'transactionDate' => '2021-04-30T18:02:08',
+              },
+              'footnote' => {
+                'hjid' => '11008707',
+                'footnoteId' => footnote.id,
+                'footnoteType' => {
+                  'hjid' => '11008014',
+                  'footnoteTypeId' => 'DS',
+                },
+              },
+            },
+          ],
+        }
+      end
+
+      let(:footnote) do
+        create(
+          :footnote,
+          :with_measure_association,
+          measure_sid: measure.measure_sid,
+        )
+      end
+
+      before { footnote }
+
+      it { expect { mapper.import }.not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }.from(1) }
     end
 
     context 'when the node is not associated to an existing measure that has a footnote' do
@@ -68,7 +116,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
       before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
 
-      it { expect { mapper.import }.not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count } }
+      it { expect { mapper.import }.not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).from(1) } }
     end
 
     context 'when the node is a GeographicalArea with multiple members' do
@@ -86,8 +134,7 @@ RSpec.describe CdsImporter::EntityMapper do
           'geographicalAreaId' => '1010',
           'geographicalCode' => '1',
           'validityStartDate' => '1958-01-01T00:00:00',
-          'geographicalAreaMembership' =>
-          [
+          'geographicalAreaMembership' => [
             {
               'hjid' => '25654',
               'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
@@ -326,8 +373,7 @@ RSpec.describe CdsImporter::EntityMapper do
             'status' => 'L',
             'transactionDate' => '2021-02-01T17:42:46',
           },
-          'measureExcludedGeographicalArea' =>
-          [
+          'measureExcludedGeographicalArea' => [
             {
               'metainfo' => {
                 'opType' => 'C',
@@ -355,7 +401,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
         mapper.import
 
-        expect(MeasureExcludedGeographicalArea[measure_sid: other_exclusion.measure_sid]).to be_present
+        expect(MeasureExcludedGeographicalArea.where(measure_sid: other_exclusion.measure_sid)).to be_present
       end
 
       context 'when there is an existing exclusion for this measure' do
@@ -366,7 +412,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
           mapper.import
 
-          expect(MeasureExcludedGeographicalArea[excluded_geographical_area: 'IT']).not_to be_present
+          expect(MeasureExcludedGeographicalArea.where(excluded_geographical_area: 'IT')).not_to be_present
         end
       end
 
