@@ -1,4 +1,6 @@
 RSpec.describe CdsImporter::EntityMapper do
+  subject(:entity_mapper) { described_class.new('AdditionalCode', xml_node) }
+
   let(:xml_node) do
     {
       'sid' => '3084',
@@ -16,23 +18,10 @@ RSpec.describe CdsImporter::EntityMapper do
       'filename' => 'test.gzip',
     }
   end
-  let(:mapper) { described_class.new('AdditionalCode', xml_node) }
-
-  describe '::ALL_MAPPERS' do
-    subject { described_class::ALL_MAPPERS }
-
-    it { is_expected.not_to be_empty }
-  end
 
   describe '#import' do
-    before do
-      create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
-    end
-
     context 'when the node is associated to an existing measure that has a footnote' do
-      subject(:mapper) { described_class.new('Measure', xml_node) }
-
-      let(:measure) { create(:measure, measure_sid: '12348') }
+      subject(:entity_mapper) { described_class.new('Measure', xml_node) }
 
       let(:xml_node) do
         {
@@ -45,15 +34,20 @@ RSpec.describe CdsImporter::EntityMapper do
         }
       end
 
+      let(:measure) { create(:measure, measure_sid: '12348') }
+
       before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
 
-      it { expect { mapper.import }.to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }.from(1).to(0) }
+      it 'removes associated footnotes that are missing from the xml node' do
+        expect { entity_mapper.import }
+          .to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }
+          .from(1)
+          .to(0)
+      end
     end
 
     context 'when the node is associated to an existing measure that has a footnote that is also in the xml node' do
-      subject(:mapper) { described_class.new('Measure', xml_node) }
-
-      let(:measure) { create(:measure, measure_sid: '12348') }
+      subject(:entity_mapper) { described_class.new('Measure', xml_node) }
 
       let(:xml_node) do
         {
@@ -85,6 +79,8 @@ RSpec.describe CdsImporter::EntityMapper do
         }
       end
 
+      let(:measure) { create(:measure, measure_sid: '12348') }
+
       let(:footnote) do
         create(
           :footnote,
@@ -95,13 +91,15 @@ RSpec.describe CdsImporter::EntityMapper do
 
       before { footnote }
 
-      it { expect { mapper.import }.not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }.from(1) }
+      it 'does not remove footnote assocations that exist in the xml node' do
+        expect { entity_mapper.import }
+          .not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }
+          .from(1)
+      end
     end
 
     context 'when the node is not associated to an existing measure that has a footnote' do
-      subject(:mapper) { described_class.new('Measure', xml_node) }
-
-      let(:measure) { create(:measure) } # Missing associated measure sid
+      subject(:entity_mapper) { described_class.new('Measure', xml_node) }
 
       let(:xml_node) do
         {
@@ -114,20 +112,21 @@ RSpec.describe CdsImporter::EntityMapper do
         }
       end
 
+      let(:measure) { create(:measure) } # Missing associated measure sid
+
       before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
 
-      it { expect { mapper.import }.not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).from(1) } }
+      it 'does not remove footnote assocations of other unrelated measures' do
+        expect { entity_mapper.import }
+          .not_to change { FootnoteAssociationMeasure.where(measure_sid: measure.measure_sid).count }
+          .from(1)
+      end
     end
 
     context 'when the node is a GeographicalArea with multiple members' do
-      let(:mapper) do
-        described_class.new(
-          'GeographicalArea',
-          geographical_area_with_multiple_members_xml_node,
-        )
-      end
+      subject(:entity_mapper) { described_class.new('GeographicalArea', xml_node) }
 
-      let(:geographical_area_with_multiple_members_xml_node) do
+      let(:xml_node) do
         {
           'hjid' => '23501',
           'sid' => '114',
@@ -158,40 +157,40 @@ RSpec.describe CdsImporter::EntityMapper do
           'geographicalAreaId' => '1010',
           'geographicalCode' => '1',
           'validityStartDate' => '1958-01-01T00:00:00',
-          'geographicalAreaMembership' =>
-            [
-              {
-                'hjid' => '25654',
-                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
-                'geographicalAreaGroupSid' => 114,
-                'validityStartDate' => '2004-05-01T00:00:00',
-                'geographicalAreaSid' => 331,
-              },
-              {
-                'hjid' => '25473',
-                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' },
-                'geographicalAreaGroupSid' => 114,
-                'validityStartDate' => '2007-01-01T00:00:00',
-                'geographicalAreaSid' => 112,
-              },
-            ],
+          'geographicalAreaMembership' => [
+            {
+              'hjid' => '25654',
+              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
+              'geographicalAreaGroupSid' => 114,
+              'validityStartDate' => '2004-05-01T00:00:00',
+              'geographicalAreaSid' => 331,
+            },
+            {
+              'hjid' => '25473',
+              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' },
+              'geographicalAreaGroupSid' => 114,
+              'validityStartDate' => '2007-01-01T00:00:00',
+              'geographicalAreaSid' => 112,
+            },
+          ],
         }
       end
 
       before do
         create(:geographical_area, hjid: 23_575, geographical_area_sid: 112)
+        create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
       end
 
       it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
-        mapper.import
+        entity_mapper.import
 
-        expect(geographical_area_with_multiple_members_xml_node).to eq(expected_hash)
+        expect(xml_node).to eq(expected_hash)
       end
 
-      context 'when the xml node is missing an membership group sid' do
+      context 'when the xml node is missing a membership group sid' do
         before do
           allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
-          geographical_area_with_multiple_members_xml_node['geographicalAreaMembership'].first.delete('geographicalAreaGroupSid')
+          xml_node['geographicalAreaMembership'].first.delete('geographicalAreaGroupSid')
         end
 
         let(:expected_hash) do
@@ -215,38 +214,29 @@ RSpec.describe CdsImporter::EntityMapper do
 
         let(:expected_message) { "Skipping membership import due to missing geographical area group sid. hjid is 25654\n" }
 
-        let(:expected_xml_node) do
-          {
-            'hjid' => '23501',
-            'sid' => '114',
-            'geographicalAreaId' => '1010',
-            'geographicalCode' => '1',
-            'validityStartDate' => '1958-01-01T00:00:00',
-            'geographicalAreaMembership' => [
-              { 'hjid' => '25473', 'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' }, 'geographicalAreaGroupSid' => 114, 'validityStartDate' => '2007-01-01T00:00:00', 'geographicalAreaSid' => 112 },
-            ],
-          }
-        end
-
         it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
-          mapper.import
+          entity_mapper.import
 
-          expect(geographical_area_with_multiple_members_xml_node).to eq(expected_hash)
+          expect(xml_node).to eq(expected_hash)
         end
 
         it 'instruments a message about the missing sid' do
-          mapper.import
+          entity_mapper.import
 
           expect(ActiveSupport::Notifications).to have_received(:instrument).with(
             'apply.import_warnings',
-            message: expected_message, xml_node: expected_xml_node,
+            message: expected_message, xml_node: xml_node,
           )
         end
       end
     end
 
     context 'when the node is a GeographicalArea with a single member' do
-      let(:mapper) do
+      before do
+        create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
+      end
+
+      let(:entity_mapper) do
         described_class.new(
           'GeographicalArea',
           geographical_area_with_one_member_xml_node,
@@ -260,8 +250,7 @@ RSpec.describe CdsImporter::EntityMapper do
           'geographicalAreaId' => '1010',
           'geographicalCode' => '1',
           'validityStartDate' => '1958-01-01T00:00:00',
-          'geographicalAreaMembership' =>
-          {
+          'geographicalAreaMembership' => {
             'hjid' => '25654',
             'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
             'geographicalAreaGroupSid' => '23590',
@@ -277,21 +266,20 @@ RSpec.describe CdsImporter::EntityMapper do
           'geographicalAreaId' => '1010',
           'geographicalCode' => '1',
           'validityStartDate' => '1958-01-01T00:00:00',
-          'geographicalAreaMembership' =>
-            [
-              {
-                'hjid' => '25654',
-                'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
-                'geographicalAreaGroupSid' => 114,
-                'validityStartDate' => '2004-05-01T00:00:00',
-                'geographicalAreaSid' => 331,
-              },
-            ],
+          'geographicalAreaMembership' => [
+            {
+              'hjid' => '25654',
+              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:45' },
+              'geographicalAreaGroupSid' => 114,
+              'validityStartDate' => '2004-05-01T00:00:00',
+              'geographicalAreaSid' => 331,
+            },
+          ],
         }
       end
 
       it 'mutates the xml node to hold the correct geographical_area_sid and geographical_area_group_sid values' do
-        mapper.import
+        entity_mapper.import
 
         expect(geographical_area_with_one_member_xml_node).to eq(expected_hash)
       end
@@ -300,39 +288,26 @@ RSpec.describe CdsImporter::EntityMapper do
     context 'when cds logger enabled' do
       before do
         allow(TariffSynchronizer).to receive(:cds_logger_enabled).and_return(true)
+        allow(AdditionalCode.operation_klass).to receive(:insert).and_raise(StandardError, 'foo')
       end
 
-      it 'calls safe method' do
-        expect(mapper).to receive(:save_record)
-        mapper.import
-      end
+      it { expect { entity_mapper.import }.not_to raise_error }
     end
 
     context 'when cds logger disabled' do
-      it 'calls bang method' do
-        expect(mapper).to receive(:save_record!)
-        mapper.import
+      before do
+        allow(TariffSynchronizer).to receive(:cds_logger_enabled).and_return(false)
+        allow(AdditionalCode.operation_klass).to receive(:insert).and_raise(StandardError, 'foo')
       end
 
-      it 'raises an error and stop import' do
-        allow(AdditionalCode::Operation).to receive(:insert).and_raise(StandardError)
-        expect { mapper.import }.to raise_error(StandardError)
-      end
+      it { expect { entity_mapper.import }.to raise_error(StandardError, 'foo') }
     end
 
-    it 'calls insert method for operation class' do
-      expect(AdditionalCode::Operation).to receive(:insert).with(
-        hash_including(additional_code: '169', additional_code_sid: 3084, additional_code_type_id: '8', operation: 'U', filename: 'test.gzip'),
-      )
-      mapper.import
-    end
-
-    it 'saves record for any instance' do
-      expect { mapper.import }.to change(AdditionalCode, :count).by(1)
-    end
+    it { expect { entity_mapper.import }.to change(AdditionalCode, :count).by(1) }
+    it { expect(entity_mapper.import).to eql('AdditionalCode::Operation' => 1) }
 
     it 'saves all attributes for record' do
-      mapper.import
+      entity_mapper.import
       record = AdditionalCode.last
       aggregate_failures do
         expect(record.additional_code).to eq '169'
@@ -346,19 +321,18 @@ RSpec.describe CdsImporter::EntityMapper do
       end
     end
 
-    it 'records INSERTs performed' do
-      expect(mapper.import).to eql({
-        'AdditionalCode::Operation' => 1,
-      })
-    end
-
     it 'selects mappers by mapping root' do
-      expect_any_instance_of(CdsImporter::EntityMapper::AdditionalCodeMapper).to receive(:parse).and_call_original
-      mapper.import
+      additional_code_mapper = CdsImporter::EntityMapper::AdditionalCodeMapper.new(xml_node)
+      allow(CdsImporter::EntityMapper::AdditionalCodeMapper).to receive(:new).and_return(additional_code_mapper)
+      allow(additional_code_mapper).to receive(:parse).and_call_original
+
+      entity_mapper.import
+
+      expect(additional_code_mapper).to have_received(:parse)
     end
 
     it 'assigns filename' do
-      mapper.import
+      entity_mapper.import
       expect(AdditionalCode.last.filename).to eq 'test.gzip'
     end
 
@@ -392,14 +366,14 @@ RSpec.describe CdsImporter::EntityMapper do
         }
       end
 
-      let(:mapper) { described_class.new('Measure', xml_node) }
+      let(:entity_mapper) { described_class.new('Measure', xml_node) }
       let(:measure) { create(:measure, measure_sid: '20130650') }
 
       it 'does not remove excluded geographical areas that belong to measures not present within the XML increment' do
         create(:geographical_area, geographical_area_sid: '439')
         other_exclusion = create(:measure_excluded_geographical_area)
 
-        mapper.import
+        entity_mapper.import
 
         expect(MeasureExcludedGeographicalArea.where(measure_sid: other_exclusion.measure_sid)).to be_present
       end
@@ -410,7 +384,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
           create(:measure_excluded_geographical_area, measure_sid: '20130650', excluded_geographical_area: 'IT')
 
-          mapper.import
+          entity_mapper.import
 
           expect(MeasureExcludedGeographicalArea.where(excluded_geographical_area: 'IT')).not_to be_present
         end
@@ -420,14 +394,14 @@ RSpec.describe CdsImporter::EntityMapper do
         create(:geographical_area, geographical_area_sid: '439')
 
         expect {
-          mapper.import
+          entity_mapper.import
         }.to change(MeasureExcludedGeographicalArea, :count).from(0).to(1)
       end
 
       it 'does persist the correct excluded geographical area from the XML increment' do
         create(:geographical_area, geographical_area_sid: '439')
 
-        mapper.import
+        entity_mapper.import
 
         expect(MeasureExcludedGeographicalArea.last).to have_attributes(
           measure_sid: 20_130_650,

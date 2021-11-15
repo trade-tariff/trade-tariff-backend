@@ -3,11 +3,11 @@
     {
       "warning_type": "SQL Injection",
       "warning_code": 0,
-      "fingerprint": "1f76d3d777c6aff125e9a1f44f36e574471f0d3498c5f5d81bb43e8a7c0e3c51",
+      "fingerprint": "6b84aeface765eb44d5e4faa217b08a3396e972353e038dd23c50a198d1a32c8",
       "check_name": "SQL",
       "message": "Possible SQL injection",
       "file": "app/lib/trade_tariff_backend/data_migrator.rb",
-      "line": 97,
+      "line": 91,
       "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
       "code": "TradeTariffBackend::DataMigration::LogEntry.where(\"filename LIKE '%#{timestamp}%'\")",
       "render_path": null,
@@ -41,49 +41,13 @@
       "note": ""
     },
     {
-      "warning_type": "SQL Injection",
-      "warning_code": 0,
-      "fingerprint": "bf4f9fefadbdc8a21bac2ef9beb74c89868b4850860e83a58bc3184bcfeda6bc",
-      "check_name": "SQL",
-      "message": "Possible SQL injection",
-      "file": "app/services/quota_search_service.rb",
-      "line": 95,
-      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
-      "code": "scope.where(\"EXTRACT(YEAR FROM measures.validity_start_date) IN (#{years})\")",
-      "render_path": null,
-      "location": {
-        "type": "method",
-        "class": "QuotaSearchService",
-        "method": "apply_years_filter"
-      },
-      "user_input": "years",
-      "confidence": "Weak",
-      "note": ""
-    },
-    {
-      "warning_type": "Remote Code Execution",
-      "warning_code": 110,
-      "fingerprint": "d882f63ce96c28fb6c6e0982f2a171460e4b933bfd9b9a5421dca21eef3f76da",
-      "check_name": "CookieSerialization",
-      "message": "Use of unsafe cookie serialization strategy `:marshal` might lead to remote code execution",
-      "file": "config/initializers/cookies_serializer.rb",
-      "line": 5,
-      "link": "https://brakemanscanner.org/docs/warning_types/unsafe_deserialization",
-      "code": "Rails.application.config.action_dispatch.cookies_serializer = :marshal",
-      "render_path": null,
-      "location": null,
-      "user_input": null,
-      "confidence": "Medium",
-      "note": ""
-    },
-    {
       "warning_type": "Denial of Service",
       "warning_code": 76,
       "fingerprint": "f45805957c1354088749e5a126b6fdfe7c155fa2df924476f72e7afb250819f5",
       "check_name": "RegexDoS",
       "message": "Model attribute used in regular expression",
       "file": "app/controllers/api/v2/goods_nomenclatures_controller.rb",
-      "line": 17,
+      "line": 20,
       "link": "https://brakemanscanner.org/docs/warning_types/denial_of_service/",
       "code": "/(#{Section.where(:position => params[:position]).take.chapters.map(&:goods_nomenclature_item_id).map do\n gn[(0..1)]\n end.join(\"|\")})\\d{8}/",
       "render_path": null,
@@ -97,6 +61,6 @@
       "note": ""
     }
   ],
-  "updated": "2021-06-01 18:54:37 +0100",
-  "brakeman_version": "5.0.1"
+  "updated": "2021-11-15 15:45:49 +0000",
+  "brakeman_version": "5.1.2"
 }
