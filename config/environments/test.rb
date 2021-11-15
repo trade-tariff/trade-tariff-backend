@@ -51,6 +51,8 @@ Rails.application.configure do
   end
 
   config.after_initialize do
+    require_relative '../../app/lib/trade_tariff_backend'
+
     TradeTariffBackend.configure do |tariff|
       tariff.search_namespace = 'tariff-test' # default is just tariff
       # We need search index to be refreshed after each operation

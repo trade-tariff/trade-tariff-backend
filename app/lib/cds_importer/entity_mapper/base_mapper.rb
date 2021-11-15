@@ -24,6 +24,10 @@ class CdsImporter
           end
         end
 
+        def mappers
+          Dir[Rails.root.join('app/lib/cds_importer/entity_mapper/*.rb')].sort.each { |f| require f }
+        end
+
         def mapping_with_key_as_array
           entity_mapping.keys.inject({}) do |memo, key|
             memo[key.split(PATH_SEPARATOR)] = entity_mapping[key]

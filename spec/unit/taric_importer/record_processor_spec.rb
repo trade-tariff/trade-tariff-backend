@@ -1,10 +1,6 @@
 require 'rails_helper'
 
-require 'taric_importer'
-require 'taric_importer/record_processor'
-require 'taric_importer/record_processor/create_operation'
-
-RSpec.describe TaricImporter::RecordProcessor do
+describe TaricImporter::RecordProcessor do
   subject(:record_processor) { described_class.new(record_hash, Date.new(2013, 8, 1)) }
 
   let(:record_hash) do
@@ -52,7 +48,7 @@ RSpec.describe TaricImporter::RecordProcessor do
       end
     end
 
-    context 'unknown operation' do
+    context 'when the operation is unknown' do
       it 'raises TaricImporter::UnknownOperation exception' do
         expect { record_processor.operation_class = 'error' }.to raise_error TaricImporter::UnknownOperationError
       end
@@ -60,27 +56,45 @@ RSpec.describe TaricImporter::RecordProcessor do
   end
 
   describe '#process!' do
-    context 'with default processor' do
+    context 'with default operation' do
+      before do
+        allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new).and_return(create_operation)
+      end
+
+      let(:create_operation) { instance_double(TaricImporter::RecordProcessor::CreateOperation, call: true) }
+
       it 'performs default create operation' do
-        create_operation_intance = instance_double(TaricImporter::RecordProcessor::CreateOperation, call: true)
-        expect(TaricImporter::RecordProcessor::CreateOperation).to receive(:new)
-                                                                   .and_return(create_operation_intance)
-        expect(create_operation_intance).to receive(:call)
         record_processor.process!
+
+        expect(create_operation).to have_received(:call)
       end
     end
 
-    context 'with custom processor' do
-      it 'performs model type specific create operation' do
-        custom_operation_instance = double('instance of LanguageDescriptionCreateOperation', call: true)
-        custom_create_operation_class = double('LanguageDescriptionCreateOperation', new: custom_operation_instance)
-        stub_const('TaricImporter::RecordProcessor::LanguageDescriptionCreateOperation', custom_create_operation_class)
+    context 'with custom operation' do
+      before do
+        stub_const(
+          'TaricImporter::RecordProcessor::OperationOverrides::LanguageDescriptionCreateOperation',
+          create_operation_class,
+        )
+        allow(TaricImporter::RecordProcessor::OperationOverrides::LanguageDescriptionCreateOperation).to receive(:new).and_return(create_operation)
+      end
 
-        record_processor = described_class.new(record_hash, Date.new(2013, 8, 1))
+      let(:create_operation_class) do
+        Class.new do
+          def initialize(_record, _operation_date); end
+
+          def call
+            true
+          end
+        end
+      end
+
+      let(:create_operation) { instance_double(create_operation_class, call: true) }
+
+      it 'performs ovverriding create operation' do
         record_processor.process!
 
-        expect(custom_create_operation_class).to have_received :new
-        expect(custom_operation_instance).to     have_received :call
+        expect(create_operation).to have_received :call
       end
     end
   end

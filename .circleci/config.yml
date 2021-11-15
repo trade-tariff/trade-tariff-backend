@@ -139,7 +139,7 @@ commands:
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && rake db:migrate" --name "db-migrate" --wait
+            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
 
   smoketest:
     parameters:
@@ -282,7 +282,7 @@ jobs:
       - run:
           name: "Setup DB"
           command: |
-            RAILS_ENV=test bundle exec rake db:structure:load --trace
+            RAILS_ENV=test bundle exec rails db:structure:load --trace
       - run:
           name: "Check ElasticSearch for availability"
           command: |

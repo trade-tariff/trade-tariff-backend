@@ -1,5 +1,3 @@
-require 'api_constraints'
-
 Rails.application.routes.draw do
   get 'healthcheck' => 'healthcheck#index'
 
