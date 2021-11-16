@@ -1,4 +1,4 @@
-describe Object do
+RSpec.describe Object do
   describe '#tap!' do
     it 'returns self if block results in nil' do
       expect(

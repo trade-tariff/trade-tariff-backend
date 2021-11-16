@@ -1,4 +1,4 @@
-describe FindAncestorsService do
+RSpec.describe FindAncestorsService do
   subject(:service) { described_class.new(goods_nomenclature_item_id).call }
 
   context 'when the search term is empty' do
