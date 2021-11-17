@@ -11,7 +11,7 @@ module HeadingService
       heading_cache_key = "heading-#{TradeTariffBackend.service}-#{heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{heading.declarable?}"
       if heading.declarable?
         Rails.cache.fetch('_' + heading_cache_key, expires_in: 24.hours) do
-          @measures = MeasurePresenter.new(heading.measures_dataset.eager({ geographical_area: [:geographical_area_descriptions,
+          @measures = MeasureCollection.new(heading.measures_dataset.eager({ geographical_area: [:geographical_area_descriptions,
                                                                                                 { contained_geographical_areas: :geographical_area_descriptions }] },
                                                                            { footnotes: :footnote_descriptions },
                                                                            { measure_type: :measure_type_description },

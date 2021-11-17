@@ -7,7 +7,7 @@ module Api
 
       def show
         if @heading.declarable?
-          @measures = MeasurePresenter.new(@heading.measures_dataset.eager({ geographical_area: [:geographical_area_descriptions,
+          @measures = MeasureCollection.new(@heading.measures_dataset.eager({ geographical_area: [:geographical_area_descriptions,
                                                                                                  { contained_geographical_areas: :geographical_area_descriptions }] },
                                                       { footnotes: :footnote_descriptions },
                                                       { measure_type: :measure_type_description },

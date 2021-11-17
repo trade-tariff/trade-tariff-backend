@@ -4,7 +4,7 @@ module Api
       before_action :find_commodity, only: [:show, :changes]
 
       def show
-        @measures = MeasurePresenter.new(
+        @measures = MeasureCollection.new(
           @commodity.measures_dataset.eager(
             { footnotes: :footnote_descriptions },
             { measure_type: :measure_type_description },
