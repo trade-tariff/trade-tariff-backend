@@ -58,7 +58,7 @@ class MeasureCollection < SimpleDelegator
 
   def filter_out_excise_measures
     if TradeTariffBackend.xi?
-      reject { |measure| measure.excise? } 
+      reject(&:excise?)
     else
       @measures
     end
