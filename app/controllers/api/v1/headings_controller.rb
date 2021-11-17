@@ -31,7 +31,7 @@ module Api
                                                       { excluded_geographical_areas: :geographical_area_descriptions },
                                                       :additional_code,
                                                       :full_temporary_stop_regulations,
-                                                      :measure_partial_temporary_stops).all, @heading).validate!
+                                                      :measure_partial_temporary_stops).all, @heading).deduplicate.filter
         else
           @commodities = GoodsNomenclatureMapper.new(@heading.commodities_dataset.eager(:goods_nomenclature_indents,
                                                                                         :goods_nomenclature_descriptions)

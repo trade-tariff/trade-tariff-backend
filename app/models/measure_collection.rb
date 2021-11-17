@@ -2,15 +2,21 @@ class MeasureCollection < SimpleDelegator
   THIRD_COUNTRY_DUTY_ID = '103'.freeze
   HIDDEN_MEASURE_TYPE_IDS = %w[430 447].freeze
 
-  def initialize(collection, declarable)
-    @collection = collection
+  attr_reader :declarable, :measures
+
+  def initialize(measures, declarable)
+    @measures = measures
     @declarable = declarable
 
-    super(collection)
+    super(measures)
   end
 
-  def validate!
-    @collection = measure_deduplicate
+  def deduplicate
+    self.class.new(measure_deduplicate, declarable)
+  end
+
+  def filter
+    self.class.new(filter_out_excise_measures, declarable)
   end
 
   private
@@ -48,5 +54,13 @@ class MeasureCollection < SimpleDelegator
 
   def matching_item_id(measure)
     measure.goods_nomenclature_item_id == @declarable.goods_nomenclature_item_id
+  end
+
+  def filter_out_excise_measures
+    if TradeTariffBackend.xi?
+      reject { |measure| measure.excise? } 
+    else
+      @measures
+    end
   end
 end

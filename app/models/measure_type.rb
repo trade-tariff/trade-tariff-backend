@@ -77,7 +77,6 @@ class MeasureType < Sequel::Model
     measure_type_series_id.in?(UNIT_EXPRESSABLE_MEASURES)
   end
 
-  # 306
   def excise?
     measure_type_series_id == 'Q'
   end

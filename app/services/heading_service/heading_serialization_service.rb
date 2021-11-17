@@ -35,7 +35,7 @@ module HeadingService
                                                                            { excluded_geographical_areas: :geographical_area_descriptions },
                                                                            :additional_code,
                                                                            :full_temporary_stop_regulations,
-                                                                           :measure_partial_temporary_stops).all, heading).validate!
+                                                                           :measure_partial_temporary_stops).all, heading).deduplicate.filter
           presenter = Api::V2::Headings::DeclarableHeadingPresenter.new(heading, @measures)
           options = { is_collection: false }
           options[:include] = [:section,
