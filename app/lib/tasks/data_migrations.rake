@@ -1,40 +1,43 @@
-TradeTariffBackend::DataMigrator.reporter = TradeTariffBackend::DataMigrator::ConsoleReporter
-
 namespace :db do
   namespace :data do
+    desc 'Set reporter class variable after the environment has loaded'
+    task load_reporter: :environment do
+      TradeTariffBackend::DataMigrator.reporter = TradeTariffBackend::DataMigrator::ConsoleReporter
+    end
+
     desc 'Applies all pending data migrations'
-    task migrate: :environment do
+    task migrate: :load_reporter do
       TradeTariffBackend::DataMigrator.migrate
     end
 
     desc 'Rollbacks last applied data migration'
-    task rollback: :environment do
+    task rollback: :load_reporter do
       TradeTariffBackend::DataMigrator.rollback
     end
 
     desc 'Prints data migration application status'
-    task status: :environment do
+    task status: :load_reporter do
       TradeTariffBackend::DataMigrator.status
     end
 
     desc 'Rollbacks last data migration and applies it'
-    task redo: :environment do
+    task redo: :load_reporter do
       TradeTariffBackend::DataMigrator.redo
     end
 
     desc 'Applies data migration one more time by timestamp'
-    task :repeat, [:timestamp] => :environment do |_task, args|
+    task :repeat, [:timestamp] => :load_reporter do |_task, args|
       TradeTariffBackend::DataMigrator.repeat(args[:timestamp])
     end
 
     desc 'Load old data migrations (run this task once)'
-    task init_migrations_table: :environment do
+    task init_migrations_table: :load_reporter do
       TradeTariffBackend::DataMigrator.send(:migration_files).each do |file|
-        if TradeTariffBackend::DataMigration::LogEntry.where(filename: file).none?
-          l = TradeTariffBackend::DataMigration::LogEntry.new
-          l.filename = file
-          l.save
-        end
+        next unless TradeTariffBackend::DataMigration::LogEntry.where(filename: file).none?
+
+        l = TradeTariffBackend::DataMigration::LogEntry.new
+        l.filename = file
+        l.save
       end
     end
   end

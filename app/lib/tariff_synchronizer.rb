@@ -34,7 +34,6 @@ module TariffSynchronizer
   mattr_accessor :taric_initial_update_date
   self.taric_initial_update_date = Date.new(2012, 6, 6)
 
-  # TODO:
   # set initial update date
   # Initial dump date + 1 day
   mattr_accessor :cds_initial_update_date
@@ -103,7 +102,7 @@ module TariffSynchronizer
     # running the apply task it is wrapped with a redis lock
     TradeTariffBackend.with_redis_lock do
       # Updates could be modifying primary keys so unrestricted it for all models.
-      Sequel::Model.subclasses.each(&:unrestrict_primary_key)
+      sequel_models.each(&:unrestrict_primary_key)
 
       date_range = date_range_since_last_pending_update
       date_range.each do |day|
@@ -134,7 +133,7 @@ module TariffSynchronizer
     # running the apply task it is wrapped with a redis lock
     TradeTariffBackend.with_redis_lock do
       # Updates could be modifying primary keys so unrestricted it for all models.
-      Sequel::Model.subclasses.each(&:unrestrict_primary_key)
+      sequel_models.each(&:unrestrict_primary_key)
 
       subscribe 'apply.import_warnings' do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
@@ -206,6 +205,7 @@ module TariffSynchronizer
   end
 
   def rollback_cds(rollback_date, keep = false)
+    Rails.autoloaders.main.eager_load
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)
 
@@ -288,9 +288,17 @@ module TariffSynchronizer
   end
 
   def oplog_based_models
-    Sequel::Model.subclasses.select do |model|
+    sequel_models.select do |model|
       model.plugins.include?(Sequel::Plugins::Oplog)
     end
+  end
+
+  def sequel_models
+    # Sequel::Model subclasses need to load into the ruby AST before they are visible
+    # This only affects running this code in development mode which does not eager load in the normal course of events
+    Rails.autoloaders.main.eager_load unless Rails.application.config.eager_load
+
+    Sequel::Model.subclasses
   end
 
   def check_tariff_updates_failures
