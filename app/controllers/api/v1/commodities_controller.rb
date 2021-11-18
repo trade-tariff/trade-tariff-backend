@@ -1,10 +1,10 @@
 module Api
   module V1
     class CommoditiesController < ApiController
-      before_action :find_commodity, only: [:show, :changes]
+      before_action :find_commodity, only: %i[show changes]
 
       def show
-        @measures = MeasurePresenter.new(
+        @measures = MeasureCollection.new(
           @commodity.measures_dataset.eager(
             { footnotes: :footnote_descriptions },
             { measure_type: :measure_type_description },
@@ -19,20 +19,20 @@ module Api
                                    :monetary_unit,
                                    :measurement_unit_qualifier,
                                    { measure_condition_code: :measure_condition_code_description },
-                                   { measure_condition_components: [:measure_condition,
-                                                                    :duty_expression,
-                                                                    :measurement_unit,
-                                                                    :monetary_unit,
-                                                                    :measurement_unit_qualifier] }] },
+                                   { measure_condition_components: %i[measure_condition
+                                                                      duty_expression
+                                                                      measurement_unit
+                                                                      monetary_unit
+                                                                      measurement_unit_qualifier] }] },
             { quota_order_number: :quota_definition },
             { excluded_geographical_areas: :geographical_area_descriptions },
             { geographical_area: [:geographical_area_descriptions,
                                   { contained_geographical_areas: :geographical_area_descriptions }] },
             :additional_code,
             :full_temporary_stop_regulations,
-            :measure_partial_temporary_stops
+            :measure_partial_temporary_stops,
           ).all, @commodity
-        ).validate!
+        ).deduplicate.filter
 
         @commodity_cache_key = "commodity-#{@commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}"
         respond_with @commodity
@@ -41,9 +41,9 @@ module Api
       def changes
         key = "commodity-#{@commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}/changes"
         @changes = Rails.cache.fetch(key, expires_at: actual_date.end_of_day) do
-          ChangeLog.new(@commodity.changes.where { |o|
+          ChangeLog.new(@commodity.changes.where do |o|
             o.operation_date <= actual_date
-          })
+          end)
         end
 
         render 'api/v1/changes/changes'

@@ -145,6 +145,10 @@ FactoryBot.define do
       measure_type_id { '674' }
     end
 
+    trait :excise do
+      measure_type { create(:measure_type, measure_type_series_id: 'Q', measure_type_id: '306') }
+    end
+
     trait :with_measure_components do
       after(:build) do |measure, evaluator|
         create_list(
