@@ -9,7 +9,8 @@ class BaseSuggestionsService
           .actual
           .distinct
           .order(Sequel.desc(:goods_nomenclature_item_id))
-          .map { |commodity| handle_commodity_record(commodity) }
+          .index_by(&:goods_nomenclature_item_id)
+          .map { |_commodity_code, commodity| handle_commodity_record(commodity) }
 
     search_references = SearchReference
           .select(:id, :title)
