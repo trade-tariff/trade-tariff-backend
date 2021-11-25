@@ -5,10 +5,26 @@ RSpec.describe RulesOfOrigin::Query do
     described_class.new roo_data_set, heading_code, country_code
   end
 
+  include_context 'with fake rules of origin data'
+
   let(:heading_code) { roo_heading_code }
   let(:country_code) { roo_country_code }
 
-  include_context 'with fake rules of origin data'
+  describe '.new' do
+    it { is_expected.to be_instance_of described_class }
+
+    context 'with invalid heading code' do
+      let(:heading_code) { '1000' }
+
+      it { expect { query }.to raise_exception described_class::InvalidParams }
+    end
+
+    context 'with invalid country code' do
+      let(:country_code) { 'USA' }
+
+      it { expect { query }.to raise_exception described_class::InvalidParams }
+    end
+  end
 
   describe '#rules' do
     subject { query.rules[roo_scheme_code] }

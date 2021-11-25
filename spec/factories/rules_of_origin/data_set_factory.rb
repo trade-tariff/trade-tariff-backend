@@ -14,7 +14,7 @@ FactoryBot.define do
     transient do
       scheme_code { scheme_set.schemes.first }
       rules { build_list :rules_of_origin_rule, 2, scheme_code: scheme_code }
-      sequence(:heading_code, 1000) { |n| sprintf '%6d', n }
+      sequence(:heading_code, 1000) { |n| sprintf '%06d', n }
     end
   end
 end
