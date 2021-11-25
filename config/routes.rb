@@ -111,6 +111,9 @@ Rails.application.routes.draw do
       resources :rules_of_origin_schemes,
                 controller: 'rules_of_origin',
                 only: %i[index]
+      get '/rules_of_origin_schemes/:heading_code/:country_code',
+          to: 'rules_of_origin#index',
+          as: :rules_of_origin
 
       if TradeTariffBackend.uk?
         get '/news_items/:id', constraints: { id: /\d+/ }, to: 'news_items#show', as: :news_item
