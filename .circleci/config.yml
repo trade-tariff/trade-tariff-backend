@@ -187,7 +187,7 @@ commands:
 jobs:
   linters:
     docker:
-      - image: cimg/ruby:3.0.2
+      - image: cimg/ruby:3.0.3
     resource_class: small
     steps:
       - checkout
@@ -248,7 +248,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/ruby:3.0.2
+      - image: cimg/ruby:3.0.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -311,7 +311,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:3.0.2
+      - image: cimg/ruby:3.0.3
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -336,7 +336,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:3.0.2
+      - image: cimg/ruby:3.0.3
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -358,7 +358,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:3.0.2
+      - image: cimg/ruby:3.0.3
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
