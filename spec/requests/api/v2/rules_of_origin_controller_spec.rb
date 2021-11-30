@@ -26,5 +26,16 @@ RSpec.describe Api::V2::RulesOfOriginController do
 
       it_behaves_like 'a successful jsonapi response'
     end
+
+    context 'with path params' do
+      let :make_request do
+        get api_rules_of_origin_path(heading_code: heading_code,
+                                     country_code: country_code,
+                                     format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
   end
 end
