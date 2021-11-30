@@ -36,7 +36,7 @@ module RulesOfOrigin
       scheme_set.links + schemes.map(&:links).flatten
     end
 
-    class InvalidParams < StandardError; end
+    class InvalidParams < ArgumentError; end
 
     private
 
