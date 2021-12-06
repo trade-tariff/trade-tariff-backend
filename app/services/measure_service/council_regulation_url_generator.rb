@@ -36,7 +36,7 @@ module MeasureService
                                  .to_s
                                  .rjust(4, '0')
 
-      url_ops = if target_regulation.is_a?(MeasurePartialTemporaryStop)
+      url_ops = if target_regulation.is_a?(MeasurePartialTemporaryStop) || target_regulation.published_date.nil?
                   #
                   # If MeasurePartialTemporaryStop, we do not pass year into the search params
                   # as there are no published_date for partial stop
