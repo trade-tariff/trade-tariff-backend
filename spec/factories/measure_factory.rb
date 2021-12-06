@@ -113,8 +113,6 @@ FactoryBot.define do
 
     trait :no_ad_valorem do
       duty_expression_id { '02' }
-      measurement_unit_code { 'DTN' }
-      monetary_unit_code { nil }
     end
 
     trait :expresses_units do
@@ -147,6 +145,16 @@ FactoryBot.define do
 
     trait :excise do
       measure_type { create(:measure_type, measure_type_series_id: 'Q', measure_type_id: '306') }
+    end
+
+    trait :single_unit do
+      measurement_unit_code { 'DTN' }
+      measurement_unit_qualifier_code { 'R' }
+    end
+
+    trait :compound_unit do
+      measurement_unit_code { 'ASV' }
+      measurement_unit_qualifier_code { 'X' }
     end
 
     trait :with_measure_components do
