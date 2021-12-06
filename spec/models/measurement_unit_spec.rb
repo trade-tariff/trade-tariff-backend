@@ -21,69 +21,78 @@ RSpec.describe MeasurementUnit do
     end
   end
 
-  describe '.measurement_unit' do
-    let(:measurement_unit) do
-      create(
-        :measurement_unit,
-        :with_description,
-        measurement_unit_code: measurement_unit_code,
-      )
+  describe '.units' do
+    context 'with a single measurement unit' do
+      subject(:result) { described_class.units('ASV', 'ASV') }
+
+      it { is_expected.to include_json([{ 'unit' => 'percent' }]) }
     end
 
-    let(:measurement_unit_code) { 'ASV' }
+    context 'with a compound measurement unit' do
+      subject(:result) { described_class.units('ASV', 'ASVX') }
 
-    context 'with valid measurement unit' do
-      let(:unit_code) { 'ASV' }
-      let(:unit_key) { 'ASV' }
-
-      it { expect(described_class.measurement_unit(unit_code, unit_key)).to include('unit' => 'percent') }
+      it { is_expected.to include_json([{ 'unit' => 'percent' }, { 'unit' => 'x 100 litres' }]) }
     end
 
     context 'with missing measurement unit present in database' do
-      subject(:result) { described_class.measurement_unit(unit_code, unit_key) }
+      subject(:result) { described_class.units('ASV', 'ASVX') }
 
       before do
         measurement_unit
         allow(Raven).to receive(:capture_message).and_call_original
         allow(described_class).to receive(:measurement_units).and_return({})
-      end
-
-      let(:unit_code) { 'ASV' }
-      let(:unit_key) { 'ASVX' }
-      let(:unit_description) { measurement_unit.description }
-
-      it { is_expected.to include('measurement_unit_code' => unit_code) }
-      it { is_expected.to include('measurement_unit_qualifier_code' => 'X') }
-      it { is_expected.to include('unit' => nil) }
-      it { is_expected.to include('abbreviation' => measurement_unit.abbreviation) }
-      it { is_expected.to include('unit_question' => "Please enter unit: #{unit_description}") }
-      it { is_expected.to include('unit_hint' =>  "Please correctly enter unit: #{unit_description}") }
-
-      it 'sends a message to Sentry' do
         result
-        expect(Raven).to have_received(:capture_message)
       end
+
+      let(:measurement_unit) do
+        create(
+          :measurement_unit,
+          :with_description,
+          measurement_unit_code: 'ASV',
+        )
+      end
+
+      let(:expected_units) do
+        [
+          {
+            'abbreviation' => measurement_unit.abbreviation,
+            'measurement_unit_code' => 'ASV',
+            'measurement_unit_qualifier_code' => 'X',
+            'unit' => nil,
+            'unit_hint' => "Please correctly enter unit: #{measurement_unit.description}",
+            'unit_question' => "Please enter unit: #{measurement_unit.description}",
+          },
+        ]
+      end
+
+      it { is_expected.to eq(expected_units) }
+      it { expect(Raven).to have_received(:capture_message) }
     end
 
     context 'with measurement unit not in the database' do
-      subject(:result) { described_class.measurement_unit('FC1', 'FC1X') }
+      subject(:result) { described_class.units('FC1', 'FC1X') }
 
       before do
         allow(Raven).to receive(:capture_message).and_call_original
         allow(described_class).to receive(:measurement_units).and_return({})
-      end
-
-      it { is_expected.to include('measurement_unit_code' => 'FC1') }
-      it { is_expected.to include('measurement_unit_qualifier_code' => 'X') }
-      it { is_expected.to include('unit' => nil) }
-      it { is_expected.to include('abbreviation' => nil) }
-      it { is_expected.to include('unit_question' => 'Please enter unit: FC1') }
-      it { is_expected.to include('unit_hint' =>  'Please correctly enter unit: FC1') }
-
-      it 'sends a message to Sentry' do
         result
-        expect(Raven).to have_received(:capture_message)
       end
+
+      let(:expected_units) do
+        [
+          {
+            'abbreviation' => nil,
+            'measurement_unit_code' => 'FC1',
+            'measurement_unit_qualifier_code' => 'X',
+            'unit' => nil,
+            'unit_hint' => 'Please correctly enter unit: FC1',
+            'unit_question' => 'Please enter unit: FC1',
+          },
+        ]
+      end
+
+      it { is_expected.to eq(expected_units) }
+      it { expect(Raven).to have_received(:capture_message) }
     end
   end
 end

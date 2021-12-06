@@ -13,7 +13,8 @@
     "abbreviation": "% vol/hl",
     "unit_question": "What is the volume of alcohol of the goods that you are importing?",
     "unit_hint": "This can be calculated by multiplying the %age alcohol by volume (ABV) by the volume. Enter the value in hectolitres (100 litres)",
-    "unit": "x 100 litres"
+    "unit": "x 100 litres",
+    "compound_units": ["ASV", "HLT"]
   },
   "CCT": {
     "measurement_unit_code": "CCT",

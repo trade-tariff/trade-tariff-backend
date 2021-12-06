@@ -10,7 +10,7 @@ RSpec.describe MeasureUnitService do
       end
     end
 
-    context 'when the measures express units' do
+    context 'when the measures express a single matching units' do
       let(:measures) { [measure] }
       let(:measure) do
         create(
@@ -18,7 +18,7 @@ RSpec.describe MeasureUnitService do
           :with_measure_components,
           :with_measure_conditions,
           :expresses_units,
-          :no_ad_valorem,
+          :single_unit,
         )
       end
       let(:expected_applicable_units) do
@@ -34,9 +34,43 @@ RSpec.describe MeasureUnitService do
         }
       end
 
-      it 'returns the correct annotated units' do
-        expect(service.call).to eq(expected_applicable_units)
+      it { expect(service.call).to eq(expected_applicable_units) }
+    end
+
+    context 'when the measures express a multiple matching units' do
+      let(:measures) { [measure] }
+      let(:measure) do
+        create(
+          :measure,
+          :with_measure_components,
+          :with_measure_conditions,
+          :expresses_units,
+          :compound_unit,
+        )
       end
+
+      let(:expected_applicable_units) do
+        {
+          'ASV' => {
+            'abbreviation' => '% vol',
+            'measurement_unit_code' => 'ASV',
+            'measurement_unit_qualifier_code' => '',
+            'unit' => 'percent',
+            'unit_hint' => 'Enter the alcohol by volume (ABV) percentage',
+            'unit_question' => 'What is the alcohol percentage (%) of the goods you are importing?',
+          },
+          'HLT' => {
+            'abbreviation' => 'hl',
+            'measurement_unit_code' => 'HLT',
+            'measurement_unit_qualifier_code' => '',
+            'unit' => 'x 100 litres',
+            'unit_hint' => 'Enter the value in hectolitres (100 litres)',
+            'unit_question' => 'What is the volume of the goods that you will be importing?',
+          },
+        }
+      end
+
+      it { expect(service.call).to eq(expected_applicable_units) }
     end
   end
 end

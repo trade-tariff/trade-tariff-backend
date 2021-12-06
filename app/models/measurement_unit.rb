@@ -15,11 +15,23 @@ class MeasurementUnit < Sequel::Model
   delegate :description, to: :measurement_unit_description
 
   class << self
-    def measurement_unit(unit_code, unit_key)
-      measurement_units[unit_key] ||= build_missing_measurement_unit(unit_code, unit_key)
+    def units(unit_code, unit_key)
+      unit = measurement_units[unit_key] || build_missing_measurement_unit(unit_code, unit_key)
+
+      if unit['compound_units'].present?
+        compound_units_for(unit)
+      else
+        [unit]
+      end
     end
 
     private
+
+    def compound_units_for(unit)
+      unit['compound_units'].flat_map do |unit_key|
+        units(unit['measurement_unit_code'], unit_key)
+      end
+    end
 
     def measurement_units
       @measurement_units ||=

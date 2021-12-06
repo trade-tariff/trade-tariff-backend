@@ -9,9 +9,11 @@ class MeasureUnitService
       unit_qualifier_code = unit[:measurement_unit_qualifier_code]
       unit_key = "#{unit_code}#{unit_qualifier_code}"
 
-      if acc[unit_key].blank?
-        acc[unit_key] = {}
-        acc[unit_key] = MeasurementUnit.measurement_unit(unit_code, unit_key)
+      MeasurementUnit.units(unit_code, unit_key).map do |presented_unit|
+        # For some measurement units we can replace the presented unit with one or more other units. This means our unit key is now different to the root unit
+        key = "#{presented_unit['measurement_unit_code']}#{presented_unit['measurement_unit_qualifier_code']}"
+
+        acc[key] = presented_unit
       end
     end
   end
