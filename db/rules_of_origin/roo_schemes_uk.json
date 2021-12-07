@@ -72,7 +72,8 @@
                 "SI",
                 "SK",
                 "SM",
-                "AD"
+                "AD",
+                "CA"
             ]
         },
         {
@@ -1321,6 +1322,48 @@
             ]
         },
         {
+            "scheme_code": "oct",
+            "country_code": "OCT",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "invoice-declaration.md"
+                }
+            ],
+            "rule_offset": 15000000,
+            "title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
+            "introductory_notes_file": "oct_intro.md",
+            "fta_intro_file": "oct.md",
+            "links": [
+                {
+                    "text": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
+                    "url": "https://www.gov.uk/government/publications/reference-document-for-the-customs-tariff-free-access-for-goods-from-british-overseas-territories-eu-exit-regulations-2020"
+                }
+            ],
+            "countries": [
+                "AI",
+                "BM",
+                "AQ",
+                "IO",
+                "VG",
+                "KY",
+                "FK",
+                "MS",
+                "PN",
+                "SH",
+                "GS",
+                "TC"
+            ]
+        },
+        {
             "scheme_code": "gsp",
             "proofs": [
                 {
@@ -1336,6 +1379,7 @@
                     "detail": "origin-declaration.md"
                 }
             ],
+            "rule_offset": 16000000,
             "title": "Generalised Scheme of Preferences (GSP)",
             "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
             "introductory_notes_file": "gsp_intro.md",
