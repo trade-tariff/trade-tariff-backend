@@ -129,6 +129,7 @@ RSpec.describe Api::V2::ChaptersController, 'GET #index' do
           attributes: {
             goods_nomenclature_sid: chapter1.goods_nomenclature_sid,
             goods_nomenclature_item_id: chapter1.goods_nomenclature_item_id,
+            formatted_description: chapter1.formatted_description,
           },
         },
         {
@@ -137,6 +138,7 @@ RSpec.describe Api::V2::ChaptersController, 'GET #index' do
           attributes: {
             goods_nomenclature_sid: chapter2.goods_nomenclature_sid,
             goods_nomenclature_item_id: chapter2.goods_nomenclature_item_id,
+            formatted_description: chapter2.formatted_description,
           },
         },
       ],
