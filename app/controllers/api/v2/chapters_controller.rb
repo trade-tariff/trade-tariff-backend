@@ -6,7 +6,7 @@ module Api
       before_action :find_chapter, only: [:show, :changes]
 
       def index
-        @chapters = Chapter.eager(:chapter_note).all
+        @chapters = Chapter.eager(:chapter_note, :goods_nomenclature_descriptions).all
 
         render json: Api::V2::Chapters::ChapterListSerializer.new(@chapters).serializable_hash
       end
