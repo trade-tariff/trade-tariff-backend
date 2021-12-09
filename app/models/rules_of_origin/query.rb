@@ -11,7 +11,7 @@ module RulesOfOrigin
 
     def initialize(data_set, heading_code, country_code)
       @data_set = data_set
-      @heading_code = heading_code.to_s
+      @heading_code = heading_code.to_s.slice(0, 6)
       @country_code = country_code.to_s.upcase
       validate!
     end
