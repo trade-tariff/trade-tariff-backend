@@ -92,7 +92,7 @@ module TariffSynchronizer
     end
   end
 
-  def apply
+  def apply(reindex_all_indexes: false)
     check_tariff_updates_failures
 
     applied_updates = []
@@ -117,13 +117,15 @@ module TariffSynchronizer
           update_names: applied_updates.map(&:filename),
           import_warnings: import_warnings,
         )
+
+        Sidekiq::Client.enqueue(ClearCacheWorker) if reindex_all_indexes
       end
     end
   rescue Redlock::LockError
     instrument('apply_lock_error.tariff_synchronizer')
   end
 
-  def apply_cds
+  def apply_cds(reindex_all_indexes: false)
     check_tariff_updates_failures
 
     applied_updates = []
@@ -150,6 +152,8 @@ module TariffSynchronizer
       if applied_updates.any? && BaseUpdate.pending_or_failed.none?
         instrument('apply.tariff_synchronizer',
                    update_names: applied_updates.map(&:filename))
+
+        Sidekiq::Client.enqueue(ClearCacheWorker) if reindex_all_indexes
       end
     end
   rescue Redlock::LockError
