@@ -19,14 +19,11 @@
   # Online converter: https://crontab.guru/#0_22_*_*_*
   #
   UpdatesSynchronizerWorker:
-    cron: "30 4 * * *"
+    cron: "0 5 * * *"
     description: "UpdatesSynchronizerWorker"
   TaricSequenceCheckWorker:
     cron: "0 14 * * 6" 
     description: "TaricSequenceCheckWorker"
-  ClearCacheWorker:
-    cron: "0 5 * * *" 
-    description: "Clear Rails cache"
   PopulateChangesTableWorker:
     cron: "30 4 * * *" 
     description: "Populates the changes table"
