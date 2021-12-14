@@ -1,51 +1,38 @@
 RSpec.describe UpdatesSynchronizerWorker, type: :worker do
-  before do
-    allow($stdout).to receive(:write)
-    allow(TariffSynchronizer).to receive(:download)
-    allow(TariffSynchronizer).to receive(:apply)
-    allow(TariffSynchronizer).to receive(:download_cds)
-    allow(TariffSynchronizer).to receive(:apply_cds)
-  end
-
   describe '#perform' do
-    context 'when CDS flag is off' do
-      before do
-        allow(TradeTariffBackend).to receive(:use_cds?).and_return(false)
-      end
+    subject(:perform) { described_class.new.perform }
 
-      it 'invokes the apply/download for the XI service' do
-        allow(TradeTariffBackend).to receive(:xi?).and_return(true)
+    before do
+      allow($stdout).to receive(:write)
 
-        expect(TariffSynchronizer).to receive(:download)
-        expect(TariffSynchronizer).to receive(:apply)
-        expect(TariffSynchronizer).not_to receive(:download_cds)
-        expect(TariffSynchronizer).not_to receive(:apply_cds)
-        described_class.new.perform
-      end
+      allow(TariffSynchronizer).to receive(:download)
+      allow(TariffSynchronizer).to receive(:apply)
+      allow(TariffSynchronizer).to receive(:download_cds)
+      allow(TariffSynchronizer).to receive(:apply_cds)
 
-      it 'does not invoke any apply/download for the UK service' do
-        allow(TradeTariffBackend).to receive(:uk?).and_return(true)
+      allow(TradeTariffBackend).to receive(:service).and_return(service)
 
-        expect(TariffSynchronizer).not_to receive(:download)
-        expect(TariffSynchronizer).not_to receive(:apply)
-        expect(TariffSynchronizer).not_to receive(:download_cds)
-        expect(TariffSynchronizer).not_to receive(:apply_cds)
-        described_class.new.perform
-      end
+      perform
     end
 
-    context 'when CDS flag is on' do
-      before do
-        allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
-      end
+    context 'when on the xi service' do
+      let(:service) { 'xi' }
 
-      it 'invokes rollback_cds' do
-        expect(TariffSynchronizer).to receive(:download_cds)
-        expect(TariffSynchronizer).to receive(:apply_cds)
-        expect(TariffSynchronizer).not_to receive(:download)
-        expect(TariffSynchronizer).not_to receive(:apply)
-        described_class.new.perform
-      end
+      it { expect(TariffSynchronizer).to have_received(:download) }
+      it { expect(TariffSynchronizer).to have_received(:apply).with(reindex_all_indexes: true) }
+
+      it { expect(TariffSynchronizer).not_to have_received(:download_cds) }
+      it { expect(TariffSynchronizer).not_to have_received(:apply_cds) }
+    end
+
+    context 'when on the uk service' do
+      let(:service) { 'uk' }
+
+      it { expect(TariffSynchronizer).to have_received(:download_cds) }
+      it { expect(TariffSynchronizer).to have_received(:apply_cds) }
+
+      it { expect(TariffSynchronizer).not_to have_received(:download) }
+      it { expect(TariffSynchronizer).not_to have_received(:apply) }
     end
   end
 end

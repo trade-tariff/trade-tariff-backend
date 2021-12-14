@@ -7,8 +7,7 @@ class UpdatesSynchronizerWorker
     logger.info 'Running UpdatesSynchronizerWorker'
     logger.info 'Downloading...'
 
-    # TODO: this check can be removed when we switch to CDS data.
-    if TradeTariffBackend.use_cds?
+    if TradeTariffBackend.uk?
       TariffSynchronizer.download_cds
       logger.info 'Applying...'
       TariffSynchronizer.apply_cds(reindex_all_indexes: true)
