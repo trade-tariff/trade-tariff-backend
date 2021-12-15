@@ -14,7 +14,7 @@ class GoodsNomenclatureMapper
     def leaf?
       children.empty?
     end
-    alias :leaf :leaf?
+    alias_method :leaf, :leaf?
 
     def ancestors
       @ancestors ||= []
@@ -34,16 +34,16 @@ class GoodsNomenclatureMapper
   def goods_nomenclatures
     @goods_nomenclatures.reject { |goods_nomenclature| goods_nomenclature.parent.present? }
   end
-  alias :root_entries :goods_nomenclatures
+  alias_method :root_entries, :goods_nomenclatures
 
   def all
     @goods_nomenclatures
   end
 
-  def find
-    @goods_nomenclatures.detect { |c| yield(c) } if block_given?
+  def find(&block)
+    @goods_nomenclatures.detect(&block) if block_given?
   end
-  alias :detect :find
+  alias_method :detect, :find
 
   def for_goods_nomenclature(ref_goods_nomenclature)
     detect { |goods_nomenclature| goods_nomenclature.goods_nomenclature_sid == ref_goods_nomenclature.goods_nomenclature_sid }
@@ -52,20 +52,19 @@ class GoodsNomenclatureMapper
   private
 
   def process
-    # first pair
-    traverse(goods_nomenclatures, nil, goods_nomenclatures.first)
-    # all other pairs
-    traverse(goods_nomenclatures, goods_nomenclatures.first, goods_nomenclatures.second)
+    traverse(goods_nomenclatures, goods_nomenclatures.first)
+    traverse(goods_nomenclatures, goods_nomenclatures.second)
   end
 
-  def traverse(goods_nomenclatures, primary, secondary)
-    # ignore case when first goods_nomenclature is blank it's a direct child of the heading
-    unless goods_nomenclatures.index(secondary).blank?
-      next_goods_nomenclature = goods_nomenclatures[goods_nomenclatures.index(secondary) + 1]
-      if next_goods_nomenclature.present? # we are not at the end of the goods_nomenclature array
-        map_goods_nomenclatures(secondary, next_goods_nomenclature)
-        traverse(goods_nomenclatures, secondary, next_goods_nomenclature)
-      end
+  def traverse(goods_nomenclatures, current_goods_nomenclature)
+    current_good = current_goods_nomenclature
+
+    while (index_gn = goods_nomenclatures.index(current_good))
+      next_good = goods_nomenclatures[index_gn + 1]
+      return unless next_good
+
+      map_goods_nomenclatures(current_good, next_good)
+      current_good = next_good
     end
   end
 
@@ -92,30 +91,29 @@ class GoodsNomenclatureMapper
         secondary.parent = primary.parent
         secondary.ancestors += primary.ancestors
       end
-    else (heading_map?(primary, secondary) &&
+    else
+      (heading_map?(primary, secondary) &&
           (primary.producline_suffix > secondary.producline_suffix)) ||
-      (primary.number_indents > secondary.number_indents)
+        (primary.number_indents > secondary.number_indents)
 
-         parent = nth_parent(primary, secondary.number_indents)
+      parent = nth_parent(primary, secondary.number_indents)
 
-         if parent.present?
-           parent.children << secondary unless parent.children.include?(secondary)
+      if parent.present?
+        parent.children << secondary unless parent.children.include?(secondary)
 
-           parent_map[secondary.id] = parent
-           secondary.parent = parent
-           secondary.ancestors += parent.ancestors
-           secondary.ancestors << parent
-         end
+        parent_map[secondary.id] = parent
+        secondary.parent = parent
+        secondary.ancestors += parent.ancestors
+        secondary.ancestors << parent
+      end
     end
   end
 
   def nth_parent(goods_nomenclature, nth)
-    if nth > 0
+    if nth.positive?
       goods_nomenclature = goods_nomenclature.parent
 
-      while goods_nomenclature.present? && goods_nomenclature.number_indents >= nth
-        goods_nomenclature = parent_of(goods_nomenclature)
-      end
+      goods_nomenclature = parent_of(goods_nomenclature) while goods_nomenclature.present? && goods_nomenclature.number_indents >= nth
 
       goods_nomenclature
     end
