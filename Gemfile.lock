@@ -124,15 +124,15 @@ GEM
       dotenv (= 2.7.6)
       railties (>= 3.2)
     e2mmap (0.1.0)
-    elasticsearch (7.9.0)
-      elasticsearch-api (= 7.9.0)
-      elasticsearch-transport (= 7.9.0)
-    elasticsearch-api (7.9.0)
+    elasticsearch (7.16.1)
+      elasticsearch-api (= 7.16.1)
+      elasticsearch-transport (= 7.16.1)
+    elasticsearch-api (7.16.1)
       multi_json
     elasticsearch-extensions (0.0.33)
       ansi
       elasticsearch
-    elasticsearch-transport (7.9.0)
+    elasticsearch-transport (7.16.1)
       faraday (~> 1)
       multi_json
     erubi (1.10.0)
@@ -429,7 +429,7 @@ DEPENDENCIES
   curb
   database_cleaner-sequel
   dotenv-rails
-  elasticsearch (~> 7.9.0)
+  elasticsearch (~> 7.16.1)
   elasticsearch-extensions
   factory_bot_rails
   fakefs
