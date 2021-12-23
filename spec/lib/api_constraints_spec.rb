@@ -5,7 +5,7 @@ RSpec.describe ApiConstraints do
     subject(:constraint) { described_class.new(version: constraint_version) }
 
     before do
-      allow_any_instance_of(described_class).to receive(:default)
+      allow(described_class).to receive(:default_version)
                                 .and_return(default_version)
     end
 

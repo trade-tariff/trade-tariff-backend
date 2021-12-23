@@ -22,7 +22,7 @@ RSpec.describe Api::V2::CommoditiesController do
     end
 
     before do
-      allow_any_instance_of(ApiConstraints).to receive(:default).and_return default_version
+      allow(ApiConstraints).to receive(:default_version).and_return default_version
     end
 
     context 'with v1 api default' do
