@@ -18,6 +18,14 @@ FactoryBot.define do
       CONTENT
     end
 
+    trait :update_page do
+      show_on_updates_page { true }
+    end
+
+    trait :both_services do
+      # NOOP - inherits defaults from main factory
+    end
+
     trait :uk_only do
       show_on_xi { false }
     end

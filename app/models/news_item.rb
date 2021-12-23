@@ -2,9 +2,16 @@ class NewsItem < Sequel::Model
   plugin :timestamps
   plugin :auto_validations
 
+  include ActiveModel::Conversion
+  extend ActiveModel::Naming
+
   DISPLAY_REGULAR = 0
 
   dataset_module do
+    def updates
+      where(show_on_updates_page: true)
+    end
+
     def descending
       order(Sequel.desc(:start_date), Sequel.desc(:id))
     end
@@ -38,5 +45,9 @@ class NewsItem < Sequel::Model
 
     validates_presence :title if title
     validates_presence :content if content
+  end
+
+  def persisted?
+    true
   end
 end

@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
   get 'healthcheck' => 'healthcheck#index'
 
+  namespace :api, defaults: { format: 'atom' }, path: '' do
+    namespace :feed do
+      resources :news_items, only: :index
+    end
+  end
+
   namespace :api, defaults: { format: 'json' }, path: '/admin' do
     scope module: :admin do
       resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do

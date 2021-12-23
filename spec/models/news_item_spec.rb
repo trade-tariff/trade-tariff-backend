@@ -79,6 +79,31 @@ RSpec.describe NewsItem do
       end
     end
 
+    describe '.updates' do
+      subject(:results) { described_class.updates }
+
+      let :home_page do
+        create :news_item, show_on_home_page: true, show_on_updates_page: false
+      end
+
+      let :updates_page do
+        create :news_item, show_on_home_page: false, show_on_updates_page: true
+      end
+
+      let :both_page do
+        create :news_item, show_on_home_page: true, show_on_updates_page: true
+      end
+
+      let :neither_page do
+        create :news_item, show_on_home_page: false, show_on_updates_page: false
+      end
+
+      it { is_expected.to include updates_page }
+      it { is_expected.to include both_page }
+      it { is_expected.not_to include home_page }
+      it { is_expected.not_to include neither_page }
+    end
+
     describe '.for_target' do
       subject(:results) { described_class.for_target(target) }
 

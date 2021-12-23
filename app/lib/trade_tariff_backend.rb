@@ -33,6 +33,14 @@ module TradeTariffBackend
       ENV['CDS'] == 'true'
     end
 
+    def tariff_home_url
+      ENV.fetch('TARIFF_HOME_URL', 'https://www.trade-tariff.service.gov.uk/find_commodity')
+    end
+
+    def tariff_updates_url
+      ENV.fetch('TARIFF_UPDATES_URL', 'https://www.trade-tariff.service.gov.uk/news')
+    end
+
     def uk?
       service == 'uk'
     end
