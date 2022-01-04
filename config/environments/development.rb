@@ -19,8 +19,8 @@ Rails.application.configure do
   # config.cache_store = :memory_store, { size: 20.megabytes }
   config.cache_store = [:null_store]
 
-  # enable sequel transaction logs by switching this to :debug
-  config.log_level = :info
+  # enable sequel transaction logs by setting RAILS_LOG_LEVEL=debug
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info').to_sym
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
