@@ -57,6 +57,17 @@ commands:
             cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
             cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
 
+      - when:
+          condition:
+            equal: [ 'development', << parameters.space >> ]
+          steps:
+          - run:
+              name: "Recreate review app network policies"
+              command: |
+                for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
+                do
+                  cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
+                done
       - run:
           name: "Verify new version is working on dark URL."
           command: |
