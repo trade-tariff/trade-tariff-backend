@@ -57,7 +57,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       before do
         allow(CdsImporter).to receive(:new).with(cds_update).and_return importer
         allow(importer).to receive(:import).and_return inserted_oplog_records
-        allow(Raven).to receive(:capture_message)
+        allow(Sentry).to receive(:capture_message)
         allow(cds_update).to receive(:check_oplog_inserts).and_call_original
 
         cds_update.import!
@@ -71,7 +71,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         end
 
         it 'will not alert' do
-          expect(Raven).not_to have_received(:capture_message)
+          expect(Sentry).not_to have_received(:capture_message)
         end
       end
 
@@ -90,7 +90,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         end
 
         it 'will not alert' do
-          expect(Raven).not_to have_received(:capture_message)
+          expect(Sentry).not_to have_received(:capture_message)
         end
       end
 
@@ -107,7 +107,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         end
 
         it 'will alert' do
-          expect(Raven).to have_received(:capture_message)
+          expect(Sentry).to have_received(:capture_message)
                              .with(/Empty CDS update - Issue Date: \d{4}-\d\d-\d\d: Applied: #{Time.zone.today}/)
         end
       end

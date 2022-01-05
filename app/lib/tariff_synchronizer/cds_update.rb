@@ -35,7 +35,7 @@ module TariffSynchronizer
     end
 
     def alert_potential_failed_import
-      Raven.capture_message \
+      Sentry.capture_message \
         "Empty CDS update - Issue Date: #{issue_date}: Applied: #{Time.zone.today}"
     end
   end
