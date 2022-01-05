@@ -45,14 +45,17 @@ RSpec.describe NewsItem do
       let(:both_page) { create :news_item, show_on_uk: true, show_on_xi: true }
       let(:neither_page) { create :news_item, show_on_uk: false, show_on_xi: false }
 
-      context 'without service name' do
-        let(:service_name) { nil }
+      shared_examples_for 'a non-filtering service filter invocation' do |service_name|
+        subject(:results) { described_class.for_service(service_name) }
 
         it { is_expected.to include uk_page }
         it { is_expected.to include xi_page }
         it { is_expected.to include both_page }
         it { is_expected.to include neither_page }
       end
+
+      it_behaves_like 'a non-filtering service filter invocation', ''
+      it_behaves_like 'a non-filtering service filter invocation', nil
 
       context 'with uk' do
         let(:service_name) { 'uk' }
@@ -71,32 +74,27 @@ RSpec.describe NewsItem do
         it { is_expected.to include both_page }
         it { is_expected.not_to include neither_page }
       end
-
-      context 'with an invalid service' do
-        let(:service_name) { 'invalid' }
-
-        it { expect { results }.to raise_exception Sequel::RecordNotFound }
-      end
     end
 
     describe '.for_target' do
       subject(:results) { described_class.for_target(target) }
 
-      let :home_page do
-        create :news_item, show_on_home_page: true, show_on_updates_page: false
+      let(:home_page) { create :news_item, show_on_home_page: true, show_on_updates_page: false }
+      let(:updates_page) { create :news_item, show_on_home_page: false, show_on_updates_page: true }
+      let(:both_page) { create :news_item, show_on_home_page: true, show_on_updates_page: true }
+      let(:neither_page) { create :news_item, show_on_home_page: false, show_on_updates_page: false }
+
+      shared_examples_for 'a non-filtering target filter invocation' do |target|
+        subject(:results) { described_class.for_target(target) }
+
+        it { is_expected.to include home_page }
+        it { is_expected.to include updates_page }
+        it { is_expected.to include both_page }
+        it { is_expected.to include neither_page }
       end
 
-      let :updates_page do
-        create :news_item, show_on_home_page: false, show_on_updates_page: true
-      end
-
-      let :both_page do
-        create :news_item, show_on_home_page: true, show_on_updates_page: true
-      end
-
-      let :neither_page do
-        create :news_item, show_on_home_page: false, show_on_updates_page: false
-      end
+      it_behaves_like 'a non-filtering target filter invocation', ''
+      it_behaves_like 'a non-filtering target filter invocation', nil
 
       context 'without target' do
         let(:target) { nil }
@@ -123,12 +121,6 @@ RSpec.describe NewsItem do
         it { is_expected.not_to include home_page }
         it { is_expected.to include both_page }
         it { is_expected.not_to include neither_page }
-      end
-
-      context 'with an invalid target' do
-        let(:target) { 'invalid' }
-
-        it { expect { results }.to raise_exception Sequel::RecordNotFound }
       end
     end
 

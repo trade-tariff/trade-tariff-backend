@@ -18,8 +18,7 @@ class NewsItem < Sequel::Model
       case service_name.to_s
       when 'uk' then where(show_on_uk: true)
       when 'xi' then where(show_on_xi: true)
-      when '' then self
-      else raise Sequel::RecordNotFound
+      else self
       end
     end
 
@@ -27,8 +26,7 @@ class NewsItem < Sequel::Model
       case target_name.to_s
       when 'home' then where(show_on_home_page: true)
       when 'updates' then where(show_on_updates_page: true)
-      when '' then self
-      else raise Sequel::RecordNotFound
+      else self
       end
     end
   end
