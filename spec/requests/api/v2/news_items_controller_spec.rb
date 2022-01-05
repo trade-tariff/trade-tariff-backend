@@ -37,13 +37,13 @@ RSpec.describe Api::V2::NewsItemsController do
         it_behaves_like 'a successful jsonapi response'
       end
 
-      context 'with unknown target' do
+      context 'with items for both updates and home page' do
         let :make_request do
-          get api_news_items_path(service: 'uk', target: 'unknown', format: :json),
+          get api_news_items_path(service: 'uk', target: '', format: :json),
               headers: { 'Accept' => 'application/vnd.uktt.v2' }
         end
 
-        it { is_expected.to have_http_status :not_found }
+        it_behaves_like 'a successful jsonapi response'
       end
     end
 
