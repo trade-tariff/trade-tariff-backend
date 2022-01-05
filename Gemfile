@@ -39,7 +39,8 @@ gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
 gem 'ox'
 gem 'plek'
-gem 'sentry-raven'
+gem 'sentry-rails'
+gem "sentry-sidekiq"
 
 # API related
 gem 'ansi'

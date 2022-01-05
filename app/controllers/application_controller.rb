@@ -27,7 +27,7 @@ class ApplicationController < ActionController::Base
   def render_bad_request(exception)
     logger.error exception
     logger.error exception.backtrace
-    ::Raven.capture_exception(exception)
+    ::Sentry.capture_exception(exception)
 
     respond_to do |format|
       format.any do
@@ -41,7 +41,7 @@ class ApplicationController < ActionController::Base
   def render_internal_server_error(exception)
     logger.error exception
     logger.error exception.backtrace
-    ::Raven.capture_exception(exception)
+    ::Sentry.capture_exception(exception)
 
     respond_to do |format|
       format.any do
