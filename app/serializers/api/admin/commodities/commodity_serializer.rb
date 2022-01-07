@@ -6,9 +6,9 @@ module Api
 
         set_type :commodity
 
-        set_id :goods_nomenclature_sid
+        set_id :admin_id
 
-        attributes :description, :goods_nomenclature_item_id
+        attributes :description, :goods_nomenclature_item_id, :producline_suffix
       end
     end
   end

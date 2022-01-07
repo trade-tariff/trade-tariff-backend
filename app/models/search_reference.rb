@@ -1,4 +1,6 @@
 class SearchReference < Sequel::Model
+  DEFAULT_PRODUCTLINE_SUFFIX = '80'.freeze
+
   extend ActiveModel::Naming
 
   plugin :active_model
@@ -10,7 +12,8 @@ class SearchReference < Sequel::Model
                                       if referenced.present?
                                         self.set(
                                           referenced_id: referenced.to_param,
-                                          referenced_class: referenced.class.name
+                                          referenced_class: referenced.class.name,
+                                          productline_suffix: referenced.try(:producline_suffix) || DEFAULT_PRODUCTLINE_SUFFIX
                                         )
                                       end
                                     end),
@@ -30,7 +33,8 @@ class SearchReference < Sequel::Model
                                          )
                                        when 'Commodity'
                                          klass.where(
-                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => commodity_id
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => commodity_id,
+                                           Sequel.qualify(:goods_nomenclatures, :producline_suffix) => productline_suffix,
                                          )
                                        end
                                      end),
@@ -155,6 +159,7 @@ class SearchReference < Sequel::Model
     errors.add(:reference_id, 'has to be associated to Section/Chapter/Heading') if referenced_id.blank?
     errors.add(:reference_class, 'has to be associated to Section/Chapter/Heading') if referenced_id.blank?
     errors.add(:title, 'missing title') if title.blank?
+    errors.add(:productline_suffix, 'missing productline suffix') if productline_suffix.blank?
   end
 
   def section_id

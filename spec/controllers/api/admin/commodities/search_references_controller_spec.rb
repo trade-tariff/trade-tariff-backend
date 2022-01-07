@@ -8,5 +8,58 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
     let(:resource_query) do
       collection_query.merge(id: search_reference.id)
     end
+    let(:to_param) do
+      search_reference_parent.admin_id
+    end
+  end
+
+  describe 'POST to #create' do
+    subject(:do_post) { post :create, params: params }
+
+    before { login_as_api_user }
+
+    let(:referenced) { create(:commodity, producline_suffix: '80') }
+
+    context 'when passing a productline suffix' do
+      let(:params) do
+        {
+          data: { type: :search_reference, attributes: { title: 'foo' } },
+          commodity_id: "#{referenced.goods_nomenclature_item_id}-#{referenced.producline_suffix}",
+        }
+      end
+
+      it { is_expected.to have_http_status(:created) }
+      it { expect { do_post }.to change(SearchReference, :count).by(1) }
+    end
+
+    context 'when passing an unmatched productline suffix' do
+      let(:params) do
+        {
+          data: { type: :search_reference, attributes: { title: 'foo' } },
+          commodity_id: "#{referenced.goods_nomenclature_item_id}-75",
+        }
+      end
+
+      it { is_expected.to have_http_status(:not_found) }
+      it { expect { do_post }.not_to change(SearchReference, :count) }
+    end
+
+    context 'when not passing a productline suffix' do
+      let(:params) do
+        {
+          data: { type: :search_reference, attributes: { title: 'foo' } },
+          commodity_id: referenced.goods_nomenclature_item_id, # This is missing the productline suffix
+        }
+      end
+
+      it { is_expected.to have_http_status(:created) }
+      it { expect { do_post }.to change(SearchReference, :count).by(1) }
+
+      it 'creates a search reference with a default productline suffix' do
+        do_post
+
+        expect(SearchReference.last.referenced).to have_attributes(producline_suffix: '80')
+      end
+    end
   end
 end

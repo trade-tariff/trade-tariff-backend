@@ -6,16 +6,12 @@ module Api
 
         set_type :commodity
 
-        set_id :goods_nomenclature_sid
+        set_id :admin_id
 
-        attributes :description, :goods_nomenclature_item_id, :goods_nomenclature_sid
+        attributes :description
 
         attribute :search_references_count do |commodity|
           commodity.search_references.count
-        end
-
-        attribute :leaf do |object|
-          object.producline_suffix == '80'
         end
       end
     end

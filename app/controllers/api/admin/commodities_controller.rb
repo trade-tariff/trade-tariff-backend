@@ -11,11 +11,19 @@ module Api
 
       def find_commodity
         @commodity = Commodity.actual
-                              .declarable
-                              .by_code(params[:id])
+                              .by_productline_suffix(productline_suffix)
+                              .by_code(commodity_code)
                               .take
 
         raise Sequel::RecordNotFound if @commodity.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
+      end
+
+      def commodity_code
+        params[:id].split('-', 2).first
+      end
+
+      def productline_suffix
+        params[:id].split('-', 2)[1] || '80'
       end
     end
   end
