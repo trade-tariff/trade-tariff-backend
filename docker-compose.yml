@@ -1,0 +1,55 @@
+version: "2"
+services:
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - dev-env-redis-volume:/data
+  hmrc-postgres:
+    container_name: postgres
+    image: postgres:10
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER=${USER}
+      - POSTGRES_PASSWORD=
+      - LANG=C.UTF-8
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - hmrc-postgres:/var/lib/postgresql/data
+  hmrc-elasticsearch:
+    container_name: hmrc-elasticsearch
+    image: elasticsearch:7.9.3
+    ports:
+      - 127.0.0.1:9200:9200
+      - 127.0.0.1:9300:9300
+    environment:
+        - bootstrap.memory_lock=true
+        - discovery.type=single-node
+        - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+        - cluster.routing.allocation.disk.threshold_enabled=false
+    ulimits:
+        memlock:
+            soft: -1
+            hard: -1
+    healthcheck:
+      interval: 60s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+    volumes:
+    - hmrc-es:/usr/share/elasticsearch/data
+
+volumes:
+  dev-env-redis-volume:
+    driver: local
+  postgres:
+    driver: local
+  hmrc-postgres:
+    driver: local
+  hmrc-es:
+    driver: local
+
+

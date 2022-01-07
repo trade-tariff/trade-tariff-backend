@@ -4,13 +4,10 @@ The Trade Tariff Backend provides an API which allows to search commodity codes 
 
 It is maintained on https://github.com/trade-tariff/trade-tariff-backend
 
-Projects using the TT API:
+Projects using the Trade Tariff (TT) API:
 
 * [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
 * [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
-
-Other related projects:
-
 * [Trade Tariff Duty Calculator](https://github.com/trade-tariff/trade-tariff-duty-calculator)
 
 ## Development
@@ -20,7 +17,7 @@ Other related projects:
   - Ruby [v3](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
   - Postgresql v10
   - ElasticSearch v7
-  - Redis
+  - Redis v4
 
 ### Setup
 
@@ -37,14 +34,15 @@ Please go through this updated [setup document](https://github.com/trade-tariff/
     - Install [conduit plugin](https://plugins.cloudfoundry.org/#conduit). It allows you to directly connect to the remote service instances in Cloud Foundry.
 
     - Get a data dump of the DB from our DEV/STAGING environment, by running:
+
        ```
        cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
        ```
 
-       for example:
+       For example:
 
-       ````
-       > cf conduit tariff-uk-development-postgres -- pg_dump --table=sections -f sections_table.psql
+       ```
+       cf conduit trade-tariff-db -- pg_dump --file trade-tariff-db.psql
        ```
 
     - Restore the data dump locally, by running:
@@ -58,25 +56,51 @@ Please go through this updated [setup document](https://github.com/trade-tariff/
 3. Start your services:
 
     #### Manually
-    - rails s -p PORT (Rails Server)
 
-    - redis-server (Redis Server)
+    - PostgreSQL Server
 
-    - bundle exec sidekiq (Sidekiq)
+    Use the command
+    `postgres -D /usr/local/pgsql/data`
 
-    - cd to your ElasticSearch folder and run:
+    or
 
-        ./bin/elasticseach
+    `pg_ctl start`
+
+    see https://www.postgresql.org/docs/10/server-start.html
+
+    - Redis Server:
+
+    `redis-server`
+
+    - ElasticSearch
+
+    cd to your ElasticSearch folder and run `./bin/elasticseach`
+
+    - Sidekiq
+
+    `bundle exec sidekiq`
+
+    - Rails Server
+
+    `bundle exec rails s`
 
     #### Using Docker compose
 
     TT backend contains a docker-compose.yml file to run Redis, ElasticSearch and Postgres:
 
+    To start the services run:
+
     ```
-    docker-compose start/stop
+    docker-compose up
     ```
 
-    Note: docker-compose help you to start the depentencies, but you still need to run the trade tarif rails service:
+    To stop them run:
+
+    `docker-compose down`
+
+    Notes:
+    - docker-compose help you to start the depentencies, but you still need to run the trade tarif rails service:
+    - Keep in mind the [difference between "up" and "start"](https://docs.docker.com/compose/faq/#whats-the-difference-between-up-run-and-start).
 
 
     ```
