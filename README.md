@@ -1,27 +1,23 @@
-
 # Trade Tariff Backend
 
-__Now maintained at https://github.com/trade-tariff/trade-tariff-backend__
+The Trade Tariff Backend provides an API which allows to search commodity codes for import and export for tax, duty and licences that apply to goods, from and to UK and NI.
 
-The API back-end for:
+It is maintained on https://github.com/trade-tariff/trade-tariff-backend
+
+Projects using the Trade Tariff (TT) API:
 
 * [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
 * [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
-
-Other related projects:
-
-* [Trade Tariff Oracle](https://github.com/trade-tariff/trade-tariff-oracle)
+* [Trade Tariff Duty Calculator](https://github.com/trade-tariff/trade-tariff-duty-calculator)
 
 ## Development
 
 ### Dependencies
 
-  - Ruby
-  - Postgresql v10 (won't work with more recent versions)
-  - ElasticSearch v7 (last tested and working with version 7.12. It may be
-    working with a more recent version, but if you have issues try to downgrade
-    to version 7)
-  - Redis
+  - Ruby [v3](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
+  - Postgresql v10
+  - ElasticSearch v7
+  - Redis v4
 
 ### Setup
 
@@ -29,38 +25,94 @@ Please go through this updated [setup document](https://github.com/trade-tariff/
 
 1. Setup your environment, by doing the following:
 
-    a. Run rails db:create - to create the databases locally
+    - Run rails db:create - to create the databases locally
 
-    b. Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
+    - Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
 
-    c. Check with DevOps to have a cf account created, if you don't have one already
+    - Check with DevOps to have a cf account created, if you don't have one already
 
-    d. Get a data dump of the DB from our DEV/STAGING environment, by running:
+    - Install [conduit plugin](https://plugins.cloudfoundry.org/#conduit). It allows you to directly connect to the remote service instances in Cloud Foundry.
 
+    - Get a data dump of the DB from our DEV/STAGING environment, by running:
+
+       ```
        cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
+       ```
 
-    e. Restore the data dump locally, by running:
+       For example:
 
+       ```
+       cf conduit trade-tariff-db -- pg_dump --file trade-tariff-db.psql
+       ```
+
+    - Restore the data dump locally, by running:
+
+       ```
        psql -h localhost tariff_development < <data_dump_file_name>.psql
+       ```
 
 2. Update `.env` file with valid data. To enable the XI version, add the extra flag `SERVICE=xi`. If not added, it will default to the UK version.
 
 3. Start your services:
 
-    a. rails s -p PORT (Rails Server)
+    #### Manually
 
-    b. redis-server (Redis Server)
+    - PostgreSQL Server
 
-    c. bundle exec sidekiq (Sidekiq)
+    Use the command
+    `postgres -D /usr/local/pgsql/data`
 
-    d. cd to your ElasticSearch folder and run:
+    or
 
-        ./bin/elasticseach (ElasticSearch - ideally version 7.10.0)
+    `pg_ctl start`
+
+    see https://www.postgresql.org/docs/10/server-start.html
+
+    - Redis Server:
+
+    `redis-server`
+
+    - ElasticSearch
+
+    cd to your ElasticSearch folder and run `./bin/elasticseach`
+
+    - Sidekiq
+
+    `bundle exec sidekiq`
+
+    - Rails Server
+
+    `bundle exec rails s`
+
+    #### Using Docker compose
+
+    TT backend contains a docker-compose.yml file to run Redis, ElasticSearch and Postgres:
+
+    To start the services run:
+
+    ```
+    docker-compose up
+    ```
+
+    To stop them run:
+
+    `docker-compose down`
+
+    Notes:
+    - docker-compose help you to start the depentencies, but you still need to run the trade tarif rails service:
+    - Keep in mind the [difference between "up" and "start"](https://docs.docker.com/compose/faq/#whats-the-difference-between-up-run-and-start).
+
+
+    ```
+    bundle exec rails s
+    ```
+
+    This way facilitates development and debugging, allowing easy setup of the other services.
+
 
 4. Verify that the app is up and running.
 
     E.g open http://localhost:3018/healthcheck
-
 
 
 ## Load database
