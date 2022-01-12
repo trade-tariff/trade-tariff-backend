@@ -5,9 +5,9 @@ class RollbackWorker
 
   def perform(date, redownload = false)
     if TradeTariffBackend.use_cds?
-      TariffSynchronizer.rollback_cds(date, redownload)
+      TariffSynchronizer.rollback_cds(date, keep: redownload)
     else
-      TariffSynchronizer.rollback(date, redownload)
+      TariffSynchronizer.rollback(date, keep: redownload)
     end
   end
 end

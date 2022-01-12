@@ -37,7 +37,7 @@ RSpec.describe TariffSynchronizer::Logger, truncation: true do
         :with_redis_lock,
       ).and_raise(Redlock::LockError, 'foo')
 
-      TariffSynchronizer.rollback(Date.current, true)
+      TariffSynchronizer.rollback(Date.current, keep: true)
     end
 
     it 'logs a warn event' do

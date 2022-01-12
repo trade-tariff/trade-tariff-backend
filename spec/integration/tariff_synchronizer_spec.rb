@@ -67,7 +67,7 @@ RSpec.describe TariffSynchronizer do
 
     context 'successful run' do
       before do
-        described_class.rollback(Date.yesterday, true)
+        described_class.rollback(Date.yesterday, keep: true)
       end
 
       it 'removes entries from oplog tables' do
@@ -83,7 +83,7 @@ RSpec.describe TariffSynchronizer do
       before do
         expect(Measure).to receive(:operation_klass).and_raise(StandardError)
 
-        rescuing { described_class.rollback(Date.yesterday, true) }
+        rescuing { described_class.rollback(Date.yesterday, keep: true) }
       end
 
       it 'does not remove entries from oplog derived tables' do
