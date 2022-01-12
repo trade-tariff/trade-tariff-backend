@@ -74,6 +74,10 @@ module TariffSynchronizer
         pending.order(:issue_date).first
       end
 
+      def last_applied
+        applied.order(:issue_date).first
+      end
+
       def descending
         order(Sequel.desc(:issue_date))
       end

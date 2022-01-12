@@ -126,6 +126,8 @@ module TariffSynchronizer
   end
 
   def apply_cds(reindex_all_indexes: false)
+    return unless correct_sequence_for_pending_cds_file?
+
     check_tariff_updates_failures
 
     applied_updates = []
@@ -263,6 +265,22 @@ module TariffSynchronizer
   end
 
   private
+
+  def correct_sequence_for_pending_cds_file?
+    last_pending = TariffSynchronizer::CdsUpdate.last_pending&.filename
+                     &.match(/^tariff_dailyExtract_v1_(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T\d+\.gzip$/)
+                     &.captures
+    last_applied = TariffSynchronizer::CdsUpdate.last_applied&.filename
+                     &.match(/^tariff_dailyExtract_v1_(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T\d+\.gzip$/)
+                     &.captures
+
+    return false unless last_pending && last_applied
+
+    last_pending_date = Date.new(*last_pending.map(&:to_i))
+    last_applied_date = Date.new(*last_applied.map(&:to_i))
+
+    last_pending_date == last_applied_date.next
+  end
 
   def perform_update(update_type, day)
     updates = update_type.pending_at(day).to_a

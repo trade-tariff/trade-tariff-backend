@@ -206,6 +206,42 @@ RSpec.describe TariffSynchronizer, truncation: true do
     end
   end
 
+  describe 'check sequence of the CDS daily updates' do
+    # TODO: This tests should be merged with the others testing the apply_cds.
+    #       That could not immediate since they use mocks instead of read data.
+    let(:applied_date) { Date.new(2020, 10, 4) }
+
+    before do
+      create :cds_update, :applied, example_date: applied_date,
+                                    filename: "tariff_dailyExtract_v1_#{applied_date.strftime('%Y%m%d')}T123456.gzip"
+
+      create :cds_update, example_date: pending_date,
+                          filename: "tariff_dailyExtract_v1_#{pending_date.strftime('%Y%m%d')}T123456.gzip"
+
+      allow(TradeTariffBackend).to receive(:with_redis_lock)
+    end
+
+    context 'when pending CDS update file is dated as the day after the last applied' do
+      let(:pending_date) { applied_date.next }
+
+      it 'runs apply_cds' do
+        described_class.apply_cds
+
+        expect(TradeTariffBackend).to have_received(:with_redis_lock)
+      end
+    end
+
+    context 'when pending CDS update does not respect the sequence' do
+      let(:pending_date) { applied_date + 2.days }
+
+      it 'does not run apply_cds' do
+        described_class.apply_cds
+
+        expect(TradeTariffBackend).not_to have_received(:with_redis_lock)
+      end
+    end
+  end
+
   describe '.apply_cds' do
     before do
       allow(described_class).to receive(:date_range_since_last_pending_update).and_return([Date.yesterday, Date.current])
@@ -246,9 +282,12 @@ RSpec.describe TariffSynchronizer, truncation: true do
     context 'when reindex_all_indexes arg is true' do
       subject(:apply) { described_class.apply_cds(reindex_all_indexes: true) }
 
-      it 'kicks off the ClearCacheWorker' do
+      before do
         allow(described_class::BaseUpdateImporter).to receive(:perform)
+        allow(described_class).to receive(:correct_sequence_for_pending_cds_file?).and_return(true)
+      end
 
+      it 'kicks off the ClearCacheWorker' do
         apply
 
         expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker)
