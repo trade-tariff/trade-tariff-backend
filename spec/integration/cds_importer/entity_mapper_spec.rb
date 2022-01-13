@@ -187,6 +187,12 @@ RSpec.describe CdsImporter::EntityMapper do
         expect(xml_node).to eq(expected_hash)
       end
 
+      it 'creates the correct memberships' do
+        expect { entity_mapper.import }
+          .to change { GeographicalAreaMembership.where(geographical_area_sid: [331, 112], geographical_area_group_sid: [114]).count }
+          .by(2)
+      end
+
       context 'when the xml node is missing a membership group sid' do
         before do
           allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
