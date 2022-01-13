@@ -206,9 +206,38 @@ RSpec.describe TariffSynchronizer, truncation: true do
     end
   end
 
-  describe 'check sequence of the CDS daily updates' do
-    # TODO: This tests should be merged with the others testing the apply_cds.
-    #       That could not immediate since they use mocks instead of read data.
+  describe 'check sequence of Taric daily updates' do
+    let(:applied_sequence_number) { 123 }
+
+    before do
+      create(:taric_update, :applied, sequence_number: '1')
+      create(:taric_update, :pending, sequence_number: pending_sequence_number)
+
+      allow(TradeTariffBackend).to receive(:with_redis_lock)
+    end
+
+    context 'when sequence is correct' do
+      let(:pending_sequence_number) { applied_sequence_number + 1 }
+
+      it 'runs the update' do
+        described_class.apply
+
+        expect(TradeTariffBackend).to have_received(:with_redis_lock)
+      end
+    end
+
+    context 'when sequence is NOT correct' do
+      let(:pending_sequence_number) { applied_sequence_number + 2 }
+
+      it 'does NOT run the update' do
+        described_class.apply
+
+        expect(TradeTariffBackend).not_to have_received(:with_redis_lock)
+      end
+    end
+  end
+
+  describe 'check sequence of CDS daily updates' do
     let(:applied_date) { Date.new(2020, 10, 4) }
 
     before do

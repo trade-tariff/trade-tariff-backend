@@ -93,6 +93,8 @@ module TariffSynchronizer
   end
 
   def apply(reindex_all_indexes: false)
+    return unless correct_sequence_for_pending_taric_file?
+
     check_tariff_updates_failures
 
     applied_updates = []
@@ -279,7 +281,20 @@ module TariffSynchronizer
     last_pending_date = Date.new(*last_pending.map(&:to_i))
     last_applied_date = Date.new(*last_applied.map(&:to_i))
 
-    last_pending_date == last_applied_date.next
+    last_pending_date == last_applied_date + 1.day
+  end
+
+  def correct_sequence_for_pending_taric_file?
+    last_pending = TariffSynchronizer::TaricUpdate.last_pending&.filename
+                     &.match(/^\d{4}-\d{2}-\d{2}_TGB(?<year>\d{2})(?<sequence>\d+.xml$)/)
+
+    last_applied = TariffSynchronizer::TaricUpdate.last_applied&.filename
+                     &.match(/^\d{4}-\d{2}-\d{2}_TGB(?<year>\d{2})(?<sequence>\d+.xml$)/)
+
+    return false unless last_pending && last_applied
+
+    last_pending[:year].to_i >= last_applied[:year].to_i &&
+      last_pending[:sequence].to_i == last_applied[:sequence].to_i + 1
   end
 
   def perform_update(update_type, day)
