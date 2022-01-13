@@ -128,6 +128,11 @@ RSpec.describe CdsImporter::EntityMapper do
 
       let(:xml_node) do
         {
+          'metainfo' => {
+            'opType' => 'U',
+            'origin' => 'N',
+            'transactionDate' => '2017-06-29T20:04:37',
+          },
           'hjid' => '23501',
           'sid' => '114',
           'geographicalAreaId' => '1010',
@@ -152,6 +157,11 @@ RSpec.describe CdsImporter::EntityMapper do
 
       let(:expected_hash) do
         {
+          'metainfo' => {
+            'opType' => 'U',
+            'origin' => 'N',
+            'transactionDate' => '2017-06-29T20:04:37',
+          },
           'hjid' => '23501',
           'sid' => '114',
           'geographicalAreaId' => '1010',
@@ -177,6 +187,7 @@ RSpec.describe CdsImporter::EntityMapper do
       end
 
       before do
+        create(:geographical_area, :group, geographical_area_id: '1010', geographical_area_sid: 114)
         create(:geographical_area, hjid: 23_575, geographical_area_sid: 112)
         create(:geographical_area, hjid: 23_590, geographical_area_sid: 331)
       end
@@ -193,6 +204,16 @@ RSpec.describe CdsImporter::EntityMapper do
           .by(2)
       end
 
+      it 'creates the correct area membership associations' do
+        entity_mapper.import
+
+        group_geographical_area = GeographicalArea.find(geographical_area_sid: 114)
+
+        expected_area_sids = group_geographical_area.contained_geographical_areas.pluck(:geographical_area_sid).sort
+
+        expect(expected_area_sids).to eq([112, 331])
+      end
+
       context 'when the xml node is missing a membership group sid' do
         before do
           allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
@@ -201,6 +222,11 @@ RSpec.describe CdsImporter::EntityMapper do
 
         let(:expected_hash) do
           {
+            'metainfo' => {
+              'opType' => 'U',
+              'origin' => 'N',
+              'transactionDate' => '2017-06-29T20:04:37',
+            },
             'hjid' => '23501',
             'sid' => '114',
             'geographicalAreaId' => '1010',
@@ -208,8 +234,8 @@ RSpec.describe CdsImporter::EntityMapper do
             'validityStartDate' => '1958-01-01T00:00:00',
             'geographicalAreaMembership' => [
               {
-                'hjid' => '25473',
                 'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-15T04:15:46' },
+                'hjid' => '25473',
                 'geographicalAreaGroupSid' => 114,
                 'validityStartDate' => '2007-01-01T00:00:00',
                 'geographicalAreaSid' => 112,

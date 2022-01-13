@@ -17,7 +17,7 @@ class CdsImporter
 
       self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
 
-      before_oplog_inserts do |xml_node|
+      before_building_model do |xml_node|
         unless xml_node['geographicalAreaMembership'].is_a?(Array)
           xml_node['geographicalAreaMembership'] = [xml_node['geographicalAreaMembership']]
         end

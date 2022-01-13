@@ -16,6 +16,10 @@ class CdsImporter
           @before_oplog_inserts_callbacks ||= []
         end
 
+        def before_building_model_callbacks
+          @before_building_model_callbacks ||= []
+        end
+
         def base_mapping
           BASE_MAPPING.except(*exclude_mapping).keys.inject({}) do |memo, key|
             mapped_key = mapping_path.present? ? "#{mapping_path}.#{key}" : key
@@ -50,6 +54,10 @@ class CdsImporter
 
         def before_oplog_inserts(&block)
           before_oplog_inserts_callbacks << block
+        end
+
+        def before_building_model(&block)
+          before_building_model_callbacks << block
         end
       end
 

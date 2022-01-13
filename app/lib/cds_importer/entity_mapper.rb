@@ -119,6 +119,8 @@ class CdsImporter
                            .sort_by { |m| m.mapping_path ? m.mapping_path.length : 0 }
 
       mappers.each.with_object({}) do |mapper, oplog_inserts_performed|
+        mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) }
+
         instances = mapper.new(xml_node).parse
 
         mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node) }
