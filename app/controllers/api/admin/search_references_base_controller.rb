@@ -34,7 +34,7 @@ module Api
         if @search_reference.save
           options = { is_collection: false }
           options[:include] = [:referenced, 'referenced.chapter', 'referenced.chapter.guides', 'referenced.section']
-          render json: Api::Admin::SearchReferences::SearchReferenceSerializer.new(@search_reference, options).serializable_hash
+          render json: Api::Admin::SearchReferences::SearchReferenceSerializer.new(@search_reference, options).serializable_hash, status: :created
         else
           data = { errors: [] }
           data[:errors] = @search_reference.errors.full_messages.map do |error|

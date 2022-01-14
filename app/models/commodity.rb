@@ -11,6 +11,10 @@ class Commodity < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
+  def admin_id
+    "#{goods_nomenclature_item_id}-#{producline_suffix}"
+  end
+
   one_to_one :heading, dataset: -> {
     actual_or_relevant(Heading)
            .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
@@ -28,15 +32,21 @@ class Commodity < GoodsNomenclature
   }, class_name: 'Measure'
 
   one_to_many :search_references, key: :referenced_id, primary_key: :code, reciprocal: :referenced, conditions: { referenced_class: 'Commodity' },
-                                  adder: proc { |search_reference| search_reference.update(referenced_id: code, referenced_class: 'Commodity') },
-                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
+                                  adder: proc { |search_reference| search_reference.update(referenced_id: code, productline_suffix: producline_suffix, referenced_class: 'Commodity') },
+                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil, productline_suffix: nil) },
+                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil, productline_suffix: nil) } do |dataset|
+                                    dataset.where(productline_suffix: producline_suffix)
+                                  end
 
   delegate :section, :section_id, to: :chapter, allow_nil: true
 
   dataset_module do
     def by_code(code = '')
       filter(goods_nomenclature_item_id: code.to_s.first(10))
+    end
+
+    def by_productline_suffix(productline_suffix)
+      filter(producline_suffix: productline_suffix)
     end
 
     def declarable

@@ -29,8 +29,8 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :commodities, only: [:show], constraints: { id: /\d{10}/ } do
-        scope module: 'commodities', constraints: { commodity_id: /\d{10}/, id: /\d+/ } do
+      resources :commodities, only: [:show] do
+        scope module: 'commodities' do
           resources :search_references, only: %i[show index destroy create update]
         end
       end

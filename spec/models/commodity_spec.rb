@@ -727,4 +727,18 @@ RSpec.describe Commodity do
       expect(commodities).not_to include(commodity2)
     end
   end
+
+  describe '.by_productline_suffix' do
+    subject(:result) { described_class.by_productline_suffix('10').all }
+
+    before do
+      declarable_commodity
+      non_declarable_commodity
+    end
+
+    let(:declarable_commodity) { create(:commodity, producline_suffix: '80') }
+    let(:non_declarable_commodity) { create(:commodity, producline_suffix: '10') }
+
+    it { expect(result).to eq([non_declarable_commodity]) }
+  end
 end

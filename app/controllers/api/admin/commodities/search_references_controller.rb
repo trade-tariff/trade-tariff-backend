@@ -13,14 +13,14 @@ module Api
         end
 
         def collection_url
-          [:admin, commodity, @search_reference]
+          [:admin, commodity.admin_id, @search_reference]
         end
 
         def commodity
           @commodity ||= begin
             commodity = Commodity.actual
-                   .declarable
                    .by_code(commodity_id)
+                   .by_productline_suffix(productline_suffix)
                    .take
 
             raise Sequel::RecordNotFound if commodity.goods_nomenclature_item_id.in?(HiddenGoodsNomenclature.codes)
@@ -30,7 +30,11 @@ module Api
         end
 
         def commodity_id
-          params[:commodity_id]
+          params[:commodity_id].split('-', 2).first
+        end
+
+        def productline_suffix
+          params[:commodity_id].split('-', 2)[1] || '80'
         end
       end
     end

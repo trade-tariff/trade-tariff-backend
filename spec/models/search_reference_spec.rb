@@ -1,35 +1,52 @@
 RSpec.describe SearchReference do
-  describe '#referenced' do
-    context 'matching heading regexp' do
-      let(:heading) { create :heading, goods_nomenclature_item_id: '1212000000' }
-      let(:search_reference) { create :search_reference, referenced: heading }
+  describe 'relationships' do
+    describe 'setter callback' do
+      subject(:search_reference) { described_class.new(title: 'foo', referenced: referenced) }
 
-      it 'returns referenced Heading object' do
-        heading
+      context 'when setting a Section reference' do
+        let(:referenced) { create(:section, id: 1) }
 
-        expect(search_reference.referenced).to eq heading
+        it { is_expected.to have_attributes(title: 'foo', referenced_id: '1', referenced_class: 'Section', productline_suffix: '80') }
+      end
+
+      context 'when setting a Chapter reference' do
+        let(:referenced) { create(:chapter, goods_nomenclature_item_id: '0100000000', producline_suffix: '10') }
+
+        it { is_expected.to have_attributes(title: 'foo', referenced_id: '01', referenced_class: 'Chapter', productline_suffix: '10') }
+      end
+
+      context 'when setting a Heading reference' do
+        let(:referenced) { create(:heading, goods_nomenclature_item_id: '0101000000', producline_suffix: '20') }
+
+        it { is_expected.to have_attributes(title: 'foo', referenced_id: '0101', referenced_class: 'Heading', productline_suffix: '20') }
+      end
+
+      context 'when setting a Commodity reference' do
+        let(:referenced) { create(:commodity, goods_nomenclature_item_id: '0101110000', producline_suffix: '30') }
+
+        it { is_expected.to have_attributes(title: 'foo', referenced_id: '0101110000', referenced_class: 'Commodity', productline_suffix: '30') }
       end
     end
+  end
 
-    context 'matching Chapter regexp' do
-      let(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
-      let(:search_reference) { create :search_reference, referenced: chapter }
+  describe 'validations' do
+    before { search_reference.validate }
 
-      it 'returns Chapter object' do
-        chapter
+    context 'when the title is nil' do
+      subject(:search_reference) { build(:search_reference, title: nil) }
 
-        expect(search_reference.referenced).to eq chapter
-      end
+      it { expect(search_reference.errors).to eq(title: ['missing title']) }
     end
 
-    context 'matching Seciont regexp' do
-      let(:section)          { create :section, position: 12 }
-      let(:search_reference) { create :search_reference, referenced: section }
+    context 'when the referenced entity is not passed' do
+      subject(:search_reference) { build(:search_reference, referenced: nil) }
 
-      it 'returns Section object' do
-        section
-
-        expect(search_reference.referenced).to eq section
+      it 'attaches the correct missing reference errors' do
+        expect(search_reference.errors).to eq(
+          productline_suffix: ['missing productline suffix'],
+          reference_id: ['has to be associated to Section/Chapter/Heading'],
+          reference_class: ['has to be associated to Section/Chapter/Heading'],
+        )
       end
     end
   end

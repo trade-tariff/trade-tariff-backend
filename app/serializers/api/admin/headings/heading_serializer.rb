@@ -14,13 +14,9 @@ module Api
           heading.search_references.count
         end
 
-        has_one :chapter, serializer: Api::Admin::Headings::ChapterSerializer, id_method_name: :goods_nomenclature_sid do |heading|
-          heading.chapter
-        end
+        has_one :chapter, serializer: Api::Admin::Headings::ChapterSerializer, id_method_name: :goods_nomenclature_sid, &:chapter
 
-        has_many :commodities, serializer: Api::Admin::Headings::CommoditySerializer, id_method_name: :goods_nomenclature_sid do |heading|
-          heading.commodities
-        end
+        has_many :commodities, serializer: Api::Admin::Headings::CommoditySerializer, id_method_name: :admin_id, &:commodities
       end
     end
   end
