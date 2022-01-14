@@ -19,8 +19,8 @@ module Search
                   properties: {
                     position: { type: 'long' },
                     title: { type: 'text' },
-                    numeral: { type: 'keyword' }
-                  }
+                    numeral: { type: 'keyword' },
+                  },
                 },
                 id: { type: 'long' },
                 chapter: {
@@ -30,8 +30,8 @@ module Search
                     validity_start_date: { type: 'date', format: 'date_optional_time' },
                     producline_suffix: { type: 'keyword' },
                     goods_nomenclature_sid: { type: 'long' },
-                    goods_nomenclature_item_id: { type: 'keyword' }
-                  }
+                    goods_nomenclature_item_id: { type: 'keyword' },
+                  },
                 },
                 title: { type: 'text' },
                 description: { type: 'text' },
@@ -45,14 +45,14 @@ module Search
                     validity_start_date: { type: 'date', format: 'date_optional_time' },
                     producline_suffix: { type: 'keyword' },
                     goods_nomenclature_sid: { type: 'long' },
-                    goods_nomenclature_item_id: { type: 'keyword' }
-                  }
-                }
+                    goods_nomenclature_item_id: { type: 'keyword' },
+                  },
+                },
               },
-              type: 'nested'
-            }
-          }
-        }
+              type: 'nested',
+            },
+          },
+        },
       }
     end
   end

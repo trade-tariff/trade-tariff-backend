@@ -10,10 +10,10 @@ class SearchReference < Sequel::Model
   many_to_one :referenced, reciprocal: :search_references, reciprocal_type: :many_to_one,
                            setter: (proc do |referenced|
                                       if referenced.present?
-                                        self.set(
+                                        set(
                                           referenced_id: referenced.to_param,
                                           referenced_class: referenced.class.name,
-                                          productline_suffix: referenced.try(:producline_suffix) || DEFAULT_PRODUCTLINE_SUFFIX
+                                          productline_suffix: referenced.try(:producline_suffix) || DEFAULT_PRODUCTLINE_SUFFIX,
                                         )
                                       end
                                     end),
@@ -25,11 +25,11 @@ class SearchReference < Sequel::Model
                                          klass.where(klass.primary_key => referenced_id)
                                        when 'Chapter'
                                          klass.where(
-                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => chapter_id
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => chapter_id,
                                          )
                                        when 'Heading'
                                          klass.where(
-                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => heading_id
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => heading_id,
                                          )
                                        when 'Commodity'
                                          klass.where(
@@ -37,52 +37,11 @@ class SearchReference < Sequel::Model
                                            Sequel.qualify(:goods_nomenclatures, :producline_suffix) => productline_suffix,
                                          )
                                        end
-                                     end),
-                           eager_loader: (proc do |eo|
-                                            id_map = {}
-                                            eo[:rows].each do |search_reference|
-                                              search_reference.associations[:referenced] = nil
-                                              ((id_map[search_reference.referenced_class] ||= {})[search_reference.referenced_id] ||= []) << search_reference
-                                            end
-                                            id_map.each do |klass_name, id_map|
-                                              klass = klass_name.constantize
-                                              if klass_name == 'Section'
-                                                klass.where(klass.primary_key => id_map.keys).all do |ref|
-                                                  id_map[ref.pk.to_s].each do |search_reference|
-                                                    search_reference.associations[:referenced] = ref
-                                                  end
-                                                end
-                                              else
-
-                                                pattern = case klass_name
-                                                          when 'Chapter'
-                                                            id_map.keys.map { |key| "#{key}________" }.join('|')
-                                                          when 'Heading'
-                                                            id_map.keys.map { |key| "#{key}______" }.join('|')
-                                                          when 'Commodity'
-                                                            id_map.keys.join('|')
-                                                          end
-
-                                                klass.where("goods_nomenclatures.goods_nomenclature_item_id SIMILAR TO '#{pattern}'").all do |ref|
-                                                  id_map[ref.short_code].each do |search_reference|
-                                                    search_reference.associations[:referenced] = ref
-                                                  end
-                                                end
-                                              end
-                                            end
-                                          end)
-
-  many_to_one :section do |_ds|
-    referenced
-  end
+                                     end)
 
   self.raise_on_save_failure = false
 
   dataset_module do
-    def heading_id
-      1
-    end
-
     def by_title
       order(Sequel.asc(:title))
     end
@@ -91,51 +50,18 @@ class SearchReference < Sequel::Model
       where(Sequel.ilike(:title, "#{letter}%"))
     end
 
-    def for_chapters
-      where(referenced_class: 'Chapter')
-    end
-
-    def for_chapter(chapter)
-      for_chapters.where(referenced_id: chapter.to_param)
-    end
-
-    def for_headings
-      where(referenced_class: 'Heading')
-    end
-
-    def for_heading(heading)
-      for_headings.where(referenced_id: heading.to_param)
-    end
-
-    def for_sections
-      where(referenced_class: 'Section')
-    end
-
-    def for_section(section)
-      for_sections.where(referenced_id: section.to_param)
-    end
-
-    def for_commodities
-      where(referenced_class: 'Commodity')
-    end
-
-    def for_commodity(commodity)
-      for_commodities.where(referenced_id: commodity.to_param)
-    end
-
     def indexable
       self
     end
   end
 
-  alias :section= :referenced=
-  alias :chapter= :referenced=
-  alias :heading= :referenced=
-  alias :commodity= :referenced=
-  alias :heading :referenced
-  alias :chapter :referenced
-  alias :section :referenced
-  alias :commodity :referenced
+  alias_method :section=, :referenced=
+  alias_method :chapter=, :referenced=
+  alias_method :heading=, :referenced=
+  alias_method :commodity=, :referenced=
+  alias_method :heading, :referenced
+  alias_method :chapter, :referenced
+  alias_method :section, :referenced
 
   def chapter_id=(chapter_id)
     self.referenced = Chapter.by_code(chapter_id).take if chapter_id.present?
