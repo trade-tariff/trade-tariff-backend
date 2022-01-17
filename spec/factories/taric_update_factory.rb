@@ -4,6 +4,7 @@ FactoryBot.define do
       sequence_number { example_date.yday }
     end
 
+    # TODO: try to remove example_date and use issue_date
     issue_date { example_date }
 
     # Example: 2015-04-15_TGB15072.xml

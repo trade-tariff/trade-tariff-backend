@@ -26,11 +26,9 @@ RSpec.describe TariffSynchronizer, truncation: true do
       end
 
       it 'logs an info event' do
+        expect_any_instance_of(TariffSynchronizer::Logger).to receive(:download)
         allow(described_class::TaricUpdate).to receive(:sync).and_return(true)
-        tariff_synchronizer_logger_listener
         described_class.download
-        expect(@logger.logged(:info).size).to eq 1
-        expect(@logger.logged(:info).last).to match(/Finished downloading updates/)
       end
     end
 
@@ -46,13 +44,11 @@ RSpec.describe TariffSynchronizer, truncation: true do
       end
 
       it 'logs an error event' do
-        tariff_synchronizer_logger_listener
+        expect_any_instance_of(TariffSynchronizer::Logger).to receive(:config_error)
+
         allow(described_class).to receive(:sync_variables_set?).and_return(false)
 
         described_class.download
-
-        expect(@logger.logged(:error).size).to eq 1
-        expect(@logger.logged(:error).last).to match(/Missing: Tariff sync enviroment variables/)
       end
     end
 
@@ -82,14 +78,13 @@ RSpec.describe TariffSynchronizer, truncation: true do
   end
 
   describe '.apply' do
-    let(:update_1) { instance_double('described_class::TaricUpdate', issue_date: Date.yesterday, filename: Date.yesterday) }
-    let(:update_2) { instance_double('described_class::TaricUpdate', issue_date: Date.current, filename: Date.current) }
+    let(:applied_update) { create(:taric_update, :applied, example_date: Date.yesterday) }
+    let(:pending_update) { create(:taric_update, :pending, example_date: Date.today) }
 
     context 'when successful' do
       before do
-        allow(described_class).to receive(:date_range_since_last_pending_update).and_return([Date.yesterday, Date.current])
-        allow(described_class::TaricUpdate).to receive(:pending_at).with(update_1.issue_date).and_return([update_1])
-        allow(described_class::TaricUpdate).to receive(:pending_at).with(update_2.issue_date).and_return([update_2])
+        applied_update
+        pending_update
 
         allow(Sidekiq::Client).to receive(:enqueue)
       end
@@ -99,20 +94,25 @@ RSpec.describe TariffSynchronizer, truncation: true do
 
         described_class.apply
 
-        expect(described_class::BaseUpdateImporter).to have_received(:perform).with(update_1)
-        expect(described_class::BaseUpdateImporter).to have_received(:perform).with(update_2)
+        expect(described_class::BaseUpdateImporter).to have_received(:perform).with(pending_update)
       end
 
       it 'logs the info event and send email' do
-        allow(described_class::BaseUpdateImporter).to receive(:perform).with(update_1).and_return(true)
-        allow(described_class::BaseUpdateImporter).to receive(:perform).with(update_2).and_return(true)
+        expect_any_instance_of(TariffSynchronizer::Logger).to receive(:apply)
+        allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
-        tariff_synchronizer_logger_listener
+        allow(described_class::BaseUpdateImporter).to receive(:perform).with(pending_update).and_return(true)
+
+        described_class.apply
+      end
+
+
+      it 'emails stakeholders' do
+        allow(described_class::BaseUpdateImporter).to receive(:perform)
+        allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
         described_class.apply
 
-        expect(@logger.logged(:info).size).to eq(3)
-        expect(@logger.logged(:info).last).to include('Finished applying updates')
         expect(ActionMailer::Base.deliveries).not_to be_empty
         expect(ActionMailer::Base.deliveries.last.subject).to include('Tariff updates applied')
         expect(ActionMailer::Base.deliveries.last.encoded).to include('No import warnings found.')
@@ -147,6 +147,7 @@ RSpec.describe TariffSynchronizer, truncation: true do
 
         it 'kicks off the ClearCacheWorker' do
           allow(described_class::BaseUpdateImporter).to receive(:perform)
+          allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
           apply
 
@@ -157,34 +158,39 @@ RSpec.describe TariffSynchronizer, truncation: true do
 
     context 'when unsuccessful' do
       before do
-        allow(described_class).to receive(:date_range_since_last_pending_update).and_return([Date.yesterday, Date.current])
-        allow(described_class::TaricUpdate).to receive(:pending_at).with(update_1.issue_date).and_return([update_1])
-        allow(described_class::BaseUpdateImporter).to receive(:perform).with(update_1).and_raise(Sequel::Rollback)
+        applied_update
+        pending_update
+
+        allow(described_class::BaseUpdateImporter).to receive(:perform).with(pending_update).and_raise(Sequel::Rollback)
         allow(Sidekiq::Client).to receive(:enqueue)
       end
 
       it 'after an error next record is not processed' do
         expect { described_class.apply }.to raise_error(Sequel::Rollback)
-        expect(described_class::BaseUpdateImporter).not_to have_received(:perform).with(update_2)
+
         expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
       end
     end
 
     context 'with failed updates present' do
-      before { create :taric_update, :failed }
+      let(:failed_update) { create(:taric_update, :failed, example_date: Date.yesterday) }
+
+      before do
+        failed_update
+      end
 
       it 'does not apply pending updates' do
         allow(described_class::TaricUpdate).to receive(:pending_at)
+
         expect { described_class.apply }.to raise_error(described_class::FailedUpdatesError)
+
         expect(described_class::TaricUpdate).not_to have_received(:pending_at)
       end
 
       it 'logs the error event' do
-        tariff_synchronizer_logger_listener
-        expect { described_class.apply }.to raise_error(described_class::FailedUpdatesError)
+        expect_any_instance_of(TariffSynchronizer::Logger).to receive(:failed_updates_present)
 
-        expect(@logger.logged(:error).size).to eq(1)
-        expect(@logger.logged(:error).last).to include('TariffSynchronizer found failed updates that need to be fixed before running:')
+        expect { described_class.apply }.to raise_error(described_class::FailedUpdatesError)
       end
 
       it 'sends email with the error' do
@@ -210,8 +216,8 @@ RSpec.describe TariffSynchronizer, truncation: true do
     let(:applied_sequence_number) { 123 }
 
     before do
-      create(:taric_update, :applied, sequence_number: '1')
-      create(:taric_update, :pending, sequence_number: pending_sequence_number)
+      create(:taric_update, :applied, example_date: Date.today, sequence_number: applied_sequence_number)
+      create(:taric_update, :pending, example_date: Date.today, sequence_number: pending_sequence_number)
 
       allow(TradeTariffBackend).to receive(:with_redis_lock)
     end

@@ -93,9 +93,9 @@ module TariffSynchronizer
   end
 
   def apply(reindex_all_indexes: false)
-    return unless correct_sequence_for_pending_taric_file?
-
     check_tariff_updates_failures
+
+    return unless correct_sequence_for_pending_taric_file?
 
     applied_updates = []
     import_warnings = []
@@ -114,6 +114,7 @@ module TariffSynchronizer
       applied_updates.flatten!
 
       if applied_updates.any? && BaseUpdate.pending_or_failed.none?
+
         instrument(
           'apply.tariff_synchronizer',
           update_names: applied_updates.map(&:filename),
