@@ -12,7 +12,7 @@ RSpec.describe RollbackWorker, type: :worker do
       end
 
       it 'invokes rollback' do
-        expect(TariffSynchronizer).to receive(:rollback).with(date, false)
+        expect(TariffSynchronizer).to receive(:rollback).with(date, keep: false)
         expect(TariffSynchronizer).not_to receive(:rollback_cds)
         described_class.new.perform(date)
       end
@@ -24,7 +24,7 @@ RSpec.describe RollbackWorker, type: :worker do
       end
 
       it 'invokes rollback_cds' do
-        expect(TariffSynchronizer).to receive(:rollback_cds).with(date, false)
+        expect(TariffSynchronizer).to receive(:rollback_cds).with(date, keep: false)
         expect(TariffSynchronizer).not_to receive(:rollback)
         described_class.new.perform(date)
       end

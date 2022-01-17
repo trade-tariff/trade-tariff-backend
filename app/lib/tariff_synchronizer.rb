@@ -163,7 +163,7 @@ module TariffSynchronizer
   # Restore database to specific date in the past
   #
   # NOTE: this does not remove records from initial seed
-  def rollback(rollback_date, keep = false)
+  def rollback(rollback_date, keep: false)
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)
 
@@ -208,7 +208,7 @@ module TariffSynchronizer
     instrument('rollback_lock_error.tariff_synchronizer', date: rollback_date, keep: keep)
   end
 
-  def rollback_cds(rollback_date, keep = false)
+  def rollback_cds(rollback_date, keep: false)
     Rails.autoloaders.main.eager_load
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)

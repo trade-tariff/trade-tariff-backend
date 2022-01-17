@@ -64,9 +64,9 @@ namespace :tariff do
     task rollback: %w[environment class_eager_load] do
       if ENV['DATE']
         if TradeTariffBackend.use_cds?
-          TariffSynchronizer.rollback_cds(ENV['DATE'], ENV['KEEP'])
+          TariffSynchronizer.rollback_cds(ENV['DATE'], keep: ENV['KEEP'])
         else
-          TariffSynchronizer.rollback(ENV['DATE'], ENV['KEEP'])
+          TariffSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
         end
       else
         raise ArgumentError, "Please set the date using environment variable 'DATE'"
