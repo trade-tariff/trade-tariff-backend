@@ -92,10 +92,10 @@ module TariffSynchronizer
     end
   end
 
+  # Taric
   def apply(reindex_all_indexes: false)
     check_tariff_updates_failures
-
-    return unless correct_sequence_for_pending_taric_file?
+    check_sequence_for_pending_file
 
     applied_updates = []
     import_warnings = []
@@ -114,7 +114,6 @@ module TariffSynchronizer
       applied_updates.flatten!
 
       if applied_updates.any? && BaseUpdate.pending_or_failed.none?
-
         instrument(
           'apply.tariff_synchronizer',
           update_names: applied_updates.map(&:filename),
@@ -129,9 +128,8 @@ module TariffSynchronizer
   end
 
   def apply_cds(reindex_all_indexes: false)
-    return unless correct_sequence_for_pending_cds_file?
-
     check_tariff_updates_failures
+    check_sequence_for_pending_file
 
     applied_updates = []
     import_warnings = []
@@ -269,35 +267,6 @@ module TariffSynchronizer
 
   private
 
-  def correct_sequence_for_pending_cds_file?
-    last_pending = TariffSynchronizer::CdsUpdate.last_pending&.filename
-                     &.match(/^tariff_dailyExtract_v1_(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T\d+\.gzip$/)
-                     &.captures
-    last_applied = TariffSynchronizer::CdsUpdate.last_applied&.filename
-                     &.match(/^tariff_dailyExtract_v1_(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T\d+\.gzip$/)
-                     &.captures
-
-    return false unless last_pending && last_applied
-
-    last_pending_date = Date.new(*last_pending.map(&:to_i))
-    last_applied_date = Date.new(*last_applied.map(&:to_i))
-
-    last_pending_date == last_applied_date + 1.day
-  end
-
-  def correct_sequence_for_pending_taric_file?
-    last_pending = TariffSynchronizer::TaricUpdate.last_pending&.filename
-                     &.match(/^\d{4}-\d{2}-\d{2}_TGB(?<year>\d{2})(?<sequence>\d+.xml$)/)
-
-    last_applied = TariffSynchronizer::TaricUpdate.last_applied&.filename
-                     &.match(/^\d{4}-\d{2}-\d{2}_TGB(?<year>\d{2})(?<sequence>\d+.xml$)/)
-
-    return false unless last_pending && last_applied
-
-    last_pending[:year].to_i >= last_applied[:year].to_i &&
-      last_pending[:sequence].to_i == last_applied[:sequence].to_i + 1
-  end
-
   def perform_update(update_type, day)
     updates = update_type.pending_at(day).to_a
     updates.map do |update|
@@ -337,6 +306,16 @@ module TariffSynchronizer
     Rails.autoloaders.main.eager_load unless Rails.application.config.eager_load
 
     Sequel::Model.subclasses
+  end
+
+  def check_sequence_for_pending_file
+    unless update_type.correct_filename_sequence?
+      raise FailedUpdatesError, 'Wrong sequence between the pending and applied files. Check the admin updates UI.'
+    end
+  end
+
+  def update_type
+    TradeTariffBackend.uk? ? CdsUpdate : TaricUpdate
   end
 
   def check_tariff_updates_failures

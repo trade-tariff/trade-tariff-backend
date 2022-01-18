@@ -106,7 +106,6 @@ RSpec.describe TariffSynchronizer, truncation: true do
         described_class.apply
       end
 
-
       it 'emails stakeholders' do
         allow(described_class::BaseUpdateImporter).to receive(:perform)
         allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
@@ -220,6 +219,7 @@ RSpec.describe TariffSynchronizer, truncation: true do
       create(:taric_update, :pending, example_date: Date.today, sequence_number: pending_sequence_number)
 
       allow(TradeTariffBackend).to receive(:with_redis_lock)
+      allow(TradeTariffBackend).to receive(:uk?).and_return(false)
     end
 
     context 'when sequence is correct' do
@@ -235,10 +235,8 @@ RSpec.describe TariffSynchronizer, truncation: true do
     context 'when sequence is NOT correct' do
       let(:pending_sequence_number) { applied_sequence_number + 2 }
 
-      it 'does NOT run the update' do
-        described_class.apply
-
-        expect(TradeTariffBackend).not_to have_received(:with_redis_lock)
+      it 'raises a wrong sequence error' do
+        expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
     end
   end
@@ -269,26 +267,22 @@ RSpec.describe TariffSynchronizer, truncation: true do
     context 'when pending CDS update does not respect the sequence' do
       let(:pending_date) { applied_date + 2.days }
 
-      it 'does not run apply_cds' do
-        described_class.apply_cds
-
-        expect(TradeTariffBackend).not_to have_received(:with_redis_lock)
+      it 'raises and wrong sequence error' do
+        expect { described_class.apply_cds }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
     end
   end
 
   describe '.apply_cds' do
-    before do
-      allow(described_class).to receive(:date_range_since_last_pending_update).and_return([Date.yesterday, Date.current])
+    let(:applied_update) { create(:cds_update, :applied, example_date: Date.yesterday) }
+    let(:pending_update) { create(:cds_update, :pending, example_date: Date.today) }
 
-      allow(described_class::CdsUpdate).to receive(:pending_at).with(todays_update.issue_date).and_return([todays_update])
-      allow(described_class::CdsUpdate).to receive(:pending_at).with(yesterdays_update.issue_date).and_return([yesterdays_update])
+    before do
+      applied_update
+      pending_update
 
       allow(Sidekiq::Client).to receive(:enqueue)
     end
-
-    let(:todays_update) { instance_double('described_class::TaricUpdate', issue_date: Date.yesterday, filename: Date.yesterday) }
-    let(:yesterdays_update) { instance_double('described_class::TaricUpdate', issue_date: Date.current, filename: Date.current) }
 
     context 'when reindex_all_indexes arg is not set' do
       subject(:apply) { described_class.apply_cds }
@@ -319,7 +313,9 @@ RSpec.describe TariffSynchronizer, truncation: true do
 
       before do
         allow(described_class::BaseUpdateImporter).to receive(:perform)
-        allow(described_class).to receive(:correct_sequence_for_pending_cds_file?).and_return(true)
+
+        # TODO: why do we even need this?
+        allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
       end
 
       it 'kicks off the ClearCacheWorker' do
