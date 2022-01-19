@@ -42,9 +42,9 @@ module Cache
               {
                 id: guide.id,
                 title: guide.title,
-                url: guide.url
+                url: guide.url,
               }
-            end
+            end,
           }
         end
 
@@ -55,7 +55,7 @@ module Cache
             numeral: heading.section.numeral,
             title: heading.section.title,
             position: heading.section.position,
-            section_note: heading.section.section_note&.content
+            section_note: heading.section.section_note&.content,
           }
         end
 
@@ -66,7 +66,7 @@ module Cache
             validity_end_date: footnote.validity_end_date,
             code: footnote.code,
             description: footnote.description,
-            formatted_description: footnote.formatted_description
+            formatted_description: footnote.formatted_description,
           }
         end
 
@@ -111,13 +111,13 @@ module Cache
               duty_expression: {
                 id: "#{measure.measure_sid}-duty_expression",
                 base: measure.duty_expression_with_national_measurement_units_for(commodity),
-                formatted_base: measure.formatted_duty_expression_with_national_measurement_units_for(commodity)
+                formatted_base: measure.formatted_duty_expression_with_national_measurement_units_for(commodity),
               },
               measure_type_id: measure.measure_type.measure_type_id,
               measure_type: {
                 measure_type_id: measure.measure_type.measure_type_id,
-                description: measure.measure_type.description
-              }
+                description: measure.measure_type.description,
+              },
             }
           end
           commodity_attributes

@@ -56,14 +56,7 @@ module HeadingService
     end
 
     def filter_commodity_relations
-      search_references = SearchReference.where(
-        referenced_id: result.commodity_ids.map(&:to_s),
-        referenced_class: 'Commodity'
-      ).all.group_by(&:referenced_id)
-
       result.commodities.each do |commodity|
-        commodity.search_references = search_references[commodity.id.to_s] || []
-
         commodity.overview_measures.keep_if do |measure|
           has_valid_dates(measure, :effective_start_date, :effective_end_date)
         end
