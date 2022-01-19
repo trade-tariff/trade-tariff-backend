@@ -94,79 +94,14 @@ module HeadingService
       end
     end
 
+    # TODO: Use the TimeMachine plugin to filter the correct associated entities
     def has_valid_dates(hash, start_key = :validity_start_date, end_key = :validity_end_date)
       hash[start_key].to_date <= as_of &&
         (hash[end_key].nil? || hash[end_key].to_date >= as_of)
     end
 
-    attr_reader :parent_map, :commodity_index
-
     def build_commodities_tree
-      @parent_map = {}
-      @commodity_index = result.commodities.each_with_index.map do |commodity, index|
-        { commodity.goods_nomenclature_sid => index }
-      end.reduce({}, :merge)
-      traverse(result.commodities.first)
-    end
-
-    def traverse(first_goods_nomenclature)
-      # ignore case when first goods_nomenclature is blank it's a direct child of the heading
-      unless result.commodities.index(first_goods_nomenclature).blank?
-        next_goods_nomenclature = result.commodities[result.commodities.index(first_goods_nomenclature) + 1]
-        if next_goods_nomenclature.present? # we are not at the end of the goods_nomenclature array
-          map_goods_nomenclatures(first_goods_nomenclature, next_goods_nomenclature)
-          traverse(next_goods_nomenclature)
-        end
-      end
-    end
-
-    def map_goods_nomenclatures(primary, secondary)
-      if primary.number_indents < secondary.number_indents
-
-        primary.leaf = false
-        secondary.parent_sid = primary.goods_nomenclature_sid
-        parent_map[secondary.goods_nomenclature_sid] = primary.goods_nomenclature_sid
-
-      elsif primary.number_indents == secondary.number_indents
-
-        if primary.parent_sid.present? # if primary is not directly under heading
-          parent = find_commodity(primary.parent_sid)
-          parent.leaf = false
-          secondary.parent_sid = parent.goods_nomenclature_sid
-          parent_map[secondary.goods_nomenclature_sid] = parent.goods_nomenclature_sid
-        end
-
-      else
-
-        parent = nth_parent(primary, secondary.number_indents)
-        if parent.present?
-          parent.leaf = false
-          secondary.parent_sid = parent.goods_nomenclature_sid
-          parent_map[secondary.goods_nomenclature_sid] = parent.goods_nomenclature_sid
-        end
-
-      end
-    end
-
-    def nth_parent(goods_nomenclature, nth)
-      if nth > 0
-        goods_nomenclature = find_commodity(goods_nomenclature.parent_sid)
-
-        while goods_nomenclature.present? && goods_nomenclature.number_indents >= nth
-          goods_nomenclature = parent_of(goods_nomenclature)
-        end
-
-        goods_nomenclature
-      end
-    end
-
-    def parent_of(goods_nomenclature)
-      find_commodity(parent_map[goods_nomenclature.goods_nomenclature_sid])
-    end
-
-    def find_commodity(goods_nomenclature_sid)
-      index = commodity_index[goods_nomenclature_sid]
-      result.commodities[index] if index.present?
+      AnnotatedCommodityService.new(result).call
     end
   end
 end

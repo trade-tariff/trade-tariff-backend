@@ -1,0 +1,802 @@
+{
+  "id": 27624,
+  "goods_nomenclature_sid": 27624,
+  "goods_nomenclature_item_id": "0101000000",
+  "producline_suffix": "80",
+  "validity_start_date": "1972-01-01T00:00:00.000Z",
+  "validity_end_date": null,
+  "description": "Live horses, asses, mules and hinnies",
+  "formatted_description": "Live horses, asses, mules and hinnies",
+  "bti_url": "https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code",
+  "number_indents": 0,
+  "chapter": {
+    "id": 27623,
+    "goods_nomenclature_sid": 27623,
+    "goods_nomenclature_item_id": "0100000000",
+    "producline_suffix": "80",
+    "validity_start_date": "1971-12-31T00:00:00.000Z",
+    "validity_end_date": null,
+    "description": "LIVE ANIMALS",
+    "formatted_description": "Live animals",
+    "chapter_note": "* 1\\. This chapter covers all live animals except:\r\n  * (a) fish and crustaceans, molluscs and other aquatic invertebrates, of heading 0301, 0306, 0307 or 0308;\r\n  * (b) cultures of micro-organisms and other products of heading 3002; and\r\n  * (c) animals of heading 9508.\r\n\r\n* 2\\. In this chapter “purebred breeding animal” is defined as in (UK law equivalent to reg 1012/2016)",
+    "forum_link": {
+      "url": null
+    },
+    "guide_ids": [
+      23
+    ],
+    "guides": [
+      {
+        "id": 23,
+        "title": "Classification of goods",
+        "url": "https://www.gov.uk/government/collections/classification-of-goods"
+      }
+    ]
+  },
+  "section_id": 1,
+  "section": {
+    "id": 1,
+    "numeral": "I",
+    "title": "Live animals; animal products",
+    "position": 1,
+    "section_note": "* 1\\. Any reference in this section to a particular genus or species of an animal, except where the context otherwise requires, includes a reference to the young of that genus or species.\r\n* 2\\. Except where the context otherwise requires, throughout the nomenclature any reference to 'dried' products also covers products which have been dehydrated, evaporated or freeze-dried."
+  },
+  "footnotes": [
+    {
+      "footnote_id": "701",
+      "validity_start_date": "2014-06-25T00:00:00.000Z",
+      "validity_end_date": null,
+      "code": "TN701",
+      "description": "According to the Council Regulation (EU) No 692/2014 (OJ L183, p. 9) it shall be prohibited to import into European Union goods originating in Crimea or Sevastopol.<br>The prohibition shall not apply in respect of: <br>(a) the execution until 26 September 2014, of trade contracts concluded before 25 June 2014, or of ancillary contracts necessary for the execution of such contracts, provided that the natural or legal persons, entity or body seeking to perform the contract have notified, at least 10 working days in advance, the activity or transaction to the competent authority of the Member State in which they are established. <br>(b) goods originating in Crimea or Sevastopol which have been made available to the Ukrainian authorities for examination, for which compliance with the conditions conferring entitlement to preferential origin has been verified and for which a certificate of origin has been issued in accordance with Regulation (EU) No 978/2012 and Regulation (EU) No 374/2014 or in accordance with the EU-Ukraine Association Agreement.",
+      "formatted_description": "According to the Council Regulation (EU) No 692/2014 (OJ L183, p. 9) it shall be prohibited to import into European Union goods originating in Crimea or Sevastopol.<br>The prohibition shall not apply in respect of: <br>(a) the execution until 26 September 2014, of trade contracts concluded before 25 June 2014, or of ancillary contracts necessary for the execution of such contracts, provided that the natural or legal persons, entity or body seeking to perform the contract have notified, at least 10 working days in advance, the activity or transaction to the competent authority of the Member State in which they are established. <br>(b) goods originating in Crimea or Sevastopol which have been made available to the Ukrainian authorities for examination, for which compliance with the conditions conferring entitlement to preferential origin has been verified and for which a certificate of origin has been issued in accordance with Regulation (EU) No 978/2012 and Regulation (EU) No 374/2014 or in accordance with the EU-Ukraine Association Agreement."
+    }
+  ],
+  "commodities": [
+    {
+      "id": 93797,
+      "goods_nomenclature_sid": 93797,
+      "goods_nomenclature_item_id": "0101210000",
+      "validity_start_date": "2012-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 93661,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 1,
+          "productline_suffix": "10"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 147427,
+          "validity_start_date": "2019-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Horses",
+          "formatted_description": "Horses",
+          "description_plain": "Horses"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 121682,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Horses",
+          "formatted_description": "Horses",
+          "description_plain": "Horses"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 116053,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Horses",
+          "formatted_description": "Horses",
+          "description_plain": "Horses"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 1,
+      "producline_suffix": "10",
+      "description": "Horses",
+      "formatted_description": "Horses",
+      "description_plain": "Horses",
+      "leaf": true
+    },
+    {
+      "id": 93796,
+      "goods_nomenclature_sid": 93796,
+      "goods_nomenclature_item_id": "0101210000",
+      "validity_start_date": "2012-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 93660,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 2,
+          "productline_suffix": "80"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 147428,
+          "validity_start_date": "2019-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Pure-bred breeding animals",
+          "formatted_description": "Pure-bred breeding animals",
+          "description_plain": "Pure-bred breeding animals"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 121683,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Pure-bred breeding animals",
+          "formatted_description": "Pure-bred breeding animals",
+          "description_plain": "Pure-bred breeding animals"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 116052,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Pure-bred breeding animals",
+          "formatted_description": "Pure-bred breeding animals",
+          "description_plain": "Pure-bred breeding animals"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 20000000,
+          "effective_start_date": "2021-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 93796,
+          "vat": false,
+          "duty_expression_id": "20000000-duty_expression",
+          "duty_expression": {
+            "id": "20000000-duty_expression",
+            "base": "0.00 %",
+            "formatted_base": "<span>0.00</span> %"
+          },
+          "measure_type_id": "103",
+          "measure_type": {
+            "measure_type_id": "103",
+            "description": "Third country duty"
+          }
+        },
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        20000000,
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 2,
+      "producline_suffix": "80",
+      "description": "Pure-bred breeding animals",
+      "formatted_description": "Pure-bred breeding animals",
+      "description_plain": "Pure-bred breeding animals",
+      "leaf": true
+    },
+    {
+      "id": 93798,
+      "goods_nomenclature_sid": 93798,
+      "goods_nomenclature_item_id": "0101290000",
+      "validity_start_date": "2012-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 93662,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 2,
+          "productline_suffix": "80"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 151710,
+          "validity_start_date": "2021-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 147429,
+          "validity_start_date": "2019-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 143795,
+          "validity_start_date": "2018-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 121684,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 116054,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 2,
+      "producline_suffix": "80",
+      "description": "Other",
+      "formatted_description": "Other",
+      "description_plain": "Other",
+      "leaf": true,
+      "parent_sid": 9379
+    },
+    {
+      "id": 93799,
+      "goods_nomenclature_sid": 93799,
+      "goods_nomenclature_item_id": "0101291000",
+      "validity_start_date": "2012-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 93663,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 3,
+          "productline_suffix": "80"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 121685,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "For slaughter",
+          "formatted_description": "For slaughter",
+          "description_plain": "For slaughter"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 116055,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "For slaughter",
+          "formatted_description": "For slaughter",
+          "description_plain": "For slaughter"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 20000001,
+          "effective_start_date": "2021-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 93799,
+          "vat": false,
+          "duty_expression_id": "20000001-duty_expression",
+          "duty_expression": {
+            "id": "20000001-duty_expression",
+            "base": "0.00 %",
+            "formatted_base": "<span>0.00</span> %"
+          },
+          "measure_type_id": "105",
+          "measure_type": {
+            "measure_type_id": "105",
+            "description": "Non preferential duty under authorised use"
+          }
+        },
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        20000001,
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 3,
+      "producline_suffix": "80",
+      "description": "For slaughter",
+      "formatted_description": "For slaughter",
+      "description_plain": "For slaughter",
+      "leaf": true,
+      "parent_sid": 9379
+    },
+    {
+      "id": 93800,
+      "goods_nomenclature_sid": 93800,
+      "goods_nomenclature_item_id": "0101299000",
+      "validity_start_date": "2012-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 93664,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 3,
+          "productline_suffix": "80"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 121686,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 116056,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 20000002,
+          "effective_start_date": "2021-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 93800,
+          "vat": false,
+          "duty_expression_id": "20000002-duty_expression",
+          "duty_expression": {
+            "id": "20000002-duty_expression",
+            "base": "10.00 %",
+            "formatted_base": "<span>10.00</span> %"
+          },
+          "measure_type_id": "103",
+          "measure_type": {
+            "measure_type_id": "103",
+            "description": "Third country duty"
+          }
+        },
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        20000002,
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 3,
+      "producline_suffix": "80",
+      "description": "Other",
+      "formatted_description": "Other",
+      "description_plain": "Other",
+      "leaf": true,
+      "parent_sid": 9379
+    },
+    {
+      "id": 93801,
+      "goods_nomenclature_sid": 93801,
+      "goods_nomenclature_item_id": "0101300000",
+      "validity_start_date": "2012-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 93665,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 1,
+          "productline_suffix": "80"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 121687,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Asses",
+          "formatted_description": "Asses",
+          "description_plain": "Asses"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 116057,
+          "validity_start_date": "2012-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Asses",
+          "formatted_description": "Asses",
+          "description_plain": "Asses"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 20000003,
+          "effective_start_date": "2021-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 93801,
+          "vat": false,
+          "duty_expression_id": "20000003-duty_expression",
+          "duty_expression": {
+            "id": "20000003-duty_expression",
+            "base": "6.00 %",
+            "formatted_base": "<span>6.00</span> %"
+          },
+          "measure_type_id": "103",
+          "measure_type": {
+            "measure_type_id": "103",
+            "description": "Third country duty"
+          }
+        },
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        20000003,
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 1,
+      "producline_suffix": "80",
+      "description": "Asses",
+      "formatted_description": "Asses",
+      "description_plain": "Asses",
+      "leaf": true
+    },
+    {
+      "id": 72763,
+      "goods_nomenclature_sid": 72763,
+      "goods_nomenclature_item_id": "0101900000",
+      "validity_start_date": "2002-01-01T00:00:00.000Z",
+      "validity_end_date": null,
+      "goods_nomenclature_indents": [
+        {
+          "goods_nomenclature_indent_sid": 72101,
+          "validity_start_date": "2002-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "number_indents": 1,
+          "productline_suffix": "80"
+        }
+      ],
+      "goods_nomenclature_descriptions": [
+        {
+          "goods_nomenclature_description_period_sid": 121688,
+          "validity_start_date": "2014-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        },
+        {
+          "goods_nomenclature_description_period_sid": 90586,
+          "validity_start_date": "2002-01-01T00:00:00.000Z",
+          "validity_end_date": null,
+          "description": "Other",
+          "formatted_description": "Other",
+          "description_plain": "Other"
+        }
+      ],
+      "overview_measures": [
+        {
+          "measure_sid": 20000004,
+          "effective_start_date": "2021-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 72763,
+          "vat": false,
+          "duty_expression_id": "20000004-duty_expression",
+          "duty_expression": {
+            "id": "20000004-duty_expression",
+            "base": "10.00 %",
+            "formatted_base": "<span>10.00</span> %"
+          },
+          "measure_type_id": "103",
+          "measure_type": {
+            "measure_type_id": "103",
+            "description": "Third country duty"
+          }
+        },
+        {
+          "measure_sid": 2982599,
+          "effective_start_date": "2008-01-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": false,
+          "duty_expression_id": "2982599-duty_expression",
+          "duty_expression": {
+            "id": "2982599-duty_expression",
+            "base": "p/st",
+            "formatted_base": "<abbr title='Number of items'>p/st</abbr>"
+          },
+          "measure_type_id": "109",
+          "measure_type": {
+            "measure_type_id": "109",
+            "description": "Supplementary unit"
+          }
+        },
+        {
+          "measure_sid": -1010362444,
+          "effective_start_date": "2020-06-01T00:00:00.000Z",
+          "effective_end_date": null,
+          "goods_nomenclature_sid": 27624,
+          "vat": true,
+          "duty_expression_id": "-1010362444-duty_expression",
+          "duty_expression": {
+            "id": "-1010362444-duty_expression",
+            "base": "20.00 %",
+            "formatted_base": "<span>20.00</span> %"
+          },
+          "measure_type_id": "305",
+          "measure_type": {
+            "measure_type_id": "305",
+            "description": "Value added tax"
+          }
+        }
+      ],
+      "search_references": [
+
+      ],
+      "overview_measure_ids": [
+        20000004,
+        2982599,
+        -1010362444
+      ],
+      "number_indents": 1,
+      "producline_suffix": "80",
+      "description": "Other",
+      "formatted_description": "Other",
+      "description_plain": "Other",
+      "leaf": true
+    }
+  ],
+  "chapter_id": 27623,
+  "footnote_ids": [
+    "701"
+  ],
+  "commodity_ids": [
+    93797,
+    93796,
+    93798,
+    93799,
+    93800,
+    93801,
+    72763
+  ]
+}
