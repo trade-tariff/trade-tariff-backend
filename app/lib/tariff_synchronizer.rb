@@ -92,8 +92,10 @@ module TariffSynchronizer
     end
   end
 
+  # Taric
   def apply(reindex_all_indexes: false)
     check_tariff_updates_failures
+    check_sequence_for_pending_file
 
     applied_updates = []
     import_warnings = []
@@ -127,6 +129,7 @@ module TariffSynchronizer
 
   def apply_cds(reindex_all_indexes: false)
     check_tariff_updates_failures
+    check_sequence_for_pending_file
 
     applied_updates = []
     import_warnings = []
@@ -303,6 +306,16 @@ module TariffSynchronizer
     Rails.autoloaders.main.eager_load unless Rails.application.config.eager_load
 
     Sequel::Model.subclasses
+  end
+
+  def check_sequence_for_pending_file
+    unless update_type.correct_filename_sequence?
+      raise FailedUpdatesError, 'Wrong sequence between the pending and applied files. Check the admin updates UI.'
+    end
+  end
+
+  def update_type
+    TradeTariffBackend.uk? ? CdsUpdate : TaricUpdate
   end
 
   def check_tariff_updates_failures

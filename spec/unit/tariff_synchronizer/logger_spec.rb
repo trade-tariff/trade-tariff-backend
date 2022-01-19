@@ -48,14 +48,15 @@ RSpec.describe TariffSynchronizer::Logger, truncation: true do
 
   describe '#apply_lock_error' do
     before do
-      expect(TradeTariffBackend).to receive(
-        :with_redis_lock,
-      ).and_raise(Redlock::LockError, 'foo')
+      create(:taric_update, :applied, example_date: Date.yesterday)
+      create(:taric_update, :pending, example_date: Date.today)
 
-      TariffSynchronizer.apply
+      expect(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'foo')
     end
 
     it 'logs a warn event' do
+      TariffSynchronizer.apply
+
       expect(@logger.logged(:warn).size).to be >= 1
       expect(@logger.logged(:warn).first.to_s).to match(/acquire Redis lock/)
     end
