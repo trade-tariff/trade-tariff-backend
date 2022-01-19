@@ -1,4 +1,4 @@
-RSpec.describe CommoditiesTreeAnnotationService do
+RSpec.describe AnnotatedCommodityService do
   subject(:service) { described_class.new(heading) }
 
   describe '#call' do

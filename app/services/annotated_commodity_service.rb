@@ -4,7 +4,7 @@
 #
 # This is then consumed by the frontend tariff application to easily build a tree UI for perusal
 # of headings, subheadings and declarable commodities.
-class CommoditiesTreeAnnotationService
+class AnnotatedCommodityService
   def initialize(heading)
     @heading = heading
   end

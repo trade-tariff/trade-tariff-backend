@@ -108,7 +108,7 @@ module HeadingService
     end
 
     def build_commodities_tree
-      CommoditiesTreeAnnotationService.new(result).call
+      AnnotatedCommodityService.new(result).call
     end
   end
 end
