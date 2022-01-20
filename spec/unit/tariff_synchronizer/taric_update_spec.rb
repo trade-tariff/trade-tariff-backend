@@ -43,43 +43,76 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
   end
 
-  describe '.correct_filename_sequence?' do
-    subject(:taric_update) { described_class }
+  describe '.correct_recent_filename_sequence?' do
+    subject(:update) { described_class }
 
-    before do
-      create(:taric_update, :applied, example_date: applied_date, sequence_number: applied_sequence_number)
-      create(:taric_update, :pending, example_date: pending_date, sequence_number: pending_sequence_number)
+    context 'when there are updates with an unbroken sequence' do
+      before do
+        create(:taric_update, :missing, example_date: Date.parse('2021-12-04'), sequence_number: 'foo')
+        create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '202')
+        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '201')
+        create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '200')
+      end
+
+      it { is_expected.to be_correct_recent_filename_sequence }
     end
 
-    let(:applied_date) { Date.parse('2021-12-01') }
-    let(:applied_sequence_number) { '002' }
+    context 'when there are updates with a broken sequence' do
+      before do
+        create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '203')
+        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
+        create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '200')
+      end
+
+      it { is_expected.not_to be_correct_recent_filename_sequence }
+    end
+
+    context 'when there are only applied updates' do
+      before do
+        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
+        create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '200')
+      end
+
+      it { is_expected.to be_correct_recent_filename_sequence }
+    end
+
+    context 'when there are no updates' do
+      it { is_expected.to be_correct_recent_filename_sequence }
+    end
+  end
+
+  describe '.correct_filename_sequence?' do
+    subject(:correct_filename_sequence?) { described_class.correct_filename_sequence?(pending_update, applied_update) }
+
+    let(:pending_update) { create(:taric_update, :pending, example_date: pending_date, sequence_number: pending_sequence_number) }
+    let(:applied_update) { create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '002') }
 
     context 'when the pending year is the same and the pending sequence is the next valid sequence' do
-      let(:pending_date) {  Date.parse('2021-12-02') } # Same year
+      let(:pending_date) { Date.parse('2021-12-02') } # Same year
       let(:pending_sequence_number) { '003' } # Correct sequence
 
-      it { is_expected.to be_correct_filename_sequence }
+      it { is_expected.to be_truthy }
     end
 
     context 'when the pending year is the same and the pending sequence is NOT the next valid sequence' do
       let(:pending_date) { Date.parse('2021-12-02') } # Same year
       let(:pending_sequence_number) { '004' } # Incorrect sequence
 
-      it { is_expected.not_to be_correct_filename_sequence }
+      it { is_expected.to be_falsey }
     end
 
     context 'when the pending year is the following year and the pending sequence is 001' do
       let(:pending_date) { Date.parse('2022-12-02') } # Following year
       let(:pending_sequence_number) { '001' } # Correct sequence
 
-      it { is_expected.to be_correct_filename_sequence }
+      it { is_expected.to be_truthy }
     end
 
     context 'when the pending year is the following year and the pending sequence is NOT the next valid sequence' do
       let(:pending_date) { Date.parse('2022-12-02') } # Following year
       let(:pending_sequence_number) { '002' }           # Incorrect sequence
 
-      it { is_expected.not_to be_correct_filename_sequence }
+      it { is_expected.to be_falsey }
     end
   end
 

@@ -215,8 +215,8 @@ RSpec.describe TariffSynchronizer, truncation: true do
     let(:applied_sequence_number) { 123 }
 
     before do
-      create(:taric_update, :applied, example_date: Date.today, sequence_number: applied_sequence_number)
-      create(:taric_update, :pending, example_date: Date.today, sequence_number: pending_sequence_number)
+      create(:taric_update, :applied, example_date: Time.zone.yesterday, sequence_number: applied_sequence_number)
+      create(:taric_update, :pending, example_date: Time.zone.today, sequence_number: pending_sequence_number)
 
       allow(TradeTariffBackend).to receive(:with_redis_lock)
       allow(TradeTariffBackend).to receive(:uk?).and_return(false)

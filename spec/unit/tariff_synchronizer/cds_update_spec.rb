@@ -114,7 +114,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
     end
   end
 
-  describe '.correct_filename_sequence?' do
+  describe '.correct_recent_filename_sequence?' do
     subject(:cds_update) { described_class }
 
     before do
@@ -127,13 +127,13 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
     context 'when the sequence date is correct' do
       let(:pending_date) { applied_date + 1.day }
 
-      it { is_expected.to be_correct_filename_sequence }
+      it { is_expected.to be_correct_recent_filename_sequence }
     end
 
     context 'when the sequence date is incorrect' do
       let(:pending_date) { applied_date + 2.days }
 
-      it { is_expected.not_to be_correct_filename_sequence }
+      it { is_expected.not_to be_correct_recent_filename_sequence }
     end
   end
 
