@@ -71,11 +71,5 @@ module TariffSynchronizer
 
       mail subject: "#{subject_prefix(:warn)} Missing #{count} #{update_type.upcase} updates in a row"
     end
-
-    def failed_taric_sequence(files)
-      @files = files
-
-      mail subject: "#{subject_prefix(:warn)} TARIC updates sequence failed"
-    end
   end
 end

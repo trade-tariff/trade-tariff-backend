@@ -21,9 +21,6 @@
   UpdatesSynchronizerWorker:
     cron: "0 6 * * *"
     description: "UpdatesSynchronizerWorker"
-  TaricSequenceCheckWorker:
-    cron: "0 14 * * 6" 
-    description: "TaricSequenceCheckWorker"
   PopulateChangesTableWorker:
     cron: "30 4 * * *" 
     description: "Populates the changes table"
