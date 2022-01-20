@@ -46,13 +46,8 @@ module TariffSynchronizer
       instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
     end
 
-    def create_record_for_not_found_response
-      # Do not create missing record until we are sure until the next day
-      return if date >= Date.current
-
-      update_or_create(BaseUpdate::MISSING_STATE, missing_filename)
-      instrument('not_found.tariff_synchronizer', date: date, url: url)
-    end
+    # We do not create records for missing updates (see dynamic send method in perform)
+    def create_record_for_not_found_response; end
 
     def missing_filename
       "#{date}_taric"
