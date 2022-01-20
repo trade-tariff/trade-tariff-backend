@@ -103,7 +103,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
   end
 
   describe '.sync' do
-    it 'calls the download method for each date since for the last 20 days to the current date' do
+    it 'calls the download method for each date for the last 20 days to the current date' do
       update = create :taric_update, :applied, issue_date: 1.day.ago
 
       (20.days.ago.to_date..Date.current).each do |download_date|
