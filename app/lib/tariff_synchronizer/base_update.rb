@@ -1,5 +1,7 @@
 module TariffSynchronizer
   class BaseUpdate < Sequel::Model(:tariff_updates)
+    DOWNLOAD_FROM = 20.days
+
     delegate :instrument, to: ActiveSupport::Notifications
 
     # Used for TARIC updates only.
@@ -62,6 +64,10 @@ module TariffSynchronizer
         where(state: FAILED_STATE)
       end
 
+      def pending_applied_or_failed
+        where(state: [PENDING_STATE, APPLIED_STATE, FAILED_STATE])
+      end
+
       def pending_or_failed
         where(state: [PENDING_STATE, FAILED_STATE])
       end
@@ -76,6 +82,10 @@ module TariffSynchronizer
 
       def last_applied
         applied.order(:issue_date).first
+      end
+
+      def last_failed
+        failed.order(:issue_date).first
       end
 
       def descending
@@ -140,7 +150,8 @@ module TariffSynchronizer
       delegate :instrument, to: ActiveSupport::Notifications
 
       def sync
-        (pending_from..Date.current).each { |date| download(date) }
+        applicable_download_date_range.each { |date| download(date) }
+
         notify_about_missing_updates if last_updates_are_missing?
       end
 
@@ -148,20 +159,30 @@ module TariffSynchronizer
         raise 'Update Type should be specified in inheriting class'
       end
 
-    private
+      def applicable_download_date_range
+        download_start_date..download_end_date
+      end
 
-      def pending_from
-        if last_download = (last_pending || descending.first)
-          last_download.issue_date
-        else
+      private
+
+      def download_end_date
+        Time.zone.today
+      end
+
+      def download_start_date
+        if pending_applied_or_failed.count.zero?
           TariffSynchronizer.initial_update_date_for(update_type)
+        else
+          last_download = (last_pending || last_applied || last_failed)
+
+          [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
         end
       end
 
       def last_updates_are_missing?
         holidays = BankHolidays.last(TariffSynchronizer.warning_day_count)
         descending.exclude(issue_date: holidays)
-                  .first.try(:missing?)
+          .first.try(:missing?)
       end
 
       def notify_about_missing_updates
