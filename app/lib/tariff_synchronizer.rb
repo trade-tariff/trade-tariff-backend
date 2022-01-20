@@ -95,7 +95,7 @@ module TariffSynchronizer
   # Taric
   def apply(reindex_all_indexes: false)
     check_tariff_updates_failures
-    check_sequence_for_pending_file
+    check_sequence
 
     applied_updates = []
     import_warnings = []
@@ -129,7 +129,7 @@ module TariffSynchronizer
 
   def apply_cds(reindex_all_indexes: false)
     check_tariff_updates_failures
-    check_sequence_for_pending_file
+    check_sequence
 
     applied_updates = []
     import_warnings = []
@@ -308,7 +308,7 @@ module TariffSynchronizer
     Sequel::Model.subclasses
   end
 
-  def check_sequence_for_pending_file
+  def check_sequence
     unless update_type.correct_filename_sequence?
       raise FailedUpdatesError, 'Wrong sequence between the pending and applied files. Check the admin updates UI.'
     end
