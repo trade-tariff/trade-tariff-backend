@@ -7,30 +7,6 @@ RSpec.describe TariffSynchronizer::Logger, truncation: true do
 
   before { tariff_synchronizer_logger_listener }
 
-  describe '#missing_updates' do
-    let(:not_found_response) { build :response, :not_found }
-
-    before do
-      stub_holidays_gem_between_call
-      create :taric_update, :missing, issue_date: Date.current.ago(2.days)
-      create :taric_update, :missing, issue_date: Date.current.ago(3.days)
-      allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-                                            .and_return(not_found_response)
-      TariffSynchronizer::TaricUpdate.sync
-    end
-
-    it 'logs a warn event' do
-      expect(@logger.logged(:warn).size).to be > 1
-      expect(@logger.logged(:warn).to_s).to match(/Missing/)
-    end
-
-    it 'sends a warning email' do
-      expect(ActionMailer::Base.deliveries).not_to be_empty
-      email = ActionMailer::Base.deliveries.last
-      expect(email.encoded).to match(/missing/)
-    end
-  end
-
   describe '#rollback_lock_error' do
     before do
       expect(TradeTariffBackend).to receive(

@@ -44,32 +44,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
           .with(generator.url).and_return(build(:response, :not_found))
       end
 
-      it 'Creates a record with a missing state if the date has passed' do
-        expect {
-          described_class.new(example_date).perform
-        }.to change(TariffSynchronizer::TaricUpdate, :count).by(1)
-
-        taric_update = TariffSynchronizer::TaricUpdate.last
-        expect(taric_update.filename).to eq('2010-01-01_taric')
-        expect(taric_update.filesize).to be_nil
-        expect(taric_update.issue_date).to eq(example_date)
-        expect(taric_update.state).to eq(TariffSynchronizer::BaseUpdate::MISSING_STATE)
-      end
-
-      it "Doesn't create a record if the date is the same" do
-        expect {
-          travel_to example_date do
-            described_class.new(example_date).perform
-          end
-        }.not_to change(TariffSynchronizer::TaricUpdate, :count)
-      end
-
-      it 'Logs the creating of the TaricUpdate record with missing state' do
-        tariff_synchronizer_logger_listener
-        described_class.new(example_date).perform
-        expect(@logger.logged(:warn).size).to eq 1
-        expect(@logger.logged(:warn).last).to eq('Update NOT found for 2010-01-01 at http://example.com/taric/TARIC320100101')
-      end
+      it { expect { described_class.new(example_date).perform }.not_to change(TariffSynchronizer::TaricUpdate, :count) }
     end
 
     context 'Retries Exceeded Response' do
