@@ -13,5 +13,9 @@ FactoryBot.define do
     trait :applied do
       state { 'A' }
     end
+
+    trait :failed do
+      state { 'F' }
+    end
   end
 end

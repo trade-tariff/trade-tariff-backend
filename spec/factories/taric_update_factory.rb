@@ -19,5 +19,9 @@ FactoryBot.define do
     trait :pending do
       state { 'P' }
     end
+
+    trait :failed do
+      state { 'F' }
+    end
   end
 end
