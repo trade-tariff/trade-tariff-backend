@@ -43,8 +43,8 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
   end
 
-  describe '.correct_recent_filename_sequence?' do
-    subject(:update) { described_class }
+  describe '.correct_filename_sequence?' do
+    subject(:taric_update) { described_class }
 
     context 'when there are updates with an unbroken sequence' do
       before do
@@ -54,7 +54,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '200')
       end
 
-      it { is_expected.to be_correct_recent_filename_sequence }
+      it { is_expected.to be_correct_filename_sequence }
     end
 
     context 'when there are updates with a broken sequence' do
@@ -64,25 +64,16 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '200')
       end
 
-      it { is_expected.not_to be_correct_recent_filename_sequence }
-    end
-
-    context 'when there are only applied updates' do
-      before do
-        create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
-        create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '200')
-      end
-
-      it { is_expected.to be_correct_recent_filename_sequence }
+      it { is_expected.not_to be_correct_filename_sequence }
     end
 
     context 'when there are no updates' do
-      it { is_expected.to be_correct_recent_filename_sequence }
+      it { is_expected.to be_correct_filename_sequence }
     end
   end
 
-  describe '.correct_filename_sequence?' do
-    subject(:correct_filename_sequence?) { described_class.correct_filename_sequence?(pending_update, applied_update) }
+  describe '.correct_sequence_pair?' do
+    subject(:correct_sequence_pair) { described_class.correct_sequence_pair?(pending_update, applied_update) }
 
     let(:pending_update) { create(:taric_update, :pending, example_date: pending_date, sequence_number: pending_sequence_number) }
     let(:applied_update) { create(:taric_update, :applied, example_date: Date.parse('2021-12-01'), sequence_number: '002') }

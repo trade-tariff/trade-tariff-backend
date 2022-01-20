@@ -6,18 +6,16 @@ module TariffSynchronizer
     SEQUENCE_APPLICABLE_STATES = [APPLIED_STATE, PENDING_STATE].freeze
 
     class << self
-      # Validates the last n (see SEQUENCE_APPLICABLE_DAYS) of updates are in the correct sequence in order to know whether we're safe to apply pending updates. Out of order updates happen when the Taric api publishes files later than the date they're meant to be downloaded and should halt the applying of the update process.
-      def correct_recent_filename_sequence?
-        return true if last_pending.blank?
-
+      # Validates the last n of updates are in the correct sequence in order to know whether we're safe to apply pending updates. Out of order updates happen when the Taric api publishes files later than the date they're meant to be downloaded and should halt the applying of the update process.
+      def correct_filename_sequence?
         sequence_applicable_updates.each_cons(2) do |next_update, previous_update|
-          return false unless correct_filename_sequence?(next_update, previous_update)
+          return false unless correct_sequence_pair?(next_update, previous_update)
         end
 
         true
       end
 
-      def correct_filename_sequence?(next_update, previous_update)
+      def correct_sequence_pair?(next_update, previous_update)
         next_sequence = next_update.filename_sequence
         previous_sequence = previous_update.filename_sequence
 

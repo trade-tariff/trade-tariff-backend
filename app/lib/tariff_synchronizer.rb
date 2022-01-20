@@ -309,7 +309,7 @@ module TariffSynchronizer
   end
 
   def check_sequence
-    unless update_type.correct_recent_filename_sequence?
+    unless update_type.correct_filename_sequence?
       raise FailedUpdatesError, 'Wrong sequence between the pending and applied files. Check the admin updates UI.'
     end
   end
