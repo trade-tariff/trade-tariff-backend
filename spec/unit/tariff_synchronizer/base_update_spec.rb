@@ -168,4 +168,65 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       end
     end
   end
+
+  describe '.last_pending' do
+    subject(:last_pending) { described_class.last_pending }
+
+    context 'when there are updates' do
+      before do
+        create(:cds_update, :pending, issue_date:  Time.zone.yesterday) # Target
+        create(:cds_update, :pending, issue_date:  Time.zone.today) # Control
+        create(:cds_update, :failed, issue_date: Time.zone.yesterday) # Control
+        create(:cds_update, :applied, issue_date:  Time.zone.yesterday) # Control
+        create(:cds_update, :missing, issue_date:  Time.zone.yesterday) # Control
+      end
+
+      it { is_expected.to have_attributes(state: 'P', issue_date: Time.zone.yesterday) }
+    end
+
+    context 'when there are no updates' do
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.most_recent_applied' do
+    subject(:most_recent_applied) { described_class.most_recent_applied }
+
+    context 'when there are updates' do
+      before do
+        create(:cds_update, :applied, issue_date:  Time.zone.today) # Target
+        create(:cds_update, :applied, issue_date:  Time.zone.yesterday) # Control
+        create(:cds_update, :failed, issue_date: Time.zone.today) # Control
+        create(:cds_update, :missing, issue_date:  Time.zone.today) # Control
+        create(:cds_update, :pending, issue_date:  Time.zone.today) # Control
+      end
+
+      it { is_expected.to have_attributes(state: 'A', issue_date: Time.zone.today) }
+    end
+
+    context 'when there are no updates' do
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.most_recent_failed' do
+    subject(:most_recent_failed) { described_class.most_recent_failed }
+
+    context 'when there are updates' do
+      before do
+        create(:cds_update, :failed, issue_date: Time.zone.today) # Target
+        create(:cds_update, :failed, issue_date: Time.zone.yesterday) # Control
+        create(:cds_update, :applied, issue_date:  Time.zone.today) # Control
+        create(:cds_update, :applied, issue_date:  Time.zone.yesterday) # Control
+        create(:cds_update, :missing, issue_date:  Time.zone.today) # Control
+        create(:cds_update, :pending, issue_date:  Time.zone.today) # Control
+      end
+
+      it { is_expected.to have_attributes(state: 'F', issue_date: Time.zone.today) }
+    end
+
+    context 'when there are no updates' do
+      it { is_expected.to be_nil }
+    end
+  end
 end

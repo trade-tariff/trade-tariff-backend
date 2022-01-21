@@ -77,15 +77,19 @@ module TariffSynchronizer
       end
 
       def last_pending
-        pending.order(:issue_date).first
+        pending.ascending.first
       end
 
-      def last_applied
-        applied.order(:issue_date).first
+      def most_recent_applied
+        applied.descending.first
       end
 
-      def last_failed
-        failed.order(:issue_date).first
+      def most_recent_failed
+        failed.descending.first
+      end
+
+      def ascending
+        order(Sequel.asc(:issue_date))
       end
 
       def descending
@@ -173,7 +177,7 @@ module TariffSynchronizer
         if pending_applied_or_failed.count.zero?
           TariffSynchronizer.initial_update_date_for(update_type)
         else
-          last_download = (last_pending || last_applied || last_failed)
+          last_download = (last_pending || most_recent_applied || most_recent_failed)
 
           [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
         end
