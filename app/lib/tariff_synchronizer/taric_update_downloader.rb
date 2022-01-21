@@ -1,5 +1,3 @@
-require 'tariff_synchronizer/taric_file_name_generator'
-
 module TariffSynchronizer
   # Download pending updates TARIC files
   class TaricUpdateDownloader

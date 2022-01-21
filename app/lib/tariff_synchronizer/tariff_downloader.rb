@@ -59,20 +59,15 @@ module TariffSynchronizer
       instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
     end
 
-    def create_record_for_not_found_response
-      # Do not create missing record until we are sure until the next day
-      return if date >= Date.current
-
-      update_or_create(missing_update_name, BaseUpdate::MISSING_STATE)
-      instrument('not_found.tariff_synchronizer', date: date, url: url)
-    end
+    # We do not create records for missing updates
+    def create_record_for_not_found_response; end
 
     def create_record_for_successful_response
       update_klass.validate_file!(response.content) # Validate response
       update_or_create(filename, BaseUpdate::PENDING_STATE, response.content.size)
       write_update_file(response.content)
-    rescue BaseUpdate::InvalidContents => exception
-      persist_exception_for_review(exception)
+    rescue BaseUpdate::InvalidContents => e
+      persist_exception_for_review(e)
     end
 
     def update_or_create(file_name, state, file_size = nil)
@@ -94,10 +89,6 @@ module TariffSynchronizer
 
     def file_path
       File.join(TariffSynchronizer.root_path, update_klass.update_type.to_s, filename)
-    end
-
-    def missing_update_name
-      "#{date}_#{update_klass.update_type}"
     end
 
     def persist_exception_for_review(exception)
