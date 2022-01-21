@@ -76,7 +76,7 @@ module TariffSynchronizer
         where(state: [APPLIED_STATE, FAILED_STATE])
       end
 
-      def last_pending
+      def oldest_pending
         pending.ascending.first
       end
 
@@ -177,7 +177,7 @@ module TariffSynchronizer
         if pending_applied_or_failed.count.zero?
           TariffSynchronizer.initial_update_date_for(update_type)
         else
-          last_download = (last_pending || most_recent_applied || most_recent_failed)
+          last_download = (oldest_pending || most_recent_applied || most_recent_failed)
 
           [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
         end

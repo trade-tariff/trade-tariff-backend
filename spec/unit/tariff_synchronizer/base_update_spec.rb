@@ -5,6 +5,9 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     stub_holidays_gem_between_call
   end
 
+  let(:today) { Time.zone.today }
+  let(:yesterday) { Time.zone.yesterday }
+
   describe '#file_path' do
     before do
       allow(TariffSynchronizer).to receive(:root_path).and_return('data')
@@ -169,19 +172,19 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     end
   end
 
-  describe '.last_pending' do
-    subject(:last_pending) { described_class.last_pending }
+  describe '.oldest_pending' do
+    subject(:oldest_pending) { described_class.oldest_pending }
 
     context 'when there are updates' do
       before do
-        create(:cds_update, :pending, issue_date:  Time.zone.yesterday) # Target
-        create(:cds_update, :pending, issue_date:  Time.zone.today) # Control
-        create(:cds_update, :failed, issue_date: Time.zone.yesterday) # Control
-        create(:cds_update, :applied, issue_date:  Time.zone.yesterday) # Control
-        create(:cds_update, :missing, issue_date:  Time.zone.yesterday) # Control
+        create(:cds_update, :pending, issue_date:  yesterday) # Target
+        create(:cds_update, :pending, issue_date:  today) # Control
+        create(:cds_update, :failed, issue_date: yesterday) # Control
+        create(:cds_update, :applied, issue_date:  yesterday) # Control
+        create(:cds_update, :missing, issue_date:  yesterday) # Control
       end
 
-      it { is_expected.to have_attributes(state: 'P', issue_date: Time.zone.yesterday) }
+      it { is_expected.to have_attributes(state: 'P', issue_date: yesterday) }
     end
 
     context 'when there are no updates' do
@@ -194,14 +197,14 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
     context 'when there are updates' do
       before do
-        create(:cds_update, :applied, issue_date:  Time.zone.today) # Target
-        create(:cds_update, :applied, issue_date:  Time.zone.yesterday) # Control
-        create(:cds_update, :failed, issue_date: Time.zone.today) # Control
-        create(:cds_update, :missing, issue_date:  Time.zone.today) # Control
-        create(:cds_update, :pending, issue_date:  Time.zone.today) # Control
+        create(:cds_update, :applied, issue_date:  today) # Target
+        create(:cds_update, :applied, issue_date:  yesterday) # Control
+        create(:cds_update, :failed, issue_date: today) # Control
+        create(:cds_update, :missing, issue_date:  today) # Control
+        create(:cds_update, :pending, issue_date:  today) # Control
       end
 
-      it { is_expected.to have_attributes(state: 'A', issue_date: Time.zone.today) }
+      it { is_expected.to have_attributes(state: 'A', issue_date: today) }
     end
 
     context 'when there are no updates' do
@@ -214,15 +217,15 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
     context 'when there are updates' do
       before do
-        create(:cds_update, :failed, issue_date: Time.zone.today) # Target
-        create(:cds_update, :failed, issue_date: Time.zone.yesterday) # Control
-        create(:cds_update, :applied, issue_date:  Time.zone.today) # Control
-        create(:cds_update, :applied, issue_date:  Time.zone.yesterday) # Control
-        create(:cds_update, :missing, issue_date:  Time.zone.today) # Control
-        create(:cds_update, :pending, issue_date:  Time.zone.today) # Control
+        create(:cds_update, :failed, issue_date: today) # Target
+        create(:cds_update, :failed, issue_date: yesterday) # Control
+        create(:cds_update, :applied, issue_date:  today) # Control
+        create(:cds_update, :applied, issue_date:  yesterday) # Control
+        create(:cds_update, :missing, issue_date:  today) # Control
+        create(:cds_update, :pending, issue_date:  today) # Control
       end
 
-      it { is_expected.to have_attributes(state: 'F', issue_date: Time.zone.today) }
+      it { is_expected.to have_attributes(state: 'F', issue_date: today) }
     end
 
     context 'when there are no updates' do

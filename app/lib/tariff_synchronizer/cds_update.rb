@@ -5,7 +5,7 @@ module TariffSynchronizer
 
     class << self
       def correct_filename_sequence?
-        pending_seq = last_pending&.filename_sequence
+        pending_seq = oldest_pending&.filename_sequence
         applied_seq = most_recent_applied&.filename_sequence
 
         return true if pending_seq.blank? || applied_seq.blank?
