@@ -106,7 +106,7 @@ module TariffSynchronizer
       # Updates could be modifying primary keys so unrestricted it for all models.
       sequel_models.each(&:unrestrict_primary_key)
 
-      date_range = date_range_since_last_pending_update
+      date_range = date_range_since_oldest_pending_update
       date_range.each do |day|
         applied_updates << perform_update(TaricUpdate, day)
       end
@@ -145,7 +145,7 @@ module TariffSynchronizer
         import_warnings << event.payload
       end
 
-      date_range = date_range_since_last_pending_update
+      date_range = date_range_since_oldest_pending_update
       date_range.each do |day|
         applied_updates << perform_update(CdsUpdate, day)
       end
@@ -279,11 +279,11 @@ module TariffSynchronizer
     updates
   end
 
-  def date_range_since_last_pending_update
-    last_pending_update = BaseUpdate.last_pending
-    return [] if last_pending_update.blank?
+  def date_range_since_oldest_pending_update
+    oldest_pending_update = BaseUpdate.oldest_pending
+    return [] if oldest_pending_update.blank?
 
-    (last_pending_update.issue_date..update_to)
+    (oldest_pending_update.issue_date..update_to)
   end
 
   def update_to
