@@ -56,7 +56,8 @@ module TariffSynchronizer
 
     # Exceeded retry count
     def retry_exceeded(event)
-      warn "Download retry count exceeded for #{event.payload[:url]}"
+      warn "Download retry count exceeded for #{event.payload[:url]}/n \
+            response: #{event.payload[:response_content]}, status: #{event.payload[:response_status]}"
 
       Mailer.retry_exceeded(event.payload[:url], event.payload[:date]).deliver_now
     end

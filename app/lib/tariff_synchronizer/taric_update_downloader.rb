@@ -43,7 +43,9 @@ module TariffSynchronizer
 
     def create_record_for_exceeded_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
+      instrument('retry_exceeded.tariff_synchronizer', date: date, url: url,
+                                                       response_content: response.content,
+                                                       response_status: response.status)
     end
 
     # We do not create records for missing updates (see dynamic send method in perform)
@@ -54,9 +56,8 @@ module TariffSynchronizer
     end
 
     def update_or_create(state, file_name)
-      TariffSynchronizer::TaricUpdate.find_or_create(filename: file_name,
-                                                     issue_date: date)
-        .update(state: state)
+      TariffSynchronizer::TaricUpdate.find_or_create(filename: file_name, issue_date: date)
+                                     .update(state: state)
     end
 
     def log_request_to_taric_update
