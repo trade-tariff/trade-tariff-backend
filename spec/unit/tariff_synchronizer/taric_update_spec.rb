@@ -160,7 +160,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
   end
 
-  describe '#next_update_sequence_filename' do
+  describe '#next_update_sequence_update_filename' do
     subject(:next_update_sequence_update_filename) { taric_update.next_update_sequence_update_filename }
 
     let(:taric_update) { create(:taric_update, filename: '2021-12-30_TGB21257.xml', issue_date: issue_date) }
