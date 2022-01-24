@@ -66,7 +66,7 @@ module TariffSynchronizer
             issue_date: current_update.next_update_issue_date,
           )
 
-          accumulator << current_update.dup
+          accumulator << current_update
         end
 
         accumulator
