@@ -2,27 +2,25 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }
 
   describe '#perform' do
-    let(:generator) { TariffSynchronizer::TaricFileNameGenerator.new(example_date) }
-
     it 'Logs the request for the TaricUpdate file' do
       expect(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-        .with(generator.url).and_return(build(:response, :not_found))
+        .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
       tariff_synchronizer_logger_listener
       described_class.new(example_date).perform
       expect(@logger.logged(:info).size).to eq 1
-      expect(@logger.logged(:info).last).to eq("Checking for TARIC update for #{example_date} at #{generator.url}")
+      expect(@logger.logged(:info).last).to eq("Checking for TARIC update for #{example_date} at http://example.com/taric/TARIC320100101")
     end
 
     it 'Calls the external server to download file' do
       expect(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-        .with(generator.url).and_return(build(:response, :not_found))
+        .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
       described_class.new(example_date).perform
     end
 
     context 'Successful Response' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-          .with(generator.url).and_return(build(:response, :success, content: "ABC.xml\nXYZ.xml"))
+          .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :success, content: "ABC.xml\nXYZ.xml"))
       end
 
       it 'Calls TariffDownloader perform for each TARIC update file found' do
@@ -41,7 +39,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
     context 'Missing Response' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-          .with(generator.url).and_return(build(:response, :not_found))
+          .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
       end
 
       it { expect { described_class.new(example_date).perform }.not_to change(TariffSynchronizer::TaricUpdate, :count) }
@@ -50,7 +48,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
     context 'Retries Exceeded Response' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-          .with(generator.url).and_return(build(:response, :retry_exceeded))
+          .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :retry_exceeded))
       end
 
       it 'Creates a record with a failed state' do
@@ -83,7 +81,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
     context 'Blank Response' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-          .with(generator.url).and_return(build(:response, :blank))
+          .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :blank))
       end
 
       it 'Creates a record with a missing state' do

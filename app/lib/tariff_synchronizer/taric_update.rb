@@ -58,7 +58,7 @@ module TariffSynchronizer
         # Bail if we need to correct with a manual rollback
         return [] unless correct_filename_sequence?
 
-        accumulator = []
+        updates_to_check = []
 
         SEQUENCE_APPLICABLE_UPDATE_LIMIT.times do
           current_update = new(
@@ -66,10 +66,10 @@ module TariffSynchronizer
             issue_date: current_update.next_update_issue_date,
           )
 
-          accumulator << current_update
+          updates_to_check << current_update
         end
 
-        accumulator
+        updates_to_check
       end
 
       private

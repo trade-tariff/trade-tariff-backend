@@ -9,19 +9,27 @@ module TariffSynchronizer
     def initialize(update)
       @local_filename = update.filename
       @issue_date = update.issue_date
-      @generator = TaricFileNameGeneratorPatched.new(update.url_filename)
+      @url_filename = update.url_filename
     end
 
     def perform
       return if check_file_already_downloaded?
 
-      TariffDownloader.new(@local_filename, @generator.url, @issue_date, TariffSynchronizer::TaricUpdate).perform
+      TariffDownloader.new(@local_filename, url, @issue_date, TariffSynchronizer::TaricUpdate).perform
     end
 
     private
 
     def check_file_already_downloaded?
       TaricUpdate.find(filename: @local_filename).present?
+    end
+
+    def url
+      sprintf(
+        TariffSynchronizer.taric_update_url_template,
+        host: TariffSynchronizer.host,
+        filename: @url_filename,
+      )
     end
   end
 end
