@@ -80,6 +80,10 @@ module TariffSynchronizer
         pending.ascending.first
       end
 
+      def most_recent_pending
+        pending.descending.first
+      end
+
       def most_recent_applied
         applied.descending.first
       end

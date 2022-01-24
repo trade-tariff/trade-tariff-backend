@@ -25,7 +25,7 @@ module SynchronizerHelper
         </env:transaction>
       </env:envelope>)
 
-    taric_file_path = File.join(TariffSynchronizer.root_path, 'taric', "#{date}_TGB#{date.strftime('%y')}#{date.yday}.xml")
+    taric_file_path = File.join(TariffSynchronizer.root_path, 'taric', "#{date}_TGB#{date.strftime('%y')}#{date.yday.to_s.rjust(3, '0')}.xml")
     create_file taric_file_path, content
   end
 

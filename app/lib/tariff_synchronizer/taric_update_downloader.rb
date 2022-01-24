@@ -1,16 +1,14 @@
-require 'tariff_synchronizer/taric_file_name_generator'
-
 module TariffSynchronizer
   # Download pending updates TARIC files
   class TaricUpdateDownloader
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
+    delegate :taric_query_url_template, :taric_update_url_template, :host, to: TariffSynchronizer
 
     attr_reader :date, :url
 
     def initialize(date)
-      @generator = TaricFileNameGenerator.new(date)
       @date = date
-      @url = @generator.url
+      @url = date_api_url
     end
 
     def perform
@@ -23,7 +21,7 @@ module TariffSynchronizer
     private
 
     def response
-      @response ||= TariffUpdatesRequester.perform(url)
+      @response ||= TariffUpdatesRequester.perform(date_api_url)
     end
 
     def check_date_already_downloaded?
@@ -31,7 +29,7 @@ module TariffSynchronizer
     end
 
     def create_record_for_successful_response
-      @generator.get_info_from_response(response.content).each do |update|
+      file_api_urls.each do |update|
         TariffDownloader.new(update[:filename], update[:url], date, TariffSynchronizer::TaricUpdate).perform
       end
     end
@@ -61,6 +59,18 @@ module TariffSynchronizer
 
     def log_request_to_taric_update
       instrument('get_taric_update_name.tariff_synchronizer', date: date, url: url)
+    end
+
+    def date_api_url
+      sprintf(taric_query_url_template, host: host, date: date.strftime('%Y%m%d'))
+    end
+
+    def file_api_urls
+      response
+        .content
+        .split("\n")
+        .map { |name| name.gsub(/[^0-9a-zA-Z.]/i, '') }
+        .map { |name| { filename: "#{date}_#{name}", url: sprintf(taric_update_url_template, host: host, filename: name) } }
     end
   end
 end

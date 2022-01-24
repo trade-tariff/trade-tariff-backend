@@ -107,32 +107,13 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
   describe '.sync' do
     it 'calls the download method for each date for the last 20 days to the current date' do
-      update = create :taric_update, :applied, issue_date: 1.day.ago
+      create :cds_update, :applied, issue_date: 1.day.ago
 
       (20.days.ago.to_date..Date.current).each do |download_date|
-        expect(TariffSynchronizer::TaricUpdate).to receive(:download).with(download_date)
+        expect(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: nil))
       end
 
-      TariffSynchronizer::TaricUpdate.sync
-    end
-
-    it 'logs and send email about several missing updates in a row' do
-      create :taric_update, :missing, issue_date: 1.day.ago
-      create :taric_update, :missing, issue_date: 2.days.ago
-      create :taric_update, :missing, issue_date: 3.days.ago
-
-      allow(TariffSynchronizer::TaricUpdate).to receive(:download)
-      tariff_synchronizer_logger_listener
-
-      TariffSynchronizer::TaricUpdate.sync
-
-      expect(@logger.logged(:warn).size).to eq(1)
-      expect(@logger.logged(:warn).last).to eq('Missing 3 updates in a row for TARIC')
-
-      expect(ActionMailer::Base.deliveries).not_to be_empty
-      email = ActionMailer::Base.deliveries.last
-      expect(email.subject).to include('Missing 3 TARIC updates in a row')
-      expect(email.encoded).to include('Trade Tariff found 3 TARIC updates in a row to be missing')
+      TariffSynchronizer::CdsUpdate.sync
     end
   end
 
@@ -185,6 +166,26 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       end
 
       it { is_expected.to have_attributes(state: 'P', issue_date: yesterday) }
+    end
+
+    context 'when there are no updates' do
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.most_recent_pending' do
+    subject(:most_recent_pending) { described_class.most_recent_pending }
+
+    context 'when there are updates' do
+      before do
+        create(:cds_update, :pending, issue_date:  today) # Target
+        create(:cds_update, :pending, issue_date:  yesterday) # Control
+        create(:cds_update, :failed, issue_date: today) # Control
+        create(:cds_update, :missing, issue_date:  today) # Control
+        create(:cds_update, :applied, issue_date:  today) # Control
+      end
+
+      it { is_expected.to have_attributes(state: 'P', issue_date: today) }
     end
 
     context 'when there are no updates' do

@@ -8,7 +8,7 @@ FactoryBot.define do
     issue_date { example_date }
 
     # Example: 2015-04-15_TGB15072.xml
-    filename { "#{example_date}_TGB#{example_date.strftime('%y')}#{sequence_number}.xml" }
+    filename { "#{example_date.iso8601}_TGB#{example_date.strftime('%y')}#{sequence_number.to_s.rjust(3, '0')}.xml" }
 
     update_type { 'TariffSynchronizer::TaricUpdate' }
 
