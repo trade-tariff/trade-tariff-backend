@@ -13,11 +13,7 @@ module TariffSynchronizer
       end
 
       def download(date_or_update)
-        if TradeTariffBackend.patch_broken_taric_downloads?
-          TaricUpdateDownloaderPatched.new(date_or_update).perform
-        else
-          TaricUpdateDownloader.new(date_or_update).perform
-        end
+        downloader_class.new(date_or_update).perform
       end
 
       # Validates the last n of updates are in the correct sequence in order to know whether we're safe to apply pending updates. Out of order updates happen when the Taric api publishes files later than the date they're meant to be downloaded and should halt the applying of the update process.
@@ -73,6 +69,10 @@ module TariffSynchronizer
       end
 
       private
+
+      def downloader_class
+        TradeTariffBackend.patch_broken_taric_downloads? ? TaricUpdateDownloaderPatched : TaricUpdateDownloader
+      end
 
       def sequence_applicable_updates
         descending.where(state: SEQUENCE_APPLICABLE_STATES).limit(SEQUENCE_APPLICABLE_UPDATE_LIMIT)

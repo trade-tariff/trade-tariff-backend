@@ -33,7 +33,6 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         (20.days.ago.to_date..Date.current).each do |download_date|
           expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:new).with(download_date)
         end
-
       end
     end
   end
@@ -187,7 +186,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
   describe '.applicable_updates' do
     subject(:applicable_updates) { described_class.applicable_updates.as_json }
 
-    context 'when there are a mixture of applied and pending sequence updates' do
+    context 'when there is an unbroken sequence of applied and pending updates' do
       before do
         create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '203')
         create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
@@ -211,7 +210,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
       it { is_expected.to eq(expected_updates) }
     end
 
-    context 'when there are unbroken sequence updates but only applied updates' do
+    context 'when there is an unbroken sequence of applied updates' do
       before do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-03'), sequence_number: '203')
         create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
