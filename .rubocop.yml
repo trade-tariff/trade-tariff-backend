@@ -67,5 +67,9 @@ Style/FrozenStringLiteralComment:
 Style/GuardClause:
   MinBodyLength: 2
 
+Style/OptionalBooleanParameter:
+  Exclude:
+    - 'app/workers/**/*.rb' # Sidekiq doesn't support kwargs syntax for jobs
+
 Style/StringLiterals:
   EnforcedStyle: single_quotes

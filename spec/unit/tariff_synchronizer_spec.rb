@@ -283,6 +283,19 @@ RSpec.describe TariffSynchronizer, truncation: true do
     end
   end
 
+  describe '.downloaded_todays_file_for_cds?' do
+    before do
+      allow(described_class::CdsUpdate).to receive(:downloaded_todays_file?)
+                                           .and_return(true)
+    end
+
+    it 'is expected to call through to CdsUpdate#downloaded_todays_file?' do
+      described_class.downloaded_todays_file_for_cds?
+
+      expect(described_class::CdsUpdate).to have_received(:downloaded_todays_file?)
+    end
+  end
+
   describe '.apply_cds' do
     let(:applied_update) { create(:cds_update, :applied, example_date: Date.yesterday) }
     let(:pending_update) { create(:cds_update, :pending, example_date: Date.today) }

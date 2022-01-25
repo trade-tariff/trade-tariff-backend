@@ -92,6 +92,10 @@ module TariffSynchronizer
     end
   end
 
+  def downloaded_todays_file_for_cds?
+    CdsUpdate.downloaded_todays_file?
+  end
+
   # Taric
   def apply(reindex_all_indexes: false)
     check_tariff_updates_failures
