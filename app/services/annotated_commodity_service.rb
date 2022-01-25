@@ -10,6 +10,9 @@ class AnnotatedCommodityService
   end
 
   def call
+    # All commodities start as leaf commodities until we discover otherwise
+    @heading.commodities.each { |commodity| commodity.leaf = true }
+
     traverse(@heading.commodities.first)
 
     @heading
