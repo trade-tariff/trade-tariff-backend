@@ -17,11 +17,29 @@ FactoryBot.define do
     validity_start_date { Date.current.ago(2.years) }
     validity_end_date   { nil }
 
+    # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
+    #       what is passed to the individual factory and adds non-fun surprises for developers.
     after(:build) do |gono, evaluator|
-      FactoryBot.create(:goods_nomenclature_indent, goods_nomenclature_sid: gono.goods_nomenclature_sid,
-                                                    validity_start_date: gono.validity_start_date,
-                                                    validity_end_date: gono.validity_end_date,
-                                                    number_indents: evaluator.indents)
+      FactoryBot.create(
+        :goods_nomenclature_indent,
+        goods_nomenclature_sid: gono.goods_nomenclature_sid,
+        validity_start_date: gono.validity_start_date,
+        validity_end_date: gono.validity_end_date,
+        number_indents: evaluator.indents,
+        productline_suffix: gono.producline_suffix,
+      )
+    end
+
+    trait :with_indent do
+      # TODO: Populate this trait
+    end
+
+    trait :with_overview_measures do
+      after(:create) do |goods_nomenclature, _evaluator|
+        create(:measure, :vat, :with_measure_type, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid, goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+        create(:measure, :third_country, :with_measure_type, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid, goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+        create(:measure, :supplementary, :with_measure_type, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid, goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
+      end
     end
 
     trait :actual do
@@ -36,10 +54,6 @@ FactoryBot.define do
     trait :expired do
       validity_start_date { Date.current.ago(3.years) }
       validity_end_date   { Date.current.ago(1.year)  }
-    end
-
-    trait :with_indent do
-      # noop
     end
 
     trait :with_description do

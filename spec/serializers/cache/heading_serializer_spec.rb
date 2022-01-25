@@ -81,7 +81,7 @@ RSpec.describe Cache::HeadingSerializer do
                 validity_start_date: String,
                 validity_end_date: nil,
                 number_indents: Integer,
-                productline_suffix: nil,
+                productline_suffix: '80',
               },
             ],
             goods_nomenclature_descriptions: [

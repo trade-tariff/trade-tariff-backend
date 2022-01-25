@@ -6,13 +6,15 @@ class MeasureType < Sequel::Model
   IMPORT_MOVEMENT_CODES = [0, 2].freeze
   EXPORT_MOVEMENT_CODES = [1, 2].freeze
   THIRD_COUNTRY = %w[103 105].freeze # 105 measure types are for end use Third Country duties. 103 are for everything else
-  VAT_TYPES = %w[VTA VTE VTS VTZ 305].freeze
+  VAT_TYPES = %w[VTA VTE VTS VTZ 305].freeze # TODO: Remove dead VAT measure types from the old days of CHIEF
   SUPPLEMENTARY_TYPES = %w[109 110 111].freeze
   QUOTA_TYPES = %w[046 122 123 143 146 147 653 654].freeze
   NATIONAL_PR_TYPES = %w[AHC AIL ATT CEX CHM COE COI CVD DPO ECM EHC EQC EWP HOP HSE IWP PHC PRE PRT QRC SFS].freeze
   DEFAULT_EXCLUDED_TYPES = %w[442 SPL].freeze
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
+  OVERVIEW_MEASURE_TYPES = MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES + MeasureType::THIRD_COUNTRY # Used for a frontend overview of the most important applicable measures
+
 
   DEFENSE_MEASURES = [
     '551', # Provisional anti-dumping duty

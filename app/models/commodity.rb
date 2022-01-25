@@ -27,8 +27,7 @@ class Commodity < GoodsNomenclature
   }
 
   one_to_many :overview_measures, key: {}, primary_key: {}, dataset: -> {
-    measures_dataset
-        .filter(measures__measure_type_id: MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES + Array.wrap(MeasureType::THIRD_COUNTRY))
+    measures_dataset.filter(measures__measure_type_id: MeasureType::OVERVIEW_MEASURE_TYPES)
   }, class_name: 'Measure'
 
   one_to_many :search_references, key: :referenced_id, primary_key: :code, reciprocal: :referenced, conditions: { referenced_class: 'Commodity' },
