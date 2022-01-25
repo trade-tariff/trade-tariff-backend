@@ -234,7 +234,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.2
+          version: 20.10.11
           docker_layer_caching: false
       - aws-cli/install
       - run:
