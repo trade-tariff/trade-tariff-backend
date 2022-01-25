@@ -196,7 +196,7 @@ commands:
 jobs:
   linters:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     resource_class: small
     steps:
       - checkout
@@ -230,11 +230,11 @@ jobs:
         default: false
         type: boolean
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.1.0
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.2
+          version: 20.10.11
           docker_layer_caching: false
       - aws-cli/install
       - run:
@@ -257,7 +257,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -320,7 +320,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -345,7 +345,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -367,7 +367,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
