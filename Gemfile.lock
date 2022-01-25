@@ -65,10 +65,10 @@ GEM
     ansi (1.5.0)
     ast (2.4.2)
     aws-eventstream (1.2.0)
-    aws-partitions (1.543.0)
+    aws-partitions (1.549.0)
     aws-record (2.7.0)
       aws-sdk-dynamodb (~> 1.18)
-    aws-sdk-core (3.125.0)
+    aws-sdk-core (3.125.5)
       aws-eventstream (~> 1, >= 1.0.2)
       aws-partitions (~> 1, >= 1.525.0)
       aws-sigv4 (~> 1.1)
@@ -86,7 +86,7 @@ GEM
       aws-sessionstore-dynamodb (~> 2)
       concurrent-ruby (~> 1)
       railties (>= 5.2.0)
-    aws-sdk-s3 (1.110.0)
+    aws-sdk-s3 (1.111.3)
       aws-sdk-core (~> 3, >= 3.125.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.4)
@@ -188,7 +188,7 @@ GEM
     holidays (8.4.1)
     i18n (1.8.11)
       concurrent-ruby (~> 1.0)
-    jmespath (1.4.0)
+    jmespath (1.5.0)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
@@ -404,6 +404,7 @@ GEM
       simplecov_json_formatter (~> 0.1)
     simplecov-html (0.12.3)
     simplecov_json_formatter (0.1.3)
+    slack-notifier (2.4.0)
     sprockets (4.0.2)
       concurrent-ruby (~> 1.0)
       rack (> 1, < 3)
@@ -484,6 +485,7 @@ DEPENDENCIES
   sidekiq
   sidekiq-scheduler
   simplecov
+  slack-notifier
   tilt
   webmock
 
