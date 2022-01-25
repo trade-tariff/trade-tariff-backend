@@ -312,6 +312,10 @@ module TariffSynchronizer
     unless update_type.correct_filename_sequence?
       raise FailedUpdatesError, 'Wrong sequence between the pending and applied files. Check the admin updates UI.'
     end
+  rescue FailedUpdatesError => e
+    notify_slack_app(e)
+
+    raise
   end
 
   def update_type
@@ -324,5 +328,13 @@ module TariffSynchronizer
                  file_names: BaseUpdate.failed.map(&:filename))
       raise FailedUpdatesError
     end
+  rescue FailedUpdatesError => e
+    notify_slack_app(e)
+
+    raise
+  end
+
+  def notify_slack_app(exception)
+    SlackNotifierService.call("Error #{exception.class}: #{exception.message}")
   end
 end

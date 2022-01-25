@@ -235,8 +235,14 @@ RSpec.describe TariffSynchronizer, truncation: true do
     context 'when sequence is NOT correct' do
       let(:pending_sequence_number) { applied_sequence_number + 2 }
 
-      it 'raises a wrong sequence error' do
-        expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+      it 'raises a wrong sequence error and notifies Slack app' do
+        allow(SlackNotifierService).to receive(:call)
+
+        expect {
+          described_class.apply
+        }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+
+        expect(SlackNotifierService).to have_received(:call)
       end
     end
   end
@@ -267,8 +273,12 @@ RSpec.describe TariffSynchronizer, truncation: true do
     context 'when pending CDS update does not respect the sequence' do
       let(:pending_date) { applied_date + 2.days }
 
-      it 'raises and wrong sequence error' do
+      it 'raises wrong sequence error and notifies Slack app' do
+        allow(SlackNotifierService).to receive(:call)
+
         expect { described_class.apply_cds }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+
+        expect(SlackNotifierService).to have_received(:call)
       end
     end
   end

@@ -41,6 +41,7 @@ gem 'ox'
 gem 'plek'
 gem 'sentry-rails'
 gem 'sentry-sidekiq'
+gem 'slack-notifier'
 
 # API related
 gem 'ansi'
