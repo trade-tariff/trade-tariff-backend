@@ -14,19 +14,12 @@ class Subheading < Commodity
   private
 
   def all_children
-    @all_children ||= begin
-      accumulator = [self]
+    @all_children = []
 
-      current_child = self
-
-      while current_child.children.size.positive?
-        current_child.children.each do |child|
-          accumulator << child
-          current_child = child
-        end
-      end
-
-      accumulator
+    traverse_children do |child|
+      @all_children << child
     end
+
+    @all_children
   end
 end

@@ -3,6 +3,7 @@ class CachedSubheadingService
 
   DEFAULT_INCLUDES = [
     :section,
+    :heading,
     :chapter,
     'chapter.guides',
     :footnotes,
@@ -50,7 +51,7 @@ class CachedSubheadingService
         commodity.overview_measure_ids = commodity.overview_measures.map(&:measure_sid)
         commodity.overview_measures.each do |measure|
           measure.duty_expression_id = measure.duty_expression.id
-          measure.measure_type_id = measure.measure_type.id
+          measure.measure_type_id = measure.measure_type_id
         end
       end
 

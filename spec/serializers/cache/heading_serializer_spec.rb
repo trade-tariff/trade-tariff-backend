@@ -1,26 +1,42 @@
 RSpec.describe Cache::HeadingSerializer do
-  describe '#as_json' do
-    let(:heading) do
-      create :heading, :non_grouping,
-             :non_declarable,
-             :with_description
-    end
-    let!(:chapter) do
-      create :chapter,
-             :with_section, :with_description,
-             goods_nomenclature_item_id: heading.chapter_id
-    end
-    let!(:forum_link) { ForumLink.create(url: '123', goods_nomenclature_sid: chapter.goods_nomenclature_sid) }
-    let!(:footnote) { create :footnote, :with_gono_association, goods_nomenclature_sid: heading.goods_nomenclature_sid }
-    let!(:commodity) { heading.commodities.first }
-    let(:measure_type) { create :measure_type, measure_type_id: '103' }
-    let!(:measure) do
-      create :measure,
-             measure_type_id: measure_type.measure_type_id,
-             goods_nomenclature: commodity,
-             goods_nomenclature_sid: commodity.goods_nomenclature_sid
-    end
-    let(:serializer) { described_class.new(heading.reload) }
+  subject(:serialized) { described_class.new(heading.reload).as_json }
+
+  let!(:chapter) do
+    create(
+      :chapter,
+      :with_section,
+      :with_description,
+      goods_nomenclature_item_id: heading.chapter_id,
+    )
+  end
+  let!(:forum_link) do
+    ForumLink.create(
+      url: '123',
+      goods_nomenclature_sid: chapter.goods_nomenclature_sid,
+    )
+  end
+  let!(:footnote) do
+    create(
+      :footnote,
+      :with_gono_association,
+      goods_nomenclature_sid: heading.goods_nomenclature_sid,
+    )
+  end
+  let!(:measure) do
+    create(
+      :measure,
+      :with_measure_type,
+      :third_country,
+      goods_nomenclature: commodity,
+      goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+    )
+  end
+
+  let!(:commodity) { heading.commodities.first }
+  let!(:measure_type) { create :measure_type, measure_type_id: '103' }
+
+  context 'when the heading is a Heading' do
+    let(:heading) { create(:heading, :non_declarable) }
 
     let(:pattern) do
       {
@@ -119,8 +135,72 @@ RSpec.describe Cache::HeadingSerializer do
       }
     end
 
-    it 'returns json representation for ElasticSearch' do
-      expect(serializer.as_json).to match_json_expression pattern
+    it { is_expected.to match_json_expression(pattern) }
+  end
+
+  context 'when the heading is a Subheading' do
+    let(:heading) do
+      create(
+        :commodity,
+        :with_indent,
+        :with_description,
+        :with_heading,
+        producline_suffix: '10',
+        goods_nomenclature_item_id: '0101210000',
+      )
+
+      Subheading.find(goods_nomenclature_item_id: '0101210000')
     end
+
+    let(:pattern) do
+      {
+        id: Integer,
+        goods_nomenclature_sid: Integer,
+        goods_nomenclature_item_id: String,
+        producline_suffix: String,
+        validity_start_date: String,
+        validity_end_date: nil,
+        description: String,
+        formatted_description: String,
+        bti_url: String,
+        number_indents: Integer,
+        chapter: {
+          id: Integer,
+          goods_nomenclature_sid: Integer,
+          goods_nomenclature_item_id: String,
+          producline_suffix: String,
+          validity_start_date: String,
+          validity_end_date: nil,
+          description: String,
+          formatted_description: String,
+          forum_link: {
+            url: String,
+          },
+          chapter_note: nil,
+          guide_ids: Array,
+          guides: Array,
+        },
+        section_id: Integer,
+        section: {
+          id: Integer,
+          numeral: String,
+          title: String,
+          position: Integer,
+          section_note: nil,
+        },
+        heading: {
+          id: Integer,
+          goods_nomenclature_sid: Integer,
+          goods_nomenclature_item_id: String,
+          description: '',
+          formatted_description: '',
+          description_plain: '',
+        },
+        footnotes: Array,
+        commodities: Array,
+      }
+    end
+
+    it { is_expected.to match_json_expression(pattern) }
   end
 end

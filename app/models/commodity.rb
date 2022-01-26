@@ -160,4 +160,10 @@ class Commodity < GoodsNomenclature
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
   end
+
+  def traverse_children(&block)
+    yield self
+
+    children.each { |child| child.traverse_children(&block) }
+  end
 end

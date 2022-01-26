@@ -21,7 +21,7 @@ module Cache
       }
 
       # TODO: Separate intermediate serialization for subheadings
-      if heading.is_a?(Subheading)
+      unless heading.is_a?(Heading)
         heading_attributes[:heading] = {
           id: heading.heading.id,
           goods_nomenclature_sid: heading.heading.goods_nomenclature_sid,

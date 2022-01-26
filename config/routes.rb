@@ -67,6 +67,8 @@ Rails.application.routes.draw do
         end
       end
 
+      resources :subheadings, only: [:show], constraints: { id: /\d{10}-\d{2}/ }
+
       resources :commodities, only: [:show], constraints: { id: /\d{10}/ } do
         member do
           get :changes

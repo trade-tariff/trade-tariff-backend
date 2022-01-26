@@ -34,6 +34,14 @@ FactoryBot.define do
       # TODO: Populate this trait
     end
 
+    trait :non_declarable do
+      after(:create) do |heading, _evaluator|
+        FactoryBot.create(:goods_nomenclature, :with_description,
+                          :with_indent,
+                          goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
+      end
+    end
+
     trait :with_overview_measures do
       after(:create) do |goods_nomenclature, _evaluator|
         create(:measure, :vat, :with_measure_type, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid, goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
