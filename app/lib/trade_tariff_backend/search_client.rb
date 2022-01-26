@@ -5,16 +5,6 @@ module TradeTariffBackend
     # Raised if Elasticsearch returns an error from query
     QueryError = Class.new(StandardError)
 
-    class Response < Hashie::Mash
-      disable_warnings
-
-      # Need to wrap object in array because serializer gem does Array(obj) and it breaks Hashie::Mash object
-      # See changes https://github.com/jsonapi-serializer/jsonapi-serializer/commit/f62a5bf1622fd2da0278e2fef0e8d4342b97e7cc
-      def to_a
-        Array.wrap(self)
-      end
-    end
-
     attr_reader :indexed_models
     attr_reader :index_page_size
     attr_reader :search_operation_options
@@ -32,11 +22,11 @@ module TradeTariffBackend
     end
 
     def search(*)
-      Response.new(super)
+      Hashie::TariffMash.new(super)
     end
 
     def msearch(*)
-      Response.new(super)
+      Hashie::TariffMash.new(super)
     end
 
     def reindex
