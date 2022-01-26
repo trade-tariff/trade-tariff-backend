@@ -20,6 +20,8 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
     end
 
     context 'when the heading is not declarable' do
+      before { chapter }
+
       let(:heading) do
         create(
           :heading,

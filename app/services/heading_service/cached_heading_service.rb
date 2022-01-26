@@ -22,7 +22,7 @@ module HeadingService
     private
 
     def serialize_result
-      ::Hashie::Mash.new(::Cache::HeadingSerializer.new(heading).as_json)
+      Hashie::TariffMash.new(::Cache::HeadingSerializer.new(heading).as_json)
     end
 
     def fetch_result
