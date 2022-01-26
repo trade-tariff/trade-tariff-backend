@@ -65,6 +65,8 @@ Rails.application.routes.draw do
         member do
           get :changes
         end
+
+        resources :validity_dates, only: [:index]
       end
 
       resources :subheadings, only: [:show], constraints: { id: /\d{10}-\d{2}/ }
@@ -73,6 +75,8 @@ Rails.application.routes.draw do
         member do
           get :changes
         end
+
+        resources :validity_dates, only: [:index]
       end
 
       resources :geographical_areas, only: %i[index show] do
