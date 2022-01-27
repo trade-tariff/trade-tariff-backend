@@ -18,6 +18,7 @@ class UpdatesSynchronizerWorker
           todays_file_has_not_yet_arrived?
 
         self.class.perform_in(TRY_AGAIN_IN, true)
+        logger.info "Daily file missing, retrying at #{TRY_AGAIN_IN.from_now}"
       else
         logger.info 'Applying...'
         TariffSynchronizer.apply_cds(reindex_all_indexes: true)
