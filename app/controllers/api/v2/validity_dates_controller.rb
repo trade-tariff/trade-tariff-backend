@@ -2,7 +2,9 @@ module Api
   module V2
     class ValidityDatesController < ApiController
       def index
-        items_in_all_periods = item_scope.limit(100).to_a
+        items_in_all_periods = item_scope.limit(10)
+                                         .order(Sequel.desc(:validity_start_date))
+                                         .to_a
 
         presented_items = items_in_all_periods.map do |item|
           Api::V2::ValidityDatePresenter.new item
