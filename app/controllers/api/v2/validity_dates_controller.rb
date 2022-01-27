@@ -2,7 +2,8 @@ module Api
   module V2
     class ValidityDatesController < ApiController
       def index
-        items_in_all_periods = item_scope.limit(10)
+        items_in_all_periods = item_scope.exclude(validity_start_date: nil)
+                                         .limit(10)
                                          .order(Sequel.desc(:validity_start_date))
                                          .to_a
 
