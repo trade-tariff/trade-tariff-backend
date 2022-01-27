@@ -89,19 +89,22 @@ Rails.application.routes.draw do
         collection { get :search }
       end
 
-      resources :certificates, only: [] do
+      resources :certificates, only: [:index] do
         collection { get :search }
       end
+
       resources :certificate_types, only: [:index]
 
       resources :additional_codes, only: [] do
         collection { get :search }
       end
+
       resources :additional_code_types, only: [:index]
 
       resources :footnotes, only: [] do
         collection { get :search }
       end
+
       resources :footnote_types, only: [:index]
 
       resources :chemicals, only: %i[index show] do

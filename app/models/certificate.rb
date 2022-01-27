@@ -11,6 +11,13 @@ class Certificate < Sequel::Model
       .order(Sequel.desc(:certificate_description_periods__validity_start_date))
   end
 
+  one_to_many :certificate_description_periods, key: %i[certificate_code certificate_type_code] do |ds|
+    ds.with_actual(CertificateDescriptionPeriod)
+      .order(Sequel.desc(:certificate_description_periods__validity_start_date))
+  end
+
+  many_to_one :certificate_type_description, key: :certificate_type_code
+
   one_to_many :measure_conditions, key: %i[certificate_type_code certificate_code],
                                    primary_key: %i[certificate_type_code certificate_code]
 
@@ -18,13 +25,17 @@ class Certificate < Sequel::Model
                           left_key: %i[certificate_code certificate_type_code],
                           right_key: :measure_sid
 
+  one_to_many :certificate_types, key: :certificate_type_code,
+                                  primary_key: :certificate_type_code do |ds|
+    ds.with_actual(CertificateType)
+  end
+
   def certificate_description
     certificate_descriptions.first
   end
 
-  one_to_many :certificate_types, key: :certificate_type_code,
-                                  primary_key: :certificate_type_code do |ds|
-    ds.with_actual(CertificateType)
+  def certificate_description_period
+    certificate_description_periods.first
   end
 
   def certificate_type
