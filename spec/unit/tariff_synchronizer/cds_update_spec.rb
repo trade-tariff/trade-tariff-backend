@@ -20,28 +20,6 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
     end
   end
 
-  describe '.downloaded_todays_file?' do
-    subject { described_class.downloaded_todays_file? }
-
-    context 'when todays file is present in table' do
-      # Note published day after file name, so todays file has yesterdays date
-      before { create :cds_update, example_date: Time.zone.yesterday }
-
-      it { is_expected.to be true }
-    end
-
-    context 'when todays file is not present in table' do
-      it { is_expected.to be false }
-    end
-
-    context 'when yesterdays file queued in table' do
-      # Note published day after file name, so yesterdays file is 2 days old
-      before { create :cds_update, example_date: 2.days.ago.to_date }
-
-      it { is_expected.to be false }
-    end
-  end
-
   describe '#import!' do
     let(:cds_update) { create :cds_update }
     let(:filesize) { 57_000 }

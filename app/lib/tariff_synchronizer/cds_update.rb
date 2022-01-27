@@ -17,10 +17,6 @@ module TariffSynchronizer
         CdsUpdateDownloader.new(date).perform
       end
 
-      def downloaded_todays_file?
-        with_issue_date(Time.zone.yesterday).count.positive?
-      end
-
       def update_type
         :cds
       end
