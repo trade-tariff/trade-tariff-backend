@@ -9,7 +9,7 @@ module Api
         end
 
         def search_reference_resource_association_hash
-          { heading: heading }
+          { referenced: heading }
         end
 
         def collection_url

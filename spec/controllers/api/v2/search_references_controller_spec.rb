@@ -1,17 +1,8 @@
-RSpec.describe Api::V2::SearchReferencesController, 'GET to #index' do
-  let(:heading) { create :heading }
-  let!(:search_reference_heading) do
-    create :search_reference, heading: heading, heading_id: heading.to_param, title: 'aa'
-  end
-
-  let(:chapter) { create :chapter }
-  let!(:search_reference_chapter) do
-    create :search_reference, heading: nil, chapter: chapter, chapter_id: chapter.to_param, title: 'bb'
-  end
-
-  let(:section) { create :section }
-  let!(:search_reference_section) do
-    create :search_reference, heading: nil, section: section, section_id: section.to_param, title: 'bb'
+RSpec.describe Api::V2::SearchReferencesController do
+  before do
+    create :search_reference, referenced: create(:heading), title: 'aa'
+    create :search_reference, referenced: create(:chapter), title: 'bb'
+    create :search_reference, referenced: create(:section), title: 'bb'
   end
 
   context 'with letter param provided' do

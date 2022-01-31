@@ -6554,8 +6554,7 @@ CREATE TABLE public.search_references (
     title text,
     referenced_id character varying(10),
     referenced_class character varying(10),
-    productline_suffix text DEFAULT '80'::text NOT NULL,
-    leaf boolean
+    productline_suffix text DEFAULT '80'::text NOT NULL
 );
 
 
@@ -10833,4 +10832,3 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20210610150945_create_chan
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210628165555_add_unique_constraint_to_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210915112121_add_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220107134210_add_productline_suffix_to_search_references.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20220131140324_add_leaf_to_search_references.rb');

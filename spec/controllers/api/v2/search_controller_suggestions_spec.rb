@@ -14,18 +14,30 @@ RSpec.describe Api::V2::SearchController do
     context 'when as_of is specified' do
       let(:params) { { as_of: '2015-12-04' } }
 
-      let!(:included_commodity) { create :commodity, validity_end_date: '2015-12-31', validity_start_date: '2000-12-31' }
-      let!(:excluded_commodity) { create :commodity, validity_end_date: '2015-12-01', validity_start_date: '2000-12-31' }
+      before do
+        create(
+          :commodity,
+          goods_nomenclature_item_id: '0101010000',
+          validity_end_date: '2015-12-31', # Included
+          validity_start_date: '2000-12-31',
+        )
 
-      it { expect(response.body.to_s).to include(included_commodity.goods_nomenclature_item_id) }
-      it { expect(response.body.to_s).not_to include(excluded_commodity.goods_nomenclature_item_id) }
+        create(
+          :commodity,
+          goods_nomenclature_item_id: '0101020000',
+          validity_end_date: '2015-12-01', # Excluded
+          validity_start_date: '2000-12-31',
+        )
+      end
+
+      it { expect(response.body.to_s).to include('0101010000') }
+      it { expect(response.body.to_s).not_to include('0101020000') }
     end
 
     context 'when there are search_references' do
-      let(:heading) { create :heading }
-      let!(:search_reference_heading) { create :search_reference, heading: heading, heading_id: heading.to_param, title: 'test heading 1' }
+      before { create :search_reference, referenced: create(:heading), title: 'foo' }
 
-      it { expect(response.body.to_s).to include(search_reference_heading.title) }
+      it { expect(response.body.to_s).to include('foo') }
     end
   end
 end

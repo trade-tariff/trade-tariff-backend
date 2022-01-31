@@ -9,7 +9,7 @@ module Api
         end
 
         def search_reference_resource_association_hash
-          { chapter: chapter }
+          { referenced: chapter }
         end
 
         def collection_url
