@@ -8,10 +8,7 @@ module Api
 
         set_id :measure_sid
 
-        attribute :id do |measure|
-          measure.measure_sid
-        end
-
+        attribute :id, &:measure_sid
         attributes :vat
 
         has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer

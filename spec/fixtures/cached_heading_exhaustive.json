@@ -142,8 +142,7 @@
       "producline_suffix": "10",
       "description": "Horses",
       "formatted_description": "Horses",
-      "description_plain": "Horses",
-      "leaf": true
+      "description_plain": "Horses"
     },
     {
       "id": 93796,
@@ -254,8 +253,7 @@
       "producline_suffix": "80",
       "description": "Pure-bred breeding animals",
       "formatted_description": "Pure-bred breeding animals",
-      "description_plain": "Pure-bred breeding animals",
-      "leaf": true
+      "description_plain": "Pure-bred breeding animals"
     },
     {
       "id": 93798,
@@ -364,7 +362,6 @@
       "description": "Other",
       "formatted_description": "Other",
       "description_plain": "Other",
-      "leaf": true,
       "parent_sid": 9379
     },
     {
@@ -469,7 +466,6 @@
       "description": "For slaughter",
       "formatted_description": "For slaughter",
       "description_plain": "For slaughter",
-      "leaf": true,
       "parent_sid": 9379
     },
     {
@@ -574,7 +570,6 @@
       "description": "Other",
       "formatted_description": "Other",
       "description_plain": "Other",
-      "leaf": true,
       "parent_sid": 9379
     },
     {
@@ -678,8 +673,7 @@
       "producline_suffix": "80",
       "description": "Asses",
       "formatted_description": "Asses",
-      "description_plain": "Asses",
-      "leaf": true
+      "description_plain": "Asses"
     },
     {
       "id": 72763,
@@ -782,8 +776,7 @@
       "producline_suffix": "80",
       "description": "Other",
       "formatted_description": "Other",
-      "description_plain": "Other",
-      "leaf": true
+      "description_plain": "Other"
     }
   ],
   "chapter_id": 27623,

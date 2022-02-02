@@ -89,8 +89,6 @@ module HeadingService
         commodity.description = description.description
         commodity.formatted_description = description.formatted_description
         commodity.description_plain = description.description_plain
-
-        commodity.leaf = true
       end
     end
 

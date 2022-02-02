@@ -127,6 +127,14 @@ FactoryBot.define do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end
 
+    trait :vat do
+      measure_type_id { '305' }
+    end
+
+    trait :supplementary do
+      measure_type_id { MeasureType::SUPPLEMENTARY_TYPES.sample }
+    end
+
     trait :trade_remedy do
       measure_type_id { '551' }
     end
