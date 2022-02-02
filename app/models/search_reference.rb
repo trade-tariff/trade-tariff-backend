@@ -11,7 +11,7 @@ class SearchReference < Sequel::Model
                            setter: (proc do |referenced|
                                       if referenced.present?
                                         set(
-                                          referenced_id: referenced.to_param,
+                                          referenced_id: referenced.to_param.sub(/-\d{2}/, ''),
                                           referenced_class: referenced.class.name,
                                           productline_suffix: referenced.try(:producline_suffix) || DEFAULT_PRODUCTLINE_SUFFIX,
                                         )
@@ -31,9 +31,10 @@ class SearchReference < Sequel::Model
                                          klass.where(
                                            Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => heading_id,
                                          )
-                                       when 'Commodity'
+                                       else
+
                                          klass.where(
-                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => commodity_id,
+                                           Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id) => referenced_id,
                                            Sequel.qualify(:goods_nomenclatures, :producline_suffix) => productline_suffix,
                                          )
                                        end
@@ -55,13 +56,15 @@ class SearchReference < Sequel::Model
     end
   end
 
-  alias_method :section=, :referenced=
-  alias_method :chapter=, :referenced=
-  alias_method :heading=, :referenced=
-  alias_method :commodity=, :referenced=
-  alias_method :heading, :referenced
-  alias_method :chapter, :referenced
   alias_method :section, :referenced
+  alias_method :chapter, :referenced
+  alias_method :heading, :referenced
+  alias_method :subheading, :referenced
+  alias_method :commodity, :referenced
+
+  def section_id=(section_id)
+    self.referenced = Section.with_pk(section_id) if section_id.present?
+  end
 
   def chapter_id=(chapter_id)
     self.referenced = Chapter.by_code(chapter_id).take if chapter_id.present?
@@ -69,10 +72,6 @@ class SearchReference < Sequel::Model
 
   def heading_id=(heading_id)
     self.referenced = Heading.by_code(heading_id).take if heading_id.present?
-  end
-
-  def section_id=(section_id)
-    self.referenced = Section.with_pk(section_id) if section_id.present?
   end
 
   def commodity_id=(commodity_id)
@@ -88,20 +87,12 @@ class SearchReference < Sequel::Model
     errors.add(:productline_suffix, 'missing productline suffix') if productline_suffix.blank?
   end
 
-  def section_id
-    referenced_id
-  end
-
   def heading_id
     "#{referenced_id}000000"
   end
 
   def chapter_id
     "#{referenced_id}00000000"
-  end
-
-  def commodity_id
-    referenced_id
   end
 
   def referenced_id_number

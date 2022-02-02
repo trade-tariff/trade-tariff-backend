@@ -79,4 +79,12 @@ RSpec.describe Subheading do
       end
     end
   end
+
+  describe '#to_param' do
+    subject(:to_param) { described_class.find(goods_nomenclature_item_id: '0101210000', producline_suffix: '10').to_param }
+
+    before { create(:commodity, producline_suffix: '10', goods_nomenclature_item_id: '0101210000') }
+
+    it { is_expected.to eq('0101210000-10') }
+  end
 end
