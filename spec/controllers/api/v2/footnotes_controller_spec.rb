@@ -2,7 +2,7 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
   context 'footnotes search' do
     let!(:footnote) { create :footnote, :national }
     let!(:footnote_description) { create :footnote_description, :with_period, footnote_type_id: footnote.footnote_type_id, footnote_id: footnote.footnote_id }
-    let!(:measure) { create :measure }
+    let!(:measure) { create :measure, :with_base_regulation }
     let!(:footnote_association_measure) { create :footnote_association_measure, footnote_type_id: footnote.footnote_type_id, footnote_id: footnote.footnote_id, measure_sid: measure.measure_sid }
     let!(:goods_nomenclature) { measure.goods_nomenclature }
     let!(:goods_nomenclature2) { create :goods_nomenclature }

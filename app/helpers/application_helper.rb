@@ -10,17 +10,17 @@ module ApplicationHelper
   end
 
   def regulation_url(regulation)
-    ApplicationHelper::regulation_url(regulation)
+    ApplicationHelper.regulation_url(regulation)
   end
 
   def self.regulation_url(regulation)
     MeasureService::CouncilRegulationUrlGenerator.new(
-      regulation
+      regulation,
     ).generate
   end
 
   def regulation_code(regulation)
-    ApplicationHelper::regulation_code(regulation)
+    ApplicationHelper.regulation_code(regulation)
   end
 
   def self.regulation_code(regulation)

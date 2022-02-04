@@ -119,7 +119,7 @@ RSpec.describe Commodity do
       end
     end
 
-    describe 'measures' do
+    describe '#measures' do
       let(:commodity) { create :commodity, :with_indent }
       let(:excluded_for_both_uk_xi) { '442' }
       let(:excluded_quota_for_xi) { '653' }
@@ -134,21 +134,21 @@ RSpec.describe Commodity do
 
         it 'does not include measures that are excluded for the UK service' do
           measure_type = create(:measure_type, measure_type_id: excluded_for_both_uk_xi)
-          measure = create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          measure = create(:measure, :with_base_regulation, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
 
           expect(commodity.measures.map(&:measure_sid)).not_to include measure.measure_sid
         end
 
         it 'does include quota measures that are only excluded for the XI service' do
           measure_type = create(:measure_type, measure_type_id: excluded_quota_for_xi)
-          measure = create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          measure = create(:measure, :with_base_regulation, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
 
           expect(commodity.measures.map(&:measure_sid)).to include measure.measure_sid
         end
 
         it 'does include P&R national measures that are only excluded for the XI service' do
           measure_type = create(:measure_type, measure_type_id: excluded_pr_for_xi)
-          measure = create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          measure = create(:measure, :with_base_regulation, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
 
           expect(commodity.measures.map(&:measure_sid)).to include measure.measure_sid
         end
@@ -159,21 +159,21 @@ RSpec.describe Commodity do
 
         it 'does not include measures that were also excluded for the UK service' do
           measure_type = create(:measure_type, measure_type_id: excluded_for_both_uk_xi)
-          measure = create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          measure = create(:measure, :with_base_regulation, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
 
           expect(commodity.measures.map(&:measure_sid)).not_to include measure.measure_sid
         end
 
         it 'does not include quota measures that are only excluded for the XI service' do
           measure_type = create(:measure_type, measure_type_id: excluded_quota_for_xi)
-          measure = create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          measure = create(:measure, :with_base_regulation, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
 
           expect(commodity.measures.map(&:measure_sid)).not_to include measure.measure_sid
         end
 
         it 'does not include P&R national measures that are only excluded for the XI service' do
           measure_type = create(:measure_type, measure_type_id: excluded_pr_for_xi)
-          measure = create(:measure, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+          measure = create(:measure, :with_base_regulation, measure_type_id: measure_type.measure_type_id, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
 
           expect(commodity.measures.map(&:measure_sid)).not_to include measure.measure_sid
         end
@@ -187,14 +187,14 @@ RSpec.describe Commodity do
       let(:measure_type) { create :measure_type }
       let(:commodity)    { create :commodity, :with_indent, validity_start_date: Date.current.ago(3.years) }
       let!(:measure1)    do
-        create :measure, measure_sid: 1,
+        create :measure, :with_base_regulation, measure_sid: 1,
                          measure_type_id: measure_type.measure_type_id,
                          additional_code_type_id: nil,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          validity_start_date: Date.current.ago(1.year)
       end
       let!(:measure2) do
-        create :measure, measure_sid: 2,
+        create :measure, :with_base_regulation, measure_sid: 2,
                          measure_generating_regulation_id: measure1.measure_generating_regulation_id,
                          geographical_area_id: measure1.geographical_area_id,
                          measure_type_id: measure_type.measure_type_id,
@@ -213,52 +213,19 @@ RSpec.describe Commodity do
       end
     end
 
-    describe 'measure duplication on same date but different goods_nomenclature_item_id' do
-      let(:measure_type) { create :measure_type }
-      let(:commodity)    { create :commodity, :with_indent, validity_start_date: Date.current.ago(3.years), goods_nomenclature_item_id: '2202901919' }
-      let!(:measure1)    do
-        create :measure, measure_sid: 1,
-                         measure_type_id: measure_type.measure_type_id,
-                         additional_code_type_id: nil,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         goods_nomenclature_item_id: '2202901900',
-                         validity_start_date: Date.current.ago(1.year)
-      end
-      let!(:measure2) do
-        create :measure, measure_sid: 2,
-                         measure_generating_regulation_id: measure1.measure_generating_regulation_id,
-                         geographical_area_id: measure1.geographical_area_id,
-                         measure_type_id: measure_type.measure_type_id,
-                         geographical_area_sid: measure1.geographical_area_sid,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         goods_nomenclature_item_id: '2202901919',
-                         additional_code_type_id: measure1.additional_code_type_id,
-                         additional_code_id: measure1.additional_code_id,
-                         validity_start_date: Date.current.ago(1.year)
-      end
-
-      pending 'The goods nomenclatures cannot have the same goods_nomenclature_sid and different goods_nomenclature_item_id'
-      # it 'groups measures by measure_generating_regulation_id and picks the measure with the highest goods_nomenclature_item_id' do
-      #  TimeMachine.at(Date.current) do
-      #    expect(commodity.measures.map(&:measure_sid)).not_to include measure1.measure_sid
-      #    expect(commodity.measures.map(&:measure_sid)).to include measure2.measure_sid
-      #  end
-      # end
-    end
-
     describe 'measures for export' do
       context 'trade movement code' do
         let(:export_measure_type) { create :measure_type, :export }
         let(:commodity1)          { create :commodity, :with_indent }
         let(:export_measure)      do
-          create :measure, measure_type_id: export_measure_type.measure_type_id,
+          create :measure, :with_base_regulation, measure_type_id: export_measure_type.measure_type_id,
                            goods_nomenclature_sid: commodity1.goods_nomenclature_sid
         end
 
         let(:import_measure_type) { create :measure_type, :import }
         let(:commodity2)          { create :commodity, :with_indent }
         let(:import_measure)      do
-          create :measure, measure_type_id: import_measure_type.measure_type_id,
+          create :measure, :with_base_regulation, measure_type_id: import_measure_type.measure_type_id,
                            goods_nomenclature_sid: commodity2.goods_nomenclature_sid
         end
 
@@ -284,7 +251,7 @@ RSpec.describe Commodity do
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
         let!(:export_measure) do
-          create :measure, export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
+          create :measure, :with_base_regulation, export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
                            goods_nomenclature_item_id: commodity.goods_nomenclature_item_id
         end
 

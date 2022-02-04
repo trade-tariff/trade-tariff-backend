@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Measures::MeasurePresenter do
   subject(:presenter) { described_class.new(measure, measure.goods_nomenclature) }
 
-  let(:measure) { create(:measure) }
+  let(:measure) { create(:measure, :with_base_regulation) }
 
   describe '#legal_acts' do
     it 'will be mapped through the MeasureLegalActPresenter' do

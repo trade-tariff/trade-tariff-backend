@@ -121,7 +121,8 @@ RSpec.describe ApplicationHelper do
 
   describe '#regulation_code' do
     let(:measure) do
-      build :measure,
+      create :measure,
+            :with_base_regulation,
             measure_generating_regulation_id: '1234567'
     end
 

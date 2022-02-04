@@ -103,6 +103,7 @@ RSpec.describe CachedCommodityService do
       allow(Rails.cache).to receive(:fetch).and_call_original
       measure = create(
         :measure,
+        :with_base_regulation,
         goods_nomenclature: commodity,
         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
         goods_nomenclature_sid: commodity.goods_nomenclature_sid,

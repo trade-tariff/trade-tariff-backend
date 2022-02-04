@@ -26,6 +26,7 @@ RSpec.describe Cache::HeadingSerializer do
     create(
       :measure,
       :with_measure_type,
+      :with_base_regulation,
       :third_country,
       goods_nomenclature: commodity,
       goods_nomenclature_sid: commodity.goods_nomenclature_sid,

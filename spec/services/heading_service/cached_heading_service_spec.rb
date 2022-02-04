@@ -23,6 +23,7 @@ RSpec.describe HeadingService::CachedHeadingService do
         end
         let!(:measure) do
           create :measure,
+                :with_base_regulation,
                  measure_type_id: measure_type.measure_type_id,
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
