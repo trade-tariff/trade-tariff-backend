@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
-  ruby: circleci/ruby@1.1.2
+  ruby: circleci/ruby@1.4.0
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
   queue: eddiewebb/queue@1.6.4
@@ -196,7 +196,7 @@ commands:
 jobs:
   linters:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     resource_class: small
     steps:
       - checkout
@@ -257,7 +257,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -320,7 +320,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -345,7 +345,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -367,7 +367,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:3.0.3
+      - image: cimg/ruby:3.1.0
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
