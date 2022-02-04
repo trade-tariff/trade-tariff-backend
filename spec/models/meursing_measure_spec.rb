@@ -7,6 +7,7 @@ RSpec.describe MeursingMeasure do
     let(:meursing_measure) do
       create(
         :measure,
+        :with_base_regulation,
         additional_code_id: '000',
         additional_code_type_id: '7',
         goods_nomenclature: nil,
@@ -17,7 +18,7 @@ RSpec.describe MeursingMeasure do
       )
     end
 
-    let(:regular_measure) { create(:measure) }
+    let(:regular_measure) { create(:measure, :with_base_regulation) }
 
     context 'when there are meursing measures' do
       let(:measures) { [regular_measure, meursing_measure] }
@@ -37,7 +38,7 @@ RSpec.describe MeursingMeasure do
   end
 
   describe '#current?' do
-    subject(:meursing_measure) { build(:meursing_measure, validity_end_date: validity_end_date, base_regulation_effective_end_date: validity_end_date) }
+    subject(:meursing_measure) { create(:meursing_measure, :with_base_regulation, validity_end_date: validity_end_date, base_regulation_effective_end_date: validity_end_date) }
 
     around { |example| TimeMachine.now { example.run } }
 

@@ -57,10 +57,16 @@ FactoryBot.define do
                                  geographical_area_id: geographical_area_id,
                                  validity_start_date: validity_start_date - 1.day)
     end
-    f.base_regulation do
-      create(:base_regulation, base_regulation_id: measure_generating_regulation_id,
-                               base_regulation_role: measure_generating_regulation_role,
-                               effective_end_date: base_regulation_effective_end_date || Date.current.in(10.years))
+
+    trait :with_base_regulation do
+      after(:create) do |measure, evaluator|
+        create(
+          :base_regulation,
+          base_regulation_id: measure.measure_generating_regulation_id,
+          base_regulation_role: measure.measure_generating_regulation_role,
+          effective_end_date: evaluator.base_regulation_effective_end_date || Date.current.in(10.years),
+        )
+      end
     end
 
     trait :national do

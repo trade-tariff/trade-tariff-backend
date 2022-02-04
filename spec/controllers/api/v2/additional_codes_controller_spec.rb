@@ -2,7 +2,7 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
   context 'additional codes search' do
     let!(:additional_code) { create :additional_code }
     let!(:additional_code_description) { create :additional_code_description, :with_period, additional_code_sid: additional_code.additional_code_sid }
-    let!(:measure) { create :measure, additional_code_sid: additional_code.additional_code_sid }
+    let!(:measure) { create :measure, :with_base_regulation, additional_code_sid: additional_code.additional_code_sid }
     let!(:goods_nomenclature) { measure.goods_nomenclature }
     let!(:goods_nomenclature_description) { create :goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
 
