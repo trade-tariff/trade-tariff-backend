@@ -101,18 +101,19 @@ class Commodity < GoodsNomenclature
   end
 
   def children
-    func = Proc.new {
-      GoodsNomenclatureMapper.new(
-        heading.commodities_dataset
-                .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions)
-                .all
-      ).all
-        .detect do |item|
-        item.goods_nomenclature_sid == goods_nomenclature_sid
-      end.try(:children) || []
-    }
+    @children ||= begin
+      mapper = GoodsNomenclatureMapper.new(preloaded_children.presence || load_children)
 
-    func.call
+      mapped = mapper.all.detect do |goods_nomenclature|
+        goods_nomenclature.goods_nomenclature_sid == goods_nomenclature_sid
+      end
+
+      mapped.try(:children) || []
+    end
+  end
+
+  def heading_short_code
+    goods_nomenclature_item_id.first(4)
   end
 
   def to_param
@@ -166,4 +167,17 @@ class Commodity < GoodsNomenclature
 
     children.each { |child| child.traverse_children(&block) }
   end
+
+  private
+
+  def load_children
+    heading.commodities_dataset
+      .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions)
+      .all
+  end
+
+  def preloaded_children
+    Thread.current[:heading_commodities].try(:fetch, heading_short_code, {})
+  end
+
 end

@@ -19,7 +19,7 @@ class Subheading < Commodity
   end
 
   def commodities
-    [ancestors, all_children].flatten.compact
+    @commodities ||= [ancestors, all_children].flatten.compact
   end
 
   private

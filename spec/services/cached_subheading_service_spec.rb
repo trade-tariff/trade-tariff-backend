@@ -71,7 +71,7 @@ RSpec.describe CachedSubheadingService do
     it 'caches with the correct key' do
       allow(Rails.cache).to receive(:fetch).and_call_original
       service.call.to_json
-      expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01", expires_in: 24.hours)
+      expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01", expires_in: 23.hours)
     end
   end
 end

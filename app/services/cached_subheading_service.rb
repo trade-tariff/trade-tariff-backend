@@ -1,5 +1,5 @@
 class CachedSubheadingService
-  TTL = 24.hours
+  TTL = 23.hours # Expire just before the ETL job runs and prewarms expensive subheadings
 
   DEFAULT_INCLUDES = [
     :section,
