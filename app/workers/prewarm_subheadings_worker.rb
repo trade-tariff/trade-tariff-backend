@@ -8,7 +8,7 @@ class PrewarmSubheadingsWorker
   def perform
     TimeMachine.at(actual_date) do
       # Enable efficient enumeration of non-declarables
-      ExpensiveHeadingCommodityContextService.new.call do
+      BufferHeadingCommoditiesService.new.call do
         applicable_subheadings.each do |subheading|
           CachedSubheadingService.new(subheading, actual_date.iso8601).call
         end

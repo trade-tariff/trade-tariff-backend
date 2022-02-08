@@ -1,4 +1,4 @@
-RSpec.describe ExpensiveHeadingCommodityContextService do
+RSpec.describe BufferHeadingCommoditiesService do
   subject(:service) { described_class.new }
 
   describe '#call' do
@@ -25,11 +25,12 @@ RSpec.describe ExpensiveHeadingCommodityContextService do
     context 'when the block call fails' do
       let(:block) { proc { raise ArgumentError } }
 
+      # rubocop:disable RSpec/MultipleExpectations
       it 'does not change the value of the initial headings commodities' do
-        service.call(&block)
-      rescue ArgumentError
+        expect { service.call(&block) }.to raise_error(ArgumentError)
         expect(Thread.current[:heading_commodities]).to eq('foo')
       end
+      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 end

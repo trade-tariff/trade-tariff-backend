@@ -1,4 +1,6 @@
-class ExpensiveHeadingCommodityContextService
+# This service is responsible for reducing the number of heading.commodities_dataset queries that are run as part
+# of prewarming heading and subheading caches and hugely improves performance of these processes.
+class BufferHeadingCommoditiesService
   def call
     previous_heading_commodities = Thread.current[:heading_commodities]
 

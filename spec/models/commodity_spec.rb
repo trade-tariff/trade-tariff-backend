@@ -438,9 +438,9 @@ RSpec.describe Commodity do
       expect(commodity2.children.map(&:pk)).to include commodity3.pk
     end
 
-    context 'when the ExpensiveHeadingCommodityContextService has ran' do
+    context 'when the BufferHeadingCommoditiesService has ran' do
       around do |example|
-        ExpensiveHeadingCommodityContextService.new.call do
+        BufferHeadingCommoditiesService.new.call do
           example.call
         end
       end

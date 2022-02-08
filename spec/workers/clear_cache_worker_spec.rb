@@ -4,7 +4,6 @@ RSpec.describe ClearCacheWorker, type: :worker do
   before do
     allow(Rails.cache).to receive(:clear)
     allow(Sidekiq::Client).to receive(:enqueue)
-    allow(Sidekiq::Client).to receive(:enqueue)
 
     silence do
       worker.perform

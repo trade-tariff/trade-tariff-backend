@@ -4,7 +4,7 @@ RSpec.describe PrewarmSubheadingsWorker, type: :worker do
   before do
     stub_const("#{described_class}::CACHE_CHILDREN_COUNT", 0)
     allow(CachedSubheadingService).to receive(:new).and_call_original
-    allow(ExpensiveHeadingCommodityContextService).to receive(:new).and_call_original
+    allow(BufferHeadingCommoditiesService).to receive(:new).and_call_original
     allow(Rails.cache).to receive(:fetch).and_call_original
   end
 
@@ -15,10 +15,10 @@ RSpec.describe PrewarmSubheadingsWorker, type: :worker do
       expect(CachedSubheadingService).not_to have_received(:new)
     end
 
-    it 'invokes the ExpensiveHeadingCommodityContextService' do
+    it 'invokes the BufferHeadingCommoditiesService' do
       worker.perform
 
-      expect(ExpensiveHeadingCommodityContextService).to have_received(:new)
+      expect(BufferHeadingCommoditiesService).to have_received(:new)
     end
   end
 
@@ -40,10 +40,10 @@ RSpec.describe PrewarmSubheadingsWorker, type: :worker do
       expect(CachedSubheadingService).to have_received(:new).with(an_instance_of(Subheading), Time.zone.today.iso8601).twice
     end
 
-    it 'invokes the ExpensiveHeadingCommodityContextService' do
+    it 'invokes the BufferHeadingCommoditiesService' do
       worker.perform
 
-      expect(ExpensiveHeadingCommodityContextService).to have_received(:new)
+      expect(BufferHeadingCommoditiesService).to have_received(:new)
     end
 
     it 'caches the correct subheadings' do

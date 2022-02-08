@@ -179,5 +179,4 @@ class Commodity < GoodsNomenclature
   def preloaded_children
     Thread.current[:heading_commodities].try(:fetch, heading_short_code, {})
   end
-
 end
