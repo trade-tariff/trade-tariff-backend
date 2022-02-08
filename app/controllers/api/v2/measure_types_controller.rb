@@ -4,7 +4,7 @@ module Api
       def index
         @measure_types = MeasureType.eager(:measure_type_description).all
 
-        render json:  Api::V2::Measures::MeasureTypeSerializer.new(@measure_types).serializable_hash
+        render json: Api::V2::Measures::MeasureTypeSerializer.new(@measure_types).serializable_hash
       end
     end
   end
