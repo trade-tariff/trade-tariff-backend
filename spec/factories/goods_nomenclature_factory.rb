@@ -160,6 +160,10 @@ FactoryBot.define do
       producline_suffix { '80' }
     end
 
+    trait :grouping do
+      producline_suffix { '10' }
+    end
+
     trait :non_grouping do
       producline_suffix { '80' }
     end

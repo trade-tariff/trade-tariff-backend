@@ -437,6 +437,18 @@ RSpec.describe Commodity do
     it 'returns children commodities with higher ident levels and items ids' do
       expect(commodity2.children.map(&:pk)).to include commodity3.pk
     end
+
+    context 'when the BufferHeadingCommoditiesService has ran' do
+      around do |example|
+        BufferHeadingCommoditiesService.new.call do
+          example.call
+        end
+      end
+
+      it 'returns children commodities with higher ident levels and items ids' do
+        expect(commodity2.children.map(&:pk)).to include commodity3.pk
+      end
+    end
   end
 
   describe '#ancestors' do
@@ -710,5 +722,11 @@ RSpec.describe Commodity do
     let(:non_declarable_commodity) { create(:commodity, producline_suffix: '10') }
 
     it { expect(result).to eq([non_declarable_commodity]) }
+  end
+
+  describe '.heading_short_code' do
+    subject(:heading_short_code) { build(:commodity, goods_nomenclature_item_id: '0101000000').heading_short_code }
+
+    it { is_expected.to eq('0101') }
   end
 end
