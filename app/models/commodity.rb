@@ -15,18 +15,18 @@ class Commodity < GoodsNomenclature
     "#{goods_nomenclature_item_id}-#{producline_suffix}"
   end
 
-  one_to_one :heading, dataset: -> {
+  one_to_one :heading, dataset: lambda {
     actual_or_relevant(Heading)
            .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
            .filter(producline_suffix: '80')
   }
 
-  one_to_one :chapter, dataset: -> {
+  one_to_one :chapter, dataset: lambda {
     actual_or_relevant(Chapter)
            .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
   }
 
-  one_to_many :overview_measures, key: {}, primary_key: {}, dataset: -> {
+  one_to_many :overview_measures, key: {}, primary_key: {}, dataset: lambda {
     measures_dataset.filter(measures__measure_type_id: MeasureType::OVERVIEW_MEASURE_TYPES)
   }, class_name: 'Measure'
 
@@ -54,8 +54,8 @@ class Commodity < GoodsNomenclature
   end
 
   # See oplog sequel plugin
-  def operation=(op)
-    self[:operation] = op.to_s.first.upcase
+  def operation=(oplog)
+    self[:operation] = oplog.to_s.first.upcase
   end
 
   def ancestors
@@ -97,7 +97,7 @@ class Commodity < GoodsNomenclature
   end
 
   def uptree
-    @_uptree ||= [ancestors, heading, chapter, self].flatten.compact
+    @uptree ||= [ancestors, heading, chapter, self].flatten.compact
   end
 
   def children
@@ -130,7 +130,7 @@ class Commodity < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(conditions)
      .where(Sequel.~(operation_date: nil))
      .limit(TradeTariffBackend.change_count)
@@ -143,20 +143,20 @@ class Commodity < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(pk_hash)
      .union(
        Measure.changes_for(
          depth + 1,
-         Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id
-       )
+         Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id,
+       ),
      )
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
       # if Commodity did not come from initial seed, filter by its
       # create/update date
-      criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
+      criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))

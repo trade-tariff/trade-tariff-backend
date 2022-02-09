@@ -6,7 +6,7 @@ class Section < Sequel::Model
   plugin :nullable
   plugin :elasticsearch
 
-  many_to_many :chapters, dataset: -> {
+  many_to_many :chapters, dataset: lambda {
     Chapter.join_table(:inner, :chapters_sections, chapters_sections__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
            .join_table(:inner, :sections, chapters_sections__section_id: :sections__id)
            .with_actual(Chapter)
@@ -22,7 +22,7 @@ class Section < Sequel::Model
            .with_actual(Chapter)
            .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
            .where(sections__id: id_map.keys).all do |chapter|
-      if sections = id_map[chapter[:section_id]]
+      if (sections = id_map[chapter[:section_id]])
         sections.each do |section|
           section.associations[:chapters] << chapter
         end

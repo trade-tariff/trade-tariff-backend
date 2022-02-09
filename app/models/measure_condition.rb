@@ -83,9 +83,9 @@ class MeasureCondition < Sequel::Model
     RequirementDutyExpressionFormatter.format(
       duty_amount: condition_duty_amount,
       monetary_unit: condition_monetary_unit_code,
-      monetary_unit_abbreviation: monetary_unit_abbreviation,
-      measurement_unit: measurement_unit,
-      formatted_measurement_unit_qualifier: formatted_measurement_unit_qualifier,
+      monetary_unit_abbreviation:,
+      measurement_unit:,
+      formatted_measurement_unit_qualifier:,
       currency: TradeTariffBackend.currency,
       formatted: true,
     )

@@ -7,7 +7,7 @@ class AdditionalCodeDescription < Sequel::Model
   set_primary_key %i[additional_code_description_period_sid additional_code_sid]
 
   custom_format :formatted_description, with: DescriptionFormatter,
-                                 using: :description
+                                        using: :description
 
   # one_to_one :additional_code_description_period, key: [:additional_code_description_period_sid, :additional_code_sid, :additional_code_type_id]
 

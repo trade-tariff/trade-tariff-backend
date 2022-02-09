@@ -119,11 +119,7 @@ class Measure < Sequel::Model
                                         measure_generating_regulation_role]
 
   def validity_start_date
-    if self[:validity_start_date].present?
-      self[:validity_start_date]
-    else
-      generating_regulation.validity_start_date
-    end
+    self[:validity_start_date].presence || generating_regulation.validity_start_date
   end
 
   def validity_end_date
@@ -181,10 +177,10 @@ class Measure < Sequel::Model
 
     def actual_for_base_regulations
       if model.point_in_time.present?
-        filter { |o|
+        filter do |o|
           o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
             (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        }
+        end
       else
         self
       end
@@ -192,10 +188,10 @@ class Measure < Sequel::Model
 
     def actual_for_modifications_regulations
       if model.point_in_time.present?
-        filter { |o|
+        filter do |o|
           o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
             (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        }
+        end
       else
         self
       end
@@ -230,11 +226,11 @@ class Measure < Sequel::Model
     end
 
     def with_gono_id(goods_nomenclature_item_id)
-      where(goods_nomenclature_item_id: goods_nomenclature_item_id)
+      where(goods_nomenclature_item_id:)
     end
 
     def with_tariff_measure_number(tariff_measure_number)
-      where(tariff_measure_number: tariff_measure_number)
+      where(tariff_measure_number:)
     end
 
     def with_geographical_area(area)
@@ -476,8 +472,6 @@ class Measure < Sequel::Model
   def meursing_measures
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
-
-  private
 
   def resolves_meursing_measures?
     meursing? && meursing_additional_code_id.present? && meursing_measures.present?

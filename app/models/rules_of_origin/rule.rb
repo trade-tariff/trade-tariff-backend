@@ -5,8 +5,8 @@ module RulesOfOrigin
     include ActiveModel::Model
     include ActiveModel::Attributes
 
-    ID_RULE_FORMAT = %r{\A\d+\z}.freeze
-    SCHEME_CODE_FORMAT = %r{\A[a-zA-Z\-]+\z}.freeze
+    ID_RULE_FORMAT = %r{\A\d+\z}
+    SCHEME_CODE_FORMAT = %r{\A[a-zA-Z\-]+\z}
 
     attribute :id_rule
     attribute :scheme_code

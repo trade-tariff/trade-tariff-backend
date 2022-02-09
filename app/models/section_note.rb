@@ -8,7 +8,7 @@ class SectionNote < Sequel::Model
   def validate
     super
 
-    errors.add(:content, 'cannot be empty') if !content || content.empty?
+    errors.add(:content, 'cannot be empty') if content.blank?
     errors.add(:section_id, 'cannot be empty') if section_id.blank?
   end
 end

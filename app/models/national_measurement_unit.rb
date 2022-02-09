@@ -1,7 +1,7 @@
 class NationalMeasurementUnit
   # parent_pk - NationalMeasurementUnitSer.primary_key
   # level - values 1,2 or 3
-  attr_reader :measurement_unit_code, :description, :level, :parent_pk
+  attr_reader :measurement_unit_code, :level, :parent_pk
 
   def initialize(attributes = {})
     @measurement_unit_code = attributes.fetch(:measurement_unit_code, nil)
@@ -18,9 +18,7 @@ class NationalMeasurementUnit
     @description
   end
 
-  def present?
-    description.present?
-  end
+  delegate :present?, to: :description
 
   def to_s
     description
@@ -38,7 +36,7 @@ class NationalMeasurementUnit
       '101' => '% Lactic Dry Matter / 100 Kg Product',
       '102' => '% Sucrose Content / 100 Kg Net',
       '104' => '% Added Sugar / 100 Kg',
-      '106' => '% Actual Alcoholic Strength / Hectolitre'
+      '106' => '% Actual Alcoholic Strength / Hectolitre',
     }
   end
 end

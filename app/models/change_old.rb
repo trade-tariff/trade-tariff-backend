@@ -1,5 +1,6 @@
 class ChangeOld
-  attr_accessor :model, :oid, :operation_date, :operation
+  attr_reader :model
+  attr_accessor :oid, :operation_date, :operation
 
   def initialize(attributes = {})
     attributes.each do |attribute, value|
@@ -12,7 +13,7 @@ class ChangeOld
   end
 
   def operation_record
-    @operation_record ||= operation_class.find(oid: oid)
+    @operation_record ||= operation_class.find(oid:)
   end
 
   # Initialize with call to bypass restricted column check

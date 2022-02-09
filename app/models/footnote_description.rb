@@ -9,5 +9,5 @@ class FootnoteDescription < Sequel::Model
   set_primary_key %i[footnote_description_period_sid footnote_id footnote_type_id]
 
   custom_format :formatted_description, with: DescriptionFormatter,
-                                 using: :description
+                                        using: :description
 end

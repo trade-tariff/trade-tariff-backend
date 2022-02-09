@@ -21,7 +21,7 @@ dataset = Sequel::Model.db[:chief_comm]
 
 class NationalMeasurementUnitSet < Sequel::Model(dataset)
   # set_primary_key [:tbl_code]
-  set_primary_key [:fe_tsmp, :cmdty_code, :audit_tsmp]
+  set_primary_key %i[fe_tsmp cmdty_code audit_tsmp]
   plugin :time_machine
 
   def national_measurement_unit_set_units
