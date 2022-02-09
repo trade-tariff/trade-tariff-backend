@@ -13,7 +13,6 @@ Rails.application.routes.draw do
       resources :updates, only: [:index]
       resources :rollbacks, only: %i[create index]
       resources :footnotes, only: %i[index show update]
-      resources :measure_types, only: %i[index show update]
       resources :search_references, only: [:index]
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
