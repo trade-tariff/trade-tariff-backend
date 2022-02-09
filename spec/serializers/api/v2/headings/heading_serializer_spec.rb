@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Headings::HeadingSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
-  let(:serializable) { HeadingService::CachedHeadingService.new(heading, actual_date).serializable_hash }
+  let(:serializable) { Api::V2::Headings::HeadingPresenter.new(heading) }
 
   let(:heading) do
     create(

@@ -3,7 +3,7 @@ module Declarable
   include Formatter
 
   included do
-    one_to_many :measures, primary_key: {}, key: {}, dataset: -> {
+    one_to_many :measures, primary_key: {}, key: {} do |ds|
       Measure.join(
         Measure.with_base_regulations
                .with_actual(BaseRegulation)
@@ -45,7 +45,7 @@ module Declarable
               Sequel.desc(:effective_start_date)),
         t1__measure_sid: :measures__measure_sid
       )
-    }
+    end
 
     one_to_many :import_measures, key: {}, primary_key: {}, dataset: -> {
       measures_dataset.join(:measure_types, measure_types__measure_type_id: :measures__measure_type_id)

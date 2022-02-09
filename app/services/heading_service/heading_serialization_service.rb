@@ -78,17 +78,19 @@ module HeadingService
         end
       else
         Rails.cache.fetch("_#{heading_cache_key}", expires_in: 24.hours) do
-          service = HeadingService::CachedHeadingService.new(heading, actual_date)
-          hash = service.serializable_hash
+          service = HeadingService::CachedHeadingService.new(heading)
+          hash = service.call
           options = { is_collection: false }
-          options[:include] = [:section,
-                               :chapter,
-                               'chapter.guides',
-                               :footnotes,
-                               :commodities,
-                               'commodities.overview_measures',
-                               'commodities.overview_measures.duty_expression',
-                               'commodities.overview_measures.measure_type']
+          options[:include] = [
+            :section,
+            :chapter,
+            'chapter.guides',
+            :footnotes,
+            :commodities,
+            'commodities.overview_measures',
+            'commodities.overview_measures.duty_expression',
+            'commodities.overview_measures.measure_type',
+          ]
           Api::V2::Headings::HeadingSerializer.new(hash, options).serializable_hash
         end
       end

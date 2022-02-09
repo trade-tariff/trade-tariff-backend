@@ -1,4 +1,12 @@
 RSpec.describe HeadingService::CachedHeadingService do
+  subject(:result) { described_class.new(heading.reload, actual_date).call }
+
+  around(:example) do |example|
+    TimeMachine.now do
+      example.call
+    end
+  end
+
   let(:heading) do
     create :heading, :non_grouping,
            :with_description
@@ -6,7 +14,7 @@ RSpec.describe HeadingService::CachedHeadingService do
   let(:measure_type) { create :measure_type, measure_type_id: '103' }
   let(:actual_date) { Date.current }
 
-  describe '#serializable_hash' do
+  describe '#call' do
     describe 'applying time machine to footnotes, chapter, commodities and overview measures' do
       context 'footnotes, chapter, commodities and overview measures has valid period' do
         let!(:footnote) { create :footnote, :with_gono_association, goods_nomenclature_sid: heading.goods_nomenclature_sid }
@@ -28,14 +36,13 @@ RSpec.describe HeadingService::CachedHeadingService do
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
-        let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'contains chapter' do
-          expect(serializable_hash.chapter).not_to equal(nil)
-          expect(serializable_hash.chapter_id).not_to equal(nil)
-          expect(serializable_hash.footnotes).not_to be_empty
-          expect(serializable_hash.commodities).not_to be_empty
-          expect(serializable_hash.commodities.first.overview_measures).not_to be_empty
+          expect(result.chapter).not_to equal(nil)
+          expect(result.chapter_id).not_to equal(nil)
+          expect(result.footnotes).not_to be_empty
+          expect(result.commodities).not_to be_empty
+          expect(result.commodities.first.overview_measures).not_to be_empty
         end
       end
 
@@ -43,8 +50,8 @@ RSpec.describe HeadingService::CachedHeadingService do
         let!(:footnote) do
           create :footnote,
                  :with_gono_association,
-                 validity_start_date: Date.current.ago(1.week),
-                 validity_end_date: Date.yesterday,
+                 valid_at: Date.current.ago(1.week),
+                 valid_to: Date.yesterday,
                  goods_nomenclature_sid: heading.goods_nomenclature_sid
         end
         let!(:chapter) do
@@ -64,10 +71,9 @@ RSpec.describe HeadingService::CachedHeadingService do
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
-        let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'does not contain footnotes' do
-          expect(serializable_hash.footnotes).to be_empty
+          expect(result.footnotes).to be_empty
         end
       end
 
@@ -92,11 +98,10 @@ RSpec.describe HeadingService::CachedHeadingService do
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
-        let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'does not contain chapter' do
-          expect(serializable_hash.chapter).to equal(nil)
-          expect(serializable_hash.chapter_id).to equal(nil)
+          expect(result.chapter).to be_nil
+          expect(result.chapter_id).to be_nil
         end
       end
 
@@ -121,10 +126,10 @@ RSpec.describe HeadingService::CachedHeadingService do
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
-        let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
+        let(:call) { described_class.new(heading.reload, actual_date).call }
 
         it 'does not contain commodities' do
-          expect(serializable_hash.commodities).to be_empty
+          expect(result.commodities).to be_empty
         end
       end
 
@@ -149,10 +154,10 @@ RSpec.describe HeadingService::CachedHeadingService do
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
-        let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
+        let(:call) { described_class.new(heading.reload, actual_date).call }
 
         it 'does not contain overview measures' do
-          expect(serializable_hash.commodities.first.overview_measures).to be_empty
+          expect(result.commodities.first.overview_measures).to be_empty
         end
       end
     end
@@ -178,11 +183,10 @@ RSpec.describe HeadingService::CachedHeadingService do
                indents: 2,
                goods_nomenclature_item_id: "#{parent_commodity.goods_nomenclature_item_id.first(6)}#{4.times.map { Random.rand(9) }.join}"
       end
-      let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
       it 'builds correct commodity tree' do
-        parent = serializable_hash.commodities.detect { |commodity| commodity.goods_nomenclature_sid == parent_commodity.goods_nomenclature_sid }
-        child = serializable_hash.commodities.detect { |commodity| commodity.goods_nomenclature_sid == child_commodity.goods_nomenclature_sid }
+        parent = result.commodities.detect { |commodity| commodity.goods_nomenclature_sid == parent_commodity.goods_nomenclature_sid }
+        child = result.commodities.detect { |commodity| commodity.goods_nomenclature_sid == child_commodity.goods_nomenclature_sid }
 
         expect(parent.parent_sid).to equal(nil)
         expect(parent.leaf).to equal(false)

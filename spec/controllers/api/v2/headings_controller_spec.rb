@@ -8,7 +8,6 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       create(
         :heading,
         :non_grouping,
-        :non_declarable,
         :with_description,
       )
     end
@@ -20,22 +19,34 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
     end
 
     context 'when the heading is not declarable' do
-      before { chapter }
-
-      let(:heading) do
-        create(
-          :heading,
-          :non_grouping,
-          :non_declarable,
-          :with_description,
-        )
+      before do
+        chapter
+        heading
+        commodity
       end
 
       let(:chapter) do
         create(
           :chapter,
           :with_section, :with_description,
-          goods_nomenclature_item_id: heading.chapter_id
+          goods_nomenclature_item_id: '0100000000'
+        )
+      end
+
+      let(:heading) do
+        create(
+          :heading,
+          :with_description,
+          goods_nomenclature_item_id: '0101000000',
+        )
+      end
+
+      let(:commodity) do
+        create(
+          :commodity,
+          :with_description,
+          goods_nomenclature_item_id: '0101290000',
+          producline_suffix: '10',
         )
       end
 

@@ -28,6 +28,7 @@ class CachedSubheadingService
 
   def presented_subheading
     @presented_subheading ||= begin
+                                Api::V2::Headings::HeadingPresenter.new(@subheading)
       presenter_serialized = Cache::HeadingSerializer.new(@subheading).as_json
 
       # We use Hashie::TariffMash as a proxy for mutating state on something that acts like a Heading and replaces the presenter pattern we use elsewhere
