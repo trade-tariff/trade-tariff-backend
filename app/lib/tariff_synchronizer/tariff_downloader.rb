@@ -3,13 +3,15 @@ module TariffSynchronizer
   class TariffDownloader
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
-    attr_reader :filename, :url, :date, :update_klass
+    attr_reader :filename, :url, :date, :update_klass, :success
+    alias_method :success?, :success
 
     def initialize(filename, url, date, update_klass)
       @filename = filename
       @url = url
       @date = date
       @update_klass = update_klass
+      @success = false
     end
 
     def perform
@@ -24,6 +26,8 @@ module TariffSynchronizer
 
     def create_entry
       return if tariff_update.present?
+
+      @success = true
 
       update_or_create(filename, BaseUpdate::PENDING_STATE, filesize)
       instrument('created_tariff.tariff_synchronizer', date: date, filename: filename, type: update_klass.update_type)
@@ -60,12 +64,14 @@ module TariffSynchronizer
     end
 
     # We do not create records for missing updates
-    def create_record_for_not_found_response; end
+    def create_record_for_not_found_response
+    end
 
     def create_record_for_successful_response
       update_klass.validate_file!(response.content) # Validate response
       update_or_create(filename, BaseUpdate::PENDING_STATE, response.content.size)
       write_update_file(response.content)
+      @success = true
     rescue BaseUpdate::InvalidContents => e
       persist_exception_for_review(e)
     end

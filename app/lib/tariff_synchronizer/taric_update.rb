@@ -7,13 +7,15 @@ module TariffSynchronizer
 
     class << self
       def sync
-        dates_or_updates = TradeTariffBackend.patch_broken_taric_downloads? ? applicable_updates : applicable_download_date_range
-
-        dates_or_updates.each { |date_or_update| download(date_or_update) }
+        applicable_download_date_range.each { |issue_date| download(issue_date) }
       end
 
-      def download(date_or_update)
-        downloader_class.new(date_or_update).perform
+      def sync_patched
+        TaricUpdateDownloaderPatched.new(applicable_update).perform
+      end
+
+      def download(issue_date)
+        TaricUpdateDownloader.new(issue_date).perform
       end
 
       # Validates the last n of updates are in the correct sequence in order to know whether we're safe to apply pending updates. Out of order updates happen when the Taric api publishes files later than the date they're meant to be downloaded and should halt the applying of the update process.
@@ -45,34 +47,19 @@ module TariffSynchronizer
         :taric
       end
 
-      def applicable_updates
+      def applicable_update
         # Pull out the most recent update
         current_update = most_recent_pending || most_recent_applied
 
         # Bail if there isn't one (impossible from where the data is now)
-        return [] if current_update.blank?
+        return nil if current_update.blank?
         # Bail if we need to correct with a manual rollback
-        return [] unless correct_filename_sequence?
+        return nil unless correct_filename_sequence?
 
-        updates_to_check = []
-
-        SEQUENCE_APPLICABLE_UPDATE_LIMIT.times do
-          current_update = new(
-            filename: current_update.next_update_sequence_update_filename,
-            issue_date: current_update.next_update_issue_date,
-          )
-
-          updates_to_check << current_update
-        end
-
-        updates_to_check
+        current_update.next_update
       end
 
       private
-
-      def downloader_class
-        TradeTariffBackend.patch_broken_taric_downloads? ? TaricUpdateDownloaderPatched : TaricUpdateDownloader
-      end
 
       def sequence_applicable_updates
         descending.where(state: SEQUENCE_APPLICABLE_STATES).limit(SEQUENCE_APPLICABLE_UPDATE_LIMIT)
@@ -94,6 +81,13 @@ module TariffSynchronizer
       Ox.parse(xml_string)
     rescue Ox::ParseError => e
       raise InvalidContents.new(e.message, e)
+    end
+
+    def next_update
+      self.class.new(
+        filename: next_update_sequence_update_filename,
+        issue_date: next_update_issue_date,
+      )
     end
 
     def next_update_sequence_update_filename

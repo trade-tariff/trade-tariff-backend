@@ -4,36 +4,32 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
   it_behaves_like 'Base Update'
 
   describe '.sync' do
-    context 'when the patched update downloader is enabled' do
-      before do
-        allow(TradeTariffBackend).to receive(:patch_broken_taric_downloads?).and_return(true)
-
-        allow(TariffSynchronizer::TaricUpdateDownloaderPatched).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloaderPatched', perform: nil))
-      end
-
-      it 'calls the downloader with the correct args' do
-        create :taric_update, :applied, issue_date: 1.day.ago
-
-        described_class.sync
-
-        expect(TariffSynchronizer::TaricUpdateDownloaderPatched).to have_received(:new).with(an_instance_of(described_class)).exactly(10).times
-      end
+    before do
+      allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloader', perform: nil))
     end
 
-    context 'when the patched update downloader is disabled' do
-      before do
-        allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloader', perform: nil))
+    it 'calls the downloader with the correct args' do
+      create :taric_update, :applied, issue_date: 1.day.ago
+
+      described_class.sync
+
+      (20.days.ago.to_date..Date.current).each do |download_date|
+        expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:new).with(download_date)
       end
+    end
+  end
 
-      it 'calls the downloader with the correct args' do
-        create :taric_update, :applied, issue_date: 1.day.ago
+  describe '.sync_patched' do
+    before do
+      allow(TariffSynchronizer::TaricUpdateDownloaderPatched).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloaderPatched', perform: nil))
+    end
 
-        described_class.sync
+    it 'calls the downloader with the correct args' do
+      create :taric_update, :applied, issue_date: 1.day.ago
 
-        (20.days.ago.to_date..Date.current).each do |download_date|
-          expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:new).with(download_date)
-        end
-      end
+      described_class.sync_patched
+
+      expect(TariffSynchronizer::TaricUpdateDownloaderPatched).to have_received(:new).with(an_instance_of(described_class)).once
     end
   end
 
@@ -183,8 +179,8 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     it { is_expected.to eq('TGB21203.xml') }
   end
 
-  describe '.applicable_updates' do
-    subject(:applicable_updates) { described_class.applicable_updates.as_json }
+  describe '.applicable_update' do
+    subject(:applicable_update) { described_class.applicable_update.as_json }
 
     context 'when there is an unbroken sequence of applied and pending updates' do
       before do
@@ -192,22 +188,11 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
       end
 
-      let(:expected_updates) do
-        [
-          { 'filename' => '2021-12-04_TGB21204.xml', 'issue_date' => '2021-12-04' },
-          { 'filename' => '2021-12-05_TGB21205.xml', 'issue_date' => '2021-12-05' },
-          { 'filename' => '2021-12-06_TGB21206.xml', 'issue_date' => '2021-12-06' },
-          { 'filename' => '2021-12-07_TGB21207.xml', 'issue_date' => '2021-12-07' },
-          { 'filename' => '2021-12-08_TGB21208.xml', 'issue_date' => '2021-12-08' },
-          { 'filename' => '2021-12-09_TGB21209.xml', 'issue_date' => '2021-12-09' },
-          { 'filename' => '2021-12-10_TGB21210.xml', 'issue_date' => '2021-12-10' },
-          { 'filename' => '2021-12-11_TGB21211.xml', 'issue_date' => '2021-12-11' },
-          { 'filename' => '2021-12-12_TGB21212.xml', 'issue_date' => '2021-12-12' },
-          { 'filename' => '2021-12-13_TGB21213.xml', 'issue_date' => '2021-12-13' },
-        ]
+      let(:expected_update) do
+        { 'filename' => '2021-12-04_TGB21204.xml', 'issue_date' => '2021-12-04' }
       end
 
-      it { is_expected.to eq(expected_updates) }
+      it { is_expected.to eq(expected_update) }
     end
 
     context 'when there is an unbroken sequence of applied updates' do
@@ -216,22 +201,11 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '202')
       end
 
-      let(:expected_updates) do
-        [
-          { 'filename' => '2021-12-04_TGB21204.xml', 'issue_date' => '2021-12-04' },
-          { 'filename' => '2021-12-05_TGB21205.xml', 'issue_date' => '2021-12-05' },
-          { 'filename' => '2021-12-06_TGB21206.xml', 'issue_date' => '2021-12-06' },
-          { 'filename' => '2021-12-07_TGB21207.xml', 'issue_date' => '2021-12-07' },
-          { 'filename' => '2021-12-08_TGB21208.xml', 'issue_date' => '2021-12-08' },
-          { 'filename' => '2021-12-09_TGB21209.xml', 'issue_date' => '2021-12-09' },
-          { 'filename' => '2021-12-10_TGB21210.xml', 'issue_date' => '2021-12-10' },
-          { 'filename' => '2021-12-11_TGB21211.xml', 'issue_date' => '2021-12-11' },
-          { 'filename' => '2021-12-12_TGB21212.xml', 'issue_date' => '2021-12-12' },
-          { 'filename' => '2021-12-13_TGB21213.xml', 'issue_date' => '2021-12-13' },
-        ]
+      let(:expected_update) do
+        { 'filename' => '2021-12-04_TGB21204.xml', 'issue_date' => '2021-12-04' }
       end
 
-      it { is_expected.to eq(expected_updates) }
+      it { is_expected.to eq(expected_update) }
     end
 
     context 'when there are broken sequence updates' do
@@ -240,11 +214,11 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '201')
       end
 
-      it { is_expected.to eq([]) }
+      it { is_expected.to eq(nil) }
     end
 
     context 'when there are no updates' do
-      it { is_expected.to eq([]) }
+      it { is_expected.to eq(nil) }
     end
   end
 end

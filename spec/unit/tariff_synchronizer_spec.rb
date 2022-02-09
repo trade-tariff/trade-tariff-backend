@@ -30,6 +30,20 @@ RSpec.describe TariffSynchronizer, truncation: true do
         allow(described_class::TaricUpdate).to receive(:sync).and_return(true)
         described_class.download
       end
+
+      context 'when patch_broken_taric_downloads is set to true' do
+        before do
+          allow(TradeTariffBackend).to receive(:patch_broken_taric_downloads?).and_return(true)
+        end
+
+        it 'invokes update downloading/syncing on all update types' do
+          allow(described_class::TaricUpdate).to receive(:sync_patched).and_return(true)
+
+          described_class.download
+
+          expect(described_class::TaricUpdate).to have_received(:sync_patched)
+        end
+      end
     end
 
     context 'when sync variables are not set' do

@@ -4,6 +4,8 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloaderPatched do
   before do
     tariff_downloader = instance_double('TariffSynchronizer::TariffDownloader', perform: nil)
 
+    allow(tariff_downloader).to receive(:success?).and_return(true, false)
+
     allow(TariffSynchronizer::TariffDownloader).to receive(:new).and_return(tariff_downloader)
   end
 
@@ -21,16 +23,27 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloaderPatched do
     context 'when the update does not yet exist in the database' do
       let(:taric_update) { build(:taric_update, example_date: Date.parse('2022-01-24')) }
 
-      it 'calls the TariffDownloader' do
+      # rubocop:disable RSpec/MultipleExpectations
+      it 'calls the TariffDownloader until the next not found increment' do
         update_downloader.perform
 
+        # successful increment
         expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(
           '2022-01-24_TGB22024.xml',
           'http://example.com/taric/TGB22024.xml',
           Date.parse('2022-01-24'),
           TariffSynchronizer::TaricUpdate,
-        )
+        ).once.ordered
+
+        # unsuccessful increment
+        expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(
+          '2022-01-25_TGB22025.xml',
+          'http://example.com/taric/TGB22025.xml',
+          Date.parse('2022-01-25'),
+          TariffSynchronizer::TaricUpdate,
+        ).once.ordered
       end
+      # rubocop:enable RSpec/MultipleExpectations
     end
   end
 end
