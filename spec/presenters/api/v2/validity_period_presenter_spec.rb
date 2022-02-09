@@ -1,8 +1,8 @@
-RSpec.describe Api::V2::ValidityDatePresenter do
+RSpec.describe Api::V2::ValidityPeriodPresenter do
   subject(:presenter) { described_class.new(item) }
 
-  describe '#validity_date_id' do
-    let(:subject) { presenter.validity_date_id }
+  describe '#validity_period_id' do
+    let(:subject) { presenter.validity_period_id }
 
     let(:expected_id) do
       "#{item.goods_nomenclature_item_id}-#{item.validity_start_date.to_i}-"

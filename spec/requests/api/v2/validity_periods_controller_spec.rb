@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Api::V2::ValidityDatesController do
+RSpec.describe Api::V2::ValidityPeriodsController do
   subject(:rendered_page) { make_request && response }
 
   let(:json) { JSON.parse(rendered_page.body)['data'] }
@@ -8,7 +8,7 @@ RSpec.describe Api::V2::ValidityDatesController do
   describe 'GET #index' do
     context 'with commodity' do
       let(:make_request) do
-        get api_commodity_validity_dates_path(commodity),
+        get api_commodity_validity_periods_path(commodity),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end
 
@@ -20,7 +20,7 @@ RSpec.describe Api::V2::ValidityDatesController do
             'id' => "#{commodity.goods_nomenclature_item_id}-" \
                     "#{commodity.validity_start_date.to_i}-" \
                     "#{commodity.validity_end_date&.to_i}",
-            'type' => 'validity_date',
+            'type' => 'validity_period',
             'attributes' => {
               'goods_nomenclature_item_id' => commodity.goods_nomenclature_item_id,
               'validity_start_date' => commodity.validity_start_date.iso8601(3),
@@ -36,7 +36,7 @@ RSpec.describe Api::V2::ValidityDatesController do
 
     context 'with unknown commodity' do
       let(:make_request) do
-        get api_commodity_validity_dates_path('1234567890'),
+        get api_commodity_validity_periods_path('1234567890'),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end
 
@@ -46,7 +46,7 @@ RSpec.describe Api::V2::ValidityDatesController do
 
     context 'with heading' do
       let(:make_request) do
-        get api_heading_validity_dates_path(heading),
+        get api_heading_validity_periods_path(heading),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end
 
@@ -58,7 +58,7 @@ RSpec.describe Api::V2::ValidityDatesController do
             'id' => "#{heading.goods_nomenclature_item_id}-" \
                     "#{heading.validity_start_date.to_i}-" \
                     "#{heading.validity_end_date&.to_i}",
-            'type' => 'validity_date',
+            'type' => 'validity_period',
             'attributes' => {
               'goods_nomenclature_item_id' => heading.goods_nomenclature_item_id,
               'validity_start_date' => heading.validity_start_date.iso8601(3),
@@ -74,7 +74,7 @@ RSpec.describe Api::V2::ValidityDatesController do
 
     context 'with unknown heading' do
       let(:make_request) do
-        get api_heading_validity_dates_path('1234'),
+        get api_heading_validity_periods_path('1234'),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end
 

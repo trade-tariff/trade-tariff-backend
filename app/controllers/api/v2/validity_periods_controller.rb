@@ -1,6 +1,6 @@
 module Api
   module V2
-    class ValidityDatesController < ApiController
+    class ValidityPeriodsController < ApiController
       def index
         items_in_all_periods = item_scope.exclude(validity_start_date: nil)
                                          .limit(10)
@@ -8,10 +8,10 @@ module Api
                                          .to_a
 
         presented_items = items_in_all_periods.map do |item|
-          Api::V2::ValidityDatePresenter.new item
+          Api::V2::ValidityPeriodPresenter.new item
         end
 
-        serializer = Api::V2::ValidityDateSerializer.new(presented_items)
+        serializer = Api::V2::ValidityPeriodSerializer.new(presented_items)
 
         render json: serializer.serializable_hash
       end

@@ -1,9 +1,9 @@
-RSpec.describe Api::V2::ValidityDateSerializer do
+RSpec.describe Api::V2::ValidityPeriodSerializer do
   subject(:serializable) do
     described_class.new(presented).serializable_hash
   end
 
-  let(:presented) { Api::V2::ValidityDatePresenter.new item }
+  let(:presented) { Api::V2::ValidityPeriodPresenter.new item }
 
   context 'with commodity' do
     let(:item) { create :commodity }
@@ -11,8 +11,8 @@ RSpec.describe Api::V2::ValidityDateSerializer do
     let :expected do
       {
         data: {
-          id: presented.validity_date_id,
-          type: :validity_date,
+          id: presented.validity_period_id,
+          type: :validity_period,
           attributes: {
             goods_nomenclature_item_id: presented.goods_nomenclature_item_id,
             validity_start_date: presented.validity_start_date,
@@ -35,8 +35,8 @@ RSpec.describe Api::V2::ValidityDateSerializer do
     let :expected do
       {
         data: {
-          id: presented.validity_date_id,
-          type: :validity_date,
+          id: presented.validity_period_id,
+          type: :validity_period,
           attributes: {
             goods_nomenclature_item_id: presented.goods_nomenclature_item_id,
             validity_start_date: presented.validity_start_date,
