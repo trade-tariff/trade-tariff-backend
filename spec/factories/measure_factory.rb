@@ -37,8 +37,8 @@ FactoryBot.define do
       create(
         :goods_nomenclature,
         validity_start_date: validity_start_date - 1.day,
-        goods_nomenclature_item_id: goods_nomenclature_item_id,
-        goods_nomenclature_sid: goods_nomenclature_sid,
+        goods_nomenclature_item_id:,
+        goods_nomenclature_sid:,
         producline_suffix: gono_producline_suffix,
         indents: gono_number_indents,
       )
@@ -53,8 +53,8 @@ FactoryBot.define do
                             measure_type_series_id: measure_type_series_id
     end
     f.geographical_area do
-      create(:geographical_area, geographical_area_sid: geographical_area_sid,
-                                 geographical_area_id: geographical_area_id,
+      create(:geographical_area, geographical_area_sid:,
+                                 geographical_area_id:,
                                  validity_start_date: validity_start_date - 1.day)
     end
 
@@ -83,8 +83,8 @@ FactoryBot.define do
         create(
           :goods_nomenclature,
           validity_start_date: validity_start_date - 1.day,
-          goods_nomenclature_item_id: goods_nomenclature_item_id,
-          goods_nomenclature_sid: goods_nomenclature_sid,
+          goods_nomenclature_item_id:,
+          goods_nomenclature_sid:,
           producline_suffix: gono_producline_suffix,
           indents: gono_number_indents,
         )
@@ -335,16 +335,20 @@ FactoryBot.define do
       measure_type_description { 'EXCISE 111' }
     end
 
+    trait :with_measure_type_series_description do |_variable|
+      after(:build) do |measure_type|
+        measure_type.measure_type_series_description = create(:measure_type_series_description)
+      end
+    end
+
     after(:build) do |measure_type, _evaluator|
       create(:measure_type_series, measure_type_series_id: measure_type.measure_type_series_id)
     end
 
     after(:build) do |measure_type, evaluator|
-      create(
-        :measure_type_description,
-        measure_type_id: measure_type.measure_type_id,
-        description: evaluator.measure_type_description,
-      )
+      create(:measure_type_description,
+             measure_type_id: measure_type.measure_type_id,
+             description: evaluator.measure_type_description)
     end
   end
 

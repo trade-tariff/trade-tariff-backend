@@ -15,7 +15,6 @@ class MeasureType < Sequel::Model
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
   OVERVIEW_MEASURE_TYPES = MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES + MeasureType::THIRD_COUNTRY # Used for a frontend overview of the most important applicable measures
 
-
   DEFENSE_MEASURES = [
     '551', # Provisional anti-dumping duty
     '552', # Definitive anti-dumping duty
@@ -54,6 +53,8 @@ class MeasureType < Sequel::Model
                          foreign_key: :measure_type_id
 
   many_to_one :measure_type_series
+
+  many_to_one :measure_type_series_description, key: :measure_type_series_id
 
   delegate :description, to: :measure_type_description
 

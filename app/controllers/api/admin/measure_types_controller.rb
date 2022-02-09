@@ -6,13 +6,13 @@ module Api
       def index
         @measure_types = MeasureType.eager(:measure_type_description).national.all
 
-        render json:  Api::Admin::MeasureTypeSerializer.new(@measure_types).serializable_hash
+        render json: Api::Admin::MeasureTypeSerializer.new(@measure_types).serializable_hash
       end
 
       def show
         @measure_type = MeasureType.national.with_pk!(measure_type_pk)
 
-        render json:  Api::Admin::MeasureTypeSerializer.new(@measure_type, { is_collection: false }).serializable_hash
+        render json: Api::Admin::MeasureTypeSerializer.new(@measure_type, { is_collection: false }).serializable_hash
       end
 
       def update
