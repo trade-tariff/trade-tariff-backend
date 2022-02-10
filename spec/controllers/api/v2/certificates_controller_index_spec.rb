@@ -35,6 +35,8 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
       certificate
       certificate_description
       certificate_type
+
+      allow(TimeMachine).to receive(:at).and_call_original
     end
 
     it 'returns a list of certificates' do
@@ -46,8 +48,6 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
     end
 
     it 'the TimeMachine receives the correct Date' do
-      allow(TimeMachine).to receive(:at)
-
       get :index, format: :json
 
       expect(TimeMachine).to have_received(:at).with(Time.zone.today)
