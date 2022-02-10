@@ -69,7 +69,7 @@ module TariffSynchronizer
 
     TradeTariffBackend.with_redis_lock do
       instrument('download.tariff_synchronizer') do
-        TaricUpdate.sync
+        TradeTariffBackend.patch_broken_taric_downloads? ? TaricUpdate.sync_patched : TaricUpdate.sync
       rescue TariffUpdatesRequester::DownloadException => e
         instrument('failed_download.tariff_synchronizer', exception: e)
         raise e.original
