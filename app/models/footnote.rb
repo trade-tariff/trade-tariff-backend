@@ -60,24 +60,9 @@ class Footnote < Sequel::Model
     end
   end
 
-  # FO4
-  # length_of :footnote_description_periods, minimum: 1
-  # # FO4
-  # associated :footnote_description_periods, ensure: :first_footnote_description_period_is_valid
-  # # FO5, FO6, FO7, FO9, FO10
-  # associated [:measures,
-  #             :goods_nomenclatures,
-  #             :export_refund_nomenclatures,
-  #             :additional_codes,
-  #             :meursing_headings], ensure: :spans_validity_period_of_associations
-  # # FO17
-  # associated :footnote_type, ensure: :footnote_type_validity_period_spans_validity_periods
-
   def code
     "#{footnote_type_id}#{footnote_id}"
   end
 
-  def id
-    code
-  end
+  alias_method :id, :code
 end
