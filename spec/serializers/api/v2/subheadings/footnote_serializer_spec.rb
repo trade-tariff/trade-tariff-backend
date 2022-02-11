@@ -6,7 +6,7 @@ RSpec.describe Api::V2::Subheadings::FootnoteSerializer do
   let(:expected_pattern) do
     {
       data: {
-        id: serializable.footnote_id,
+        id: 'TR037',
         type: 'footnote',
         attributes: {
           code: 'TR037',

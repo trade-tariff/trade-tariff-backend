@@ -6,7 +6,7 @@ module Api
 
         set_type :footnote
 
-        set_id :footnote_id
+        set_id :id
 
         attributes :code, :description, :formatted_description
       end

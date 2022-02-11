@@ -77,6 +77,7 @@ RSpec.describe Cache::HeadingSerializer do
         },
         footnotes: [
           {
+            id: String,
             footnote_id: String,
             validity_start_date: String,
             validity_end_date: nil,

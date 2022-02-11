@@ -71,6 +71,7 @@ module Cache
 
       heading_attributes[:footnotes] = heading.footnotes.map do |footnote|
         {
+          id: footnote.id,
           footnote_id: footnote.footnote_id,
           validity_start_date: footnote.validity_start_date&.strftime('%FT%T.%LZ'),
           validity_end_date: footnote.validity_end_date,
