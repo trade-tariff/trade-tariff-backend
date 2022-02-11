@@ -19,6 +19,7 @@ gem 'aws-sdk-s3'
 gem 'rubyzip'
 
 # Background jobs
+gem 'connection_pool'
 gem 'redis-rails'
 gem 'redlock'
 gem 'sidekiq'
