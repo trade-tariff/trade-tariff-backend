@@ -1,5 +1,5 @@
 RSpec.describe Api::V2::CommoditiesController, 'GET #show' do
-  let!(:commodity) do
+  let(:commodity) do
     create(
       :commodity,
       :with_indent,
@@ -93,10 +93,32 @@ RSpec.describe Api::V2::CommoditiesController, 'GET #show' do
     context 'when a filter for meursing_additional_code_id is passed' do
       subject(:do_response) { get :show, params: { id: commodity.code, filter: { meursing_additional_code_id: '000' } } }
 
-      after { Thread.current[:meursing_additional_code_id] = nil }
+      let(:commodity) do
+        create(
+          :commodity,
+          :with_indent,
+          :with_chapter,
+          :with_heading,
+          :with_description,
+          :with_meursing_measures,
+          :declarable,
+        )
+      end
 
-      it 'sets the current Threads value for meursing additional code' do
-        expect { do_response }.to change { Thread.current[:meursing_additional_code_id] }.from(nil).to('000')
+      before do
+        Thread.current[:meursing_additional_code_id] = 'foo'
+      end
+
+      it 'sets the value to nil when we are done making the request' do
+        expect { do_response }.to change { Thread.current[:meursing_additional_code_id] }.from('foo').to(nil)
+      end
+
+      it 'passes the correct meursing additional code to the MeursingMeasureFinderService' do
+        allow(MeursingMeasureFinderService).to receive(:new).and_call_original
+
+        do_response
+
+        expect(MeursingMeasureFinderService).to have_received(:new).with(an_instance_of(Measure), '000')
       end
     end
 

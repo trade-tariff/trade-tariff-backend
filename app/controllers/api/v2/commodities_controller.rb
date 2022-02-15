@@ -2,7 +2,7 @@ module Api
   module V2
     class CommoditiesController < ApiController
       before_action :find_commodity, only: %i[show changes]
-      before_action :set_meursing_additional_code, only: :show
+      around_action :configure_meursing_additional_code, only: :show
 
       def show
         render json: cached_commodity
@@ -50,8 +50,12 @@ module Api
         end
       end
 
-      def set_meursing_additional_code
+      def configure_meursing_additional_code
         Thread.current[:meursing_additional_code_id] = filter_params[:meursing_additional_code_id]
+
+        yield
+      ensure
+        Thread.current[:meursing_additional_code_id] = nil
       end
     end
   end

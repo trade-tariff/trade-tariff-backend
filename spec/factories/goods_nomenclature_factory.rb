@@ -50,6 +50,46 @@ FactoryBot.define do
       end
     end
 
+    trait :with_meursing_measures do
+      after(:create) do |goods_nomenclature, _evaluator|
+        root_measure = create(
+          :measure,
+          :third_country,
+          :with_base_regulation,
+          goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+          geographical_area_id: '1011',
+        )
+
+        # Ad valorem measure component
+        create(
+          :measure_component,
+          :with_duty_expression,
+          measure_sid: root_measure.measure_sid,
+          duty_expression_id: '01',
+        )
+        # Placeholder meursing measure component - agricultural component
+        create(
+          :measure_component,
+          :with_duty_expression,
+          measure_sid: root_measure.measure_sid,
+          duty_expression_id: '12',
+        )
+
+        root_measure.reload
+
+        meursing_agricultural_measure = create(:measure, :agricultural, geographical_area_id: '1011')
+
+        create(
+          :measure_component,
+          duty_amount: 0.0,
+          monetary_unit_code: 'EUR',
+          measurement_unit_code: 'DTN',
+          measure_sid: meursing_agricultural_measure.measure_sid,
+        )
+      end
+    end
+
     trait :actual do
       validity_start_date { Date.current.ago(3.years) }
       validity_end_date   { nil }
