@@ -1,5 +1,6 @@
 RSpec.describe Api::V2::GeographicalAreasController do
   before do
+    Rails.cache.clear
     allow(Rails.cache).to receive(:fetch).and_call_original
   end
 
