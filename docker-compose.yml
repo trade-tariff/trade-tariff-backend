@@ -20,27 +20,30 @@ services:
       - 127.0.0.1:5432:5432
     volumes:
       - hmrc-postgres:/var/lib/postgresql/data
-  hmrc-elasticsearch:
-    container_name: hmrc-elasticsearch
-    image: elasticsearch:7.9.3
+  hmrc-opensearch:
+    container_name: hmrc-opensearch
+    image: opensearchproject/opensearch:1.2.4
     ports:
       - 127.0.0.1:9200:9200
       - 127.0.0.1:9300:9300
     environment:
         - bootstrap.memory_lock=true
         - discovery.type=single-node
-        - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+        - "OPENSEARCH_JAVA_OPTS=-Xms2g -Xmx2g"
         - cluster.routing.allocation.disk.threshold_enabled=false
     ulimits:
         memlock:
             soft: -1
             hard: -1
+        nofile:
+          soft: 65536
+          hard: 65536
     healthcheck:
       interval: 60s
       retries: 10
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     volumes:
-    - hmrc-es:/usr/share/elasticsearch/data
+    - hmrc-os:/usr/share/opensearch/data
 
 volumes:
   dev-env-redis-volume:
@@ -49,7 +52,7 @@ volumes:
     driver: local
   hmrc-postgres:
     driver: local
-  hmrc-es:
+  hmrc-os:
     driver: local
 
 
