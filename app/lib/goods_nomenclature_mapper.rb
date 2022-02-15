@@ -70,6 +70,7 @@ class GoodsNomenclatureMapper
   end
 
   def map_goods_nomenclatures(primary, secondary)
+    reload_if_stale(primary)
     reload_if_stale(secondary)
 
     if (heading_map?(primary, secondary) &&
