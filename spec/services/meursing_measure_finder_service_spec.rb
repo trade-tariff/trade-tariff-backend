@@ -18,7 +18,7 @@ RSpec.describe MeursingMeasureFinderService do
       let(:meursing_measure) do
         create(
           :meursing_measure,
-          root_measure: root_measure,
+          root_measure:,
           geographical_area_id: GeographicalArea::ERGA_OMNES_ID, # Implicitly validates extensive measure contained geographical area filtering
         )
       end
