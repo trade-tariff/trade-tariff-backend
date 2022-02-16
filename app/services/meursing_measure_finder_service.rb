@@ -5,10 +5,13 @@ class MeursingMeasureFinderService
   end
 
   def call
-    MeursingMeasure.filter(
-      additional_code_id: additional_code_id,
-      reduction_indicator: root_measure.reduction_indicator,
-    )
+    MeursingMeasure
+      .where(
+        Sequel.lit('additional_code_id = ?', @additional_code_id),
+      )
+      .where(
+        Sequel.lit('reduction_indicator = ?', @root_measure.reduction_indicator),
+      )
       .actual
       .eager(
         :measure_excluded_geographical_areas,
