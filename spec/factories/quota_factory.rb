@@ -74,8 +74,10 @@ FactoryBot.define do
     end
 
     trait :with_quota_balance_events do
-      after(:create) do |quota_definition, _evaluator|
-        create(:quota_balance_event, quota_definition: quota_definition)
+      transient { event_new_balance { 100 } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance)
       end
     end
 
