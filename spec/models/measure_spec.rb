@@ -1224,36 +1224,4 @@ RSpec.describe Measure do
 
     it { expect(measure.meursing_measures).to eq(meursing_measures) }
   end
-
-  shared_context 'with regulation measures' do
-    before do
-      create(:base_regulation, base_regulation_id: 'R9726580')
-      create(:modification_regulation, modification_regulation_id: 'R9726580')
-
-      # Base regulation measure
-      create(:measure, measure_sid: 1, goods_nomenclature_sid: 1, measure_generating_regulation_role: 1, measure_generating_regulation_id: 'R9726580')
-
-      # Modification regulation measure
-      create(:measure, measure_sid: 2, goods_nomenclature_sid: 1, measure_generating_regulation_role: 4, measure_generating_regulation_id: 'R9726580')
-
-      # No regulation measure - control
-      create(:measure, measure_sid: 3, goods_nomenclature_sid: 1)
-    end
-  end
-
-  describe '.with_base_regulations' do
-    subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
-
-    include_context 'with regulation measures'
-
-    it { is_expected.to eq([1]) } # Base regulation measure
-  end
-
-  describe '.with_modification_regulations' do
-    subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
-
-    include_context 'with regulation measures'
-
-    it { is_expected.to eq([2]) } # Modification regulation measure
-  end
 end
