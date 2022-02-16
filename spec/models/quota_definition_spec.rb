@@ -28,4 +28,42 @@ RSpec.describe QuotaDefinition do
       end
     end
   end
+
+  describe '#balance' do
+    around do |example|
+      TimeMachine.at(Time.zone.today) do
+        example.run
+      end
+    end
+
+    context 'when there are quota balance events' do
+      subject(:quota_definition) do
+        create(
+          :quota_definition,
+          :with_quota_balance_events,
+          event_new_balance: 6500,
+          volume: 6501,
+          initial_volume: 6502,
+        )
+      end
+
+      it 'returns the new balance of the quota balance event' do
+        expect(quota_definition.balance).to eq(6500)
+      end
+    end
+
+    context 'when there are no quota balance events' do
+      subject(:quota_definition) do
+        create(
+          :quota_definition,
+          volume: 6501,
+          initial_volume: 6502,
+        )
+      end
+
+      it 'returns initial volume' do
+        expect(quota_definition.balance).to eq(6502)
+      end
+    end
+  end
 end

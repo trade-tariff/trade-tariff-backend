@@ -58,7 +58,7 @@ class QuotaDefinition < Sequel::Model
   end
 
   def balance
-    last_balance_event.present? ? last_balance_event.new_balance : volume
+    last_balance_event.present? ? last_balance_event.new_balance : initial_volume
   end
 
   def last_suspension_period
