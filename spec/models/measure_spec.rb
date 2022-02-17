@@ -936,7 +936,7 @@ RSpec.describe Measure do
           :measure,
           :third_country,
           :with_measure_components,
-          duty_amount: duty_amount,
+          duty_amount:,
         )
       end
 
@@ -952,7 +952,7 @@ RSpec.describe Measure do
             create(
               :measure_component,
               measure_sid: measure.measure_sid,
-              duty_amount: duty_amount,
+              duty_amount:,
               duty_expression_id: '01',
             )
           end
@@ -1223,5 +1223,55 @@ RSpec.describe Measure do
     end
 
     it { expect(measure.meursing_measures).to eq(meursing_measures) }
+  end
+
+  shared_context 'with regulation measures' do
+    around do |example|
+      TimeMachine.now { example.run }
+    end
+
+    before do
+      create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 1)
+      create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 2)
+      create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 3)
+      create(:modification_regulation, modification_regulation_id: 'R9726580')
+
+      non_distinct_measure_opts = {
+        goods_nomenclature_sid: 1,
+        geographical_area_id: 'GB',
+        geographical_area_sid: 1,
+        measure_type_id: 1,
+        measure_generating_regulation_id: 'R9726580',
+        additional_code_type_id: 'F',
+        additional_code_id: '001',
+      }
+
+      # Base regulation measures
+      create(:measure, { measure_sid: 1, measure_generating_regulation_role: 1 }.merge(non_distinct_measure_opts))
+      create(:measure, { measure_sid: 2, measure_generating_regulation_role: 2 }.merge(non_distinct_measure_opts))
+      create(:measure, { measure_sid: 3, measure_generating_regulation_role: 3 }.merge(non_distinct_measure_opts))
+
+      # Modification regulation measure
+      create(:measure, measure_sid: 4, measure_generating_regulation_role: 4, measure_generating_regulation_id: 'R9726580')
+
+      # No regulation measure - control - this is not possible in the wild even
+      create(:measure, measure_sid: 5)
+    end
+  end
+
+  describe '.with_base_regulations' do
+    subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
+
+    include_context 'with regulation measures'
+
+    it { is_expected.to eq([1, 2, 3]) } # Base regulation measures
+  end
+
+  describe '.with_modification_regulations' do
+    subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
+
+    include_context 'with regulation measures'
+
+    it { is_expected.to eq([4]) } # Modification regulation measure
   end
 end
