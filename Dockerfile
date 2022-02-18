@@ -16,8 +16,11 @@ RUN apk add --update --no-cache build-base \
   echo "Europe/London" > /etc/timezone
 
 COPY . /app
+
 RUN bundle config path /app/vendor/bundle \
   && bundle install --jobs=4 --no-binstubs
+
+RUN rm -rf app/spec
 
 # Build runtime image
 FROM ruby:3.1.0-alpine3.15 as production
@@ -36,8 +39,6 @@ RUN apk add --update --no-cache build-base \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 
-
-# Copy files generated in the builder image
 COPY --from=builder /app/ /app
 
 RUN bundle config path /app/vendor/bundle
