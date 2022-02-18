@@ -230,13 +230,14 @@ jobs:
         default: false
         type: boolean
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.1.0
     steps:
       - checkout
       - setup_remote_docker:
           version: 20.10.11
           docker_layer_caching: false
       - aws-cli/install
+      - ruby/install-deps
       - run:
           name: "Set docker tag"
           command: |
