@@ -79,6 +79,7 @@ commands:
       - run:
           name: "Verify new version is working on dark URL."
           command: |
+            sudo apt-get install curl
             sleep 15
             # Verify new version is working on dark URL.
             APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
@@ -247,6 +248,7 @@ jobs:
           command: |
             export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
             echo $GIT_NEW_REVISION >REVISION
+            export DOCKER_BUILDKIT=1
             docker build -t $IMAGE_NAME:$DOCKER_TAG .
       - run:
           name: "Push image"
