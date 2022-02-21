@@ -24,10 +24,10 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
       expect(json_body['data']).to eq(
         [
           {
-            'id' => '5',
+            'id' => '000001',
             'type' => 'quota_order_number',
             'attributes' => {
-              'quota_order_number_id' => '000001',
+              'quota_order_number_sid' => 5,
               'validity_start_date' => Date.current.ago(4.years).as_json,
               'validity_end_date' => nil,
             },

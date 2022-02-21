@@ -7,10 +7,10 @@ RSpec.describe Api::V2::QuotaOrderNumberSerializer do
     let(:expected_pattern) do
       {
         data: {
-          id: serializable.quota_order_number_sid.to_s,
+          id: serializable.quota_order_number_id.to_s,
           type: :quota_order_number,
           attributes: {
-            quota_order_number_id: serializable.quota_order_number_id,
+            quota_order_number_sid: serializable.quota_order_number_sid,
             validity_end_date: nil,
             validity_start_date: Date.current.ago(4.years),
           },
