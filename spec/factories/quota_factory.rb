@@ -30,7 +30,7 @@ FactoryBot.define do
       validity_end_date { nil }
     end
 
-    trait :non_current do
+    trait :expired do
       validity_end_date { Time.zone.yesterday }
     end
 
@@ -38,7 +38,7 @@ FactoryBot.define do
       quota_definition_validity_end_date { nil }
     end
 
-    trait :non_current_definition do
+    trait :expired_definition do
       quota_definition_validity_end_date { Time.zone.yesterday }
     end
 

@@ -56,10 +56,10 @@ RSpec.describe QuotaOrderNumber do
     end
 
     before do
-      create(:quota_order_number, :with_quota_definition, :current, :current_definition, quota_order_number_id: '000001')         # target
-      create(:quota_order_number, :with_quota_definition, :current, :non_current_definition, quota_order_number_id: '000002')     # control
-      create(:quota_order_number, :with_quota_definition, :non_current, :current_definition, quota_order_number_id: '000003')     # control
-      create(:quota_order_number, :with_quota_definition, :non_current, :non_current_definition, quota_order_number_id: '000004') # control
+      create(:quota_order_number, :with_quota_definition, :current, :current_definition, quota_order_number_id: '000001') # target
+      create(:quota_order_number, :with_quota_definition, :current, :expired_definition, quota_order_number_id: '000002') # control
+      create(:quota_order_number, :with_quota_definition, :expired, :current_definition, quota_order_number_id: '000003') # control
+      create(:quota_order_number, :with_quota_definition, :expired, :expired_definition, quota_order_number_id: '000004') # control
     end
 
     it { is_expected.to eq %w[000001] }
