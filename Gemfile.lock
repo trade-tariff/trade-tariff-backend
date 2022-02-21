@@ -458,6 +458,7 @@ DEPENDENCIES
   aws-sdk-s3
   bootsnap
   brakeman
+  connection_pool
   curb
   database_cleaner-sequel
   dotenv-rails
