@@ -16,6 +16,7 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
       )
 
       allow(TimeMachine).to receive(:at).and_call_original
+      allow(Rails.cache).to receive(:fetch).and_call_original
     end
 
     it { is_expected.to have_http_status(:success) }
@@ -50,6 +51,11 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
     it 'the TimeMachine receives the correct Date' do
       do_request
       expect(TimeMachine).to have_received(:at).with(Time.zone.today)
+    end
+
+    it 'rails cache receives fetch with the correct key' do
+      do_request
+      expect(Rails.cache).to have_received(:fetch).with("_quota-order-numbers-#{Time.zone.today.iso8601}", expires_in: 1.day)
     end
   end
 end
