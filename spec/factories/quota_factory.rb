@@ -12,6 +12,11 @@ FactoryBot.define do
   end
 
   factory :quota_order_number do
+    transient do
+      quota_definition_sid { generate(:sid) }
+      quota_definition_validity_end_date { nil }
+    end
+
     quota_order_number_sid { generate(:quota_order_number_sid) }
     quota_order_number_id  { generate(:quota_order_number_id) }
     validity_start_date { Date.current.ago(4.years) }
@@ -19,6 +24,35 @@ FactoryBot.define do
 
     trait :xml do
       validity_end_date { Date.current.ago(1.year) }
+    end
+
+    trait :current do
+      validity_end_date { nil }
+    end
+
+    trait :expired do
+      validity_end_date { Time.zone.yesterday }
+    end
+
+    trait :current_definition do
+      quota_definition_validity_end_date { nil }
+    end
+
+    trait :expired_definition do
+      quota_definition_validity_end_date { Time.zone.yesterday }
+    end
+
+    trait :with_quota_definition do
+      after(:create) do |quota_order_number, evaluator|
+        result = create(
+          :quota_definition,
+          quota_order_number_id: quota_order_number.quota_order_number_id,
+          quota_order_number_sid: quota_order_number.quota_order_number_sid,
+          quota_definition_sid: evaluator.quota_definition_sid,
+          validity_end_date: evaluator.quota_definition_validity_end_date,
+        )
+        result
+      end
     end
   end
 
@@ -67,6 +101,8 @@ FactoryBot.define do
     monetary_unit_code              { Forgery(:basic).text(exactly: 3) }
     measurement_unit_code           { Forgery(:basic).text(exactly: 3) }
     measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
+    validity_start_date             { Date.current.ago(4.years) }
+    validity_end_date               { nil }
 
     trait :actual do
       validity_start_date { Date.current.ago(3.years) }

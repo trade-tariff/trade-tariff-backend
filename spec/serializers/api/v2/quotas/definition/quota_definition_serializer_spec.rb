@@ -13,7 +13,7 @@ RSpec.describe Api::V2::Quotas::Definition::QuotaDefinitionSerializer do
           quota_definition_sid: be_a(Numeric),
           quota_order_number_id: match(/09\d{4}/),
           initial_volume: nil,
-          validity_start_date: nil,
+          validity_start_date: Date.current.ago(4.years).as_json,
           validity_end_date: nil,
           status: 'Open',
           description: nil,

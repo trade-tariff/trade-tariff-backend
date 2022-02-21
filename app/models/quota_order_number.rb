@@ -4,9 +4,17 @@ class QuotaOrderNumber < Sequel::Model
 
   set_primary_key [:quota_order_number_sid]
 
-  one_to_one :quota_definition, key: :quota_order_number_sid,
-                                primary_key: :quota_order_number_sid do |ds|
+  one_to_one :quota_definition, key: :quota_order_number_sid, primary_key: :quota_order_number_sid do |ds|
     ds.with_actual(QuotaDefinition)
+  end
+
+  dataset_module do
+    def with_quota_definitions
+      inner_join(:quota_definitions, quota_order_numbers__quota_order_number_sid: :quota_definitions__quota_order_number_sid)
+        .actual
+        .with_actual(QuotaDefinition)
+        .eager(:quota_definition)
+    end
   end
 
   LICENSED_QUOTA_PREFIXES = %w[094 084 074 064 054 044 034 024 014].freeze
@@ -22,6 +30,8 @@ class QuotaOrderNumber < Sequel::Model
   def definition_id
     definition&.quota_definition_sid
   end
+
+  alias_method :quota_definition_id, :definition_id
 
   one_to_one :quota_order_number_origin, primary_key: :quota_order_number_sid,
                                          key: :quota_order_number_sid do |ds|
