@@ -38,10 +38,10 @@ RSpec.describe Api::V2::Measures::MeasureLegalActPresenter do
 
     context 'with legal act' do
       let(:regulation) do
-        create(:base_regulation, published_date: Date.yesterday)
+        create(:base_regulation, published_date: Time.zone.yesterday)
       end
 
-      it { is_expected.to eql(Date.yesterday) }
+      it { is_expected.to eql(Time.zone.yesterday) }
     end
 
     context 'with legal act without published_date field' do

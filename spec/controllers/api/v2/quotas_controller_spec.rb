@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::QuotasController, type: :controller do
   describe 'GET /quotas/search.json' do
-    let(:validity_start_date) { Date.new(Date.current.year, 1, 1) }
+    let(:validity_start_date) { Date.new(Time.zone.today.year, 1, 1) }
     let(:quota_order_number) { create :quota_order_number }
     let!(:measure) { create :measure, ordernumber: quota_order_number.quota_order_number_id, validity_start_date: validity_start_date }
     let!(:quota_definition) do
@@ -27,7 +27,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
     end
 
     context 'when not specifying an includes list in the query params' do
-      let(:params) { { year: [Date.current.year.to_s] } }
+      let(:params) { { year: [Time.zone.today.year.to_s] } }
 
       let(:pattern) do
         {
@@ -136,7 +136,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
       let(:params) do
         {
           year: [
-            Date.current.year.to_s,
+            Time.zone.today.year.to_s,
           ],
           include: 'quota_balance_events,measures,measures.geographical_area',
         }

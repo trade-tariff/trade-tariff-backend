@@ -20,7 +20,7 @@ RSpec.describe Api::V2::MeasureConditionCodesController, type: :controller do
             'type' => 'measure_condition_code',
             'attributes' => {
               'description' => 'Presentation of a certificate/licence/document',
-              'validity_start_date' => Date.current.ago(3.years).as_json,
+              'validity_start_date' => 3.years.ago.beginning_of_day.as_json,
               'validity_end_date' => nil,
             },
           },

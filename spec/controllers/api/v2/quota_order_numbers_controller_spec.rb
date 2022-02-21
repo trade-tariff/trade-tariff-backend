@@ -29,7 +29,7 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
             'type' => 'quota_order_number',
             'attributes' => {
               'quota_order_number_sid' => 5,
-              'validity_start_date' => Date.current.ago(4.years).as_json,
+              'validity_start_date' => 4.years.ago.beginning_of_day.as_json,
               'validity_end_date' => nil,
             },
             'relationships' => {

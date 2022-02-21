@@ -14,20 +14,20 @@ RSpec.describe AdditionalCode do
       let!(:additional_code_description1)   do
         create :additional_code_description, :with_period,
                additional_code_sid: additional_code.additional_code_sid,
-               valid_at: Date.current.ago(2.years),
+               valid_at: 2.years.ago.beginning_of_day,
                valid_to: nil
       end
       let!(:additional_code_description2) do
         create :additional_code_description, :with_period,
                additional_code_sid: additional_code.additional_code_sid,
-               valid_at: Date.current.ago(5.years),
-               valid_to: Date.current.ago(3.years)
+               valid_at: 5.years.ago.beginning_of_day,
+               valid_to: 3.years.ago.beginning_of_day
       end
       let!(:additional_code_description3) do
         create :additional_code_description, :with_period,
                additional_code_sid: additional_code.additional_code_sid,
-               valid_at: Date.current.ago(6.years),
-               valid_to: Date.current.ago(1.year)
+               valid_at: 6.years.ago.beginning_of_day,
+               valid_to: 1.year.ago.beginning_of_day
       end
 
       context 'direct loading' do

@@ -27,7 +27,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         commodity = create :goods_nomenclature, :with_description
 
         period = commodity.goods_nomenclature_description.goods_nomenclature_description_period
-        period.validity_start_date = Date.current
+        period.validity_start_date = Time.zone.today
         period.save
       end
 
@@ -53,7 +53,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         create(:goods_nomenclature_description,
                goods_nomenclature_sid: heading.goods_nomenclature_sid,
                goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-               validity_start_date: Date.current,
+               validity_start_date: Time.zone.today,
                validity_end_date: heading.validity_end_date,
                description: 'Description')
       end
@@ -80,7 +80,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         create(:goods_nomenclature_description,
                goods_nomenclature_sid: heading.goods_nomenclature_sid,
                goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-               validity_start_date: Date.current,
+               validity_start_date: Time.zone.today,
                validity_end_date: heading.validity_end_date,
                description: 'Description')
       end

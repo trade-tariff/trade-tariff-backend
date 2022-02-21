@@ -39,7 +39,7 @@ RSpec.describe Api::V2::SearchController do
         post :search, params: { q: chapter.description, as_of: chapter.validity_start_date }
       end
 
-      let(:chapter) { create :chapter, :with_description, description: 'horse', validity_start_date: Date.current }
+      let(:chapter) { create :chapter, :with_description, description: 'horse', validity_start_date: Time.zone.today }
 
       let(:pattern) do
         {

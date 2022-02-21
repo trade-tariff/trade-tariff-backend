@@ -11,7 +11,7 @@ FactoryBot.define do
     export_refund_code   { 3.times.map { Random.rand(9) }.join }
     additional_code_type { Random.rand(9) }
     productline_suffix   { [10, 20, 80].sample }
-    validity_start_date  { Date.current.ago(2.years) }
+    validity_start_date  { 2.years.ago.beginning_of_day }
     validity_end_date    { nil }
 
     trait :with_indent do
@@ -26,20 +26,20 @@ FactoryBot.define do
     export_refund_nomenclature_sid { generate(:export_refund_nomenclature_sid) }
     export_refund_nomenclature_indents_sid { generate(:export_refund_nomenclature_sid) }
     number_export_refund_nomenclature_indents { Forgery(:basic).number }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
   end
 
   factory :export_refund_nomenclature_description_period do
     export_refund_nomenclature_sid { generate(:sid) }
     export_refund_nomenclature_description_period_sid { generate(:sid) }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
   end
 
   factory :export_refund_nomenclature_description do
     transient do
-      validity_start_date { Date.current.ago(3.years) }
+      validity_start_date { 3.years.ago.beginning_of_day }
       validity_end_date { nil }
       valid_at { Time.zone.now.ago(2.years) }
       valid_to { nil }

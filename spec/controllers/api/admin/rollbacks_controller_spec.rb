@@ -3,7 +3,7 @@ RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
 
   let(:rollback_attributes) { attributes_for :rollback }
   let(:record) do
-    create :measure, operation_date: Date.yesterday.to_date
+    create :measure, operation_date: Time.zone.yesterday.to_date
   end
 
   context 'when rollback is valid' do
@@ -19,7 +19,7 @@ RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
     it 'performs a rollback' do
       Sidekiq::Testing.inline! do
         expect {
-          create(:rollback, date: Date.current.ago(1.month).to_date)
+          create(:rollback, date: 1.month.ago.beginning_of_day)
         }.to change(Measure, :count).from(1).to(0)
       end
     end

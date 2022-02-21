@@ -68,7 +68,7 @@ class ApplicationController < ActionController::Base
   def actual_date
     Date.parse(params[:as_of].to_s)
   rescue ArgumentError # empty as_of param means today
-    Date.current
+    Time.zone.today
   end
   helper_method :actual_date
 

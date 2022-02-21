@@ -70,7 +70,7 @@ RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
   context 'changes happened after chapter creation' do
     let(:chapter) do
       create :chapter, :with_section, :with_note,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:heading) { create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000" }
@@ -80,7 +80,7 @@ RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
              goods_nomenclature: heading,
              goods_nomenclature_sid: heading.goods_nomenclature_sid,
              goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:pattern) do
@@ -119,7 +119,7 @@ RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
   context 'changes happened before requested date' do
     let(:chapter) do
       create :chapter, :with_section, :with_note,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
     let(:heading) { create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000" }
     let!(:measure) do
@@ -128,11 +128,11 @@ RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
              goods_nomenclature: heading,
              goods_nomenclature_sid: heading.goods_nomenclature_sid,
              goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     it 'does not include change records' do
-      get :changes, params: { id: chapter, as_of: Date.yesterday }, format: :json
+      get :changes, params: { id: chapter, as_of: Time.zone.yesterday }, format: :json
 
       expect(response.body).to match_json_expression []
     end
@@ -141,7 +141,7 @@ RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
   context 'changes include deleted record' do
     let(:chapter) do
       create :chapter, :with_section, :with_note,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:heading) { create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000" }
@@ -151,7 +151,7 @@ RSpec.describe Api::V1::ChaptersController, 'GET #changes' do
              goods_nomenclature: heading,
              goods_nomenclature_sid: heading.goods_nomenclature_sid,
              goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:pattern) do

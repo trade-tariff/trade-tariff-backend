@@ -1,5 +1,5 @@
 RSpec.describe FullTemporaryStopRegulation do
-  let(:fts_regulation) { build :fts_regulation, effective_enddate: Date.current }
+  let(:fts_regulation) { build :fts_regulation, effective_enddate: Time.zone.today }
 
   describe '#regulation_id' do
     it 'is an alias for full temporary stop regulation id' do

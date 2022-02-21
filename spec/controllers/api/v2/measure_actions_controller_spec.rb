@@ -19,7 +19,7 @@ RSpec.describe Api::V2::MeasureActionsController, type: :controller do
             'attributes' => {
               'description' => 'Import/export not allowed after control',
               'validity_end_date' => nil,
-              'validity_start_date' => Date.current.ago(3.years).as_json,
+              'validity_start_date' => 3.years.ago.beginning_of_day.as_json,
             },
             'id' => '01',
             'type' => 'measure_action',

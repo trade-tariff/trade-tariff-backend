@@ -7,11 +7,11 @@ FactoryBot.define do
     end
 
     condition_code { generate(:condition_code) }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.year) }
+      validity_end_date { 1.year.ago.beginning_of_day }
     end
 
     trait :with_description do

@@ -7,7 +7,7 @@ FactoryBot.define do
     end
 
     measurement_unit_code { generate(:measurement_unit_code) }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     trait :with_description do

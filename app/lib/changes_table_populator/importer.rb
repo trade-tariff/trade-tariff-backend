@@ -11,7 +11,7 @@ module ChangesTablePopulator
       ].freeze
       DB = Sequel::Model.db
 
-      def populate(day: Date.current)
+      def populate(day: Time.zone.today)
         elements = DB[source_table]
           .where(where_condition(day: day))
           .select &select_condition
@@ -21,7 +21,7 @@ module ChangesTablePopulator
           .import IMPORT_FIELDS, import_records(elements: elements, day: day)
       end
 
-      def populate_backlog(from: Date.current - 3.months, to: Date.current)
+      def populate_backlog(from: Time.zone.today - 3.months, to: Time.zone.today)
         from = from.to_date
         to = to.to_date
         (from..to).each do |day|
@@ -37,7 +37,7 @@ module ChangesTablePopulator
         raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
-      def where_condition(day: Date.current) # rubocop:disable Lint/UnusedMethodArgument
+      def where_condition(day: Time.zone.today) # rubocop:disable Lint/UnusedMethodArgument
         raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
@@ -45,7 +45,7 @@ module ChangesTablePopulator
         raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
-      def integrate_element(row:, day: Date.current, is_end_line: nil, siblings: nil)
+      def integrate_element(row:, day: Time.zone.today, is_end_line: nil, siblings: nil)
         [
           row[:goods_nomenclature_item_id],
           row[:goods_nomenclature_sid],
@@ -56,7 +56,7 @@ module ChangesTablePopulator
         ]
       end
 
-      def end_line?(row:, day: Date.current, siblings: [])
+      def end_line?(row:, day: Time.zone.today, siblings: [])
         TimeMachine.at(day) do
           item_id = row[:goods_nomenclature_item_id]
           return false if chapter?(item_id) || heading?(item_id)
@@ -73,7 +73,7 @@ module ChangesTablePopulator
         end
       end
 
-      def integrate_and_find_children(row:, day: Date.current)
+      def integrate_and_find_children(row:, day: Time.zone.today)
         suffix = row[:producline_suffix] || row[:productline_suffix]
         children = find_children(row: row, day: day)
         is_end_line = suffix.nil? || suffix == '80' ? children.none? : false
@@ -109,7 +109,7 @@ module ChangesTablePopulator
         children
       end
 
-      def find_children(row:, day: Date.current)
+      def find_children(row:, day: Time.zone.today)
         TimeMachine.at(day) do
           item_id = row[:goods_nomenclature_item_id]
 
@@ -133,7 +133,7 @@ module ChangesTablePopulator
         item_id.ends_with?('000000') && !chapter?(item_id)
       end
 
-      def chapter_children(row:, day: Date.current)
+      def chapter_children(row:, day: Time.zone.today)
         item_id = row[:goods_nomenclature_item_id]
         chapter_id_regex = "#{item_id[0, 2]}________"
 
@@ -160,7 +160,7 @@ module ChangesTablePopulator
         # rubocop:enable all
       end
 
-      def heading_children(row:, day: Date.current)
+      def heading_children(row:, day: Time.zone.today)
         item_id = row[:goods_nomenclature_item_id]
         heading_id_regex = "#{item_id[0, 4]}______"
 
@@ -187,7 +187,7 @@ module ChangesTablePopulator
         # rubocop:enable all
       end
 
-      def commodity_children(row:, day: Date.current)
+      def commodity_children(row:, day: Time.zone.today)
         item_id = row[:goods_nomenclature_item_id]
         heading_id_regex = "#{item_id[0, 4]}______"
 

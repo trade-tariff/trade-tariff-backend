@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
 
     context 'when there are measures that ended on the previous day' do
       before do
-        create :measure, validity_end_date: Date.current - 1.day
+        create :measure, validity_end_date: Time.zone.today - 1.day
       end
 
       it 'extracts changes' do
@@ -49,7 +49,7 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
                goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                goods_nomenclature: commodity,
-               validity_end_date: Date.current - 1.day
+               validity_end_date: Time.zone.today - 1.day
       end
 
       it 'extracts the commodity and the child commodity as change' do
@@ -75,7 +75,7 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
                goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
                goods_nomenclature_sid: heading.goods_nomenclature_sid,
                goods_nomenclature: heading,
-               validity_end_date: Date.current - 1.day
+               validity_end_date: Time.zone.today - 1.day
       end
 
       it 'extracts the commodity and the child commodity as change' do

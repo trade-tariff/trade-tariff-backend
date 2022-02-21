@@ -14,7 +14,7 @@ FactoryBot.define do
     # results
     goods_nomenclature_item_id { 10.times.map { Random.rand(1..9) }.join }
     producline_suffix   { '80' }
-    validity_start_date { Date.current.ago(2.years) }
+    validity_start_date { 2.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
@@ -91,7 +91,7 @@ FactoryBot.define do
     end
 
     trait :actual do
-      validity_start_date { Date.current.ago(3.years) }
+      validity_start_date { 3.years.ago.beginning_of_day }
       validity_end_date   { nil }
     end
 
@@ -100,8 +100,8 @@ FactoryBot.define do
     end
 
     trait :expired do
-      validity_start_date { Date.current.ago(3.years) }
-      validity_end_date   { Date.current.ago(1.year)  }
+      validity_start_date { 3.years.ago.beginning_of_day }
+      validity_end_date   { 1.year.ago.beginning_of_day  }
     end
 
     trait :with_description do
@@ -115,7 +115,7 @@ FactoryBot.define do
     end
 
     trait :xml do
-      validity_end_date           { Date.current.ago(1.year) }
+      validity_end_date           { 1.year.ago.beginning_of_day }
       statistical_indicator       { 1 }
     end
   end
@@ -231,32 +231,32 @@ FactoryBot.define do
     goods_nomenclature_sid { generate(:sid) }
     goods_nomenclature_indent_sid { generate(:sid) }
     number_indents { Forgery(:basic).number }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     trait :xml do
       goods_nomenclature_item_id     { Forgery(:basic).text(exactly: 2) }
       productline_suffix             { Forgery(:basic).text(exactly: 2) }
-      validity_end_date              { Date.current.ago(1.year) }
+      validity_end_date              { 1.year.ago.beginning_of_day }
     end
   end
 
   factory :goods_nomenclature_description_period do
     goods_nomenclature_sid { generate(:sid) }
     goods_nomenclature_description_period_sid { generate(:sid) }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     trait :xml do
       goods_nomenclature_item_id                 { Forgery(:basic).text(exactly: 2) }
       productline_suffix                         { Forgery(:basic).text(exactly: 2) }
-      validity_end_date                          { Date.current.ago(1.year) }
+      validity_end_date                          { 1.year.ago.beginning_of_day }
     end
   end
 
   factory :goods_nomenclature_description do
     transient do
-      validity_start_date { Date.current.ago(3.years) }
+      validity_start_date { 3.years.ago.beginning_of_day }
       validity_end_date { nil }
     end
 
@@ -280,14 +280,14 @@ FactoryBot.define do
   end
 
   factory :goods_nomenclature_group do
-    validity_start_date                  { Date.current.ago(3.years) }
+    validity_start_date                  { 3.years.ago.beginning_of_day }
     validity_end_date                    { nil }
     goods_nomenclature_group_type        { generate(:goods_nomenclature_group_type) }
     goods_nomenclature_group_id          { Forgery(:basic).text(exactly: 2) }
     nomenclature_group_facility_code     { 0 }
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.year) }
+      validity_end_date { 1.year.ago.beginning_of_day }
     end
   end
 
@@ -323,11 +323,11 @@ FactoryBot.define do
     goods_nomenclature_group_id    { Forgery(:basic).text(exactly: 2) }
     goods_nomenclature_item_id     { Forgery(:basic).text(exactly: 2) }
     productline_suffix             { Forgery(:basic).text(exactly: 2) }
-    validity_start_date            { Date.current.ago(3.years) }
+    validity_start_date            { 3.years.ago.beginning_of_day }
     validity_end_date              { nil }
 
     trait :xml do
-      validity_end_date            { Date.current.ago(1.year) }
+      validity_end_date            { 1.year.ago.beginning_of_day }
     end
   end
 end

@@ -63,12 +63,12 @@ RSpec.describe TariffSynchronizer do
   end
 
   describe '.rollback' do
-    let!(:measure) { create :measure, operation_date: Date.current }
-    let!(:update)  { create :taric_update, :applied, issue_date: Date.current }
+    let!(:measure) { create :measure, operation_date: Time.zone.today }
+    let!(:update)  { create :taric_update, :applied, issue_date: Time.zone.today }
 
     context 'successful run' do
       before do
-        described_class.rollback(Date.yesterday, keep: true)
+        described_class.rollback(Time.zone.yesterday, keep: true)
       end
 
       it 'removes entries from oplog tables' do
@@ -84,7 +84,7 @@ RSpec.describe TariffSynchronizer do
       before do
         expect(Measure).to receive(:operation_klass).and_raise(StandardError)
 
-        rescuing { described_class.rollback(Date.yesterday, keep: true) }
+        rescuing { described_class.rollback(Time.zone.yesterday, keep: true) }
       end
 
       it 'does not remove entries from oplog derived tables' do
@@ -98,7 +98,7 @@ RSpec.describe TariffSynchronizer do
 
     context 'forced to redownload by default' do
       before do
-        described_class.rollback(Date.yesterday)
+        described_class.rollback(Time.zone.yesterday)
       end
 
       it 'removes entries from oplog derived tables' do
@@ -116,7 +116,7 @@ RSpec.describe TariffSynchronizer do
       end
 
       before do
-        described_class.rollback(Date.yesterday)
+        described_class.rollback(Time.zone.yesterday)
       end
 
       it 'removes entries from oplog derived tables' do
@@ -134,6 +134,6 @@ RSpec.describe TariffSynchronizer do
   end
 
   def example_date
-    @example_date ||= Date.current
+    @example_date ||= Time.zone.today
   end
 end

@@ -6,7 +6,7 @@ module Cache
 
     def initialize(additional_code)
       @additional_code = additional_code
-      @as_of = Date.current.midnight
+      @as_of = Time.zone.today.midnight
     end
 
     def as_json

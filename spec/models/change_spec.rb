@@ -26,7 +26,7 @@ RSpec.describe Change do
     context 'when there are outdated changes' do
       before do
         create :change
-        create :change, change_date: Date.current.ago(4.months)
+        create :change, change_date: 4.months.ago.beginning_of_day
         create :change_measure
       end
 

@@ -50,7 +50,7 @@ TradeTariffBackend::DataMigrator.migration do
       delete_old_footnotes_associations
       FootnoteAssociationMeasure.unrestrict_primary_key
 
-      TimeMachine.at(Date.current) do
+      TimeMachine.at(Time.zone.today) do
         Commodity.where(goods_nomenclature_item_id: GOODS_NOMENCLATURE_ITEM_IDS).each do |commodity|
           measures = commodity.measures.select{ |m| m.measure_type_id == "103" }
 

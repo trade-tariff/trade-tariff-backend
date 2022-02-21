@@ -38,11 +38,11 @@ class SearchService
   end
 
   def as_of=(date)
-    date ||= Date.current.to_s
+    date ||= Time.zone.today.to_s
     @as_of = begin
       Date.parse(date)
     rescue StandardError
-      Date.current
+      Time.zone.today
     end
   end
 

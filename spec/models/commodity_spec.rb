@@ -185,13 +185,13 @@ RSpec.describe Commodity do
       # validity_start date
       # need to group and choose the latest one
       let(:measure_type) { create :measure_type }
-      let(:commodity)    { create :commodity, :with_indent, validity_start_date: Date.current.ago(3.years) }
+      let(:commodity)    { create :commodity, :with_indent, validity_start_date: 3.years.ago.beginning_of_day }
       let!(:measure1)    do
         create :measure, :with_base_regulation, measure_sid: 1,
                          measure_type_id: measure_type.measure_type_id,
                          additional_code_type_id: nil,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         validity_start_date: Date.current.ago(1.year)
+                         validity_start_date: 1.year.ago.beginning_of_day
       end
       let!(:measure2) do
         create :measure, :with_base_regulation, measure_sid: 2,
@@ -202,11 +202,11 @@ RSpec.describe Commodity do
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          additional_code_type_id: measure1.additional_code_type_id,
                          additional_code_id: measure1.additional_code_id,
-                         validity_start_date: Date.current.ago(2.years)
+                         validity_start_date: 2.years.ago.beginning_of_day
       end
 
       it 'groups measures by measure_generating_regulation_id and picks latest one' do
-        TimeMachine.at(Date.current) do
+        TimeMachine.at(Time.zone.today) do
           expect(commodity.measures.map(&:measure_sid)).to     include measure1.measure_sid
           expect(commodity.measures.map(&:measure_sid)).not_to include measure2.measure_sid
         end
@@ -388,7 +388,7 @@ RSpec.describe Commodity do
 
     context 'when in TimeMachine block' do
       it 'fetches commodities that are actual on specified Date' do
-        TimeMachine.at(Date.current.ago(2.years)) do
+        TimeMachine.at(2.years.ago.beginning_of_day) do
           commodities = described_class.actual.all
           expect(commodities).to include actual_commodity
           expect(commodities).to include expired_commodity
@@ -623,7 +623,7 @@ RSpec.describe Commodity do
     end
 
     context 'with commodity changes' do
-      let!(:commodity) { create :commodity, operation_date: Date.current }
+      let!(:commodity) { create :commodity, operation_date: Time.zone.today }
 
       it 'includes commodity changes' do
         expect(
@@ -636,12 +636,12 @@ RSpec.describe Commodity do
     end
 
     context 'with associated measure changes' do
-      let!(:commodity) { create :commodity, operation_date: Date.yesterday }
+      let!(:commodity) { create :commodity, operation_date: Time.zone.yesterday }
       let!(:measure)   do
         create :measure,
                goods_nomenclature: commodity,
                goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-               operation_date: Date.current
+               operation_date: Time.zone.today
       end
 
       it 'includes measure changes' do

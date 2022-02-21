@@ -9,11 +9,11 @@ module ChangesTablePopulator
         -> { [goods_nomenclature_item_id, goods_nomenclature_sid, productline_suffix] }
       end
 
-      def where_condition(day: Date.current)
+      def where_condition(day: Time.zone.today)
         { validity_start_date: day }
       end
 
-      def import_records(elements:, day: Date.current)
+      def import_records(elements:, day: Time.zone.today)
         elements.map { |element| integrate_element(row: element, day: day) }
       end
 

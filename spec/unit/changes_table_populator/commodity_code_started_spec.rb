@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
 
     context 'when there are commodities that started on the same day' do
       before do
-        create :goods_nomenclature, validity_start_date: Date.current
+        create :goods_nomenclature, validity_start_date: Time.zone.today
       end
 
       it 'extracts changes' do
@@ -47,7 +47,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
         commodity = create :commodity, :with_heading
 
         heading = commodity.heading
-        heading.validity_start_date = Date.current
+        heading.validity_start_date = Time.zone.today
         heading.save
       end
 
