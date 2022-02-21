@@ -47,4 +47,33 @@ RSpec.describe QuotaOrderNumber do
       end
     end
   end
+
+  describe '.with_quota_definitions' do
+    subject(:with_quota_definitions) { described_class.with_quota_definitions.map(&:quota_order_number_id) }
+
+    around do |example|
+      TimeMachine.now { example.run }
+    end
+
+    before do
+      create(:quota_order_number, :with_quota_definition, :current, :current_definition, quota_order_number_id: '000001')         # target
+      create(:quota_order_number, :with_quota_definition, :current, :non_current_definition, quota_order_number_id: '000002')     # control
+      create(:quota_order_number, :with_quota_definition, :non_current, :current_definition, quota_order_number_id: '000003')     # control
+      create(:quota_order_number, :with_quota_definition, :non_current, :non_current_definition, quota_order_number_id: '000004') # control
+    end
+
+    it { is_expected.to eq %w[000001] }
+  end
+
+  describe '#definition_id' do
+    subject(:definition_id) { create(:quota_order_number, :with_quota_definition, quota_definition_sid: 111).definition_id }
+
+    it { is_expected.to eq(111) }
+  end
+
+  describe '#quota_definition_id' do
+    subject(:quota_order_number) { create(:quota_order_number) }
+
+    it { expect(quota_order_number.method(:quota_definition_id)).to eq(quota_order_number.method(:definition_id)) }
+  end
 end
