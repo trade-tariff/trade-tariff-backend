@@ -317,6 +317,24 @@ RSpec.describe SearchService do
         expect(@result).not_to match_json_expression commodity_pattern(commodity)
       end
     end
+
+    context 'search references' do
+      subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Date.current).to_json }
+
+      let!(:search_reference) { create(:search_reference, title: 'Foo Bar') }
+
+      let(:expected_pattern) do
+        {
+          type: 'exact_match',
+          entry: {
+            endpoint: 'headings',
+            id: search_reference.referenced_id,
+          },
+        }
+      end
+
+      it { is_expected.to match_json_expression(expected_pattern) }
+    end
   end
 
   # Searching in ElasticSearch index
