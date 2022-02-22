@@ -4,7 +4,7 @@ ruby File.read('.ruby-version')
 
 # Server
 gem 'puma'
-gem 'rails'
+gem 'rails', '~> 7.0'
 
 # DB
 gem 'pg'
