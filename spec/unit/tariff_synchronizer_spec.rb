@@ -69,24 +69,23 @@ RSpec.describe TariffSynchronizer, truncation: true do
     context 'when a download exception' do
       before do
         allow(described_class).to receive(:sync_variables_set?).and_return(true)
-        allow_any_instance_of(Curl::Easy).to receive(:perform)
-                                         .and_raise(Curl::Err::HostResolutionError)
+        allow_any_instance_of(Faraday::Connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
       end
 
       it 'raises original exception ending the process and logs an error event' do
         tariff_synchronizer_logger_listener
-        expect { described_class.download }.to raise_error Curl::Err::HostResolutionError
+        expect { described_class.download }.to raise_error Faraday::Error
         expect(@logger.logged(:error).size).to eq 1
         expect(@logger.logged(:error).last).to match(/Download failed/)
       end
 
       it 'sends an email with the exception error' do
         ActionMailer::Base.deliveries.clear
-        expect { described_class.download }.to raise_error(Curl::Err::HostResolutionError)
+        expect { described_class.download }.to raise_error(Faraday::Error)
 
         expect(ActionMailer::Base.deliveries).not_to be_empty
         expect(ActionMailer::Base.deliveries.last.encoded).to match(/Backtrace/)
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Curl::Err::HostResolutionError/)
+        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Trade Tariff download failure/)
       end
     end
   end

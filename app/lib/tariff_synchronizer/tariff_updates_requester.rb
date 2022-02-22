@@ -29,7 +29,7 @@ module TariffSynchronizer
 
         if response.terminated?
           return response
-        elsif @retry_count == 0
+        elsif @retry_count.zero?
           response.retry_count_exceeded!
           return response
         else
@@ -39,7 +39,7 @@ module TariffSynchronizer
         end
       rescue DownloadException => e
         ActiveSupport::Notifications.instrument('download_exception.tariff_synchronizer', url: @url, class: e.original.class)
-        if @exception_retry_count == 0
+        if @exception_retry_count.zero?
           ActiveSupport::Notifications.instrument('download_exception_exceeded.tariff_synchronizer', url: @url)
           raise
         else
@@ -49,30 +49,22 @@ module TariffSynchronizer
       end
     end
 
-  private
+    private
 
     def send_request
-      begin
-        crawler = Curl::Easy.new(@url)
-        crawler.ssl_verify_peer = false
-        crawler.ssl_verify_host = false
-        # Add basic auth if it's TARIC and skip it for CDS updates
-        if URI(@url).host == URI(ENV['TARIFF_SYNC_HOST']).host
-          crawler.http_auth_types = :basic
-          crawler.username = TariffSynchronizer.username
-          crawler.password = TariffSynchronizer.password
+      uri = URI(@url)
+
+      client = Faraday.new(uri.host) do |conn|
+        if TradeTariffBackend.xi?
+          conn.request :authorization, :basic, TariffSynchronizer.username, TariffSynchronizer.password
         end
-        crawler.perform
-      rescue Curl::Err::HostResolutionError,
-             Curl::Err::ConnectionFailedError,
-             Curl::Err::SSLConnectError,
-             Curl::Err::PartialFileError => e
-        # NOTE: could be a glitch in curb because it throws HostResolutionError
-        # occasionally without any reason.
-        raise DownloadException.new(@url, e)
       end
 
-      Response.new(crawler.response_code, crawler.body_str)
+      faraday_response = client.get(uri)
+
+      Response.new(faraday_response.status, faraday_response.body)
+    rescue Faraday::Error => e
+      raise DownloadException.new(@url, e)
     end
   end
 end

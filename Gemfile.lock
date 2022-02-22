@@ -118,7 +118,6 @@ GEM
     crack (0.4.5)
       rexml
     crass (1.0.6)
-    curb (1.0.0)
     database_cleaner-core (2.0.1)
     database_cleaner-sequel (2.0.0)
       database_cleaner-core (~> 2.0.0)
@@ -459,7 +458,6 @@ DEPENDENCIES
   bootsnap
   brakeman
   connection_pool
-  curb
   database_cleaner-sequel
   dotenv-rails
   elasticsearch (~> 7.9.0)
