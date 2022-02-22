@@ -145,10 +145,40 @@ commands:
             export DOCKER_IMAGE=tariff-backend
             export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
             CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
+  cf_deploy_docker_tasks:
+    parameters:
+      dev-release:
+        default: false
+        type: boolean
+      space:
+        type: string
+      service:
+        type: string
+      environment_key:
+        type: string
+    steps:
+      - checkout
+      - cf_install:
+          space: << parameters.space >>
+      - run:
+          name: "Create tasks app manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p tasks_deploy_manifest.yml
+      - run:
+          name: "Push Tasks app"
+          command: |
+            export DOCKER_IMAGE=tariff-backend
+            export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
+            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
+                                                               -f tasks_deploy_manifest.yml \
+                                                               --no-route \
+                                                               --task \
+                                                               --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
+                                                               --docker-username "$AWS_ACCESS_KEY_ID"
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
+            cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
 
   smoketest:
     parameters:
@@ -331,6 +361,11 @@ jobs:
           time: '10'
           consider-branch: false
           dont-quit: true
+      - cf_deploy_docker_tasks:
+          dev-release: true
+          space: "development"
+          environment_key: "dev"
+          service: << parameters.service >>
       - cf_deploy_docker_worker:
           dev-release: true
           space: "development"
@@ -355,6 +390,10 @@ jobs:
       - queue/until_front_of_line:
           time: '10'
           dont-quit: true
+      - cf_deploy_docker_tasks:
+          space: "staging"
+          environment_key: "staging"
+          service: << parameters.service >>
       - cf_deploy_docker_worker:
           space: "staging"
           environment_key: "staging"
@@ -377,6 +416,10 @@ jobs:
       - queue/until_front_of_line:
           time: '10'
           dont-quit: true
+      - cf_deploy_docker_tasks:
+          space: "production"
+          environment_key: "production"
+          service: << parameters.service >>
       - cf_deploy_docker_worker:
           space: "production"
           environment_key: "production"
