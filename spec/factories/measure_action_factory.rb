@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :measure_action do
     action_code         { Forgery(:basic).text(exactly: 2) }
-    validity_start_date { Date.current.ago(3.years) }
+    validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     trait :with_description do

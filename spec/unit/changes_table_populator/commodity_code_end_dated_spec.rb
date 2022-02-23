@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
 
     context 'when there are commodities that ended on the previous day' do
       before do
-        create :goods_nomenclature, validity_end_date: Date.current - 1.day
+        create :goods_nomenclature, validity_end_date: Time.zone.today - 1.day
       end
 
       it 'extracts changes' do
@@ -47,7 +47,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
         commodity = create :commodity, :with_heading
 
         heading = commodity.heading
-        heading.validity_end_date = Date.current - 1.day
+        heading.validity_end_date = Time.zone.today - 1.day
         heading.save
       end
 

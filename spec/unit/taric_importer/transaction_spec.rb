@@ -10,7 +10,7 @@ RSpec.describe TaricImporter::Transaction do
         'language_id' => 'EN',
         'description' => 'French' } }
   end
-  let(:transaction_date) { Date.current }
+  let(:transaction_date) { Time.zone.today }
 
   describe 'initialization' do
     context 'invalid record structure provided' do

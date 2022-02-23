@@ -4,7 +4,7 @@ RSpec.describe HeadingService::CachedHeadingService do
            :with_description
   end
   let(:measure_type) { create :measure_type, measure_type_id: '103' }
-  let(:actual_date) { Date.current }
+  let(:actual_date) { Time.zone.today }
 
   describe '#serializable_hash' do
     describe 'applying time machine to footnotes, chapter, commodities and overview measures' do
@@ -43,8 +43,8 @@ RSpec.describe HeadingService::CachedHeadingService do
         let!(:footnote) do
           create :footnote,
                  :with_gono_association,
-                 validity_start_date: Date.current.ago(1.week),
-                 validity_end_date: Date.yesterday,
+                 validity_start_date: 1.week.ago.beginning_of_day,
+                 validity_end_date: Time.zone.yesterday,
                  goods_nomenclature_sid: heading.goods_nomenclature_sid
         end
         let!(:chapter) do
@@ -76,8 +76,8 @@ RSpec.describe HeadingService::CachedHeadingService do
         let!(:chapter) do
           create :chapter,
                  :with_section, :with_description,
-                 validity_start_date: Date.current.ago(1.week),
-                 validity_end_date: Date.yesterday,
+                 validity_start_date: 1.week.ago.beginning_of_day,
+                 validity_end_date: Time.zone.yesterday,
                  goods_nomenclature_item_id: heading.chapter_id
         end
         let!(:commodity) do
@@ -111,8 +111,8 @@ RSpec.describe HeadingService::CachedHeadingService do
           create :goods_nomenclature,
                  :with_description,
                  :with_indent,
-                 validity_start_date: Date.current.ago(1.week),
-                 validity_end_date: Date.yesterday,
+                 validity_start_date: 1.week.ago.beginning_of_day,
+                 validity_end_date: Time.zone.yesterday,
                  goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}"
         end
         let!(:measure) do
@@ -143,8 +143,8 @@ RSpec.describe HeadingService::CachedHeadingService do
         end
         let!(:measure) do
           create :measure,
-                 validity_start_date: Date.current.ago(1.week),
-                 validity_end_date: Date.yesterday,
+                 validity_start_date: 1.week.ago.beginning_of_day,
+                 validity_end_date: Time.zone.yesterday,
                  measure_type_id: measure_type.measure_type_id,
                  goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid

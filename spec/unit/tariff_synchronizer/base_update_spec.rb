@@ -107,9 +107,9 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
 
   describe '.sync' do
     it 'calls the download method for each date for the last 20 days to the current date' do
-      create :cds_update, :applied, issue_date: 1.day.ago
+      create :cds_update, :applied, issue_date: 1.day.ago.to_date
 
-      (20.days.ago.to_date..Date.current).each do |download_date|
+      (20.days.ago.to_date..Time.zone.today).each do |download_date|
         expect(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: nil))
       end
 
@@ -127,8 +127,8 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
         travel_back
       end
 
-      let!(:update1) { create :taric_update, :missing, example_date: Date.current }
-      let!(:update2) { create :taric_update, example_date: Date.yesterday }
+      let!(:update1) { create :taric_update, :missing, example_date: Time.zone.today }
+      let!(:update2) { create :taric_update, example_date: Time.zone.yesterday }
 
       it 'returns false' do
         expect(described_class.send(:last_updates_are_missing?)).to be_falsey
@@ -144,8 +144,8 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
         travel_back
       end
 
-      let!(:update1) { create :taric_update, :missing, example_date: Date.current }
-      let!(:update2) { create :taric_update, example_date: Date.yesterday }
+      let!(:update1) { create :taric_update, :missing, example_date: Time.zone.today }
+      let!(:update2) { create :taric_update, example_date: Time.zone.yesterday }
 
       it 'returns true' do
         expect(described_class.send(:last_updates_are_missing?)).to be_truthy

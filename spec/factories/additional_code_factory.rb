@@ -7,7 +7,7 @@ FactoryBot.define do
     additional_code_sid     { generate(:additional_code_sid) }
     additional_code_type_id { generate(:additional_code_type_id) }
     additional_code         { Forgery(:basic).text(exactly: 3) }
-    validity_start_date     { Date.current.ago(2.years) }
+    validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }
 
     trait :with_export_refund_nomenclature do
@@ -32,13 +32,13 @@ FactoryBot.define do
     additional_code_sid                    { generate(:additional_code_sid) }
     additional_code_type_id                { generate(:additional_code_type_id) }
     additional_code                        { Forgery(:basic).text(exactly: 3) }
-    validity_start_date                    { Date.current.ago(2.years) }
+    validity_start_date                    { 2.years.ago.beginning_of_day }
     validity_end_date                      { nil }
   end
 
   factory :additional_code_description do
     transient do
-      valid_at { Date.current.ago(2.years) }
+      valid_at { 2.years.ago.beginning_of_day }
       valid_to { nil }
     end
 
@@ -63,7 +63,7 @@ FactoryBot.define do
   factory :additional_code_type do
     additional_code_type_id { generate(:additional_code_type_id) }
     application_code        { '1' }
-    validity_start_date     { Date.current.ago(2.years) }
+    validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }
 
     trait :ern do
@@ -91,7 +91,7 @@ FactoryBot.define do
     end
 
     trait :xml do
-      validity_end_date { Date.current.ago(1.year) }
+      validity_end_date { 1.year.ago.beginning_of_day }
     end
   end
 
@@ -107,14 +107,14 @@ FactoryBot.define do
   factory :meursing_additional_code do
     meursing_additional_code_sid { generate(:meursing_additional_code_sid) }
     additional_code         { Forgery(:basic).text(exactly: 3) }
-    validity_start_date     { Date.current.ago(2.years) }
+    validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }
   end
 
   factory :additional_code_type_measure_type do |f|
     f.measure_type_id { Forgery(:basic).text(exactly: 3) }
     f.additional_code_type_id { generate(:additional_code_type_id) }
-    f.validity_start_date     { Date.current.ago(2.years) }
+    f.validity_start_date     { 2.years.ago.beginning_of_day }
     f.validity_end_date       { nil }
 
     f.measure_type         { create :measure_type, measure_type_id: measure_type_id }

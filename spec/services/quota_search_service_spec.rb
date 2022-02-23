@@ -6,7 +6,7 @@ RSpec.describe QuotaSearchService do
     TimeMachine.now { example.run }
   end
 
-  let(:validity_start_date) { Date.yesterday }
+  let(:validity_start_date) { Time.zone.yesterday }
   let(:quota_order_number1) { create :quota_order_number }
   let!(:measure1) { create :measure, ordernumber: quota_order_number1.quota_order_number_id, validity_start_date: validity_start_date }
   let!(:quota_definition1) do
@@ -123,7 +123,7 @@ RSpec.describe QuotaSearchService do
       before do
         create :quota_blocking_period,
                quota_definition_sid: quota_definition1.quota_definition_sid,
-               blocking_start_date: Date.current,
+               blocking_start_date: Time.zone.today,
                blocking_end_date: 1.year.from_now
       end
 
@@ -138,7 +138,7 @@ RSpec.describe QuotaSearchService do
       before do
         create :quota_blocking_period,
                quota_definition_sid: quota_definition1.quota_definition_sid,
-               blocking_start_date: Date.current,
+               blocking_start_date: Time.zone.today,
                blocking_end_date: 1.year.from_now
       end
 

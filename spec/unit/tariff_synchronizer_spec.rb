@@ -92,7 +92,7 @@ RSpec.describe TariffSynchronizer, truncation: true do
   end
 
   describe '.apply' do
-    let(:applied_update) { create(:taric_update, :applied, example_date: Date.yesterday) }
+    let(:applied_update) { create(:taric_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:taric_update, :pending, example_date: Date.today) }
 
     context 'when successful' do
@@ -186,7 +186,7 @@ RSpec.describe TariffSynchronizer, truncation: true do
     end
 
     context 'with failed updates present' do
-      let(:failed_update) { create(:taric_update, :failed, example_date: Date.yesterday) }
+      let(:failed_update) { create(:taric_update, :failed, example_date: Time.zone.yesterday) }
 
       before do
         failed_update
@@ -298,7 +298,7 @@ RSpec.describe TariffSynchronizer, truncation: true do
   end
 
   describe '.apply_cds' do
-    let(:applied_update) { create(:cds_update, :applied, example_date: Date.yesterday) }
+    let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:cds_update, :pending, example_date: Date.today) }
 
     before do

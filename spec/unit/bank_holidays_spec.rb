@@ -14,8 +14,8 @@ RSpec.describe BankHolidays do
       expect(described_class.last(2)).to be_a(Array)
     end
 
-    it 'returns max date less or equal Date.current' do
-      expect(described_class.last(3).last).to be <= Date.current
+    it 'returns max date less or equal Time.zone.today' do
+      expect(described_class.last(3).last).to be <= Time.zone.today
     end
 
     it 'returns Date type records' do

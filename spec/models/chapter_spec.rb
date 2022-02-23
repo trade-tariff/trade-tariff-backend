@@ -72,7 +72,7 @@ RSpec.describe Chapter do
     end
 
     context 'with Chapter changes' do
-      let!(:chapter) { create :chapter, operation_date: Date.current }
+      let!(:chapter) { create :chapter, operation_date: Time.zone.today }
 
       it 'includes Chapter changes' do
         expect(
@@ -86,7 +86,7 @@ RSpec.describe Chapter do
       context 'with Heading changes' do
         let!(:heading) do
           create :heading,
-                 operation_date: Date.current,
+                 operation_date: Time.zone.today,
                  goods_nomenclature_item_id: "#{chapter.short_code}01000000"
         end
 
@@ -102,7 +102,7 @@ RSpec.describe Chapter do
         context 'with associated Commodity changes' do
           let!(:commodity) do
             create :commodity,
-                   operation_date: Date.current,
+                   operation_date: Time.zone.today,
                    goods_nomenclature_item_id: "#{heading.short_code}000001"
           end
 
@@ -120,7 +120,7 @@ RSpec.describe Chapter do
               create :measure,
                      goods_nomenclature: commodity,
                      goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                     operation_date: Date.current
+                     operation_date: Time.zone.today
             end
 
             it 'includes Measure changes' do

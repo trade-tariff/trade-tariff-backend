@@ -192,7 +192,7 @@ RSpec.describe Heading do
 
   describe '#declarable' do
     context 'different points in time' do
-      today = Date.current
+      today = Time.zone.today
       t1 = today.ago(2.years)
       t2 = today.ago(1.year)
       let!(:declarable_heading) { create :heading, :declarable, goods_nomenclature_item_id: '0102000000', validity_start_date: t1, validity_end_date: nil }
@@ -275,7 +275,7 @@ RSpec.describe Heading do
     end
 
     context 'with Heading changes' do
-      let!(:heading) { create :heading, operation_date: Date.current }
+      let!(:heading) { create :heading, operation_date: Time.zone.today }
 
       it 'includes Heading changes' do
         expect(
@@ -288,10 +288,10 @@ RSpec.describe Heading do
     end
 
     context 'with associated Commodity changes' do
-      let!(:heading)   { create :heading, operation_date: Date.yesterday }
+      let!(:heading)   { create :heading, operation_date: Time.zone.yesterday }
       let!(:commodity) do
         create :commodity,
-               operation_date: Date.yesterday,
+               operation_date: Time.zone.yesterday,
                goods_nomenclature_item_id: "#{heading.short_code}000001"
       end
 
@@ -305,17 +305,17 @@ RSpec.describe Heading do
       end
 
       context 'with associated Measure (through Commodity) changes' do
-        let!(:heading)   { create :heading, operation_date: Date.yesterday }
+        let!(:heading)   { create :heading, operation_date: Time.zone.yesterday }
         let!(:commodity) do
           create :commodity,
-                 operation_date: Date.yesterday,
+                 operation_date: Time.zone.yesterday,
                  goods_nomenclature_item_id: "#{heading.short_code}000001"
         end
         let!(:measure) do
           create :measure,
                  goods_nomenclature: commodity,
                  goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                 operation_date: Date.yesterday
+                 operation_date: Time.zone.yesterday
         end
 
         it 'includes Measure changes' do

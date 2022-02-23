@@ -22,8 +22,8 @@ shared_examples_for 'one to one to' do |associated_object, eager_load_associatio
     end
   end
   let!(:source_record)             { :"#{described_class.to_s.underscore}" }
-  let!(:"#{associated_object}1")   { create associated_object, { validity_start_date: Date.current.ago(3.years) }.merge(right_association) }
-  let!(:"#{associated_object}2")   { create associated_object, { validity_start_date: Date.current.ago(5.years) }.merge(right_association) }
+  let!(:"#{associated_object}1")   { create associated_object, { validity_start_date: 3.years.ago.beginning_of_day }.merge(right_association) }
+  let!(:"#{associated_object}2")   { create associated_object, { validity_start_date: 5.years.ago.beginning_of_day }.merge(right_association) }
   let!(@source_record)             { create source_record, left_association }
 
   context 'direct loading' do

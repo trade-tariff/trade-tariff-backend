@@ -85,7 +85,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
              :with_heading,
              :with_description,
              :declarable,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:pattern) do
@@ -119,11 +119,11 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
              :with_heading,
              :with_description,
              :declarable,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     it 'does not include change records' do
-      get :changes, params: { id: commodity, as_of: Date.yesterday }, format: :json
+      get :changes, params: { id: commodity, as_of: Time.zone.yesterday }, format: :json
 
       expect(response.body).to match_json_expression []
     end
@@ -136,7 +136,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
              :with_heading,
              :with_description,
              :declarable,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
     let!(:measure) do
       create :measure,
@@ -144,7 +144,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
              goods_nomenclature: commodity,
              goods_nomenclature_sid: commodity.goods_nomenclature_sid,
              goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:pattern) do

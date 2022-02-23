@@ -9,11 +9,11 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
 
     it 'calls the downloader with the correct args' do
-      create :taric_update, :applied, issue_date: 1.day.ago
+      create :taric_update, :applied, issue_date: 1.day.ago.to_date
 
       described_class.sync
 
-      (20.days.ago.to_date..Date.current).each do |download_date|
+      (20.days.ago.to_date..Time.zone.today).each do |download_date|
         expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:new).with(download_date)
       end
     end

@@ -26,7 +26,7 @@ RSpec.describe ChangesTablePopulator::MeasureDeleted do
       before do
         measure = create :measure
 
-        db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Date.current}' " \
+        db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Time.zone.today}' " \
                "WHERE measure_sid = '#{measure.measure_sid}'")
       end
 
@@ -53,7 +53,7 @@ RSpec.describe ChangesTablePopulator::MeasureDeleted do
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          goods_nomenclature: commodity
 
-        db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Date.current}' " \
+        db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Time.zone.today}' " \
                "WHERE measure_sid = '#{measure.measure_sid}'")
       end
 
@@ -81,7 +81,7 @@ RSpec.describe ChangesTablePopulator::MeasureDeleted do
                          goods_nomenclature_sid: heading.goods_nomenclature_sid,
                          goods_nomenclature: heading
 
-        db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Date.current}' " \
+        db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Time.zone.today}' " \
                "WHERE measure_sid = '#{measure.measure_sid}'")
       end
 

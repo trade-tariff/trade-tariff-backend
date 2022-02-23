@@ -120,7 +120,7 @@ RSpec.describe Api::V1::HeadingsController, 'GET #changes' do
              :non_declarable,
              :with_description,
              :with_chapter,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     let(:pattern) do
@@ -153,11 +153,11 @@ RSpec.describe Api::V1::HeadingsController, 'GET #changes' do
              :non_declarable,
              :with_description,
              :with_chapter,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
 
     it 'does not include change records' do
-      get :changes, params: { id: heading, as_of: Date.yesterday }, format: :json
+      get :changes, params: { id: heading, as_of: Time.zone.yesterday }, format: :json
 
       expect(response.body).to match_json_expression []
     end
@@ -169,7 +169,7 @@ RSpec.describe Api::V1::HeadingsController, 'GET #changes' do
              :non_declarable,
              :with_description,
              :with_chapter,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
     let!(:measure) do
       create :measure,
@@ -177,7 +177,7 @@ RSpec.describe Api::V1::HeadingsController, 'GET #changes' do
              goods_nomenclature: heading,
              goods_nomenclature_sid: heading.goods_nomenclature_sid,
              goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-             operation_date: Date.current
+             operation_date: Time.zone.today
     end
     let(:pattern) do
       [

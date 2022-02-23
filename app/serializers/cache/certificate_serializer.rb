@@ -6,7 +6,7 @@ module Cache
 
     def initialize(certificate)
       @certificate = certificate
-      @as_of = Date.current.midnight
+      @as_of = Time.zone.today.midnight
     end
 
     def as_json

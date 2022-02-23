@@ -34,8 +34,8 @@ RSpec.describe Api::Admin::UpdatesController, 'GET #index' do
   end
 
   context 'when records are present' do
-    let!(:taric_update1) { create :taric_update, :applied, issue_date: Date.yesterday }
-    let!(:taric_update2) { create :taric_update, :pending, issue_date: Date.current }
+    let!(:taric_update1) { create :taric_update, :applied, issue_date: Time.zone.yesterday }
+    let!(:taric_update2) { create :taric_update, :pending, issue_date: Time.zone.today }
 
     it 'returns rendered records' do
       get :index, format: :json

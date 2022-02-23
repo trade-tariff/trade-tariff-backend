@@ -3,7 +3,7 @@ FactoryBot.define do
 
   factory :footnote do
     transient do
-      valid_at { Date.current.ago(2.years) }
+      valid_at { 2.years.ago.beginning_of_day }
       valid_to { nil }
       goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
       measure_sid { generate(:measure_sid) }
@@ -11,7 +11,7 @@ FactoryBot.define do
 
     footnote_id      { Forgery(:basic).text(exactly: 3) }
     footnote_type_id { Forgery(:basic).text(exactly: 2) }
-    validity_start_date     { Date.current.ago(2.years).localtime }
+    validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }
 
     after(:build) do |ftn, _evaluator|
@@ -59,13 +59,13 @@ FactoryBot.define do
     footnote_description_period_sid { generate(:footnote_sid) }
     footnote_id      { Forgery(:basic).text(exactly: 3) }
     footnote_type_id { Forgery(:basic).text(exactly: 2) }
-    validity_start_date                    { Date.current.ago(2.years) }
+    validity_start_date                    { 2.years.ago.beginning_of_day }
     validity_end_date                      { nil }
   end
 
   factory :footnote_description do
     transient do
-      valid_at { Date.current.ago(2.years) }
+      valid_at { 2.years.ago.beginning_of_day }
       valid_to { nil }
     end
 
@@ -89,7 +89,7 @@ FactoryBot.define do
     goods_nomenclature_sid          { generate(:goods_nomenclature_sid) }
     footnote_id                     { Forgery(:basic).text(exactly: 3) }
     footnote_type                   { Forgery(:basic).text(exactly: 2) }
-    validity_start_date             { Date.current.ago(3.years) }
+    validity_start_date             { 3.years.ago.beginning_of_day }
     validity_end_date               { nil }
   end
 
@@ -97,7 +97,7 @@ FactoryBot.define do
     export_refund_nomenclature_sid  { generate(:export_refund_nomenclature_sid) }
     footnote_id                     { Forgery(:basic).text(exactly: 3) }
     footnote_type                   { Forgery(:basic).text(exactly: 2) }
-    validity_start_date             { Date.current.ago(2.years) }
+    validity_start_date             { 2.years.ago.beginning_of_day }
     validity_end_date               { nil }
   end
 
@@ -111,7 +111,7 @@ FactoryBot.define do
     additional_code_sid             { generate(:additional_code_sid) }
     footnote_id                     { Forgery(:basic).text(exactly: 3) }
     footnote_type_id                { Forgery(:basic).text(exactly: 2) }
-    validity_start_date             { Date.current.ago(2.years) }
+    validity_start_date             { 2.years.ago.beginning_of_day }
     validity_end_date               { nil }
   end
 
@@ -120,13 +120,13 @@ FactoryBot.define do
     meursing_heading_number         { Forgery(:basic).number }
     footnote_id                     { Forgery(:basic).text(exactly: 3) }
     footnote_type                   { Forgery(:basic).text(exactly: 2) }
-    validity_start_date             { Date.current.ago(2.years) }
+    validity_start_date             { 2.years.ago.beginning_of_day }
     validity_end_date               { nil }
   end
 
   factory :footnote_type do
     footnote_type_id { Forgery(:basic).text(exactly: 2) }
-    validity_start_date { Date.current.ago(2.years) }
+    validity_start_date { 2.years.ago.beginning_of_day }
     validity_end_date   { nil }
   end
 

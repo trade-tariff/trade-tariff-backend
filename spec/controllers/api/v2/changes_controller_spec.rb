@@ -5,7 +5,7 @@ RSpec.describe Api::V2::ChangesController do
   let(:productline_suffix) { nil }
   let(:end_line) { nil }
   let(:change_type) { nil }
-  let(:change_date) { Date.current.strftime('%Y-%m-%d') }
+  let(:change_date) { Time.zone.today.strftime('%Y-%m-%d') }
 
   let(:expected_change_response) do
     {
@@ -43,7 +43,7 @@ RSpec.describe Api::V2::ChangesController do
     end
 
     context 'when a commodity change exists for the day' do
-      let!(:change) { create :change, change_date: Date.current }
+      let!(:change) { create :change, change_date: Time.zone.today }
       let(:goods_nomenclature_item_id) { change.goods_nomenclature_item_id }
       let(:goods_nomenclature_sid) { change.goods_nomenclature_sid }
       let(:productline_suffix) { change.productline_suffix }
@@ -61,7 +61,7 @@ RSpec.describe Api::V2::ChangesController do
       end
 
       context 'on the previous day' do
-        before { get :index, params: { as_of: (Date.current - 1.day) }, format: :json }
+        before { get :index, params: { as_of: (Time.zone.today - 1.day) }, format: :json }
 
         let(:json) { JSON.parse(response.body) }
 
@@ -72,7 +72,7 @@ RSpec.describe Api::V2::ChangesController do
     end
 
     context 'when a measure change exists for the day' do
-      let!(:change) { create :change_measure, change_date: Date.current }
+      let!(:change) { create :change_measure, change_date: Time.zone.today }
       let(:goods_nomenclature_item_id) { change.goods_nomenclature_item_id }
       let(:goods_nomenclature_sid) { change.goods_nomenclature_sid }
       let(:productline_suffix) { change.productline_suffix }
@@ -90,7 +90,7 @@ RSpec.describe Api::V2::ChangesController do
       end
 
       context 'on the previous day' do
-        before { get :index, params: { as_of: (Date.current - 1.day) }, format: :json }
+        before { get :index, params: { as_of: (Time.zone.today - 1.day) }, format: :json }
 
         let(:json) { JSON.parse(response.body) }
 

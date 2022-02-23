@@ -13,7 +13,7 @@ RSpec.describe TariffSynchronizer::Logger, truncation: true do
         :with_redis_lock,
       ).and_raise(Redlock::LockError, 'foo')
 
-      TariffSynchronizer.rollback(Date.current, keep: true)
+      TariffSynchronizer.rollback(Time.zone.today, keep: true)
     end
 
     it 'logs a warn event' do
@@ -24,7 +24,7 @@ RSpec.describe TariffSynchronizer::Logger, truncation: true do
 
   describe '#apply_lock_error' do
     before do
-      create(:taric_update, :applied, example_date: Date.yesterday)
+      create(:taric_update, :applied, example_date: Time.zone.yesterday)
       create(:taric_update, :pending, example_date: Date.today)
 
       expect(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'foo')

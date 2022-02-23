@@ -17,7 +17,7 @@ RSpec.describe Api::V2::QuotaDefinitionSerializer do
             measurement_unit_qualifier_code: serializable.measurement_unit_qualifier_code,
             quota_order_number_id: serializable.quota_order_number_id,
             validity_end_date: nil,
-            validity_start_date: Date.current.ago(4.years),
+            validity_start_date: 4.years.ago.beginning_of_day,
           },
         },
       }

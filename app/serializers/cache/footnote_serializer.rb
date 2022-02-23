@@ -6,7 +6,7 @@ module Cache
 
     def initialize(footnote)
       @footnote = footnote
-      @as_of = Date.current.midnight
+      @as_of = Time.zone.today.midnight
     end
 
     def as_json

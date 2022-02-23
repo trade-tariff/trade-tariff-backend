@@ -12,7 +12,7 @@ RSpec.describe QuotaEvent do
 
   describe '.for_quota_definition' do
     it 'returns all quota events for specified quota_definition_sid' do
-      events = described_class.for_quota_definition(quota_definition.quota_definition_sid, Date.current).all
+      events = described_class.for_quota_definition(quota_definition.quota_definition_sid, Time.zone.today).all
       expect(
         events.select { |ev| ev[:event_type] == 'balance' },
       ).not_to be_blank
@@ -28,7 +28,7 @@ RSpec.describe QuotaEvent do
   describe '.last_for' do
     it 'returns last quota event type (as class) for provided quota_definition_sid value' do
       expect(
-        described_class.last_for(quota_definition.quota_definition_sid, Date.current),
+        described_class.last_for(quota_definition.quota_definition_sid, Time.zone.today),
       ).to eq QuotaExhaustionEvent
     end
   end

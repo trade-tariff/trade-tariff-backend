@@ -122,7 +122,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       create(:cds_update, :pending, example_date: pending_date)
     end
 
-    let(:applied_date) { Date.yesterday }
+    let(:applied_date) { Time.zone.yesterday }
 
     context 'when the sequence date is correct' do
       let(:pending_date) { applied_date + 1.day }

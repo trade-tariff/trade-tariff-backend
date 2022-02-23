@@ -29,7 +29,7 @@ FactoryBot.define do
     f.goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
     f.geographical_area_sid { generate(:geographical_area_sid) }
     f.geographical_area_id { generate(:geographical_area_id) }
-    f.validity_start_date { Date.current.ago(3.years) }
+    f.validity_start_date { 3.years.ago.beginning_of_day }
     f.validity_end_date   { nil }
     f.reduction_indicator { [nil, 1, 2, 3].sample }
 
@@ -64,7 +64,7 @@ FactoryBot.define do
           :base_regulation,
           base_regulation_id: measure.measure_generating_regulation_id,
           base_regulation_role: measure.measure_generating_regulation_role,
-          effective_end_date: evaluator.base_regulation_effective_end_date || Date.current.in(10.years),
+          effective_end_date: evaluator.base_regulation_effective_end_date || Time.zone.today.in(10.years),
         )
       end
     end
@@ -309,7 +309,7 @@ FactoryBot.define do
 
     measure_type_id { generate(:measure_type_id) }
     sequence(:measure_type_series_id, LoopingSequence.lower_a_to_upper_z, &:value)
-    validity_start_date    { Date.current.ago(3.years) }
+    validity_start_date    { 3.years.ago.beginning_of_day }
     validity_end_date      { nil }
     measure_explosion_level { 10 }
     order_number_capture_code { 10 }

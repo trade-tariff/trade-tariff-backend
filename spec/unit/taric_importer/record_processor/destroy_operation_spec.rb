@@ -20,7 +20,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
   end
 
   let(:operation) do
-    described_class.new(record, Date.current)
+    described_class.new(record, Time.zone.today)
   end
 
   describe '#to_oplog_operation' do

@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
 
     context 'when there are measures that started on the same day' do
       before do
-        create :measure, validity_start_date: Date.current
+        create :measure, validity_start_date: Time.zone.today
       end
 
       it 'extracts changes' do
@@ -49,7 +49,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
                goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                goods_nomenclature: commodity,
-               validity_start_date: Date.current
+               validity_start_date: Time.zone.today
       end
 
       it 'extracts the commodity and the child commodity as change' do
@@ -75,7 +75,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
                goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
                goods_nomenclature_sid: heading.goods_nomenclature_sid,
                goods_nomenclature: heading,
-               validity_start_date: Date.current
+               validity_start_date: Time.zone.today
       end
 
       it 'extracts the commodity and the child commodity as change' do

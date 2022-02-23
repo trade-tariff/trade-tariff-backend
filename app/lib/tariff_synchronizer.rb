@@ -170,7 +170,7 @@ module TariffSynchronizer
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)
 
-      (date..Date.current).to_a.reverse.each do |date_for_rollback|
+      (date..Time.zone.today).to_a.reverse.each do |date_for_rollback|
         Sequel::Model.db.transaction do
           # Delete actual data
           oplog_based_models.each do |model|
@@ -216,7 +216,7 @@ module TariffSynchronizer
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)
 
-      (date..Date.current).to_a.reverse.each do |date_for_rollback|
+      (date..Time.zone.today).to_a.reverse.each do |date_for_rollback|
         Sequel::Model.db.transaction do
           if keep
             TariffSynchronizer::CdsUpdate.applied_or_failed.where { issue_date > date_for_rollback }.each do |cds_update|
@@ -287,7 +287,7 @@ module TariffSynchronizer
   end
 
   def update_to
-    ENV['DATE'] ? Date.parse(ENV['DATE']) : Date.current
+    ENV['DATE'] ? Date.parse(ENV['DATE']) : Time.zone.today
   end
 
   def sync_variables_set?

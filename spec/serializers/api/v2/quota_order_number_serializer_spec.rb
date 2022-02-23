@@ -12,7 +12,7 @@ RSpec.describe Api::V2::QuotaOrderNumberSerializer do
           attributes: {
             quota_order_number_sid: serializable.quota_order_number_sid,
             validity_end_date: nil,
-            validity_start_date: Date.current.ago(4.years),
+            validity_start_date: 4.years.ago.beginning_of_day,
           },
           relationships: {
             quota_definition: { data: { id: serializable.quota_definition_id.to_s, type: :quota_definition } },

@@ -69,24 +69,24 @@ RSpec.describe GeographicalArea do
       let!(:geographical_area)                { create :geographical_area, geographical_area_id: 'xx' }
       let!(:contained_area_present)           do
         create :geographical_area, geographical_area_id: 'ab',
-                                   validity_start_date: Date.current.ago(2.years),
-                                   validity_end_date: Date.current.ago(2.years)
+                                   validity_start_date: 2.years.ago.beginning_of_day,
+                                   validity_end_date: 2.years.ago.beginning_of_day
       end
       let!(:contained_area_past) do
         create :geographical_area, geographical_area_id: 'de',
-                                   validity_start_date: Date.current.ago(5.years),
+                                   validity_start_date: 5.years.ago.beginning_of_day,
                                    validity_end_date: 3.years.ago
       end
       let!(:geographical_area_membership1) do
         create :geographical_area_membership, geographical_area_sid: contained_area_present.geographical_area_sid,
                                               geographical_area_group_sid: geographical_area.geographical_area_sid,
-                                              validity_start_date: Date.current.ago(2.years),
+                                              validity_start_date: 2.years.ago.beginning_of_day,
                                               validity_end_date: nil
       end
       let!(:geographical_area_membership2) do
         create :geographical_area_membership, geographical_area_sid: contained_area_past.geographical_area_sid,
                                               geographical_area_group_sid: geographical_area.geographical_area_sid,
-                                              validity_start_date: Date.current.ago(5.years),
+                                              validity_start_date: 5.years.ago.beginning_of_day,
                                               validity_end_date: 3.years.ago
       end
 
