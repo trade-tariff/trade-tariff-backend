@@ -31,8 +31,10 @@ module TariffSynchronizer
     def import!
       instrument('apply_cds.tariff_synchronizer', filename: filename) do
         @oplog_inserts = CdsImporter.new(self).import
+
         check_oplog_inserts
         mark_as_applied
+        store_oplog_inserts
       end
     end
 
@@ -56,6 +58,12 @@ module TariffSynchronizer
       return if oplog_inserts.values.sum > 0
 
       alert_potential_failed_import
+    end
+
+    def store_oplog_inserts
+      self.inserts = oplog_inserts.to_json
+
+      save
     end
 
     def alert_potential_failed_import
