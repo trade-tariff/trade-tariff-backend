@@ -224,6 +224,43 @@ commands:
             sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
 
 jobs:
+  refresh_staging_db:
+    docker:
+      - image: cimg/ruby:3.1.1
+    parameters:
+      service:
+        type: string
+    steps:
+      - checkout
+      - cf_install:
+          space: 'production'
+      - run:
+          name: "Install necessary dependencies"
+          command: |
+            cf install-plugin conduit -r CF-Community -f
+            sudo apt-get update -qq
+            sudo apt-get install postgresql-client
+      - run:
+          name: "Switch to production space"
+          command: |
+            cf target -s production
+      - run:
+          name: "Dump the production database"
+          command: |
+            cf conduit tariff-"<< parameters.service >>"-production-postgres -- pg_dump --file tariff-"<< parameters.service >>"-production-postgres.psql --no-acl --no-owner --clean --verbose
+      - run:
+          name: "Switch to staging space"
+          command: |
+            cf target -s staging
+      - run:
+          name: "Restore the production database into staging"
+          command: |
+            cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < tariff-"<< parameters.service >>"-production-postgres.psql
+      - cf_deploy_docker_tasks:
+          space: staging
+          service: << parameters.service >>
+          environment_key: staging
+
   linters:
     docker:
       - image: cimg/ruby:3.1.1
@@ -260,7 +297,7 @@ jobs:
         default: false
         type: boolean
     docker:
-      - image: cimg/ruby:2.7.4
+      - image: cimg/ruby:3.1.1
     steps:
       - checkout
       - setup_remote_docker:
@@ -432,6 +469,37 @@ jobs:
 
 workflows:
   version: 2
+
+  weekly:
+    triggers:
+      - schedule:
+          # Every Saturday at midnight.
+          cron: "00 00 * * SAT"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - build:
+          name: build_live
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+      - refresh_staging_db:
+          context: trade-tariff
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          filters:
+            branches:
+              only:
+                - main
+          requires: # TODO: Make build_live only run if there is not an image for the current sha
+            - build_live
   ci:
     jobs:
       - linters:
