@@ -474,7 +474,7 @@ workflows:
     triggers:
       - schedule:
           # Every Saturday at midnight.
-          cron: "00 00 * * SAT"
+          cron: "00 00 * * 6"
           filters:
             branches:
               only:
