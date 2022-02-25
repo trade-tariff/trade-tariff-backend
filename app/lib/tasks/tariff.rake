@@ -15,6 +15,11 @@ namespace :tariff do
     TradeTariffBackend.recache
   end
 
+  desc 'Enqueue clearing of all caches'
+  task recache_all: %w[environment] do
+    Sidekiq::Client.enqueue(ClearCacheWorker)
+  end
+
   desc 'Add commodity footnotes for ECO licences where these is an export restriction'
   task add_missing_commodity_footnote: :environment do
     measure_type_id = MeasureType.all.detect { |mt| mt.description == 'Export authorization (Dual use)' }.values[:measure_type_id]
