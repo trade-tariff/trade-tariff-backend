@@ -1,5 +1,5 @@
 # Build compilation image
-FROM ruby:3.1.0-alpine3.15 as builder
+FROM ruby:3.1.1-alpine3.15 as builder
 
 # The application runs from /app
 WORKDIR /app
@@ -11,9 +11,6 @@ RUN apk add --update --no-cache build-base git postgresql-dev curl-dev shared-mi
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 
-# Install bundler to run bundle exec
-# This should be the same version as the Gemfile.lock
-RUN gem install bundler:2.2.18 --no-document
 RUN bundle config set without 'development test'
 
 # Install gems defined in Gemfile
@@ -34,11 +31,13 @@ RUN rm -rf node_modules log tmp && \
       find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:3.1.0-alpine3.15 as production
+FROM ruby:3.1.1-alpine3.15 as production
 
 RUN apk add --update --no-cache postgresql-dev curl curl-dev shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
+
+RUN bundle config set without 'development test'
 
 # The application runs from /app
 WORKDIR /app
