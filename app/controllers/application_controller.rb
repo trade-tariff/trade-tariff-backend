@@ -6,13 +6,11 @@ class ApplicationController < ActionController::Base
   before_action :clear_association_queries
   around_action :configure_time_machine
 
-  unless Rails.application.config.consider_all_requests_local
-    rescue_from Exception,                          with: :render_internal_server_error
-    rescue_from ArgumentError,                      with: :render_bad_request
-    rescue_from Sequel::RecordNotFound,             with: :render_not_found
-    rescue_from ActionController::RoutingError,     with: :render_not_found
-    rescue_from AbstractController::ActionNotFound, with: :render_not_found
-  end
+  rescue_from Exception,                          with: :render_internal_server_error
+  rescue_from ArgumentError,                      with: :render_bad_request
+  rescue_from Sequel::RecordNotFound,             with: :render_not_found
+  rescue_from ActionController::RoutingError,     with: :render_not_found
+  rescue_from AbstractController::ActionNotFound, with: :render_not_found
 
   def render_not_found
     respond_to do |format|
@@ -47,7 +45,7 @@ class ApplicationController < ActionController::Base
       format.any do
         response.headers['Content-Type'] = 'application/json'
         serializer = TradeTariffBackend.error_serializer(request)
-        render json: serializer.serialized_errors(error: "500 - Internal Server Error: #{exception.message}"), status: :internal_server_error
+        render json: serializer.serialized_errors(error: '500 - Internal Server Error: Please contact the Tariff team for help with this issue.'), status: :internal_server_error
       end
     end
   end
