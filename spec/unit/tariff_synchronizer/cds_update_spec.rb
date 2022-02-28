@@ -87,7 +87,18 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
       let(:importer) { CdsImporter.new(cds_update) }
 
+      let(:inserted_oplog_records) do
+        {
+          'AdditionalCode::Operation' => 1,
+          'Measure::Operation' => 5,
+        }
+      end
+
       context 'with valid upload' do
+        it 'will store the inserts on the update' do
+          expect(cds_update.reload.inserts).to eq('{"AdditionalCode::Operation":1,"Measure::Operation":5}')
+        end
+
         it 'will check the import' do
           expect(cds_update).to have_received(:check_oplog_inserts)
         end
@@ -160,7 +171,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
   end
 
   describe '#filename_sequence' do
-    subject(:cds_update) { create(:cds_update, filename: filename) }
+    subject(:cds_update) { create(:cds_update, filename:) }
 
     let(:filename) { 'tariff_dailyExtract_v1_20220118T235959.gzip' }
 
