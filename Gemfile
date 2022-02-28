@@ -46,7 +46,6 @@ gem 'slack-notifier'
 
 # API related
 gem 'ansi'
-gem 'curb'
 gem 'jsonapi-serializer'
 gem 'rabl'
 gem 'responders'
