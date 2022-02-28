@@ -6747,7 +6747,8 @@ CREATE TABLE public.tariff_updates (
     last_error_at timestamp without time zone,
     exception_backtrace text,
     exception_queries text,
-    exception_class text
+    exception_class text,
+    inserts text
 );
 
 
@@ -10832,3 +10833,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20210610150945_create_chan
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210628165555_add_unique_constraint_to_changes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210915112121_add_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220107134210_add_productline_suffix_to_search_references.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20220223091956_add_oplog_inserts_to_tariff_updates.rb');
