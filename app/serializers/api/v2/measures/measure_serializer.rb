@@ -13,6 +13,7 @@ module Api
                    :effective_start_date,
                    :effective_end_date,
                    :import,
+                   :export,
                    :excise,
                    :vat,
                    :reduction_indicator,

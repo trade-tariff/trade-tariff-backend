@@ -322,6 +322,10 @@ FactoryBot.define do
       trade_movement_code { 0 }
     end
 
+    trait :import_and_export do
+      trade_movement_code { 2 }
+    end
+
     trait :national do
       national { true }
     end

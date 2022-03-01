@@ -650,17 +650,22 @@ RSpec.describe Measure do
     context 'measure type is import' do
       let(:measure_type) { create :measure_type, :import }
 
-      it 'returns false' do
-        expect(measure.export).to be_falsy
-      end
+      it { expect(measure.import).to be_truthy }
+      it { expect(measure.export).to be_falsy }
     end
 
     context 'measure type is export' do
       let(:measure_type) { create :measure_type, :export }
 
-      it 'returns true' do
-        expect(measure.export).to be_truthy
-      end
+      it { expect(measure.import).to be_falsy }
+      it { expect(measure.export).to be_truthy }
+    end
+
+    context 'measure type is import_and_export' do
+      let(:measure_type) { create :measure_type, :import_and_export }
+
+      it { expect(measure.import).to be_truthy }
+      it { expect(measure.export).to be_truthy }
     end
   end
 

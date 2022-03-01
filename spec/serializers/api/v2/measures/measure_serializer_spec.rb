@@ -16,6 +16,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           effective_start_date: nil,
           effective_end_date: nil,
           import: true,
+          export: false,
           excise: false,
           vat: false,
           reduction_indicator: 1,
