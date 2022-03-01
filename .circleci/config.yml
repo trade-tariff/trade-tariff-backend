@@ -145,10 +145,6 @@ commands:
             export DOCKER_IMAGE=tariff-backend
             export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
             CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
-      - run:
-          name: "Run Migrations"
-          command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
 
   cf_deploy_docker_tasks:
     parameters:
@@ -180,6 +176,9 @@ commands:
                                                                --task \
                                                                --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
                                                                --docker-username "$AWS_ACCESS_KEY_ID"
+      - run_migrations:
+          service: << parameters.service >>
+          environment_key: << parameters.environment_key >>
 
   smoketest:
     parameters:
@@ -223,6 +222,7 @@ commands:
             sentry-cli releases set-commits $SENTRY_RELEASE --auto
             sentry-cli releases finalize $SENTRY_RELEASE
             sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
+
   run_migrations:
     parameters:
       service:
@@ -233,7 +233,7 @@ commands:
       - run:
           name: "Run Migrations"
           command: |
-            cf run-task "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
+            cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
 
 jobs:
   refresh_staging_db:
@@ -269,7 +269,7 @@ jobs:
           command: |
             cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < tariff-"<< parameters.service >>"-production-postgres.psql
       - run_migrations:
-          service: << parameters.service >>
+          service: staging
           environment_key: staging
 
   linters:
