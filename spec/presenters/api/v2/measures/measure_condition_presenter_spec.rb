@@ -27,7 +27,19 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
     end
 
     context 'when the measure condition has an unknown classification' do
-      let(:measure_condition) { build(:measure_condition) }
+      let(:measure_condition) { build(:measure_condition, :unknown) }
+
+      it { is_expected.to eq('unknown') }
+    end
+
+    context 'when the measure condition has an excluded cds waiver document' do
+      let(:measure_condition) { build(:measure_condition, :cds_waiver) }
+
+      it { is_expected.to eq('unknown') }
+    end
+
+    context 'when the measure condition has an excluded other certificates document' do
+      let(:measure_condition) { build(:measure_condition, :other_exemption) }
 
       it { is_expected.to eq('unknown') }
     end
