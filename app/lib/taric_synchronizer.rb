@@ -15,8 +15,8 @@ class TaricSynchronizer < BaseSynchronizer
   self.host = ENV['TARIFF_SYNC_HOST']
 
   # Initial dump date + 1 day
-  cattr_accessor :taric_initial_update_date
-  self.taric_initial_update_date = Date.new(2012, 6, 6)
+  cattr_accessor :initial_update_date
+  self.initial_update_date = Date.new(2012, 6, 6)
 
   # TARIC query url template
   cattr_accessor :taric_query_url_template

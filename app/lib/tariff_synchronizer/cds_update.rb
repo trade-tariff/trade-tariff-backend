@@ -4,6 +4,10 @@ module TariffSynchronizer
     REGEX_CDS_SEQUENCE = /^tariff_dailyExtract_v1_(?<year>\d{4})(?<month>\d{2})(?<day>\d{2})T\d+\.gzip$/
 
     class << self
+      def initial_update_date
+        CdsSynchronizer.initial_update_date
+      end
+
       def correct_filename_sequence?
         pending_seq = oldest_pending&.filename_sequence
         applied_seq = most_recent_applied&.filename_sequence

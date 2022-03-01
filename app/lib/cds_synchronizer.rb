@@ -6,8 +6,8 @@ class CdsSynchronizer < BaseSynchronizer
 
   # set initial update date
   # Initial dump date + 1 day
-  cattr_accessor :cds_initial_update_date
-  self.cds_initial_update_date = Date.new(2020, 9, 1)
+  cattr_accessor :initial_update_date
+  self.initial_update_date = Date.new(2020, 9, 1)
 
   cattr_accessor :update_type
   self.update_type = TariffSynchronizer::CdsUpdate
