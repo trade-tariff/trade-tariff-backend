@@ -17,7 +17,8 @@ Rails.application.configure do
   config.public_file_server.headers = { 'Cache-Control' => 'public, max-age=3600' }
 
   # Show full error reports and disable caching.
-  config.consider_all_requests_local       = true
+  # TODO: This is only really necessary to make the application controller rescue behaviour testable.
+  config.consider_all_requests_local       = false
   config.action_controller.perform_caching = false
 
   config.cache_store = :null_store

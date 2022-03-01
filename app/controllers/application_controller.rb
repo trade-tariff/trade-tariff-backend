@@ -47,7 +47,7 @@ class ApplicationController < ActionController::Base
       format.any do
         response.headers['Content-Type'] = 'application/json'
         serializer = TradeTariffBackend.error_serializer(request)
-        render json: serializer.serialized_errors(error: "500 - Internal Server Error: #{exception.message}"), status: :internal_server_error
+        render json: serializer.serialized_errors(error: '500 - Internal Server Error: Please contact the Tariff team for help with this issue.'), status: :internal_server_error
       end
     end
   end
