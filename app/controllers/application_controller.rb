@@ -6,11 +6,13 @@ class ApplicationController < ActionController::Base
   before_action :clear_association_queries
   around_action :configure_time_machine
 
-  rescue_from Exception,                          with: :render_internal_server_error
-  rescue_from ArgumentError,                      with: :render_bad_request
-  rescue_from Sequel::RecordNotFound,             with: :render_not_found
-  rescue_from ActionController::RoutingError,     with: :render_not_found
-  rescue_from AbstractController::ActionNotFound, with: :render_not_found
+  unless Rails.application.config.consider_all_requests_local
+    rescue_from Exception,                          with: :render_internal_server_error
+    rescue_from ArgumentError,                      with: :render_bad_request
+    rescue_from Sequel::RecordNotFound,             with: :render_not_found
+    rescue_from ActionController::RoutingError,     with: :render_not_found
+    rescue_from AbstractController::ActionNotFound, with: :render_not_found
+  end
 
   def render_not_found
     respond_to do |format|
