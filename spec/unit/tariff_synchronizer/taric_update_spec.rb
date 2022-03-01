@@ -3,6 +3,12 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
 
   it_behaves_like 'Base Update'
 
+  describe '.initial_update_date' do
+    subject(:initial_update_date) { described_class.initial_update_date }
+
+    it { is_expected.to eq(Date.parse('2012-06-06')) }
+  end
+
   describe '.sync' do
     before do
       allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloader', perform: nil))
