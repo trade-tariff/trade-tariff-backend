@@ -1,5 +1,12 @@
 class SlackNotifierService
-  def call(message)
-    Rails.application.config.slack_notifier.ping(message)
+  class << self
+    def call(message)
+      notifier.ping(message)
+    end
+
+  private
+    def notifier
+      Rails.application.config.slack_notifier
+    end
   end
 end

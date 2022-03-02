@@ -4,8 +4,8 @@ RSpec.describe SlackNotifierService do
   end
 
   it 'sends a Slack message' do
-    described_class.new.call('Hello Slack')
+    SlackNotifierService.call('Hello Slack')
 
-    expect(Rails.application.config.slack_notifier).to have_received(:ping).with('Hello Slack')
+    expect(Rails.application.config.slack_notifier).to have_received(:ping).with("Hello Slack")
   end
 end
