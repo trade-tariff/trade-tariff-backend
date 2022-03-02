@@ -10,12 +10,6 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
   it_behaves_like 'Base Update'
 
-  describe '.initial_update_date' do
-    subject(:initial_update_date) { described_class.initial_update_date }
-
-    it { is_expected.to eq(Date.parse('2020-09-01')) }
-  end
-
   describe '.download' do
     it 'calls CdsUpdateDownloader perform for a Cds update' do
       downloader = instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: true)

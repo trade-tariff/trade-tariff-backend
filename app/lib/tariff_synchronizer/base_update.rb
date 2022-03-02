@@ -177,13 +177,9 @@ module TariffSynchronizer
         Time.zone.today
       end
 
-      def initial_update_date
-        raise NotImplementedError, 'Implemented in the concrete STI class'
-      end
-
       def download_start_date
         if pending_applied_or_failed.count.zero?
-          initial_update_date
+          TariffSynchronizer.initial_update_date_for(update_type)
         else
           last_download = (oldest_pending || most_recent_applied || most_recent_failed)
 

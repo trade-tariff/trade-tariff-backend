@@ -121,7 +121,7 @@ module TariffSynchronizer
         instrument(
           'apply.tariff_synchronizer',
           update_names: applied_updates.map(&:filename),
-          import_warnings:,
+          import_warnings: import_warnings,
         )
 
         Sidekiq::Client.enqueue(ClearCacheWorker) if reindex_all_indexes
@@ -209,10 +209,10 @@ module TariffSynchronizer
         end
       end
 
-      instrument('rollback.tariff_synchronizer', date:, keep:)
+      instrument('rollback.tariff_synchronizer', date: date, keep: keep)
     end
   rescue Redlock::LockError
-    instrument('rollback_lock_error.tariff_synchronizer', date: rollback_date, keep:)
+    instrument('rollback_lock_error.tariff_synchronizer', date: rollback_date, keep: keep)
   end
 
   def rollback_cds(rollback_date, keep: false)
@@ -259,10 +259,10 @@ module TariffSynchronizer
         end
       end
 
-      instrument('rollback.tariff_synchronizer', date:, keep:)
+      instrument('rollback.tariff_synchronizer', date: date, keep: keep)
     end
   rescue Redlock::LockError
-    instrument('rollback_lock_error.tariff_synchronizer', date: rollback_date, keep:)
+    instrument('rollback_lock_error.tariff_synchronizer', date: rollback_date, keep: keep)
   end
 
   def initial_update_date_for(update_type)
@@ -276,7 +276,7 @@ module TariffSynchronizer
     updates.map do |update|
       instrument('perform_update.tariff_synchronizer',
                  filename: update.filename,
-                 update_type:)
+                 update_type: update_type)
 
       BaseUpdateImporter.perform(update)
     end
@@ -339,6 +339,6 @@ module TariffSynchronizer
   end
 
   def notify_slack_app(exception)
-    SlackNotifierService.new.call("Error #{exception.class}: #{exception.message}")
+    SlackNotifierService.call("Error #{exception.class}: #{exception.message}")
   end
 end

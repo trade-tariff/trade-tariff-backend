@@ -6,10 +6,6 @@ module TariffSynchronizer
     SEQUENCE_APPLICABLE_STATES = [APPLIED_STATE, PENDING_STATE].freeze
 
     class << self
-      def initial_update_date
-        TaricSynchronizer.initial_update_date
-      end
-
       def sync
         applicable_download_date_range.each { |issue_date| download(issue_date) }
       end
