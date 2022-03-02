@@ -214,6 +214,7 @@ FactoryBot.define do
 
         create(
           :measure_condition_component,
+          :with_duty_expression,
           measure_condition_sid: condition.measure_condition_sid,
           duty_amount: evaluator.duty_amount,
           duty_expression_id: evaluator.duty_expression_id,

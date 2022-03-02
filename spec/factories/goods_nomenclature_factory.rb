@@ -42,6 +42,20 @@ FactoryBot.define do
       end
     end
 
+    trait :with_measures do
+      after(:create) do |goods_nomenclature, _evaluator|
+        create(
+          :measure,
+          :third_country,
+          :with_measure_type,
+          :with_measure_conditions,
+          :with_base_regulation,
+          goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+          goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+        )
+      end
+    end
+
     trait :with_overview_measures do
       after(:create) do |goods_nomenclature, _evaluator|
         create(:measure, :vat, :with_measure_type, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid, goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)

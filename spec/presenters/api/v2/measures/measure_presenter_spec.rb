@@ -1,35 +1,97 @@
-RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
-  describe '#measure_condition_class' do
-    subject(:measure_condition_class) { described_class.new(measure_condition).measure_condition_class }
+RSpec.describe Api::V2::Measures::MeasurePresenter do
+  subject(:presenter) { described_class.new(measure, measure.goods_nomenclature) }
 
-    context 'when the measure condition has threshold attributes' do
-      let(:measure_condition) { build(:measure_condition, :threshold) }
+  let(:measure) { create(:measure, :with_base_regulation, :with_measure_conditions) }
 
-      it { is_expected.to eq('threshold') }
+  describe '#legal_acts' do
+    it 'will be mapped through the MeasureLegalActPresenter' do
+      expect(presenter.legal_acts.first).to \
+        be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
+    end
+  end
+
+  describe '#measure_conditions' do
+    subject(:measure_conditions) { described_class.new(measure, measure.goods_nomenclature).measure_conditions }
+
+    it { expect(measure_conditions.first).to be_instance_of(Api::V2::Measures::MeasureConditionPresenter) }
+  end
+
+  describe 'exclusions' do
+    let(:gb) { create(:geographical_area, geographical_area_id: 'GB') }
+    let(:xi) { create(:geographical_area, geographical_area_id: 'XI') }
+
+    let(:xi_exclusion) do
+      create(:measure_excluded_geographical_area,
+             measure_sid: measure.measure_sid,
+             geographical_area_sid: xi.geographical_area_sid,
+             excluded_geographical_area: xi.geographical_area_id,
+             measure: measure,
+             geographical_area: xi)
     end
 
-    context 'when the measure condition has a negative measure action code' do
-      let(:measure_condition) { create(:measure_condition, :negative) }
-
-      it { is_expected.to eq('negative') }
+    before do
+      allow(MeasureTypeExclusion).to \
+        receive(:find)
+        .with(measure.measure_type_id, measure.geographical_area_id)
+        .and_return(excluded_countries)
     end
 
-    context 'when the measure condition has a document exemption attributes' do
-      let(:measure_condition) { build(:measure_condition, :exemption) }
+    describe '#excluded_countries' do
+      subject { presenter.excluded_countries }
 
-      it { is_expected.to eq('exemption') }
+      context 'with measure type exclusions' do
+        let(:excluded_countries) { [gb.geographical_area_id] }
+
+        it { is_expected.to include(gb) }
+        it { is_expected.not_to include(xi) }
+      end
+
+      context 'with directly excluded countries' do
+        let(:excluded_countries) { [] }
+
+        before { xi_exclusion }
+
+        it { is_expected.to include(xi) }
+        it { is_expected.not_to include(gb) }
+      end
+
+      context 'with both measure type and directly excluded countries' do
+        let(:excluded_countries) { [gb.geographical_area_id] }
+
+        before { xi_exclusion }
+
+        it { is_expected.to include(gb) }
+        it { is_expected.to include(xi) }
+      end
     end
 
-    context 'when the measure condition has a document attributes' do
-      let(:measure_condition) { build(:measure_condition, :document) }
+    describe '#excluded_country_ids' do
+      subject { presenter.excluded_country_ids }
 
-      it { is_expected.to eq('document') }
-    end
+      context 'with measure type exclusions' do
+        let(:excluded_countries) { [gb.geographical_area_id] }
 
-    context 'when the measure condition has an unknown classification' do
-      let(:measure_condition) { build(:measure_condition) }
+        it { is_expected.to include('GB') }
+        it { is_expected.not_to include('XI') }
+      end
 
-      it { is_expected.to eq('unknown') }
+      context 'with directly excluded countries' do
+        let(:excluded_countries) { [] }
+
+        before { xi_exclusion }
+
+        it { is_expected.to include('XI') }
+        it { is_expected.not_to include('GB') }
+      end
+
+      context 'with both measure type and directly excluded countries' do
+        let(:excluded_countries) { [gb.geographical_area_id] }
+
+        before { xi_exclusion }
+
+        it { is_expected.to include('GB') }
+        it { is_expected.to include('XI') }
+      end
     end
   end
 end
