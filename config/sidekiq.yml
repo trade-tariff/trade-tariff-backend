@@ -18,9 +18,14 @@
   #
   # Online converter: https://crontab.guru/#0_22_*_*_*
   #
-  UpdatesSynchronizerWorker:
+  CdsUpdatesWorker:
     cron: "0 5 * * *"
-    description: "UpdatesSynchronizerWorker"
+    description: "Check for, parse and load UK data updates for the United Kingdom"
+    enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
+  TaricUpdatesWorker:
+    cron: "0 0 * * *"
+    description: "Check for, parse and load EU data updates for Northern Ireland"
+    enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
   PopulateChangesTableWorker:
     cron: "30 4 * * *" 
     description: "Populates the changes table"
