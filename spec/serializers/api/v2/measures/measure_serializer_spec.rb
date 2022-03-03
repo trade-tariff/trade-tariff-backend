@@ -2,7 +2,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable, options).serializable_hash.as_json }
 
   let(:serializable) { Api::V2::Measures::MeasurePresenter.new(measure.reload, measure.goods_nomenclature.reload) }
-  let(:measure) { create(:measure, :with_meursing, :with_measure_components, reduction_indicator: 1) }
+  let(:measure) { create(:measure, :with_measure_type, :with_meursing, :with_measure_components, reduction_indicator: 1) }
   let(:options) { {} }
 
   let(:expected_pattern) do
@@ -16,7 +16,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           effective_start_date: nil,
           effective_end_date: nil,
           import: true,
-          export: false,
+          export: true,
           excise: false,
           vat: false,
           reduction_indicator: 1,

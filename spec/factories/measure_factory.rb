@@ -105,7 +105,7 @@ FactoryBot.define do
           validity_start_date: measure.validity_start_date - 1.day,
           measure_explosion_level: evaluator.type_explosion_level,
           order_number_capture_code: evaluator.order_number_capture_code,
-          trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
+          trade_movement_code: 2,
           measure_type_series_id: evaluator.measure_type_series_id,
         )
       end
