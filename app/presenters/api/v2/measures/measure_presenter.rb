@@ -18,6 +18,10 @@ module Api
           vat?
         end
 
+        def universal_waiver_applies
+          universal_waiver_applies?
+        end
+
         def duty_expression
           Api::V2::Measures::DutyExpressionPresenter.new(self, @declarable)
         end

@@ -1,4 +1,6 @@
 class MeasureCondition < Sequel::Model
+  CDS_WAIVER_DOCUMENT_CODE = '999L'.freeze
+
   plugin :time_machine
   plugin :national
   plugin :oplog, primary_key: :measure_condition_sid
@@ -83,9 +85,9 @@ class MeasureCondition < Sequel::Model
     RequirementDutyExpressionFormatter.format(
       duty_amount: condition_duty_amount,
       monetary_unit: condition_monetary_unit_code,
-      monetary_unit_abbreviation: monetary_unit_abbreviation,
-      measurement_unit: measurement_unit,
-      formatted_measurement_unit_qualifier: formatted_measurement_unit_qualifier,
+      monetary_unit_abbreviation:,
+      measurement_unit:,
+      formatted_measurement_unit_qualifier:,
       currency: TradeTariffBackend.currency,
       formatted: true,
     )
@@ -121,6 +123,10 @@ class MeasureCondition < Sequel::Model
 
   def expresses_unit?
     measure_condition_components.any?(&:expresses_unit?)
+  end
+
+  def universal_waiver_applies?
+    document_code.present? && document_code == CDS_WAIVER_DOCUMENT_CODE
   end
 
   def units
