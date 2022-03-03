@@ -2,20 +2,12 @@ module Api
   module V2
     module Measures
       class MeasurePresenter < SimpleDelegator
-        attr_reader :measure, :duty_expression, :geographical_areas, :national_measurement_units
-
         delegate :id, to: :duty_expression, prefix: true
-        delegate :geographical_area, :geographical_area_id, to: :measure
 
-        def initialize(measure, declarable, geographical_areas = [])
+        def initialize(measure, declarable)
           super(measure)
-          @measure = measure
-          @duty_expression = Api::V2::Measures::DutyExpressionPresenter.new(measure, declarable)
-          @geographical_areas = geographical_areas
-          @national_measurement_units = declarable.national_measurement_unit_set
-                                                  &.national_measurement_unit_set_units
-                                                  &.select(&:present?)
-                                                  &.select { |nmu| nmu.level > 1 } || []
+
+          @declarable = declarable
         end
 
         def excise
@@ -24,6 +16,17 @@ module Api
 
         def vat
           vat?
+        end
+
+        def duty_expression
+          Api::V2::Measures::DutyExpressionPresenter.new(self, @declarable)
+        end
+
+        def national_measurement_units
+          @national_measurement_units ||= @declarable.national_measurement_unit_set
+                                                    &.national_measurement_unit_set_units
+                                                    &.select(&:present?)
+                                                    &.select { |nmu| nmu.level > 1 } || []
         end
 
         def additional_code
@@ -59,12 +62,12 @@ module Api
         end
 
         def legal_act_ids
-          measure.legal_acts.map(&:regulation_id)
+          legal_acts.map(&:regulation_id)
         end
 
         def legal_acts
           super.map do |legal_act|
-            Api::V2::Measures::MeasureLegalActPresenter.new legal_act, @measure
+            Api::V2::Measures::MeasureLegalActPresenter.new legal_act, self
           end
         end
 
