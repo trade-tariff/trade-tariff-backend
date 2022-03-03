@@ -93,6 +93,19 @@ RSpec.describe CachedCommodityService do
             },
             meta: { duty_calculator: { source: 'uk', scheme_code: nil } },
           },
+          {
+            id: String,
+            type: 'measure_condition',
+            attributes: Hash,
+            relationships: {
+              measure_condition_components: Hash,
+            },
+          },
+          {
+            id: String,
+            type: 'measure_condition_component',
+            attributes: Hash,
+          },
         ],
       }
     end
@@ -101,8 +114,12 @@ RSpec.describe CachedCommodityService do
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
+
+      create :duty_expression, :with_description, duty_expression_id: '02'
+
       measure = create(
         :measure,
+        :with_measure_conditions,
         :with_base_regulation,
         goods_nomenclature: commodity,
         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
