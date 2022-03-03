@@ -37,6 +37,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           },
           legal_acts: { data: [] },
           measure_conditions: { data: [] },
+          measure_condition_permutation_groups: { data: [] },
           measure_components: { data: [] },
           national_measurement_units: { data: [] },
           geographical_area: {

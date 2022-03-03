@@ -120,4 +120,13 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
       it { is_expected.to be_nil }
     end
   end
+
+  describe '#measure_condition_permutation_groups' do
+    subject { presenter.measure_condition_permutation_groups }
+
+    let(:measure) { create :measure, :with_measure_conditions }
+
+    it { is_expected.not_to be_empty }
+    it { is_expected.to all be_instance_of MeasureConditionPermutations::Group }
+  end
 end

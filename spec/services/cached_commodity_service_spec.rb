@@ -83,6 +83,7 @@ RSpec.describe CachedCommodityService do
               measure_type: Hash,
               legal_acts: Hash,
               measure_conditions: Hash,
+              measure_condition_permutation_groups: Hash,
               measure_components: Hash,
               national_measurement_units: Hash,
               geographical_area: Hash,
@@ -105,6 +106,21 @@ RSpec.describe CachedCommodityService do
             id: String,
             type: 'measure_condition_component',
             attributes: Hash,
+          },
+          {
+            id: String,
+            type: 'measure_condition_permutation_group',
+            attributes: Hash,
+            relationships: {
+              permutations: Hash,
+            },
+          },
+          {
+            id: String,
+            type: 'measure_condition_permutation',
+            relationships: {
+              measure_conditions: Hash,
+            },
           },
         ],
       }

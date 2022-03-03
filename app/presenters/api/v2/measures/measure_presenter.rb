@@ -93,6 +93,16 @@ module Api
           TradeTariffBackend.rules_of_origin.scheme_associations[geographical_area_id]
         end
 
+        def measure_condition_permutation_groups
+          @measure_condition_permutation_groups = \
+            MeasureConditionPermutations::Calculator.new(measure)
+                                                    .permutation_groups
+        end
+
+        def measure_condition_permutation_group_ids
+          measure_condition_permutation_groups.map(&:id)
+        end
+
       private
 
         def measure_type_exclusions

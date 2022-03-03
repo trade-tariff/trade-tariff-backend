@@ -28,6 +28,7 @@ module Api
                                         record_type: :suspension_legal_act, serializer: Api::V2::Measures::MeasureSuspensionLegalActSerializer,
                                         if: proc { |measure| !measure.national && measure.suspended? }
         has_many :measure_conditions, serializer: Api::V2::Measures::MeasureConditionSerializer
+        has_many :measure_condition_permutation_groups, serializer: Api::V2::Measures::MeasureConditionPermutationGroupSerializer
         has_many :measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer
         has_many :resolved_measure_components, serializer: Api::V2::Measures::MeasureComponentSerializer
 
