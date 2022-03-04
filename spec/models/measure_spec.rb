@@ -1230,6 +1230,26 @@ RSpec.describe Measure do
     it { expect(measure.meursing_measures).to eq(meursing_measures) }
   end
 
+  describe '#universal_waiver_applies?' do
+    context 'when at least one measure condition has the cds waiver document code' do
+      subject(:measure) { create(:measure, :with_measure_conditions, certificate_type_code: '9', certificate_code: '99L') }
+
+      it { is_expected.to be_universal_waiver_applies }
+    end
+
+    context 'when no measure conditions have the cds waiver document code' do
+      subject(:measure) { create(:measure, :with_measure_conditions, certificate_type_code: '7', certificate_code: '97L') }
+
+      it { is_expected.not_to be_universal_waiver_applies }
+    end
+
+    context 'when there are no measure conditions' do
+      subject(:measure) { create(:measure) }
+
+      it { is_expected.not_to be_universal_waiver_applies }
+    end
+  end
+
   shared_context 'with regulation measures' do
     around do |example|
       TimeMachine.now { example.run }

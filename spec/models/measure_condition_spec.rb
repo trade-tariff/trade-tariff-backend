@@ -202,5 +202,19 @@ RSpec.describe MeasureCondition do
       it { expect(measure_condition.units).to eq([]) }
     end
   end
+
+  describe '#universal_waiver_applies?' do
+    context 'when the measure condition has a cds waiver document_code' do
+      subject(:measure_condition) { create(:measure_condition, certificate_type_code: '9', certificate_code: '99L') }
+
+      it { is_expected.to be_universal_waiver_applies }
+    end
+
+    context 'when the measure condition has no cds waiver document_code' do
+      subject(:measure_condition) { create(:measure_condition, certificate_type_code: '7', certificate_code: '99L') }
+
+      it { is_expected.not_to be_universal_waiver_applies }
+    end
+  end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers

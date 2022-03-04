@@ -25,7 +25,7 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
              measure_sid: measure.measure_sid,
              geographical_area_sid: xi.geographical_area_sid,
              excluded_geographical_area: xi.geographical_area_id,
-             measure: measure,
+             measure:,
              geographical_area: xi)
     end
 
@@ -93,5 +93,13 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
         it { is_expected.to include('XI') }
       end
     end
+  end
+
+  describe '#universal_waiver_applies' do
+    subject(:universal_waiver_applies) { described_class.new(measure, measure.goods_nomenclature).universal_waiver_applies }
+
+    let(:measure) { create(:measure, :with_measure_conditions, certificate_type_code: '9', certificate_code: '99L') }
+
+    it { is_expected.to be(true) }
   end
 end

@@ -20,6 +20,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           excise: false,
           vat: false,
           reduction_indicator: 1,
+          universal_waiver_applies: false,
         },
         relationships: {
           duty_expression: {

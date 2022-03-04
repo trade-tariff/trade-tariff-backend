@@ -101,6 +101,10 @@ class Measure < Sequel::Model
 
   delegate :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
 
+  def universal_waiver_applies?
+    measure_conditions.any?(&:universal_waiver_applies?)
+  end
+
   def full_temporary_stop_regulation
     full_temporary_stop_regulations.first
   end
