@@ -216,5 +216,33 @@ RSpec.describe MeasureCondition do
       it { is_expected.not_to be_universal_waiver_applies }
     end
   end
+
+  describe '#permutation_key' do
+    subject { measure_condition.permutation_key }
+
+    let(:type_code) { measure_condition.certificate_type_code }
+    let(:certificate_code) { measure_condition.certificate_code }
+    let(:duty_amount) { measure_condition.condition_duty_amount }
+
+    it { is_expected.to eql "#{type_code}-#{certificate_code}-#{duty_amount}" }
+
+    context 'with nil certificate_type_code' do
+      let(:measure_condition) { create :measure_condition, certificate_type_code: nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with nil certificate_code' do
+      let(:measure_condition) { create :measure_condition, certificate_code: nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with nil condition_duty_amount' do
+      let(:measure_condition) { create :measure_condition, condition_duty_amount: nil }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers

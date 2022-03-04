@@ -134,6 +134,12 @@ class MeasureCondition < Sequel::Model
     measure_condition_components.map(&:unit)
   end
 
+  def permutation_key
+    return unless certificate_type_code && certificate_code && condition_duty_amount
+
+    "#{certificate_type_code}-#{certificate_code}-#{condition_duty_amount}"
+  end
+
 private
 
   def classification
