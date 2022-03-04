@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
-  let(:serializable) { create(:measure_condition) }
+  let(:serializable) { Api::V2::Measures::MeasureConditionPresenter.new(create(:measure_condition)) }
 
   let(:expected_pattern) do
     {
@@ -22,6 +22,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
           monetary_unit_abbreviation: nil,
           condition_measurement_unit_code: serializable.condition_measurement_unit_code,
           condition_measurement_unit_qualifier_code: serializable.condition_measurement_unit_qualifier_code,
+          measure_condition_class: 'threshold',
         },
         relationships: {
           measure_condition_components: {

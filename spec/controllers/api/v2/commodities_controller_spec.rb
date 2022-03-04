@@ -1,75 +1,21 @@
-RSpec.describe Api::V2::CommoditiesController, 'GET #show' do
+RSpec.describe Api::V2::CommoditiesController do
   let(:commodity) do
     create(
       :commodity,
       :with_indent,
       :with_chapter,
       :with_heading,
+      :with_measures,
       :with_description,
       :declarable,
     )
   end
 
-  let(:pattern) do
-    {
-      data: {
-        id: String,
-        type: 'commodity',
-        attributes: Hash,
-        relationships: {
-          footnotes: Hash,
-          section: Hash,
-          chapter: Hash,
-          heading: Hash,
-          ancestors: Hash,
-          import_measures: Hash,
-          export_measures: Hash,
-        },
-        meta: {
-          duty_calculator: {
-            applicable_additional_codes: Hash,
-            applicable_measure_units: Hash,
-            applicable_vat_options: Hash,
-            entry_price_system: false,
-            meursing_code: false,
-            source: 'uk',
-            trade_defence: false,
-            zero_mfn_duty: false,
-          },
-        },
-      },
-      included: [
-        {
-          id: String,
-          type: 'chapter',
-          attributes: Hash,
-          relationships: {
-            guides: Hash,
-          },
-        },
-        {
-          id: String,
-          type: 'heading',
-          attributes: Hash,
-        },
-        {
-          id: String,
-          type: 'section',
-          attributes: Hash,
-        },
-      ],
-    }
-  end
-
-  describe 'GET :show' do
+  describe 'GET #show' do
     subject(:do_response) { get :show, params: { id: commodity.code } }
 
     before do
       allow(CachedCommodityService).to receive(:new).and_call_original
-    end
-
-    it 'returns rendered record' do
-      expect(do_response.body).to match_json_expression pattern
     end
 
     it 'initializes the CachedCommodityService' do

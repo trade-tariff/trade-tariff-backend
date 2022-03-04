@@ -1,13 +1,19 @@
 RSpec.describe Api::V2::Measures::MeasurePresenter do
   subject(:presenter) { described_class.new(measure, measure.goods_nomenclature) }
 
-  let(:measure) { create(:measure, :with_base_regulation) }
+  let(:measure) { create(:measure, :with_base_regulation, :with_measure_conditions) }
 
   describe '#legal_acts' do
     it 'will be mapped through the MeasureLegalActPresenter' do
       expect(presenter.legal_acts.first).to \
         be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
     end
+  end
+
+  describe '#measure_conditions' do
+    subject(:measure_conditions) { described_class.new(measure, measure.goods_nomenclature).measure_conditions }
+
+    it { expect(measure_conditions.first).to be_instance_of(Api::V2::Measures::MeasureConditionPresenter) }
   end
 
   describe 'exclusions' do

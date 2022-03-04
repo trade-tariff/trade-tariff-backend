@@ -20,7 +20,8 @@ module Api
                    :document_code,
                    :duty_expression,
                    :monetary_unit_abbreviation,
-                   :requirement
+                   :requirement,
+                   :measure_condition_class
 
         has_many :measure_condition_components, serializer: Api::V2::Measures::MeasureConditionComponentSerializer
       end
