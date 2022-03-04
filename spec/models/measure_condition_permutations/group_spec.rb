@@ -2,14 +2,21 @@ RSpec.describe MeasureConditionPermutations::Group do
   subject :group do
     described_class.new measure.measure_sid,
                         condition_code,
-                        measure.measure_conditions.to_a
+                        permutations
   end
 
   let(:measure) { create :measure, :with_measure_conditions }
   let(:condition_code) { 'A' }
 
+  let :permutations do
+    measure.measure_conditions.map(
+      &MeasureConditionPermutations::Permutation.method(:new)
+    )
+  end
+
   it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :condition_code }
+  it { is_expected.to have_attributes length: 1 }
 
   describe '#id' do
     subject { group.id }

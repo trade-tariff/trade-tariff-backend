@@ -8,6 +8,19 @@ RSpec.describe MeasureConditionPermutations::Permutation do
   it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :measure_conditions }
   it { is_expected.to respond_to :measure_condition_ids }
+  it { is_expected.to have_attributes length: 1 }
+
+  describe '#initialize' do
+    context 'with multiple conditions' do
+      it { is_expected.to have_attributes length: 1 }
+    end
+
+    context 'with single condition' do
+      let(:conditions) { measure.measure_conditions.first }
+
+      it { is_expected.to have_attributes length: 1 }
+    end
+  end
 
   describe '#id' do
     subject { permutation.id }

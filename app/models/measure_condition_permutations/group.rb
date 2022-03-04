@@ -1,34 +1,18 @@
 module MeasureConditionPermutations
   class Group
-    # Permutations are grouped according to condition code
+    attr_reader :id, :condition_code, :permutations
 
-    attr_reader :id, :condition_code
+    delegate :length, to: :permutations
 
-    def initialize(measure_sid, condition_code, conditions)
+    def initialize(measure_sid, condition_code, permutations)
       @measure_sid = measure_sid
       @condition_code = condition_code
-      @conditions = conditions
+      @permutations = permutations
       @id = "#{measure_sid}-#{condition_code}"
-    end
-
-    def permutations
-      @permutations = compute_permutations.map(&:remove_duplicate_conditions)
-                                          .map(&method(:remove_superset_permutations))
     end
 
     def permutation_ids
       permutations.map(&:id)
-    end
-
-  private
-
-    def compute_permutations
-      [Permutation.new(@conditions)]
-    end
-
-    def remove_superset_permutations(permutations)
-      # FIXME: To be implemented
-      permutations
     end
   end
 end

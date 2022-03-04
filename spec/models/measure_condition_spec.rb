@@ -241,7 +241,7 @@ RSpec.describe MeasureCondition do
     context 'with nil condition_duty_amount' do
       let(:measure_condition) { create :measure_condition, condition_duty_amount: nil }
 
-      it { is_expected.to be_nil }
+      it { is_expected.to eql "#{type_code}-#{certificate_code}-" }
     end
   end
 end

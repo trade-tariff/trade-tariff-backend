@@ -4,8 +4,10 @@ module MeasureConditionPermutations
   class Permutation
     attr_reader :id, :measure_conditions
 
+    delegate :length, to: :measure_conditions
+
     def initialize(measure_conditions)
-      @measure_conditions = measure_conditions
+      @measure_conditions = Array.wrap(measure_conditions)
       @id = generate_id
     end
 

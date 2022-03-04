@@ -135,7 +135,7 @@ class MeasureCondition < Sequel::Model
   end
 
   def permutation_key
-    return unless certificate_type_code && certificate_code && condition_duty_amount
+    return unless certificate_type_code && certificate_code
 
     "#{certificate_type_code}-#{certificate_code}-#{condition_duty_amount}"
   end

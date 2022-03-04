@@ -3,13 +3,16 @@ RSpec.describe Api::V2::Measures::MeasureConditionPermutationGroupSerializer do
 
   let :group do
     MeasureConditionPermutations::Group.new measure.measure_sid,
-                                            condition_code,
-                                            conditions
+                                            'A',
+                                            permutations
   end
 
   let(:measure) { create :measure, :with_measure_conditions }
-  let(:condition_code) { 'A' }
   let(:conditions) { measure.measure_conditions.to_a }
+
+  let :permutations do
+    conditions.map(&MeasureConditionPermutations::Permutation.method(:new))
+  end
 
   describe '#serializable_hash' do
     subject { serializer.serializable_hash.as_json }
@@ -20,7 +23,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionPermutationGroupSerializer do
           id: group.id.to_s,
           type: 'measure_condition_permutation_group',
           attributes: {
-            condition_code:,
+            condition_code: 'A',
           },
           relationships: {
             'permutations': {
