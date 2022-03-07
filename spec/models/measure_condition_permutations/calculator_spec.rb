@@ -4,23 +4,27 @@ RSpec.describe MeasureConditionPermutations::Calculator do
   let(:measure) do
     create(:measure)
       .tap { |m| create :measure_condition, measure_sid: m.measure_sid }
-      .reload
   end
 
   describe '#measure_conditions' do
-    subject { calculator.measure_conditions }
+    let(:first_condition) { measure.measure_conditions.first }
 
-    it { is_expected.to include measure.measure_conditions.first }
+    it { is_expected.to have_attributes measure_conditions: include(first_condition) }
 
     context 'with universal waiver conditions do' do
       let :waiver_condition do
-        create(:measure_condition, :cds_waiver,
-               measure_sid: measure.measure_sid).tap do |mc|
-          mc.measure.reload
-        end
+        create :measure_condition, :cds_waiver, measure_sid: measure.measure_sid
       end
 
-      it { is_expected.not_to include waiver_condition }
+      it { is_expected.not_to have_attributes measure_conditions: include(waiver_condition) }
+    end
+
+    context 'with negative action conditions do' do
+      let :negative_condition do
+        create :measure_condition, :negative, measure_sid: measure.measure_sid
+      end
+
+      it { is_expected.not_to have_attributes measure_conditions: include(negative_condition) }
     end
   end
 
