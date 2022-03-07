@@ -7,6 +7,7 @@ module Api
         def initialize(measure, declarable)
           super(measure)
 
+          @measure = measure
           @declarable = declarable
         end
 
@@ -95,7 +96,7 @@ module Api
 
         def measure_condition_permutation_groups
           @measure_condition_permutation_groups = \
-            MeasureConditionPermutations::Calculator.new(measure)
+            MeasureConditionPermutations::Calculator.new(@measure)
                                                     .permutation_groups
         end
 

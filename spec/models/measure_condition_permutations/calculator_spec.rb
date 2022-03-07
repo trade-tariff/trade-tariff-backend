@@ -1,7 +1,11 @@
 RSpec.describe MeasureConditionPermutations::Calculator do
   subject(:calculator) { described_class.new measure }
 
-  let(:measure) { create :measure, :with_measure_conditions }
+  let(:measure) do
+    create(:measure)
+      .tap { |m| create :measure_condition, measure_sid: m.measure_sid }
+      .reload
+  end
 
   describe '#permuation_groups' do
     subject(:groups) { calculator.permutation_groups }
