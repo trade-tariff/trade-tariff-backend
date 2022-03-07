@@ -1,5 +1,5 @@
 RSpec.describe MeasureConditionPermutations::Calculator do
-  subject(:calculator) { described_class.new measure }
+  subject(:calculator) { described_class.new measure.reload }
 
   let(:measure) do
     create(:measure)
@@ -58,32 +58,24 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
 
     context 'with mixture of conditions' do
-      let(:first_condition) { measure.measure_conditions.first }
+      let :measure do
+        create(:measure).tap do |measure|
+          first = create :measure_condition, measure_sid: measure.measure_sid
 
-      let :second_condition do
-        create :measure_condition, measure_sid: measure.measure_sid,
-                                   certificate_type_code: first_condition.certificate_type_code,
-                                   certificate_code: first_condition.certificate_code,
-                                   condition_duty_amount: first_condition.condition_duty_amount
-      end
+          second = create :measure_condition, measure_sid: measure.measure_sid,
+                                              certificate_type_code: first.certificate_type_code,
+                                              certificate_code: first.certificate_code,
+                                              condition_duty_amount: first.condition_duty_amount
 
-      let :third_condition do
-        create :measure_condition, measure_sid: second_condition.measure_sid,
-                                   condition_code: first_condition.condition_code
-      end
+          create :measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: first.condition_code
 
-      let :fourth_condition do
-        create :measure_condition, measure_sid: third_condition.measure_sid,
-                                   condition_code: second_condition.condition_code
-      end
+          create :measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: second.condition_code
 
-      let :fifth_condition do
-        create :measure_condition, measure_sid: fourth_condition.measure_sid,
-                                   condition_code: fourth_condition.condition_code
-      end
-
-      let :calculator do
-        described_class.new fifth_condition.measure.reload
+          create :measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: second.condition_code
+        end
       end
 
       it { is_expected.to have_attributes length: 1 }
