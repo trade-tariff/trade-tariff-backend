@@ -9,10 +9,13 @@ module MeasureConditionPermutations
     # one group per condition code, with a separate permutation per condition
     # within it
 
-    delegate :measure_conditions, to: :@measure
-
     def initialize(measure)
       @measure = measure
+    end
+
+    def measure_conditions
+      @measure_conditions = @measure.measure_conditions
+                                    .reject(&:universal_waiver_applies?)
     end
 
     def permutation_groups

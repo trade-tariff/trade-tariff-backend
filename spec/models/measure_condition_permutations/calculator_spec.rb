@@ -7,6 +7,23 @@ RSpec.describe MeasureConditionPermutations::Calculator do
       .reload
   end
 
+  describe '#measure_conditions' do
+    subject { calculator.measure_conditions }
+
+    it { is_expected.to include measure.measure_conditions.first }
+
+    context 'with universal waiver conditions do' do
+      let :waiver_condition do
+        create(:measure_condition, :cds_waiver,
+               measure_sid: measure.measure_sid).tap do |mc|
+          mc.measure.reload
+        end
+      end
+
+      it { is_expected.not_to include waiver_condition }
+    end
+  end
+
   describe '#permuation_groups' do
     subject(:groups) { calculator.permutation_groups }
 
