@@ -22,6 +22,11 @@ module MeasureConditionPermutations
       measure_conditions.map(&:measure_condition_sid)
     end
 
+    def ==(other)
+      other.class == self.class &&
+        measure_condition_ids == other.measure_condition_ids
+    end
+
   private
 
     def generate_id

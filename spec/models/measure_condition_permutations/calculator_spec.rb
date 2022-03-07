@@ -16,13 +16,8 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     it { is_expected.to have_attributes length: condition_codes.length }
 
     context 'with conditions which do not match across condition groups' do
-      let :second_condition do
-        create :measure_condition, measure_sid: measure.measure_sid
-      end
-
-      let :calculator do
-        described_class.new second_condition.measure.reload
-      end
+      let(:second_condition) { create :measure_condition, measure_sid: measure.measure_sid }
+      let(:calculator) { described_class.new second_condition.measure.reload }
 
       it { is_expected.to have_attributes length: 2 }
       it { is_expected.to all have_attributes length: 1 }
@@ -38,9 +33,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
                                    condition_duty_amount: first_condition.condition_duty_amount
       end
 
-      let :calculator do
-        described_class.new second_condition.measure.reload
-      end
+      let(:calculator) { described_class.new second_condition.measure.reload }
 
       it { is_expected.to have_attributes length: 1 }
       it { is_expected.to all have_attributes length: 1 }
