@@ -1,27 +1,59 @@
 RSpec.describe MeasureType do
-  describe 'constants' do
+  describe '.excluded_measure_types' do
+    subject(:excluded_measure_types) { described_class.excluded_measure_types }
+
     before do
       allow(TradeTariffBackend).to receive(:service).and_return(service)
     end
 
     context 'when the service is the UK version' do
       let(:service) { 'uk' }
-      let(:excluded_types) { %w[442 SPL] }
+      let(:excluded_types) { %w[442 447 SPL] }
 
-      it 'defines the correct EXCLUDED_TYPES list' do
-        expect(described_class.excluded_measure_types).to eq(excluded_types)
-      end
+      it { is_expected.to eq(excluded_types) }
     end
 
     context 'when the service is the XI version' do
       let(:service) { 'xi' }
+
       let(:excluded_types) do
-        described_class::DEFAULT_EXCLUDED_TYPES + described_class::QUOTA_TYPES + described_class::NATIONAL_PR_TYPES
+        %w[
+          442
+          447
+          SPL
+          AHC
+          AIL
+          ATT
+          CEX
+          CHM
+          COE
+          COI
+          CVD
+          DPO
+          ECM
+          EHC
+          EQC
+          EWP
+          HOP
+          HSE
+          IWP
+          PHC
+          PRE
+          PRT
+          QRC
+          SFS
+          046
+          122
+          123
+          143
+          146
+          147
+          653
+          654
+        ]
       end
 
-      it 'defines the correct EXCLUDED_TYPES list' do
-        expect(described_class.excluded_measure_types).to contain_exactly(*excluded_types)
-      end
+      it { is_expected.to eq(excluded_types) }
     end
   end
 
@@ -45,7 +77,7 @@ RSpec.describe MeasureType do
 
   describe '#meursing?' do
     shared_examples_for 'a meursing measure type' do |measure_type_id|
-      subject(:measure_type) { build(:measure_type, measure_type_id: measure_type_id) }
+      subject(:measure_type) { build(:measure_type, measure_type_id:) }
 
       it { is_expected.to be_meursing }
     end
