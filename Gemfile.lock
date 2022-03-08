@@ -399,8 +399,8 @@ GEM
       sentry-ruby-core (~> 5.1.1)
     sentry-ruby-core (5.1.1)
       concurrent-ruby
-    sentry-sidekiq (5.1.0)
-      sentry-ruby-core (~> 5.1.0)
+    sentry-sidekiq (5.1.1)
+      sentry-ruby-core (~> 5.1.1)
       sidekiq (>= 3.0)
     sequel (5.54.0)
     sequel-rails (1.1.1)
