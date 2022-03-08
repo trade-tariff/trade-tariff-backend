@@ -46,6 +46,11 @@ RSpec.describe MeasureConditionPermutations::Calculator do
 
       it { is_expected.to have_attributes length: 2 }
       it { is_expected.to all have_attributes length: 1 }
+
+      it 'splits the conditions into separate permuation groups' do
+        expect(groups.first.permutations.first.measure_condition_ids).not_to \
+          eql groups.second.permutations.first.measure_condition_ids
+      end
     end
 
     context 'with conditions which match across condition groups' do
@@ -97,32 +102,64 @@ RSpec.describe MeasureConditionPermutations::Calculator do
       end
     end
 
-    context 'with mixture of conditions' do
-      let :measure_with_conditions do
-        create(:measure).tap do |measure|
-          first = create :measure_condition, measure_sid: measure.measure_sid
+    context 'with mixture of conditions both matching and not matching' do
+      let(:measure) { create :measure }
+      let(:measure_with_conditions) { conditions.first.measure.reload }
 
-          second = create :measure_condition, measure_sid: measure.measure_sid,
-                                              certificate_type_code: first.certificate_type_code,
-                                              certificate_code: first.certificate_code,
-                                              condition_duty_amount: first.condition_duty_amount
+      let :conditions do
+        [
+          create(:measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: 'AB',
+                                     certificate_type_code: 'f',
+                                     certificate_code: 'def',
+                                     condition_duty_amount: 30_000),
 
-          create :measure_condition, measure_sid: measure.measure_sid,
-                                     condition_code: first.condition_code
+          create(:measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: 'CD',
+                                     certificate_type_code: 'f',
+                                     certificate_code: 'def',
+                                     condition_duty_amount: 30_000),
 
-          create :measure_condition, measure_sid: measure.measure_sid,
-                                     condition_code: second.condition_code
+          create(:measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: 'AB'),
 
-          create :measure_condition, measure_sid: measure.measure_sid,
-                                     condition_code: second.condition_code
-        end
+          create(:measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: 'CD'),
+
+          create(:measure_condition, measure_sid: measure.measure_sid,
+                                     condition_code: 'CD'),
+        ]
       end
 
       it { is_expected.to have_attributes length: 1 }
-      it { expect(groups.first.permutations.length).to be 3 }
-      it { expect(groups.first.permutations.first.length).to be 1 }
-      it { expect(groups.first.permutations.second.length).to be 2 }
-      it { expect(groups.first.permutations.third.length).to be 2 }
+
+      describe 'the permutations' do
+        subject(:condition_id_permutations) do
+          groups.first.permutations.map(&:measure_condition_ids)
+        end
+
+        it { is_expected.to have_attributes length: 3 }
+
+        it 'contains a permutation with the matched conditions' do
+          expect(condition_id_permutations.first).to eql [
+            conditions.first.measure_condition_sid,
+          ]
+        end
+
+        it 'contains a permutation with the first combination of unmatched conditions' do
+          expect(condition_id_permutations).to include [
+            conditions.third.measure_condition_sid,
+            conditions.fourth.measure_condition_sid,
+          ]
+        end
+
+        it 'contains a permutation with the other combination of unmatched conditions' do
+          expect(condition_id_permutations).to include [
+            conditions.third.measure_condition_sid,
+            conditions.fifth.measure_condition_sid,
+          ]
+        end
+      end
     end
   end
 end
