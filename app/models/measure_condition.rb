@@ -56,6 +56,7 @@ class MeasureCondition < Sequel::Model
   delegate :description, to: :certificate_type, prefix: true, allow_nil: true
   delegate :description, to: :measure_action, prefix: true, allow_nil: true
   delegate :description, to: :measure_condition_code, prefix: true, allow_nil: true
+  delegate :measure_condition_class, to: :classification
 
   def before_create
     self.measure_condition_sid ||= self.class.next_national_sid
@@ -131,5 +132,11 @@ class MeasureCondition < Sequel::Model
 
   def units
     measure_condition_components.map(&:unit)
+  end
+
+private
+
+  def classification
+    @classification ||= MeasureConditionClassification.new(self)
   end
 end

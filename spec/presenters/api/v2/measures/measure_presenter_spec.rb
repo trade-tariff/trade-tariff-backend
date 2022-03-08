@@ -10,12 +10,6 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     end
   end
 
-  describe '#measure_conditions' do
-    subject(:measure_conditions) { described_class.new(measure, measure.goods_nomenclature).measure_conditions }
-
-    it { expect(measure_conditions.first).to be_instance_of(Api::V2::Measures::MeasureConditionPresenter) }
-  end
-
   describe 'exclusions' do
     let(:gb) { create(:geographical_area, geographical_area_id: 'GB') }
     let(:xi) { create(:geographical_area, geographical_area_id: 'XI') }

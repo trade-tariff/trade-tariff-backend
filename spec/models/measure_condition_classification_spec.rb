@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
+RSpec.describe MeasureConditionClassification do
   describe '#measure_condition_class' do
     subject(:measure_condition_class) { described_class.new(measure_condition).measure_condition_class }
 
