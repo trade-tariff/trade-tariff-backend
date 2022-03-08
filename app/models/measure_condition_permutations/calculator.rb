@@ -16,7 +16,7 @@ module MeasureConditionPermutations
     def measure_conditions
       @measure_conditions = @measure.measure_conditions
                                     .reject(&:universal_waiver_applies?)
-                                    .reject(&:measure_action_negative_action?)
+                                    .reject(&:negative_class?)
     end
 
     def permutation_groups

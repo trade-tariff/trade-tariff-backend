@@ -54,9 +54,10 @@ class MeasureCondition < Sequel::Model
   delegate :formatted_measurement_unit_qualifier, to: :measurement_unit_qualifier, prefix: false, allow_nil: true
   delegate :description, to: :certificate, prefix: true, allow_nil: true
   delegate :description, to: :certificate_type, prefix: true, allow_nil: true
-  delegate :description, :negative_action?, to: :measure_action, prefix: true, allow_nil: true
+  delegate :description, to: :measure_action, prefix: true, allow_nil: true
   delegate :description, to: :measure_condition_code, prefix: true, allow_nil: true
-  delegate :measure_condition_class, to: :classification
+  delegate :measure_condition_class, :threshold_class?, :negative_class?,
+           :exemption_class?, :document_class?, to: :classification
 
   def before_create
     self.measure_condition_sid ||= self.class.next_national_sid
