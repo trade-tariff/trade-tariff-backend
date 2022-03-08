@@ -29,8 +29,6 @@ RSpec.describe MeasureConditionPermutations::Group do
 
     it { is_expected.not_to be_empty }
     it { is_expected.to all be_instance_of MeasureConditionPermutations::Permutation }
-
-    it 'will implement logic for calculating permutations'
   end
 
   describe '#permutation_ids' do

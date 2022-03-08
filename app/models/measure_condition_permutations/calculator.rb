@@ -58,6 +58,7 @@ module MeasureConditionPermutations
     def permutations_for_matched_conditions
       matched_measure_conditions_in_permutation_key_groups
         .map(&:first) # conditions match, so only include the first
+        .sort_by(&method(:sort_priority))
         .map(&Permutation.method(:new)) # Create permutation for each condition
     end
 
@@ -95,6 +96,15 @@ module MeasureConditionPermutations
       Group.new(@measure.measure_sid,
                 condition_code,
                 conditions.map(&Permutation.method(:new)))
+    end
+
+    def sort_priority(condition)
+      case condition.measure_condition_class
+      when MeasureConditionClassification::DOCUMENT_CLASS then 1
+      when MeasureConditionClassification::EXEMPTION_CLASS then 2
+      when MeasureConditionClassification::THRESHOLD_CLASS then 3
+      else 4
+      end
     end
   end
 end
