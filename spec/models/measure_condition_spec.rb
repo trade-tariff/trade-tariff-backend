@@ -229,19 +229,29 @@ RSpec.describe MeasureCondition do
     context 'with nil certificate_type_code' do
       let(:measure_condition) { create :measure_condition, certificate_type_code: nil }
 
-      it { is_expected.to be_nil }
+      it { is_expected.to eql "-#{certificate_code}-#{duty_amount}" }
     end
 
     context 'with nil certificate_code' do
       let(:measure_condition) { create :measure_condition, certificate_code: nil }
 
-      it { is_expected.to be_nil }
+      it { is_expected.to eql "#{type_code}--#{duty_amount}" }
     end
 
     context 'with nil condition_duty_amount' do
       let(:measure_condition) { create :measure_condition, condition_duty_amount: nil }
 
       it { is_expected.to eql "#{type_code}-#{certificate_code}-" }
+    end
+
+    context 'with nil certificate_code, certificate_type_code and condition_duty_amount' do
+      let :measure_condition do
+        create :measure_condition, certificate_type_code: nil,
+                                   certificate_code: nil,
+                                   condition_duty_amount: nil
+      end
+
+      it { is_expected.to be_nil }
     end
   end
 end
