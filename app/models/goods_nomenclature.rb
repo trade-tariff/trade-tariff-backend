@@ -53,7 +53,14 @@ class GoodsNomenclature < Sequel::Model
 
   delegate :national_measurement_unit_set_units, to: :national_measurement_unit_set, allow_nil: true
 
-  delegate :number_indents, to: :goods_nomenclature_indent, allow_nil: true
+  def number_indents
+    if goods_nomenclature_indent.present?
+      goods_nomenclature_indent.number_indents
+    else
+      reload && goods_nomenclature_indent&.number_indents
+    end
+  end
+
   delegate :description, :formatted_description, to: :goods_nomenclature_description, allow_nil: true
 
   one_to_one :goods_nomenclature_origin, key: %i[goods_nomenclature_item_id
