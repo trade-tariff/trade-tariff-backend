@@ -270,7 +270,7 @@ jobs:
             cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < tariff-"<< parameters.service >>"-production-postgres.psql
             cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < db/seeds/staging.sql
       - run_migrations:
-          service: staging
+          service: << parameters.service >>
           environment_key: staging
 
   linters:
