@@ -1,4 +1,6 @@
 class CachedCommodityService
+  CACHE_VERSION = TradeTariffBackend.permutations? ? 2 : 1
+
   DEFAULT_INCLUDES = [
     'section',
     'chapter',
@@ -144,7 +146,7 @@ class CachedCommodityService
   end
 
   def cache_key
-    "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
+    "_commodity-v#{CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
   end
 
   def filtering_country
