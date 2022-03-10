@@ -10,6 +10,7 @@ class BaseSuggestionsService
           .distinct
           .order(Sequel.desc(:goods_nomenclature_item_id))
           .index_by(&:goods_nomenclature_item_id)
+          .without(*hidden_goods_nomenclature_ids)
           .map { |_commodity_code, commodity| handle_commodity_record(commodity) }
 
     search_references = SearchReference
@@ -34,5 +35,9 @@ class BaseSuggestionsService
 
   def handle_search_reference_record(_search_reference)
     nil
+  end
+
+  def hidden_goods_nomenclature_ids
+    @hidden_goods_nomenclature_ids ||= HiddenGoodsNomenclature.codes
   end
 end
