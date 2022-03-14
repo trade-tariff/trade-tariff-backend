@@ -70,9 +70,6 @@ class GoodsNomenclatureMapper
   end
 
   def map_goods_nomenclatures(primary, secondary)
-    reload_if_stale(primary)
-    reload_if_stale(secondary)
-
     if (heading_map?(primary, secondary) &&
        (primary.producline_suffix < secondary.producline_suffix)) ||
         (primary.number_indents < secondary.number_indents)
@@ -129,11 +126,5 @@ class GoodsNomenclatureMapper
 
   def heading_map?(primary, secondary)
     primary.is_a?(Heading) && secondary.is_a?(Heading)
-  end
-
-  def reload_if_stale(goods_nomenclature)
-    return if goods_nomenclature.number_indents
-
-    goods_nomenclature.reload
   end
 end
