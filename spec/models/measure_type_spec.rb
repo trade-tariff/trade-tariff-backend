@@ -175,4 +175,23 @@ RSpec.describe MeasureType do
       it { expect(measure_type).not_to be_vat }
     end
   end
+
+  describe '#rules_of_origin_apply?' do
+    shared_examples 'a rules of origin measure' do |measure_type_id|
+      subject(:measure_type) { build :measure_type, measure_type_id: measure_type_id }
+
+      it { is_expected.to be_rules_of_origin_apply }
+    end
+
+    it_behaves_like 'a rules of origin measure', '142'
+    it_behaves_like 'a rules of origin measure', '143'
+    it_behaves_like 'a rules of origin measure', '145'
+    it_behaves_like 'a rules of origin measure', '146'
+
+    context 'when not a rules of origin measure' do
+      let(:measure_type) { build :measure_type, measure_type_id: 'X' }
+
+      it { is_expected.not_to be_rules_of_origin_apply }
+    end
+  end
 end

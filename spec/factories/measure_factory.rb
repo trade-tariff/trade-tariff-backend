@@ -129,6 +129,10 @@ FactoryBot.define do
       measure_type_series_id { 'S' }
     end
 
+    trait :tariff_preference do
+      measure_type_id { '142' }
+    end
+
     trait :third_country do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end

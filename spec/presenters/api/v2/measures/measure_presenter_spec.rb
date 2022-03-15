@@ -102,4 +102,28 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
     it { is_expected.to be(true) }
   end
+
+  describe '#scheme_code' do
+    subject(:scheme_code) { described_class.new(measure, measure.goods_nomenclature).scheme_code }
+
+    context 'when a rules of origin measure with a matching scheme code' do
+      let(:measure) { create(:measure, :with_measure_type, :tariff_preference, geographical_area_id:) }
+      let(:geographical_area_id) { '1013' }
+
+      it { is_expected.to eq('eu') }
+    end
+
+    context 'when a rules of origin measure with a non-matching scheme code' do
+      let(:measure) { create(:measure, :with_measure_type, :tariff_preference, geographical_area_id:) }
+      let(:geographical_area_id) { 'FOO' }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when not a rules of origin measure' do
+      let(:measure) { create(:measure, :with_measure_type, :third_country) }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end

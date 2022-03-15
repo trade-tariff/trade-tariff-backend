@@ -52,6 +52,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
         meta: {
           duty_calculator: {
             source: 'uk',
+            scheme_code: nil,
           },
         },
       },
