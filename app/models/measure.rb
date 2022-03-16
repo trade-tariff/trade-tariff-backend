@@ -99,7 +99,7 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
-  delegate :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
+  delegate :rules_of_origin_apply?, :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)

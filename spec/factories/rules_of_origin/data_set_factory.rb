@@ -1,9 +1,10 @@
 FactoryBot.define do
   factory :rules_of_origin_data_set, class: 'RulesOfOrigin::DataSet' do
-    initialize_with { new scheme_set, rule_set, heading_mappings }
+    initialize_with { new scheme_set, rule_set, heading_mappings, scheme_associations }
 
     scheme_set { build :rules_of_origin_scheme_set }
     rule_set { build :rules_of_origin_rule_set, rules: rules }
+    scheme_associations { build :rules_of_origin_scheme_associations }
 
     heading_mappings do
       build :rules_of_origin_heading_mappings,

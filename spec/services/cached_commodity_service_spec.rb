@@ -91,7 +91,7 @@ RSpec.describe CachedCommodityService do
               order_number: Hash,
               resolved_measure_components: Hash,
             },
-            meta: { duty_calculator: { source: 'uk' } },
+            meta: { duty_calculator: { source: 'uk', scheme_code: nil } },
           },
         ],
       }

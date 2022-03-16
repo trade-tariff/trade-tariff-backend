@@ -38,10 +38,11 @@ module Api
         has_one :additional_code, if: proc { |measure| measure.additional_code.present? }, serializer: Api::V2::AdditionalCodeSerializer
         has_one :order_number, serializer: Api::V2::Quotas::OrderNumber::QuotaOrderNumberSerializer
 
-        meta do |_measure|
+        meta do |measure|
           {
             duty_calculator: {
               source: TradeTariffBackend.service,
+              scheme_code: measure.scheme_code,
             },
           }
         end

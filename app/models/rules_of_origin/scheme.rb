@@ -59,7 +59,7 @@ module RulesOfOrigin
                               end
     end
 
-  private
+    private
 
     def new_proof(proof_attrs)
       Proof.new proof_attrs.merge(scheme: self)

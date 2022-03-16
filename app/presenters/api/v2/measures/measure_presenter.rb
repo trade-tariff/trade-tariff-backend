@@ -91,6 +91,12 @@ module Api
           excluded_countries.map(&:id)
         end
 
+        def scheme_code
+          return nil unless rules_of_origin_apply?
+
+          TradeTariffBackend.rules_of_origin.scheme_associations[geographical_area_id]
+        end
+
       private
 
         def measure_type_exclusions

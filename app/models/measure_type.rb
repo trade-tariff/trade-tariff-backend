@@ -31,6 +31,13 @@ class MeasureType < Sequel::Model
     '674', # Agricultural component (shortened to EA {Élément agricole])
   ].freeze
 
+  RULES_OF_ORIGIN_MEASURES = %w[
+    142
+    143
+    145
+    146
+  ].freeze
+
   UNIT_EXPRESSABLE_MEASURES = [
     'C', # Applicable duty
     'D', # Anti-dumping/countervailing measures
@@ -94,6 +101,10 @@ class MeasureType < Sequel::Model
   # The VAT reduced rate 5% has measure type 305 and  VATA additional code.
   def vat?
     MeasureType::VAT_TYPES.include?(measure_type_id)
+  end
+
+  def rules_of_origin_apply?
+    measure_type_id.in?(RULES_OF_ORIGIN_MEASURES)
   end
 
   def self.excluded_measure_types
