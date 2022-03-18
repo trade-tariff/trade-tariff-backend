@@ -123,17 +123,17 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 goods_nomenclature: {
                   data: {
                     id: String,
-                    type: 'goods_nomenclature',
+                    type: 'commodity',
                   },
                 },
               },
             },
             {
               id: String,
-              type: 'goods_nomenclature',
+              type: 'commodity',
               attributes: {
-                goods_nomenclature_class: 'Commodity',
-                goods_nomenclature_id: String,
+                goods_nomenclature_item_id: String,
+                producline_suffix: String,
               },
             },
           ],
@@ -247,7 +247,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 goods_nomenclature: {
                   data: {
                     id: String,
-                    type: 'goods_nomenclature',
+                    type: 'commodity',
                   },
                 },
               },
