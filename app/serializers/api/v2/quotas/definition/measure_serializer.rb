@@ -11,6 +11,7 @@ module Api
 
           attribute :goods_nomenclature_item_id
 
+          has_one :goods_nomenclature, polymorphic: true
           has_one :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
         end
       end

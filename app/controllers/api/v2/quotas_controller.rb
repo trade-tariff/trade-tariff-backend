@@ -1,7 +1,7 @@
 module Api
   module V2
     class QuotasController < ApiController
-      DEFAULT_INCLUDES = %w[quota_order_number quota_order_number.geographical_areas measures measures.geographical_area].freeze
+      DEFAULT_INCLUDES = %w[quota_order_number quota_order_number.geographical_areas measures measures.goods_nomenclature measures.geographical_area].freeze
 
       def search
         render json: serialized_quota_definitions
