@@ -99,8 +99,8 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def goods_nomenclature_class
-    @serializer_type ||= begin
-                           class_name = self.class.sti_load(goods_nomenclature_item_id:).class.name
+    @goods_nomenclature_class ||= begin
+      class_name = self.class.sti_load(goods_nomenclature_item_id:).class.name
 
       return class_name unless class_name == 'Commodity'
 
