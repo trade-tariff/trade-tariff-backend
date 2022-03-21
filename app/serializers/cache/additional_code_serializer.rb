@@ -10,7 +10,10 @@ module Cache
     end
 
     def as_json
-      measures = additional_code.measures.select do |measure|
+      measures = additional_code.measures_dataset
+                                .exclude(goods_nomenclature_item_id: nil)
+                                .to_a
+                                .select do |measure|
         has_valid_dates(measure)
       end
       {
@@ -31,9 +34,9 @@ module Cache
             validity_end_date: measure.validity_end_date,
             goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
             goods_nomenclature_sid: measure.goods_nomenclature_sid,
-            goods_nomenclature: goods_nomenclature_attributes(measure.goods_nomenclature)
+            goods_nomenclature: goods_nomenclature_attributes(measure.goods_nomenclature),
           }
-        end
+        end,
       }
     end
   end
