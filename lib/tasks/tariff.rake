@@ -20,6 +20,29 @@ namespace :tariff do
     Sidekiq::Client.enqueue(ClearCacheWorker)
   end
 
+  desc 'List queued jobs'
+  task jobs: %w[environment] do
+    require 'sidekiq/api'
+
+    Sidekiq::Queue.all.each do |queue|
+      puts "\nQueue '#{queue.name}': #{queue.size}"
+
+      queue
+        .map(&:item)
+        .group_by { |job| job['class'] }
+        .each do |job_class, jobs|
+          puts "  #{job_class}: #{jobs.size}"
+
+          case job_class
+          when 'BuildIndexPageWorker'
+            jobs.pluck('args').group_by(&:second).each do |indexable, index_jobs|
+              puts "    #{indexable}: #{index_jobs.length}"
+            end
+          end
+        end
+    end
+  end
+
   desc 'Add commodity footnotes for ECO licences where these is an export restriction'
   task add_missing_commodity_footnote: :environment do
     measure_type_id = MeasureType.all.detect { |mt| mt.description == 'Export authorization (Dual use)' }.values[:measure_type_id]
