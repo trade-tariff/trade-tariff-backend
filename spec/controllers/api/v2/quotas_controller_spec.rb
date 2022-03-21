@@ -2,7 +2,15 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
   describe 'GET /quotas/search.json' do
     let(:validity_start_date) { Date.new(Time.zone.today.year, 1, 1) }
     let(:quota_order_number) { create :quota_order_number }
-    let!(:measure) { create :measure, ordernumber: quota_order_number.quota_order_number_id, validity_start_date: validity_start_date }
+    let!(:measure) do
+      create(
+        :measure,
+        ordernumber: quota_order_number.quota_order_number_id,
+        validity_start_date: validity_start_date,
+        goods_nomenclature: goods_nomenclature,
+      )
+    end
+    let(:goods_nomenclature) do create(:commodity, :with_heading, :declarable) end
     let!(:quota_definition) do
       create(
         :quota_definition,
@@ -112,6 +120,20 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                     type: 'geographical_area',
                   },
                 },
+                goods_nomenclature: {
+                  data: {
+                    id: String,
+                    type: 'commodity',
+                  },
+                },
+              },
+            },
+            {
+              id: String,
+              type: 'commodity',
+              attributes: {
+                goods_nomenclature_item_id: String,
+                producline_suffix: String,
               },
             },
           ],
@@ -220,6 +242,12 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                   data: {
                     id: String,
                     type: 'geographical_area',
+                  },
+                },
+                goods_nomenclature: {
+                  data: {
+                    id: String,
+                    type: 'commodity',
                   },
                 },
               },

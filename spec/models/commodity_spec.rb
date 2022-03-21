@@ -729,4 +729,18 @@ RSpec.describe Commodity do
 
     it { is_expected.to eq('0101') }
   end
+
+  describe '#goods_nomenclature_class' do
+    context 'when the Commodity is declarable' do
+      subject(:goods_nomenclature_class) { create(:commodity, :declarable, :with_heading).goods_nomenclature_class }
+
+      it { is_expected.to eq('Commodity') }
+    end
+
+    context 'when the Commodity is not declarable' do
+      subject(:goods_nomenclature_class) { create(:commodity, :non_declarable, :with_heading).goods_nomenclature_class }
+
+      it { is_expected.to eq('Subheading') }
+    end
+  end
 end

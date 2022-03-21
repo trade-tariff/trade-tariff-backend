@@ -334,4 +334,30 @@ RSpec.describe GoodsNomenclature do
       expect(gono.to_s).to include(gono.goods_nomenclature_item_id)
     end
   end
+
+  describe '#goods_nomenclature_class' do
+    context 'when the GoodsNomenclature is a Commodity' do
+      subject(:goods_nomenclature_class) { create(:commodity, :declarable, :with_heading).goods_nomenclature_class }
+
+      it { is_expected.to eq('Commodity') }
+    end
+
+    context 'when the GoodsNomenclature is a Subheading' do
+      subject(:goods_nomenclature_class) { create(:commodity, :non_declarable, :with_heading).goods_nomenclature_class }
+
+      it { is_expected.to eq('Subheading') }
+    end
+
+    context 'when the GoodsNomenclature is a Heading' do
+      subject(:goods_nomenclature_class) { create(:heading).goods_nomenclature_class }
+
+      it { is_expected.to eq('Heading') }
+    end
+
+    context 'when the GoodsNomenclature is a Chapter' do
+      subject(:goods_nomenclature_class) { create(:chapter).goods_nomenclature_class }
+
+      it { is_expected.to eq('Chapter') }
+    end
+  end
 end

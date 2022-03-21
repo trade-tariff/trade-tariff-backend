@@ -60,10 +60,6 @@ class QuotaSearchService
     eager_load
   end
 
-  def includes
-    @includes ||= attributes.fetch(:includes, [])
-  end
-
   def apply_goods_nomenclature_item_id_filter
     ancestors = FindAncestorsService.new(goods_nomenclature_item_id).call
 

@@ -168,6 +168,10 @@ class Commodity < GoodsNomenclature
     children.each { |child| child.traverse_children(&block) }
   end
 
+  def goods_nomenclature_class
+    declarable? ? 'Commodity' : 'Subheading'
+  end
+
   private
 
   def load_children

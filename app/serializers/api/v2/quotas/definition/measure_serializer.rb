@@ -11,6 +11,8 @@ module Api
 
           attribute :goods_nomenclature_item_id
 
+          has_one :goods_nomenclature, serializer: proc { |record, _params| "Api::V2::Quotas::Definition::#{record.goods_nomenclature_class}Serializer".constantize }
+
           has_one :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
         end
       end
