@@ -7,5 +7,16 @@ module Hashie
     def to_a
       Array.wrap(self)
     end
+
+    # When using non-static serializers we need to avoid the jsonapi-serializer gem from treating a TariffMash like
+    # an Array which it internally maps over to pull out ids and types from each record
+    # when in fact each Mash should be treated like a single record.
+    #
+    # TODO: Replace Hashie::Mash with models and presenters since it does not play friendly with jsonapi-serializer
+    def respond_to?(method)
+      return false if method.to_sym == :map
+
+      super
+    end
   end
 end
