@@ -7,10 +7,8 @@ class MeursingMeasureFinderService
   def call
     MeursingMeasure
       .where(
-        Sequel.lit('additional_code_id = ?', @additional_code_id),
-      )
-      .where(
-        Sequel.lit('reduction_indicator = ?', @root_measure.reduction_indicator),
+        additional_code_id: @additional_code_id,
+        reduction_indicator: @root_measure.reduction_indicator,
       )
       .actual
       .eager(

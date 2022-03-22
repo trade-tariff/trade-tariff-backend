@@ -23,7 +23,7 @@ RSpec.describe MeursingMeasureFinderService do
         )
       end
 
-      xit { expect(service.call.map(&:pk)).to eq([meursing_measure.pk]) }
+      it { expect(service.call.map(&:pk)).to eq([meursing_measure.pk]) }
     end
 
     context 'when there are no matching meursing measures' do
