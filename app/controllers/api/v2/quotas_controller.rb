@@ -10,7 +10,7 @@ module Api
       private
 
       def serialized_quota_definitions
-        Api::V2::Quotas::Definition::QuotaDefinitionSerializer.new(
+        Api::V2::Quotas::QuotaDefinitionSerializer.new(
           quota_definitions, serializer_options
         ).serializable_hash
       end
@@ -25,7 +25,7 @@ module Api
           meta: {
             pagination: {
               page: current_page,
-              per_page: per_page,
+              per_page:,
               total_count: search_service.pagination_record_count,
             },
           },

@@ -112,6 +112,8 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
               type: 'measure',
               attributes: {
                 goods_nomenclature_item_id: String,
+                validity_start_date: String,
+                validity_end_date: nil,
               },
               relationships: {
                 geographical_area: {
@@ -134,6 +136,8 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
               attributes: {
                 goods_nomenclature_item_id: String,
                 producline_suffix: String,
+                description: String,
+                formatted_description: nil,
               },
             },
           ],
@@ -236,6 +240,8 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
               type: 'measure',
               attributes: {
                 goods_nomenclature_item_id: String,
+                validity_start_date: String,
+                validity_end_date: nil,
               },
               relationships: {
                 geographical_area: {
