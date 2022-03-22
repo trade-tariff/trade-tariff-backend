@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Quotas::Definition::MeasureSerializer do
+RSpec.describe Api::V2::Shared::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable, {}) }
 
   let(:serializable) { create(:measure, goods_nomenclature:) }

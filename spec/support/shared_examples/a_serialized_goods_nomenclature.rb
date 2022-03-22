@@ -1,7 +1,7 @@
 shared_examples_for 'a serialized goods nomenclature' do |type|
   subject(:serializer) { described_class.new(serializable, {}) }
 
-  let(:serializable) { build(:goods_nomenclature) }
+  let(:serializable) { build(:goods_nomenclature, :with_description) }
 
   describe '#serializable_hash' do
     let(:expected_pattern) do
@@ -12,6 +12,8 @@ shared_examples_for 'a serialized goods nomenclature' do |type|
           attributes: {
             goods_nomenclature_item_id: match(/\d{10}/),
             producline_suffix: match(/\d{2}/),
+            description: '',
+            formatted_description: nil,
           },
         },
       }

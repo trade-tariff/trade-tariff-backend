@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Quotas::Definition::QuotaBalanceEventSerializer do
+RSpec.describe Api::V2::Quotas::QuotaBalanceEventSerializer do
   subject(:serializer) { described_class.new(serializable) }
 
   let(:serializable) { create(:quota_balance_event) }
