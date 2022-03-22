@@ -37,7 +37,7 @@ RSpec.describe MeasureConditionPermutations::Calculator do
     end
   end
 
-  describe '#permuation_groups' do
+  describe '#permutation_groups' do
     subject(:groups) { calculator.permutation_groups }
 
     context 'with conditions which do not match across condition groups' do
