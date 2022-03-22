@@ -14,7 +14,7 @@ module Hashie
     #
     # TODO: Replace Hashie::Mash with models and presenters since it does not play friendly with jsonapi-serializer
     def respond_to?(method)
-      return false if method == :map
+      return false if method.to_sym == :map
 
       super
     end
