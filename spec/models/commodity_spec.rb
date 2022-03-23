@@ -656,35 +656,42 @@ RSpec.describe Commodity do
   end
 
   describe '#declarable?' do
-    let(:commodity_80) { create(:commodity, producline_suffix: '80') }
-    let(:commodity_10) { create(:commodity, producline_suffix: '10') }
+    before do
+      allow(Rails.cache).to receive(:fetch).and_call_original
+    end
 
-    context 'with children' do
-      before do
-        allow_any_instance_of(described_class).to receive(:children).and_return([1])
-      end
+    context 'when the commodity has no children and a non-grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :non_grouping, :with_heading, :without_children) }
 
-      it "returns true for producline_suffix == '80'" do
-        expect(commodity_80).not_to be_declarable
-      end
+      it { is_expected.to be_declarable }
 
-      it 'returns false for other producline_suffix' do
-        expect(commodity_10).not_to be_declarable
+      it 'caches the result' do
+        commodity.declarable?
+
+        expect(Rails.cache).to have_received(:fetch).with("_declarable_#{commodity.goods_nomenclature_sid}")
       end
     end
 
-    context 'without children' do
-      before do
-        allow_any_instance_of(described_class).to receive(:children).and_return([])
-      end
+    shared_examples_for 'a non declarable commodity' do
+      it { is_expected.not_to be_declarable }
 
-      it "returns true for producline_suffix == '80'" do
-        expect(commodity_80).to be_declarable
-      end
+      it 'caches the result' do
+        commodity.declarable?
 
-      it 'returns false for other producline_suffix' do
-        expect(commodity_10).not_to be_declarable
+        expect(Rails.cache).to have_received(:fetch).with("_declarable_#{commodity.goods_nomenclature_sid}")
       end
+    end
+
+    it_behaves_like 'a non declarable commodity' do
+      subject(:commodity) { create(:commodity, :non_grouping, :with_heading, :with_children) }
+    end
+
+    it_behaves_like 'a non declarable commodity' do
+      subject(:commodity) { create(:commodity, :grouping, :with_heading, :with_children) }
+    end
+
+    it_behaves_like 'a non declarable commodity' do
+      subject(:commodity) { create(:commodity, :grouping, :with_heading, :without_children) }
     end
   end
 

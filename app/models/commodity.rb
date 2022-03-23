@@ -93,7 +93,9 @@ class Commodity < GoodsNomenclature
   end
 
   def declarable?
-    producline_suffix == '80' && children.none?
+    Rails.cache.fetch("_declarable_#{goods_nomenclature_sid}") do
+      producline_suffix == '80' && children.none?
+    end
   end
 
   def uptree
