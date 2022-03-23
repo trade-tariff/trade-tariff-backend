@@ -10,7 +10,7 @@ module Api
 
         attributes :additional_code_type_id, :additional_code, :code, :description, :formatted_description
 
-        has_many :measures, serializer: Api::V2::AdditionalCodes::MeasureSerializer
+        has_many :measures, serializer: Api::V2::Shared::MeasureSerializer
       end
     end
   end
