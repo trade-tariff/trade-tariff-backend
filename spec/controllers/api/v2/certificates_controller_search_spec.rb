@@ -7,7 +7,7 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
              certificate_type_code: certificate.certificate_type_code,
              certificate_code: certificate.certificate_code
     end
-    let!(:measure) { create :measure }
+    let!(:measure) { create :measure, goods_nomenclature: create(:heading) }
     let!(:goods_nomenclature) { measure.goods_nomenclature }
     let!(:measure_condition) do
       create :measure_condition,
@@ -19,53 +19,61 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
 
     let(:pattern) do
       {
-        data: [{
-          id: String,
-          type: 'certificates',
-          attributes: {
-            certificate_type_code: String,
-            certificate_code: String,
-            description: String,
-            formatted_description: String,
-          },
-          relationships: {
-            measures: {
-              data: [{
-                id: String,
-                type: 'measure',
-              }],
+        data: [
+          {
+            id: String,
+            type: 'certificates',
+            attributes: {
+              certificate_type_code: String,
+              certificate_code: String,
+              description: String,
+              formatted_description: String,
             },
-          },
-        }],
-        included: [{
-          id: String,
-          type: 'measure',
-          attributes: {
-            id: Integer,
-            validity_start_date: String,
-            validity_end_date: String,
-            goods_nomenclature_item_id: String,
-          },
-          relationships: {
-            goods_nomenclature: {
-              data: {
-                id: String,
-                type: 'goods_nomenclature',
+            relationships: {
+              measures: {
+                data: [{
+                  id: String,
+                  type: 'measure',
+                }],
               },
             },
           },
-        },
-                   {
-                     id: String,
-                     type: 'goods_nomenclature',
-                     attributes: {
-                       goods_nomenclature_item_id: String,
-                       goods_nomenclature_sid: Integer,
-                       description: String,
-                       number_indents: Integer,
-                       producline_suffix: String,
-                     },
-                   }],
+        ],
+        included: [
+          {
+            id: String,
+            type: 'measure',
+            attributes: {
+              goods_nomenclature_item_id: String,
+              validity_start_date: String,
+              validity_end_date: nil,
+            },
+            relationships: {
+              goods_nomenclature: {
+                data: {
+                  id: String,
+                  type: 'heading',
+                },
+              },
+              geographical_area: {
+                data: {
+                  id: String,
+                  type: 'geographical_area',
+                },
+              },
+            },
+          },
+          {
+            id: String,
+            type: 'heading',
+            attributes: {
+              goods_nomenclature_item_id: String,
+              description: String,
+              formatted_description: String,
+              producline_suffix: String,
+            },
+          },
+        ],
         meta: {
           pagination: {
             page: Integer,
