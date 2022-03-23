@@ -63,7 +63,7 @@ RSpec.describe Cache::SearchCacheMethods do
           description: '',
           formatted_description: '',
           producline_suffix: '80',
-          validity_start_date: '2020-03-22T00:00:00.000Z',
+          validity_start_date: goods_nomenclature.validity_start_date,
           validity_end_date: nil,
         }
       end

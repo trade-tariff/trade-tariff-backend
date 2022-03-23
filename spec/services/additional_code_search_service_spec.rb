@@ -6,12 +6,12 @@ RSpec.describe AdditionalCodeSearchService do
 
     let!(:additional_code_1) { create :additional_code }
     let!(:additional_code_description_1) { create :additional_code_description, :with_period, additional_code_sid: additional_code_1.additional_code_sid }
-    let!(:measure_1) { create :measure, additional_code_sid: additional_code_1.additional_code_sid }
+    let!(:measure_1) { create :measure, additional_code_sid: additional_code_1.additional_code_sid, goods_nomenclature: create(:chapter) }
     let!(:goods_nomenclature_1) { measure_1.goods_nomenclature }
 
     let!(:additional_code_2) { create :additional_code }
     let!(:additional_code_description_2) { create :additional_code_description, :with_period, additional_code_sid: additional_code_2.additional_code_sid }
-    let!(:measure_2) { create :measure, additional_code_sid: additional_code_2.additional_code_sid }
+    let!(:measure_2) { create :measure, additional_code_sid: additional_code_2.additional_code_sid, goods_nomenclature: create(:heading) }
     let!(:goods_nomenclature_2) { measure_2.goods_nomenclature }
     let(:current_page) { 1 }
     let(:per_page) { 20 }
