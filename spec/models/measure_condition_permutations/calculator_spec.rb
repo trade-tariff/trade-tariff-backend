@@ -6,34 +6,37 @@ RSpec.describe MeasureConditionPermutations::Calculator do
       .tap { |m| create :measure_condition, measure_sid: m.measure_sid }
   end
 
-  describe '#measure_conditions' do
-    subject { calculator.measure_conditions }
-
-    context 'for regular condition' do
-      let(:measure_with_conditions) { measure.reload }
-      let(:first_condition) { measure.measure_conditions.first }
-
-      it { is_expected.to include(first_condition) }
+  describe 'filtering measure_conditions' do
+    subject :measure_conditions do
+      calculator.permutation_groups.first.permutations.flat_map(&:measure_conditions)
     end
 
-    context 'with universal waiver conditions do' do
-      let :waiver_condition do
-        create :measure_condition, :cds_waiver, measure_sid: measure.measure_sid
-      end
+    let(:regular_condition) { measure.measure_conditions.first }
 
-      let(:measure_with_conditions) { waiver_condition.measure.reload }
-
-      it { is_expected.not_to include(waiver_condition) }
+    let :waiver_condition do
+      create :measure_condition, :cds_waiver, measure_sid: measure.measure_sid
     end
 
-    context 'with negative action conditions do' do
-      let :negative_condition do
-        create :measure_condition, :negative, measure_sid: measure.measure_sid
-      end
+    let :negative_condition do
+      create :measure_condition, :negative, measure_sid: measure.measure_sid
+    end
 
-      let(:measure_with_conditions) { negative_condition.measure.reload }
+    let :measure_with_conditions do
+      regular_condition && waiver_condition && negative_condition
 
-      it { is_expected.not_to include(negative_condition) }
+      measure.reload
+    end
+
+    it 'includes a regular condition' do
+      expect(measure_conditions).to include(regular_condition)
+    end
+
+    it 'excludes universal waiver conditions' do
+      expect(measure_conditions).not_to include(waiver_condition)
+    end
+
+    it 'exlcudes negative action conditions' do
+      expect(measure_conditions).not_to include(negative_condition)
     end
   end
 

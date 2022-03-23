@@ -15,12 +15,6 @@ module MeasureConditionPermutations
       @measure = measure
     end
 
-    def measure_conditions
-      @measure_conditions ||= @measure.measure_conditions
-                                      .reject(&:universal_waiver_applies?)
-                                      .reject(&:negative_class?)
-    end
-
     def permutation_groups
       if matched_measure_conditions?
         Calculators::Matched.new(measure_sid, measure_conditions)
@@ -32,6 +26,12 @@ module MeasureConditionPermutations
     end
 
   private
+
+    def measure_conditions
+      @measure_conditions ||= @measure.measure_conditions
+                                      .reject(&:universal_waiver_applies?)
+                                      .reject(&:negative_class?)
+    end
 
     def matched_measure_conditions?
       measure_conditions
