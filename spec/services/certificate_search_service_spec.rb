@@ -11,7 +11,7 @@ RSpec.describe CertificateSearchService do
              certificate_type_code: certificate_1.certificate_type_code,
              certificate_code: certificate_1.certificate_code
     end
-    let!(:measure_1) { create :measure }
+    let!(:measure_1) { create :measure, goods_nomenclature: create(:heading) }
     let!(:goods_nomenclature_1) { measure_1.goods_nomenclature }
     let!(:measure_condition_1) do
       create :measure_condition,
@@ -27,7 +27,7 @@ RSpec.describe CertificateSearchService do
              certificate_type_code: certificate_2.certificate_type_code,
              certificate_code: certificate_2.certificate_code
     end
-    let!(:measure_2) { create :measure }
+    let!(:measure_2) { create :measure, goods_nomenclature: create(:chapter) }
     let!(:goods_nomenclature_2) { measure_2.goods_nomenclature }
     let!(:measure_condition_2) do
       create :measure_condition,
