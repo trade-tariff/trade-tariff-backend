@@ -19,7 +19,6 @@ module MeasureConditionPermutations
       def measure_conditions_grouped_by_permutation_key
         @measure_conditions_grouped_by_permutation_key ||=
           @measure_conditions
-            .select(&:permutation_key) # ignore those we can't calculate key for
             .group_by(&:permutation_key)
             .values
       end

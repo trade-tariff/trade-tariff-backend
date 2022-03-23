@@ -35,7 +35,6 @@ module MeasureConditionPermutations
 
     def matched_measure_conditions?
       measure_conditions
-        .select(&:permutation_key) # ignore those we can't calculate key for
         .group_by(&:permutation_key)
         .values
         .any?(&:many?) # multiple conditions with same key

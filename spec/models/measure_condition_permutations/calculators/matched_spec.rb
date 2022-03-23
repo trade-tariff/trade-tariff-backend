@@ -59,7 +59,10 @@ RSpec.describe MeasureConditionPermutations::Calculators::Matched do
                                        condition_code: 'CD'),
 
             create(:measure_condition, measure_sid: measure.measure_sid,
-                                       condition_code: 'CD'),
+                                       condition_code: 'CD',
+                                       certificate_type_code: nil,
+                                       certificate_code: nil,
+                                       condition_duty_amount: nil),
           ]
         end
 

@@ -251,7 +251,7 @@ RSpec.describe MeasureCondition do
                                    condition_duty_amount: nil
       end
 
-      it { is_expected.to be_nil }
+      it { is_expected.to eql measure_condition.measure_condition_sid }
     end
   end
 end
