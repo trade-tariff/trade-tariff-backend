@@ -30,11 +30,12 @@ module Cache
             validity_end_date: measure.validity_end_date,
             goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
             goods_nomenclature_sid: measure.goods_nomenclature_sid,
+            goods_nomenclature_id: measure.goods_nomenclature_sid,
             goods_nomenclature: goods_nomenclature_attributes(measure.goods_nomenclature),
             geographical_area_id: measure.geographical_area_id,
             geographical_area: geographical_area_attributes(measure.geographical_area),
           }
-        end
+        end,
       }
     end
   end
