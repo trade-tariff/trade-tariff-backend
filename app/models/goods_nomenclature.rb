@@ -4,8 +4,7 @@ class GoodsNomenclature < Sequel::Model
   set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id))
   set_primary_key [:goods_nomenclature_sid]
 
-  plugin :time_machine, period_start_column: Sequel.qualify(:goods_nomenclatures, :validity_start_date),
-                        period_end_column: Sequel.qualify(:goods_nomenclatures, :validity_end_date)
+  plugin :time_machine
 
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :nullable

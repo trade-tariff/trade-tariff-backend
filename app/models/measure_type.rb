@@ -47,8 +47,7 @@ class MeasureType < Sequel::Model
 
   UNIT_EXPRESSABLE_MEASURES.freeze
 
-  plugin :time_machine, period_start_column: :measure_types__validity_start_date,
-                        period_end_column: :measure_types__validity_end_date
+  plugin :time_machine
   plugin :oplog, primary_key: :measure_type_id
 
   set_primary_key [:measure_type_id]
