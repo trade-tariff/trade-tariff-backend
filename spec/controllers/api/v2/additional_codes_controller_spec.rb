@@ -2,62 +2,70 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
   context 'additional codes search' do
     let!(:additional_code) { create :additional_code }
     let!(:additional_code_description) { create :additional_code_description, :with_period, additional_code_sid: additional_code.additional_code_sid }
-    let!(:measure) { create :measure, :with_base_regulation, additional_code_sid: additional_code.additional_code_sid }
+    let!(:measure) { create :measure, :with_base_regulation, additional_code_sid: additional_code.additional_code_sid, goods_nomenclature: create(:heading) }
     let!(:goods_nomenclature) { measure.goods_nomenclature }
     let!(:goods_nomenclature_description) { create :goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
 
     let(:pattern) do
       {
-        data: [{
-          id: String,
-          type: 'additional_code',
-          attributes: {
-            additional_code_type_id: String,
-            additional_code: String,
-            code: String,
-            description: String,
-            formatted_description: String,
-          },
-          relationships: {
-            measures: {
-              data: [
-                {
-                  id: String,
-                  type: 'measure',
-                },
-              ],
+        data: [
+          {
+            id: String,
+            type: 'additional_code',
+            attributes: {
+              additional_code_type_id: String,
+              additional_code: String,
+              code: String,
+              description: String,
+              formatted_description: String,
             },
-          },
-        }],
-        included: [{
-          id: String,
-          type: 'measure',
-          attributes: {
-            id: Integer,
-            validity_start_date: String,
-            validity_end_date: String,
-            goods_nomenclature_item_id: String,
-          },
-          relationships: {
-            goods_nomenclature: {
-              data: {
-                id: String,
-                type: 'goods_nomenclature',
+            relationships: {
+              measures: {
+                data: [
+                  {
+                    id: String,
+                    type: 'measure',
+                  },
+                ],
               },
             },
           },
-        },
-                   {
-                     id: String,
-                     type: 'goods_nomenclature',
-                     attributes: {
-                       goods_nomenclature_item_id: String,
-                       goods_nomenclature_sid: Integer,
-                       description: String,
-                       number_indents: Integer,
-                       producline_suffix: String,
-                     },
-                   }],
+        ],
+        included: [
+          {
+            id: String,
+            type: 'measure',
+            attributes: {
+              validity_start_date: String,
+              validity_end_date: String,
+              goods_nomenclature_item_id: String,
+            },
+            relationships: {
+              goods_nomenclature: {
+                data: {
+                  id: String,
+                  type: 'heading',
+                },
+              },
+              geographical_area: {
+                data: {
+                  id: String,
+                  type: 'geographical_area',
+                },
+              },
+            },
+          },
+          {
+            id: String,
+            type: 'heading',
+            attributes: {
+              goods_nomenclature_item_id: String,
+              description: String,
+              formatted_description: String,
+              producline_suffix: String,
+            },
+          },
+        ],
         meta: {
           pagination: {
             page: Integer,
