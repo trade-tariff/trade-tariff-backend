@@ -38,7 +38,6 @@ FactoryBot.define do
       producline_suffix { '80' }
     end
 
-
     trait :with_indent do
       # TODO: Populate this trait
     end
