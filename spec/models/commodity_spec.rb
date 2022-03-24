@@ -695,6 +695,34 @@ RSpec.describe Commodity do
     end
   end
 
+  describe '#non_grouping?' do
+    context 'when the commodity has a non-grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :non_grouping) }
+
+      it { is_expected.to be_non_grouping }
+    end
+
+    context 'when the commodity has a grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :grouping) }
+
+      it { is_expected.not_to be_non_grouping }
+    end
+  end
+
+  describe '#grouping?' do
+    context 'when the commodity has a grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :grouping) }
+
+      it { is_expected.to be_grouping }
+    end
+
+    context 'when the commodity has a non-grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :non_grouping) }
+
+      it { is_expected.not_to be_grouping }
+    end
+  end
+
   describe '.declarable' do
     let(:commodity_80) { create(:commodity, producline_suffix: '80') }
     let(:commodity_10) { create(:commodity, producline_suffix: '10') }

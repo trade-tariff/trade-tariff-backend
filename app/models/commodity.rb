@@ -18,7 +18,7 @@ class Commodity < GoodsNomenclature
   one_to_one :heading, dataset: -> {
     actual_or_relevant(Heading)
            .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
-           .filter(producline_suffix: '80')
+           .filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
   }
 
   one_to_one :chapter, dataset: -> {
@@ -49,7 +49,7 @@ class Commodity < GoodsNomenclature
     end
 
     def declarable
-      filter(producline_suffix: '80')
+      filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
     end
   end
 
@@ -93,9 +93,19 @@ class Commodity < GoodsNomenclature
   end
 
   def declarable?
-    Rails.cache.fetch("_declarable_#{goods_nomenclature_sid}") do
-      producline_suffix == '80' && children.none?
+    cache_key = "commodity-#{goods_nomenclature_sid}-#{point_in_time&.to_date&.iso8601}-is-declarable?"
+
+    Rails.cache.fetch(cache_key) do
+      non_grouping? && children.none?
     end
+  end
+
+  def non_grouping?
+    producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+  end
+
+  def grouping?
+    !non_grouping?
   end
 
   def uptree
