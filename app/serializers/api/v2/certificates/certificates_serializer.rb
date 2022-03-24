@@ -8,7 +8,7 @@ module Api
 
         attributes :certificate_type_code, :certificate_code, :description, :formatted_description
 
-        has_many :measures, serializer: Api::V2::Certificates::MeasureSerializer
+        has_many :measures, serializer: Api::V2::Shared::MeasureSerializer
       end
     end
   end
