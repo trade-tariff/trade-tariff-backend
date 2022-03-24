@@ -1,6 +1,6 @@
 {
   "instance_min_count": 2,
-  "instance_max_count": 12,
+  "instance_max_count": 8,
   "scaling_rules": [
     {
       "metric_type": "memoryutil",
