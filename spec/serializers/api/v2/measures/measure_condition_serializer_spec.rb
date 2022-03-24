@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
-  let(:serializable) { Api::V2::Measures::MeasureConditionPresenter.new(create(:measure_condition)) }
+  let(:serializable) { create(:measure_condition) }
 
   let(:expected_pattern) do
     {

@@ -45,10 +45,6 @@ module Api
           measure_conditions.pluck(:measure_condition_sid)
         end
 
-        def measure_conditions
-          super.map { |measure_condition| Api::V2::Measures::MeasureConditionPresenter.new(measure_condition) }
-        end
-
         def measure_component_ids
           measure_components.map(&:id)
         end
