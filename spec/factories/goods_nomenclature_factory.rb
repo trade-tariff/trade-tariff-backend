@@ -30,6 +30,14 @@ FactoryBot.define do
       )
     end
 
+    trait :grouping do
+      producline_suffix { '10' }
+    end
+
+    trait :non_grouping do
+      producline_suffix { '80' }
+    end
+
     trait :with_indent do
       # TODO: Populate this trait
     end
@@ -205,20 +213,16 @@ FactoryBot.define do
     end
   end
 
+  trait :without_children do
+    # This is just a labelling trait
+  end
+
   factory :heading, parent: :goods_nomenclature, class: 'Heading' do
     # +1 is needed to avoid creating heading with gono id in form of
     # xx00xxxxxx which is a Chapter
     goods_nomenclature_item_id { "#{4.times.map { Random.rand(1..8) }.join}000000" }
 
     trait :declarable do
-      producline_suffix { '80' }
-    end
-
-    trait :grouping do
-      producline_suffix { '10' }
-    end
-
-    trait :non_grouping do
       producline_suffix { '80' }
     end
 
