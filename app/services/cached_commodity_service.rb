@@ -1,4 +1,6 @@
 class CachedCommodityService
+  CACHE_VERSION = TradeTariffBackend.permutations? ? 2 : 1
+
   DEFAULT_INCLUDES = [
     'section',
     'chapter',
@@ -14,6 +16,8 @@ class CachedCommodityService
     'import_measures.legal_acts',
     'import_measures.suspending_regulation',
     'import_measures.measure_conditions',
+    'import_measures.measure_condition_permutation_groups',
+    'import_measures.measure_condition_permutation_groups.permutations',
     'import_measures.measure_conditions.measure_condition_components',
     'import_measures.measure_components',
     'import_measures.measure_components.measurement_unit',
@@ -33,6 +37,8 @@ class CachedCommodityService
     'export_measures.legal_acts',
     'export_measures.suspending_regulation',
     'export_measures.measure_conditions',
+    'export_measures.measure_condition_permutation_groups',
+    'export_measures.measure_condition_permutation_groups.permutations',
     'export_measures.measure_conditions.measure_condition_components',
     'export_measures.measure_components',
     'export_measures.measure_components.measurement_unit',
@@ -140,7 +146,7 @@ class CachedCommodityService
   end
 
   def cache_key
-    "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
+    "_commodity-v#{CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
   end
 
   def filtering_country

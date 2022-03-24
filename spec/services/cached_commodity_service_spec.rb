@@ -83,6 +83,7 @@ RSpec.describe CachedCommodityService do
               measure_type: Hash,
               legal_acts: Hash,
               measure_conditions: Hash,
+              measure_condition_permutation_groups: Hash,
               measure_components: Hash,
               national_measurement_units: Hash,
               geographical_area: Hash,
@@ -93,6 +94,34 @@ RSpec.describe CachedCommodityService do
             },
             meta: { duty_calculator: { source: 'uk', scheme_code: nil } },
           },
+          {
+            id: String,
+            type: 'measure_condition',
+            attributes: Hash,
+            relationships: {
+              measure_condition_components: Hash,
+            },
+          },
+          {
+            id: String,
+            type: 'measure_condition_component',
+            attributes: Hash,
+          },
+          {
+            id: String,
+            type: 'measure_condition_permutation_group',
+            attributes: Hash,
+            relationships: {
+              permutations: Hash,
+            },
+          },
+          {
+            id: String,
+            type: 'measure_condition_permutation',
+            relationships: {
+              measure_conditions: Hash,
+            },
+          },
         ],
       }
     end
@@ -101,8 +130,12 @@ RSpec.describe CachedCommodityService do
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original
+
+      create :duty_expression, :with_description, duty_expression_id: '02'
+
       measure = create(
         :measure,
+        :with_measure_conditions,
         :with_base_regulation,
         goods_nomenclature: commodity,
         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
@@ -125,7 +158,7 @@ RSpec.describe CachedCommodityService do
       end
 
       it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-"
+        expected_key = "_commodity-v2-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
@@ -135,7 +168,7 @@ RSpec.describe CachedCommodityService do
       let(:filter_params) { ActionController::Parameters.new.permit! }
 
       it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}--"
+        expected_key = "_commodity-v2-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}--"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
@@ -145,7 +178,7 @@ RSpec.describe CachedCommodityService do
       include_context 'with meursing additional code id', 'foo'
 
       it 'uses a cache key with an area filter in it' do
-        expected_key = "_commodity-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-foo"
+        expected_key = "_commodity-v2-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-RO-foo"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end

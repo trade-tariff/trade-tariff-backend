@@ -25,8 +25,6 @@ class MeasureConditionClassification
     UNKNOWN_CLASS
   end
 
-  private
-
   def threshold_class?
     @measure_condition.condition_duty_amount.present?
   end

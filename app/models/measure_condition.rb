@@ -56,7 +56,8 @@ class MeasureCondition < Sequel::Model
   delegate :description, to: :certificate_type, prefix: true, allow_nil: true
   delegate :description, to: :measure_action, prefix: true, allow_nil: true
   delegate :description, to: :measure_condition_code, prefix: true, allow_nil: true
-  delegate :measure_condition_class, to: :classification
+  delegate :measure_condition_class, :threshold_class?, :negative_class?,
+           :exemption_class?, :document_class?, to: :classification
 
   def before_create
     self.measure_condition_sid ||= self.class.next_national_sid
@@ -132,6 +133,14 @@ class MeasureCondition < Sequel::Model
 
   def units
     measure_condition_components.map(&:unit)
+  end
+
+  def permutation_key
+    if certificate_type_code || certificate_code || condition_duty_amount
+      "#{certificate_type_code}-#{certificate_code}-#{condition_duty_amount}"
+    else
+      measure_condition_sid # ensure always unique
+    end
   end
 
 private
