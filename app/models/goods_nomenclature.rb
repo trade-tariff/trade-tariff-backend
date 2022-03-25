@@ -100,11 +100,11 @@ class GoodsNomenclature < Sequel::Model
 
   def goods_nomenclature_class
     @goods_nomenclature_class ||= begin
-      class_name = self.class.sti_load(goods_nomenclature_item_id:).class.name
+      class_name = self.class.sti_load(goods_nomenclature_item_id: goods_nomenclature_item_id).class.name
 
       return class_name unless class_name == 'Commodity'
 
-      Commodity.find(goods_nomenclature_sid:).goods_nomenclature_class
+      Commodity.find(goods_nomenclature_sid: goods_nomenclature_sid).goods_nomenclature_class
     end
   end
 

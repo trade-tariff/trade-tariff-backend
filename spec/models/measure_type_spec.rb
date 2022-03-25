@@ -77,7 +77,7 @@ RSpec.describe MeasureType do
 
   describe '#meursing?' do
     shared_examples_for 'a meursing measure type' do |measure_type_id|
-      subject(:measure_type) { build(:measure_type, measure_type_id:) }
+      subject(:measure_type) { build(:measure_type, measure_type_id: measure_type_id) }
 
       it { is_expected.to be_meursing }
     end
