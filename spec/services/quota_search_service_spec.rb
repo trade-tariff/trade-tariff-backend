@@ -21,6 +21,7 @@ RSpec.describe QuotaSearchService do
            :with_geographical_area,
            quota_order_number_sid: quota_order_number1.quota_order_number_sid
   end
+  let!(:duplicate_measure) { create :measure, ordernumber: quota_order_number1.quota_order_number_id, validity_start_date: validity_start_date + 1.hour }
 
   let(:quota_order_number2) { create :quota_order_number }
   let!(:measure2) { create :measure, ordernumber: quota_order_number2.quota_order_number_id, validity_start_date: validity_start_date }
@@ -53,6 +54,14 @@ RSpec.describe QuotaSearchService do
   end
 
   describe '#call' do
+    context 'when filtering by a quota order number id' do
+      let(:filter) { { 'order_number' => duplicate_measure.ordernumber } }
+
+      it 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_definition1])
+      end
+    end
+
     context 'when filtering by a fully-qualified goods_nomenclature_item_id' do
       let(:filter) { { 'goods_nomenclature_item_id' => measure1.goods_nomenclature_item_id } }
 
