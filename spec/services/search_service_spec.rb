@@ -244,12 +244,12 @@ RSpec.describe SearchService do
                  validity_start_date: Date.new(2011, 1, 1)
         end
 
-        let(:heading_pattern) do
+        let(:subheading_pattern) do
           {
             type: 'exact_match',
             entry: {
-              endpoint: 'headings',
-              id: heading.goods_nomenclature_item_id.first(4),
+              endpoint: 'subheadings',
+              id: "8418213100-80",
             },
           }
         end
@@ -259,7 +259,7 @@ RSpec.describe SearchService do
           result = described_class.new(data_serializer, q: commodity1.goods_nomenclature_item_id,
                                                         as_of: Time.zone.today).to_json
 
-          expect(result).to match_json_expression heading_pattern
+          expect(result).to match_json_expression subheading_pattern
         end
       end
 

@@ -58,7 +58,13 @@ class SearchService
 
       # NOTE: at the moment scope .declarable is not enough to
       # determine if it is really declarable or not
-      commodity.present? && commodity.declarable? ? commodity : nil
+      if commodity.blank?
+        nil
+      elsif commodity.declarable?
+        commodity
+      else
+        Subheading.actual.by_code(query).declarable.non_hidden.first
+      end
     end
 
     def find_chapter(query)
