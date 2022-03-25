@@ -10,7 +10,7 @@ module PaasConfig
       ENV['REDIS_URL']
     end
 
-    { url: url, db: 0, id: nil } # rubocop:disable Style/HashSyntax
+    { url: url, db: Rails.env.test? ? 1 : 0, id: nil } # rubocop:disable Style/HashSyntax
   end
 
   def elasticsearch

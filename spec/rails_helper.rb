@@ -40,12 +40,8 @@ RSpec.configure do |config|
 
   config.include_context 'with fake global rules of origin data'
 
-  redis = Redis.new(db: 15)
-  RedisLockDb.redis = redis
-
   config.before(:suite) do
     TradeTariffBackend.redis.flushdb
-    redis.flushdb
 
     MeasureTypeExclusion.load_from_file \
       Rails.root.join('spec/fixtures/measure_type_exclusions.csv')
@@ -53,7 +49,6 @@ RSpec.configure do |config|
 
   config.after(:suite) do
     TradeTariffBackend.redis.flushdb
-    redis.flushdb
   end
 
   config.before do
