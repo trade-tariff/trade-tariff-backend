@@ -17,6 +17,7 @@ RSpec.describe Api::V2::NewsItemSerializer do
           show_on_uk: news_item.show_on_uk,
           show_on_updates_page: news_item.show_on_updates_page,
           show_on_home_page: news_item.show_on_home_page,
+          show_on_banner: news_item.show_on_banner,
           start_date: news_item.start_date,
           end_date: news_item.end_date,
           created_at: news_item.created_at,

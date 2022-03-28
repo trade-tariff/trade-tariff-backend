@@ -26,6 +26,7 @@ class NewsItem < Sequel::Model
       case target_name.to_s
       when 'home' then where(show_on_home_page: true)
       when 'updates' then where(show_on_updates_page: true)
+      when 'banner' then where(show_on_banner: true)
       else self
       end
     end
