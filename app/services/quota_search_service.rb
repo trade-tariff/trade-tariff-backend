@@ -33,7 +33,7 @@ class QuotaSearchService
       .actual
       .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id]])
       .eager(eager_load_graph)
-      .distinct(:measures__ordernumber, :measures__validity_start_date)
+      .distinct(:measures__ordernumber)
       .select(Sequel.expr(:measures).*)
       .order(:measures__ordernumber)
 
