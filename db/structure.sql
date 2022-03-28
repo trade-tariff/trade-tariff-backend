@@ -5225,7 +5225,8 @@ CREATE TABLE public.news_items (
     start_date date NOT NULL,
     end_date date,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    show_on_banner boolean DEFAULT false NOT NULL
 );
 
 
@@ -10834,3 +10835,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20210628165555_add_unique_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210915112121_add_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220107134210_add_productline_suffix_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220223091956_add_oplog_inserts_to_tariff_updates.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20220328091515_add_show_on_banner_to_news_items.rb');
