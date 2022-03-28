@@ -49,5 +49,33 @@ RSpec.describe Api::V2::Shared::MeasureSerializer do
     it_behaves_like 'a measure with a polymorphic goods nomenclature', 'chapter' do
       let(:goods_nomenclature) { create(:chapter) }
     end
+
+    context 'when the goods nomenclature is nil' do
+      let(:goods_nomenclature) { nil }
+      let(:expected_pattern) do
+        {
+          data: {
+            id: serializable.measure_sid.to_s,
+            type: 'measure',
+            attributes: {
+              goods_nomenclature_item_id: match(/\d{10}/),
+            },
+            relationships: {
+              geographical_area: {
+                data: {
+                  id: serializable.geographical_area_id,
+                  type: 'geographical_area',
+                },
+              },
+              goods_nomenclature: {
+                data: nil,
+              },
+            },
+          },
+        }
+      end
+
+      it { expect(serializer.serializable_hash.as_json).to include_json(expected_pattern) }
+    end
   end
 end
