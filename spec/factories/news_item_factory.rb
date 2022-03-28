@@ -6,7 +6,7 @@ FactoryBot.define do
     show_on_xi { true }
     show_on_uk { true }
     show_on_updates_page { false }
-    show_on_home_page { true }
+    show_on_home_page { false }
 
     content do
       <<~CONTENT
@@ -26,13 +26,12 @@ FactoryBot.define do
       show_on_uk { false }
     end
 
-    trait :homepage do
-      show_on_updates_page { false }
+    trait :home_page do
       show_on_home_page { true }
     end
 
-    trait :updates_and_homepage do
-      show_on_home_page { true }
+    trait :updates_page do
+      show_on_updates_page { true }
     end
   end
 end

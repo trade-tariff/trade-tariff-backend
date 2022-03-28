@@ -79,22 +79,10 @@ RSpec.describe NewsItem do
     describe '.for_target' do
       subject(:results) { described_class.for_target(target) }
 
-      let(:home_page) { create :news_item, show_on_home_page: true, show_on_updates_page: false }
-      let(:updates_page) { create :news_item, show_on_home_page: false, show_on_updates_page: true }
-      let(:both_page) { create :news_item, show_on_home_page: true, show_on_updates_page: true }
-      let(:neither_page) { create :news_item, show_on_home_page: false, show_on_updates_page: false }
-
-      shared_examples_for 'a non-filtering target filter invocation' do |target|
-        subject(:results) { described_class.for_target(target) }
-
-        it { is_expected.to include home_page }
-        it { is_expected.to include updates_page }
-        it { is_expected.to include both_page }
-        it { is_expected.to include neither_page }
-      end
-
-      it_behaves_like 'a non-filtering target filter invocation', ''
-      it_behaves_like 'a non-filtering target filter invocation', nil
+      let(:home_page) { create :news_item, :home_page }
+      let(:updates_page) { create :news_item, :updates_page }
+      let(:both_page) { create :news_item, :home_page, :updates_page }
+      let(:neither_page) { create :news_item }
 
       context 'without target' do
         let(:target) { nil }
