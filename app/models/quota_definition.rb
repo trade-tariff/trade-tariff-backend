@@ -1,4 +1,6 @@
 class QuotaDefinition < Sequel::Model
+  DEFINITION_CRITICAL_STATE = 'Y'.freeze
+
   plugin :time_machine
   plugin :oplog, primary_key: :quota_definition_sid
 
@@ -6,6 +8,12 @@ class QuotaDefinition < Sequel::Model
 
   one_to_one :quota_order_number, key: :quota_order_number_sid,
                                   primary_key: :quota_order_number_sid
+
+  one_to_many :quota_critical_events, key: :quota_definition_sid do |ds|
+    ds
+      .where('occurrence_timestamp <= ?', point_in_time)
+      .order(Sequel.desc(:occurrence_timestamp))
+  end
 
   one_to_many :quota_exhaustion_events, key: :quota_definition_sid,
                                         primary_key: :quota_definition_sid
@@ -47,8 +55,27 @@ class QuotaDefinition < Sequel::Model
     "#{measurement_unit_description} (#{measurement_unit_abbreviation})" if measurement_unit_description.present?
   end
 
+  # TODO: There is a cascading logic to the status that events set.
+  #
+  #       Status (pending a discussion) should be determined by active events and be prioritised in the following order:
+  #
+  #       - suspended
+  #       - blocked
+  #       - exhausted
+  #       - critical
+  #       - open events
   def status
-    QuotaEvent.last_for(quota_definition_sid, point_in_time).status.presence || (critical_state? ? 'Critical' : 'Open')
+    if last_event.present?
+      return QuotaCriticalEvent.status if has_active_critical_event?
+
+      last_event.status
+    else
+      critical_state? ? QuotaCriticalEvent.status : QuotaBalanceEvent.status
+    end
+  end
+
+  def last_event
+    @last_event ||= QuotaEvent.last_for(quota_definition_sid, point_in_time)
   end
 
   def last_balance_event
@@ -71,7 +98,15 @@ class QuotaDefinition < Sequel::Model
 
 private
 
+  def has_active_critical_event?
+    last_event.status == QuotaBalanceEvent.status && last_critical_event&.active?
+  end
+
+  def last_critical_event
+    @last_critical_event ||= quota_critical_events.first
+  end
+
   def critical_state?
-    critical_state == 'Y'
+    critical_state == DEFINITION_CRITICAL_STATE
   end
 end

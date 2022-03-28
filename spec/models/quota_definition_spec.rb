@@ -1,13 +1,59 @@
 RSpec.describe QuotaDefinition do
   describe '#status' do
-    it 'returns Open if quota definition is not in critical state' do
-      quota_definition = build :quota_definition, critical_state: 'N'
-      expect(quota_definition.status).to eq 'Open'
+    around { |example| TimeMachine.now { example.run } }
+
+    context 'when not in a critical state with no events' do
+      subject(:status) { build(:quota_definition, critical_state: 'N').status }
+
+      it { is_expected.to eq 'Open' }
     end
 
-    it 'returns Critical if quota definition is in critical state' do
-      quota_definition = build :quota_definition, critical_state: 'Y'
-      expect(quota_definition.status).to eq 'Critical'
+    context 'when in a critical state with no events' do
+      subject(:status) { build(:quota_definition, critical_state: 'Y').status }
+
+      it { is_expected.to eq 'Critical' }
+    end
+
+    context 'when there are balance events' do
+      subject(:status) { create(:quota_definition, :with_quota_balance_events).status }
+
+      it { is_expected.to eq 'Open' }
+    end
+
+    context 'when there are critical events' do
+      subject(:status) { create(:quota_definition, :with_quota_critical_events).status }
+
+      it { is_expected.to eq 'Critical' }
+    end
+
+    context 'when there are exhaustion events' do
+      subject(:status) { create(:quota_definition, :with_quota_exhaustion_events).status }
+
+      it { is_expected.to eq 'Exhausted' }
+    end
+
+    context 'when there are unsuspension events' do
+      subject(:status) { create(:quota_definition, :with_quota_unsuspension_events).status }
+
+      it { is_expected.to eq 'Unsuspended' }
+    end
+
+    context 'when there are reopening events' do
+      subject(:status) { create(:quota_definition, :with_quota_reopening_events).status }
+
+      it { is_expected.to eq 'Reopened' }
+    end
+
+    context 'when there are balance events and an active critical event' do
+      subject(:status) { create(:quota_definition, :with_quota_balance_and_active_critical_events).status }
+
+      it { is_expected.to eq 'Critical' }
+    end
+
+    context 'when there are balance events and an inactive critical event' do
+      subject(:status) { build(:quota_definition, :with_quota_balance_and_inactive_critical_events).status }
+
+      it { is_expected.to eq 'Open' }
     end
   end
 

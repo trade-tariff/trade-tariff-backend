@@ -109,11 +109,59 @@ FactoryBot.define do
       validity_end_date   { nil }
     end
 
+    trait :with_quota_balance_and_active_critical_events do
+      transient { event_new_balance { 100 } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance, occurrence_timestamp: Time.zone.today)
+        create(:quota_critical_event, :active, quota_definition:, occurrence_timestamp: Time.zone.yesterday)
+      end
+    end
+
+    trait :with_quota_balance_and_inactive_critical_events do
+      transient { event_new_balance { 100 } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance, occurrence_timestamp: Time.zone.today)
+        create(:quota_critical_event, :inactive, quota_definition:, occurrence_timestamp: Time.zone.yesterday)
+      end
+    end
+
     trait :with_quota_balance_events do
       transient { event_new_balance { 100 } }
 
       after(:create) do |quota_definition, evaluator|
         create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance)
+      end
+    end
+
+    trait :with_quota_critical_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_critical_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_exhaustion_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_exhaustion_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_unsuspension_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_unsuspension_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_reopening_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_reopening_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_unblocking_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_unblocking_event, quota_definition:)
       end
     end
 
@@ -164,6 +212,14 @@ FactoryBot.define do
     trait :xml do
       critical_state { Forgery(:basic).text(exactly: 2) }
     end
+
+    trait :active do
+      critical_state { 'Y' }
+    end
+
+    trait :inactive do
+      critical_state { 'N' }
+    end
   end
 
   factory :quota_suspension_period do
@@ -175,6 +231,7 @@ FactoryBot.define do
   end
 
   factory :quota_unblocking_event do
+    quota_definition
     quota_definition_sid  { generate(:sid) }
     occurrence_timestamp  { 24.hours.ago }
     unblocking_date       { 1.year.ago.beginning_of_day }
