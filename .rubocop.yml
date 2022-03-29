@@ -64,6 +64,9 @@ Style/Documentation:
 Style/FrozenStringLiteralComment:
   Enabled: false
 
+Style/HashSyntax:
+  EnforcedShorthandSyntax: never
+
 Style/GuardClause:
   MinBodyLength: 2
 
