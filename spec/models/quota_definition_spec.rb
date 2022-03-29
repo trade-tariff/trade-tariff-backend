@@ -44,6 +44,12 @@ RSpec.describe QuotaDefinition do
       it { is_expected.to eq 'Reopened' }
     end
 
+    context 'when there are unblocking events' do
+      subject(:status) { create(:quota_definition, :with_quota_unblocking_events).reload.status }
+
+      it { is_expected.to eq 'Unblocked' }
+    end
+
     context 'when there are balance events and an active critical event' do
       subject(:status) { create(:quota_definition, :with_quota_balance_and_active_critical_events).status }
 

@@ -232,7 +232,6 @@ FactoryBot.define do
 
   factory :quota_unblocking_event do
     quota_definition
-    quota_definition_sid  { generate(:sid) }
     occurrence_timestamp  { 24.hours.ago }
     unblocking_date       { 1.year.ago.beginning_of_day }
   end
