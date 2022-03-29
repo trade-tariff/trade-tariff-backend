@@ -59,6 +59,7 @@ module Api
           show_on_uk
           show_on_updates_page
           show_on_home_page
+          show_on_banner
           display_style
         ])
       end

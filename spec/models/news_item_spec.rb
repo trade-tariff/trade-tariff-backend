@@ -79,27 +79,13 @@ RSpec.describe NewsItem do
     describe '.for_target' do
       subject(:results) { described_class.for_target(target) }
 
-      let(:home_page) { create :news_item, show_on_home_page: true, show_on_updates_page: false }
-      let(:updates_page) { create :news_item, show_on_home_page: false, show_on_updates_page: true }
-      let(:both_page) { create :news_item, show_on_home_page: true, show_on_updates_page: true }
-      let(:neither_page) { create :news_item, show_on_home_page: false, show_on_updates_page: false }
-
-      shared_examples_for 'a non-filtering target filter invocation' do |target|
-        subject(:results) { described_class.for_target(target) }
-
-        it { is_expected.to include home_page }
-        it { is_expected.to include updates_page }
-        it { is_expected.to include both_page }
-        it { is_expected.to include neither_page }
-      end
-
-      it_behaves_like 'a non-filtering target filter invocation', ''
-      it_behaves_like 'a non-filtering target filter invocation', nil
+      let(:updates_page) { create :news_item, :updates_page }
+      let(:both_page) { create :news_item, :home_page, :updates_page }
+      let(:neither_page) { create :news_item }
 
       context 'without target' do
         let(:target) { nil }
 
-        it { is_expected.to include home_page }
         it { is_expected.to include updates_page }
         it { is_expected.to include both_page }
         it { is_expected.to include neither_page }
@@ -107,6 +93,7 @@ RSpec.describe NewsItem do
 
       context 'with home' do
         let(:target) { 'home' }
+        let(:home_page) { create :news_item, :home_page }
 
         it { is_expected.to include home_page }
         it { is_expected.not_to include updates_page }
@@ -116,10 +103,21 @@ RSpec.describe NewsItem do
 
       context 'with updates' do
         let(:target) { 'updates' }
+        let(:home_page) { create :news_item, :home_page }
 
         it { is_expected.to include updates_page }
         it { is_expected.not_to include home_page }
         it { is_expected.to include both_page }
+        it { is_expected.not_to include neither_page }
+      end
+
+      context 'with banner' do
+        let(:target) { 'banner' }
+        let(:banner) { create :news_item, :banner }
+
+        it { is_expected.to include banner }
+        it { is_expected.not_to include updates_page }
+        it { is_expected.not_to include both_page }
         it { is_expected.not_to include neither_page }
       end
     end
@@ -139,14 +137,14 @@ RSpec.describe NewsItem do
         create :news_item, start_date: Time.zone.tomorrow, end_date: Time.zone.tomorrow
       end
 
-      let :indefinite do
+      let :ongoing do
         create :news_item, start_date: Time.zone.today, end_date: nil
       end
 
       it { is_expected.not_to include yesterdays }
       it { is_expected.to include todays }
       it { is_expected.not_to include tomorrows }
-      it { is_expected.to include indefinite }
+      it { is_expected.to include ongoing }
     end
 
     describe '.descending' do
