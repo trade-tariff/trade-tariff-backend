@@ -45,7 +45,8 @@ module Cache
 
     def measures
       additional_code
-        .measures_dataset.eager(:goods_nomenclature)
+        .measures_dataset
+        .eager(:goods_nomenclature)
         .exclude(goods_nomenclature_item_id: nil)
         .all
         .select { |measure| has_valid_dates(measure) && measure.goods_nomenclature.present? }
