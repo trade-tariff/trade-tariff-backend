@@ -1,6 +1,5 @@
 class AdditionalCodeSearchService
-  attr_reader :code, :type, :description, :as_of
-  attr_reader :current_page, :per_page, :pagination_record_count
+  attr_reader :code, :type, :description, :as_of, :current_page, :per_page, :pagination_record_count
 
   def initialize(attributes, current_page, per_page)
     @as_of = AdditionalCode.point_in_time
@@ -12,9 +11,9 @@ class AdditionalCodeSearchService
             bool: {
               must: [
                 { range: { validity_start_date: { lte: as_of } } },
-                { range: { validity_end_date: { gte: as_of } } }
-              ]
-            }
+                { range: { validity_end_date: { gte: as_of } } },
+              ],
+            },
           },
           # or is greater than item's validity_start_date
           # and item has blank validity_end_date (is unbounded)
@@ -22,21 +21,21 @@ class AdditionalCodeSearchService
             bool: {
               must: [
                 { range: { validity_start_date: { lte: as_of } } },
-                { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
-              ]
-            }
+                { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
+              ],
+            },
           },
           # or item has blank validity_start_date and validity_end_date
           {
             bool: {
               must: [
                 { bool: { must_not: { exists: { field: 'validity_start_date' } } } },
-                { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
-              ]
-            }
-          }
-        ]
-      }
+                { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
+              ],
+            },
+          },
+        ],
+      },
     }]
 
     @code = attributes['code']
@@ -53,6 +52,7 @@ class AdditionalCodeSearchService
     apply_type_filter if type.present?
     apply_description_filter if description.present?
     fetch
+    apply_post_fetch_filters
     @result
   end
 
@@ -61,7 +61,7 @@ class AdditionalCodeSearchService
   def fetch
     search_client = ::TradeTariffBackend.cache_client
     index = ::Cache::AdditionalCodeIndex.new(TradeTariffBackend.search_namespace).name
-    result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w(additional_code_type_id additional_code) }
+    result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w[additional_code_type_id additional_code] }
     @pagination_record_count = result&.hits&.total&.value || 0
     @result = result&.hits&.hits&.map(&:_source)
   end
@@ -76,5 +76,13 @@ class AdditionalCodeSearchService
 
   def apply_description_filter
     @query.push({ multi_match: { query: description, fields: %w[description], operator: 'and' } })
+  end
+
+  def apply_post_fetch_filters
+    @result.each do |serialized_additional_code|
+      serialized_additional_code.measures.delete_if do |measure|
+        measure.responds_to?(:goods_nomenclature) && measure.goods_nomenclature.blank?
+      end
+    end
   end
 end
