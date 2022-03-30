@@ -2,17 +2,12 @@ module Cache
   class CertificateSerializer
     include ::Cache::SearchCacheMethods
 
-    attr_reader :certificate, :as_of
-
     def initialize(certificate)
       @certificate = certificate
       @as_of = Time.zone.today.midnight
     end
 
     def as_json
-      measures = certificate.measures.select do |measure|
-        has_valid_dates(measure)
-      end
       {
         id: certificate.id,
         certificate_type_code: certificate.certificate_type_code,
@@ -37,6 +32,23 @@ module Cache
           }
         end,
       }
+    end
+
+    private
+
+    attr_reader :certificate, :as_of
+
+    def measures
+      @measures ||= certificate
+        .measures_dataset
+        .eager(:goods_nomenclature)
+        .exclude(goods_nomenclature_item_id: nil)
+        .all
+        .select do |measure|
+          has_valid_dates(measure) &&
+            measure.goods_nomenclature.present? &&
+            HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
+        end
     end
   end
 end
