@@ -1,6 +1,5 @@
 class FootnoteSearchService
-  attr_reader :code, :type, :description, :as_of
-  attr_reader :current_page, :per_page, :pagination_record_count
+  attr_reader :code, :type, :description, :as_of, :current_page, :per_page, :pagination_record_count
 
   def initialize(attributes, current_page, per_page)
     @as_of = Footnote.point_in_time
@@ -12,9 +11,9 @@ class FootnoteSearchService
             bool: {
               must: [
                 { range: { validity_start_date: { lte: as_of } } },
-                { range: { validity_end_date: { gte: as_of } } }
-              ]
-            }
+                { range: { validity_end_date: { gte: as_of } } },
+              ],
+            },
           },
           # or is greater than item's validity_start_date
           # and item has blank validity_end_date (is unbounded)
@@ -22,21 +21,21 @@ class FootnoteSearchService
             bool: {
               must: [
                 { range: { validity_start_date: { lte: as_of } } },
-                { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
-              ]
-            }
+                { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
+              ],
+            },
           },
           # or item has blank validity_start_date and validity_end_date
           {
             bool: {
               must: [
                 { bool: { must_not: { exists: { field: 'validity_start_date' } } } },
-                { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
-              ]
-            }
-          }
-        ]
-      }
+                { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
+              ],
+            },
+          },
+        ],
+      },
     }]
 
     @code = attributes['code']
@@ -60,7 +59,7 @@ class FootnoteSearchService
   def fetch
     search_client = ::TradeTariffBackend.cache_client
     index = ::Cache::FootnoteIndex.new(TradeTariffBackend.search_namespace).name
-    result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w(footnote_type_id footnote_id) }
+    result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w[footnote_type_id footnote_id] }
     @pagination_record_count = result&.hits&.total&.value || 0
     @result = result&.hits&.hits&.map(&:_source)
   end

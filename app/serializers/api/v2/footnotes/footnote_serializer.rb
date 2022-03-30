@@ -11,7 +11,14 @@ module Api
         attributes :code, :footnote_type_id, :footnote_id, :description, :formatted_description, :extra_large_measures
 
         has_many :measures, serializer: Api::V2::Shared::MeasureSerializer
-        has_many :goods_nomenclatures, serializer: proc { |record, _params| "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize }
+        has_many :goods_nomenclatures,
+                 serializer: proc { |record, _params|
+                   if record && record.respond_to?(:goods_nomenclature_class)
+                     "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize
+                   else
+                     Api::V2::Shared::GoodsNomenclatureSerializer
+                   end
+                 }
       end
     end
   end

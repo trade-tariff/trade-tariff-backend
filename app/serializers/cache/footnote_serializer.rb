@@ -2,6 +2,8 @@ module Cache
   class FootnoteSerializer
     include ::Cache::SearchCacheMethods
 
+    MAX_MEASURE_THRESHOLD = 1000
+
     attr_reader :footnote, :as_of
 
     def initialize(footnote)
@@ -10,11 +12,6 @@ module Cache
     end
 
     def as_json
-      goods_nomenclatures = footnote.goods_nomenclatures.reject do |goods_nomenclature|
-        HiddenGoodsNomenclature.codes.include? goods_nomenclature.goods_nomenclature_item_id
-      end.select do |goods_nomenclature|
-        has_valid_dates(goods_nomenclature)
-      end
       footnote_attributes = {
         code: footnote.code,
         footnote_type_id: footnote.footnote_type_id,
@@ -26,12 +23,10 @@ module Cache
         goods_nomenclature_ids: goods_nomenclatures.map(&:goods_nomenclature_sid),
         goods_nomenclatures: goods_nomenclatures.map do |goods_nomenclature|
           goods_nomenclature_attributes(goods_nomenclature)
-        end
+        end,
       }
 
-      measures = footnote.measures.select { |measure| has_valid_dates(measure) }
-      extra_large_measures = measures.size >= 1000
-      unless extra_large_measures
+      unless extra_large_measures?
         footnote_attributes[:measure_ids] = measures.map(&:measure_sid)
         footnote_attributes[:measures] = measures.map do |measure|
           {
@@ -48,8 +43,34 @@ module Cache
           }
         end
       end
-      footnote_attributes[:extra_large_measures] = extra_large_measures
+      footnote_attributes[:extra_large_measures] = extra_large_measures?
       footnote_attributes
+    end
+
+    private
+
+    def goods_nomenclatures
+      @goods_nomenclatures ||= footnote.goods_nomenclatures.compact.select do |goods_nomenclature|
+        has_valid_dates(goods_nomenclature) &&
+          HiddenGoodsNomenclature.codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
+      end
+    end
+
+    def measures
+      @measures ||= footnote
+        .measures_dataset
+        .eager(:goods_nomenclature)
+        .exclude(goods_nomenclature_item_id: nil)
+        .all
+        .select do |measure|
+          has_valid_dates(measure) &&
+            measure.goods_nomenclature.present? &&
+            HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
+        end
+    end
+
+    def extra_large_measures?
+      measures.size >= MAX_MEASURE_THRESHOLD
     end
   end
 end
