@@ -86,11 +86,25 @@ FactoryBot.define do
   end
 
   factory :footnote_association_goods_nomenclature do
-    goods_nomenclature_sid          { generate(:goods_nomenclature_sid) }
-    footnote_id                     { Forgery(:basic).text(exactly: 3) }
-    footnote_type                   { Forgery(:basic).text(exactly: 2) }
-    validity_start_date             { 3.years.ago.beginning_of_day }
-    validity_end_date               { nil }
+    transient do
+      footnote {}
+      goods_nomenclature {}
+    end
+
+    goods_nomenclature_sid do
+      goods_nomenclature.try(:goods_nomenclature_sid) || generate(:goods_nomenclature_sid)
+    end
+
+    footnote_id do
+      footnote.try(:footnote_id) || Forgery(:basic).text(exactly: 3)
+    end
+
+    footnote_type do
+      footnote.try(:footnote_type_id) || Forgery(:basic).text(exactly: 2)
+    end
+
+    validity_start_date { 3.years.ago.beginning_of_day }
+    validity_end_date   { nil }
   end
 
   factory :footnote_association_ern do
@@ -102,9 +116,22 @@ FactoryBot.define do
   end
 
   factory :footnote_association_measure do
-    measure_sid                     { generate(:measure_sid) }
-    footnote_id                     { Forgery(:basic).text(exactly: 3) }
-    footnote_type_id                { Forgery(:basic).text(exactly: 2) }
+    transient do
+      footnote {}
+      measure {}
+    end
+
+    measure_sid do
+      measure.try(:measure_sid) || generate(:measure_sid)
+    end
+
+    footnote_id do
+      footnote.try(:footnote_id) || Forgery(:basic).text(exactly: 3)
+    end
+
+    footnote_type_id do
+      footnote.try(:footnote_type_id) || Forgery(:basic).text(exactly: 2)
+    end
   end
 
   factory :footnote_association_additional_code do
