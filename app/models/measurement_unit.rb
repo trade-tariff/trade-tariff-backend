@@ -47,9 +47,9 @@ class MeasurementUnit < Sequel::Model
       qualifier_code = unit_key.length == 4 ? unit_key[3..] : ''
 
       if unit.present?
-        Sentry.capture_message("Missing measurement unit in database for measurement unit key: #{unit_key}")
+        Rails.logger.warn("Missing measurement unit in database for measurement unit key: #{unit_key}")
       else
-        Sentry.capture_message("Missing measurement unit in measurement_units.yml: #{unit_key}")
+        Rails.logger.warn("Missing measurement unit in measurement_units.yml: #{unit_key}")
       end
 
       {
