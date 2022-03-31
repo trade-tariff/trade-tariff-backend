@@ -1,22 +1,8 @@
 RSpec.describe Api::V2::CertificatesController, type: :controller do
   describe 'GET #search' do
-    let!(:certificate) { create :certificate }
-    let!(:certificate_description) do
-      create :certificate_description,
-             :with_period,
-             certificate_type_code: certificate.certificate_type_code,
-             certificate_code: certificate.certificate_code
-    end
-    let!(:measure) { create :measure, goods_nomenclature: create(:heading) }
-    let!(:goods_nomenclature) { measure.goods_nomenclature }
-    let!(:measure_condition) do
-      create :measure_condition,
-             certificate_type_code: certificate.certificate_type_code,
-             certificate_code: certificate.certificate_code,
-             measure_sid: measure.measure_sid
-    end
-    let!(:goods_nomenclature_description) { create :goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
+    subject(:do_response) { get :search, params: { code: certificate.certificate_code }, format: :json && response }
 
+    let(:certificate) { create(:certificate, :with_description) }
     let(:pattern) do
       {
         data: [
@@ -31,10 +17,12 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
             },
             relationships: {
               measures: {
-                data: [{
-                  id: String,
-                  type: 'measure',
-                }],
+                data: [
+                  {
+                    id: String,
+                    type: 'measure',
+                  },
+                ],
               },
             },
           },
@@ -85,16 +73,20 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
     end
 
     before do
+      create(
+        :measure,
+        :with_measure_conditions,
+        goods_nomenclature: create(:heading, :with_description),
+        certificate_type_code: certificate.certificate_type_code,
+        certificate_code: certificate.certificate_code,
+      )
+
       Sidekiq::Testing.inline! do
         TradeTariffBackend.cache_client.reindex
         sleep(1)
       end
     end
 
-    it 'returns rendered found additional codes and related measures and goods nomenclatures' do
-      get :search, params: { code: certificate.certificate_code }, format: :json
-
-      expect(response.body).to match_json_expression pattern
-    end
+    it { expect(do_response.body).to match_json_expression pattern }
   end
 end
