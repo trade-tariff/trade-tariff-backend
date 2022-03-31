@@ -11,6 +11,17 @@ FactoryBot.define do
     certificate_code      { Forgery(:basic).text(exactly: 3) }
     validity_start_date   { 2.years.ago.beginning_of_day }
     validity_end_date     { nil }
+
+    trait :with_description do
+      after(:create) do |certificate, _evaluator|
+        create(
+          :certificate_description,
+          :with_period,
+          certificate_type_code: certificate.certificate_type_code,
+          certificate_code: certificate.certificate_code,
+        )
+      end
+    end
   end
 
   factory :certificate_description_period do
