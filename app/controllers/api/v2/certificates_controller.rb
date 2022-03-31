@@ -10,11 +10,6 @@ module Api
       end
 
       def index
-        certificates = Certificate.actual
-                                  .eager(:certificate_descriptions, :certificate_description_periods, :certificate_type_description)
-                                  .order(Sequel.asc(%i[certificate_type_code certificate_code]))
-                                  .all
-
         render json: Api::V2::Certificates::CertificateListSerializer.new(certificates).serializable_hash
       end
 
@@ -24,6 +19,13 @@ module Api
         TimeMachine.now do
           @certificates = search_service.perform
         end
+      end
+
+      def certificates
+        Certificate.actual
+          .eager(:certificate_descriptions, :certificate_description_periods, :certificate_type_description)
+          .order(Sequel.asc(%i[certificate_type_code certificate_code]))
+          .all
       end
 
       def search_service

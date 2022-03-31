@@ -22,6 +22,16 @@ FactoryBot.define do
         )
       end
     end
+
+    trait :with_certificate_type do
+      after(:create) do |certificate, _evaluator|
+        create(
+          :certificate_type,
+          :with_description,
+          certificate_type_code: certificate.certificate_type_code,
+        )
+      end
+    end
   end
 
   factory :certificate_description_period do
