@@ -13,6 +13,7 @@ RSpec.describe Cache::CertificateSerializer do
       goods_nomenclature: create(:heading, :with_description),
     )
   end
+
   let(:measure_with_no_goods_nomenclature) do
     create(
       :measure,
