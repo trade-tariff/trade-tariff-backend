@@ -3,6 +3,8 @@ module Api
     class QuotasController < ApiController
       DEFAULT_INCLUDES = %w[quota_order_number quota_order_number.geographical_areas measures measures.goods_nomenclature measures.geographical_area].freeze
 
+      ALLOWED_INCLUDES = %w[quota_balance_events].freeze
+
       def search
         render json: serialized_quota_definitions
       end
@@ -21,7 +23,7 @@ module Api
 
       def serializer_options
         {
-          include: includes,
+          include: valid_includes,
           meta: {
             pagination: {
               page: current_page,
@@ -36,24 +38,30 @@ module Api
         @search_service ||= QuotaSearchService.new(params, current_page, per_page)
       end
 
-      def per_page
-        5
+      def valid_includes
+        return DEFAULT_INCLUDES if include_params.empty?
+
+        valid_resources = include_params.select { |resource| ALLOWED_INCLUDES.include?(resource) }
+
+        if valid_resources.length < include_params.length
+          raise ArgumentError, "Error: invalid params in 'includes': #{invalid_includes}"
+        end
+
+        valid_resources
       end
 
-      def includes
-        return provided_includes if provided_includes.present?
-
-        DEFAULT_INCLUDES
-      end
-
-      def provided_includes
-        include_params.presence || []
+      def invalid_includes
+        include_params.reject { |resource| ALLOWED_INCLUDES.include?(resource) }
       end
 
       def actual_date
         Date.parse([params['year'], params['month'], params['day']].join('-'))
       rescue ArgumentError # empty date, default to as_of in ApplicationController
         super
+      end
+
+      def per_page
+        5
       end
     end
   end
