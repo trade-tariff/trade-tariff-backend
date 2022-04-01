@@ -4,14 +4,14 @@ module Api
       class CertificateListSerializer
         include JSONAPI::Serializer
 
-        set_type :certificate_type
+        set_type :certificate
 
         set_id :id
 
         attributes :certificate_type_code, :certificate_code, :description, :formatted_description
 
         attribute :certificate_type_description do |certificate|
-          certificate&.certificate_type_description&.description
+          certificate.certificate_type_description&.description
         end
 
         attribute :validity_start_date do |certificate|

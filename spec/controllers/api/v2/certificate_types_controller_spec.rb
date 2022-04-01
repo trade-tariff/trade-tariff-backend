@@ -1,45 +1,32 @@
 RSpec.describe Api::V2::CertificateTypesController, type: :controller do
-  describe '#index' do
-    let!(:certificate_type_1) { create :certificate_type }
-    let!(:certificate_type_description_1) { create :certificate_type_description, certificate_type_code: certificate_type_1.certificate_type_code }
-    let!(:certificate_type_2) { create :certificate_type }
-    let!(:certificate_type_description_2) { create :certificate_type_description, certificate_type_code: certificate_type_2.certificate_type_code }
-    let!(:certificate_type_3) { create :certificate_type }
-    let!(:certificate_type_description_3) { create :certificate_type_description, certificate_type_code: certificate_type_3.certificate_type_code }
+  describe 'GET #index' do
+    subject(:do_response) do
+      get :index, format: :json
+
+      response.body
+    end
+
+    let(:certificate_type) { create(:certificate_type, :with_description) }
 
     let(:pattern) do
       {
-        "data": [{
-          "id": String,
-          "type": 'certificate_type',
-          "attributes": {
-            "certificate_type_code": String,
-            "description": String,
+        "data": [
+          {
+            "id": String,
+            "type": 'certificate_type',
+            "attributes": {
+              "certificate_type_code": String,
+              "description": String,
+            },
           },
-        },
-                 {
-                   "id": String,
-                   "type": 'certificate_type',
-                   "attributes": {
-                     "certificate_type_code": String,
-                     "description": String,
-                   },
-                 },
-                 {
-                   "id": String,
-                   "type": 'certificate_type',
-                   "attributes": {
-                     "certificate_type_code": String,
-                     "description": String,
-                   },
-                 }],
+        ],
       }
     end
 
-    it 'returns all certificate types' do
-      get :index, format: :json
-
-      expect(response.body).to match_json_expression pattern
+    before do
+      certificate_type
     end
+
+    it { is_expected.to match_json_expression(pattern) }
   end
 end
