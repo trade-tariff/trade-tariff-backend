@@ -32,6 +32,11 @@ FactoryBot.define do
         )
       end
     end
+
+    trait :with_guidance do
+      certificate_code { '001' }
+      certificate_type_code { 'A' }
+    end
   end
 
   factory :certificate_description_period do

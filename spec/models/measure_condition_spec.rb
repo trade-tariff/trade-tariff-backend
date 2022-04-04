@@ -254,5 +254,45 @@ RSpec.describe MeasureCondition do
       it { is_expected.to eql measure_condition.measure_condition_sid }
     end
   end
+
+  describe '#guidance_cds' do
+    context 'when the measure condition has a document code with guidance' do
+      subject(:guidance_cds) { build(:measure_condition, :with_guidance).guidance_cds }
+
+      it { is_expected.not_to be_nil }
+    end
+
+    context 'when the measure condition has a document code without guidance' do
+      subject(:guidance_cds) { build(:measure_condition, :without_guidance).guidance_cds }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when the measure condition has no document code' do
+      subject(:guidance_cds) { build(:measure_condition, :without_certificate).guidance_cds }
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#guidance_chief' do
+    context 'when the measure condition has a document code with guidance' do
+      subject(:guidance_chief) { build(:measure_condition, :with_guidance).guidance_chief }
+
+      it { is_expected.not_to be_nil }
+    end
+
+    context 'when the measure condition has a document code without guidance' do
+      subject(:guidance_chief) { build(:measure_condition, :without_guidance).guidance_chief }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'when the measure condition has no document code' do
+      subject(:guidance_chief) { build(:measure_condition, :without_certificate).guidance_chief }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers

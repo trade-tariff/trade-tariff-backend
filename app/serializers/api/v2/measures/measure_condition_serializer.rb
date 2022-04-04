@@ -19,9 +19,11 @@ module Api
                    :condition_monetary_unit_code,
                    :document_code,
                    :duty_expression,
+                   :guidance_cds,
+                   :guidance_chief,
+                   :measure_condition_class,
                    :monetary_unit_abbreviation,
-                   :requirement,
-                   :measure_condition_class
+                   :requirement
 
         has_many :measure_condition_components, serializer: Api::V2::Measures::MeasureConditionComponentSerializer
       end

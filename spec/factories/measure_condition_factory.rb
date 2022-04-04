@@ -100,4 +100,19 @@ FactoryBot.define do
     certificate_code { '084' }
     certificate_type_code { 'C' }
   end
+
+  trait :with_guidance do
+    certificate_code { '001' }
+    certificate_type_code { 'A' }
+  end
+
+  trait :without_guidance do
+    certificate_code { '000' }
+    certificate_type_code { 'F' }
+  end
+
+  trait :without_certificate do
+    certificate_code {}
+    certificate_type_code {}
+  end
 end
