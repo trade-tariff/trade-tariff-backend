@@ -17,6 +17,18 @@ module Api
         attribute :validity_start_date do |certificate|
           certificate.certificate_description_period.validity_start_date
         end
+
+        attribute :guidance_cds do |certificate|
+          guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
+
+          guidance.try(:[], 'guidance_cds')
+        end
+
+        attribute :guidance_chief do |certificate|
+          guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
+
+          guidance.try(:[], 'guidance_chief')
+        end
       end
     end
   end

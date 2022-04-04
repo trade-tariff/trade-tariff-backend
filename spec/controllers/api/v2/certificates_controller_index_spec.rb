@@ -20,6 +20,8 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
               formatted_description: String,
               certificate_type_description: String,
               validity_start_date: String,
+              guidance_cds: nil,
+              guidance_chief: nil,
             },
           },
         ],
