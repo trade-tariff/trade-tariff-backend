@@ -10,28 +10,19 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
         goods_nomenclature: goods_nomenclature,
       )
     end
-    let(:goods_nomenclature) do create(:commodity, :with_heading, :declarable) end
-    let!(:quota_definition) do
-      create(
-        :quota_definition,
-        :with_quota_balance_events,
-        quota_order_number_sid: quota_order_number.quota_order_number_sid,
-        quota_order_number_id: quota_order_number.quota_order_number_id,
-        critical_state: 'Y',
-        validity_start_date: validity_start_date,
-      )
-    end
-    let!(:quota_order_number_origin) do
-      create(
-        :quota_order_number_origin,
-        :with_geographical_area,
-        quota_order_number_sid: quota_order_number.quota_order_number_sid,
-      )
-    end
+    let(:goods_nomenclature) { create(:commodity, :with_heading, :declarable) }
 
     before do
-      measure.geographical_area = quota_order_number_origin.geographical_area
-      measure.save
+      create(:quota_definition, :with_quota_balance_events,
+             quota_order_number_sid: quota_order_number.quota_order_number_sid,
+             quota_order_number_id: quota_order_number.quota_order_number_id,
+             critical_state: 'Y',
+             validity_start_date: validity_start_date)
+
+      quota_order_number_origin = create(:quota_order_number_origin, :with_geographical_area,
+                                         quota_order_number_sid: quota_order_number.quota_order_number_sid)
+
+      measure.update(geographical_area: quota_order_number_origin.geographical_area)
     end
 
     context 'when not specifying an includes list in the query params' do
@@ -164,7 +155,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
           year: [
             Time.zone.today.year.to_s,
           ],
-          include: 'quota_balance_events,measures,measures.geographical_area',
+          include: include_param,
         }
       end
 
@@ -193,15 +184,6 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 blocking_period_end_date: nil,
               },
               relationships: {
-                order_number: {},
-                measures: {
-                  data: [
-                    {
-                      id: String,
-                      type: 'measure',
-                    },
-                  ],
-                },
                 quota_balance_events: {
                   data: [
                     {
@@ -210,6 +192,8 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                     },
                   ],
                 },
+                order_number: {},
+                measures: {},
               },
             },
           ],
@@ -226,38 +210,6 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 imported_amount: String,
               },
             },
-            {
-              id: String,
-              type: 'geographical_area',
-              attributes: {
-                id: String,
-                description: String,
-                geographical_area_id: String,
-              },
-            },
-            {
-              id: String,
-              type: 'measure',
-              attributes: {
-                goods_nomenclature_item_id: String,
-                validity_start_date: String,
-                validity_end_date: nil,
-              },
-              relationships: {
-                geographical_area: {
-                  data: {
-                    id: String,
-                    type: 'geographical_area',
-                  },
-                },
-                goods_nomenclature: {
-                  data: {
-                    id: String,
-                    type: 'commodity',
-                  },
-                },
-              },
-            },
           ],
           meta: {
             pagination: {
@@ -269,10 +221,25 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
         }
       end
 
-      it 'returns rendered found quotas' do
-        get :search, params: params, format: :json
+      context 'when included resouces are valid' do
+        let(:include_param) { 'quota_balance_events' }
 
-        expect(response.body).to match_json_expression pattern
+        it 'returns rendered found quotas with the allowed resources' do
+          get :search, params: params, format: :json
+
+          expect(response.body).to match_json_expression pattern
+        end
+      end
+
+      context 'when included resouces are NOT allowed (or non-existent)' do
+        let(:include_param) { 'wrong_resource' }
+
+        it 'raises an ArgumentError' do
+          get :search, params: params, format: :json
+
+          response_error = JSON.parse(response.body)['error']
+          expect(response_error).to include("invalid params in 'includes': [\"wrong_resource\"]")
+        end
       end
     end
   end
