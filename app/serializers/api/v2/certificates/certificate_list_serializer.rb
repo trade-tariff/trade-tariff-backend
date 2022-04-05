@@ -19,15 +19,19 @@ module Api
         end
 
         attribute :guidance_cds do |certificate|
-          guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
+          if TradeTariffBackend.uk?
+            guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
 
-          guidance.try(:[], 'guidance_cds')
+            guidance.try(:[], 'guidance_cds')
+          end
         end
 
         attribute :guidance_chief do |certificate|
-          guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
+          if TradeTariffBackend.uk?
+            guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
 
-          guidance.try(:[], 'guidance_chief')
+            guidance.try(:[], 'guidance_chief')
+          end
         end
       end
     end
