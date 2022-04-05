@@ -227,6 +227,10 @@ module TradeTariffBackend
       @rules_of_origin ||= RulesOfOrigin::DataSet.load_default
     end
 
+    def chief_cds_guidance
+      @chief_cds_guidance ||= ChiefCdsGuidance.load_default
+    end
+
     def permutations?
       ENV['PERMUTATIONS'].to_s == 'true'
     end

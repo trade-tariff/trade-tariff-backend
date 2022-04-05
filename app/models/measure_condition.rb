@@ -143,7 +143,19 @@ class MeasureCondition < Sequel::Model
     end
   end
 
+  def guidance_cds
+    guidance.try(:[], 'guidance_cds')
+  end
+
+  def guidance_chief
+    guidance.try(:[], 'guidance_chief')
+  end
+
 private
+
+  def guidance
+    @guidance ||= TradeTariffBackend.chief_cds_guidance.guidance_for(document_code)
+  end
 
   def classification
     @classification ||= MeasureConditionClassification.new(self)
