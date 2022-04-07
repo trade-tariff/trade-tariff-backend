@@ -12,7 +12,7 @@ class ChangeOld
   end
 
   def operation_record
-    @operation_record ||= operation_class.find(oid: oid)
+    @operation_record ||= operation_class.find(oid:)
   end
 
   # Initialize with call to bypass restricted column check

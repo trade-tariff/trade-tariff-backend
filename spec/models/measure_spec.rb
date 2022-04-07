@@ -941,7 +941,7 @@ RSpec.describe Measure do
           :measure,
           :third_country,
           :with_measure_components,
-          duty_amount: duty_amount,
+          duty_amount:,
         )
       end
 
@@ -957,7 +957,7 @@ RSpec.describe Measure do
             create(
               :measure_component,
               measure_sid: measure.measure_sid,
-              duty_amount: duty_amount,
+              duty_amount:,
               duty_expression_id: '01',
             )
           end

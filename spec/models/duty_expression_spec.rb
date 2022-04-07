@@ -1,6 +1,6 @@
 RSpec.describe DutyExpression do
   describe '#meursing_measure_type_id' do
-    subject(:duty_expression) { build(:duty_expression, duty_expression_id: duty_expression_id) }
+    subject(:duty_expression) { build(:duty_expression, duty_expression_id:) }
 
     shared_examples_for 'a meursing duty expression' do |duty_expression_id, expected_measure_type_id|
       let(:duty_expression_id) { duty_expression_id }

@@ -58,7 +58,7 @@ module RulesOfOrigin
     def invalid_rules
       [].tap do |invalid|
         @rules.each do |id_rule, rule|
-          rule = Rule.new rule.merge(id_rule: id_rule)
+          rule = Rule.new rule.merge(id_rule:)
 
           invalid << rule if rule.invalid?
         end

@@ -9,7 +9,7 @@ module Search
         {}
       else
         {
-          title: title,
+          title:,
           reference_class: referenced_class,
           reference: referenced.serializable_hash.merge(
             class: referenced_class

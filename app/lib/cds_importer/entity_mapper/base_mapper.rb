@@ -47,7 +47,7 @@ class CdsImporter
         end
 
         def instrument_warning(message, xml_node)
-          instrument('apply.import_warnings', message: message, xml_node: xml_node)
+          instrument('apply.import_warnings', message:, xml_node:)
         end
 
         protected

@@ -37,8 +37,8 @@ FactoryBot.define do
       create(
         :goods_nomenclature,
         validity_start_date: validity_start_date - 1.day,
-        goods_nomenclature_item_id: goods_nomenclature_item_id,
-        goods_nomenclature_sid: goods_nomenclature_sid,
+        goods_nomenclature_item_id:,
+        goods_nomenclature_sid:,
         producline_suffix: gono_producline_suffix,
         indents: gono_number_indents,
       )
@@ -53,8 +53,8 @@ FactoryBot.define do
                             measure_type_series_id: measure_type_series_id
     end
     f.geographical_area do
-      create(:geographical_area, geographical_area_sid: geographical_area_sid,
-                                 geographical_area_id: geographical_area_id,
+      create(:geographical_area, geographical_area_sid:,
+                                 geographical_area_id:,
                                  validity_start_date: validity_start_date - 1.day)
     end
 
@@ -83,8 +83,8 @@ FactoryBot.define do
         create(
           :goods_nomenclature,
           validity_start_date: validity_start_date - 1.day,
-          goods_nomenclature_item_id: goods_nomenclature_item_id,
-          goods_nomenclature_sid: goods_nomenclature_sid,
+          goods_nomenclature_item_id:,
+          goods_nomenclature_sid:,
           producline_suffix: gono_producline_suffix,
           indents: gono_number_indents,
         )

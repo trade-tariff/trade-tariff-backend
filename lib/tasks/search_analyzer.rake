@@ -6,7 +6,7 @@ namespace :search_analyzer do
     p 'Format should be: /path/to/file.csv'
     filename = STDIN.gets.chomp
 
-    analyzer = SearchAnalyzer.new(filename: filename)
+    analyzer = SearchAnalyzer.new(filename:)
     p '########## STARTING ANALYSIS ##########'
     analyzer.failed_searches
     p '########## ANALYSIS COMPLETED ##########'

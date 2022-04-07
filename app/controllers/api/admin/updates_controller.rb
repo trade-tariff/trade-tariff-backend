@@ -25,7 +25,7 @@ module Api
           meta: {
             pagination: {
               page: current_page,
-              per_page: per_page,
+              per_page:,
               total_count: @collection.pagination_record_count,
             },
           },

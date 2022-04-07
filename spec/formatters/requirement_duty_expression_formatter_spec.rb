@@ -4,7 +4,7 @@ RSpec.describe RequirementDutyExpressionFormatter do
       measurement_unit_abbreviation.measurement_unit
     end
     let(:unit) do
-      measurement_unit.abbreviation(measurement_unit_qualifier: measurement_unit_qualifier)
+      measurement_unit.abbreviation(measurement_unit_qualifier:)
     end
     let!(:measurement_unit_abbreviation) do
       create(:measurement_unit_abbreviation, :with_measurement_unit, :include_qualifier)
@@ -23,7 +23,7 @@ RSpec.describe RequirementDutyExpressionFormatter do
 
     context 'monetary unit, measurement unit & measurement_unit_qualifier are present ' do
       subject do
-        described_class.format(measurement_unit: measurement_unit,
+        described_class.format(measurement_unit:,
                                formatted_measurement_unit_qualifier: 'L',
                                monetary_unit: 'EUR')
       end
@@ -38,8 +38,8 @@ RSpec.describe RequirementDutyExpressionFormatter do
         described_class.format(
           duty_amount: 3.50,
           monetary_unit: 'EUR',
-          measurement_unit: measurement_unit,
-          formatted: formatted,
+          measurement_unit:,
+          formatted:,
         )
       end
 
@@ -68,7 +68,7 @@ RSpec.describe RequirementDutyExpressionFormatter do
 
     context 'measurement unit is present' do
       subject do
-        described_class.format(measurement_unit: measurement_unit)
+        described_class.format(measurement_unit:)
       end
 
       it 'properly formats output' do

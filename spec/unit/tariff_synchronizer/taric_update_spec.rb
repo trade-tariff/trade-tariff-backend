@@ -128,7 +128,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
   end
 
   describe '#filename_sequence' do
-    subject(:taric_update) { create(:taric_update, filename: filename) }
+    subject(:taric_update) { create(:taric_update, filename:) }
 
     let(:filename) { '2021-12-30_TGB21257.xml' }
 
@@ -140,7 +140,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
   describe '#next_update_sequence_url_filename' do
     subject(:next_update_sequence_url_filename) { taric_update.next_update_sequence_url_filename }
 
-    let(:taric_update) { create(:taric_update, filename: '2021-12-30_TGB21257.xml', issue_date: issue_date) }
+    let(:taric_update) { create(:taric_update, filename: '2021-12-30_TGB21257.xml', issue_date:) }
 
     context 'when the next issue date is the same year' do
       let(:issue_date) { Date.parse('2021-12-30') }
@@ -158,7 +158,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
   describe '#next_update_sequence_update_filename' do
     subject(:next_update_sequence_update_filename) { taric_update.next_update_sequence_update_filename }
 
-    let(:taric_update) { create(:taric_update, filename: '2021-12-30_TGB21257.xml', issue_date: issue_date) }
+    let(:taric_update) { create(:taric_update, filename: '2021-12-30_TGB21257.xml', issue_date:) }
 
     context 'when the next issue date is the same year' do
       let(:issue_date) { Date.parse('2021-12-30') }

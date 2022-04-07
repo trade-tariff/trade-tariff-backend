@@ -44,8 +44,8 @@ module TradeTariffBackend
               ops = {
                 fe_tsmp: validity_start_date,
                 amend_indicator: 'I',
-                msrgp_code: msrgp_code,
-                msr_type: msr_type,
+                msrgp_code:,
+                msr_type:,
                 tty_code: 'B00',
                 tar_msr_no: nil,
                 le_tsmp: nil,
@@ -130,7 +130,7 @@ module TradeTariffBackend
                   )
 
                   candidate_measures << ChiefTransformer::CandidateMeasure.new(
-                    mfcm: mfcm,
+                    mfcm:,
                     tame: mfcm.tame,
                     operation: :create,
                     operation_date: Time.zone.today

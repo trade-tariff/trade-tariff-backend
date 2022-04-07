@@ -19,7 +19,7 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
              measure_sid: measure.measure_sid,
              geographical_area_sid: xi.geographical_area_sid,
              excluded_geographical_area: xi.geographical_area_id,
-             measure: measure,
+             measure:,
              geographical_area: xi)
     end
 
@@ -101,14 +101,14 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     subject(:scheme_code) { described_class.new(measure, measure.goods_nomenclature).scheme_code }
 
     context 'when a rules of origin measure with a matching scheme code' do
-      let(:measure) { create(:measure, :with_measure_type, :tariff_preference, geographical_area_id: geographical_area_id) }
+      let(:measure) { create(:measure, :with_measure_type, :tariff_preference, geographical_area_id:) }
       let(:geographical_area_id) { '1013' }
 
       it { is_expected.to eq('eu') }
     end
 
     context 'when a rules of origin measure with a non-matching scheme code' do
-      let(:measure) { create(:measure, :with_measure_type, :tariff_preference, geographical_area_id: geographical_area_id) }
+      let(:measure) { create(:measure, :with_measure_type, :tariff_preference, geographical_area_id:) }
       let(:geographical_area_id) { 'FOO' }
 
       it { is_expected.to be_nil }

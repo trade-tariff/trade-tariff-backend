@@ -171,7 +171,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
   end
 
   describe '#filename_sequence' do
-    subject(:cds_update) { create(:cds_update, filename: filename) }
+    subject(:cds_update) { create(:cds_update, filename:) }
 
     let(:filename) { 'tariff_dailyExtract_v1_20220118T235959.gzip' }
 

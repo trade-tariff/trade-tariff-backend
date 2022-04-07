@@ -16,7 +16,7 @@ class FindAncestorsService
   end
 
   def goods_nomenclature_class
-    GoodsNomenclature.sti_load(goods_nomenclature_item_id: goods_nomenclature_item_id).class
+    GoodsNomenclature.sti_load(goods_nomenclature_item_id:).class
   end
 
   def goods_nomenclature_item_id

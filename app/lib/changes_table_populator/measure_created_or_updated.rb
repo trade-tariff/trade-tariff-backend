@@ -19,7 +19,7 @@ module ChangesTablePopulator
       def import_records(elements:, day: Time.zone.today)
         elements
           .uniq { |element| element[:goods_nomenclature_sid] }
-          .collect_concat { |element| integrate_and_find_children(row: element, day: day) }
+          .collect_concat { |element| integrate_and_find_children(row: element, day:) }
       end
 
       def change_type

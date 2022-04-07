@@ -15,7 +15,7 @@ module Api
             { title: attribute, detail: error }
           end
 
-          { errors: errors }
+          { errors: }
         end
       end
     end

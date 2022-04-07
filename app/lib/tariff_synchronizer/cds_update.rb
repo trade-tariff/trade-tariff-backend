@@ -29,7 +29,7 @@ module TariffSynchronizer
     attr_reader :oplog_inserts
 
     def import!
-      instrument('apply_cds.tariff_synchronizer', filename: filename) do
+      instrument('apply_cds.tariff_synchronizer', filename:) do
         @oplog_inserts = CdsImporter.new(self).import
 
         check_oplog_inserts

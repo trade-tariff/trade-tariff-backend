@@ -1,6 +1,6 @@
 RSpec.describe SearchReference do
   describe 'setter callback' do
-    subject(:search_reference) { described_class.new(title: 'foo', referenced: referenced) }
+    subject(:search_reference) { described_class.new(title: 'foo', referenced:) }
 
     context 'when setting a Section reference' do
       let(:referenced) { create(:section, id: 1) }
@@ -39,7 +39,7 @@ RSpec.describe SearchReference do
     subject(:search_reference) { described_class.find(title: 'foo') }
 
     before do
-      create(:search_reference, title: 'foo', referenced: referenced)
+      create(:search_reference, title: 'foo', referenced:)
     end
 
     context 'when getting a Section reference' do

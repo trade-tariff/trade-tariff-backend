@@ -54,7 +54,7 @@ RSpec.describe RulesOfOrigin::Proof do
 
   describe '#url' do
     subject do
-      build(:rules_of_origin_proof, proof_class: proof_class, scheme: scheme).url
+      build(:rules_of_origin_proof, proof_class:, scheme:).url
     end
 
     let(:scheme) { build :rules_of_origin_scheme, scheme_set: scheme_set }

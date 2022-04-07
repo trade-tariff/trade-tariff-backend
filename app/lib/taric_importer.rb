@@ -30,7 +30,7 @@ class TaricImporter
     handler = XmlProcessor.new(@taric_update.issue_date)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     XmlParser::Reader.new(file, 'record', handler).parse
-    post_import(file_path: @taric_update.file_path, filename: filename)
+    post_import(file_path: @taric_update.file_path, filename:)
   end
 
   class XmlProcessor
@@ -56,7 +56,7 @@ class TaricImporter
   end
 
   def post_import(file_path:, filename:)
-    create_update_entry(file_path: file_path, filename: filename) if TradeTariffBackend.use_cds?
+    create_update_entry(file_path:, filename:) if TradeTariffBackend.use_cds?
     ActiveSupport::Notifications.instrument('taric_imported.tariff_importer', filename: @taric_update.filename)
   end
 
@@ -65,7 +65,7 @@ class TaricImporter
     issue_date = Date.parse(filename.scan(/[0-9]{8}/).last)
     TariffSynchronizer::TaricUpdate.find_or_create(
       filename: filename[0, 30],
-      issue_date: issue_date,
+      issue_date:,
       filesize: file_size,
       state: 'A',
       applied_at: Time.zone.now,

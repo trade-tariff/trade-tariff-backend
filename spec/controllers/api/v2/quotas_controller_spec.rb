@@ -6,8 +6,8 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
       create(
         :measure,
         ordernumber: quota_order_number.quota_order_number_id,
-        validity_start_date: validity_start_date,
-        goods_nomenclature: goods_nomenclature,
+        validity_start_date:,
+        goods_nomenclature:,
       )
     end
     let(:goods_nomenclature) { create(:commodity, :with_heading, :declarable) }
@@ -17,7 +17,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
              quota_order_number_sid: quota_order_number.quota_order_number_sid,
              quota_order_number_id: quota_order_number.quota_order_number_id,
              critical_state: 'Y',
-             validity_start_date: validity_start_date)
+             validity_start_date:)
 
       quota_order_number_origin = create(:quota_order_number_origin, :with_geographical_area,
                                          quota_order_number_sid: quota_order_number.quota_order_number_sid)
@@ -235,7 +235,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
         let(:include_param) { 'wrong_resource' }
 
         it 'raises an ArgumentError' do
-          get :search, params: params, format: :json
+          get :search, params:, format: :json
 
           response_error = JSON.parse(response.body)['error']
           expect(response_error).to include("invalid params in 'includes': [\"wrong_resource\"]")

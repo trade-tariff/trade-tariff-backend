@@ -8,7 +8,7 @@ shared_examples_for 'a serialized goods nomenclature' do |type|
       {
         data: {
           id: serializable.goods_nomenclature_sid.to_s,
-          type: type,
+          type:,
           attributes: {
             goods_nomenclature_item_id: match(/\d{10}/),
             producline_suffix: match(/\d{2}/),

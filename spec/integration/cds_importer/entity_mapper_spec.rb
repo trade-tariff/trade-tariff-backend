@@ -257,7 +257,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
           expect(ActiveSupport::Notifications).to have_received(:instrument).with(
             'apply.import_warnings',
-            message: expected_message, xml_node: xml_node,
+            message: expected_message, xml_node:,
           )
         end
       end

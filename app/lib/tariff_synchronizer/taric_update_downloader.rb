@@ -36,12 +36,12 @@ module TariffSynchronizer
 
     def create_record_for_empty_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument('blank_update.tariff_synchronizer', date: date, url: url)
+      instrument('blank_update.tariff_synchronizer', date:, url:)
     end
 
     def create_record_for_exceeded_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
+      instrument('retry_exceeded.tariff_synchronizer', date:, url:)
     end
 
     # We do not create records for missing updates (see dynamic send method in perform)
@@ -54,15 +54,15 @@ module TariffSynchronizer
     def update_or_create(state, file_name)
       TariffSynchronizer::TaricUpdate.find_or_create(filename: file_name,
                                                      issue_date: date)
-        .update(state: state)
+        .update(state:)
     end
 
     def log_request_to_taric_update
-      instrument('get_taric_update_name.tariff_synchronizer', date: date, url: url)
+      instrument('get_taric_update_name.tariff_synchronizer', date:, url:)
     end
 
     def date_api_url
-      sprintf(taric_query_url_template, host: host, date: date.strftime('%Y%m%d'))
+      sprintf(taric_query_url_template, host:, date: date.strftime('%Y%m%d'))
     end
 
     def file_api_urls
@@ -70,7 +70,7 @@ module TariffSynchronizer
         .content
         .split("\n")
         .map { |name| name.gsub(/[^0-9a-zA-Z.]/i, '') }
-        .map { |name| { filename: "#{date}_#{name}", url: sprintf(taric_update_url_template, host: host, filename: name) } }
+        .map { |name| { filename: "#{date}_#{name}", url: sprintf(taric_update_url_template, host:, filename: name) } }
     end
   end
 end

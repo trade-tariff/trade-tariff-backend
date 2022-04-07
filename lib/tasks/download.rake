@@ -11,7 +11,7 @@ namespace :tariff do
         next unless proceed_with_download?(key)
 
         File.open(filename(key), 'wb') do |file|
-          s3.get_object(bucket: s3_bucket, key: key) do |chunk|
+          s3.get_object(bucket: s3_bucket, key:) do |chunk|
             file.write(chunk)
           end
         end
@@ -32,7 +32,7 @@ namespace :tariff do
       s3 = Aws::S3::Client.new
       files.each do |key|
         File.open(key, 'wb') do |file|
-          s3.get_object(bucket: 'tariff-dev', key: key) do |chunk|
+          s3.get_object(bucket: 'tariff-dev', key:) do |chunk|
             file.write(chunk)
           end
         end

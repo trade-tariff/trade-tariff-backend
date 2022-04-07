@@ -13,19 +13,19 @@ module ChangesTablePopulator
 
       def populate(day: Time.zone.today)
         elements = DB[source_table]
-          .where(where_condition(day: day))
+          .where(where_condition(day:))
           .select &select_condition
 
         DB[:changes]
           .insert_conflict(constraint: :changes_upsert_unique)
-          .import IMPORT_FIELDS, import_records(elements: elements, day: day)
+          .import IMPORT_FIELDS, import_records(elements:, day:)
       end
 
       def populate_backlog(from: Time.zone.today - 3.months, to: Time.zone.today)
         from = from.to_date
         to = to.to_date
         (from..to).each do |day|
-          populate(day: day)
+          populate(day:)
         end
       end
 
@@ -50,7 +50,7 @@ module ChangesTablePopulator
           row[:goods_nomenclature_item_id],
           row[:goods_nomenclature_sid],
           row[:producline_suffix] || row[:productline_suffix] || '80',
-          is_end_line || end_line?(row: row, day: day, siblings: siblings),
+          is_end_line || end_line?(row:, day:, siblings:),
           change_type,
           day,
         ]
@@ -65,9 +65,9 @@ module ChangesTablePopulator
           return false if suffix.present? && suffix != '80'
 
           children = if siblings&.any?
-                       find_children_from_siblings(row: row, siblings: siblings)
+                       find_children_from_siblings(row:, siblings:)
                      else
-                       find_children(row: row, day: day)
+                       find_children(row:, day:)
                      end
           children.none?
         end
@@ -75,11 +75,11 @@ module ChangesTablePopulator
 
       def integrate_and_find_children(row:, day: Time.zone.today)
         suffix = row[:producline_suffix] || row[:productline_suffix]
-        children = find_children(row: row, day: day)
+        children = find_children(row:, day:)
         is_end_line = suffix.nil? || suffix == '80' ? children.none? : false
 
-        [integrate_element(row: row, day: day, is_end_line: is_end_line)]
-          .concat(children.map { |child| integrate_element(row: child, day: day, siblings: children) })
+        [integrate_element(row:, day:, is_end_line:)]
+          .concat(children.map { |child| integrate_element(row: child, day:, siblings: children) })
       end
 
       def find_children_from_siblings(row:, siblings:)
@@ -114,11 +114,11 @@ module ChangesTablePopulator
           item_id = row[:goods_nomenclature_item_id]
 
           if chapter?(item_id)
-            return chapter_children(row: row, day: day)
+            return chapter_children(row:, day:)
           elsif heading?(item_id)
-            return heading_children(row: row, day: day)
+            return heading_children(row:, day:)
           else
-            return commodity_children(row: row, day: day)
+            return commodity_children(row:, day:)
           end
         end
       end

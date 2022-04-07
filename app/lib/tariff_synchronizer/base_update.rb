@@ -195,7 +195,7 @@ module TariffSynchronizer
 
       def notify_about_missing_updates
         instrument('missing_updates.tariff_synchronizer',
-                   update_type: update_type,
+                   update_type:,
                    count: TariffSynchronizer.warning_day_count)
       end
     end

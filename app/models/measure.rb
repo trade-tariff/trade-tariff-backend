@@ -240,11 +240,11 @@ class Measure < Sequel::Model
     end
 
     def with_gono_id(goods_nomenclature_item_id)
-      where(goods_nomenclature_item_id: goods_nomenclature_item_id)
+      where(goods_nomenclature_item_id:)
     end
 
     def with_tariff_measure_number(tariff_measure_number)
-      where(tariff_measure_number: tariff_measure_number)
+      where(tariff_measure_number:)
     end
 
     def with_geographical_area(area)

@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Shared::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable, {}) }
 
-  let(:serializable) { create(:measure, goods_nomenclature: goods_nomenclature) }
+  let(:serializable) { create(:measure, goods_nomenclature:) }
 
   describe '#serializable_hash' do
     shared_examples_for 'a measure with a polymorphic goods nomenclature' do |polymorphic_type|
