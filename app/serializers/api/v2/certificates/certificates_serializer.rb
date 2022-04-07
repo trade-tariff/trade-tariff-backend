@@ -12,15 +12,15 @@ module Api
                    :formatted_description
 
         attribute :guidance_cds do |certificate|
-          guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
-
-          guidance.try(:[], 'guidance_cds')
+          TradeTariffBackend
+            .chief_cds_guidance
+            .cds_guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
         end
 
         attribute :guidance_chief do |certificate|
-          guidance = TradeTariffBackend.chief_cds_guidance.guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
-
-          guidance.try(:[], 'guidance_chief')
+          TradeTariffBackend
+            .chief_cds_guidance
+            .chief_guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
         end
 
         has_many :measures, serializer: Api::V2::Shared::MeasureSerializer

@@ -14,8 +14,8 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
               certificate_code: String,
               description: String,
               formatted_description: String,
-              guidance_chief: nil,
-              guidance_cds: nil,
+              guidance_chief: String,
+              guidance_cds: String,
             },
             relationships: {
               measures: {
