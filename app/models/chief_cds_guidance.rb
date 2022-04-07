@@ -1,6 +1,6 @@
 class ChiefCdsGuidance
   DEFAULT_SOURCE_PATH = Rails.root.join('db/').freeze
-  DEFAULT_FILE = 'chief_cds_guidance_20220404.json'.freeze
+  DEFAULT_FILE = 'chief_cds_guidance_20220407.json'.freeze
   DEFAULT_EMPTY_GUIDANCE = 'No information currently available'.freeze
   CHIEF_GUIDANCE_KEY = 'guidance_chief'.freeze
   CDS_GUIDANCE_KEY = 'guidance_cds'.freeze
