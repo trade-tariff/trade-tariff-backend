@@ -144,15 +144,11 @@ class MeasureCondition < Sequel::Model
   end
 
   def guidance_cds
-    if TradeTariffBackend.uk?
-      guidance.try(:[], 'guidance_cds')
-    end
+    guidance.try(:[], 'guidance_cds')
   end
 
   def guidance_chief
-    if TradeTariffBackend.uk?
-      guidance.try(:[], 'guidance_chief')
-    end
+    guidance.try(:[], 'guidance_chief')
   end
 
 private

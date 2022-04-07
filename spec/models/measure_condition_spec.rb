@@ -259,21 +259,7 @@ RSpec.describe MeasureCondition do
     context 'when the measure condition has a document code with guidance' do
       subject(:guidance_cds) { build(:measure_condition, :with_guidance).guidance_cds }
 
-      before do
-        allow(TradeTariffBackend).to receive(:service).and_return(service)
-      end
-
-      context 'when on uk service' do
-        let(:service) { 'uk' }
-
-        it { is_expected.not_to be_nil }
-      end
-
-      context 'when on xi service' do
-        let(:service) { 'xi' }
-
-        it { is_expected.to be_nil }
-      end
+      it { is_expected.not_to be_nil }
     end
 
     context 'when the measure condition has a document code without guidance' do
@@ -293,21 +279,7 @@ RSpec.describe MeasureCondition do
     context 'when the measure condition has a document code with guidance' do
       subject(:guidance_chief) { build(:measure_condition, :with_guidance).guidance_chief }
 
-      before do
-        allow(TradeTariffBackend).to receive(:service).and_return(service)
-      end
-
-      context 'when on uk service' do
-        let(:service) { 'uk' }
-
-        it { is_expected.not_to be_nil }
-      end
-
-      context 'when on xi service' do
-        let(:service) { 'xi' }
-
-        it { is_expected.to be_nil }
-      end
+      it { is_expected.not_to be_nil }
     end
 
     context 'when the measure condition has a document code without guidance' do
