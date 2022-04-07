@@ -265,7 +265,7 @@ RSpec.describe MeasureCondition do
     context 'when the measure condition has a document code without guidance' do
       subject(:guidance_cds) { build(:measure_condition, :without_guidance).guidance_cds }
 
-      it { is_expected.to be_nil }
+      it { is_expected.to eq('No information currently available') }
     end
 
     context 'when the measure condition has no document code' do
@@ -285,7 +285,7 @@ RSpec.describe MeasureCondition do
     context 'when the measure condition has a document code without guidance' do
       subject(:guidance_chief) { build(:measure_condition, :without_guidance).guidance_chief }
 
-      it { is_expected.to be_nil }
+      it { is_expected.to eq('No information currently available') }
     end
 
     context 'when the measure condition has no document code' do
