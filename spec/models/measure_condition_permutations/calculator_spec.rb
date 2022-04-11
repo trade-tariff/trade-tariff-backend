@@ -8,7 +8,9 @@ RSpec.describe MeasureConditionPermutations::Calculator do
 
   describe 'filtering measure_conditions' do
     subject :measure_conditions do
-      calculator.permutation_groups.first.permutations.flat_map(&:measure_conditions)
+      calculator.permutation_groups
+                .flat_map(&:permutations)
+                .flat_map(&:measure_conditions)
     end
 
     let(:regular_condition) { measure.measure_conditions.first }
