@@ -50,7 +50,7 @@ module TariffSynchronizer
           format('(%{class_name}) %{sql} %{binds}',
                  class_name: event.payload[:name],
                  sql: event.payload[:sql].squeeze(' '),
-                 binds: binds)
+                 binds:)
         )
       end
     end
@@ -97,7 +97,7 @@ module TariffSynchronizer
     def notify_exception(exception)
       ActiveSupport::Notifications.instrument(
         'failed_update.tariff_synchronizer',
-        exception: exception,
+        exception:,
         update: @base_update,
         database_queries: @database_queries
       )

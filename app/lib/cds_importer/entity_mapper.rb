@@ -154,12 +154,12 @@ class CdsImporter
     def save_record(record)
       save_record!(record)
     rescue StandardError => e
-      instrument('cds_error.cds_importer', record: record, xml_key: key, xml_node: xml_node, exception: e)
+      instrument('cds_error.cds_importer', record:, xml_key: key, xml_node:, exception: e)
       nil
     end
 
     def instrument_warning(message, xml_node)
-      instrument('apply.import_warnings', message: message, xml_node: xml_node)
+      instrument('apply.import_warnings', message:, xml_node:)
     end
 
     def logger_enabled?

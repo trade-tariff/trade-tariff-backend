@@ -53,7 +53,7 @@ class CdsImporter
     rescue StandardError => e
       ActiveSupport::Notifications.instrument(
         'cds_failed.tariff_importer',
-        exception: e, hash: hash_from_node, key: key,
+        exception: e, hash: hash_from_node, key:,
       )
       raise ImportException
     end

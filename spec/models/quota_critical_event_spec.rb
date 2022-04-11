@@ -6,7 +6,7 @@ RSpec.describe QuotaCriticalEvent do
   end
 
   describe '#active?' do
-    subject(:event) { build(:quota_critical_event, critical_state: critical_state) }
+    subject(:event) { build(:quota_critical_event, critical_state:) }
 
     context 'when the critical event is active' do
       let(:critical_state) { 'Y' }

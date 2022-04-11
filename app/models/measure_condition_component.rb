@@ -43,14 +43,14 @@ class MeasureConditionComponent < Sequel::Model
 
   def formatted_duty_expression
     DutyExpressionFormatter.format(
-      duty_expression_id: duty_expression_id,
-      duty_expression_description: duty_expression_description,
-      duty_expression_abbreviation: duty_expression_abbreviation,
-      duty_amount: duty_amount,
+      duty_expression_id:,
+      duty_expression_description:,
+      duty_expression_abbreviation:,
+      duty_amount:,
       monetary_unit: monetary_unit_code,
-      monetary_unit_abbreviation: monetary_unit_abbreviation,
-      measurement_unit: measurement_unit,
-      measurement_unit_qualifier: measurement_unit_qualifier,
+      monetary_unit_abbreviation:,
+      measurement_unit:,
+      measurement_unit_qualifier:,
       currency: TradeTariffBackend.currency,
       formatted: true,
     )

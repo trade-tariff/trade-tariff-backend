@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::HeadingsController, type: :controller do
   describe '#show' do
-    subject(:do_response) { get :show, params: { id: id } }
+    subject(:do_response) { get :show, params: { id: } }
 
     let(:id) { heading.short_code }
 

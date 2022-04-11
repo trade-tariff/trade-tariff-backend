@@ -1,5 +1,5 @@
 RSpec.describe CachedGeographicalAreaService do
-  subject(:service) { described_class.new(actual_date, countries: countries) }
+  subject(:service) { described_class.new(actual_date, countries:) }
 
   let(:actual_date) { Time.zone.today }
   let(:countries) { false }

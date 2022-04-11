@@ -100,8 +100,8 @@ module Api
           pagination: {
             total: search_reference_collection.count,
             offset: page * per_page,
-            page: page,
-            per_page: per_page
+            page:,
+            per_page:
           }
         }.to_json
       end

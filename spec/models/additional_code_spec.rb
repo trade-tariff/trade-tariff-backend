@@ -2,7 +2,7 @@ RSpec.describe AdditionalCode do
   subject(:additional_code) do
     build(
       :additional_code,
-      additional_code_type_id: additional_code_type_id,
+      additional_code_type_id:,
     )
   end
 

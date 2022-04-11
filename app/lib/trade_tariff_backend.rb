@@ -100,9 +100,9 @@ module TradeTariffBackend
     def search_client
       @search_client ||= SearchClient.new(
         Elasticsearch::Client.new,
-        indexed_models: indexed_models,
+        indexed_models:,
         index_page_size: 500,
-        search_operation_options: search_operation_options,
+        search_operation_options:,
       )
     end
 
@@ -112,7 +112,7 @@ module TradeTariffBackend
         namespace: 'cache',
         indexed_models: cached_models,
         index_page_size: 5,
-        search_operation_options: search_operation_options,
+        search_operation_options:,
       )
     end
 

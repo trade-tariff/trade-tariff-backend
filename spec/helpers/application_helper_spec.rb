@@ -13,7 +13,7 @@ RSpec.describe ApplicationHelper do
         let!(:measure) do
           create(:measure, goods_nomenclature_item_id: '8711601000',
                            measure_generating_regulation_id: 'I1703530',
-                           base_regulation: base_regulation)
+                           base_regulation:)
         end
 
         before do
@@ -37,7 +37,7 @@ RSpec.describe ApplicationHelper do
         let!(:measure) do
           create(:measure, goods_nomenclature_item_id: '0808108000',
                            measure_generating_regulation_id: 'R1708920',
-                           base_regulation: base_regulation)
+                           base_regulation:)
         end
 
         before do
@@ -95,7 +95,7 @@ RSpec.describe ApplicationHelper do
         let!(:measure) do
           create(:measure, goods_nomenclature_item_id: '2823000000',
                            measure_generating_regulation_id: 'R0912150',
-                           base_regulation: base_regulation)
+                           base_regulation:)
         end
 
         let!(:measure_partial_temporary_stop) do

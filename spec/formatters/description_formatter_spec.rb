@@ -4,7 +4,7 @@ RSpec.describe DescriptionFormatter do
       description = '-| bread -| butter'
 
       expect(
-        described_class.format(description: description),
+        described_class.format(description:),
       ).to eq '<br/>- bread <br/>- butter'
 
       description2 = "\n-| bread -| butter"
@@ -18,7 +18,7 @@ RSpec.describe DescriptionFormatter do
       description = 'bread & butter'
 
       expect(
-        described_class.format(description: description),
+        described_class.format(description:),
       ).to eq 'bread &amp; butter'
     end
 
@@ -26,7 +26,7 @@ RSpec.describe DescriptionFormatter do
       description = '&#39;A&#39; with an &#39;X&#39;'
 
       expect(
-        described_class.format(description: description),
+        described_class.format(description:),
       ).to eq description
     end
 
@@ -34,7 +34,7 @@ RSpec.describe DescriptionFormatter do
       description = 'a&nbsp;paragraph'
 
       expect(
-        described_class.format(description: description),
+        described_class.format(description:),
       ).to eq description
     end
 

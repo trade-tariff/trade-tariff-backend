@@ -16,7 +16,7 @@ shared_examples_for 'a component' do |type|
   end
 
   describe '#expresses_unit?' do
-    subject(:component) { build(type, measurement_unit_code: measurement_unit_code) }
+    subject(:component) { build(type, measurement_unit_code:) }
 
     context 'when the component specifies a measurement unit code' do
       let(:measurement_unit_code) { 'TNE' }

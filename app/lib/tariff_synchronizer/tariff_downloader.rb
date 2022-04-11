@@ -30,7 +30,7 @@ module TariffSynchronizer
       @success = true
 
       update_or_create(filename, BaseUpdate::PENDING_STATE, filesize)
-      instrument('created_tariff.tariff_synchronizer', date: date, filename: filename, type: update_klass.update_type)
+      instrument('created_tariff.tariff_synchronizer', date:, filename:, type: update_klass.update_type)
     end
 
     def file_already_downloaded?
@@ -38,7 +38,7 @@ module TariffSynchronizer
     end
 
     def tariff_update
-      update_klass.find(filename: filename, update_type: update_klass.name, issue_date: date)
+      update_klass.find(filename:, update_type: update_klass.name, issue_date: date)
     end
 
     def filesize
@@ -55,12 +55,12 @@ module TariffSynchronizer
 
     def create_record_for_empty_response
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-      instrument('blank_update.tariff_synchronizer', date: date, url: url)
+      instrument('blank_update.tariff_synchronizer', date:, url:)
     end
 
     def create_record_for_exceeded_response
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-      instrument('retry_exceeded.tariff_synchronizer', date: date, url: url)
+      instrument('retry_exceeded.tariff_synchronizer', date:, url:)
     end
 
     # We do not create records for missing updates
@@ -80,14 +80,14 @@ module TariffSynchronizer
       update_klass.find_or_create(filename: file_name,
                                   update_type: update_klass.name,
                                   issue_date: date)
-        .update(state: state, filesize: file_size)
+        .update(state:, filesize: file_size)
     end
 
     def write_update_file(response_body)
       FileService.write_file(file_path, response_body)
       instrument('downloaded_tariff_update.tariff_synchronizer',
-                 date: date,
-                 url: url,
+                 date:,
+                 url:,
                  type: update_klass.update_type,
                  path: file_path,
                  size: response_body.size)

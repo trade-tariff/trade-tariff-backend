@@ -4,7 +4,7 @@ RSpec.describe DutyExpressionFormatter do
       measurement_unit_abbreviation.measurement_unit
     end
     let(:unit) do
-      measurement_unit.abbreviation(measurement_unit_qualifier: measurement_unit_qualifier)
+      measurement_unit.abbreviation(measurement_unit_qualifier:)
     end
     let(:measurement_unit_abbreviation) do
       create(:measurement_unit_abbreviation, :with_measurement_unit, :include_qualifier)
@@ -18,8 +18,8 @@ RSpec.describe DutyExpressionFormatter do
         it 'return the measurement unit' do
           expect(
             described_class.format(duty_expression_id: '99',
-                                   measurement_unit: measurement_unit,
-                                   measurement_unit_qualifier: measurement_unit_qualifier),
+                                   measurement_unit:,
+                                   measurement_unit_qualifier:),
           ).to eq unit
         end
       end
@@ -33,7 +33,7 @@ RSpec.describe DutyExpressionFormatter do
         it 'returns unit' do
           expect(
             described_class.format(duty_expression_id: '99',
-                                   measurement_unit: measurement_unit),
+                                   measurement_unit:),
           ).to eq unit
         end
       end
@@ -102,8 +102,8 @@ RSpec.describe DutyExpressionFormatter do
         it 'result includes measurement unit and measurement unit qualifier' do
           expect(
             described_class.format(duty_expression_id: '15',
-                                   measurement_unit: measurement_unit,
-                                   measurement_unit_qualifier: measurement_unit_qualifier,
+                                   measurement_unit:,
+                                   measurement_unit_qualifier:,
                                    duty_expression_description: 'abc'),
           ).to match Regexp.new(unit)
         end
@@ -118,7 +118,7 @@ RSpec.describe DutyExpressionFormatter do
         it 'result includes measurement unit' do
           expect(
             described_class.format(duty_expression_id: '15',
-                                   measurement_unit: measurement_unit,
+                                   measurement_unit:,
                                    duty_expression_description: 'abc'),
           ).to match Regexp.new(unit)
         end
@@ -195,8 +195,8 @@ RSpec.describe DutyExpressionFormatter do
         it 'result includes measurement unit and measurement unit qualifier' do
           expect(
             described_class.format(duty_expression_id: '66',
-                                   measurement_unit: measurement_unit,
-                                   measurement_unit_qualifier: measurement_unit_qualifier,
+                                   measurement_unit:,
+                                   measurement_unit_qualifier:,
                                    duty_expression_description: 'abc'),
           ).to match Regexp.new(unit)
         end
@@ -211,7 +211,7 @@ RSpec.describe DutyExpressionFormatter do
         it 'result includes measurement unit' do
           expect(
             described_class.format(duty_expression_id: '66',
-                                   measurement_unit: measurement_unit,
+                                   measurement_unit:,
                                    duty_expression_description: 'abc'),
           ).to match Regexp.new(unit)
         end

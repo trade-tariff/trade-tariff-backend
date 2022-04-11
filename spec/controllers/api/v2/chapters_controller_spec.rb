@@ -99,7 +99,7 @@ RSpec.describe Api::V2::ChaptersController, 'GET #show' do
   context 'when record is not present' do
     it 'returns not found if record was not found' do
       id = chapter.goods_nomenclature_item_id.first(2).to_i + 1
-      get :show, params: { id: id }, format: :json
+      get :show, params: { id: }, format: :json
 
       expect(response.status).to eq 404
     end

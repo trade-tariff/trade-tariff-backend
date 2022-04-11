@@ -27,7 +27,7 @@ class User < Sequel::Model
   end
 
   def self.find_by_uid(uid)
-    find(uid: uid)
+    find(uid:)
   end
 
   def self.create!(attrs)

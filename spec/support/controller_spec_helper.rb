@@ -12,6 +12,6 @@ module ControllerSpecHelper
     request.env['warden'] = double('Authenticated API User',
                                    authenticate!: true,
                                    authenticated?: true,
-                                   user: user)
+                                   user:)
   end
 end

@@ -31,7 +31,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #show' do
   context 'when record is not present' do
     it 'returns not found if record was not found' do
       id = commodity.goods_nomenclature_item_id.to_i + 1
-      get :show, params: { id: id }, format: :json
+      get :show, params: { id: }, format: :json
 
       expect(response.status).to eq 404
     end

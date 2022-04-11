@@ -58,7 +58,7 @@ class TaricImporter
 
     def operation_class=(operation)
       @operation_class = OPERATION_MAP.fetch(operation) do
-        instrument('taric_unexpected_update_type.tariff_importer', record: record)
+        instrument('taric_unexpected_update_type.tariff_importer', record:)
 
         raise TaricImporter::UnknownOperationError
       end

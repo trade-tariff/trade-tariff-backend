@@ -10,7 +10,7 @@ module PaasConfig
       ENV['REDIS_URL']
     end
 
-    { url: url, db: Rails.env.test? ? 1 : 0, id: nil }
+    { url:, db: Rails.env.test? ? 1 : 0, id: nil }
   end
 
   def elasticsearch
@@ -22,7 +22,7 @@ module PaasConfig
       ENV['ELASTICSEARCH_URL']
     end
 
-    { url: url }
+    { url: }
   end
 
   def space

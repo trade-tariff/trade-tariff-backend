@@ -38,7 +38,7 @@ RSpec.describe MeursingMeasure do
   end
 
   describe '#current?' do
-    subject(:meursing_measure) { create(:meursing_measure, :with_base_regulation, validity_end_date: validity_end_date, base_regulation_effective_end_date: validity_end_date) }
+    subject(:meursing_measure) { create(:meursing_measure, :with_base_regulation, validity_end_date:, base_regulation_effective_end_date: validity_end_date) }
 
     around { |example| TimeMachine.now { example.run } }
 

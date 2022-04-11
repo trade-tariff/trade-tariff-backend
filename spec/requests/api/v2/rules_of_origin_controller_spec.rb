@@ -9,7 +9,7 @@ RSpec.describe Api::V2::RulesOfOriginController do
 
     let :make_request do
       get api_rules_of_origin_schemes_path(format: :json),
-          params: { heading_code: heading_code, country_code: country_code },
+          params: { heading_code:, country_code: },
           headers: { 'Accept' => 'application/vnd.uktt.v2' }
     end
 
@@ -29,8 +29,8 @@ RSpec.describe Api::V2::RulesOfOriginController do
 
     context 'with path params' do
       let :make_request do
-        get api_rules_of_origin_path(heading_code: heading_code,
-                                     country_code: country_code,
+        get api_rules_of_origin_path(heading_code:,
+                                     country_code:,
                                      format: :json),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end

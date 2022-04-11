@@ -1,12 +1,12 @@
 RSpec.describe MeasureAction do
   shared_examples_for 'a positive measure action' do |action_code|
-    subject(:measure_action) { build(:measure_action, action_code: action_code) }
+    subject(:measure_action) { build(:measure_action, action_code:) }
 
     it { is_expected.to be_positive_action }
   end
 
   shared_examples_for 'a negative measure action' do |action_code|
-    subject(:measure_action) { build(:measure_action, action_code: action_code) }
+    subject(:measure_action) { build(:measure_action, action_code:) }
 
     it { is_expected.to be_negative_action }
   end
