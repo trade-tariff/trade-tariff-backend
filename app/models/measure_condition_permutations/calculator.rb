@@ -9,6 +9,8 @@ module MeasureConditionPermutations
     # one group per condition code, with a separate permutation per condition
     # within it
 
+    INCLUDED_NEGATIVE_ACTIONS = %w[08].freeze
+
     delegate :measure_sid, to: :@measure
 
     def initialize(measure)
@@ -30,7 +32,7 @@ module MeasureConditionPermutations
     def measure_conditions
       @measure_conditions ||= @measure.measure_conditions
                                       .reject(&:universal_waiver_applies?)
-                                      .reject(&:negative_class?)
+                                      .reject(&method(:excluded_condition?))
     end
 
     def matched_measure_conditions?
@@ -38,6 +40,12 @@ module MeasureConditionPermutations
         .group_by(&:permutation_key)
         .values
         .any?(&:many?) # multiple conditions with same key
+    end
+
+    def excluded_condition?(condition)
+      condition.negative_class? &&
+        condition.measure_action.present? &&
+        INCLUDED_NEGATIVE_ACTIONS.exclude?(condition.measure_action.action_code)
     end
   end
 end
