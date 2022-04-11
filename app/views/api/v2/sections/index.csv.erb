@@ -1,0 +1,13 @@
+<%= CSV.generate do |csv| =%>
+  <%- csv << %w[id numeral title position chapter_from chapter_to] -%>
+  <%- @sections.each do |section| -%>
+    <%- csv << [
+      section.id,
+      section.numeral,
+      section.title,
+      section.position,
+      section.chapter_from,
+      section.chapter_to,
+    ] -%>
+  <%- end -%>
+<% end.html_safe %>
