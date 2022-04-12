@@ -9,7 +9,7 @@ module Api
             headers['Content-Type'] = 'text/csv'
             headers['Content-Disposition'] = "attachment; filename=#{filename}.csv"
 
-            render 'api/v2/sections/index'
+            render content: Api::V2::Csv::SectionSerializer.new(@sections).serialized_csv
           end
 
           format.all { render json: Api::V2::Sections::SectionListSerializer.new(@sections).serializable_hash }
