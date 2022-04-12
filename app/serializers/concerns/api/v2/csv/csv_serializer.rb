@@ -36,9 +36,7 @@ module Api
         private
 
         def header_row
-          column_options.map do |column_option|
-            column_option[:column_name]
-          end
+          column_options.pluck(:column_name)
         end
 
         module ClassMethods
