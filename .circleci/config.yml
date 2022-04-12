@@ -216,7 +216,10 @@ commands:
       - run:
           name: Create release and notify Sentry of deploy
           command: |
-            curl -sL https://sentry.io/get-cli/ | bash
+            sudo curl -sL \
+                      -o /usr/local/bin/sentry-cli \
+                      https://github.com/getsentry/sentry-cli/releases/download/1.74.3/sentry-cli-Linux-x86_64
+            sudo chmod 0755 /usr/local/bin/sentry-cli
             export SENTRY_RELEASE=$(sentry-cli releases propose-version)
             sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
             sentry-cli releases set-commits $SENTRY_RELEASE --auto
