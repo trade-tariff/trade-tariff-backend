@@ -8,7 +8,9 @@ RSpec.describe MeasureConditionPermutations::Calculator do
 
   describe 'filtering measure_conditions' do
     subject :measure_conditions do
-      calculator.permutation_groups.first.permutations.flat_map(&:measure_conditions)
+      calculator.permutation_groups
+                .flat_map(&:permutations)
+                .flat_map(&:measure_conditions)
     end
 
     let(:regular_condition) { measure.measure_conditions.first }
@@ -35,8 +37,17 @@ RSpec.describe MeasureConditionPermutations::Calculator do
       expect(measure_conditions).not_to include(waiver_condition)
     end
 
-    it 'exlcudes negative action conditions' do
+    it 'excludes negative action conditions' do
       expect(measure_conditions).not_to include(negative_condition)
+    end
+
+    context 'with action_code=08 negative condition' do
+      let :negative_condition do
+        create :measure_condition, :negative, measure_sid: measure.measure_sid,
+                                              action_code: '08'
+      end
+
+      it { is_expected.to include negative_condition }
     end
   end
 
