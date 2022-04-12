@@ -21,7 +21,7 @@ RSpec.describe Api::V2::Quotas::QuotaDefinitionSerializer do
           measurement_unit: nil,
           monetary_unit: be_a(String),
           measurement_unit_qualifier: be_a(String),
-          last_allocation_date: serializable.last_balance_event.occurrence_timestamp.xmlschema(3),
+          last_allocation_date: serializable.last_balance_event.last_import_date_in_allocation.iso8601,
           suspension_period_start_date: nil,
           suspension_period_end_date: nil,
           blocking_period_start_date: nil,
