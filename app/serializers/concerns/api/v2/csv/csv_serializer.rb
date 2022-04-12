@@ -42,14 +42,16 @@ module Api
         end
 
         module ClassMethods
-          cattr_accessor :column_options
-
           def columns(*column_options)
             column_options.each(&method(:column))
           end
 
           def column(column, options = {}, &block)
             (self.column_options ||= []) << options.reverse_merge(column:, column_name: column, value_block: block)
+          end
+
+          def column_options
+            @column_options ||= []
           end
         end
       end
