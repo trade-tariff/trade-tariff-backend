@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Csv::SectionsSerializer do
+RSpec.describe Api::V2::Csv::SectionSerializer do
   describe '#serializable_array' do
     subject(:serializable_array) { described_class.new(serializable).serializable_array }
 
