@@ -14,7 +14,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
 
     context 'when there are measures but haven\'t changed' do
       before do
-        create :measure
+        create :measure, :with_goods_nomenclature
       end
 
       it 'doesn\'t extract changes' do
@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
 
     context 'when there are measures that started on the same day' do
       before do
-        create :measure, validity_start_date: Time.zone.today
+        create :measure, :with_goods_nomenclature, validity_start_date: Time.zone.today
       end
 
       it 'extracts changes' do

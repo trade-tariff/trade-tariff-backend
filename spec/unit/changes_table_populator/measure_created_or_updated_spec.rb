@@ -14,7 +14,7 @@ RSpec.describe ChangesTablePopulator::MeasureCreatedOrUpdated do
 
     context 'when there are measures created today' do
       before do
-        measure = create :measure
+        measure = create :measure, :with_goods_nomenclature
 
         db.run("UPDATE measures_oplog SET operation = 'C', operation_date = '#{Time.zone.today}' " \
                "WHERE measure_sid = '#{measure.measure_sid}'")
@@ -37,7 +37,7 @@ RSpec.describe ChangesTablePopulator::MeasureCreatedOrUpdated do
 
     context 'when there are measures that have been changed' do
       before do
-        measure = create :measure
+        measure = create :measure, :with_goods_nomenclature
 
         db.run("UPDATE measures_oplog SET operation = 'U', operation_date = '#{Time.zone.today}' " \
                "WHERE measure_sid = '#{measure.measure_sid}'")
