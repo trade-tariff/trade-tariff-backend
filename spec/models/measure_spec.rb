@@ -7,6 +7,22 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#goods_nomenclature' do
+    around { |example| TimeMachine.now { example.run } }
+
+    context 'when the goods nomenclature is active' do
+      subject(:goods_nomenclature) { create(:measure, :with_goods_nomenclature).goods_nomenclature }
+
+      it { is_expected.to be_present }
+    end
+
+    context 'when the goods nomenclature is inactive' do
+      subject(:goods_nomenclature) { create(:measure, :with_inactive_goods_nomenclature).goods_nomenclature }
+
+      it { is_expected.not_to be_present }
+    end
+  end
+
   describe '#generating_regulation' do
     let(:measure_of_base_regulation) { create :measure }
     let(:measure_of_modification_regulation) { create :measure, :with_modification_regulation }
