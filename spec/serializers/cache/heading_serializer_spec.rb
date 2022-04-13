@@ -93,6 +93,7 @@ RSpec.describe Cache::HeadingSerializer do
             goods_nomenclature_item_id: String,
             validity_start_date: String,
             validity_end_date: nil,
+            declarable: false,
             goods_nomenclature_indents: [
               {
                 goods_nomenclature_indent_sid: Integer,
