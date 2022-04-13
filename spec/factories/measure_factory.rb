@@ -4,7 +4,7 @@ FactoryBot.define do
   # types in the code base
   sequence(:measure_type_id, 10_000) { |n| n }
 
-  factory :measure do |f|
+  factory :measure do
     transient do
       type_explosion_level { 10 }
       gono_number_indents { 1 }
@@ -20,31 +20,20 @@ FactoryBot.define do
       base_regulation_effective_end_date { nil }
     end
 
-    f.measure_sid { generate(:measure_sid) }
-    f.measure_type_id { generate(:measure_type_id) }
-    f.measure_generating_regulation_id { generate(:base_regulation_sid) }
-    f.measure_generating_regulation_role { 1 }
-    f.additional_code_type_id { generate(:additional_code_type_id) }
-    f.goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-    f.goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
-    f.geographical_area_sid { generate(:geographical_area_sid) }
-    f.geographical_area_id { generate(:geographical_area_id) }
-    f.validity_start_date { 3.years.ago.beginning_of_day }
-    f.validity_end_date   { nil }
-    f.reduction_indicator { [nil, 1, 2, 3].sample }
+    measure_sid { generate(:measure_sid) }
+    measure_type_id { generate(:measure_type_id) }
+    measure_generating_regulation_id { generate(:base_regulation_sid) }
+    measure_generating_regulation_role { 1 }
+    additional_code_type_id { generate(:additional_code_type_id) }
+    goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
+    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
+    geographical_area_sid { generate(:geographical_area_sid) }
+    geographical_area_id { generate(:geographical_area_id) }
+    validity_start_date { 3.years.ago.beginning_of_day }
+    validity_end_date   { nil }
+    reduction_indicator { [nil, 1, 2, 3].sample }
 
-    f.goods_nomenclature do
-      create(
-        :goods_nomenclature,
-        validity_start_date: validity_start_date - 1.day,
-        goods_nomenclature_item_id:,
-        goods_nomenclature_sid:,
-        producline_suffix: gono_producline_suffix,
-        indents: gono_number_indents,
-      )
-    end
-
-    f.measure_type do
+    measure_type do
       create :measure_type, measure_type_id: measure_type_id,
                             validity_start_date: validity_start_date - 1.day,
                             measure_explosion_level: type_explosion_level,
@@ -52,10 +41,37 @@ FactoryBot.define do
                             trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
                             measure_type_series_id: measure_type_series_id
     end
-    f.geographical_area do
+    geographical_area do
       create(:geographical_area, geographical_area_sid:,
                                  geographical_area_id:,
                                  validity_start_date: validity_start_date - 1.day)
+    end
+
+    trait :with_goods_nomenclature do
+      after(:create) do |measure, evaluator|
+        create(
+          :goods_nomenclature,
+          validity_start_date: measure.validity_start_date - 1.day,
+          goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+          goods_nomenclature_sid: measure.goods_nomenclature_sid,
+          producline_suffix: evaluator.gono_producline_suffix,
+          indents: evaluator.gono_number_indents,
+        )
+      end
+    end
+
+    trait :with_inactive_goods_nomenclature do
+      after(:create) do |measure, evaluator|
+        create(
+          :goods_nomenclature,
+          validity_start_date: measure.validity_start_date - 1.day,
+          validity_end_date: measure.validity_start_date,
+          goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+          goods_nomenclature_sid: measure.goods_nomenclature_sid,
+          producline_suffix: evaluator.gono_producline_suffix,
+          indents: evaluator.gono_number_indents,
+        )
+      end
     end
 
     trait :with_base_regulation do

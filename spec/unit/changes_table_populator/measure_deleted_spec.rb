@@ -14,7 +14,7 @@ RSpec.describe ChangesTablePopulator::MeasureDeleted do
 
     context 'when there are measures but haven\'t changed' do
       before do
-        create :measure
+        create :measure, :with_goods_nomenclature
       end
 
       it 'doesn\'t extract changes' do
@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::MeasureDeleted do
 
     context 'when a measure has been deleted on the same day' do
       before do
-        measure = create :measure
+        measure = create :measure, :with_goods_nomenclature
 
         db.run("UPDATE measures_oplog SET operation = 'D', operation_date = '#{Time.zone.today}' " \
                "WHERE measure_sid = '#{measure.measure_sid}'")

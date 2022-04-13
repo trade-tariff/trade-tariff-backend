@@ -14,7 +14,7 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
 
     context 'when there are measures but haven\'t changed' do
       before do
-        create :measure
+        create :measure, :with_goods_nomenclature
       end
 
       it 'doesn\'t extract changes' do
@@ -24,7 +24,7 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
 
     context 'when there are measures that ended on the previous day' do
       before do
-        create :measure, validity_end_date: Time.zone.today - 1.day
+        create :measure, :with_goods_nomenclature, validity_end_date: Time.zone.today - 1.day
       end
 
       it 'extracts changes' do
