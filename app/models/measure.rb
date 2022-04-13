@@ -24,7 +24,9 @@ class Measure < Sequel::Model
   plugin :national
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
-                                   foreign_key: :goods_nomenclature_sid
+                                   foreign_key: :goods_nomenclature_sid do |ds|
+                                     ds.with_actual(GoodsNomenclature)
+                                   end
 
   many_to_one :export_refund_nomenclature, key: :export_refund_nomenclature_sid,
                                            foreign_key: :export_refund_nomenclature_sid
