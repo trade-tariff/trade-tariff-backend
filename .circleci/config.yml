@@ -241,7 +241,7 @@ commands:
 jobs:
   refresh_staging_db:
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
     parameters:
       service:
         type: string
@@ -278,7 +278,7 @@ jobs:
 
   linters:
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
     resource_class: small
     steps:
       - checkout
@@ -312,7 +312,7 @@ jobs:
         default: false
         type: boolean
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
     steps:
       - checkout
       - setup_remote_docker:
@@ -339,7 +339,7 @@ jobs:
 
   test:
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -402,7 +402,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -432,7 +432,7 @@ jobs:
 
   deploy_staging:
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -458,7 +458,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:3.1.1
+      - image: cimg/ruby:3.1.2
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
