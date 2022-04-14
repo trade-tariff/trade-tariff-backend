@@ -28,8 +28,9 @@ RSpec.describe MeasureUnitService do
             'measurement_unit_qualifier_code' => 'R',
             'abbreviation' => '100 kg std qual',
             'unit_question' => 'What is the weight net of the standard quality of the goods you will be importing?',
-            'unit_hint' => 'Enter the value in decitonnes (100kg)',
-            'unit' => 'x 100 kg',
+            'unit_hint' => 'Enter the value in kilogrammes',
+            'unit' => 'kilogrammes',
+            'multiplier' => '0.01',
           },
         }
       end
@@ -37,7 +38,7 @@ RSpec.describe MeasureUnitService do
       it { expect(service.call).to eq(expected_applicable_units) }
     end
 
-    context 'when the measures express a multiple matching units' do
+    context 'when the measures express multiple matching units' do
       let(:measures) { [measure] }
       let(:measure) do
         create(
@@ -54,18 +55,20 @@ RSpec.describe MeasureUnitService do
           'ASV' => {
             'abbreviation' => '% vol',
             'measurement_unit_code' => 'ASV',
-            'measurement_unit_qualifier_code' => '',
+            'measurement_unit_qualifier_code' => nil,
             'unit' => 'percent',
             'unit_hint' => 'Enter the alcohol by volume (ABV) percentage',
             'unit_question' => 'What is the alcohol percentage (%) of the goods you are importing?',
+            'multiplier' => nil,
           },
           'HLT' => {
             'abbreviation' => 'hl',
             'measurement_unit_code' => 'HLT',
-            'measurement_unit_qualifier_code' => '',
-            'unit' => 'x 100 litres',
-            'unit_hint' => 'Enter the value in hectolitres (100 litres)',
+            'measurement_unit_qualifier_code' => nil,
+            'unit' => 'litres',
+            'unit_hint' => 'Enter the value in litres',
             'unit_question' => 'What is the volume of the goods that you will be importing?',
+            'multiplier' => '0.01',
           },
         }
       end

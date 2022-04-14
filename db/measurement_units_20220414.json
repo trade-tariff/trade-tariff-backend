@@ -1,0 +1,606 @@
+{
+  "ASV": {
+    "measurement_unit_code": "ASV",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "% vol",
+    "unit_question": "What is the alcohol percentage (%) of the goods you are importing?",
+    "unit_hint": "Enter the alcohol by volume (ABV) percentage",
+    "unit": "percent",
+    "multiplier": null
+  },
+  "ASVX": {
+    "measurement_unit_code": "ASV",
+    "measurement_unit_qualifier_code": "X",
+    "abbreviation": "% vol/hl",
+    "unit_question": "What is the volume of alcohol of the goods that you are importing?",
+    "unit_hint": "This can be calculated by multiplying the %age alcohol by volume (ABV) by the volume. Enter the value in hectolitres (100 litres)",
+    "unit": "x 100 litres",
+    "multiplier": "I don't understand this one - we may need to talk about how the compound bit works",
+    "compound_units": ["ASV", "HLT"]
+  },
+  "CCT": {
+    "measurement_unit_code": "CCT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "ct/l",
+    "unit_question": "No longer used?",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "CEN": {
+    "measurement_unit_code": "CEN",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "100 p/st",
+    "unit_question": "How many items will you be importing?",
+    "unit_hint": "Enter the number of items",
+    "unit": "items",
+    "multiplier": "0.01"
+  },
+  "CTM": {
+    "measurement_unit_code": "CTM",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "c/k",
+    "unit_question": "What is the diamond weight of the goods you are importing?",
+    "unit_hint": "Enter the value in metric carats, where 1 metric carat = 200 milligrammes",
+    "unit": "carats",
+    "multiplier": null
+  },
+  "DAP": {
+    "measurement_unit_code": "DAP",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "10 000 kg/polar",
+    "unit_question": "What is the weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in decatonnes (10,000 kg), corrected according to polarisation",
+    "unit": "x 10,000 kg",
+    "multiplier": null
+  },
+  "DHS": {
+    "measurement_unit_code": "DHS",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg DHS",
+    "unit_question": "What is the weight of dihydrostreptomycin in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTN": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "100 kg",
+    "unit_question": "What is the weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNE": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "E",
+    "abbreviation": "100 kg/net eda",
+    "unit_question": "What is the net drained weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNF": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "F",
+    "abbreviation": "100 kg common wheat",
+    "unit_question": "What is weight (common wheat) of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNG": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "G",
+    "abbreviation": "100 kg/br",
+    "unit_question": "What is the gross weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNL": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "L",
+    "abbreviation": "100 kg live weight",
+    "unit_question": "What is the live weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNM": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "M",
+    "abbreviation": "100 kg/net mas",
+    "unit_question": "What is the weight net of dry matter of the goods you will be importing ?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNR": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "R",
+    "abbreviation": "100 kg std qual",
+    "unit_question": "What is the weight net of the standard quality of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNS": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "S",
+    "abbreviation": "100 kg raw sugar",
+    "unit_question": "What is the weight of raw sugar in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "DTNZ": {
+    "measurement_unit_code": "DTN",
+    "measurement_unit_qualifier_code": "Z",
+    "abbreviation": "100 kg/net/%sacchar.",
+    "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilogrammes",
+    "unit": "kilogrammes",
+    "multiplier": "0.01"
+  },
+  "EUR": {
+    "measurement_unit_code": "EUR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "EUR",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "GFI": {
+    "measurement_unit_code": "GFI",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "gi F/S",
+    "unit_question": "What is the weight of fissile isotopes that you will be importing?",
+    "unit_hint": "Enter the value in grams",
+    "unit": "grams",
+    "multiplier": null
+  },
+  "GRM": {
+    "measurement_unit_code": "GRM",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "g",
+    "unit_question": "What is the weight of the goods that you will be importing ?",
+    "unit_hint": "Enter the value in grams",
+    "unit": "grams",
+    "multiplier": null
+  },
+  "GRT": {
+    "measurement_unit_code": "GRT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "GT",
+    "unit_question": "What is the gross tonnage of the goods that you will be importing?",
+    "unit_hint": "Enter the value in grams",
+    "unit": "grams",
+    "multiplier": null
+  },
+  "HLT": {
+    "measurement_unit_code": "HLT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "hl",
+    "unit_question": "What is the volume of the goods that you will be importing?",
+    "unit_hint": "Enter the value in litres",
+    "unit": "litres",
+    "multiplier": "0.01"
+  },
+  "HMT": {
+    "measurement_unit_code": "HMT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "100 m",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KCC": {
+    "measurement_unit_code": "KCC",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg C₅H₁₄ClNO",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KCL": {
+    "measurement_unit_code": "KCL",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "tonne KCl",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KGM": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg",
+    "unit_question": "What is the weight of the goods that you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KGMA": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": "A",
+    "abbreviation": "kg/tot/alc",
+    "unit_question": "What is the weight of total alcohol in the goods that you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KGME": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": "E",
+    "abbreviation": "kg/net eda",
+    "unit_question": "What is the net drained weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KGMG": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": "G",
+    "abbreviation": "GKG",
+    "unit_question": "What is the gross weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KGMP": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": "P",
+    "abbreviation": "kg/lactic matter",
+    "unit_question": "What is the weight of lactic matter in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KGMS": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": "S",
+    "abbreviation": "kg/raw sugar",
+    "unit_question": "What is the weight of raw sugar in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KGMT": {
+    "measurement_unit_code": "KGM",
+    "measurement_unit_qualifier_code": "T",
+    "abbreviation": "kg/dry lactic matter",
+    "unit_question": "What is the weight of dry lactic matter in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KLT": {
+    "measurement_unit_code": "KLT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "1,000 l",
+    "unit_question": "What is the volume of the goods that you will be importing?",
+    "unit_hint": "Enter the value in litres",
+    "unit": "litres",
+    "multiplier": "0.001"
+  },
+  "KMA": {
+    "measurement_unit_code": "KMA",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg methylamines",
+    "unit_question": "What is the weight of methylamines in the goods you will be importing?",
+    "unit_hint": "Enter the value in kilograms",
+    "unit": "kilograms",
+    "multiplier": null
+  },
+  "KMT": {
+    "measurement_unit_code": "KMT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "KM",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KNI": {
+    "measurement_unit_code": "KNI",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg N",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KNS": {
+    "measurement_unit_code": "KNS",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg H₂O₂",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KPH": {
+    "measurement_unit_code": "KPH",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg KOH",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KPO": {
+    "measurement_unit_code": "KPO",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg K₂O",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KPP": {
+    "measurement_unit_code": "KPP",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg P₂O₅",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KSD": {
+    "measurement_unit_code": "KSD",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg 90% sdt",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KSH": {
+    "measurement_unit_code": "KSH",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg NaOH",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "KUR": {
+    "measurement_unit_code": "KUR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "kg U",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "LPA": {
+    "measurement_unit_code": "LPA",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "l alc. 100%",
+    "unit_question": "What is the volume of pure alcohol in the goods you will be importing?",
+    "unit_hint": "Enter the value in litres",
+    "unit": "litres",
+    "multiplier": null
+  },
+  "LTR": {
+    "measurement_unit_code": "LTR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "l",
+    "unit_question": "What is the volume of the goods you will be importing?",
+    "unit_hint": "Enter the value in litres",
+    "unit": "litres",
+    "multiplier": null
+  },
+  "LTRA": {
+    "measurement_unit_code": "LTR",
+    "measurement_unit_qualifier_code": "A",
+    "abbreviation": "L total alc.",
+    "unit_question": "What is the volume of the goods you will be importing?",
+    "unit_hint": "Enter the value in litres of total alcohol",
+    "unit": "litres",
+    "multiplier": null
+  },
+  "MIL": {
+    "measurement_unit_code": "MIL",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "1,000 p/st",
+    "unit_question": "How many items will you be importing?",
+    "unit_hint": "Enter the number of items",
+    "unit": "items",
+    "multiplier": "0.001"
+  },
+  "MPR": {
+    "measurement_unit_code": "MPR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "1,000 pa",
+    "unit_question": "How many pairs will you be importing?",
+    "unit_hint": "Enter the number of pairs",
+    "unit": "pairs",
+    "multiplier": "0.001"
+  },
+  "MTK": {
+    "measurement_unit_code": "MTK",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "m²",
+    "unit_question": "What is the size of the goods you will be importing?",
+    "unit_hint": "Enter the value in metres<sup>2</sup>",
+    "unit": "metres<sup>2</sup>",
+    "multiplier": null
+  },
+  "MTQ": {
+    "measurement_unit_code": "MTQ",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "m³",
+    "unit_question": "What is the volume of the goods you will be importing?",
+    "unit_hint": "Enter the value in metres<sup>3</sup>",
+    "unit": "metres<sup>3</sup>",
+    "multiplier": null
+  },
+  "MTQC": {
+    "measurement_unit_code": "MTQ",
+    "measurement_unit_qualifier_code": "C",
+    "abbreviation": "1,000 m³",
+    "unit_question": "What is the volume of the goods you will be importing?",
+    "unit_hint": "Enter the value in 1,000 metres<sup>3</sup>",
+    "unit": "1,000 metres<sup>3</sup>",
+    "multiplier": null
+  },
+  "MTR": {
+    "measurement_unit_code": "MTR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "m",
+    "unit_question": "What is the length of the goods you will be importing?",
+    "unit_hint": "Enter the value in metres",
+    "unit": "metres",
+    "multiplier": null
+  },
+  "MWH": {
+    "measurement_unit_code": "MWH",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "1,000 kWh",
+    "unit_question": "What is the unit of energy of the items you will be importing?",
+    "unit_hint": "Enter the value in 1,000 kilowatt hours (kWh)",
+    "unit": "x 1,000 kilowatt hours (kWh)",
+    "multiplier": null
+  },
+  "NAR": {
+    "measurement_unit_code": "NAR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "p/st",
+    "unit_question": "How many items will you be importing?",
+    "unit_hint": "Enter the number of items",
+    "unit": "items",
+    "multiplier": null
+  },
+  "NARB": {
+    "measurement_unit_code": "NAR",
+    "measurement_unit_qualifier_code": "B",
+    "abbreviation": "b/f",
+    "unit_question": "No longer used",
+    "unit_hint": null,
+    "unit": null,
+    "multiplier": null
+  },
+  "NCL": {
+    "measurement_unit_code": "NCL",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "ce/el",
+    "unit_question": "How many cells will you be importing?",
+    "unit_hint": "Enter the number of cells",
+    "unit": "cells",
+    "multiplier": null
+  },
+  "NPR": {
+    "measurement_unit_code": "NPR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "pa",
+    "unit_question": "How many pairs will you be importing?",
+    "unit_hint": "Enter the number of pairs",
+    "unit": "pairs",
+    "multiplier": null
+  },
+  "RET": {
+    "measurement_unit_code": "RET",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "GBP",
+    "unit_question": "What is the retail price of the goods you will be importing?",
+    "unit_hint": "Enter the value in pounds",
+    "unit": "£",
+    "multiplier": null
+  },
+  "TJO": {
+    "measurement_unit_code": "TJO",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "TJ",
+    "unit_question": "What is the gross calorific value of the goods you will be importing?",
+    "unit_hint": "Enter the value in terajoules",
+    "unit": "terajoules",
+    "multiplier": null
+  },
+  "TNE": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "1,000 kg",
+    "unit_question": "What is the weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNEE": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "E",
+    "abbreviation": "1,000 kg/net eda",
+    "unit_question": "What is the net drained weight of the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNEI": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "I",
+    "abbreviation": "1,000 kg/biodiesel",
+    "unit_question": "What is the weight of biodiesel in the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNEJ": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "J",
+    "abbreviation": "1,000 kg/fuel content",
+    "unit_question": "What is the weight of the fuel content in the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNEK": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "K",
+    "abbreviation": "1,000 kg/bioethanol",
+    "unit_question": "What is the weight of bioethanol in the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNEM": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "M",
+    "abbreviation": "1,000 kg/net mas",
+    "unit_question": "What is the weight net of dry matter of the goods you will be importing ?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNER": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "R",
+    "abbreviation": "1,000 kg std qual",
+    "unit_question": "What is the weight net of the standard quality of the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "TNEZ": {
+    "measurement_unit_code": "TNE",
+    "measurement_unit_qualifier_code": "Z",
+    "abbreviation": "1,000 kg/net/%saccha.",
+    "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
+    "unit_hint": "Enter the value in tonnes (1,000 kg)",
+    "unit": "tonnes",
+    "multiplier": null
+  },
+  "WAT": {
+    "measurement_unit_code": "WAT",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "Watt",
+    "unit_question": "What is the power of the items you will be importing?",
+    "unit_hint": "Enter the value in watts",
+    "unit": "watts",
+    "multiplier": null
+  }
+}
