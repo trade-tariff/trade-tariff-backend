@@ -7,8 +7,17 @@ module Api
 
       def index
         @chapters = Chapter.eager(:chapter_note, :goods_nomenclature_descriptions).all
+        respond_to do |format|
+          format.csv do
+            send_data(
+              Api::V2::Csv::ChapterSerializer.new(@chapters).serialized_csv,
+              type: 'text/csv; charset=utf-8; header=present',
+              disposition: "attachment; filename=chapters-#{actual_date.iso8601}.csv",
+            )
+          end
 
-        render json: Api::V2::Chapters::ChapterListSerializer.new(@chapters).serializable_hash
+          format.any { render json: Api::V2::Chapters::ChapterListSerializer.new(@chapters).serializable_hash }
+        end
       end
 
       def show
