@@ -234,5 +234,9 @@ module TradeTariffBackend
     def permutations?
       ENV['PERMUTATIONS'].to_s == 'true'
     end
+
+    def normalised_measure_units?
+      ENV['NORMALISED_MEASURE_UNITS'].to_s == 'true'
+    end
   end
 end

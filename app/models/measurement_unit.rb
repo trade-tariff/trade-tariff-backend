@@ -1,4 +1,6 @@
 class MeasurementUnit < Sequel::Model
+  MEASUREMENT_UNIT_OVERLAY_FILE = TradeTariffBackend.normalised_measure_units? ? 'db/measurement_units_20220414.json' : 'db/measurement_units.json'
+
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
 
@@ -34,11 +36,7 @@ class MeasurementUnit < Sequel::Model
     end
 
     def measurement_units
-      @measurement_units ||=
-        begin
-          file = File.join(::Rails.root, 'db', 'measurement_units.json').freeze
-          JSON.parse(File.read(file))
-        end
+      @measurement_units ||= JSON.parse(File.read(Rails.root.join(MEASUREMENT_UNIT_OVERLAY_FILE)))
     end
 
     def build_missing_measurement_unit(unit_code, unit_key)
