@@ -76,21 +76,17 @@ module Api
         @commodities = commodities
         response.set_header('Date', actual_date.httpdate)
 
-        filename = [
-          'goods-nomenclatures-for',
-          'as-of',
-          actual_date,
-        ].join('-')
-
         respond_to do |format|
           format.json do
             headers['Content-Type'] = 'application/json'
             render json: Api::V2::GoodsNomenclatures::GoodsNomenclatureListSerializer.new(@goods_nomenclatures.to_a).serializable_hash
           end
           format.csv do
-            headers['Content-Type'] = 'text/csv'
-            headers['Content-Disposition'] = "attachment; filename=#{filename}.csv"
-            render 'api/v2/goods_nomenclatures/index'
+            send_data(
+              Api::V2::Csv::GoodsNomenclatureSerializer.new(@goods_nomenclatures).serialized_csv,
+              type: 'text/csv; charset=utf-8; header=present',
+              disposition: "attachment; filename=goods-nomenclatures-for-as-of-#{actual_date.iso8601}.csv",
+            )
           end
         end
       end

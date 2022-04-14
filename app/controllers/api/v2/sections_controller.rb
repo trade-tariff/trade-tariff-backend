@@ -2,9 +2,21 @@ module Api
   module V2
     class SectionsController < ApiController
       def index
-        @sections = Section.eager({ chapters: [:chapter_note] }, :section_note).all
+        @sections = Section
+          .eager({ chapters: [:chapter_note] }, :section_note)
+          .all
 
-        render json: Api::V2::Sections::SectionListSerializer.new(@sections).serializable_hash
+        respond_to do |format|
+          format.csv do
+            send_data(
+              Api::V2::Csv::SectionSerializer.new(@sections).serialized_csv,
+              type: 'text/csv; charset=utf-8; header=present',
+              disposition: "attachment; filename=sections-#{actual_date.iso8601}.csv",
+            )
+          end
+
+          format.all { render json: Api::V2::Sections::SectionListSerializer.new(@sections).serializable_hash }
+        end
       end
 
       def show

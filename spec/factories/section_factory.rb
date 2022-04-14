@@ -12,6 +12,14 @@ FactoryBot.define do
         FactoryBot.create(:section_note, section_id: section.id)
       end
     end
+
+    trait :with_chapter do
+      after(:create) do |section, _evaluator|
+        chapter = create(:chapter)
+        chapter.add_section section
+        chapter.save
+      end
+    end
   end
 
   factory :section_note do
