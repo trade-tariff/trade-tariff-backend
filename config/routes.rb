@@ -52,6 +52,10 @@ Rails.application.routes.draw do
         collection do
           get :tree
         end
+
+        member do
+          get :chapters
+        end
       end
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
