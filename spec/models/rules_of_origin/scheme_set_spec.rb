@@ -75,9 +75,9 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     end
 
     context 'with multiple matching schemes' do
-      let(:country_code) { 'KE' }
+      let(:country_code) { 'VN' }
 
-      it { is_expected.to include have_attributes(scheme_code: 'kenya') }
+      it { is_expected.to include have_attributes(scheme_code: 'vietnam') }
       it { is_expected.to include have_attributes(scheme_code: 'gsp') }
     end
   end
