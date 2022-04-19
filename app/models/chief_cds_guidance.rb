@@ -1,9 +1,11 @@
+# frozen_string_literal: true
+
 class ChiefCdsGuidance
-  DEFAULT_SOURCE_PATH = Rails.root.join('db/').freeze
-  DEFAULT_FILE = 'chief_cds_guidance_20220414.json'.freeze
-  DEFAULT_EMPTY_GUIDANCE = 'No additional information is available.'.freeze
-  CHIEF_GUIDANCE_KEY = 'guidance_chief'.freeze
-  CDS_GUIDANCE_KEY = 'guidance_cds'.freeze
+  DEFAULT_SOURCE_PATH = Rails.root.join('db/')
+  DEFAULT_FILE = 'chief_cds_guidance_20220414.json'
+  DEFAULT_EMPTY_GUIDANCE = 'No additional information is available.'
+  CHIEF_GUIDANCE_KEY = 'guidance_chief'
+  CDS_GUIDANCE_KEY = 'guidance_cds'
 
   def self.load_default
     new(DEFAULT_SOURCE_PATH.join(DEFAULT_FILE)).tap(&:guidance)
