@@ -43,7 +43,7 @@ Rails.application.routes.draw do
     end
   end
 
-  namespace :api, path: '/' do
+  namespace :api, defaults: { format: 'json' }, path: '/' do
     # How (or even if) API versioning will be implemented is still an open question. We can defer
     # the choice until we need to expose the API to clients which we don't control.
 
