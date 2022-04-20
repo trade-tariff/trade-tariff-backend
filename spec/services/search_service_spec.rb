@@ -166,6 +166,28 @@ RSpec.describe SearchService do
           expect(result).to match_json_expression commodity_pattern(commodity)
         end
 
+        it 'returns endpoint and identifier if provided with 6 symbol commoditity code' do
+          commodity = create(:commodity, :declarable, :with_heading, :with_indent,
+                                         goods_nomenclature_item_id: '0101010000')
+
+          result = described_class.new(data_serializer,
+                                       q: '010101',
+                                       as_of: Time.zone.today).to_json
+
+          expect(result).to match_json_expression commodity_pattern(commodity)
+        end
+
+        it 'returns endpoint and identifier if provided with 8 symbol commoditity code' do
+          commodity = create(:commodity, :declarable, :with_heading, :with_indent,
+                                         goods_nomenclature_item_id: '0101010100')
+
+          result = described_class.new(data_serializer,
+                                       q: '01010101',
+                                       as_of: Time.zone.today).to_json
+
+          expect(result).to match_json_expression commodity_pattern(commodity)
+        end
+
         it 'returns endpoint and identifier if provided with 10 symbol commodity code separated by spaces' do
           code = [commodity.goods_nomenclature_item_id[0..1],
                   commodity.goods_nomenclature_item_id[2..3],

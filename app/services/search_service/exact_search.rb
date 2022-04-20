@@ -4,9 +4,9 @@ class SearchService
       @results = case query_string
                  when /^[0-9]{1,3}$/
                    find_chapter(query_string)
-                 when /^[0-9]{4,9}$/
+                 when /^[0-9]{4}$/
                    find_heading(query_string)
-                 when /^[0-9]{10}$/
+                 when /^[0-9]{5,10}$/
                    # A commodity or declarable heading may have code of
                    # 10 digits
                    find_commodity(query_string) || find_heading(query_string)
@@ -48,6 +48,7 @@ class SearchService
     end
 
     def find_commodity(query)
+      query = query + ('0' * (10 - query.length)) if query.length < 10 # normalise shortened codes
       query = SearchService::CodesMapping.check(query) || query
 
       commodity = Commodity.actual
