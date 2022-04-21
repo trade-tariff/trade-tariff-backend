@@ -1,44 +1,50 @@
-namespace :db do
-  namespace :data do
-    desc 'Set reporter class variable after the environment has loaded'
-    task load_reporter: :environment do
-      TradeTariffBackend::DataMigrator.reporter = TradeTariffBackend::DataMigrator::ConsoleReporter
+namespace :data do
+  namespace :migrate do
+    task load: :environment do # rubocop:disable Rake/Desc
+      require 'data_migrations'
+      db_for_current_env
     end
 
-    desc 'Applies all pending data migrations'
-    task migrate: :load_reporter do
-      TradeTariffBackend::DataMigrator.migrate
-    end
-
-    desc 'Rollbacks last applied data migration'
-    task rollback: :load_reporter do
-      TradeTariffBackend::DataMigrator.rollback
-    end
-
-    desc 'Prints data migration application status'
-    task status: :load_reporter do
-      TradeTariffBackend::DataMigrator.status
-    end
-
-    desc 'Rollbacks last data migration and applies it'
-    task redo: :load_reporter do
-      TradeTariffBackend::DataMigrator.redo
-    end
-
-    desc 'Applies data migration one more time by timestamp'
-    task :repeat, [:timestamp] => :load_reporter do |_task, args|
-      TradeTariffBackend::DataMigrator.repeat(args[:timestamp])
-    end
-
-    desc 'Load old data migrations (run this task once)'
-    task init_migrations_table: :load_reporter do
-      TradeTariffBackend::DataMigrator.send(:migration_files).each do |file|
-        next unless TradeTariffBackend::DataMigration::LogEntry.where(filename: file).none?
-
-        l = TradeTariffBackend::DataMigration::LogEntry.new
-        l.filename = file
-        l.save
+    desc 'Rollbacks the database one data migration and re migrate up. If you want to rollback more than one step, define STEP=x. Target specific version with VERSION=x.'
+    task redo: :load do
+      if ENV['VERSION']
+        Rake::Task['data:migrate:down'].invoke
+        Rake::Task['data:migrate:up'].invoke
+      else
+        Rake::Task['data:rollback'].invoke
+        Rake::Task['data:migrate'].invoke
       end
     end
+
+    desc 'Runs the "up" for a given data migration VERSION.'
+    task up: :load do
+      version = ENV['VERSION'] ? ENV['VERSION'].to_i : nil
+      raise 'VERSION is required' unless version
+
+      ::DataMigrations.migrate_up!(version)
+    end
+
+    desc 'Runs the "down" for a given data migration VERSION.'
+    task down: :load do
+      version = ENV['VERSION'] ? ENV['VERSION'].to_i : nil
+      raise 'VERSION is required' unless version
+
+      ::DataMigrations.migrate_down!(version)
+    end
+  end
+
+  desc 'Migrate data to the latest version'
+  task migrate: 'migrate:load' do
+    ::DataMigrations.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
+  end
+
+  desc 'Rollback the latest data migration file or down to specified VERSION=x'
+  task rollback: 'migrate:load' do
+    version = if ENV['VERSION']
+                ENV['VERSION'].to_i
+              else
+                ::DataMigrations.previous_migration
+              end
+    ::DataMigrations.migrate_down! version
   end
 end
