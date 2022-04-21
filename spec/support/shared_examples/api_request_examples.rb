@@ -5,6 +5,10 @@ RSpec.shared_examples 'a successful jsonapi response' do
 end
 
 RSpec.shared_examples 'a successful csv response' do
+  subject(:do_request) { make_request && response }
+
+  let(:make_request) { get "#{path}.csv" }
+
   it { is_expected.to have_http_status :success }
   it { is_expected.to have_attributes media_type: /csv/ }
   it { expect { CSV.parse(subject.body) }.not_to raise_error }

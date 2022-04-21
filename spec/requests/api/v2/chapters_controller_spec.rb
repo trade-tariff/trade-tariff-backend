@@ -1,13 +1,11 @@
 RSpec.describe Api::V2::ChaptersController do
   describe 'GET #index' do
-    subject(:do_request) { make_request && response }
+    it_behaves_like 'a successful csv response' do
+      let(:path) { '/chapters' }
 
-    let(:make_request) { get '/chapters.csv' }
-
-    before do
-      create(:chapter)
+      before do
+        create(:chapter)
+      end
     end
-
-    it_behaves_like 'a successful csv response'
   end
 end
