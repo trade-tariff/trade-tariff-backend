@@ -67,6 +67,7 @@ Rails.application.routes.draw do
       resources :headings, only: [:show], constraints: { id: /\d{4}/ } do
         member do
           get :changes
+          get :commodities
         end
 
         resources :validity_periods, only: [:index]
