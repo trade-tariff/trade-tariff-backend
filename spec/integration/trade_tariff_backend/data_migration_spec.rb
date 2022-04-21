@@ -1,4 +1,4 @@
-RSpec.describe TradeTariffBackend::DataMigration do
+RSpec.xdescribe TradeTariffBackend::DataMigration do
   describe 'migrating up' do
     let(:measure) { create :measure }
 
