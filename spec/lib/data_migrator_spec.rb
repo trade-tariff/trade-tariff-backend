@@ -1,6 +1,6 @@
-require 'data_migrations'
+require 'data_migrator'
 
-RSpec.describe DataMigrations do
+RSpec.describe DataMigrator do
   before do
     allow(described_class).to receive(:migrations_dir).and_return(migrations_dir)
   end

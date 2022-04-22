@@ -1,4 +1,4 @@
-class DataMigrations < SequelRails::Migrations
+class DataMigrator < SequelRails::Migrations
   DATA_MIGRATIONS_TABLE = 'data_migrations'.freeze
 
   class << self

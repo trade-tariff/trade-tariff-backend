@@ -1,7 +1,7 @@
 namespace :data do
   namespace :migrate do
     task load: :environment do # rubocop:disable Rake/Desc
-      require 'data_migrations'
+      require 'data_migrator'
       db_for_current_env
     end
 
@@ -21,7 +21,7 @@ namespace :data do
       version = ENV['VERSION'] ? ENV['VERSION'].to_i : nil
       raise 'VERSION is required' unless version
 
-      ::DataMigrations.migrate_up!(version)
+      ::DataMigrator.migrate_up!(version)
     end
 
     desc 'Runs the "down" for a given data migration VERSION.'
@@ -29,13 +29,13 @@ namespace :data do
       version = ENV['VERSION'] ? ENV['VERSION'].to_i : nil
       raise 'VERSION is required' unless version
 
-      ::DataMigrations.migrate_down!(version)
+      ::DataMigrator.migrate_down!(version)
     end
   end
 
   desc 'Migrate data to the latest version'
   task migrate: 'migrate:load' do
-    ::DataMigrations.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
+    ::DataMigrator.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
   end
 
   desc 'Rollback the latest data migration file or down to specified VERSION=x'
@@ -43,8 +43,8 @@ namespace :data do
     version = if ENV['VERSION']
                 ENV['VERSION'].to_i
               else
-                ::DataMigrations.previous_migration
+                ::DataMigrator.previous_migration
               end
-    ::DataMigrations.migrate_down! version
+    ::DataMigrator.migrate_down! version
   end
 end
