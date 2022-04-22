@@ -35,17 +35,13 @@ class DataMigrator < SequelRails::Migrations
 
     def default_opts
       ::Sequel::OPTS.merge(
-        allow_missing_migration_files:,
+        allow_missing_migration_files: true,
         table: DATA_MIGRATIONS_TABLE,
       )
     end
 
     def migrator_class
       ::Sequel::TimestampMigrator
-    end
-
-    def allow_missing_migration_files
-      !!SequelRails.configuration.allow_missing_migration_files
     end
   end
 end
