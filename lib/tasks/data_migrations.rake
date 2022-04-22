@@ -33,7 +33,7 @@ namespace :data do
     end
   end
 
-  desc 'Migrate data to the latest version'
+  desc 'Migrate data to the latest version - IMPORTANT ensure migrations are idempotent'
   task migrate: 'migrate:load' do
     ::DataMigrator.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
   end
