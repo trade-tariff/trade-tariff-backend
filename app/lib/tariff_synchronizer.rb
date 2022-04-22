@@ -206,6 +206,8 @@ module TariffSynchronizer
               taric_update.delete
             end
           end
+
+          DataMigration.since(date_for_rollback).delete # Requeue data migrations
         end
       end
 
@@ -256,6 +258,8 @@ module TariffSynchronizer
               cds_update.delete
             end
           end
+
+          DataMigration.since(date_for_rollback).delete # Requeue data migrations
         end
       end
 
