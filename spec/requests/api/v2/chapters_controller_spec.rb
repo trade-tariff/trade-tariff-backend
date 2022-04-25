@@ -10,22 +10,14 @@ RSpec.describe Api::V2::ChaptersController do
     end
   end
 
-  describe 'GET #chapters/:id/headings' do
+  describe 'GET #headings' do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }
 
-    let(:path) { "/chapters/#{chapter.short_code}/headings" }
+    let(:expected_filename) { "uk-chapter-#{chapter.short_code}-headings-#{Time.zone.today.iso8601}.csv" }
 
-    context 'when request asks for JSON format' do
-      subject { make_request && response }
-
-      let(:make_request) { get path }
-
-      it_behaves_like 'a successful jsonapi response'
-    end
-
-    context 'when request asks for CSV format' do
-      it_behaves_like 'a successful csv response'
+    it_behaves_like 'a successful csv response' do
+      let(:path) { "/chapters/#{chapter.short_code}/headings" }
     end
   end
 end

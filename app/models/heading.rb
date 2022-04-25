@@ -46,8 +46,8 @@ class Heading < GoodsNomenclature
   delegate :section, :section_id, to: :chapter, allow_nil: true
 
   # See oplog sequel plugin
-  def operation=(op)
-    self[:operation] = op.to_s.first.upcase
+  def operation=(operation)
+    self[:operation] = operation.to_s.first.upcase
   end
 
   def short_code
@@ -110,14 +110,6 @@ class Heading < GoodsNomenclature
     ).where(conditions)
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last))
-  end
-
-  def footnote_ids
-    footnotes.map(&:footnote_id)
-  end
-
-  def commodity_ids
-    commodities.map(&:goods_nomenclature_item_id)
   end
 
   private

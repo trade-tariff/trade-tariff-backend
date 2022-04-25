@@ -49,21 +49,21 @@ module Api
         chapter_headings = chapter.headings
 
         respond_to do |format|
+          filename = "#{TradeTariffBackend.service}-chapter-#{params[:id]}-headings-#{actual_date.iso8601}.csv"
+
           format.csv do
             send_data(
               Api::V2::Csv::HeadingSerializer.new(chapter_headings).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
-              disposition: "attachment; filename=chapter-#{params[:id]}-headings-#{actual_date.iso8601}.csv",
+              disposition: "attachment; filename=#{filename}",
             )
-          end
-
-          format.any do
-            render json: Api::V2::Headings::HeadingSerializer.new(chapter_headings).serializable_hash
           end
         end
       end
 
       private
+
+      attr_reader :chapter
 
       def find_chapter
         @chapter = Chapter.actual
@@ -73,16 +73,8 @@ module Api
         raise Sequel::RecordNotFound if @chapter.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
       end
 
-      attr_reader :chapter
-
       def chapter_id
-        c_id = params[:id]
-
-        if c_id.length == 2
-          "#{c_id}00000000"
-        else # it is single digit
-          "0#{c_id}00000000"
-        end
+        "#{params[:id]}00000000"
       end
     end
   end

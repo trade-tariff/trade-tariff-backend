@@ -12,12 +12,7 @@ module Api
                 :formatted_description,
                 :producline_suffix
 
-        column :leaf do |heading|
-          heading.commodities.any? do |commodity|
-            commodity.children.any?
-          end
-        end
-
+        column(:leaf) { |heading| heading.commodities_dataset.empty? }
       end
     end
   end
