@@ -4,6 +4,7 @@ RSpec.describe Api::V2::Sections do
 
     it_behaves_like 'a successful csv response' do
       let(:path) { "/sections/#{section.position}/chapters" }
+      let(:expected_filename) { "sections-#{section.position}-chapters-#{Time.zone.today.iso8601}.csv" }
     end
   end
 end
