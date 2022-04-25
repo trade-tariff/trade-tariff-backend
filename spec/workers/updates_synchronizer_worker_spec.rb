@@ -3,15 +3,17 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
     subject(:perform) { described_class.new.perform }
 
     before do
-      allow($stdout).to receive(:write)
-
       allow(TariffSynchronizer).to receive(:download)
-      allow(TariffSynchronizer).to receive(:apply)
+      allow(TariffSynchronizer).to receive(:apply).and_return(changes_applied)
       allow(TariffSynchronizer).to receive(:download_cds)
-      allow(TariffSynchronizer).to receive(:apply_cds)
+      allow(TariffSynchronizer).to receive(:apply_cds).and_return(changes_applied)
 
       allow(TradeTariffBackend).to receive(:service).and_return(service)
+
+      allow(Sidekiq::Client).to receive(:enqueue)
     end
+
+    let(:changes_applied) { true }
 
     context 'when on the xi service' do
       before { perform }
@@ -19,12 +21,21 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       let(:service) { 'xi' }
 
       it { expect(TariffSynchronizer).to have_received(:download) }
-      it { expect(TariffSynchronizer).to have_received(:apply).with(reindex_all_indexes: true) }
+      it { expect(TariffSynchronizer).to have_received(:apply) }
 
       it { expect(TariffSynchronizer).not_to have_received(:download_cds) }
       it { expect(TariffSynchronizer).not_to have_received(:apply_cds) }
 
+      it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
       it { expect(described_class.jobs).to be_empty }
+
+      context 'with no updates applied' do
+        let(:changes_applied) { nil }
+
+        it { expect(TariffSynchronizer).to have_received(:download) }
+        it { expect(TariffSynchronizer).to have_received(:apply) }
+        it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+      end
     end
 
     context 'when on the uk service' do
@@ -51,6 +62,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
+          it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
           it { expect(described_class.jobs).to have_attributes length: 1 }
 
           it 'creates a later job to re-attempt download and processing' do
@@ -73,6 +85,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
+          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
           it { expect(described_class.jobs).to be_empty }
         end
 
@@ -85,6 +98,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
+          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
           it { expect(described_class.jobs).to be_empty }
         end
       end
@@ -103,7 +117,16 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
         it { expect(TariffSynchronizer).not_to have_received(:download) }
         it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
+        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
         it { expect(described_class.jobs).to be_empty }
+
+        context 'with no updates applied' do
+          let(:changes_applied) { nil }
+
+          it { expect(TariffSynchronizer).to have_received(:download_cds) }
+          it { expect(TariffSynchronizer).to have_received(:apply_cds) }
+          it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+        end
       end
     end
   end

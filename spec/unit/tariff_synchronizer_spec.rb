@@ -96,16 +96,21 @@ RSpec.describe TariffSynchronizer, truncation: true do
 
     context 'when successful' do
       before do
+        # Don't actually try to import the (non-existant) file since that will fail
+        allow_any_instance_of(TaricImporter).to receive(:import)
+
         applied_update
         pending_update
+      end
 
-        allow(Sidekiq::Client).to receive(:enqueue)
+      it 'returns true to mark successful application of updates' do
+        expect(described_class.apply).to be_truthy
       end
 
       it 'all pending updates get applied' do
-        allow(described_class::BaseUpdateImporter).to receive(:perform)
+        allow(described_class::BaseUpdateImporter).to receive(:perform).and_call_original
 
-        described_class.apply
+        expect(described_class.apply).to be_truthy
 
         expect(described_class::BaseUpdateImporter).to have_received(:perform).with(pending_update)
       end
@@ -114,13 +119,13 @@ RSpec.describe TariffSynchronizer, truncation: true do
         expect_any_instance_of(TariffSynchronizer::Logger).to receive(:apply)
         allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
-        allow(described_class::BaseUpdateImporter).to receive(:perform).with(pending_update).and_return(true)
+        allow(described_class::BaseUpdateImporter).to receive(:perform).with(pending_update).and_call_original
 
         described_class.apply
       end
 
       it 'emails stakeholders' do
-        allow(described_class::BaseUpdateImporter).to receive(:perform)
+        allow(described_class::BaseUpdateImporter).to receive(:perform).and_call_original
         allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
         described_class.apply
@@ -128,43 +133,6 @@ RSpec.describe TariffSynchronizer, truncation: true do
         expect(ActionMailer::Base.deliveries).not_to be_empty
         expect(ActionMailer::Base.deliveries.last.subject).to include('Tariff updates applied')
         expect(ActionMailer::Base.deliveries.last.encoded).to include('No import warnings found.')
-      end
-
-      context 'when reindex_all_indexes arg is not set' do
-        subject(:apply) { described_class.apply }
-
-        it 'does not kick off the ClearCacheWorker' do
-          allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-          apply
-
-          expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
-        end
-      end
-
-      context 'when reindex_all_indexes arg is false' do
-        subject(:apply) { described_class.apply(reindex_all_indexes: false) }
-
-        it 'does not kick off the ClearCacheWorker' do
-          allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-          apply
-
-          expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
-        end
-      end
-
-      context 'when reindex_all_indexes arg is true' do
-        subject(:apply) { described_class.apply(reindex_all_indexes: true) }
-
-        it 'kicks off the ClearCacheWorker' do
-          allow(described_class::BaseUpdateImporter).to receive(:perform)
-          allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
-
-          apply
-
-          expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker)
-        end
       end
     end
 
@@ -174,13 +142,10 @@ RSpec.describe TariffSynchronizer, truncation: true do
         pending_update
 
         allow(described_class::BaseUpdateImporter).to receive(:perform).with(pending_update).and_raise(Sequel::Rollback)
-        allow(Sidekiq::Client).to receive(:enqueue)
       end
 
       it 'after an error next record is not processed' do
         expect { described_class.apply }.to raise_error(Sequel::Rollback)
-
-        expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
       end
     end
 
@@ -207,19 +172,6 @@ RSpec.describe TariffSynchronizer, truncation: true do
 
       it 'sends email with the error' do
         expect { described_class.apply }.to raise_error(described_class::FailedUpdatesError)
-      end
-
-      context 'when reindex_all_indexes arg is true' do
-        subject(:apply) { described_class.apply(reindex_all_indexes: true) }
-
-        it 'does not kick off the ClearCacheWorker' do
-          allow(Sidekiq::Client).to receive(:enqueue)
-          allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-          apply
-        rescue StandardError
-          expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
-        end
       end
     end
   end
@@ -314,67 +266,27 @@ RSpec.describe TariffSynchronizer, truncation: true do
     let(:pending_update) { create(:cds_update, :pending, example_date: Date.today) }
 
     before do
+      allow_any_instance_of(CdsImporter).to receive(:import).and_return({})
+
       applied_update
       pending_update
-
-      allow(Sidekiq::Client).to receive(:enqueue)
     end
 
-    context 'when reindex_all_indexes arg is not set' do
+    context 'with successful updates present' do
       subject(:apply) { described_class.apply_cds }
 
       it 'does not kick off the ClearCacheWorker' do
-        allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-        apply
-
-        expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
-      end
-    end
-
-    context 'when reindex_all_indexes arg is false' do
-      subject(:apply) { described_class.apply_cds(reindex_all_indexes: false) }
-
-      it 'does not kick off the ClearCacheWorker' do
-        allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-        apply
-
-        expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
-      end
-    end
-
-    context 'when reindex_all_indexes arg is true' do
-      subject(:apply) { described_class.apply_cds(reindex_all_indexes: true) }
-
-      before do
-        allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-        # TODO: why do we even need this?
-        allow(described_class::BaseUpdate).to receive(:pending_or_failed).and_return([])
-      end
-
-      it 'kicks off the ClearCacheWorker' do
-        apply
-
-        expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker)
+        expect(apply).to be_truthy
       end
     end
 
     context 'with failed updates present' do
       before { create :taric_update, :failed }
 
-      context 'when reindex_all_indexes arg is true' do
-        subject(:apply) { described_class.apply_cds(reindex_all_indexes: true) }
+      subject(:apply) { described_class.apply_cds }
 
-        it 'does not kick off the ClearCacheWorker' do
-          allow(Sidekiq::Client).to receive(:enqueue)
-          allow(described_class::BaseUpdateImporter).to receive(:perform)
-
-          apply
-        rescue StandardError
-          expect(Sidekiq::Client).not_to have_received(:enqueue).with(ClearCacheWorker)
-        end
+      it 'does not kick off the ClearCacheWorker' do
+        expect { apply }.to raise_error StandardError
       end
     end
   end
