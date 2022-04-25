@@ -16,7 +16,7 @@ module Api
             send_data(
               Api::V2::Csv::CommoditySerializer.new(cached_commodities).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
-              disposition: "attachment; filename=headings-#{params[:id]}-commodities-#{actual_date.iso8601}.csv",
+              disposition: "attachment; filename=#{TradeTariffBackend.service}-headings-#{params[:id]}-commodities-#{actual_date.iso8601}.csv",
             )
           end
 

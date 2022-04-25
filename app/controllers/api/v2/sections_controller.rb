@@ -11,7 +11,7 @@ module Api
             send_data(
               Api::V2::Csv::SectionSerializer.new(@sections).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
-              disposition: "attachment; filename=sections-#{actual_date.iso8601}.csv",
+              disposition: "attachment; filename=#{TradeTariffBackend.service}-sections-#{actual_date.iso8601}.csv",
             )
           end
 
@@ -39,7 +39,7 @@ module Api
             send_data(
               Api::V2::Csv::ChapterSerializer.new(chapters).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
-              disposition: "attachment; filename=sections-#{params[:id]}-chapters-#{actual_date.iso8601}.csv",
+              disposition: "attachment; filename=#{TradeTariffBackend.service}-sections-#{params[:id]}-chapters-#{actual_date.iso8601}.csv",
             )
           end
 
