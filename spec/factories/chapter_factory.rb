@@ -4,21 +4,27 @@ FactoryBot.define do
 
     trait :with_section do
       after(:create) do |chapter, _evaluator|
-        section = FactoryBot.create(:section)
+        section = create(:section)
         chapter.add_section section
         chapter.save
       end
     end
 
+    trait :with_headings do
+      after(:create) do |chapter, _evaluator|
+        create(:heading, goods_nomenclature_item_id: "#{chapter.short_code}10000000")
+      end
+    end
+
     trait :with_note do
       after(:create) do |chapter, _evaluator|
-        FactoryBot.create(:chapter_note, chapter_id: chapter.to_param)
+        create(:chapter_note, chapter_id: chapter.to_param)
       end
     end
 
     trait :with_guide do
       after(:create) do |chapter, _evaluator|
-        guide = FactoryBot.create(:chapter_guide)
+        guide = create(:chapter_guide)
         chapter.add_guide guide
         chapter.save
       end
