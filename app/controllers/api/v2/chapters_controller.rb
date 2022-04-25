@@ -12,7 +12,7 @@ module Api
             send_data(
               Api::V2::Csv::ChapterSerializer.new(@chapters).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
-              disposition: "attachment; filename=chapters-#{actual_date.iso8601}.csv",
+              disposition: "attachment; filename=#{TradeTariffBackend.service}-chapters-#{actual_date.iso8601}.csv",
             )
           end
 
