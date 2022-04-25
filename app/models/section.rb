@@ -1,6 +1,8 @@
 class Section < Sequel::Model
   extend ActiveModel::Naming
 
+  set_primary_key [:position]
+
   plugin :timestamps
   plugin :active_model
   plugin :nullable
@@ -33,6 +35,7 @@ class Section < Sequel::Model
   def chapter_ids
     chapters.pluck(:goods_nomenclature_sid)
   end
+
 
   one_to_one :section_note
 
