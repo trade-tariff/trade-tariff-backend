@@ -6,7 +6,10 @@ module Api
 
         columns :goods_nomenclature_sid,
                 :goods_nomenclature_item_id,
-                :formatted_description
+                :headings_from,
+                :headings_to,
+                :formatted_description,
+                :description
       end
     end
   end
