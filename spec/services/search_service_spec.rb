@@ -166,6 +166,28 @@ RSpec.describe SearchService do
           expect(result).to match_json_expression commodity_pattern(commodity)
         end
 
+        it 'returns endpoint and identifier if provided with 6 symbol commoditity code' do
+          commodity = create(:commodity, :declarable, :with_heading, :with_indent,
+                                         goods_nomenclature_item_id: '0101010000')
+
+          result = described_class.new(data_serializer,
+                                       q: '010101',
+                                       as_of: Time.zone.today).to_json
+
+          expect(result).to match_json_expression commodity_pattern(commodity)
+        end
+
+        it 'returns endpoint and identifier if provided with 8 symbol commoditity code' do
+          commodity = create(:commodity, :declarable, :with_heading, :with_indent,
+                                         goods_nomenclature_item_id: '0101010100')
+
+          result = described_class.new(data_serializer,
+                                       q: '01010101',
+                                       as_of: Time.zone.today).to_json
+
+          expect(result).to match_json_expression commodity_pattern(commodity)
+        end
+
         it 'returns endpoint and identifier if provided with 10 symbol commodity code separated by spaces' do
           code = [commodity.goods_nomenclature_item_id[0..1],
                   commodity.goods_nomenclature_item_id[2..3],
@@ -244,12 +266,12 @@ RSpec.describe SearchService do
                  validity_start_date: Date.new(2011, 1, 1)
         end
 
-        let(:heading_pattern) do
+        let(:subheading_pattern) do
           {
             type: 'exact_match',
             entry: {
-              endpoint: 'headings',
-              id: heading.goods_nomenclature_item_id.first(4),
+              endpoint: 'subheadings',
+              id: "8418213100-80",
             },
           }
         end
@@ -259,7 +281,7 @@ RSpec.describe SearchService do
           result = described_class.new(data_serializer, q: commodity1.goods_nomenclature_item_id,
                                                         as_of: Time.zone.today).to_json
 
-          expect(result).to match_json_expression heading_pattern
+          expect(result).to match_json_expression subheading_pattern
         end
       end
 
