@@ -1,0 +1,19 @@
+module Api
+  module V2
+    module Csv
+      class HeadingSerializer
+        include CsvSerializer
+
+        columns :goods_nomenclature_item_id,
+                :goods_nomenclature_sid,
+                :declarable,
+                :description,
+                :description_plain,
+                :formatted_description,
+                :producline_suffix
+
+        column(:leaf) { |heading| heading.commodities_dataset.empty? }
+      end
+    end
+  end
+end

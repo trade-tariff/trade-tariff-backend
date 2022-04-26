@@ -3,7 +3,7 @@ require 'goods_nomenclature_mapper'
 module Api
   module V2
     class ChaptersController < ApiController
-      before_action :find_chapter, only: %i[show changes]
+      before_action :find_chapter, only: %i[show changes headings]
 
       def index
         @chapters = Chapter.eager(:chapter_note, :goods_nomenclature_descriptions).all
@@ -21,14 +21,14 @@ module Api
       end
 
       def show
-        root_headings = GoodsNomenclatureMapper.new(@chapter.headings_dataset
+        root_headings = GoodsNomenclatureMapper.new(chapter.headings_dataset
                                                       .eager(:goods_nomenclature_descriptions,
                                                              :goods_nomenclature_indents)
                                                       .all).root_entries
 
         options = { is_collection: false }
         options[:include] = [:section, :guides, :headings, 'headings.children']
-        presenter = Api::V2::Chapters::ChapterPresenter.new(@chapter, root_headings)
+        presenter = Api::V2::Chapters::ChapterPresenter.new(chapter, root_headings)
         render json: Api::V2::Chapters::ChapterSerializer.new(presenter, options).serializable_hash
       end
 
@@ -45,7 +45,25 @@ module Api
         render json: Api::V2::Changes::ChangeSerializer.new(@changes.changes, options).serializable_hash
       end
 
+      def headings
+        chapter_headings = chapter.headings
+
+        respond_to do |format|
+          filename = "#{TradeTariffBackend.service}-chapter-#{params[:id]}-headings-#{actual_date.iso8601}.csv"
+
+          format.csv do
+            send_data(
+              Api::V2::Csv::HeadingSerializer.new(chapter_headings).serialized_csv,
+              type: 'text/csv; charset=utf-8; header=present',
+              disposition: "attachment; filename=#{filename}",
+            )
+          end
+        end
+      end
+
       private
+
+      attr_reader :chapter
 
       def find_chapter
         @chapter = Chapter.actual
