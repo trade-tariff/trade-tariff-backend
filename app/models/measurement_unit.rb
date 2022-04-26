@@ -1,5 +1,5 @@
 class MeasurementUnit < Sequel::Model
-  MEASUREMENT_UNIT_OVERLAY_FILE = TradeTariffBackend.normalised_measure_units? ? 'db/measurement_units_20220414.json' : 'db/measurement_units.json'
+  MEASUREMENT_UNIT_OVERLAY_FILE = TradeTariffBackend.normalised_measure_units? ? 'db/measurement_units_20220426.json' : 'db/measurement_units.json'
 
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine

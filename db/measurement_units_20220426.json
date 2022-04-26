@@ -6,7 +6,8 @@
     "unit_question": "What is the alcohol percentage (%) of the goods you are importing?",
     "unit_hint": "Enter the alcohol by volume (ABV) percentage",
     "unit": "percent",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "ASVX": {
     "measurement_unit_code": "ASV",
@@ -16,6 +17,7 @@
     "unit_hint": "This can be calculated by multiplying the %age alcohol by volume (ABV) by the volume. Enter the value in hectolitres (100 litres)",
     "unit": "x 100 litres",
     "multiplier": "I don't understand this one - we may need to talk about how the compound bit works",
+    "coerced_measurement_unit_code": null,
     "compound_units": ["ASV", "HLT"]
   },
   "CCT": {
@@ -25,7 +27,8 @@
     "unit_question": "No longer used?",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "CEN": {
     "measurement_unit_code": "CEN",
@@ -34,7 +37,8 @@
     "unit_question": "How many items will you be importing?",
     "unit_hint": "Enter the number of items",
     "unit": "items",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": null
   },
   "CTM": {
     "measurement_unit_code": "CTM",
@@ -43,7 +47,8 @@
     "unit_question": "What is the diamond weight of the goods you are importing?",
     "unit_hint": "Enter the value in metric carats, where 1 metric carat = 200 milligrammes",
     "unit": "carats",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "DAP": {
     "measurement_unit_code": "DAP",
@@ -52,7 +57,8 @@
     "unit_question": "What is the weight of the goods you will be importing?",
     "unit_hint": "Enter the value in decatonnes (10,000 kg), corrected according to polarisation",
     "unit": "x 10,000 kg",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "DHS": {
     "measurement_unit_code": "DHS",
@@ -61,7 +67,8 @@
     "unit_question": "What is the weight of dihydrostreptomycin in the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTN": {
     "measurement_unit_code": "DTN",
@@ -70,7 +77,8 @@
     "unit_question": "What is the weight of the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNE": {
     "measurement_unit_code": "DTN",
@@ -79,7 +87,8 @@
     "unit_question": "What is the net drained weight of the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNF": {
     "measurement_unit_code": "DTN",
@@ -88,7 +97,8 @@
     "unit_question": "What is weight (common wheat) of the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNG": {
     "measurement_unit_code": "DTN",
@@ -97,7 +107,8 @@
     "unit_question": "What is the gross weight of the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNL": {
     "measurement_unit_code": "DTN",
@@ -106,7 +117,8 @@
     "unit_question": "What is the live weight of the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNM": {
     "measurement_unit_code": "DTN",
@@ -115,7 +127,8 @@
     "unit_question": "What is the weight net of dry matter of the goods you will be importing ?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNR": {
     "measurement_unit_code": "DTN",
@@ -124,7 +137,8 @@
     "unit_question": "What is the weight net of the standard quality of the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNS": {
     "measurement_unit_code": "DTN",
@@ -133,7 +147,8 @@
     "unit_question": "What is the weight of raw sugar in the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "DTNZ": {
     "measurement_unit_code": "DTN",
@@ -142,7 +157,8 @@
     "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
     "unit_hint": "Enter the value in kilogrammes",
     "unit": "kilogrammes",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "KGM"
   },
   "EUR": {
     "measurement_unit_code": "EUR",
@@ -151,7 +167,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "GFI": {
     "measurement_unit_code": "GFI",
@@ -160,7 +177,8 @@
     "unit_question": "What is the weight of fissile isotopes that you will be importing?",
     "unit_hint": "Enter the value in grams",
     "unit": "grams",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "GRM": {
     "measurement_unit_code": "GRM",
@@ -169,7 +187,8 @@
     "unit_question": "What is the weight of the goods that you will be importing ?",
     "unit_hint": "Enter the value in grams",
     "unit": "grams",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "GRT": {
     "measurement_unit_code": "GRT",
@@ -178,7 +197,8 @@
     "unit_question": "What is the gross tonnage of the goods that you will be importing?",
     "unit_hint": "Enter the value in grams",
     "unit": "grams",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "HLT": {
     "measurement_unit_code": "HLT",
@@ -187,7 +207,8 @@
     "unit_question": "What is the volume of the goods that you will be importing?",
     "unit_hint": "Enter the value in litres",
     "unit": "litres",
-    "multiplier": "0.01"
+    "multiplier": "0.01",
+    "coerced_measurement_unit_code": "LTR"
   },
   "HMT": {
     "measurement_unit_code": "HMT",
@@ -196,7 +217,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KCC": {
     "measurement_unit_code": "KCC",
@@ -205,7 +227,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KCL": {
     "measurement_unit_code": "KCL",
@@ -214,7 +237,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGM": {
     "measurement_unit_code": "KGM",
@@ -223,7 +247,8 @@
     "unit_question": "What is the weight of the goods that you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGMA": {
     "measurement_unit_code": "KGM",
@@ -232,7 +257,8 @@
     "unit_question": "What is the weight of total alcohol in the goods that you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGME": {
     "measurement_unit_code": "KGM",
@@ -241,7 +267,8 @@
     "unit_question": "What is the net drained weight of the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGMG": {
     "measurement_unit_code": "KGM",
@@ -250,7 +277,8 @@
     "unit_question": "What is the gross weight of the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGMP": {
     "measurement_unit_code": "KGM",
@@ -259,7 +287,8 @@
     "unit_question": "What is the weight of lactic matter in the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGMS": {
     "measurement_unit_code": "KGM",
@@ -268,7 +297,8 @@
     "unit_question": "What is the weight of raw sugar in the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KGMT": {
     "measurement_unit_code": "KGM",
@@ -277,7 +307,8 @@
     "unit_question": "What is the weight of dry lactic matter in the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KLT": {
     "measurement_unit_code": "KLT",
@@ -286,7 +317,8 @@
     "unit_question": "What is the volume of the goods that you will be importing?",
     "unit_hint": "Enter the value in litres",
     "unit": "litres",
-    "multiplier": "0.001"
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "LTR"
   },
   "KMA": {
     "measurement_unit_code": "KMA",
@@ -295,7 +327,8 @@
     "unit_question": "What is the weight of methylamines in the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KMT": {
     "measurement_unit_code": "KMT",
@@ -304,7 +337,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KNI": {
     "measurement_unit_code": "KNI",
@@ -313,7 +347,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KNS": {
     "measurement_unit_code": "KNS",
@@ -322,7 +357,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KPH": {
     "measurement_unit_code": "KPH",
@@ -331,7 +367,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KPO": {
     "measurement_unit_code": "KPO",
@@ -340,7 +377,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KPP": {
     "measurement_unit_code": "KPP",
@@ -349,7 +387,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KSD": {
     "measurement_unit_code": "KSD",
@@ -358,7 +397,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KSH": {
     "measurement_unit_code": "KSH",
@@ -367,7 +407,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "KUR": {
     "measurement_unit_code": "KUR",
@@ -376,7 +417,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "LPA": {
     "measurement_unit_code": "LPA",
@@ -385,7 +427,8 @@
     "unit_question": "What is the volume of pure alcohol in the goods you will be importing?",
     "unit_hint": "Enter the value in litres",
     "unit": "litres",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "LTR": {
     "measurement_unit_code": "LTR",
@@ -394,7 +437,8 @@
     "unit_question": "What is the volume of the goods you will be importing?",
     "unit_hint": "Enter the value in litres",
     "unit": "litres",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "LTRA": {
     "measurement_unit_code": "LTR",
@@ -403,7 +447,8 @@
     "unit_question": "What is the volume of the goods you will be importing?",
     "unit_hint": "Enter the value in litres of total alcohol",
     "unit": "litres",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "MIL": {
     "measurement_unit_code": "MIL",
@@ -412,7 +457,8 @@
     "unit_question": "How many items will you be importing?",
     "unit_hint": "Enter the number of items",
     "unit": "items",
-    "multiplier": "0.001"
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": null
   },
   "MPR": {
     "measurement_unit_code": "MPR",
@@ -421,7 +467,8 @@
     "unit_question": "How many pairs will you be importing?",
     "unit_hint": "Enter the number of pairs",
     "unit": "pairs",
-    "multiplier": "0.001"
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": null
   },
   "MTK": {
     "measurement_unit_code": "MTK",
@@ -430,7 +477,8 @@
     "unit_question": "What is the size of the goods you will be importing?",
     "unit_hint": "Enter the value in metres<sup>2</sup>",
     "unit": "metres<sup>2</sup>",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "MTQ": {
     "measurement_unit_code": "MTQ",
@@ -439,7 +487,8 @@
     "unit_question": "What is the volume of the goods you will be importing?",
     "unit_hint": "Enter the value in metres<sup>3</sup>",
     "unit": "metres<sup>3</sup>",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "MTQC": {
     "measurement_unit_code": "MTQ",
@@ -448,7 +497,8 @@
     "unit_question": "What is the volume of the goods you will be importing?",
     "unit_hint": "Enter the value in 1,000 metres<sup>3</sup>",
     "unit": "1,000 metres<sup>3</sup>",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "MTR": {
     "measurement_unit_code": "MTR",
@@ -457,7 +507,8 @@
     "unit_question": "What is the length of the goods you will be importing?",
     "unit_hint": "Enter the value in metres",
     "unit": "metres",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "MWH": {
     "measurement_unit_code": "MWH",
@@ -466,7 +517,8 @@
     "unit_question": "What is the unit of energy of the items you will be importing?",
     "unit_hint": "Enter the value in 1,000 kilowatt hours (kWh)",
     "unit": "x 1,000 kilowatt hours (kWh)",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "NAR": {
     "measurement_unit_code": "NAR",
@@ -475,7 +527,8 @@
     "unit_question": "How many items will you be importing?",
     "unit_hint": "Enter the number of items",
     "unit": "items",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "NARB": {
     "measurement_unit_code": "NAR",
@@ -484,7 +537,8 @@
     "unit_question": "No longer used",
     "unit_hint": null,
     "unit": null,
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "NCL": {
     "measurement_unit_code": "NCL",
@@ -493,7 +547,8 @@
     "unit_question": "How many cells will you be importing?",
     "unit_hint": "Enter the number of cells",
     "unit": "cells",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "NPR": {
     "measurement_unit_code": "NPR",
@@ -502,7 +557,8 @@
     "unit_question": "How many pairs will you be importing?",
     "unit_hint": "Enter the number of pairs",
     "unit": "pairs",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "RET": {
     "measurement_unit_code": "RET",
@@ -511,7 +567,8 @@
     "unit_question": "What is the retail price of the goods you will be importing?",
     "unit_hint": "Enter the value in pounds",
     "unit": "£",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TJO": {
     "measurement_unit_code": "TJO",
@@ -520,7 +577,8 @@
     "unit_question": "What is the gross calorific value of the goods you will be importing?",
     "unit_hint": "Enter the value in terajoules",
     "unit": "terajoules",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNE": {
     "measurement_unit_code": "TNE",
@@ -529,7 +587,8 @@
     "unit_question": "What is the weight of the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNEE": {
     "measurement_unit_code": "TNE",
@@ -538,7 +597,8 @@
     "unit_question": "What is the net drained weight of the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNEI": {
     "measurement_unit_code": "TNE",
@@ -547,7 +607,8 @@
     "unit_question": "What is the weight of biodiesel in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNEJ": {
     "measurement_unit_code": "TNE",
@@ -556,7 +617,8 @@
     "unit_question": "What is the weight of the fuel content in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNEK": {
     "measurement_unit_code": "TNE",
@@ -565,7 +627,8 @@
     "unit_question": "What is the weight of bioethanol in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNEM": {
     "measurement_unit_code": "TNE",
@@ -574,7 +637,8 @@
     "unit_question": "What is the weight net of dry matter of the goods you will be importing ?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNER": {
     "measurement_unit_code": "TNE",
@@ -583,7 +647,8 @@
     "unit_question": "What is the weight net of the standard quality of the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "TNEZ": {
     "measurement_unit_code": "TNE",
@@ -592,7 +657,8 @@
     "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   },
   "WAT": {
     "measurement_unit_code": "WAT",
@@ -601,6 +667,7 @@
     "unit_question": "What is the power of the items you will be importing?",
     "unit_hint": "Enter the value in watts",
     "unit": "watts",
-    "multiplier": null
+    "multiplier": null,
+    "coerced_measurement_unit_code": null
   }
 }
