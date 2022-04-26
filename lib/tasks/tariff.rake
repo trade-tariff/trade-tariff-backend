@@ -75,7 +75,7 @@ namespace :tariff do
   namespace :sync do
     desc 'Update database by downloading and then applying TARIC updates via worker'
     task update: %i[environment class_eager_load] do
-      UpdatesSynchronizerWorker.perform_async
+      UpdatesSynchronizerWorker.perform_async(true, true)
     end
 
     desc 'Download pending Taric or CDS update files, Update tariff_updates table'
