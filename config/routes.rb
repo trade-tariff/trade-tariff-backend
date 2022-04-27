@@ -58,7 +58,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :chapters, only: %i[index show] do
+      resources :chapters, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         member do
           get :changes
         end
