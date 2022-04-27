@@ -28,9 +28,10 @@ RSpec.describe MeasureUnitService do
             'measurement_unit_qualifier_code' => 'R',
             'abbreviation' => '100 kg std qual',
             'unit_question' => 'What is the weight net of the standard quality of the goods you will be importing?',
-            'unit_hint' => 'Enter the value in kilogrammes',
-            'unit' => 'kilogrammes',
+            'unit_hint' => 'Enter the value in kilograms',
+            'unit' => 'kilograms',
             'multiplier' => '0.01',
+            'coerced_measurement_unit_code' => 'KGM',
           },
         }
       end
@@ -60,6 +61,7 @@ RSpec.describe MeasureUnitService do
             'unit_hint' => 'Enter the alcohol by volume (ABV) percentage',
             'unit_question' => 'What is the alcohol percentage (%) of the goods you are importing?',
             'multiplier' => nil,
+            'coerced_measurement_unit_code' => nil,
           },
           'HLT' => {
             'abbreviation' => 'hl',
@@ -69,6 +71,7 @@ RSpec.describe MeasureUnitService do
             'unit_hint' => 'Enter the value in litres',
             'unit_question' => 'What is the volume of the goods that you will be importing?',
             'multiplier' => '0.01',
+            'coerced_measurement_unit_code' => 'LTR',
           },
         }
       end
