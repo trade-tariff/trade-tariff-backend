@@ -39,16 +39,17 @@ class SearchService
     private
 
     def find_heading(query)
+      query = normalise_shortened_code(query)
       query = SearchService::CodesMapping.check(query) || query
 
       Heading.actual
-             .by_code(query)
+             .by_declarable_code(query)
              .non_hidden
              .first
     end
 
     def find_commodity(query)
-      query = query + ('0' * (10 - query.length)) if query.length < 10 # normalise shortened codes
+      query = normalise_shortened_code(query)
       query = SearchService::CodesMapping.check(query) || query
 
       commodity = Commodity.actual
@@ -108,6 +109,12 @@ class SearchService
         query.singularize,
         query.pluralize,
       ].uniq
+    end
+
+    def normalise_shortened_code(code)
+      return code if code.length >= 10
+
+      code + ('0' * (10 - code.length))
     end
   end
 end
