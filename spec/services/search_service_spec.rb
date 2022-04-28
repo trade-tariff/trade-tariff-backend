@@ -296,6 +296,51 @@ RSpec.describe SearchService do
           expect(result).to match_json_expression commodity_pattern(commodity2)
         end
       end
+
+      context 'unknown commodity' do
+        let(:pattern) do
+          {
+            type: 'fuzzy_match',
+            goods_nomenclature_match: {
+              chapters: [],
+              commodities: [],
+              headings: [],
+              sections: [],
+            },
+            reference_match: {
+              chapters: [],
+              commodities: [],
+              headings: [],
+              sections: [],
+            },
+          }
+        end
+
+        context 'under unknown heading' do
+          it 'returns empty result' do
+            result = described_class.new(data_serializer,
+                                         q: '8418999999',
+                                         as_of: Time.zone.today).to_json
+
+            expect(result).to match_json_expression pattern
+          end
+        end
+
+        context 'under known heading' do
+          let!(:heading) do
+            create :heading, goods_nomenclature_item_id: '8418000000',
+                             validity_start_date: Date.new(2011, 1, 1)
+          end
+
+          it 'returns empty result' do
+            result = described_class.new(data_serializer,
+                                         q: '8418999999',
+                                         as_of: Time.zone.today).to_json
+
+            expect(result).to match_json_expression pattern
+          end
+        end
+      end
     end
 
     context 'chemicals' do
