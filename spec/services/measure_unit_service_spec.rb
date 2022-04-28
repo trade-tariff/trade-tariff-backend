@@ -32,6 +32,7 @@ RSpec.describe MeasureUnitService do
             'unit' => 'kilograms',
             'multiplier' => '0.01',
             'coerced_measurement_unit_code' => 'KGM',
+            'original_unit' => 'x 100 kg',
           },
         }
       end
@@ -62,6 +63,7 @@ RSpec.describe MeasureUnitService do
             'unit_question' => 'What is the alcohol percentage (%) of the goods you are importing?',
             'multiplier' => nil,
             'coerced_measurement_unit_code' => nil,
+            'original_unit' => nil,
           },
           'HLT' => {
             'abbreviation' => 'hl',
@@ -72,6 +74,7 @@ RSpec.describe MeasureUnitService do
             'unit_question' => 'What is the volume of the goods that you will be importing?',
             'multiplier' => '0.01',
             'coerced_measurement_unit_code' => 'LTR',
+            'original_unit' => 'x 100 litres',
           },
         }
       end
