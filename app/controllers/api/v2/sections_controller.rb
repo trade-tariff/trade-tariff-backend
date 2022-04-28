@@ -20,9 +20,7 @@ module Api
       end
 
       def show
-        # id is a position
-        @section = Section.where(position: params[:id])
-                          .take
+        @section = Section.where(position: params[:id]).take
 
         options = { is_collection: false }
         options[:include] = [:chapters, 'chapters.guides']

@@ -3,8 +3,8 @@ Rails.application.routes.draw do
 
   namespace :api, defaults: { format: 'json' }, path: '/admin' do
     scope module: :admin do
-      resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do
-        scope module: 'sections', constraints: { section_id: /\d{1,2}/, id: /\d+/ } do
+      resources :sections, only: %i[index show] do
+        scope module: 'sections', constraints: { id: /\d+/ } do
           resource :section_note, only: %i[show create update destroy]
           resources :search_references, only: %i[show index destroy create update]
         end
@@ -48,7 +48,7 @@ Rails.application.routes.draw do
     # the choice until we need to expose the API to clients which we don't control.
 
     scope module: :v2, constraints: ApiConstraints.new(version: 2) do
-      resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do
+      resources :sections, only: %i[index show] do
         collection do
           get :tree
         end
@@ -58,7 +58,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
+      resources :chapters, only: %i[index show], constraints: { id: /\d{1,2}/ } do
         member do
           get :changes
           get :headings
@@ -152,11 +152,11 @@ Rails.application.routes.draw do
     end
 
     scope module: :v1, constraints: ApiConstraints.new(version: 1) do
-      resources :sections, only: %i[index show], constraints: { id: /\d{1,2}/ } do
+      resources :sections, only: %i[index show] do
         collection do
           get :tree
         end
-        scope module: 'sections', constraints: { section_id: /\d{1,2}/, id: /\d+/ } do
+        scope module: 'sections', constraints: { id: /\d+/ } do
           resource :section_note, only: %i[show]
         end
       end
