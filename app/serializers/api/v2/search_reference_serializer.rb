@@ -7,7 +7,7 @@ module Api
 
       set_id :id
 
-      attributes :title, :referenced_id, :referenced_class
+      attributes :title, :referenced_id, :referenced_class, :productline_suffix
     end
   end
 end
