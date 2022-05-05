@@ -25,6 +25,6 @@
   PopulateChangesTableWorker:
     cron: "30 4 * * *" 
     description: "Populates the changes table"
-  ScheduledHealthcheckWorker:
+  HealthcheckWorker:
     cron: "0 * * * *"
     description: Trigger the healthcheck check

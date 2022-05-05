@@ -1,4 +1,4 @@
-RSpec.describe AsyncHealthcheckWorker, type: :worker do
+RSpec.describe HealthcheckWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   describe '#perform' do
