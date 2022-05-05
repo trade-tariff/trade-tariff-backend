@@ -11,11 +11,9 @@ RSpec.describe AsyncHealthcheckWorker, type: :worker do
     end
 
     it 'updates the healthcheck key' do
-      expect(Rails.cache).to have_received(:write).with(
-        'sidekiq-healthcheck',
-        Time.zone.now.utc.to_formatted_s(:db),
-        expires_in: 1.month.from_now,
-      )
+      expect(Rails.cache).to have_received(:write).with('sidekiq-healthcheck',
+                                                        Time.zone.now.utc.iso8601,
+                                                        expires_in: 1.month.from_now)
     end
   end
 end

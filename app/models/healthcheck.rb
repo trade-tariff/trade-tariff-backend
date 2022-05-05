@@ -1,5 +1,7 @@
 class Healthcheck
   REVISION_FILE = Rails.root.join('REVISION').to_s.freeze
+  SIDEKIQ_KEY = 'sidekiq-healthcheck'.freeze
+  SIDEKIQ_THRESHOLD = 90.minutes
 
   delegate :current_revision, to: self
 
@@ -18,10 +20,25 @@ class Healthcheck
   end
 
   def check
-    Section.all
+    check_postgres!
 
     {
       git_sha1: current_revision,
+      sidekiq: sidekiq_healthy?,
     }
+  end
+
+private
+
+  def check_postgres!
+    Section.all
+  end
+
+  def sidekiq_healthy?
+    if (healthcheck_time = Rails.cache.read(SIDEKIQ_KEY))
+      Time.zone.parse(healthcheck_time) >= SIDEKIQ_THRESHOLD.ago
+    else
+      false
+    end
   end
 end
