@@ -1,5 +1,5 @@
 class HealthcheckController < ApplicationController
   def index
-    render json: Healthcheck.new.check
+    render json: Healthcheck.check
   end
 end

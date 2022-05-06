@@ -1,14 +1,16 @@
 RSpec.describe Healthcheck do
-  describe '.current_revision' do
-    subject { described_class.current_revision }
+  subject(:instance) { described_class.instance }
+
+  describe '#current_revision' do
+    subject { instance.current_revision }
 
     before do
-      described_class.instance_variable_set(:@current_revision, nil)
+      instance.instance_variable_set(:@current_revision, nil)
       allow(File).to receive(:read).and_call_original
       allow(File).to receive(:file?).and_call_original
     end
 
-    after { described_class.instance_variable_set(:@current_revision, nil) }
+    after { instance.instance_variable_set(:@current_revision, nil) }
 
     context 'with revision file' do
       before do
@@ -40,7 +42,7 @@ RSpec.describe Healthcheck do
   end
 
   describe '#check' do
-    subject(:check) { described_class.new.check }
+    subject(:check) { instance.check }
 
     before { allow(Section).to receive(:all).and_return [] }
 
@@ -87,5 +89,11 @@ RSpec.describe Healthcheck do
         it { is_expected.to include sidekiq: false }
       end
     end
+  end
+
+  describe '.check' do
+    subject { described_class.check }
+
+    it { is_expected.to include sidekiq: false }
   end
 end

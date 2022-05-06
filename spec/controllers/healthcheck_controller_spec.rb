@@ -7,7 +7,7 @@ RSpec.describe HealthcheckController do
       allow(healthcheck).to receive(:check).and_call_original
     end
 
-    let(:healthcheck) { Healthcheck.new }
+    let(:healthcheck) { Healthcheck.instance }
 
     it { is_expected.to have_http_status :success }
     it { is_expected.to have_attributes media_type: /json/ }
