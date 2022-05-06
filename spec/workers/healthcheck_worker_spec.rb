@@ -13,7 +13,7 @@ RSpec.describe HealthcheckWorker, type: :worker do
     it 'updates the healthcheck key' do
       expect(Rails.cache).to have_received(:write).with('sidekiq-healthcheck',
                                                         Time.zone.now.utc.iso8601,
-                                                        expires_in: 1.month.from_now)
+                                                        expires_in: 1.month)
     end
   end
 end

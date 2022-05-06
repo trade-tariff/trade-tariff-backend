@@ -7,7 +7,7 @@ class HealthcheckWorker
   def perform
     Rails.cache.write(Healthcheck::SIDEKIQ_KEY,
                       healthcheck_time,
-                      expires_in: TTL.from_now)
+                      expires_in: TTL)
   end
 
   private
