@@ -9,8 +9,26 @@ RSpec.describe Api::V2::SearchReferencesController do
     let(:pattern) do
       {
         data: [
-          { id: String, type: String, attributes: { title: String, referenced_class: 'Section', referenced_id: String } },
-          { id: String, type: String, attributes: { title: String, referenced_class: 'Chapter', referenced_id: String } },
+          {
+            id: String,
+            type: String,
+            attributes: {
+              title: String,
+              referenced_class: 'Section',
+              referenced_id: String,
+              productline_suffix: String,
+            },
+          },
+          {
+            id: String,
+            type: String,
+            attributes: {
+              title: String,
+              referenced_class: 'Chapter',
+              referenced_id: String,
+              productline_suffix: String,
+            },
+          },
         ],
       }
     end
@@ -26,13 +44,23 @@ RSpec.describe Api::V2::SearchReferencesController do
     let(:pattern) do
       {
         data: [
-          { id: String, type: String, attributes: { title: String, referenced_class: 'Heading', referenced_id: String } },
+          {
+            id: String,
+            type: String,
+            attributes: {
+              title: String,
+              referenced_class: 'Heading',
+              referenced_id: String,
+              productline_suffix: String,
+            },
+          },
         ],
       }
     end
 
     it 'peforms lookup with letter A by default' do
-      get :index, format: :json
+      get :index,
+          format: :json
 
       expect(response.body).to match_json_expression pattern
     end
