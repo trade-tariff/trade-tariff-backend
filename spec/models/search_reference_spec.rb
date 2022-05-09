@@ -42,12 +42,6 @@ RSpec.describe SearchReference do
       create(:search_reference, title: 'foo', referenced:)
     end
 
-    context 'when getting a Section reference' do
-      let(:referenced) { create(:section, id: 1) }
-
-      it { expect(search_reference.referenced).to be_a(Section) }
-    end
-
     context 'when getting a Chapter reference' do
       let(:referenced) { create(:chapter, goods_nomenclature_item_id: '0100000000', producline_suffix: '10') }
 
@@ -92,8 +86,8 @@ RSpec.describe SearchReference do
       it 'attaches the correct missing reference errors' do
         expect(search_reference.errors).to eq(
           productline_suffix: ['missing productline suffix'],
-          reference_id: ['has to be associated to Section/Chapter/Heading'],
-          reference_class: ['has to be associated to Section/Chapter/Heading'],
+          referenced_id: ['has to be associated to Chapter/Heading/Subheading/Commodity'],
+          referenced_class: ['has to be associated to Chapter/Heading/Subheading/Commodity'],
         )
       end
     end

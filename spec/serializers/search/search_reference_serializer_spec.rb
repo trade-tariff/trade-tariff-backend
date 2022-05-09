@@ -24,7 +24,6 @@ RSpec.describe Search::SearchReferenceSerializer do
       let(:search_reference) do
         described_class.new(
           create(:search_reference,
-                 section_id: nil,
                  chapter_id: nil,
                  heading_id: nil,
                  referenced: nil),

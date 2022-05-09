@@ -530,32 +530,6 @@ RSpec.describe SearchService do
         expect(result.to_json).to match_json_expression response_pattern
       end
     end
-
-    context 'searching with synonyms' do
-      include SynonymsHelper
-
-      let(:synonym) { 'synonym 1' }
-      let(:resources) { %w[section chapter heading commodity] }
-      let(:exact_match) do
-        described_class.new(data_serializer, q: synonym, as_of: Time.zone.today).send(:perform).results
-      end
-
-      before do
-        # create resources with synonyms
-        resources.each do |resource|
-          create(resource).tap do |r|
-            2.times do
-              create_synonym_for(r, synonym)
-            end
-          end
-        end
-      end
-
-      # there shouldn't be duplicates
-      it 'returns first created search reference' do
-        expect(exact_match).to be_a(Section)
-      end
-    end
   end
 
   context 'reference search' do
