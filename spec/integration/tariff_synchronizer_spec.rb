@@ -66,8 +66,16 @@ RSpec.describe TariffSynchronizer do
     let!(:measure) { create :measure, operation_date: Time.zone.today }
     let!(:update)  { create :taric_update, :applied, issue_date: Time.zone.today }
 
+    let :data_migrations do
+      DataMigration.unrestrict_primary_key
+      DataMigration.create filename: "#{Time.zone.now.strftime('%Y%m%d%H%M%S')}_today.rb"
+      DataMigration.create filename: "#{2.days.ago.strftime('%Y%m%d%H%M%S')}_older.rb"
+    end
+
     context 'successful run' do
       before do
+        data_migrations
+
         described_class.rollback(Time.zone.yesterday, keep: true)
       end
 
@@ -78,10 +86,16 @@ RSpec.describe TariffSynchronizer do
       it 'marks Taric updates as pending' do
         expect(update.reload).to be_pending
       end
+
+      it 'removes only todays data migration record' do
+        expect(DataMigration.count).to be 1
+      end
     end
 
     context 'encounters an exception' do
       before do
+        data_migrations
+
         expect(Measure).to receive(:operation_klass).and_raise(StandardError)
 
         rescuing { described_class.rollback(Time.zone.yesterday, keep: true) }
@@ -93,6 +107,10 @@ RSpec.describe TariffSynchronizer do
 
       it 'leaves Taric updates in applid state' do
         expect(update.reload).to be_applied
+      end
+
+      it 'leaves both todays and the earlier data migration record' do
+        expect(DataMigration.count).to be 2
       end
     end
 
