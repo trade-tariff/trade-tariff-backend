@@ -97,7 +97,7 @@ module TariffSynchronizer
   end
 
   # Taric
-  def apply(reindex_all_indexes: false)
+  def apply
     check_tariff_updates_failures
     check_sequence
 
@@ -124,14 +124,14 @@ module TariffSynchronizer
           import_warnings:,
         )
 
-        Sidekiq::Client.enqueue(ClearCacheWorker) if reindex_all_indexes
+        true
       end
     end
   rescue Redlock::LockError
     instrument('apply_lock_error.tariff_synchronizer')
   end
 
-  def apply_cds(reindex_all_indexes: false)
+  def apply_cds
     check_tariff_updates_failures
     check_sequence
 
@@ -160,7 +160,7 @@ module TariffSynchronizer
         instrument('apply.tariff_synchronizer',
                    update_names: applied_updates.map(&:filename))
 
-        Sidekiq::Client.enqueue(ClearCacheWorker) if reindex_all_indexes
+        true
       end
     end
   rescue Redlock::LockError

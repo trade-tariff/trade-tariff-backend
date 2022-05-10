@@ -78,14 +78,22 @@ namespace :tariff do
       UpdatesSynchronizerWorker.perform_async
     end
 
-    desc 'Download pending Taric update files, Update tariff_updates table'
+    desc 'Download pending Taric or CDS update files, Update tariff_updates table'
     task download: %i[environment class_eager_load] do
-      TariffSynchronizer.download
+      if TradeTariffBackend.use_cds?
+        TariffSynchronizer.download_cds
+      else
+        TariffSynchronizer.download
+      end
     end
 
-    desc 'Apply pending updates Taric'
+    desc 'Apply pending updates for Taric or CDS'
     task apply: %i[environment class_eager_load] do
-      TariffSynchronizer.apply
+      if TradeTariffBackend.use_cds?
+        TariffSynchronizer.apply_cds
+      else
+        TariffSynchronizer.apply
+      end
     end
 
     desc 'Rollback to specific date in the past'

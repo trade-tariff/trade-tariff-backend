@@ -1,8 +1,4 @@
 RSpec.describe RollbackWorker, type: :worker do
-  before do
-    allow($stdout).to receive(:write)
-  end
-
   let(:date) { '01-01-2020' }
 
   describe '#perform' do
