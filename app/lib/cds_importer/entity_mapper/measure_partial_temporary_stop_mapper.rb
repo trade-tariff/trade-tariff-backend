@@ -7,6 +7,8 @@ class CdsImporter
     class MeasurePartialTemporaryStopMapper < BaseMapper
       self.entity_class = 'MeasurePartialTemporaryStop'.freeze
 
+      self.mapping_root = 'Measure'.freeze
+
       self.mapping_path = 'measurePartialTemporaryStop'.freeze
 
       self.exclude_mapping = ['metainfo.origin'].freeze
