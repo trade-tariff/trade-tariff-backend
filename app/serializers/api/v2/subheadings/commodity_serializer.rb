@@ -15,7 +15,8 @@ module Api
                    :producline_suffix,
                    :goods_nomenclature_sid,
                    :parent_sid,
-                   :leaf
+                   :leaf,
+                   :declarable
 
         attribute :productline_suffix, &:producline_suffix
 
