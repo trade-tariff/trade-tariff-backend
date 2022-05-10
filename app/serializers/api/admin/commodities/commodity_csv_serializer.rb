@@ -44,11 +44,11 @@ module Api
           "#{row[:goods_nomenclature_item_id]}_#{row[:producline_suffix]}"
         end
 
-        column :hierarchy, column_name: 'Hierarchy' do |row|
-          'hierarchy' # TODO: calculate the hierarchy
-        end
+        # TODO: calculate the hierarchy
+        # column :hierarchy, column_name: 'Hierarchy' do |row|
+        #   'hierarchy'
+        # end
       end
-
     end
   end
 end

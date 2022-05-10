@@ -1,11 +1,11 @@
 Sequel.migration do
   up do
-    Sequel::Model.db.run('CREATE SCHEMA IF NOT EXISTS "utils"')
+    Sequel::Model.db.run('CREATE SCHEMA IF NOT EXISTS "public"')
     Sequel::Model.db.run(function_body)
   end
 
   down do
-    Sequel::Model.db.run('DROP FUNCTION IF EXISTS "utils.goods_nomenclature_export_new"')
+    Sequel::Model.db.run('DROP FUNCTION IF EXISTS "public.goods_nomenclature_export_new"')
   end
 end
 
@@ -13,7 +13,7 @@ private
 
 def function_body
   <<~SQL.freeze
-    CREATE OR REPLACE FUNCTION utils.goods_nomenclature_export_new(pchapter text, key_date character varying)
+    CREATE OR REPLACE FUNCTION public.goods_nomenclature_export_new(pchapter text, key_date character varying)
      RETURNS TABLE(goods_nomenclature_sid integer, goods_nomenclature_item_id character varying, producline_suffix character varying, validity_start_date timestamp without time zone, validity_end_date timestamp without time zone, description text, number_indents integer, chapter text, node text, leaf text, significant_digits integer)
      LANGUAGE plpgsql
     AS $function$
