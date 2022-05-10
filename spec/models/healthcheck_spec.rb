@@ -92,6 +92,12 @@ RSpec.describe Healthcheck do
   describe '.check' do
     subject { described_class.check }
 
-    it { is_expected.to include sidekiq: false }
+    before do
+      TradeTariffBackend.redis.set \
+        described_class::SIDEKIQ_KEY,
+        (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
+    end
+
+    it { is_expected.to include sidekiq: true }
   end
 end
