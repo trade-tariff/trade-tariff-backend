@@ -6,7 +6,6 @@ Rails.application.routes.draw do
       resources :sections, only: %i[index show] do
         scope module: 'sections', constraints: { id: /\d+/ } do
           resource :section_note, only: %i[show create update destroy]
-          resources :search_references, only: %i[show index destroy create update]
         end
       end
 

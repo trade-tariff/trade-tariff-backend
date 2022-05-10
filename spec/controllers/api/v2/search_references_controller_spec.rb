@@ -2,7 +2,7 @@ RSpec.describe Api::V2::SearchReferencesController do
   before do
     create :search_reference, referenced: create(:heading), title: 'aa'
     create :search_reference, referenced: create(:chapter), title: 'bb'
-    create :search_reference, referenced: create(:section), title: 'bb'
+    create :search_reference, referenced: create(:commodity), title: 'bb'
   end
 
   context 'with letter param provided' do
@@ -14,7 +14,7 @@ RSpec.describe Api::V2::SearchReferencesController do
             type: String,
             attributes: {
               title: String,
-              referenced_class: 'Section',
+              referenced_class: 'Commodity',
               referenced_id: String,
               productline_suffix: String,
             },
