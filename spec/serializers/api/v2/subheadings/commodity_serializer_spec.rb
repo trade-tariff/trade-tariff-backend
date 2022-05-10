@@ -47,6 +47,7 @@ RSpec.describe Api::V2::Subheadings::CommoditySerializer do
       ],
       'parent_sid' => 1,
       'leaf' => true,
+      'declarable' => true,
       'number_indents' => 2,
       'producline_suffix' => '80',
       'description' => 'voMrkLOGSd0R1',
@@ -71,6 +72,7 @@ RSpec.describe Api::V2::Subheadings::CommoditySerializer do
           'parent_sid' => 1,
           'leaf' => true,
           'productline_suffix' => '80',
+          'declarable' => true,
         },
         'relationships' => {
           'overview_measures' => {
