@@ -1,13 +1,11 @@
 class HealthcheckWorker
   include Sidekiq::Worker
-  sidekiq_options queue: :healthcheck, retry: 2
-
-  TTL = 1.month
+  sidekiq_options queue: :healthcheck, retry: 1
 
   def perform
-    Rails.cache.write(Healthcheck::SIDEKIQ_KEY,
-                      healthcheck_time,
-                      expires_in: TTL)
+    Sidekiq.redis do |redis|
+      redis.set(Healthcheck::SIDEKIQ_KEY, healthcheck_time)
+    end
   end
 
   private

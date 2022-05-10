@@ -35,10 +35,16 @@ private
   end
 
   def sidekiq_healthy?
-    if (healthcheck_time = Rails.cache.read(SIDEKIQ_KEY))
+    if (healthcheck_time = read_last_sidekiq_healthcheck)
       Time.zone.parse(healthcheck_time) >= SIDEKIQ_THRESHOLD.ago
     else
       false
+    end
+  end
+
+  def read_last_sidekiq_healthcheck
+    Sidekiq.redis do |redis|
+      redis.get(SIDEKIQ_KEY)
     end
   end
 end

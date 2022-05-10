@@ -61,29 +61,27 @@ RSpec.describe Healthcheck do
     end
 
     describe 'sidekiq health' do
-      before do
-        allow(Rails.cache).to receive(:read).and_call_original
-        allow(Rails.cache).to receive(:read).with(described_class::SIDEKIQ_KEY)
-                                            .and_return(health_key)
-      end
-
       context 'with no cache key' do
-        let(:health_key) { nil }
+        before { TradeTariffBackend.redis.del described_class::SIDEKIQ_KEY }
 
         it { is_expected.to include sidekiq: false }
       end
 
       context 'with recent cache key' do
-        let :health_key do
-          (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
+        before do
+          TradeTariffBackend.redis.set \
+            described_class::SIDEKIQ_KEY,
+            (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
         end
 
         it { is_expected.to include sidekiq: true }
       end
 
       context 'with outdated cache key' do
-        let :health_key do
-          (described_class::SIDEKIQ_THRESHOLD + 1.minute).ago.utc.iso8601
+        before do
+          TradeTariffBackend.redis.set \
+            described_class::SIDEKIQ_KEY,
+            (described_class::SIDEKIQ_THRESHOLD + 1.minute).ago.utc.iso8601
         end
 
         it { is_expected.to include sidekiq: false }
