@@ -1,10 +1,10 @@
 :verbose: false
 :concurrency: 10
 :queues:
-  - [healthcheck, 20]
-  - [rollbacks, 2]
-  - [sync, 2]
-  - [default, 5]
+  - healthcheck
+  - rollbacks
+  - sync
+  - default
 :schedule:
   #
   # Syntax:
