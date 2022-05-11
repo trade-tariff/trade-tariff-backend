@@ -52,6 +52,106 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: fetch_chapter_commodities_for_date(character varying, character varying); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.fetch_chapter_commodities_for_date(chapter_short_code character varying, actual_date character varying) RETURNS TABLE(goods_nomenclature_sid integer, goods_nomenclature_item_id character varying, producline_suffix character varying, validity_start_date timestamp without time zone, validity_end_date timestamp without time zone, description text, number_indents integer, chapter text, node text, leaf text, significant_digits integer)
+    LANGUAGE plpgsql
+    AS $_$
+    # variable_conflict use_column
+DECLARE
+    coerced_actual_date date := actual_date::date;
+BEGIN
+    IF chapter_short_code = '' THEN
+        chapter_short_code = '%';
+    END IF;
+
+    /* temporary table contains results of query plus a placeholder column for leaf - defaulted to 0
+node column has the significant digits used to find child nodes having the same significant digits.
+The basic query retrieves all current (and future) nomenclature with indents and descriptions */
+    DROP TABLE IF EXISTS tmp_nomenclature;
+    CREATE TEMP TABLE tmp_nomenclature ON COMMIT DROP AS
+SELECT
+        gn.goods_nomenclature_sid, gn.goods_nomenclature_item_id, gn.producline_suffix, gn.validity_start_date, gn.validity_end_date, regexp_replace(gnd.description, E'[\n\r]+', ' ', 'g') AS description, gni.number_indents,
+    LEFT (gn.goods_nomenclature_item_id, 2) "chapter", REGEXP_REPLACE(gn.goods_nomenclature_item_id, '(00)+$', '') AS "node", '0' AS "leaf", CASE WHEN
+    RIGHT (gn.goods_nomenclature_item_id, 8) = '00000000' THEN
+        2
+    WHEN
+    RIGHT (gn.goods_nomenclature_item_id, 6) = '000000' THEN
+        4
+    WHEN
+    RIGHT (gn.goods_nomenclature_item_id, 4) = '0000' THEN
+        6
+    WHEN
+    RIGHT (gn.goods_nomenclature_item_id, 2) = '00' THEN
+        8
+    ELSE
+        10
+    END AS significant_digits
+FROM
+    goods_nomenclatures gn
+    JOIN goods_nomenclature_descriptions gnd ON gnd.goods_nomenclature_sid = gn.goods_nomenclature_sid
+    JOIN goods_nomenclature_description_periods gndp ON gndp.goods_nomenclature_description_period_sid = gnd.goods_nomenclature_description_period_sid
+    JOIN goods_nomenclature_indents gni ON gni.goods_nomenclature_sid = gn.goods_nomenclature_sid
+WHERE (gn.validity_end_date IS NULL OR gn.validity_end_date >= coerced_actual_date)
+AND gn.goods_nomenclature_item_id LIKE chapter_short_code
+AND gndp.goods_nomenclature_description_period_sid IN (
+    SELECT
+        MAX(gndp2.goods_nomenclature_description_period_sid)
+    FROM
+        goods_nomenclature_description_periods gndp2
+    WHERE
+        gndp2.goods_nomenclature_sid = gnd.goods_nomenclature_sid
+        AND gndp2.validity_start_date <= coerced_actual_date)
+AND gni.goods_nomenclature_indent_sid IN (
+    SELECT MAX(gni2.goods_nomenclature_indent_sid)
+    FROM goods_nomenclature_indents gni2
+    WHERE gni2.goods_nomenclature_sid = gn.goods_nomenclature_sid
+    AND gni2.validity_start_date <= coerced_actual_date
+);
+
+    /* Index to speed up child node matching - need to perf test to see if any use */
+    CREATE INDEX t1_i_nomenclature ON tmp_nomenclature (goods_nomenclature_sid, goods_nomenclature_item_id);
+
+    /* Cursor loops through result set to identify if nodes are leaf and updates the flag if so */
+    DECLARE cur_nomenclature CURSOR FOR
+        SELECT
+            *
+        FROM
+            tmp_nomenclature;
+    BEGIN
+        FOR nom_record IN cur_nomenclature LOOP
+            -- Raise Notice 'goods nomenclature item id %', nom_record.goods_nomenclature_item_id;
+            /* Leaf nodes have to have pls of 80 and no children having the same nomenclature code */
+            IF nom_record.producline_suffix = '80' THEN
+                IF LENGTH(nom_record.node) = 10 OR NOT EXISTS (
+                    SELECT
+                        1
+                    FROM
+                        tmp_nomenclature
+                    WHERE
+                        goods_nomenclature_item_id LIKE CONCAT(nom_record.node, '%') AND goods_nomenclature_item_id <> nom_record.goods_nomenclature_item_id) THEN
+                    UPDATE
+                        tmp_nomenclature tn
+                    SET
+                        leaf = '1'
+                    WHERE
+                        goods_nomenclature_sid = nom_record.goods_nomenclature_sid;
+                END IF;
+            END IF;
+        END LOOP;
+    END;
+    RETURN QUERY
+    SELECT
+        *
+    FROM
+        tmp_nomenclature;
+END;
+
+$_$;
+
+
+--
 -- Name: forbid_ddl_reader(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -72,11 +172,11 @@ CREATE FUNCTION public.forbid_ddl_reader() RETURNS event_trigger
 		END IF;
 
 		-- do not execute if member of manager role
-		IF pg_has_role(current_user, 'rdsbroker_64be335b_ae80_46f6_b3dc_151c43e0d66e_manager', 'member') THEN
+		IF pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager', 'member') THEN
 			RETURN;
 		END IF;
 
-		IF pg_has_role(current_user, 'rdsbroker_64be335b_ae80_46f6_b3dc_151c43e0d66e_reader', 'member') THEN
+		IF pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader', 'member') THEN
 			RAISE EXCEPTION 'executing % is disabled for read only bindings', tg_tag;
 		END IF;
 	end
@@ -194,8 +294,10 @@ CREATE FUNCTION public.make_readable() RETURNS event_trigger
     SET search_path TO 'public'
     AS $$
 	begin
-		EXECUTE 'select make_readable_generic()';
-		RETURN;
+		IF EXISTS (SELECT 1 FROM pg_event_trigger_ddl_commands() WHERE schema_name NOT LIKE 'pg_temp%') THEN
+			EXECUTE 'select make_readable_generic()';
+			RETURN;
+		END IF;
 	end
 	$$;
 
@@ -223,15 +325,15 @@ CREATE FUNCTION public.make_readable_generic() RETURNS void
 		END IF;
 
 		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_64be335b_ae80_46f6_b3dc_151c43e0d66e_manager', 'member') THEN
+		IF NOT pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager', 'member') THEN
 			RETURN;
 		END IF;
 
 		FOR r in (select schema_name from information_schema.schemata) LOOP
 			BEGIN
-				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_64be335b_ae80_46f6_b3dc_151c43e0d66e_reader');
-				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_64be335b_ae80_46f6_b3dc_151c43e0d66e_reader');
-				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_64be335b_ae80_46f6_b3dc_151c43e0d66e_reader');
+				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader');
+				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader');
+				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader');
 
 				RAISE NOTICE 'GRANTED READ ONLY IN SCHEMA %s', r.schema_name;
 			EXCEPTION WHEN OTHERS THEN
@@ -250,6 +352,7 @@ $$;
 
 CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
     LANGUAGE plpgsql
+    SET search_path TO 'public'
     AS $$
 	begin
 		-- do not execute if member of rds_superuser
@@ -258,19 +361,21 @@ CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
 			RETURN;
 		END IF;
 
-		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_266a9334_2e5d_4234_b2bf_5f5ebf7d973d_manager', 'member') THEN
-			RETURN;
-		END IF;
-
 		-- do not execute if superuser
 		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
 			RETURN;
 		END IF;
 
-		EXECUTE 'reassign owned by "' || current_user || '" to "rdsbroker_266a9334_2e5d_4234_b2bf_5f5ebf7d973d_manager"';
+		-- do not execute if not member of manager role
+		IF NOT pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager', 'member') THEN
+			RETURN;
+		END IF;
+
+		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager');
+
+		RETURN;
 	end
-	$$;
+$$;
 
 
 --
@@ -294,7 +399,7 @@ The basic query retrieves all current (and future) nomenclature with indents and
     DROP TABLE IF EXISTS tmp_nomenclature;
     CREATE TEMP TABLE tmp_nomenclature ON COMMIT DROP AS
     SELECT
-        gn.goods_nomenclature_sid, gn.goods_nomenclature_item_id, gn.producline_suffix, gn.validity_start_date, gn.validity_end_date, regexp_replace(gnd.description, E'[\n\r]+', ' ', 'g') AS description, gni.number_indents,
+        gn.goods_nomenclature_sid, gn.goods_nomenclature_item_id, gn.producline_suffix, gn.validity_start_date, gn.validity_end_date, regexp_replace(gnd.description, E'[\\n\\r]+', ' ', 'g') AS description, gni.number_indents,
     LEFT (gn.goods_nomenclature_item_id, 2) "chapter", REGEXP_REPLACE(gn.goods_nomenclature_item_id, '(00)+$', '') AS "node", '0' AS "leaf", CASE WHEN
     RIGHT (gn.goods_nomenclature_item_id, 8) = '00000000' THEN
         2
@@ -11137,4 +11242,3 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20210915112121_add_news_it
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220107134210_add_productline_suffix_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220223091956_add_oplog_inserts_to_tariff_updates.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220328091515_add_show_on_banner_to_news_items.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20220509104200_create_goods_nomenclature_export_function.rb');

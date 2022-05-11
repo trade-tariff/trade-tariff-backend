@@ -1,13 +1,14 @@
 module Admin
   class QueryAllCommodities
     def self.call(actual_date)
-      commodity_groups = []
-
       # Splitting the queries this way make the execution faster
-      (0..9).each do |starting_digit|
-        commodity_groups << Sequel::Model.db.fetch(
-          'select * from public.goods_nomenclature_export_new(?, ?) order by 2, 3',
-          "#{starting_digit}%", actual_date
+      chapter_short_codes = Chapter.all.map(&:short_code)
+
+      commodity_groups = chapter_short_codes.map do |chapter_code|
+        Sequel::Model.db.fetch(
+          'select * from public.goods_nomenclature_export_new(?, ?) ' \
+          'order by goods_nomenclature_item_id, producline_suffix',
+          "#{chapter_code}%", actual_date
         )
       end
 
