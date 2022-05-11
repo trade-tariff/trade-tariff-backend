@@ -11,7 +11,9 @@ module Api
         respond_to do |format|
           format.csv do
             send_data(
-              Api::Admin::Commodities::CommodityCsvSerializer.new(all_commodities).serialized_csv,
+              Api::Admin::Commodities::CommodityCsvSerializer.new(
+                ::Admin::QueryAllCommodities.call(actual_date),
+              ).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
               disposition: "attachment; filename=#{TradeTariffBackend.service}-commodities-#{actual_date.iso8601}.csv",
             )
@@ -36,18 +38,6 @@ module Api
 
       def productline_suffix
         params[:id].split('-', 2)[1] || '80'
-      end
-
-      def all_commodities
-        commodity_groups = []
-
-        # Splitting the queries this way make the execution faster
-        (0..9).each do |starting_digit|
-          commodity_groups << Sequel::Model.db.fetch('select * from public.goods_nomenclature_export_new(?, ?) order by 2, 3', "#{starting_digit}%", actual_date)
-        end
-
-        # Running the queries and merging ...'
-        commodity_groups.map(&:to_a).flatten
       end
     end
   end
