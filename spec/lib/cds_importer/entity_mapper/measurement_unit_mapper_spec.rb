@@ -1,0 +1,28 @@
+RSpec.describe CdsImporter::EntityMapper::MeasurementUnitMapper do
+  it_behaves_like 'an entity mapper' do
+    let(:xml_node) do
+      {
+        'measurementUnitCode' => 'MWH',
+        'validityStartDate' => '1970-01-01T00:00:00',
+        'validityEndDate' => '1971-01-01T00:00:00',
+        'metainfo' => {
+          'opType' => 'U',
+          'transactionDate' => '2017-06-29T20:04:37',
+        },
+      }
+    end
+
+    let(:expected_values) do
+      {
+        validity_start_date: Time.parse('1970-01-01T00:00:00.000Z'),
+        validity_end_date: Time.parse('1971-01-01T00:00:00.000Z'),
+        operation: 'U',
+        operation_date: Date.parse('2017-06-29'),
+        measurement_unit_code: 'MWH',
+      }
+    end
+
+    let(:expected_entity_class) { 'MeasurementUnit' }
+    let(:expected_mapping_root) { 'MeasurementUnit' }
+  end
+end
