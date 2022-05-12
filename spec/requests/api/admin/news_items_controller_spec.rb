@@ -5,11 +5,9 @@ RSpec.describe Api::Admin::NewsItemsController do
   let(:news_item) { create :news_item }
 
   describe 'GET to #index' do
-    render_views
-
-    before { login_as_api_user }
-
-    let(:make_request) { get :index, format: :json }
+    let(:make_request) do
+      authenticated_get api_admin_news_items_path(format: :json)
+    end
 
     context 'with some news items' do
       it { is_expected.to have_http_status :success }
@@ -24,12 +22,8 @@ RSpec.describe Api::Admin::NewsItemsController do
   end
 
   describe 'GET to #show' do
-    render_views
-
-    before { login_as_api_user }
-
     let(:make_request) do
-      get :show, format: :json, params: { id: news_item_id }
+      authenticated_get api_admin_news_item_path(news_item_id, format: :json)
     end
 
     context 'with existent news item' do
@@ -47,11 +41,9 @@ RSpec.describe Api::Admin::NewsItemsController do
   end
 
   describe 'POST to #create' do
-    render_views
-
-    before { login_as_api_user }
-
-    let(:make_request) { post :create, format: :json, params: news_item_data }
+    let(:make_request) do
+      authenticated_post api_admin_news_items_path(format: :json), params: news_item_data
+    end
 
     let :news_item_data do
       {
@@ -84,16 +76,11 @@ RSpec.describe Api::Admin::NewsItemsController do
   end
 
   describe 'PATCH to #update' do
-    render_views
-
-    before { login_as_api_user }
-
     let(:news_item_id) { news_item.id }
     let(:updated_title) { 'Updated title' }
 
     let(:make_request) do
-      patch :update, format: :json, params: {
-        id: news_item_id,
+      authenticated_patch api_admin_news_item_path(news_item_id, format: :json), params: {
         data: {
           type: :news_item,
           attributes: { title: updated_title },
@@ -128,12 +115,8 @@ RSpec.describe Api::Admin::NewsItemsController do
   end
 
   describe 'DELETE to #destroy' do
-    render_views
-
-    before { login_as_api_user }
-
     let :make_request do
-      delete :destroy, format: :json, params: { id: news_item_id }
+      authenticated_delete api_admin_news_item_path(news_item_id, format: :json)
     end
 
     context 'with known news item' do
