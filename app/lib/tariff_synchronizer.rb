@@ -207,7 +207,11 @@ module TariffSynchronizer
             end
           end
 
-          DataMigration.since(date_for_rollback).delete # Requeue data migrations
+          # Requeue data migrations
+          # Rollback leaves 'date_for_rollback's data intact, it removes only
+          # removes data for subsequent days - so look for migrations after
+          # the end of the date_for_rollback day
+          DataMigration.since(date_for_rollback.end_of_day).delete
         end
       end
 
@@ -259,7 +263,11 @@ module TariffSynchronizer
             end
           end
 
-          DataMigration.since(date_for_rollback).delete # Requeue data migrations
+          # Requeue data migrations
+          # Rollback leaves 'date_for_rollback's data intact, it removes only
+          # removes data for subsequent days - so look for migrations after
+          # the end of the date_for_rollback day
+          DataMigration.since(date_for_rollback.end_of_day).delete
         end
       end
 
