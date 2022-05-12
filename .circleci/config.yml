@@ -526,8 +526,6 @@ workflows:
               ignore:
                 - main
                 - /^dependabot\/.*/
-          requires:
-            - test
       - deploy_dev:
            matrix:
              parameters:
@@ -541,6 +539,7 @@ workflows:
                  - main
                  - /^dependabot\/.*/
            requires:
+             - test
              - build_dev
       - smoketest_dev:
           name: smoketest_dev
