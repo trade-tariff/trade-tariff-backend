@@ -20,6 +20,7 @@ gem 'rubyzip'
 
 # Background jobs
 gem 'connection_pool'
+gem 'redis-elasticache'
 gem 'redis-rails'
 gem 'redlock'
 gem 'sidekiq'
