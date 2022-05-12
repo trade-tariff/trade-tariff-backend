@@ -89,7 +89,9 @@ Sequel.migration do
                             FROM
                                 tmp_nomenclature
                             WHERE
-                                goods_nomenclature_item_id LIKE CONCAT(nom_record.node, '%') AND goods_nomenclature_item_id <> nom_record.goods_nomenclature_item_id) THEN
+                                goods_nomenclature_item_id LIKE CONCAT(nom_record.node, '%')
+                                    AND goods_nomenclature_item_id <> nom_record.goods_nomenclature_item_id)
+                                    AND number_indents <= nom_record.number_indents THEN
                             UPDATE
                                 tmp_nomenclature tn
                             SET
@@ -113,6 +115,6 @@ Sequel.migration do
   end
 
   down do
-    Sequel::Model.db.run('DROP FUNCTION IF EXISTS "public.goods_nomenclature_export_new"')
+    Sequel::Model.db.run('DROP FUNCTION IF EXISTS "public.fetch_chapter_commodities_for_date"')
   end
 end

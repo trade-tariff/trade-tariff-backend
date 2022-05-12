@@ -23,11 +23,11 @@ module Api
         end
 
         column :validity_start_date, column_name: 'Start date' do |row|
-          row[:validity_start_date]
+          row[:validity_start_date].to_date.iso8601
         end
 
         column :validity_end_date, column_name: 'End date' do |row|
-          row[:validity_end_date]
+          row[:validity_end_date] ? row[:validity_end_date].to_date.iso8601 : ''
         end
 
         column :number_indents, column_name: 'Indentation' do |row|
