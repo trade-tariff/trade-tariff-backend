@@ -69,13 +69,13 @@ namespace :tariff do
     end
   end
 
-  desc 'Download and apply Taric data'
-  task sync: %w[environment sync:apply]
+  desc 'Download and apply Taric or CDS data using Sidekiq'
+  task sync: %w[environment sync:update]
 
   namespace :sync do
-    desc 'Update database by downloading and then applying TARIC updates via worker'
+    desc 'Update database by downloading and then applying TARIC or CDS updates via worker'
     task update: %i[environment class_eager_load] do
-      UpdatesSynchronizerWorker.perform_async
+      UpdatesSynchronizerWorker.perform_async(true, true)
     end
 
     desc 'Download pending Taric or CDS update files, Update tariff_updates table'

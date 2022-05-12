@@ -1,3 +1,5 @@
+require 'data_migrator'
+
 RSpec.describe UpdatesSynchronizerWorker, type: :worker do
   describe '#perform' do
     subject(:perform) { described_class.new.perform }
@@ -11,6 +13,11 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       allow(TradeTariffBackend).to receive(:service).and_return(service)
 
       allow(Sidekiq::Client).to receive(:enqueue)
+
+      migrations_dir =
+        Rails.root.join(file_fixture_path).join('data_migrations')
+      allow(DataMigrator).to receive(:migrations_dir).and_return(migrations_dir)
+      allow(DataMigrator).to receive(:migrate_up!).and_return(true)
     end
 
     let(:changes_applied) { true }
@@ -26,8 +33,17 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       it { expect(TariffSynchronizer).not_to have_received(:download_cds) }
       it { expect(TariffSynchronizer).not_to have_received(:apply_cds) }
 
+      it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+
       it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
       it { expect(described_class.jobs).to be_empty }
+
+      context 'with reapply_data_migrations option' do
+        subject(:perform) { described_class.new.perform(true, true) }
+
+        it { expect(TariffSynchronizer).to have_received(:download) }
+        it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
+      end
 
       context 'with no updates applied' do
         let(:changes_applied) { nil }
@@ -35,6 +51,13 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
         it { expect(TariffSynchronizer).to have_received(:download) }
         it { expect(TariffSynchronizer).to have_received(:apply) }
         it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+
+        context 'with reapply_data_migrations option' do
+          subject(:perform) { described_class.new.perform(true, true) }
+
+          it { expect(TariffSynchronizer).to have_received(:download) }
+          it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+        end
       end
     end
 
@@ -51,11 +74,11 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
         before do
           allow(TariffSynchronizer).to receive(:downloaded_todays_file_for_cds?)
                                        .and_return(false)
+
+          perform
         end
 
         context 'when before cut off time' do
-          before { perform }
-
           it { expect(TariffSynchronizer).to have_received(:download_cds) }
           it { expect(TariffSynchronizer).not_to have_received(:apply_cds) }
 
@@ -72,11 +95,15 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
                       'args' => [true],
                       'retry' => false
           end
+
+          context 'with reapply_data_migrations option' do
+            subject(:perform) { described_class.new.perform(true, true) }
+
+            it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+          end
         end
 
         context 'when after cut off time' do
-          before { perform }
-
           let(:cut_off_time) { 5.minutes.ago }
 
           it { expect(TariffSynchronizer).to have_received(:download_cds) }
@@ -87,10 +114,16 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
           it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
           it { expect(described_class.jobs).to be_empty }
+
+          context 'with reapply_data_migrations option' do
+            subject(:perform) { described_class.new.perform(true, true) }
+
+            it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
+          end
         end
 
         context 'when before cut off but check disabled' do
-          before { described_class.new.perform(false) }
+          subject(:perform) { described_class.new.perform(false) }
 
           it { expect(TariffSynchronizer).to have_received(:download_cds) }
           it { expect(TariffSynchronizer).to have_received(:apply_cds) }
@@ -100,6 +133,12 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
           it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
           it { expect(described_class.jobs).to be_empty }
+
+          context 'with reapply_data_migrations option' do
+            subject(:perform) { described_class.new.perform(false, true) }
+
+            it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
+          end
         end
       end
 
@@ -117,8 +156,17 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
         it { expect(TariffSynchronizer).not_to have_received(:download) }
         it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
+        it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+
         it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
         it { expect(described_class.jobs).to be_empty }
+
+        context 'with reapply_data_migrations option' do
+          subject(:perform) { described_class.new.perform(true, true) }
+
+          it { expect(TariffSynchronizer).to have_received(:download_cds) }
+          it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
+        end
 
         context 'with no updates applied' do
           let(:changes_applied) { nil }
@@ -126,6 +174,13 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).to have_received(:download_cds) }
           it { expect(TariffSynchronizer).to have_received(:apply_cds) }
           it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+
+          context 'with reapply_data_migrations option' do
+            subject(:perform) { described_class.new.perform(true, true) }
+
+            it { expect(TariffSynchronizer).to have_received(:download_cds) }
+            it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+          end
         end
       end
     end

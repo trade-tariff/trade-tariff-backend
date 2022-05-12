@@ -6,7 +6,7 @@ class UpdatesSynchronizerWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(check_for_todays_file = true)
+  def perform(check_for_todays_file = true, reapply_data_migrations = false)
     logger.info 'Running UpdatesSynchronizerWorker'
     logger.info 'Downloading...'
 
@@ -30,6 +30,8 @@ class UpdatesSynchronizerWorker
       return unless TariffSynchronizer.apply # return if nothing changed
     end
 
+    migrate_data if reapply_data_migrations
+
     Sidekiq::Client.enqueue(ClearCacheWorker)
   end
 
@@ -49,5 +51,12 @@ private
 
   def todays_file_has_not_yet_arrived?
     !TariffSynchronizer.downloaded_todays_file_for_cds?
+  end
+
+  def migrate_data
+    logger.info 'Re-applying data migrations...'
+
+    require 'data_migrator' unless defined?(DataMigrator)
+    DataMigrator.migrate_up!(nil)
   end
 end
