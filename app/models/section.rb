@@ -1,6 +1,8 @@
 class Section < Sequel::Model
   extend ActiveModel::Naming
 
+  set_dataset order(Sequel.asc(:position))
+
   plugin :timestamps
   plugin :active_model
   plugin :nullable
