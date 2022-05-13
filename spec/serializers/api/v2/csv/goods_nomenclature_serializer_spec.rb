@@ -9,13 +9,13 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
     it 'serializes correctly' do
       expect(serializable_array).to eq(
         [
-          [
-            'SID',
-            'Goods Nomenclature Item ID',
-            'Indents',
-            'Description',
-            'Product Line Suffix',
-            'Href',
+          %i[
+            goods_nomenclature_sid
+            goods_nomenclature_item_id
+            number_indents
+            description
+            producline_suffix
+            href
           ],
           [
             goods_nomenclature.goods_nomenclature_sid,

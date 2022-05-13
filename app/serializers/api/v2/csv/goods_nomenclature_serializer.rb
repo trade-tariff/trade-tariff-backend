@@ -4,13 +4,13 @@ module Api
       class GoodsNomenclatureSerializer
         include CsvSerializer
 
-        column :goods_nomenclature_sid, column_name: 'SID'
-        column :goods_nomenclature_item_id, column_name: 'Goods Nomenclature Item ID'
-        column :number_indents, column_name: 'Indents'
-        column :description, column_name: 'Description'
-        column :producline_suffix, column_name: 'Product Line Suffix'
+        column :goods_nomenclature_sid
+        column :goods_nomenclature_item_id
+        column :number_indents
+        column :description
+        column :producline_suffix
 
-        column :href, column_name: 'Href' do |goods_nomenclature, _options|
+        column :href do |goods_nomenclature, _options|
           Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature)
         end
       end
