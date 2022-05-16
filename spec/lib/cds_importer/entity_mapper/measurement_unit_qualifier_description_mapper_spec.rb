@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasurementUnitQualifierDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasurementUnitQualifierDescription', 'MeasurementUnitQualifier' do
     let(:xml_node) do
       {
         'measurementUnitQualifierCode' => 'B',
@@ -25,8 +25,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasurementUnitQualifierDescriptionMap
         language_id: 'EN',
       }
     end
-
-    let(:expected_entity_class) { 'MeasurementUnitQualifierDescription' }
-    let(:expected_mapping_root) { 'MeasurementUnitQualifier' }
   end
 end

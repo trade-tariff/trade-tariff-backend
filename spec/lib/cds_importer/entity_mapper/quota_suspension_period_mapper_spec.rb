@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaSuspensionPeriodMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaSuspensionPeriod', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '12113',
@@ -31,8 +31,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaSuspensionPeriodMapper do
         description: 'Description',
       }
     end
-
-    let(:expected_entity_class) { 'QuotaSuspensionPeriod' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

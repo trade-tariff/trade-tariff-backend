@@ -1,10 +1,11 @@
 RSpec.describe CdsImporter::EntityMapper::RegulationGroupDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'RegulationGroupDescription', 'RegulationGroup' do
     let(:xml_node) do
       {
         'hjid' => '440103',
         'regulationGroupId' => '123',
         'regulationGroupDescription' => {
+          'description' => 'A regulation group',
           'language' => {
             'languageId' => 'EN',
           },
@@ -24,11 +25,8 @@ RSpec.describe CdsImporter::EntityMapper::RegulationGroupDescriptionMapper do
         operation_date: Date.parse('2017-06-29'),
         regulation_group_id: '123',
         language_id: 'EN',
-        description: nil,
+        description: 'A regulation group',
       }
     end
-
-    let(:expected_entity_class) { 'RegulationGroupDescription' }
-    let(:expected_mapping_root) { 'RegulationGroup' }
   end
 end

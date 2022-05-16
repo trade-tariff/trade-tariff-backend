@@ -1,10 +1,10 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteTypeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FootnoteTypeDescription', 'FootnoteType' do
     let(:xml_node) do
       {
         'footnoteTypeId' => 'TN',
         'footnoteTypeDescription' => {
-          'description' => 'Taric Nomenclature',
+          'description' => 'CDS Nomenclature',
           'language' => {
             'languageId' => 'EN',
           },
@@ -24,11 +24,8 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteTypeDescriptionMapper do
         operation_date: Date.parse('2016-07-27'),
         footnote_type_id: 'TN',
         language_id: 'EN',
-        description: 'Taric Nomenclature',
+        description: 'CDS Nomenclature',
       }
     end
-
-    let(:expected_entity_class) { 'FootnoteTypeDescription' }
-    let(:expected_mapping_root) { 'FootnoteType' }
   end
 end

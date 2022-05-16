@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureActionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureAction', 'MeasureAction' do
     let(:xml_node) do
       {
         'actionCode' => '29',
@@ -14,15 +14,12 @@ RSpec.describe CdsImporter::EntityMapper::MeasureActionMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1970-01-01T00:00:00.000Z'),
-        validity_end_date: Time.parse('1972-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('1972-01-01T00:00:00.000Z'),
         operation: 'U',
         operation_date: Date.parse('2017-06-29'),
         action_code: '29',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureAction' }
-    let(:expected_mapping_root) { 'MeasureAction' }
   end
 end

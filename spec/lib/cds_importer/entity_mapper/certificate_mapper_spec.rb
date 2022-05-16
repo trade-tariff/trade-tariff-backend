@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::CertificateMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'Certificate', 'Certificate' do
     let(:xml_node) do
       {
         'hjid' => '11317072',
@@ -24,7 +24,7 @@ RSpec.describe CdsImporter::EntityMapper::CertificateMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('2021-08-09T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('2021-08-09T00:00:00.000Z'),
         validity_end_date: nil,
         national: false,
         operation: 'C',
@@ -33,8 +33,5 @@ RSpec.describe CdsImporter::EntityMapper::CertificateMapper do
         certificate_code: '071',
       }
     end
-
-    let(:expected_entity_class) { 'Certificate' }
-    let(:expected_mapping_root) { 'Certificate' }
   end
 end

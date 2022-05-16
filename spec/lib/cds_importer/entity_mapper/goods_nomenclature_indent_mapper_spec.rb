@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureIndentMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GoodsNomenclatureIndent', 'GoodsNomenclature' do
     let(:xml_node) do
       {
         'sid' => '27652',
@@ -30,8 +30,5 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureIndentMapper do
         productline_suffix: '80',
       }
     end
-
-    let(:expected_entity_class) { 'GoodsNomenclatureIndent' }
-    let(:expected_mapping_root) { 'GoodsNomenclature' }
   end
 end

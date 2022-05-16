@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::LanguageDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'LanguageDescription', 'Language' do
     let(:xml_node) do
       {
         'languageId' => 'EN',
@@ -23,8 +23,5 @@ RSpec.describe CdsImporter::EntityMapper::LanguageDescriptionMapper do
         description: 'English',
       }
     end
-
-    let(:expected_entity_class) { 'LanguageDescription' }
-    let(:expected_mapping_root) { 'Language' }
   end
 end

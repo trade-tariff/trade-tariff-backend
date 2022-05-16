@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GeographicalAreaDescriptionPeriodMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GeographicalAreaDescriptionPeriod', 'GeographicalArea' do
     let(:xml_node) do
       {
         'sid' => '234',
@@ -19,7 +19,7 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaDescriptionPeriodMappe
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('2008-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('2008-01-01T00:00:00.000Z'),
         validity_end_date: nil,
         national: true,
         operation: 'U',
@@ -29,8 +29,5 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaDescriptionPeriodMappe
         geographical_area_id: '1032',
       }
     end
-
-    let(:expected_entity_class) { 'GeographicalAreaDescriptionPeriod' }
-    let(:expected_mapping_root) { 'GeographicalArea' }
   end
 end

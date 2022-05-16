@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::NomenclatureGroupMembershipMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'NomenclatureGroupMembership', 'GoodsNomenclature' do
     let(:xml_node) do
       {
         'sid' => 27_640,
@@ -31,8 +31,5 @@ RSpec.describe CdsImporter::EntityMapper::NomenclatureGroupMembershipMapper do
         goods_nomenclature_group_type: 'B',
       }
     end
-
-    let(:expected_entity_class) { 'NomenclatureGroupMembership' }
-    let(:expected_mapping_root) { 'GoodsNomenclature' }
   end
 end

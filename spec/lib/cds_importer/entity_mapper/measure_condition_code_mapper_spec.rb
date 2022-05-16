@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureConditionCodeMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureConditionCode', 'MeasureConditionCode' do
     let(:xml_node) do
       {
         'conditionCode' => 'A',
@@ -13,15 +13,12 @@ RSpec.describe CdsImporter::EntityMapper::MeasureConditionCodeMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1970-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
         validity_end_date: nil,
         operation: 'U',
         operation_date: Date.parse('2017-06-29'),
         condition_code: 'A',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureConditionCode' }
-    let(:expected_mapping_root) { 'MeasureConditionCode' }
   end
 end

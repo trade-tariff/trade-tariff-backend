@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureConditionComponentMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureConditionComponent', 'Measure' do
     let(:xml_node) do
       {
         'sid' => '12348',
@@ -52,8 +52,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureConditionComponentMapper do
         measurement_unit_qualifier_code: '12',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureConditionComponent' }
-    let(:expected_mapping_root) { 'Measure' }
   end
 end

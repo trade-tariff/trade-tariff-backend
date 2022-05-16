@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::DutyExpressionDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'DutyExpressionDescription', 'DutyExpression' do
     let(:xml_node) do
       {
         'sid' => 123_456,
@@ -32,8 +32,5 @@ RSpec.describe CdsImporter::EntityMapper::DutyExpressionDescriptionMapper do
         description: 'Some description',
       }
     end
-
-    let(:expected_entity_class) { 'DutyExpressionDescription' }
-    let(:expected_mapping_root) { 'DutyExpression' }
   end
 end

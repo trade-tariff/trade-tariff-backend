@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'AdditionalCodeType', 'AdditionalCodeType' do
     let(:xml_node) do
       {
         'applicationCode' => '1',
@@ -16,7 +16,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1970-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
         validity_end_date: nil,
         national: false,
         operation: 'U',
@@ -26,8 +26,5 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
         meursing_table_plan_id: '01',
       }
     end
-
-    let(:expected_entity_class) { 'AdditionalCodeType' }
-    let(:expected_mapping_root) { 'AdditionalCodeType' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationMeursingHeadingMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FootnoteAssociationMeursingHeading', 'MeursingTablePlan' do
     let(:xml_node) do
       {
         'meursingTablePlanId' => '2',
@@ -34,8 +34,8 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationMeursingHeadingMapp
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('2018-06-03T00:00:00.000Z'),
-        validity_end_date: Time.parse('1995-07-10T20:59:59.000Z'),
+        validity_start_date: Time.zone.parse('2018-06-03T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('1995-07-10T20:59:59.000Z'),
         operation: 'C',
         operation_date: Date.parse('2017-08-27'),
         meursing_table_plan_id: '2',
@@ -45,8 +45,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationMeursingHeadingMapp
         footnote_id: '08',
       }
     end
-
-    let(:expected_entity_class) { 'FootnoteAssociationMeursingHeading' }
-    let(:expected_mapping_root) { 'MeursingTablePlan' }
   end
 end

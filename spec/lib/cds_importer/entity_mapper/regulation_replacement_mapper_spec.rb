@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::RegulationReplacementMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'RegulationReplacement', 'RegulationReplacement' do
     let(:xml_node) do
       {
         'replacedRegulationRole' => '1',
@@ -33,8 +33,5 @@ RSpec.describe CdsImporter::EntityMapper::RegulationReplacementMapper do
         measure_type_id: '2',
       }
     end
-
-    let(:expected_entity_class) { 'RegulationReplacement' }
-    let(:expected_mapping_root) { 'RegulationReplacement' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionPeriodMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FootnoteDescriptionPeriod', 'Footnote' do
     let(:xml_node) do
       {
         'footnoteId' => '123',
@@ -31,8 +31,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionPeriodMapper do
         footnote_id: '123',
       }
     end
-
-    let(:expected_entity_class) { 'FootnoteDescriptionPeriod' }
-    let(:expected_mapping_root) { 'Footnote' }
   end
 end

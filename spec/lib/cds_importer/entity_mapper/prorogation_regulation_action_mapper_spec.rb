@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::ProrogationRegulationActionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'ProrogationRegulationAction', 'ProrogationRegulation' do
     let(:xml_node) do
       {
         'prorogationRegulationId' => 'C123X324',
@@ -29,8 +29,5 @@ RSpec.describe CdsImporter::EntityMapper::ProrogationRegulationActionMapper do
         prorogated_date: Date.parse('1998-04-01'),
       }
     end
-
-    let(:expected_entity_class) { 'ProrogationRegulationAction' }
-    let(:expected_mapping_root) { 'ProrogationRegulation' }
   end
 end

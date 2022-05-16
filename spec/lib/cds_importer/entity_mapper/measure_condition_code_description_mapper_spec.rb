@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureConditionCodeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureConditionCodeDescription', 'MeasureConditionCode' do
     let(:xml_node) do
       {
         'conditionCode' => 'A',
@@ -25,8 +25,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureConditionCodeDescriptionMapper 
         description: 'Presentation of an anti-dumping/countervailing document',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureConditionCodeDescription' }
-    let(:expected_mapping_root) { 'MeasureConditionCode' }
   end
 end

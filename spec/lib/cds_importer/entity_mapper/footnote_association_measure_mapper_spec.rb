@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationMeasureMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FootnoteAssociationMeasure', 'Measure' do
     let(:xml_node) do
       {
         'sid' => '3084',
@@ -36,8 +36,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationMeasureMapper do
         footnote_id: '08',
       }
     end
-
-    let(:expected_entity_class) { 'FootnoteAssociationMeasure' }
-    let(:expected_mapping_root) { 'Measure' }
   end
 end

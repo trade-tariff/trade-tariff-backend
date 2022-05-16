@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::AdditionalCodeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'AdditionalCodeDescription', 'AdditionalCode' do
     let(:xml_node) do
       {
         'sid' => '3084',
@@ -37,8 +37,5 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeDescriptionMapper do
         description: 'Other.',
       }
     end
-
-    let(:expected_entity_class) { 'AdditionalCodeDescription' }
-    let(:expected_mapping_root) { 'AdditionalCode' }
   end
 end

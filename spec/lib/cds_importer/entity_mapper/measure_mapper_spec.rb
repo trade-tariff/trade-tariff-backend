@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'Measure', 'Measure' do
     let(:xml_node) do
       {
         'sid' => '12348',
@@ -31,8 +31,8 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1970-01-01T00:00:00.000Z'),
-        validity_end_date: Time.parse('1972-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('1972-01-01T00:00:00.000Z'),
         national: true,
         operation: 'U',
         operation_date: Date.parse('2017-06-29'),
@@ -55,8 +55,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
         export_refund_nomenclature_sid: 19_911,
       }
     end
-
-    let(:expected_entity_class) { 'Measure' }
-    let(:expected_mapping_root) { 'Measure' }
   end
 end

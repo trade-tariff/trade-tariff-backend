@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginExclusionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaOrderNumberOriginExclusion', 'QuotaOrderNumber' do
     let(:xml_node) do
       {
         'sid' => '12113',
@@ -49,8 +49,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginExclusionMapper 
         excluded_geographical_area_sid: 11_993,
       }
     end
-
-    let(:expected_entity_class) { 'QuotaOrderNumberOriginExclusion' }
-    let(:expected_mapping_root) { 'QuotaOrderNumber' }
   end
 end

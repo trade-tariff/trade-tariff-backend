@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureActionDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureActionDescription', 'MeasureAction' do
     let(:xml_node) do
       {
         'actionCode' => '29',
@@ -25,8 +25,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureActionDescriptionMapper do
         description: 'Import/export allowed after control',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureActionDescription' }
-    let(:expected_mapping_root) { 'MeasureAction' }
   end
 end

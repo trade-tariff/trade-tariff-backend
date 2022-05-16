@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaOrderNumberOrigin', 'QuotaOrderNumber' do
     let(:xml_node) do
       {
         'sid' => '12113',
@@ -29,8 +29,8 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1970-01-01T00:00:00.000Z'),
-        validity_end_date: Time.parse('1971-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('1971-01-01T00:00:00.000Z'),
         operation: 'C',
         operation_date: Date.parse('2017-04-11'),
         quota_order_number_origin_sid: 1485,
@@ -39,8 +39,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginMapper do
         geographical_area_sid: 11_993,
       }
     end
-
-    let(:expected_entity_class) { 'QuotaOrderNumberOrigin' }
-    let(:expected_mapping_root) { 'QuotaOrderNumber' }
   end
 end

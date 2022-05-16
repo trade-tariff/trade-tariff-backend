@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaUnsuspensionEventMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaUnsuspensionEvent', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '12113',
@@ -28,8 +28,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaUnsuspensionEventMapper do
         unsuspension_date: Date.parse('2004-02-16'),
       }
     end
-
-    let(:expected_entity_class) { 'QuotaUnsuspensionEvent' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaBlockingPeriodMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaBlockingPeriod', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '13321',
@@ -29,8 +29,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaBlockingPeriodMapper do
         quota_blocking_period_sid: 16_811,
       }
     end
-
-    let(:expected_entity_class) { 'QuotaBlockingPeriod' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaDefinition', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '12113',
@@ -9,6 +9,8 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
         'criticalThreshold' => '75',
         'criticalState' => 'N',
         'description' => 'some description',
+        'validityStartDate' => '1970-01-01T00:00:00',
+        'validityEndDate' => '1972-01-01T00:00:00',
         'quotaOrderNumber' => {
           'sid' => '1485',
           'quotaOrderNumberId' => '092607',
@@ -31,8 +33,8 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: nil,
-        validity_end_date: nil,
+        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('1972-01-01T00:00:00.000Z'),
         operation: 'U',
         operation_date: Date.parse('2017-06-29'),
         quota_definition_sid: 12_113,
@@ -49,8 +51,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
         description: 'some description',
       }
     end
-
-    let(:expected_entity_class) { 'QuotaDefinition' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

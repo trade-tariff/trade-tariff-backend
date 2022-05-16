@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeursingSubheadingMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeursingSubheading', 'MeursingTablePlan' do
     let(:xml_node) do
       {
         'meursingTablePlanId' => '01',
@@ -31,8 +31,8 @@ RSpec.describe CdsImporter::EntityMapper::MeursingSubheadingMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1991-06-01T00:00:00.000Z'),
-        validity_end_date: Time.parse('1996-06-14T23:59:59.000Z'),
+        validity_start_date: Time.zone.parse('1991-06-01T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('1996-06-14T23:59:59.000Z'),
         operation: 'U',
         operation_date: Date.parse('2016-07-27'),
         meursing_table_plan_id: '01',
@@ -42,8 +42,5 @@ RSpec.describe CdsImporter::EntityMapper::MeursingSubheadingMapper do
         description: 'Some text.',
       }
     end
-
-    let(:expected_entity_class) { 'MeursingSubheading' }
-    let(:expected_mapping_root) { 'MeursingTablePlan' }
   end
 end

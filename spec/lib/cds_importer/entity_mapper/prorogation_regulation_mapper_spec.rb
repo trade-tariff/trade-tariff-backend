@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::ProrogationRegulationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'ProrogationRegulation', 'ProrogationRegulation' do
     let(:xml_node) do
       {
         'approvedFlag' => '1',
@@ -33,8 +33,5 @@ RSpec.describe CdsImporter::EntityMapper::ProrogationRegulationMapper do
         approved_flag: true,
       }
     end
-
-    let(:expected_entity_class) { 'ProrogationRegulation' }
-    let(:expected_mapping_root) { 'ProrogationRegulation' }
   end
 end

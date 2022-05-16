@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::BaseRegulationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'BaseRegulation', 'BaseRegulation' do
     let(:xml_node) do
       {
         'hjid' => '11089523',
@@ -21,7 +21,7 @@ RSpec.describe CdsImporter::EntityMapper::BaseRegulationMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('2021-01-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('2021-01-01T00:00:00.000Z'),
         validity_end_date: nil,
         national: false,
         operation: 'C',
@@ -46,8 +46,5 @@ RSpec.describe CdsImporter::EntityMapper::BaseRegulationMapper do
         explicit_abrogation_regulation_id: nil,
       }
     end
-
-    let(:expected_entity_class) { 'BaseRegulation' }
-    let(:expected_mapping_root) { 'BaseRegulation' }
   end
 end

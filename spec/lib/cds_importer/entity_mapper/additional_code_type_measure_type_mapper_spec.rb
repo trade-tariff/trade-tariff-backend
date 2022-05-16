@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMeasureTypeMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'AdditionalCodeTypeMeasureType', 'AdditionalCodeType' do
     let(:xml_node) do
       {
         'additionalCodeTypeId' => '3',
@@ -28,8 +28,5 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMeasureTypeMapper do
         additional_code_type_id: '3',
       }
     end
-
-    let(:expected_entity_class) { 'AdditionalCodeTypeMeasureType' }
-    let(:expected_mapping_root) { 'AdditionalCodeType' }
   end
 end

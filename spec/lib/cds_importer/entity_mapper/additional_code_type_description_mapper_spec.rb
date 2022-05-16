@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'AdditionalCodeTypeDescription', 'AdditionalCodeType' do
     let(:xml_node) do
       {
         'additionalCodeTypeId' => '3',
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeDescriptionMapper do
         description: 'Prohibition/Restriction/Surveillance',
       }
     end
-
-    let(:expected_entity_class) { 'AdditionalCodeTypeDescription' }
-    let(:expected_mapping_root) { 'AdditionalCodeType' }
   end
 end

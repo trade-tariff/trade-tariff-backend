@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureGroupDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GoodsNomenclatureGroupDescription', 'GoodsNomenclatureGroup' do
     let(:xml_node) do
       {
         'goodsNomenclatureGroupId' => '125000',
@@ -26,8 +26,5 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureGroupDescriptionMappe
         description: nil,
       }
     end
-
-    let(:expected_entity_class) { 'GoodsNomenclatureGroupDescription' }
-    let(:expected_mapping_root) { 'GoodsNomenclatureGroup' }
   end
 end

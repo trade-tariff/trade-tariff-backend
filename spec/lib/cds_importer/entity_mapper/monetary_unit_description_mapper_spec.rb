@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MonetaryUnitDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MonetaryUnitDescription', 'MonetaryUnit' do
     let(:xml_node) do
       {
         'monetaryUnitCode' => 'IEP',
@@ -25,8 +25,5 @@ RSpec.describe CdsImporter::EntityMapper::MonetaryUnitDescriptionMapper do
         description: 'Irish pound',
       }
     end
-
-    let(:expected_entity_class) { 'MonetaryUnitDescription' }
-    let(:expected_mapping_root) { 'MonetaryUnit' }
   end
 end

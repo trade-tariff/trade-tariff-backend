@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeursingHeadingTextMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeursingHeadingText', 'MeursingTablePlan' do
     let(:xml_node) do
       {
         'meursingTablePlanId' => '01',
@@ -36,8 +36,5 @@ RSpec.describe CdsImporter::EntityMapper::MeursingHeadingTextMapper do
         description: 'Hari Seldon',
       }
     end
-
-    let(:expected_entity_class) { 'MeursingHeadingText' }
-    let(:expected_mapping_root) { 'MeursingTablePlan' }
   end
 end

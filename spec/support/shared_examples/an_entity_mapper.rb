@@ -1,4 +1,4 @@
-RSpec.shared_examples_for 'an entity mapper' do
+RSpec.shared_examples_for 'an entity mapper' do |expected_entity_class, expected_mapping_root|
   describe '.entity_class' do
     subject(:entity_class) { described_class.entity_class }
 

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::DutyExpressionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'DutyExpression', 'DutyExpression' do
     let(:xml_node) do
       {
         'dutyExpressionId' => '14',
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::DutyExpressionMapper do
         monetary_unit_applicability_code: 0,
       }
     end
-
-    let(:expected_entity_class) { 'DutyExpression' }
-    let(:expected_mapping_root) { 'DutyExpression' }
   end
 end

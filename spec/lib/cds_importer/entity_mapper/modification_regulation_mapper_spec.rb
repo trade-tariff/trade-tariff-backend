@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::ModificationRegulationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'ModificationRegulation', 'ModificationRegulation' do
     let(:xml_node) do
       {
         'modificationRegulationId' => 'R9617341',
@@ -46,7 +46,7 @@ RSpec.describe CdsImporter::EntityMapper::ModificationRegulationMapper do
         base_regulation_id: 'R8726581',
         replacement_indicator: 0,
         information_text: 'NC - 01.01.1997 (mes. 110/111)',
-        effective_end_date: Time.parse('1996-06-30T23:59:59.000Z'),
+        effective_end_date: Time.zone.parse('1996-06-30T23:59:59.000Z'),
         approved_flag: true,
         stopped_flag: true,
         modification_regulation_role: 5,
@@ -57,8 +57,5 @@ RSpec.describe CdsImporter::EntityMapper::ModificationRegulationMapper do
         complete_abrogation_regulation_id: '123',
       }
     end
-
-    let(:expected_entity_class) { 'ModificationRegulation' }
-    let(:expected_mapping_root) { 'ModificationRegulation' }
   end
 end

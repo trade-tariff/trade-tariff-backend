@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FullTemporaryStopRegulationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FullTemporaryStopRegulation', 'FullTemporaryStopRegulation' do
     let(:xml_node) do
       {
         'sid' => '1277',
@@ -49,8 +49,5 @@ RSpec.describe CdsImporter::EntityMapper::FullTemporaryStopRegulationMapper do
         approved_flag: true,
       }
     end
-
-    let(:expected_entity_class) { 'FullTemporaryStopRegulation' }
-    let(:expected_mapping_root) { 'FullTemporaryStopRegulation' }
   end
 end

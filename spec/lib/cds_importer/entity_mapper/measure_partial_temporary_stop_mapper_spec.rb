@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasurePartialTemporaryStopMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasurePartialTemporaryStop', 'Measure' do
     let(:xml_node) do
       {
         'sid' => '12348',
@@ -30,8 +30,8 @@ RSpec.describe CdsImporter::EntityMapper::MeasurePartialTemporaryStopMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('1971-03-03T00:00:00.000Z'),
-        validity_end_date: Time.parse('2018-02-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('1971-03-03T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('2018-02-01T00:00:00.000Z'),
         operation: 'U',
         operation_date: Date.parse('2017-07-25'),
         measure_sid: 12_348,
@@ -43,8 +43,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasurePartialTemporaryStopMapper do
         abrogation_regulation_officialjournal_page: 2,
       }
     end
-
-    let(:expected_entity_class) { 'MeasurePartialTemporaryStop' }
-    let(:expected_mapping_root) { 'Measure' }
   end
 end

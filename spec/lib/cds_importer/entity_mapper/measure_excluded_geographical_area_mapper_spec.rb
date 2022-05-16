@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureExcludedGeographicalArea', 'Measure' do
     let(:xml_node) do
       {
         'sid' => '12348',
@@ -43,8 +43,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper 
         geographical_area_sid: 11_993,
       }
     end
-
-    let(:expected_entity_class) { 'MeasureExcludedGeographicalArea' }
-    let(:expected_mapping_root) { 'Measure' }
   end
 end

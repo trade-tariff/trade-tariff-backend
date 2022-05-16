@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::RegulationRoleTypeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'RegulationRoleTypeDescription', 'RegulationRoleType' do
     let(:xml_node) do
       {
         'regulationRoleTypeId' => '1',
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::RegulationRoleTypeDescriptionMapper do
         language_id: 'EN',
       }
     end
-
-    let(:expected_entity_class) { 'RegulationRoleTypeDescription' }
-    let(:expected_mapping_root) { 'RegulationRoleType' }
   end
 end

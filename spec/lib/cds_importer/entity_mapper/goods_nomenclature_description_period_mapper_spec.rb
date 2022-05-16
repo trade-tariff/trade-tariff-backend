@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GoodsNomenclatureDescriptionPeriod', 'GoodsNomenclature' do
     let(:xml_node) do
       {
         'sid' => '27652',
@@ -28,8 +28,5 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapp
         productline_suffix: '80',
       }
     end
-
-    let(:expected_entity_class) { 'GoodsNomenclatureDescriptionPeriod' }
-    let(:expected_mapping_root) { 'GoodsNomenclature' }
   end
 end

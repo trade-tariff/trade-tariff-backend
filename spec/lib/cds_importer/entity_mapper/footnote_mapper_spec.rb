@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'Footnote', 'Footnote' do
     let(:xml_node) do
       {
         'footnoteId' => '133',
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
         footnote_type_id: 'TM',
       }
     end
-
-    let(:expected_entity_class) { 'Footnote' }
-    let(:expected_mapping_root) { 'Footnote' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::CertificateTypeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'CertificateTypeDescription', 'CertificateType' do
     let(:xml_node) do
       {
         'certificateTypeCode' => 'A',
@@ -31,8 +31,5 @@ RSpec.describe CdsImporter::EntityMapper::CertificateTypeDescriptionMapper do
         description: 'foo',
       }
     end
-
-    let(:expected_entity_class) { 'CertificateTypeDescription' }
-    let(:expected_mapping_root) { 'CertificateType' }
   end
 end

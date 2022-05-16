@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaCriticalEventMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaCriticalEvent', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '12113',
@@ -25,13 +25,10 @@ RSpec.describe CdsImporter::EntityMapper::QuotaCriticalEventMapper do
         operation: 'U',
         operation_date: Date.parse('2017-04-11'),
         quota_definition_sid: 12_113,
-        occurrence_timestamp: Time.parse('2005-12-15T16:37:59.000Z'),
+        occurrence_timestamp: Time.zone.parse('2005-12-15T16:37:59.000Z'),
         critical_state: 'Y',
         critical_state_change_date: Date.parse('2004-02-16'),
       }
     end
-
-    let(:expected_entity_class) { 'QuotaCriticalEvent' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasurementUnitDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasurementUnitDescription', 'MeasurementUnit' do
     let(:xml_node) do
       {
         'measurementUnitCode' => 'MWH',
@@ -29,8 +29,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasurementUnitDescriptionMapper do
         description: '1000 kilowatt hours',
       }
     end
-
-    let(:expected_entity_class) { 'MeasurementUnitDescription' }
-    let(:expected_mapping_root) { 'MeasurementUnit' }
   end
 end

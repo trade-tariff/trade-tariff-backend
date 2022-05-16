@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureTypeDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureTypeDescription', 'MeasureType' do
     let(:xml_node) do
       {
         'measureTypeId' => '487',
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureTypeDescriptionMapper do
         description: 'Representative price (poultry)',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureTypeDescription' }
-    let(:expected_mapping_root) { 'MeasureType' }
   end
 end

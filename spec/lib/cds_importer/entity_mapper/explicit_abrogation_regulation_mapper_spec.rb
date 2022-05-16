@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::ExplicitAbrogationRegulationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'ExplicitAbrogationRegulation', 'ExplicitAbrogationRegulation' do
     let(:xml_node) do
       {
         'regulationRoleType' => { 'regulationRoleTypeId' => '123' },
@@ -33,8 +33,5 @@ RSpec.describe CdsImporter::EntityMapper::ExplicitAbrogationRegulationMapper do
         approved_flag: false,
       }
     end
-
-    let(:expected_entity_class) { 'ExplicitAbrogationRegulation' }
-    let(:expected_mapping_root) { 'ExplicitAbrogationRegulation' }
   end
 end

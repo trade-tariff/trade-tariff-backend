@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GoodsNomenclature', 'GoodsNomenclature' do
     let(:xml_node) do
       {
         'sid' => '1234',
@@ -17,8 +17,8 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureMapper do
 
     let(:expected_values) do
       {
-        validity_start_date: Time.parse('2017-10-01T00:00:00.000Z'),
-        validity_end_date: Time.parse('2020-09-01T00:00:00.000Z'),
+        validity_start_date: Time.zone.parse('2017-10-01T00:00:00.000Z'),
+        validity_end_date: Time.zone.parse('2020-09-01T00:00:00.000Z'),
         operation: 'C',
         operation_date: Date.parse('2017-09-27'),
         goods_nomenclature_sid: 1234,
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureMapper do
         statistical_indicator: 2,
       }
     end
-
-    let(:expected_entity_class) { 'GoodsNomenclature' }
-    let(:expected_mapping_root) { 'GoodsNomenclature' }
   end
 end

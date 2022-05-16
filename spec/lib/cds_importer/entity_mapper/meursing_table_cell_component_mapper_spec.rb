@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeursingTableCellComponentMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeursingTableCellComponent', 'MeursingAdditionalCode' do
     let(:xml_node) do
       {
         'sid' => '359',
@@ -42,8 +42,5 @@ RSpec.describe CdsImporter::EntityMapper::MeursingTableCellComponentMapper do
         subheading_sequence_number: 150,
       }
     end
-
-    let(:expected_entity_class) { 'MeursingTableCellComponent' }
-    let(:expected_mapping_root) { 'MeursingAdditionalCode' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MonetaryExchangeRateMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MonetaryExchangeRate', 'MonetaryExchangePeriod' do
     let(:xml_node) do
       {
         'sid' => 2927,
@@ -28,8 +28,5 @@ RSpec.describe CdsImporter::EntityMapper::MonetaryExchangeRateMapper do
         exchange_rate: 0.9123,
       }
     end
-
-    let(:expected_entity_class) { 'MonetaryExchangeRate' }
-    let(:expected_mapping_root) { 'MonetaryExchangePeriod' }
   end
 end

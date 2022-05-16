@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FootnoteDescription', 'Footnote' do
     let(:xml_node) do
       {
         'footnoteId' => '133',
@@ -35,8 +35,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionMapper do
         description: 'The rate of duty is applicable to the net free-at-Community',
       }
     end
-
-    let(:expected_entity_class) { 'FootnoteDescription' }
-    let(:expected_mapping_root) { 'Footnote' }
   end
 end

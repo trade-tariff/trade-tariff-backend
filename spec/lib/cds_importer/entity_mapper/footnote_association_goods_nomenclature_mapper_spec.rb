@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationGoodsNomenclatureMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'FootnoteAssociationGoodsNomenclature', 'GoodsNomenclature' do
     let(:xml_node) do
       {
         'sid' => '27652',
@@ -37,8 +37,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteAssociationGoodsNomenclatureMa
         footnote_type: '5',
       }
     end
-
-    let(:expected_entity_class) { 'FootnoteAssociationGoodsNomenclature' }
-    let(:expected_mapping_root) { 'GoodsNomenclature' }
   end
 end

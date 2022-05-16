@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GeographicalArea', 'GeographicalArea' do
     let(:xml_node) do
       {
         'sid' => '234',
@@ -31,8 +31,5 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMapper do
         parent_geographical_area_group_sid: 400,
       }
     end
-
-    let(:expected_entity_class) { 'GeographicalArea' }
-    let(:expected_mapping_root) { 'GeographicalArea' }
   end
 end

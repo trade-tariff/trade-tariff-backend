@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::CertificateDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'CertificateDescription', 'Certificate' do
     let(:xml_node) do
       {
         'hjid' => '11317072',
@@ -34,8 +34,5 @@ RSpec.describe CdsImporter::EntityMapper::CertificateDescriptionMapper do
         description: 'Goods that have originated from or shipped from Belarus, subject to a contract signed before 9 August 2021',
       }
     end
-
-    let(:expected_entity_class) { 'CertificateDescription' }
-    let(:expected_mapping_root) { 'Certificate' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureSuccessorMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'GoodsNomenclatureSuccessor', 'GoodsNomenclature' do
     let(:xml_node) do
       {
         'sid' => '27652',
@@ -27,8 +27,5 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureSuccessorMapper do
         productline_suffix: '10',
       }
     end
-
-    let(:expected_entity_class) { 'GoodsNomenclatureSuccessor' }
-    let(:expected_mapping_root) { 'GoodsNomenclature' }
   end
 end

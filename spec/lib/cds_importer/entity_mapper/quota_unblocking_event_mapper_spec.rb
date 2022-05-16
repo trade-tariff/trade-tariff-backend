@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaUnblockingEventMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaUnblockingEvent', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '13412',
@@ -19,12 +19,9 @@ RSpec.describe CdsImporter::EntityMapper::QuotaUnblockingEventMapper do
         operation: 'U',
         operation_date: Date.parse('2016-07-27'),
         quota_definition_sid: 13_412,
-        occurrence_timestamp: Time.parse('2004-02-16T14:10:40.000Z'),
+        occurrence_timestamp: Time.zone.parse('2004-02-16T14:10:40.000Z'),
         unblocking_date: Date.parse('2004-02-16'),
       }
     end
-
-    let(:expected_entity_class) { 'QuotaUnblockingEvent' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureConditionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureCondition', 'Measure' do
     let(:xml_node) do
       {
         'sid' => '12348',
@@ -49,8 +49,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureConditionMapper do
         certificate_code: '03',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureCondition' }
-    let(:expected_mapping_root) { 'Measure' }
   end
 end

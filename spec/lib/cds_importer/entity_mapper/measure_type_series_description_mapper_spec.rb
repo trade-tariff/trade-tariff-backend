@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureTypeSeriesDescriptionMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureTypeSeriesDescription', 'MeasureTypeSeries' do
     let(:xml_node) do
       {
         'measureTypeSeriesId' => 'N',
@@ -25,8 +25,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureTypeSeriesDescriptionMapper do
         description: 'Posterior surveillance',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureTypeSeriesDescription' }
-    let(:expected_mapping_root) { 'MeasureTypeSeries' }
   end
 end

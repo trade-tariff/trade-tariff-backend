@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaAssociationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'QuotaAssociation', 'QuotaDefinition' do
     let(:xml_node) do
       {
         'sid' => '12112',
@@ -36,8 +36,5 @@ RSpec.describe CdsImporter::EntityMapper::QuotaAssociationMapper do
         coefficient: 1.42,
       }
     end
-
-    let(:expected_entity_class) { 'QuotaAssociation' }
-    let(:expected_mapping_root) { 'QuotaDefinition' }
   end
 end

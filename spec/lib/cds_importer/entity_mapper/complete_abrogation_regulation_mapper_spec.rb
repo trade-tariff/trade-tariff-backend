@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::CompleteAbrogationRegulationMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'CompleteAbrogationRegulation', 'CompleteAbrogationRegulation' do
     let(:xml_node) do
       {
         'regulationRoleType' => {
@@ -33,8 +33,5 @@ RSpec.describe CdsImporter::EntityMapper::CompleteAbrogationRegulationMapper do
         approved_flag: false,
       }
     end
-
-    let(:expected_entity_class) { 'CompleteAbrogationRegulation' }
-    let(:expected_mapping_root) { 'CompleteAbrogationRegulation' }
   end
 end

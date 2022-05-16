@@ -1,5 +1,5 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureTypeMapper do
-  it_behaves_like 'an entity mapper' do
+  it_behaves_like 'an entity mapper', 'MeasureType', 'MeasureType' do
     let(:xml_node) do
       {
         'measureTypeId' => '487',
@@ -38,8 +38,5 @@ RSpec.describe CdsImporter::EntityMapper::MeasureTypeMapper do
         measure_type_series_id: 'M',
       }
     end
-
-    let(:expected_entity_class) { 'MeasureType' }
-    let(:expected_mapping_root) { 'MeasureType' }
   end
 end
