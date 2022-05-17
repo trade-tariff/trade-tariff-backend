@@ -32,14 +32,8 @@ class CdsImporter
     end
 
     class << self
-      # select all mappers that have mapping_root equal to current xml key
-      # it means that every selected mapper requires fetched by this xml key
-      # sort mappers to apply top level first
-      # e.g. Footnote before FootnoteDescription
       def applicable_mappers_for(key)
-        mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }
-
-        mappers.sort_by { |m| m.mapping_path ? m.mapping_path.length : 0 }
+        all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
       end
 
       def all_mapping_roots

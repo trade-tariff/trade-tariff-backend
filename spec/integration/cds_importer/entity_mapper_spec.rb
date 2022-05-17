@@ -452,8 +452,8 @@ RSpec.describe CdsImporter::EntityMapper do
       let(:expected_applicable_mappers) do
         [
           CdsImporter::EntityMapper::MeasureMapper,
-          CdsImporter::EntityMapper::MeasureConditionMapper,
           CdsImporter::EntityMapper::MeasureComponentMapper,
+          CdsImporter::EntityMapper::MeasureConditionMapper,
           CdsImporter::EntityMapper::FootnoteAssociationMeasureMapper,
           CdsImporter::EntityMapper::MeasurePartialTemporaryStopMapper,
           CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper,
@@ -473,7 +473,7 @@ RSpec.describe CdsImporter::EntityMapper do
   end
 
   describe '.all_mapping_roots' do
-    subject(:all_mapping_roots) { described_class.all_mapping_roots }
+    subject(:all_mapping_roots) { described_class.all_mapping_roots.reject { |mr| mr == 'foo' } }
 
     let(:expected_mapping_roots) do
       %w[
@@ -517,7 +517,7 @@ RSpec.describe CdsImporter::EntityMapper do
   end
 
   describe '.all_mappers' do
-    subject(:all_mappers) { described_class.all_mappers.sort }
+    subject(:all_mappers) { described_class.all_mappers.sort_by(&:name) }
 
     let(:expected_mappers) do
       [

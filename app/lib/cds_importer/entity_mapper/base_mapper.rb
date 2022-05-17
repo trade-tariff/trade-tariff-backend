@@ -50,6 +50,10 @@ class CdsImporter
           instrument('apply.import_warnings', message:, xml_node:)
         end
 
+        def sort_key
+          "#{mapping_path.to_s.length}#{name}"
+        end
+
         protected
 
         def before_oplog_inserts(&block)
