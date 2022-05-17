@@ -1,4 +1,4 @@
-shared_examples_for 'a serialized goods nomenclature' do |type|
+RSpec.shared_examples_for 'a serialized goods nomenclature' do |type|
   subject(:serializer) { described_class.new(serializable, {}) }
 
   let(:serializable) { build(:goods_nomenclature, :with_description) }

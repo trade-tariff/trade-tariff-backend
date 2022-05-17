@@ -1,4 +1,4 @@
-shared_examples_for 'one to one to' do |associated_object, eager_load_association = associated_object|
+RSpec.shared_examples_for 'one to one to' do |associated_object, eager_load_association = associated_object|
   @source_record =  :"#{described_class.to_s.underscore}"
   let!(:primary_key)               { associated_object.to_s.classify.constantize.primary_key }
   let!(:left_primary_key)          { primary_key }

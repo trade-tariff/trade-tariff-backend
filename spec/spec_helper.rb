@@ -9,6 +9,7 @@ RSpec.configure do |config|
 
   config.filter_run :focus
   config.run_all_when_everything_filtered = true
+  config.expose_dsl_globally = false
 
   config.order = :random
 

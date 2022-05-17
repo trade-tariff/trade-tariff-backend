@@ -1,4 +1,4 @@
-shared_examples_for 'a component' do |type|
+RSpec.shared_examples_for 'a component' do |type|
   it_is_associated 'one to one to', :duty_expression do
     let(:duty_expression_id) { Forgery(:basic).text(exactly: 3) }
   end
