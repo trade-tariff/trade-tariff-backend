@@ -1,6 +1,8 @@
 class DataMigration < Sequel::Model
   VERSION_FORMAT = /\A20\d{12}\z/
 
+  set_dataset order(Sequel.asc(:filename))
+
   dataset_module do
     def version(version)
       raise ArgumentError, 'Invalid version number' unless version =~ VERSION_FORMAT
@@ -25,5 +27,9 @@ class DataMigration < Sequel::Model
     def within(since, upto)
       since(since).upto(upto)
     end
+  end
+
+  def version
+    filename.first(14)
   end
 end
