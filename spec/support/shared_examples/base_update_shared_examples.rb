@@ -1,4 +1,4 @@
-shared_examples_for 'Base Update' do
+RSpec.shared_examples_for 'Base Update' do
   describe '.sync' do
     include BankHolidaysHelper
 

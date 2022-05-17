@@ -1,4 +1,4 @@
-shared_examples_for 'v2 search references controller' do
+RSpec.shared_examples_for 'v2 search references controller' do
   before { login_as_api_user }
 
 
