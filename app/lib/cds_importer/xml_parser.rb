@@ -10,7 +10,7 @@ class CdsImporter
 
       def initialize(stringio, target_handler)
         @stringio = stringio
-        @targets = CdsImporter::EntityMapper::ALL_MAPPERS.map(&:mapping_root).compact.uniq
+        @targets = CdsImporter::EntityMapper.all_mapping_roots
         @target_handler = target_handler
         @target_depth = 3
         @in_target = false
