@@ -2,9 +2,24 @@ module Api
   module Admin
     class CommoditiesController < ApiController
       before_action :find_commodity, only: [:show]
+      before_action :authenticate_user!
 
       def show
         render json: Api::Admin::Commodities::CommoditySerializer.new(@commodity, { is_collection: false }).serializable_hash
+      end
+
+      def index
+        commodities = ::Admin::QueryAllCommodities.call(actual_date.iso8601)
+
+        respond_to do |format|
+          format.csv do
+            send_data(
+              Api::Admin::Commodities::CommodityCsvSerializer.new(commodities).serialized_csv,
+              type: 'text/csv; charset=utf-8; header=present',
+              disposition: "attachment; filename=#{TradeTariffBackend.service}-commodities-#{actual_date.iso8601}.csv",
+            )
+          end
+        end
       end
 
       private
