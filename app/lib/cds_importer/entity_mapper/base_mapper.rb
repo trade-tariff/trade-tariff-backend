@@ -21,29 +21,23 @@ class CdsImporter
         end
 
         def base_mapping
-          BASE_MAPPING.except(*exclude_mapping).keys.inject({}) do |memo, key|
+          BASE_MAPPING.except(*exclude_mapping).keys.each_with_object({}) do |key, memo|
             mapped_key = mapping_path.present? ? "#{mapping_path}.#{key}" : key
             memo[mapped_key] = BASE_MAPPING[key]
-            memo
           end
         end
 
-        def mappers
-          Dir[Rails.root.join('app/lib/cds_importer/entity_mapper/*.rb')].sort.each { |f| require f }
-        end
-
         def mapping_with_key_as_array
-          entity_mapping.keys.inject({}) do |memo, key|
+          entity_mapping.keys.each_with_object({}) do |key, memo|
             memo[key.split(PATH_SEPARATOR)] = entity_mapping[key]
-            memo
           end
         end
 
         def mapping_keys_to_parse
-          mapping_with_key_as_array.keys.reject { |key|
+          mapping_with_key_as_array.keys.reject do |key|
             key.size == 1 ||
               key[0] == METAINFO
-          }
+          end
         end
 
         def instrument_warning(message, xml_node)
@@ -75,7 +69,7 @@ class CdsImporter
         'validityEndDate' => :validity_end_date,
         'metainfo.origin' => :national,
         'metainfo.opType' => :operation,
-        'metainfo.transactionDate' => :operation_date
+        'metainfo.transactionDate' => :operation_date,
       }.freeze
 
       def initialize(values)
@@ -94,14 +88,17 @@ class CdsImporter
             new_expanded = nil
             expanded.each do |values|
               value = values.dig(*current_path)
-              if value.is_a?(Array)
-                # iterating through all items in Array and creating @values copy
-                value.each do |v|
-                  # [1,2,3] => {1=>{2=>{3=>value}}
-                  tmp = current_path.lazy.reverse_each.inject(v) { |memo, i| memo = { i => memo }; memo }
-                  new_expanded ||= []
-                  new_expanded << values.deep_merge(tmp)
+              next unless value.is_a?(Array)
+
+              # iterating through all items in Array and creating @values copy
+              value.each do |v|
+                # [1,2,3] => {1=>{2=>{3=>value}}
+                tmp = current_path.lazy.reverse_each.inject(v) do |memo, i|
+                  memo = { i => memo }
+                  memo
                 end
+                new_expanded ||= []
+                new_expanded << values.deep_merge(tmp)
               end
             end
             expanded = new_expanded if new_expanded.present?
@@ -125,7 +122,7 @@ class CdsImporter
       protected
 
       def entity_class
-        self.class.entity_class.presence || raise(ArgumentError.new("entity_class has not been defined: #{self.class}"))
+        self.class.entity_class.presence || raise(ArgumentError, "entity_class has not been defined: #{self.class}")
       end
 
       def mapping_path
@@ -133,22 +130,21 @@ class CdsImporter
       end
 
       def entity_mapping
-        self.class.entity_mapping.presence || raise(ArgumentError.new("entity_mapping has not been defined: #{self.class}"))
+        self.class.entity_mapping.presence || raise(ArgumentError, "entity_mapping has not been defined: #{self.class}")
       end
 
       def entity_mapping_key_as_array
-        self.class.entity_mapping_key_as_array.presence || raise(ArgumentError.new("entity_mapping_key_as_array has not been defined: #{self.class}"))
+        self.class.entity_mapping_key_as_array.presence || raise(ArgumentError, "entity_mapping_key_as_array has not been defined: #{self.class}")
       end
 
       def entity_mapping_keys_to_parse
-        self.class.entity_mapping_keys_to_parse || raise(ArgumentError.new("entity_mapping_keys_to_parse has not been defined: #{self.class}"))
+        self.class.entity_mapping_keys_to_parse || raise(ArgumentError, "entity_mapping_keys_to_parse has not been defined: #{self.class}")
       end
 
       def mapped_values(values)
-        entity_mapping_key_as_array.keys.inject({}) do |memo, key|
+        entity_mapping_key_as_array.keys.each_with_object({}) do |key, memo|
           mapped_key = entity_mapping_key_as_array[key]
           memo[mapped_key] = values.dig(*key)
-          memo
         end
       end
 
