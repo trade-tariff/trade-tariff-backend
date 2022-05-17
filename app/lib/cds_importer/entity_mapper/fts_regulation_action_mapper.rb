@@ -19,12 +19,8 @@ class CdsImporter
         'regulationRoleType.regulationRoleTypeId' => :fts_regulation_role,
         'fullTemporaryStopRegulationId' => :fts_regulation_id,
         "#{mapping_path}.stoppedRegulationRole" => :stopped_regulation_role,
-        "#{mapping_path}.stoppedRegulationId" => :stopped_regulation_id
+        "#{mapping_path}.stoppedRegulationId" => :stopped_regulation_id,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

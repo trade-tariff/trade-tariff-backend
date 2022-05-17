@@ -14,12 +14,8 @@ class CdsImporter
         'prorogationRegulationId' => :prorogation_regulation_id,
         "#{mapping_path}.prorogatedRegulationRole" => :prorogated_regulation_role,
         "#{mapping_path}.prorogatedRegulationId" => :prorogated_regulation_id,
-        "#{mapping_path}.prorogatedDate" => :prorogated_date
+        "#{mapping_path}.prorogatedDate" => :prorogated_date,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

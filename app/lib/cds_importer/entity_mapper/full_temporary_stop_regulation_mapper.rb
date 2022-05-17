@@ -18,12 +18,8 @@ class CdsImporter
         'explicitAbrogationRegulation.explicitAbrogationRegulationId' => :explicit_abrogation_regulation_id,
         'replacementIndicator' => :replacement_indicator,
         'informationText' => :information_text,
-        'approvedFlag' => :approved_flag
+        'approvedFlag' => :approved_flag,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

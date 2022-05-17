@@ -23,12 +23,8 @@ class CdsImporter
         'explicitAbrogationRegulation.regulationRoleType.regulationRoleTypeId' => :explicit_abrogation_regulation_role,
         'explicitAbrogationRegulation.explicitAbrogationRegulationId' => :explicit_abrogation_regulation_id,
         'completeAbrogationRegulation.regulationRoleType.regulationRoleTypeId' => :complete_abrogation_regulation_role,
-        'completeAbrogationRegulation.completeAbrogationRegulationId' => :complete_abrogation_regulation_id
+        'completeAbrogationRegulation.completeAbrogationRegulationId' => :complete_abrogation_regulation_id,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end
