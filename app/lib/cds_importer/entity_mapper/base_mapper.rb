@@ -28,13 +28,13 @@ class CdsImporter
         end
 
         def mapping_with_key_as_array
-          entity_mapping.keys.each_with_object({}) do |key, memo|
+          @mapping_with_key_as_array ||= entity_mapping.keys.each_with_object({}) do |key, memo|
             memo[key.split(PATH_SEPARATOR)] = entity_mapping[key]
           end
         end
 
         def mapping_keys_to_parse
-          mapping_with_key_as_array.keys.reject do |key|
+          @mapping_keys_to_parse ||= mapping_with_key_as_array.keys.reject do |key|
             key.size == 1 ||
               key[0] == METAINFO
           end
