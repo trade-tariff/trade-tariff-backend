@@ -16,12 +16,8 @@ class CdsImporter
         'produclineSuffix' => :productline_suffix,
         'goodsNomenclatureItemId' => :goods_nomenclature_item_id,
         "#{mapping_path}.footnote.footnoteId" => :footnote_id,
-        "#{mapping_path}.footnote.footnoteType.footnoteTypeId" => :footnote_type
+        "#{mapping_path}.footnote.footnoteType.footnoteTypeId" => :footnote_type,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

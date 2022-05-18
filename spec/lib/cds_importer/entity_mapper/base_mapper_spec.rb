@@ -21,8 +21,6 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
         'mockedModel.foo.bar' => :qux,
         'mockedModel.foo.baz' => :qaz,
       )
-      self.entity_mapping_key_as_array = mapping_with_key_as_array
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse
       self.exclude_mapping = %w[validityStartDate]
 
       def self.name
@@ -48,8 +46,6 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
   it_behaves_like 'an entity mapper accessor', :mapping_path
   it_behaves_like 'an entity mapper accessor', :mapping_root
   it_behaves_like 'an entity mapper accessor', :exclude_mapping
-  it_behaves_like 'an entity mapper accessor', :entity_mapping_key_as_array
-  it_behaves_like 'an entity mapper accessor', :entity_mapping_keys_to_parse
 
   describe '.before_oplog_inserts_callbacks' do
     it { expect(mocked_mapper.before_oplog_inserts_callbacks).to include(an_instance_of(Proc)) }

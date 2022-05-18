@@ -20,12 +20,8 @@ class CdsImporter
         "#{mapping_path}.partialTemporaryStopRegulationOfficialjournalPage" => :partial_temporary_stop_regulation_officialjournal_page,
         "#{mapping_path}.abrogationRegulationId" => :abrogation_regulation_id,
         "#{mapping_path}.abrogationRegulationOfficialjournalNumber" => :abrogation_regulation_officialjournal_number,
-        "#{mapping_path}.abrogationRegulationOfficialjournalPage" => :abrogation_regulation_officialjournal_page
+        "#{mapping_path}.abrogationRegulationOfficialjournalPage" => :abrogation_regulation_officialjournal_page,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

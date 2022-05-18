@@ -13,13 +13,9 @@ class CdsImporter
         'originDestCode' => :origin_dest_code,
         'orderNumberCaptureCode' => :order_number_capture_code,
         'measureExplosionLevel' => :measure_explosion_level,
-        'measureTypeSeries.measureTypeSeriesId' => :measure_type_series_id
+        'measureTypeSeries.measureTypeSeriesId' => :measure_type_series_id,
         # measure_type_acronym will be skipped
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

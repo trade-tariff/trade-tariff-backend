@@ -11,12 +11,8 @@ class CdsImporter
         'sid' => :goods_nomenclature_sid,
         'goodsNomenclatureItemId' => :goods_nomenclature_item_id,
         'produclineSuffix' => :producline_suffix,
-        'statisticalIndicator' => :statistical_indicator
+        'statisticalIndicator' => :statistical_indicator,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

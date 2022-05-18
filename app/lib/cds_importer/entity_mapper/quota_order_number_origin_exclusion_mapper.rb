@@ -16,12 +16,8 @@ class CdsImporter
 
       self.entity_mapping = base_mapping.merge(
         'quotaOrderNumberOrigin.sid' => :quota_order_number_origin_sid,
-        "#{mapping_path}.geographicalArea.sid" => :excluded_geographical_area_sid
+        "#{mapping_path}.geographicalArea.sid" => :excluded_geographical_area_sid,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

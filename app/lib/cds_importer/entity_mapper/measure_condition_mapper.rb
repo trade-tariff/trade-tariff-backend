@@ -25,12 +25,8 @@ class CdsImporter
         "#{mapping_path}.measurementUnitQualifier.measurementUnitQualifierCode" => :condition_measurement_unit_qualifier_code,
         "#{mapping_path}.measureAction.actionCode" => :action_code,
         "#{mapping_path}.certificate.certificateType.certificateTypeCode" => :certificate_type_code,
-        "#{mapping_path}.certificate.certificateCode" => :certificate_code
+        "#{mapping_path}.certificate.certificateCode" => :certificate_code,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

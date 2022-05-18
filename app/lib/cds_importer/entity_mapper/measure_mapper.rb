@@ -25,10 +25,6 @@ class CdsImporter
         'exportRefundNomenclature.sid' => :export_refund_nomenclature_sid,
       ).freeze
 
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
-
       before_oplog_inserts do |xml_node|
         MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
       end

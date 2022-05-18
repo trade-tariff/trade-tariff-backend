@@ -21,12 +21,8 @@ class CdsImporter
         'validityStartDate' => :validity_start_date,
         'validityEndDate' => :validity_end_date,
         'metainfo.opType' => :operation,
-        'metainfo.transactionDate' => :operation_date
+        'metainfo.transactionDate' => :operation_date,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

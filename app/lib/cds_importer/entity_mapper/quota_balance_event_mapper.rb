@@ -19,12 +19,8 @@ class CdsImporter
         "#{mapping_path}.lastImportDateInAllocation" => :last_import_date_in_allocation,
         "#{mapping_path}.oldBalance" => :old_balance,
         "#{mapping_path}.newBalance" => :new_balance,
-        "#{mapping_path}.importedAmount" => :imported_amount
+        "#{mapping_path}.importedAmount" => :imported_amount,
       ).freeze
-
-      self.entity_mapping_key_as_array = mapping_with_key_as_array.freeze
-
-      self.entity_mapping_keys_to_parse = mapping_keys_to_parse.freeze
     end
   end
 end

@@ -1,16 +1,16 @@
 class CdsImporter
   class EntityMapper
     class BaseMapper
+      delegate :entity_class, :entity_mapping, :mapping_path, :mapping_root, :exclude_mapping, :mapping_with_key_as_array, :mapping_keys_to_parse, to: :class
+
       class << self
         delegate :instrument, :subscribe, to: ActiveSupport::Notifications
-        # entity_class    - model
-        # entity_mapping  - attributes mapping
-        # entity_mapping_key_as_array  - attributes mapping
-        # mapping_path    - path to attributes in xml
-        # mapping_root    - node name in xml that provides data for mapping
-        # exclude_mapping - list of excluded attributes
-        attr_accessor :entity_class, :entity_mapping, :mapping_path, :mapping_root, :exclude_mapping,
-                      :entity_mapping_key_as_array, :entity_mapping_keys_to_parse
+
+        attr_accessor :entity_class,   # model
+                      :entity_mapping, # attributes mapping
+                      :mapping_path,   # path to attributes in xml
+                      :mapping_root,   # node name in xml that provides data for mapping
+                      :exclude_mapping # list of excluded attributes
 
         def before_oplog_inserts_callbacks
           @before_oplog_inserts_callbacks ||= []
@@ -28,13 +28,13 @@ class CdsImporter
         end
 
         def mapping_with_key_as_array
-          entity_mapping.keys.each_with_object({}) do |key, memo|
+          @mapping_with_key_as_array ||= entity_mapping.keys.each_with_object({}) do |key, memo|
             memo[key.split(PATH_SEPARATOR)] = entity_mapping[key]
           end
         end
 
         def mapping_keys_to_parse
-          mapping_with_key_as_array.keys.reject do |key|
+          @mapping_keys_to_parse ||= mapping_with_key_as_array.keys.reject do |key|
             key.size == 1 ||
               key[0] == METAINFO
           end
@@ -73,7 +73,7 @@ class CdsImporter
       }.freeze
 
       def initialize(values)
-        @values = values.slice(*entity_mapping_key_as_array.keys.map { |k| k[0] }.uniq)
+        @values = values.slice(*mapping_with_key_as_array.keys.map { |k| k[0] }.uniq)
       end
 
       # Sometimes we have array as a mapping path value,
@@ -81,7 +81,7 @@ class CdsImporter
       def parse
         expanded = [@values]
         # iterating through all the mapping keys to expand Arrays
-        entity_mapping_keys_to_parse.each do |path|
+        mapping_keys_to_parse.each do |path|
           current_path = []
           path.each do |key|
             current_path << key
@@ -108,42 +108,21 @@ class CdsImporter
         if mapping_path.present?
           expanded.select! { |values| values.dig(*mapping_path.split(PATH_SEPARATOR)).present? }
         end
-        expanded.map { |values| create_instance(values) }
+        expanded.map(&method(:build_instance))
       end
 
       private
 
-      def create_instance(values)
-        normalized_values = normalized_values(mapped_values(values))
+      def build_instance(values)
+        values = mapped_values(values)
+        normalized_values = normalized_values(values)
         instance = entity_class.constantize.new
         instance.set_fields(normalized_values, entity_mapping.values)
       end
 
-      protected
-
-      def entity_class
-        self.class.entity_class.presence || raise(ArgumentError, "entity_class has not been defined: #{self.class}")
-      end
-
-      def mapping_path
-        self.class.mapping_path.presence
-      end
-
-      def entity_mapping
-        self.class.entity_mapping.presence || raise(ArgumentError, "entity_mapping has not been defined: #{self.class}")
-      end
-
-      def entity_mapping_key_as_array
-        self.class.entity_mapping_key_as_array.presence || raise(ArgumentError, "entity_mapping_key_as_array has not been defined: #{self.class}")
-      end
-
-      def entity_mapping_keys_to_parse
-        self.class.entity_mapping_keys_to_parse || raise(ArgumentError, "entity_mapping_keys_to_parse has not been defined: #{self.class}")
-      end
-
       def mapped_values(values)
-        entity_mapping_key_as_array.keys.each_with_object({}) do |key, memo|
-          mapped_key = entity_mapping_key_as_array[key]
+        mapping_with_key_as_array.keys.each_with_object({}) do |key, memo|
+          mapped_key = mapping_with_key_as_array[key]
           memo[mapped_key] = values.dig(*key)
         end
       end
