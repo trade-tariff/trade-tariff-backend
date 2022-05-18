@@ -41,28 +41,11 @@ RSpec.describe Api::V2::SearchReferencesController do
   end
 
   context 'with no letter param provided' do
-    let(:pattern) do
-      {
-        data: [
-          {
-            id: String,
-            type: String,
-            attributes: {
-              title: String,
-              referenced_class: 'Heading',
-              referenced_id: String,
-              productline_suffix: String,
-            },
-          },
-        ],
-      }
-    end
+    it 'does not filter by letter' do
+      get :index, format: :json
 
-    it 'peforms lookup with letter A by default' do
-      get :index,
-          format: :json
-
-      expect(response.body).to match_json_expression pattern
+      ref_count = JSON.parse(response.body)['data'].count
+      expect(ref_count).to eq(3)
     end
   end
 end
