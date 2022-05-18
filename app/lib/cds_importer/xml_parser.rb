@@ -6,16 +6,18 @@ class CdsImporter
   module XmlParser
     class Reader < ::Ox::Sax
       STRIP_NAMESPACE = '*'.freeze
-      CONTENT_KEY = :__content__.freeze
+      CONTENT_KEY = :__content__
 
       def initialize(stringio, target_handler)
         @stringio = stringio
-        @targets = CdsImporter::EntityMapper::ALL_MAPPERS.map(&:mapping_root).compact.uniq
+        @targets = CdsImporter::EntityMapper.all_mapping_roots
         @target_handler = target_handler
         @target_depth = 3
         @in_target = false
         @stack = []
         @depth = 0
+
+        super()
       end
 
       def parse
@@ -55,11 +57,11 @@ class CdsImporter
         when Hash
           @node[key] = [@node[key], child]
         else
-          if child.size == 1 && child.key?(CONTENT_KEY)
-            @node[key] = child[:__content__]
-          else
-            @node[key] = child
-          end
+          @node[key] = if child.size == 1 && child.key?(CONTENT_KEY)
+                         child[:__content__]
+                       else
+                         child
+                       end
         end
       end
     end
