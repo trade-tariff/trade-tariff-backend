@@ -18,7 +18,6 @@ class CdsImporter
       CdsImporter::EntityMapper::DutyExpressionMapper,
       CdsImporter::EntityMapper::ExplicitAbrogationRegulationMapper,
       CdsImporter::EntityMapper::FootnoteAssociationAdditionalCodeMapper,
-      CdsImporter::EntityMapper::FootnoteAssociationErnMapper,
       CdsImporter::EntityMapper::FootnoteAssociationGoodsNomenclatureMapper,
       CdsImporter::EntityMapper::FootnoteAssociationMeasureMapper,
       CdsImporter::EntityMapper::FootnoteAssociationMeursingHeadingMapper,
