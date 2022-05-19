@@ -37,6 +37,8 @@ class CachedSubheadingService
       presented.heading_id = presented.heading.id
       presented.commodity_ids = presented.commodities.map(&:id)
       presented.footnote_ids = presented.footnotes.map(&:id)
+      presented.ancestors = @subheading.ancestors
+      presented.ancestor_ids = presented.ancestors.map(&:id)
 
       presented.chapter.guide_ids = presented.chapter.guides.map(&:id)
       presented.commodities.each do |commodity|

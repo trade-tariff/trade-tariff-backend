@@ -22,6 +22,7 @@ module Api
         has_one :section, serializer: Api::V2::Subheadings::SectionSerializer
         has_one :chapter, serializer: Api::V2::Subheadings::ChapterSerializer
         has_one :heading, serializer: Api::V2::Subheadings::HeadingSerializer
+        has_many :ancestors, serializer: Api::V2::Commodities::CommoditySerializer
         has_many :commodities, serializer: Api::V2::Subheadings::CommoditySerializer
         has_many :footnotes, serializer: Api::V2::Subheadings::FootnoteSerializer
       end
