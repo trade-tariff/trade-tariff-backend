@@ -238,5 +238,9 @@ module TradeTariffBackend
     def normalised_measure_units?
       ENV['NORMALISED_MEASURE_UNITS'].to_s == 'true'
     end
+
+    def handle_soft_deletes?
+      ENV['SOFT_DELETES'].to_s == 'true'
+    end
   end
 end

@@ -145,6 +145,14 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
       it { expect(destroy_operation?).to be(false) }
     end
 
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
+      before do
+        allow(TradeTariffBackend).to receive(:handle_soft_deletes?).and_return(false)
+      end
+
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
     it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
       let(:mapper_class) { primary_mocked_mapper }
     end

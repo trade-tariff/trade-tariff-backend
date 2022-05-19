@@ -63,7 +63,8 @@ class CdsImporter
 
         def destroy_operation?(xml_node)
           xml_node.dig('metainfo', 'opType') == Sequel::Plugins::Oplog::DESTROY_OPERATION &&
-            primary?
+            primary? &&
+            TradeTariffBackend.handle_soft_deletes?
         end
 
         protected
