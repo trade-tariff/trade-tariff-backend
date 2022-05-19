@@ -28,4 +28,77 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
       }
     end
   end
+
+  describe '#import' do
+    subject(:entity_mapper) { CdsImporter::EntityMapper.new('Footnote', xml_node) }
+
+    let(:xml_node) do
+      {
+        'metainfo' => {
+          'origin' => 'T',
+          'opType' => operation,
+          'transactionDate' => '2016-07-27T09:18:57',
+        },
+        'footnoteId' => '133',
+        'footnoteType' => { 'footnoteTypeId' => 'TM' },
+        'footnoteDescriptionPeriod' => {
+          'sid' => '1355',
+          'footnoteDescription' => {
+            'description' => 'The rate of duty is applicable to the net free-at-Community',
+            'language' => { 'languageId' => 'EN' },
+            'metainfo' => {
+              'origin' => 'T',
+              'opType' => operation,
+              'transactionDate' => '2016-07-27T09:18:57',
+            },
+          },
+          'metainfo' => {
+            'origin' => 'T',
+            'opType' => operation,
+            'transactionDate' => '2016-07-27T09:18:57',
+          },
+        },
+      }
+    end
+
+    before do
+      create(
+        :footnote,
+        :with_additional_code_association,
+        :with_gono_association,
+        :with_measure_association,
+        :with_meursing_heading_association,
+        footnote_id: '133',
+        footnote_type_id: 'TM',
+      )
+    end
+
+    context 'when the footnote is being updated' do
+      let(:operation) { 'U' }
+
+      it_behaves_like 'an entity mapper update operation', Footnote
+      it_behaves_like 'an entity mapper update operation', FootnoteDescriptionPeriod
+      it_behaves_like 'an entity mapper update operation', FootnoteDescription
+    end
+
+    context 'when the footnote is being created' do
+      let(:operation) { 'C' }
+
+      it_behaves_like 'an entity mapper create operation', Footnote
+      it_behaves_like 'an entity mapper create operation', FootnoteDescriptionPeriod
+      it_behaves_like 'an entity mapper create operation', FootnoteDescription
+    end
+
+    context 'when the footnote is being deleted' do
+      let(:operation) { 'D' }
+
+      it_behaves_like 'an entity mapper destroy operation', Footnote
+      it_behaves_like 'an entity mapper destroy operation', FootnoteAssociationAdditionalCode
+      it_behaves_like 'an entity mapper destroy operation', FootnoteAssociationGoodsNomenclature
+      it_behaves_like 'an entity mapper destroy operation', FootnoteAssociationMeasure
+      it_behaves_like 'an entity mapper destroy operation', FootnoteAssociationMeursingHeading
+      it_behaves_like 'an entity mapper destroy operation', FootnoteDescription
+      it_behaves_like 'an entity mapper destroy operation', FootnoteDescriptionPeriod
+    end
+  end
 end

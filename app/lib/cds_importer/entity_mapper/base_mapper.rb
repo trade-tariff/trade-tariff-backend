@@ -1,6 +1,19 @@
 class CdsImporter
   class EntityMapper
     class BaseMapper
+      NATIONAL = 'N'.freeze
+      APPROVED_FLAG = '1'.freeze
+      STOPPED_FLAG = '1'.freeze
+      PATH_SEPARATOR = '.'.freeze
+      METAINFO = 'metainfo'.freeze
+      BASE_MAPPING = {
+        'validityStartDate' => :validity_start_date,
+        'validityEndDate' => :validity_end_date,
+        'metainfo.origin' => :national,
+        'metainfo.opType' => :operation,
+        'metainfo.transactionDate' => :operation_date,
+      }.freeze
+
       delegate :entity_class, :entity_mapping, :mapping_path, :mapping_root, :exclude_mapping, :mapping_with_key_as_array, :mapping_keys_to_parse, to: :class
 
       class << self
@@ -48,6 +61,11 @@ class CdsImporter
           "#{mapping_path.to_s.length}#{name}"
         end
 
+        def destroy_operation?(xml_node)
+          xml_node.dig('metainfo', 'opType') == Sequel::Plugins::Oplog::DESTROY_OPERATION &&
+            primary?
+        end
+
         protected
 
         def before_oplog_inserts(&block)
@@ -57,20 +75,11 @@ class CdsImporter
         def before_building_model(&block)
           before_building_model_callbacks << block
         end
-      end
 
-      NATIONAL = 'N'.freeze
-      APPROVED_FLAG = '1'.freeze
-      STOPPED_FLAG = '1'.freeze
-      PATH_SEPARATOR = '.'.freeze
-      METAINFO = 'metainfo'.freeze
-      BASE_MAPPING = {
-        'validityStartDate' => :validity_start_date,
-        'validityEndDate' => :validity_end_date,
-        'metainfo.origin' => :national,
-        'metainfo.opType' => :operation,
-        'metainfo.transactionDate' => :operation_date,
-      }.freeze
+        def primary?
+          name.match(/\ACdsImporter::EntityMapper::(?<entity_class>.*)Mapper\z/).try(:[], :entity_class) == entity_class
+        end
+      end
 
       def initialize(values)
         @values = values.slice(*mapping_with_key_as_array.keys.map { |k| k[0] }.uniq)
