@@ -49,8 +49,8 @@ module Sequel
         # For some reasons it does not work for operation setter method (operation=) for child class
         # in rails = 5.1.6.1 and sequel >= 5.0.0
         # e.g. Chapter, Heading, Commodity
-        def operation=(op)
-          self[:operation] = op.present? ? op[0].upcase : op
+        def operation=(operation)
+          self[:operation] = operation.present? ? operation[0].upcase : operation
         end
 
         def operation
