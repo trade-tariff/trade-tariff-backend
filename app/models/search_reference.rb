@@ -47,7 +47,7 @@ class SearchReference < Sequel::Model
     end
 
     def for_letter(letter)
-      where(Sequel.ilike(:title, "#{letter}%"))
+      where(Sequel.ilike(:title, "#{letter}%")).by_title
     end
 
     def indexable
