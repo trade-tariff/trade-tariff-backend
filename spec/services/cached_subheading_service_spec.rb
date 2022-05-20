@@ -34,6 +34,7 @@ RSpec.describe CachedSubheadingService do
             heading: Hash,
             commodities: Hash,
             chapter: Hash,
+            ancestors: Hash,
           }.ignore_extra_keys!,
         }.ignore_extra_keys!,
       }.ignore_extra_keys!
