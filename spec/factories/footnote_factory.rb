@@ -26,12 +26,14 @@ FactoryBot.define do
     end
 
     trait :with_gono_association do
-      after(:create) do |ftn, evaluator|
-        FactoryBot.create(:footnote_association_goods_nomenclature, goods_nomenclature_sid: evaluator.goods_nomenclature_sid,
-                                                                    footnote_id: ftn.footnote_id,
-                                                                    footnote_type: ftn.footnote_type_id,
-                                                                    validity_start_date: evaluator.valid_at,
-                                                                    validity_end_date: evaluator.valid_to)
+      after(:create) do |footnote, evaluator|
+        create(
+          :footnote_association_goods_nomenclature,
+          goods_nomenclature_sid: evaluator.goods_nomenclature_sid,
+          footnote:,
+          validity_start_date: evaluator.valid_at,
+          validity_end_date: evaluator.valid_to,
+        )
       end
     end
 
@@ -42,6 +44,26 @@ FactoryBot.define do
           measure_sid: evaluator.measure_sid,
           footnote_id: footnote.footnote_id,
           footnote_type_id: footnote.footnote_type_id,
+        )
+      end
+    end
+
+    trait :with_additional_code_association do
+      after(:create) do |footnote, _evaluator|
+        create(
+          :footnote_association_additional_code,
+          footnote_id: footnote.footnote_id,
+          footnote_type_id: footnote.footnote_type_id,
+        )
+      end
+    end
+
+    trait :with_meursing_heading_association do
+      after(:create) do |footnote, _evaluator|
+        create(
+          :footnote_association_meursing_heading,
+          footnote_id: footnote.footnote_id,
+          footnote_type: footnote.footnote_type_id,
         )
       end
     end

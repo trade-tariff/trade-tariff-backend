@@ -445,28 +445,50 @@ RSpec.describe CdsImporter::EntityMapper do
   end
 
   describe '.applicable_mappers_for' do
-    subject(:applicable_mappers_for) { described_class.applicable_mappers_for(key) }
+    subject(:applicable_mappers_for) { described_class.applicable_mappers_for(key, xml_node) }
 
-    context 'when the key belongs to a mapping root' do
+    let(:xml_node) do
+      {
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'N',
+          'transactionDate' => '2017-06-29T20:04:37',
+        },
+      }
+    end
+
+    context 'when the primary node is set for soft deletion' do
       let(:key) { 'Measure' }
+      let(:operation) { 'D' }
+
+      let(:expected_applicable_mappers) { [an_instance_of(CdsImporter::EntityMapper::MeasureMapper)] }
+
+      it { is_expected.to match_array(expected_applicable_mappers) }
+    end
+
+    context 'when the primary node is `not` set for soft deletion' do
+      let(:key) { 'Measure' }
+      let(:operation) { 'U' }
+
       let(:expected_applicable_mappers) do
         [
-          CdsImporter::EntityMapper::MeasureMapper,
-          CdsImporter::EntityMapper::MeasureComponentMapper,
-          CdsImporter::EntityMapper::MeasureConditionMapper,
-          CdsImporter::EntityMapper::FootnoteAssociationMeasureMapper,
-          CdsImporter::EntityMapper::MeasurePartialTemporaryStopMapper,
-          CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper,
-          CdsImporter::EntityMapper::MeasureConditionComponentMapper,
+          an_instance_of(CdsImporter::EntityMapper::MeasureMapper),
+          an_instance_of(CdsImporter::EntityMapper::MeasureComponentMapper),
+          an_instance_of(CdsImporter::EntityMapper::MeasureConditionMapper),
+          an_instance_of(CdsImporter::EntityMapper::FootnoteAssociationMeasureMapper),
+          an_instance_of(CdsImporter::EntityMapper::MeasurePartialTemporaryStopMapper),
+          an_instance_of(CdsImporter::EntityMapper::MeasureExcludedGeographicalAreaMapper),
+          an_instance_of(CdsImporter::EntityMapper::MeasureConditionComponentMapper),
         ]
       end
 
-      it { is_expected.to eq(expected_applicable_mappers) }
+      it { is_expected.to match_array(expected_applicable_mappers) }
     end
 
     context 'when the key does not belong to a mapping root' do
       let(:key) { 'ReticulatingSpleens' }
       let(:expected_applicable_mappers) { [] }
+      let(:operation) { 'U' }
 
       it { is_expected.to eq(expected_applicable_mappers) }
     end

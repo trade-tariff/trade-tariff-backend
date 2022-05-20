@@ -1,6 +1,10 @@
 module Sequel
   module Plugins
     module Oplog
+      CREATE_OPERATION = 'C'.freeze
+      UPDATE_OPERATION = 'U'.freeze
+      DESTROY_OPERATION = 'D'.freeze
+
       def self.configure(model, options = {})
         model_primary_key = options.fetch(:primary_key, model.primary_key)
         primary_key = [:oid, model_primary_key].flatten
@@ -19,7 +23,7 @@ module Sequel
           key: model_primary_key,
           primary_key: model_primary_key,
           foreign_key: model_primary_key,
-          class_name: model
+          class_name: model,
         )
         operation_class.set_primary_key(primary_key)
 
@@ -45,15 +49,15 @@ module Sequel
         # For some reasons it does not work for operation setter method (operation=) for child class
         # in rails = 5.1.6.1 and sequel >= 5.0.0
         # e.g. Chapter, Heading, Commodity
-        def operation=(op)
-          self[:operation] = op.present? ? op[0].upcase : op
+        def operation=(operation)
+          self[:operation] = operation.present? ? operation[0].upcase : operation
         end
 
         def operation
           case self[:operation]
-          when 'C' then :create
-          when 'U' then :update
-          when 'D' then :destroy
+          when CREATE_OPERATION then :create
+          when UPDATE_OPERATION then :update
+          when DESTROY_OPERATION then :destroy
           else
             :create
           end
@@ -64,11 +68,11 @@ module Sequel
         # @note fixes `NotImplementedError: You should be inserting model instances`
         # Since sequel 5.4.0 method needs to return `nil` to execute `_insert_raw`
         # See https://github.com/jeremyevans/sequel/compare/5.3.0...5.4.0#diff-a5b2d78790313f597d88b4f2977a7d57R1638
-        def _insert_select_raw(_ds)
+        def _insert_select_raw(_dataset)
           nil
         end
 
-        def _insert_raw(_ds)
+        def _insert_raw(_dataset)
           self.operation = :create
 
           values = self.values.except(:oid)
@@ -107,15 +111,15 @@ module Sequel
       module ClassMethods
         # Hide oplog columns if asked
         def columns
-          super - [:oid, :operation, :operation_date]
+          super - %i[oid operation operation_date]
         end
 
-        def insert(*args)
-          raise NotImplementedError.new('You should be instantiating model and saving instances.')
+        def insert(*_args)
+          raise NotImplementedError, 'You should be instantiating model and saving instances.'
         end
 
         def operation_klass
-          @_operation_klass ||= "#{self}::Operation".constantize
+          @operation_klass ||= "#{self}::Operation".constantize
         end
       end
 
@@ -125,11 +129,11 @@ module Sequel
         end
 
         def insert
-          raise NotImplementedError.new('You should be inserting model instances.')
+          raise NotImplementedError, 'You should be inserting model instances.'
         end
 
         def delete
-          raise NotImplementedError.new('You should be *destroying* model instances.')
+          raise NotImplementedError, 'You should be *destroying* model instances.'
         end
       end
     end

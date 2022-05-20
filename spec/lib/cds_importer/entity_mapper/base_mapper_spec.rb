@@ -10,7 +10,25 @@ class MockedModel
 end
 
 RSpec.describe CdsImporter::EntityMapper::BaseMapper do
-  let(:mocked_mapper) do
+  let(:primary_mocked_mapper) do
+    Class.new(described_class) do
+      # No mapping path pulls base values for the mapper out of the primary node
+      self.entity_class = 'MockedModel'
+      self.mapping_root = 'MockedModel'
+      self.entity_mapping = base_mapping.merge(
+        'sid' => :measure_sid,
+        'flibble' => :squiloogle,
+        'foo.bar' => :qux,
+        'foo.baz' => :qaz,
+      )
+
+      def self.name
+        'CdsImporter::EntityMapper::MockedModelMapper'
+      end
+    end
+  end
+
+  let(:secondary_mocked_mapper) do
     Class.new(described_class) do
       self.entity_class = 'MockedModel'
       self.mapping_root = 'Primary'
@@ -24,7 +42,7 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
       self.exclude_mapping = %w[validityStartDate]
 
       def self.name
-        'MockedMapper'
+        'CdsImporter::EntityMapper::SecondaryMapper'
       end
 
       before_oplog_inserts do |xml_node|
@@ -48,16 +66,16 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
   it_behaves_like 'an entity mapper accessor', :exclude_mapping
 
   describe '.before_oplog_inserts_callbacks' do
-    it { expect(mocked_mapper.before_oplog_inserts_callbacks).to include(an_instance_of(Proc)) }
+    it { expect(secondary_mocked_mapper.before_oplog_inserts_callbacks).to include(an_instance_of(Proc)) }
   end
 
   describe '.before_building_model_callbacks' do
-    it { expect(mocked_mapper.before_building_model_callbacks).to include(an_instance_of(Proc)) }
+    it { expect(secondary_mocked_mapper.before_building_model_callbacks).to include(an_instance_of(Proc)) }
   end
 
   describe '.base_mapping' do
     it 'returns the mapped base mappings without excluded' do
-      expect(mocked_mapper.base_mapping).to eq(
+      expect(secondary_mocked_mapper.base_mapping).to eq(
         'mockedModel.metainfo.opType' => :operation,
         'mockedModel.metainfo.origin' => :national,
         'mockedModel.metainfo.transactionDate' => :operation_date,
@@ -68,7 +86,7 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
 
   describe '.mapping_with_key_as_array' do
     it 'returns the dot separated mapping keys as an array' do
-      expect(mocked_mapper.mapping_with_key_as_array).to eq(
+      expect(secondary_mocked_mapper.mapping_with_key_as_array).to eq(
         %w[sid] => :measure_sid,
         %w[flibble] => :squiloogle,
         %w[mockedModel foo bar] => :qux,
@@ -84,7 +102,7 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
 
   describe '.mapping_keys_to_parse' do
     it 'returns the dot separated mapping keys as an array' do
-      expect(mocked_mapper.mapping_keys_to_parse).to eq(
+      expect(secondary_mocked_mapper.mapping_keys_to_parse).to eq(
         [
           %w[mockedModel validityStartDate],
           %w[mockedModel validityEndDate],
@@ -99,7 +117,7 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
   end
 
   describe '#parse' do
-    subject(:parsed) { mocked_mapper.new(xml_node).parse.first }
+    subject(:parsed) { secondary_mocked_mapper.new(xml_node).parse.first }
 
     let(:xml_node) do
       {
@@ -152,5 +170,71 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
     it { is_expected.to be_a(MockedModel) }
     it { expect(parsed.values).to eq(expected_values) }
     it { expect(parsed.fields).to eq(expected_fields) }
+  end
+
+  describe '#destroy_operation?' do
+    context 'when the mapper is a primary mapper and the operation is destroy' do
+      subject(:mapper) do
+        primary_mocked_mapper.new(
+          'metainfo' => {
+            'opType' => 'D',
+            'origin' => 'T',
+            'status' => 'L',
+          },
+        )
+      end
+
+      it { is_expected.to be_destroy_operation }
+    end
+
+    shared_examples_for 'an xml node and mapper that are not a destroy operation' do |operation|
+      subject(:mapper) do
+        mapper_class.new(
+          'metainfo' => {
+            'opType' => operation,
+            'origin' => 'T',
+            'status' => 'L',
+          },
+        )
+      end
+
+      it { is_expected.not_to be_destroy_operation }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
+      before do
+        allow(TradeTariffBackend).to receive(:handle_soft_deletes?).and_return(false)
+      end
+
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
   end
 end
