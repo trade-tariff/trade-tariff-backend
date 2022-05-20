@@ -10,8 +10,8 @@ class CdsImporter
         'footnoteType.footnoteTypeId' => :footnote_type_id,
       ).freeze
 
-      before_oplog_inserts do |xml_node|
-        if destroy_operation?(xml_node)
+      before_oplog_inserts do |xml_node, mapper_instance|
+        if mapper_instance.destroy_operation?
           footnote_id = xml_node['footnoteId']
           footnote_type_id = xml_node.dig('footnoteType', 'footnoteTypeId')
 

@@ -116,72 +116,6 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
     end
   end
 
-  describe '.destroy_operation?' do
-    context 'when the mapper is a primary mapper and the operation is destroy' do
-      subject(:destroy_operation?) do
-        primary_mocked_mapper.destroy_operation?(
-          'metainfo' => {
-            'opType' => 'D',
-            'origin' => 'T',
-            'status' => 'L',
-          },
-        )
-      end
-
-      it { expect(destroy_operation?).to be(true) }
-    end
-
-    shared_examples_for 'an xml node and mapper that are not a destroy operation' do |operation|
-      subject(:destroy_operation?) do
-        mapper_class.destroy_operation?(
-          'metainfo' => {
-            'opType' => operation,
-            'origin' => 'T',
-            'status' => 'L',
-          },
-        )
-      end
-
-      it { expect(destroy_operation?).to be(false) }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
-      before do
-        allow(TradeTariffBackend).to receive(:handle_soft_deletes?).and_return(false)
-      end
-
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-  end
-
   describe '#parse' do
     subject(:parsed) { secondary_mocked_mapper.new(xml_node).parse.first }
 
@@ -236,5 +170,71 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
     it { is_expected.to be_a(MockedModel) }
     it { expect(parsed.values).to eq(expected_values) }
     it { expect(parsed.fields).to eq(expected_fields) }
+  end
+
+  describe '#destroy_operation?' do
+    context 'when the mapper is a primary mapper and the operation is destroy' do
+      subject(:mapper) do
+        primary_mocked_mapper.new(
+          'metainfo' => {
+            'opType' => 'D',
+            'origin' => 'T',
+            'status' => 'L',
+          },
+        )
+      end
+
+      it { is_expected.to be_destroy_operation }
+    end
+
+    shared_examples_for 'an xml node and mapper that are not a destroy operation' do |operation|
+      subject(:mapper) do
+        mapper_class.new(
+          'metainfo' => {
+            'opType' => operation,
+            'origin' => 'T',
+            'status' => 'L',
+          },
+        )
+      end
+
+      it { is_expected.not_to be_destroy_operation }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
+      before do
+        allow(TradeTariffBackend).to receive(:handle_soft_deletes?).and_return(false)
+      end
+
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
+      let(:mapper_class) { primary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
+
+    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
+      let(:mapper_class) { secondary_mocked_mapper }
+    end
   end
 end

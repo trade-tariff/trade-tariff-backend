@@ -14,7 +14,17 @@ class CdsImporter
         'metainfo.transactionDate' => :operation_date,
       }.freeze
 
-      delegate :entity_class, :entity_mapping, :mapping_path, :mapping_root, :exclude_mapping, :mapping_with_key_as_array, :mapping_keys_to_parse, to: :class
+      delegate :entity_class,
+               :entity_mapping,
+               :mapping_path,
+               :mapping_root,
+               :exclude_mapping,
+               :mapping_with_key_as_array,
+               :mapping_keys_to_parse,
+               :before_oplog_inserts_callbacks,
+               :before_building_model_callbacks,
+               :name,
+               to: :class
 
       class << self
         delegate :instrument, :subscribe, to: ActiveSupport::Notifications
@@ -61,12 +71,6 @@ class CdsImporter
           "#{mapping_path.to_s.length}#{name}"
         end
 
-        def destroy_operation?(xml_node)
-          xml_node.dig('metainfo', 'opType') == Sequel::Plugins::Oplog::DESTROY_OPERATION &&
-            primary? &&
-            TradeTariffBackend.handle_soft_deletes?
-        end
-
         protected
 
         def before_oplog_inserts(&block)
@@ -76,20 +80,16 @@ class CdsImporter
         def before_building_model(&block)
           before_building_model_callbacks << block
         end
-
-        def primary?
-          name.match(/\ACdsImporter::EntityMapper::(?<entity_class>.*)Mapper\z/).try(:[], :entity_class) == entity_class
-        end
       end
 
-      def initialize(values)
-        @values = values.slice(*mapping_with_key_as_array.keys.map { |k| k[0] }.uniq)
+      def initialize(xml_node)
+        @xml_node = xml_node
       end
 
       # Sometimes we have array as a mapping path value,
       # so need to iterate through it and import each item separately
       def parse
-        expanded = [@values]
+        expanded = [@xml_node]
         # iterating through all the mapping keys to expand Arrays
         mapping_keys_to_parse.each do |path|
           current_path = []
@@ -121,6 +121,12 @@ class CdsImporter
         expanded.map(&method(:build_instance))
       end
 
+      def destroy_operation?
+        @xml_node.dig('metainfo', 'opType') == Sequel::Plugins::Oplog::DESTROY_OPERATION &&
+          primary? &&
+          TradeTariffBackend.handle_soft_deletes?
+      end
+
       private
 
       def build_instance(values)
@@ -142,6 +148,21 @@ class CdsImporter
         values[:approved_flag] = (values[:approved_flag] == APPROVED_FLAG) if values.key?(:approved_flag)
         values[:stopped_flag] = (values[:stopped_flag] == STOPPED_FLAG) if values.key?(:approved_flag)
         values
+      end
+
+      # In the CDS file we treat the parent node differently from the
+      # secondary child nodes when it comes to support for the destroy operation.
+      #
+      # Each entity mapper represents either a child or a parent node in the xml file.
+      #
+      # Parent nodes have the same assigned entity class as their derived class. Our internal naming
+      # for this has been to name this parent node the primary.
+      def primary?
+        derived_entity_class == entity_class
+      end
+
+      def derived_entity_class
+        name.match(/\ACdsImporter::EntityMapper::(?<entity_class>.*)Mapper\z/).try(:[], :entity_class)
       end
     end
   end

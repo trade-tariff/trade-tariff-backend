@@ -17,9 +17,9 @@ class CdsImporter
       applicable_mappers_for(@key, @xml_node).each.with_object({}) do |mapper, oplog_inserts_performed|
         mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) }
 
-        instances = mapper.new(xml_node).parse
+        instances = mapper.parse
 
-        mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node) }
+        mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper) }
 
         instances.each do |i|
           oplog_inserts_performed[i.operation_klass.to_s] ||= 0
@@ -39,10 +39,11 @@ class CdsImporter
       # this is managed by a separate callback process (see each primary entity mapper for what gets soft deleted).
       def applicable_mappers_for(key, xml_node)
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
+        mappers = mappers.map { |mapper| mapper.new(xml_node) }
 
         primary_mapper = mappers.first
 
-        if primary_mapper && primary_mapper.destroy_operation?(xml_node)
+        if primary_mapper&.destroy_operation?
           [primary_mapper]
         else
           mappers
