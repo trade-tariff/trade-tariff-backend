@@ -65,12 +65,13 @@ Rails.application.configure do
 
   # Rails cache store
   # PaasConfig returns url and db
-  config.cache_store = :redis_store,
+  config.cache_store = :redis_cache_store,
                        PaasConfig.redis.merge({
                          expires_in: 1.day,
                          namespace: ENV['GOVUK_APP_DOMAIN'],
-                         pool_size: Integer(ENV['MAX_THREADS'] || 5)
+                         pool_size: Integer(ENV['MAX_THREADS'] || 5),
                        })
+
   # Enable serving of images, stylesheets, and JavaScripts from an asset server.
   # config.action_controller.asset_host = 'http://assets.example.com'
 
