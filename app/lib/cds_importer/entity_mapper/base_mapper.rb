@@ -60,18 +60,8 @@ class CdsImporter
           before_oplog_inserts do |xml_node, _mapper_instance, model_instance|
             if TradeTariffBackend.handle_soft_deletes?
               entity_configuration.each do |relation, options|
-                filter = options[:filter].each_with_object({}) do |(primary_field, secondary_field), acc|
-                  acc[secondary_field] = model_instance.public_send(primary_field)
-                end
-
-                database_entities = relation.where(filter).pluck(options.dig(:relation_primary_key, :model_primary_key))
-                xml_node_entities = Array.wrap(xml_node.fetch(options[:relation_mapping_path], []))
-                xml_node_entities = xml_node_entities.map do |xml_entity|
-                  primary_key_value = xml_entity[options.dig(:relation_primary_key, :xml_node_primary_key)]
-
-                  Integer(primary_key_value)
-                end
-
+                database_entities = database_entities_for(model_instance, relation, options)
+                xml_node_entities = xml_entities_for(xml_node, options)
                 missing_entities = database_entities - xml_node_entities
 
                 relation.where(options.dig(:relation_primary_key, :model_primary_key) => missing_entities).destroy
@@ -109,6 +99,30 @@ class CdsImporter
 
         def before_building_model(&block)
           before_building_model_callbacks << block
+        end
+
+        private
+
+        def xml_entities_for(xml_node, options)
+          xml_node_entities = Array.wrap(xml_node.fetch(options[:relation_mapping_path], []))
+
+          xml_node_entities.map do |xml_entity|
+            primary_key = xml_entity[options.dig(:relation_primary_key, :xml_node_primary_key)]
+
+            Integer(primary_key)
+          end
+        end
+
+        def database_entities_for(model_instance, relation, options)
+          filter = filter_for(options, model_instance)
+
+          relation.where(filter).pluck(options.dig(:relation_primary_key, :model_primary_key))
+        end
+
+        def filter_for(options, model_instance)
+          options[:filter].each_with_object({}) do |(primary_field, secondary_field), acc|
+            acc[secondary_field] = model_instance.public_send(primary_field)
+          end
         end
       end
 
