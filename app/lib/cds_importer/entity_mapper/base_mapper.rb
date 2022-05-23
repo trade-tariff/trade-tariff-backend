@@ -58,22 +58,24 @@ class CdsImporter
         #   relation_primary_key: How we understand the mapping between the model's primary key and the xml nodes primary key
         def delete_missing_entities(entity_configuration)
           before_oplog_inserts do |xml_node, _mapper_instance, model_instance|
-            entity_configuration.each do |relation, options|
-              filter = options[:filter].each_with_object({}) do |(primary_field, secondary_field), acc|
-                acc[secondary_field] = model_instance.public_send(primary_field)
+            if TradeTariffBackend.handle_soft_deletes?
+              entity_configuration.each do |relation, options|
+                filter = options[:filter].each_with_object({}) do |(primary_field, secondary_field), acc|
+                  acc[secondary_field] = model_instance.public_send(primary_field)
+                end
+
+                database_entities = relation.where(filter).pluck(options.dig(:relation_primary_key, :model_primary_key))
+                xml_node_entities = Array.wrap(xml_node.fetch(options[:relation_mapping_path], []))
+                xml_node_entities = xml_node_entities.map do |xml_entity|
+                  primary_key_value = xml_entity[options.dig(:relation_primary_key, :xml_node_primary_key)]
+
+                  Integer(primary_key_value)
+                end
+
+                missing_entities = database_entities - xml_node_entities
+
+                relation.where(options.dig(:relation_primary_key, :model_primary_key) => missing_entities).destroy
               end
-
-              database_entities = relation.where(filter).pluck(options.dig(:relation_primary_key, :model_primary_key))
-              xml_node_entities = Array.wrap(xml_node.fetch(options[:relation_mapping_path], []))
-              xml_node_entities = xml_node_entities.map do |xml_entity|
-                primary_key_value = xml_entity[options.dig(:relation_primary_key, :xml_node_primary_key)]
-
-                Integer(primary_key_value)
-              end
-
-              missing_entities = database_entities - xml_node_entities
-
-              relation.where(options.dig(:relation_primary_key, :model_primary_key) => missing_entities).destroy
             end
           end
         end
