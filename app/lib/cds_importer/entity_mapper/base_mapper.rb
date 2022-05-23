@@ -50,6 +50,34 @@ class CdsImporter
           end
         end
 
+        # Register a callback to soft delete missing entities based on the passed in configuration
+        #
+        # Each secondary entity can have the following configuration:
+        #   filter: The filter used to find the secondary entities for soft deletion
+        #   relation_mapping_path: How we dig through the xml node to determine the secondaries that are being imported
+        #   relation_primary_key: How we understand the mapping between the model's primary key and the xml nodes primary key
+        def delete_missing_entities(entity_configuration)
+          before_oplog_inserts do |xml_node, _mapper_instance, model_instance|
+            entity_configuration.each do |relation, options|
+              filter = options[:filter].each_with_object({}) do |(primary_field, secondary_field), acc|
+                acc[secondary_field] = model_instance.public_send(primary_field)
+              end
+
+              database_entities = relation.where(filter).pluck(options.dig(:relation_primary_key, :model_primary_key))
+              xml_node_entities = Array.wrap(xml_node.fetch(options[:relation_mapping_path], []))
+              xml_node_entities = xml_node_entities.map do |xml_entity|
+                primary_key_value = xml_entity[options.dig(:relation_primary_key, :xml_node_primary_key)]
+
+                Integer(primary_key_value)
+              end
+
+              missing_entities = database_entities - xml_node_entities
+
+              relation.where(options.dig(:relation_primary_key, :model_primary_key) => missing_entities).destroy
+            end
+          end
+        end
+
         def mapping_with_key_as_array
           @mapping_with_key_as_array ||= entity_mapping.keys.each_with_object({}) do |key, memo|
             memo[key.split(PATH_SEPARATOR)] = entity_mapping[key]

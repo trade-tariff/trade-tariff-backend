@@ -19,14 +19,14 @@ class CdsImporter
 
         instances = mapper.parse
 
-        mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper) }
+        instances.each do |model_instance|
+          mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper, model_instance) }
 
-        instances.each do |i|
-          oplog_inserts_performed[i.operation_klass.to_s] ||= 0
+          oplog_inserts_performed[model_instance.operation_klass.to_s] ||= 0
 
-          oplog_oid = logger_enabled? ? save_record(i) : save_record!(i)
+          oplog_oid = logger_enabled? ? save_record(model_instance) : save_record!(model_instance)
 
-          oplog_inserts_performed[i.operation_klass.to_s] += 1 if oplog_oid
+          oplog_inserts_performed[model_instance.operation_klass.to_s] += 1 if oplog_oid
         end
       end
     end
