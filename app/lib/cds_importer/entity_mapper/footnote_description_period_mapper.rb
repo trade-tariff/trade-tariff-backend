@@ -12,6 +12,17 @@ class CdsImporter
         'footnoteType.footnoteTypeId' => :footnote_type_id,
         'footnoteId' => :footnote_id,
       ).freeze
+
+      self.primary_filters = {
+        footnote_type_id: :footnote_type_id,
+        footnote_id: :footnote_id,
+      }.freeze
+
+      self.primary_key_mapping = entity_mapping.slice(
+        "#{mapping_path}.sid",
+        'footnoteType.footnoteTypeId',
+        'footnoteId',
+      )
     end
   end
 end

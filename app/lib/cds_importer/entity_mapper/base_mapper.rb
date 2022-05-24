@@ -29,11 +29,13 @@ class CdsImporter
       class << self
         delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
-        attr_accessor :entity_class,   # model
-                      :entity_mapping, # attributes mapping
-                      :mapping_path,   # path to attributes in xml
-                      :mapping_root,   # node name in xml that provides data for mapping
-                      :exclude_mapping # list of excluded attributes
+        attr_accessor :entity_class,        # model
+                      :entity_mapping,      # attributes mapping
+                      :mapping_path,        # path to attributes in xml
+                      :mapping_root,        # node name in xml that provides data for mapping
+                      :exclude_mapping,     # list of excluded attributes
+                      :primary_key_mapping, # how we pull out the (often composite) primary key from the xml node document
+                      :primary_filters      # how we know what secondaries are associated with the primary
 
         def before_oplog_inserts_callbacks
           @before_oplog_inserts_callbacks ||= []
@@ -56,18 +58,23 @@ class CdsImporter
         #   filter: The filter used to find the secondary entities for soft deletion
         #   relation_mapping_path: How we dig through the xml node to determine the secondaries that are being imported
         #   relation_primary_key: How we understand the mapping between the model's primary key and the xml nodes primary key
-        def delete_missing_entities(entity_configuration)
+        def delete_missing_entities(*secondary_mappers)
           before_oplog_inserts do |xml_node, _mapper_instance, model_instance|
             if TradeTariffBackend.handle_soft_deletes?
-              entity_configuration.each do |relation, options|
-                database_entities = database_entities_for(model_instance, relation, options)
-                xml_node_entities = xml_entities_for(xml_node, options)
+              secondary_mappers.each do |secondary_mapper|
+                database_entities = database_entities_for(model_instance, secondary_mapper)
+                xml_node_entities = xml_entities_for(xml_node, secondary_mapper)
                 missing_entities = database_entities - xml_node_entities
+                missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
 
-                relation.where(options.dig(:relation_primary_key, :model_primary_key) => missing_entities).destroy
+                secondary_mapper.entity.where(missing_entity_filter).destroy
               end
             end
           end
+        end
+
+        def entity
+          entity_class.constantize
         end
 
         def mapping_with_key_as_array
@@ -91,6 +98,43 @@ class CdsImporter
           "#{mapping_path.to_s.length}#{name}"
         end
 
+        # Returns sequel filter args that will find all secondaries associated with a primary model instance
+        def filter_for(primary_model_instance)
+          primary_filters.each_with_object({}) do |(primary_field, secondary_field), acc|
+            acc[secondary_field] = primary_model_instance.public_send(primary_field)
+          end
+        end
+
+        # Returns sequel filter args that will find all missing secondaries based on the primary key index order
+        # defined by the underlying secondary entity model class
+        def missing_entity_filter_for(missing_entities)
+          entity_composite_primary_key.each_with_object({}).with_index do |(primary_key_field, acc), index|
+            acc[primary_key_field] = missing_entities.map { |entity| entity[index] }
+          end
+        end
+
+        def relative_primary_key_paths_for_secondary_node
+          primary_key_paths_for_secondary_node.each_with_object({}) do |path, acc|
+            relative_path = path.sub("#{mapping_path}.", '')
+
+            acc[relative_path] = primary_key_mapping[path]
+          end
+        end
+
+        def primary_key_paths_for_primary_node
+          primary_node_paths = primary_key_mapping.keys - primary_key_paths_for_secondary_node
+
+          primary_node_paths.index_with { |path| primary_key_mapping[path] }
+        end
+
+        def primary_key_paths_for_secondary_node
+          primary_key_mapping.keys.grep(/#{mapping_path}/)
+        end
+
+        def entity_composite_primary_key
+          Array.wrap(entity.primary_key)
+        end
+
         protected
 
         def before_oplog_inserts(&block)
@@ -103,25 +147,36 @@ class CdsImporter
 
         private
 
-        def xml_entities_for(xml_node, options)
-          xml_node_entities = Array.wrap(xml_node.fetch(options[:relation_mapping_path], []))
+        def xml_entities_for(xml_node, secondary_mapper)
+          xml_node_entities = Array.wrap(xml_node.fetch(secondary_mapper.mapping_path, []))
 
           xml_node_entities.map do |xml_entity|
-            primary_key = xml_entity[options.dig(:relation_primary_key, :xml_node_primary_key)]
+            composite_primary_key = {}
 
-            Integer(primary_key)
+            accumulate_primary_key_parts_for( secondary_mapper.relative_primary_key_paths_for_primary_node, xml_node, composite_primary_key,)
+
+            accumulate_primary_key_parts_for( secondary_mapper.relative_primary_key_paths_for_secondary_node, xml_entity, composite_primary_key,)
+
+            secondary_mapper.entity_composite_primary_key.map do |model_primary_key_part|
+              composite_primary_key[model_primary_key_part]
+            end
           end
         end
 
-        def database_entities_for(model_instance, relation, options)
-          filter = filter_for(options, model_instance)
+        def accumulate_primary_key_parts_for(paths, xml_node, composite_primary_key)
+          paths.each do |xml_path, model_primary_key_part|
+            primary_key_part = xml_node.dig(*xml_path.split('.'))
 
-          relation.where(filter).pluck(options.dig(:relation_primary_key, :model_primary_key))
+            composite_primary_key[model_primary_key_part] = primary_key_part
+          end
         end
 
-        def filter_for(options, model_instance)
-          options[:filter].each_with_object({}) do |(primary_field, secondary_field), acc|
-            acc[secondary_field] = model_instance.public_send(primary_field)
+        def database_entities_for(primary_model_instance, secondary_mapper)
+          filter = secondary_mapper.filter_for(primary_model_instance)
+          primary_keys = secondary_mapper.entity.primary_key
+
+          secondary_mapper.entity.where(filter).pluck(*primary_keys).map do |composite_primary_key|
+            composite_primary_key.map(&:to_s)
           end
         end
       end

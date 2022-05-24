@@ -1,22 +1,19 @@
-RSpec.shared_examples_for 'an entity mapper missing destroy operation' do |relation, model_primary_key, filter|
+RSpec.shared_examples_for 'an entity mapper missing destroy operation' do |relation, model_primary_keys, filter|
+  let(:change_oplog_deletion_count) do
+    change { relation::Operation.where(filter.merge(operation: 'D')).count }
+  end
   it "hides the missing xml nodes from the #{relation} view" do
-    before_import_period_sids = relation.where(filter).pluck(model_primary_key)
+    before_import_primary_keys = relation.where(filter).pluck(*model_primary_keys)
 
     entity_mapper.import
 
-    after_import_period_sids = relation.where(filter).pluck(model_primary_key)
+    after_import_primary_keys = relation.where(filter).pluck(*model_primary_keys)
 
-    expect(after_import_period_sids).not_to include(before_import_period_sids)
+    expect(after_import_primary_keys).not_to include(before_import_primary_keys)
   end
 
   it "inserts the missing xml nodes as a soft deleted row in the #{relation} oplog" do
-    before_import_period_sids = relation.where(filter).pluck(model_primary_key)
-
-    entity_mapper.import
-
-    soft_deleted_sids = relation::Operation.where(filter.merge(operation: 'D')).pluck(:footnote_description_period_sid)
-
-    expect(before_import_period_sids).to eq(soft_deleted_sids)
+    expect { entity_mapper.import }.to change_oplog_deletion_count.by(1)
   end
 
   # TODO: Remove me once all is merged and tested
@@ -26,18 +23,16 @@ RSpec.shared_examples_for 'an entity mapper missing destroy operation' do |relat
     end
 
     it "does not hide the missing xml nodes from the #{relation} view" do
-      before_import_period_sids = relation.where(filter).pluck(model_primary_key)
+      before_import_primary_keys = relation.where(filter).pluck(*model_primary_keys)
 
       entity_mapper.import
 
-      after_import_period_sids = relation.where(filter).pluck(model_primary_key)
+      after_import_primary_keys = relation.where(filter).pluck(*model_primary_keys)
 
-      expect(after_import_period_sids).to include(*before_import_period_sids)
+      expect(after_import_primary_keys).to include(*before_import_primary_keys)
     end
 
     it "does not insert the missing xml nodes as a soft deleted row in the #{relation} oplog" do
-      change_oplog_deletion_count = change { relation::Operation.where(filter.merge(operation: 'D')).count }
-
       expect { entity_mapper.import }.not_to change_oplog_deletion_count
     end
   end

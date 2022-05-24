@@ -102,6 +102,15 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
     end
 
     context 'when there are multiple footnote description periods and some are missing' do
+      before do
+        create( # Control for a non-deleted period
+          :footnote_description_period,
+          footnote_description_period_sid: '96004',
+          footnote_type_id: 'TM',
+          footnote_id: '133',
+        )
+      end
+
       let(:xml_node) do
         {
           'metainfo' => { 'opType' => 'U', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-07-22T18:02:08' },
@@ -128,7 +137,7 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
         }
       end
 
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescriptionPeriod, :footnote_description_period_sid, footnote_type_id: 'TM', footnote_id: '133'
+      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescriptionPeriod, %i[footnote_description_period_sid footnote_type_id footnote_id], footnote_type_id: 'TM', footnote_id: '133'
     end
   end
 end
