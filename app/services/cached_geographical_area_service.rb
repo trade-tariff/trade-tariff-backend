@@ -13,14 +13,6 @@ class CachedGeographicalAreaService
     QX
     QY
     QZ
-    ZB
-    ZD
-    ZE
-    ZF
-    ZG
-    ZH
-    ZN
-    ZU
   ].freeze
 
   DEFAULT_INCLUDES = [:contained_geographical_areas].freeze
