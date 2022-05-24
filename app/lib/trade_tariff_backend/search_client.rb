@@ -37,7 +37,7 @@ module TradeTariffBackend
       search_index_for(namespace, model).tap do |index|
         drop_index(index)
         create_index(index)
-        build_index(model)
+        build_index(index)
       end
     end
 
@@ -48,7 +48,7 @@ module TradeTariffBackend
     def update(model)
       search_index_for(namespace, model).tap do |index|
         create_index(index)
-        build_index(model)
+        build_index(index)
       end
     end
 
@@ -60,10 +60,10 @@ module TradeTariffBackend
       indices.delete(index: index.name) if indices.exists(index: index.name)
     end
 
-    def build_index(model)
-      total_pages = (model.dataset.count / index_page_size.to_f).ceil
+    def build_index(index)
+      total_pages = (index.dataset.count / index_page_size.to_f).ceil
       (1..total_pages).each do |page_number|
-        BuildIndexPageWorker.perform_async(namespace, model.to_s, page_number, index_page_size)
+        BuildIndexPageWorker.perform_async(namespace, index.model.to_s, page_number, index_page_size)
       end
     end
 

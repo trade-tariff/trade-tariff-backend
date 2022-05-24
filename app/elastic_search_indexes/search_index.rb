@@ -1,4 +1,6 @@
 class SearchIndex
+  delegate :dataset, to: :model
+
   def initialize(namespace)
     @namespace = namespace
   end

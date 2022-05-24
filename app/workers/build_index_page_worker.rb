@@ -15,7 +15,7 @@ class BuildIndexPageWorker
       body: serialize_for(
         :index,
         index,
-        model.dataset.paginate(page_number, page_size)
+        index.dataset.paginate(page_number, page_size)
       )
     )
   end
