@@ -100,5 +100,35 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
       it_behaves_like 'an entity mapper destroy operation', FootnoteDescription
       it_behaves_like 'an entity mapper destroy operation', FootnoteDescriptionPeriod
     end
+
+    context 'when there are multiple footnote description periods and some are missing' do
+      let(:xml_node) do
+        {
+          'metainfo' => { 'opType' => 'U', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-07-22T18:02:08' },
+          'footnoteId' => '133',
+          'validityStartDate' => '2010-02-01T00:00:00',
+          'footnoteDescriptionPeriod' => [
+            {
+              'metainfo' => { 'opType' => 'U', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-18T12:55:56' },
+              'sid' => '96004',
+              'validityStartDate' => '2010-02-01T00:00:00',
+            },
+            {
+              'metainfo' => { 'opType' => 'U', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-18T12:55:56' },
+              'sid' => '96630',
+              'validityStartDate' => '2015-01-01T00:00:00',
+            },
+            {
+              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-07-22T18:02:08' },
+              'sid' => '200577',
+              'validityStartDate' => '2021-01-01T00:00:00',
+            },
+          ],
+          'footnoteType' => { 'footnoteTypeId' => 'TM' },
+        }
+      end
+
+      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescriptionPeriod, :footnote_description_period_sid, footnote_type_id: 'TM', footnote_id: '133'
+    end
   end
 end

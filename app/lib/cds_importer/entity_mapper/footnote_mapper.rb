@@ -10,10 +10,10 @@ class CdsImporter
         'footnoteType.footnoteTypeId' => :footnote_type_id,
       ).freeze
 
-      before_oplog_inserts do |xml_node, mapper_instance|
+      before_oplog_inserts do |_xml_node, mapper_instance, model_instance|
         if mapper_instance.destroy_operation?
-          footnote_id = xml_node['footnoteId']
-          footnote_type_id = xml_node.dig('footnoteType', 'footnoteTypeId')
+          footnote_id = model_instance.footnote_id
+          footnote_type_id = model_instance.footnote_type_id
 
           FootnoteAssociationAdditionalCode.where(footnote_type_id:, footnote_id:).destroy
           FootnoteAssociationGoodsNomenclature.where(footnote_type: footnote_type_id, footnote_id:).destroy
@@ -23,6 +23,15 @@ class CdsImporter
           FootnoteDescriptionPeriod.where(footnote_type_id:, footnote_id:).destroy
         end
       end
+
+      delete_missing_entities FootnoteDescriptionPeriod => {
+        filter: { footnote_type_id: :footnote_type_id, footnote_id: :footnote_id },
+        relation_mapping_path: FootnoteDescriptionPeriodMapper.mapping_path,
+        relation_primary_key: {
+          model_primary_key: :footnote_description_period_sid,
+          xml_node_primary_key: 'sid',
+        },
+      }
     end
   end
 end
