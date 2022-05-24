@@ -2,6 +2,7 @@ RSpec.shared_examples_for 'an entity mapper missing destroy operation' do |relat
   let(:change_oplog_deletion_count) do
     change { relation::Operation.where(filter.merge(operation: 'D')).count }
   end
+
   it "hides the missing xml nodes from the #{relation} view" do
     before_import_primary_keys = relation.where(filter).pluck(*model_primary_keys)
 

@@ -52,12 +52,7 @@ class CdsImporter
           end
         end
 
-        # Register a callback to soft delete missing entities based on the passed in configuration
-        #
-        # Each secondary entity can have the following configuration:
-        #   filter: The filter used to find the secondary entities for soft deletion
-        #   relation_mapping_path: How we dig through the xml node to determine the secondaries that are being imported
-        #   relation_primary_key: How we understand the mapping between the model's primary key and the xml nodes primary key
+        # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
         def delete_missing_entities(*secondary_mappers)
           before_oplog_inserts do |xml_node, _mapper_instance, model_instance|
             if TradeTariffBackend.handle_soft_deletes?
@@ -173,9 +168,8 @@ class CdsImporter
 
         def database_entities_for(primary_model_instance, secondary_mapper)
           filter = secondary_mapper.filter_for(primary_model_instance)
-          primary_keys = secondary_mapper.entity.primary_key
 
-          secondary_mapper.entity.where(filter).pluck(*primary_keys).map do |composite_primary_key|
+          secondary_mapper.entity.where(filter).pluck(*secondary_mapper.entity.primary_key).map do |composite_primary_key|
             composite_primary_key.map(&:to_s)
           end
         end
