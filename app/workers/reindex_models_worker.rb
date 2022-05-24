@@ -5,7 +5,7 @@ class ReindexModelsWorker
 
   def perform
     logger.info 'Reindexing models in Elastic Search...'
-    TradeTariffBackend.reindex
+    TradeTariffBackend.reindex_all
     logger.info 'Reindexing of models completed'
   end
 end

@@ -29,22 +29,26 @@ module TradeTariffBackend
       Hashie::TariffMash.new(super)
     end
 
-    def reindex
-      indexed_models.each do |model|
-        search_index_for(namespace, model).tap do |index|
-          drop_index(index)
-          create_index(index)
-          build_index(model)
-        end
+    def reindex_all
+      indexed_models.each(&method(:reindex))
+    end
+
+    def reindex(model)
+      search_index_for(namespace, model).tap do |index|
+        drop_index(index)
+        create_index(index)
+        build_index(model)
       end
     end
 
-    def update
-      indexed_models.each do |model|
-        search_index_for(namespace, model).tap do |index|
-          create_index(index)
-          build_index(model)
-        end
+    def update_all
+      indexed_models.each(&method(:update))
+    end
+
+    def update(model)
+      search_index_for(namespace, model).tap do |index|
+        create_index(index)
+        build_index(model)
       end
     end
 

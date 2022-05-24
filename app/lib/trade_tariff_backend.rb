@@ -76,14 +76,14 @@ module TradeTariffBackend
 
     def reindex(indexer = search_client)
       TimeMachine.with_relevant_validity_periods do
-        indexer.update
+        indexer.update_all
       rescue StandardError => e
         Mailer.reindex_exception(e).deliver_now
       end
     end
 
     def recache(indexer = cache_client)
-      indexer.update
+      indexer.update_all
     rescue StandardError => e
       Mailer.reindex_exception(e).deliver_now
     end

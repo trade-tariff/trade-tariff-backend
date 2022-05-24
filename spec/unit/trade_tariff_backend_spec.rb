@@ -1,12 +1,12 @@
 RSpec.describe TradeTariffBackend do
-  describe '.reindex' do
+  describe '.reindex_all' do
     context 'when successful' do
-      let(:stub_indexer) { double(update: true) }
+      let(:stub_indexer) { double(update_all: true) }
 
       before { described_class.reindex(stub_indexer) }
 
       it 'reindexes Tariff model contents in the search engine' do
-        expect(stub_indexer).to have_received(:update)
+        expect(stub_indexer).to have_received(:update_all)
       end
     end
 
@@ -14,7 +14,7 @@ RSpec.describe TradeTariffBackend do
       let(:mock_indexer) { double }
 
       before do
-        expect(mock_indexer).to receive(:update).and_raise(StandardError)
+        expect(mock_indexer).to receive(:update_all).and_raise(StandardError)
 
         described_class.reindex(mock_indexer)
       end
