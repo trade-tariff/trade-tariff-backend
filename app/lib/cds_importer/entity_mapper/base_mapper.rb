@@ -153,9 +153,9 @@ class CdsImporter
           xml_node_entities.map do |xml_entity|
             composite_primary_key = {}
 
-            accumulate_primary_key_parts_for( secondary_mapper.relative_primary_key_paths_for_primary_node, xml_node, composite_primary_key,)
+            accumulate_primary_key_parts_for(secondary_mapper.relative_primary_key_paths_for_primary_node, xml_node, composite_primary_key)
 
-            accumulate_primary_key_parts_for( secondary_mapper.relative_primary_key_paths_for_secondary_node, xml_entity, composite_primary_key,)
+            accumulate_primary_key_parts_for(secondary_mapper.relative_primary_key_paths_for_secondary_node, xml_entity, composite_primary_key)
 
             secondary_mapper.entity_composite_primary_key.map do |model_primary_key_part|
               composite_primary_key[model_primary_key_part]
