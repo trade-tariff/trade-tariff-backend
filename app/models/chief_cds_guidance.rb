@@ -2,7 +2,7 @@
 
 class ChiefCdsGuidance
   DEFAULT_SOURCE_PATH = Rails.root.join('db/')
-  DEFAULT_FILE = 'chief_cds_guidance_20220414.json'
+  DEFAULT_FILE = 'chief_cds_guidance_20220524.json'
   DEFAULT_EMPTY_GUIDANCE = 'No additional information is available.'
   CHIEF_GUIDANCE_KEY = 'guidance_chief'
   CDS_GUIDANCE_KEY = 'guidance_cds'
