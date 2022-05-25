@@ -61,18 +61,6 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
       }
     end
 
-    before do
-      create(
-        :footnote,
-        :with_additional_code_association,
-        :with_gono_association,
-        :with_measure_association,
-        :with_meursing_heading_association,
-        footnote_id: '133',
-        footnote_type_id: 'TM',
-      )
-    end
-
     context 'when the footnote is being updated' do
       let(:operation) { 'U' }
 
@@ -90,6 +78,18 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
     end
 
     context 'when the footnote is being deleted' do
+      before do
+        create(
+          :footnote,
+          :with_additional_code_association,
+          :with_gono_association,
+          :with_measure_association,
+          :with_meursing_heading_association,
+          footnote_id: '133',
+          footnote_type_id: 'TM',
+        )
+      end
+
       let(:operation) { 'D' }
 
       it_behaves_like 'an entity mapper destroy operation', Footnote
@@ -103,7 +103,18 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
 
     context 'when there are missing secondary entities to be soft deleted' do
       before do
-        create( # Control for a non-deleted period
+        # Creates entities that will be missing from the xml node
+        create(
+          :footnote,
+          :with_additional_code_association,
+          :with_gono_association,
+          :with_measure_association,
+          :with_meursing_heading_association,
+          footnote_id: '133',
+          footnote_type_id: 'TM',
+        )
+        # Control for a non-deleted period
+        create(
           :footnote_description_period,
           footnote_description_period_sid: '96004',
           footnote_type_id: 'TM',

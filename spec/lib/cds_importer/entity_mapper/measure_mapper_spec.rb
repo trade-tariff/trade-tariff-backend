@@ -165,18 +165,6 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
       }
     end
 
-    before do
-      create(
-        :measure,
-        :with_footnote_association,
-        :with_measure_components,
-        :with_measure_conditions,
-        :with_measure_excluded_geographical_area,
-        :with_measure_partial_temporary_stop,
-        measure_sid: '12348',
-      )
-    end
-
     context 'when the measure is being updated' do
       let(:operation) { 'U' }
 
@@ -202,6 +190,18 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
     end
 
     context 'when the measure is being deleted' do
+      before do
+        create(
+          :measure,
+          :with_footnote_association,
+          :with_measure_components,
+          :with_measure_conditions,
+          :with_measure_excluded_geographical_area,
+          :with_measure_partial_temporary_stop,
+          measure_sid: '12348',
+        )
+      end
+
       let(:operation) { 'D' }
 
       it_behaves_like 'an entity mapper destroy operation', Measure
@@ -214,9 +214,18 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
     end
 
     context 'when there are missing secondary entities to be soft deleted' do
-      let(:operation) { 'C' }
-
       before do
+        # Creates entities that will be missing from the xml node
+        create(
+          :measure,
+          :with_footnote_association,
+          :with_measure_components,
+          :with_measure_conditions,
+          :with_measure_excluded_geographical_area,
+          :with_measure_partial_temporary_stop,
+          measure_sid: '12348',
+        )
+
         # Control for non-deleted secondary entities
         create(:footnote_association_measure, measure_sid: '12348', footnote_type_id: '06', footnote_id: '08')
         create(:measure_component, measure_sid: '12348', duty_expression_id: '01')
@@ -225,6 +234,8 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
         create(:measure_excluded_geographical_area, measure_sid: '12348', geographical_area_sid: '11993')
         create(:measure_partial_temporary_stop, measure_sid: '12348', partial_temporary_stop_regulation_id: 'R1312020')
       end
+
+      let(:operation) { 'C' }
 
       it_behaves_like 'an entity mapper missing destroy operation', FootnoteAssociationMeasure, measure_sid: '12348' do
         let(:has_hard_deletes) { true } # TODO: This will be removed once we migrate to soft-deletion

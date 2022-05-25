@@ -112,20 +112,18 @@ RSpec.describe CdsImporter::EntityMapper::MeasureConditionMapper do
       }
     end
 
-    before do
-      create(
-        :measure_condition,
-        :with_measure_condition_components,
-        measure_sid: '12348',
-        measure_condition_sid: '3321',
-        duty_expression_id: '02',
-      )
-    end
-
     context 'when there are missing secondary entities to be soft deleted' do
       let(:operation) { 'C' }
 
       before do
+        # Creates entities that will be missing from the xml node
+        create(
+          :measure_condition,
+          :with_measure_condition_components,
+          measure_sid: '12348',
+          measure_condition_sid: '3321',
+          duty_expression_id: '02',
+        )
         # Control for non-deleted secondary entities
         create(
           :measure_condition_component,
