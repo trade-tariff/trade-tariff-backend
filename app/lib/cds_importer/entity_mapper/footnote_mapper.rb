@@ -24,14 +24,7 @@ class CdsImporter
         end
       end
 
-      delete_missing_entities FootnoteDescriptionPeriod => {
-        filter: { footnote_type_id: :footnote_type_id, footnote_id: :footnote_id },
-        relation_mapping_path: FootnoteDescriptionPeriodMapper.mapping_path,
-        relation_primary_key: {
-          model_primary_key: :footnote_description_period_sid,
-          xml_node_primary_key: 'sid',
-        },
-      }
+      delete_missing_entities FootnoteDescriptionPeriodMapper
     end
   end
 end
