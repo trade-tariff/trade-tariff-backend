@@ -21,12 +21,17 @@ FactoryBot.define do
   end
 
   trait :with_measure_condition_components do
+    transient do
+      duty_expression_id { '01' }
+    end
+
     after(:create) do |measure_condition, evaluator|
       create(
         :measure_condition_component,
         measure_condition_sid: measure_condition.measure_condition_sid,
         measurement_unit_code: evaluator.measurement_unit_code,
         measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
+        duty_expression_id: evaluator.duty_expression_id,
       )
 
       measure_condition.reload

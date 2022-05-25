@@ -75,7 +75,7 @@ RSpec.describe Measure do
     let(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.yesterday }
     let(:measure) do
       create :measure, measure_generating_regulation_role: 1,
-                       base_regulation: base_regulation,
+                       base_regulation:,
                        validity_end_date: Time.zone.today
     end
 
@@ -89,7 +89,7 @@ RSpec.describe Measure do
       let(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.today }
       let(:measure) do
         create :measure, measure_generating_regulation_role: 1,
-                         base_regulation: base_regulation,
+                         base_regulation:,
                          validity_end_date: Time.zone.yesterday
       end
 
@@ -102,7 +102,7 @@ RSpec.describe Measure do
       let(:base_regulation) { create :base_regulation, effective_end_date: nil }
       let(:measure) do
         create :measure, measure_generating_regulation_role: 1,
-                         base_regulation: base_regulation,
+                         base_regulation:,
                          validity_end_date: nil
       end
 
@@ -115,7 +115,7 @@ RSpec.describe Measure do
       let(:base_regulation) { create :base_regulation, effective_end_date: nil }
       let(:measure) do
         create :measure, measure_generating_regulation_role: 1,
-                         base_regulation: base_regulation,
+                         base_regulation:,
                          validity_end_date: Time.zone.today
       end
 
@@ -128,7 +128,7 @@ RSpec.describe Measure do
       let(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.today }
       let(:measure) do
         create :measure, measure_generating_regulation_role: 1,
-                         base_regulation: base_regulation,
+                         base_regulation:,
                          validity_end_date: nil
       end
 
@@ -141,7 +141,7 @@ RSpec.describe Measure do
       let(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.yesterday }
       let(:measure) do
         create :measure, measure_generating_regulation_role: 1,
-                         base_regulation: base_regulation,
+                         base_regulation:,
                          validity_end_date: Time.zone.today,
                          national: true
       end
@@ -628,7 +628,7 @@ RSpec.describe Measure do
 
     context 'quota_order_number missing' do
       let(:ordernumber) { 6.times.map { Random.rand(9) }.join }
-      let(:measure) { create :measure, ordernumber: ordernumber }
+      let(:measure) { create :measure, ordernumber: }
 
       it 'returns a mock quota order number with just the number set' do
         expect(measure.order_number.quota_order_number_id).to eq ordernumber
@@ -641,7 +641,7 @@ RSpec.describe Measure do
   end
 
   describe '#import' do
-    let(:measure) { create :measure, measure_type: measure_type }
+    let(:measure) { create :measure, measure_type: }
 
     context 'measure type is import' do
       let(:measure_type) { create :measure_type, :import }
@@ -661,7 +661,7 @@ RSpec.describe Measure do
   end
 
   describe '#export' do
-    let(:measure) { create :measure, measure_type: measure_type }
+    let(:measure) { create :measure, measure_type: }
 
     context 'measure type is import' do
       let(:measure_type) { create :measure_type, :import }
@@ -814,13 +814,11 @@ RSpec.describe Measure do
 
   describe '#relevant_for_country?' do
     context 'when the measure excludes the country id' do
-      subject(:measure) { exclusion.measure }
+      subject(:measure) { create(:measure, :with_measure_excluded_geographical_area) }
 
-      let(:exclusion) { create(:measure_excluded_geographical_area) }
+      let(:exclusion) { measure.measure_excluded_geographical_areas.first }
 
-      it 'returns false' do
-        expect(measure.relevant_for_country?(exclusion.geographical_area.geographical_area_id)).to eq(false)
-      end
+      it { expect(measure.relevant_for_country?(exclusion.excluded_geographical_area)).to eq(false) }
     end
 
     context 'when the measure is a national measure and its geographical area is the world' do

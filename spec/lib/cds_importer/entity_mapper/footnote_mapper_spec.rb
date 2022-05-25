@@ -101,7 +101,7 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
       it_behaves_like 'an entity mapper destroy operation', FootnoteDescriptionPeriod
     end
 
-    context 'when there are multiple footnote description periods and some are missing' do
+    context 'when there are missing secondary entities to be soft deleted' do
       before do
         create( # Control for a non-deleted period
           :footnote_description_period,
@@ -122,22 +122,12 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
               'sid' => '96004',
               'validityStartDate' => '2010-02-01T00:00:00',
             },
-            {
-              'metainfo' => { 'opType' => 'U', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2018-12-18T12:55:56' },
-              'sid' => '96630',
-              'validityStartDate' => '2015-01-01T00:00:00',
-            },
-            {
-              'metainfo' => { 'opType' => 'C', 'origin' => 'T', 'status' => 'L', 'transactionDate' => '2021-07-22T18:02:08' },
-              'sid' => '200577',
-              'validityStartDate' => '2021-01-01T00:00:00',
-            },
           ],
           'footnoteType' => { 'footnoteTypeId' => 'TM' },
         }
       end
 
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescriptionPeriod, %i[footnote_description_period_sid footnote_type_id footnote_id], footnote_type_id: 'TM', footnote_id: '133'
+      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescriptionPeriod, footnote_type_id: 'TM', footnote_id: '133'
     end
   end
 end

@@ -1,7 +1,3 @@
-#
-# FootnoteAssociationMeasure is nested in to Measure.
-#
-
 class CdsImporter
   class EntityMapper
     class FootnoteAssociationMeasureMapper < BaseMapper
@@ -18,6 +14,16 @@ class CdsImporter
         "#{mapping_path}.footnote.footnoteType.footnoteTypeId" => :footnote_type_id,
         "#{mapping_path}.footnote.footnoteId" => :footnote_id,
       ).freeze
+
+      self.primary_filters = {
+        measure_sid: :measure_sid,
+      }.freeze
+
+      self.primary_key_mapping = entity_mapping.slice(
+        'sid',
+        "#{mapping_path}.footnote.footnoteType.footnoteTypeId",
+        "#{mapping_path}.footnote.footnoteId",
+      )
     end
   end
 end
