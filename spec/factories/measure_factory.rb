@@ -34,12 +34,12 @@ FactoryBot.define do
     reduction_indicator { [nil, 1, 2, 3].sample }
 
     measure_type do
-      create :measure_type, measure_type_id: measure_type_id,
+      create :measure_type, measure_type_id:,
                             validity_start_date: validity_start_date - 1.day,
                             measure_explosion_level: type_explosion_level,
-                            order_number_capture_code: order_number_capture_code,
+                            order_number_capture_code:,
                             trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
-                            measure_type_series_id: measure_type_series_id
+                            measure_type_series_id:
     end
     geographical_area do
       create(:geographical_area, geographical_area_sid:,
@@ -191,6 +191,16 @@ FactoryBot.define do
       measurement_unit_qualifier_code { 'X' }
     end
 
+    trait :with_footnote_association do
+      after(:build) do |measure, _evaluator|
+        create(
+          :footnote,
+          :with_measure_association,
+          measure_sid: measure.measure_sid,
+        )
+      end
+    end
+
     trait :with_measure_components do
       after(:build) do |measure, evaluator|
         create_list(
@@ -246,6 +256,18 @@ FactoryBot.define do
           measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
+      end
+    end
+
+    trait :with_measure_excluded_geographical_area do
+      after(:build) do |measure, _evaluator|
+        create(:measure_excluded_geographical_area, measure_sid: measure.measure_sid)
+      end
+    end
+
+    trait :with_measure_partial_temporary_stop do
+      after(:build) do |measure, _evaluator|
+        create(:measure_partial_temporary_stop, measure_sid: measure.measure_sid)
       end
     end
 

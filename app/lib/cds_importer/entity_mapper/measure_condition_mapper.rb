@@ -1,8 +1,3 @@
-#
-# MeasureCondition is nested in to Measure.
-# So we will pass @values for MeasureCondition the same as for Measure.
-#
-
 class CdsImporter
   class EntityMapper
     class MeasureConditionMapper < BaseMapper
@@ -27,6 +22,16 @@ class CdsImporter
         "#{mapping_path}.certificate.certificateType.certificateTypeCode" => :certificate_type_code,
         "#{mapping_path}.certificate.certificateCode" => :certificate_code,
       ).freeze
+
+      self.primary_filters = {
+        measure_sid: :measure_sid,
+      }.freeze
+
+      self.primary_key_mapping = entity_mapping.slice(
+        "#{mapping_path}.sid",
+      )
+
+      delete_missing_entities MeasureConditionComponentMapper
     end
   end
 end

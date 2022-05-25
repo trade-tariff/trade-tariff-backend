@@ -54,11 +54,11 @@ class CdsImporter
 
         # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
         def delete_missing_entities(*secondary_mappers)
-          before_oplog_inserts do |xml_node, _mapper_instance, model_instance|
+          before_oplog_inserts do |xml_node, _mapper_instance, primary_model_instance|
             if TradeTariffBackend.handle_soft_deletes?
               secondary_mappers.each do |secondary_mapper|
-                database_entities = database_entities_for(model_instance, secondary_mapper)
-                xml_node_entities = xml_entities_for(xml_node, secondary_mapper)
+                database_entities = secondary_mapper.database_entities_for(primary_model_instance)
+                xml_node_entities = secondary_mapper.xml_entities_for(xml_node)
                 missing_entities = database_entities - xml_node_entities
                 missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
 
@@ -108,26 +108,22 @@ class CdsImporter
           end
         end
 
-        def relative_primary_key_paths_for_secondary_node
-          primary_key_paths_for_secondary_node.each_with_object({}) do |path, acc|
-            relative_path = path.sub("#{mapping_path}.", '')
+        def entity_composite_primary_key
+          Array.wrap(entity.primary_key)
+        end
 
-            acc[relative_path] = primary_key_mapping[path]
+        def database_entities_for(primary_model_instance)
+          filter = filter_for(primary_model_instance)
+
+          entity.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
+            Array.wrap(composite_primary_key)
           end
         end
 
-        def primary_key_paths_for_primary_node
-          primary_node_paths = primary_key_mapping.keys - primary_key_paths_for_secondary_node
+        def xml_entities_for(xml_node)
+          xml_node_entities = new(xml_node).parse
 
-          primary_node_paths.index_with { |path| primary_key_mapping[path] }
-        end
-
-        def primary_key_paths_for_secondary_node
-          primary_key_mapping.keys.grep(/#{mapping_path}/)
-        end
-
-        def entity_composite_primary_key
-          Array.wrap(entity.primary_key)
+          xml_node_entities.pluck(*entity.primary_key).map(&Array.method(:wrap))
         end
 
         protected
@@ -138,40 +134,6 @@ class CdsImporter
 
         def before_building_model(&block)
           before_building_model_callbacks << block
-        end
-
-        private
-
-        def xml_entities_for(xml_node, secondary_mapper)
-          xml_node_entities = Array.wrap(xml_node.fetch(secondary_mapper.mapping_path, []))
-
-          xml_node_entities.map do |xml_entity|
-            composite_primary_key = {}
-
-            accumulate_primary_key_parts_for(secondary_mapper.primary_key_paths_for_primary_node, xml_node, composite_primary_key)
-
-            accumulate_primary_key_parts_for(secondary_mapper.relative_primary_key_paths_for_secondary_node, xml_entity, composite_primary_key)
-
-            secondary_mapper.entity_composite_primary_key.map do |model_primary_key_part|
-              composite_primary_key[model_primary_key_part]
-            end
-          end
-        end
-
-        def accumulate_primary_key_parts_for(paths, xml_node, composite_primary_key)
-          paths.each do |xml_path, model_primary_key_part|
-            primary_key_part = xml_node.dig(*xml_path.split('.'))
-
-            composite_primary_key[model_primary_key_part] = primary_key_part
-          end
-        end
-
-        def database_entities_for(primary_model_instance, secondary_mapper)
-          filter = secondary_mapper.filter_for(primary_model_instance)
-
-          secondary_mapper.entity.where(filter).pluck(*secondary_mapper.entity.primary_key).map do |composite_primary_key|
-            composite_primary_key.map(&:to_s)
-          end
         end
       end
 

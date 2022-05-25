@@ -1,8 +1,3 @@
-#
-# MeasureConditionComponent is nested in to MeasureCondition.
-# MeasureCondition is nested in to Measure.
-#
-
 class CdsImporter
   class EntityMapper
     class MeasureConditionComponentMapper < BaseMapper
@@ -22,6 +17,15 @@ class CdsImporter
         "#{mapping_path}.measurementUnit.measurementUnitCode" => :measurement_unit_code,
         "#{mapping_path}.measurementUnitQualifier.measurementUnitQualifierCode" => :measurement_unit_qualifier_code,
       ).freeze
+
+      self.primary_filters = {
+        measure_condition_sid: :measure_condition_sid,
+      }
+
+      self.primary_key_mapping = entity_mapping.slice(
+        'measureCondition.sid',
+        "#{mapping_path}.dutyExpression.dutyExpressionId",
+      )
     end
   end
 end

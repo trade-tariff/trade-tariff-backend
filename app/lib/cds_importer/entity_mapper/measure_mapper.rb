@@ -26,12 +26,36 @@ class CdsImporter
       ).freeze
 
       before_oplog_inserts do |xml_node|
-        MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
+        unless TradeTariffBackend.handle_soft_deletes?
+          MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
+        end
       end
 
       before_oplog_inserts do |xml_node|
-        FootnoteAssociationMeasure.operation_klass.where(measure_sid: xml_node['sid']).delete
+        unless TradeTariffBackend.handle_soft_deletes?
+          FootnoteAssociationMeasure.operation_klass.where(measure_sid: xml_node['sid']).delete
+        end
       end
+
+      before_oplog_inserts do |_xml_node, mapper_instance, model_instance|
+        if mapper_instance.destroy_operation?
+          measure_sid = model_instance.measure_sid
+
+          FootnoteAssociationMeasure.where(measure_sid:).destroy
+          MeasureComponent.where(measure_sid:).destroy
+          measure_conditions = MeasureCondition.where(measure_sid:)
+          MeasureConditionComponent.where(measure_condition_sid: measure_conditions.pluck(:measure_condition_sid)).destroy
+          measure_conditions.destroy
+          MeasureExcludedGeographicalArea.where(measure_sid:).destroy
+          MeasurePartialTemporaryStop.where(measure_sid:).destroy
+        end
+      end
+
+      delete_missing_entities FootnoteAssociationMeasureMapper,
+                              MeasureComponentMapper,
+                              MeasureConditionMapper,
+                              MeasureExcludedGeographicalAreaMapper,
+                              MeasurePartialTemporaryStopMapper
     end
   end
 end

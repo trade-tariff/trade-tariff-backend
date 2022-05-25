@@ -1,8 +1,3 @@
-#
-# MeasureComponent is nested in to Measure.
-# So we will pass @values for MeasureComponent the same as for Measure.
-#
-
 class CdsImporter
   class EntityMapper
     class MeasureComponentMapper < BaseMapper
@@ -22,6 +17,15 @@ class CdsImporter
         "#{mapping_path}.measurementUnit.measurementUnitCode" => :measurement_unit_code,
         "#{mapping_path}.measurementUnitQualifier.measurementUnitQualifierCode" => :measurement_unit_qualifier_code,
       ).freeze
+
+      self.primary_filters = {
+        measure_sid: :measure_sid,
+      }.freeze
+
+      self.primary_key_mapping = entity_mapping.slice(
+        'sid',
+        "#{mapping_path}.dutyExpression.dutyExpressionId",
+      )
     end
   end
 end
