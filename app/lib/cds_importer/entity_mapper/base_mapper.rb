@@ -108,24 +108,6 @@ class CdsImporter
           end
         end
 
-        def relative_primary_key_paths_for_secondary_node
-          primary_key_paths_for_secondary_node.each_with_object({}) do |path, acc|
-            relative_path = path.sub("#{mapping_path}.", '')
-
-            acc[relative_path] = primary_key_mapping[path]
-          end
-        end
-
-        def primary_key_paths_for_primary_node
-          primary_node_paths = primary_key_mapping.keys - primary_key_paths_for_secondary_node
-
-          primary_node_paths.index_with { |path| primary_key_mapping[path] }
-        end
-
-        def primary_key_paths_for_secondary_node
-          primary_key_mapping.keys.grep(/#{mapping_path}/)
-        end
-
         def entity_composite_primary_key
           Array.wrap(entity.primary_key)
         end
