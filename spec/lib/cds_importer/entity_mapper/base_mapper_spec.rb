@@ -130,6 +130,20 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
     end
   end
 
+  describe '#primary?' do
+    context 'when the mapper entity class matches the derived entity class' do
+      subject(:mapper) { primary_mocked_mapper.new({}) }
+
+      it { is_expected.to be_primary }
+    end
+
+    context 'when the mapper entity class does not match the derived entity class' do
+      subject(:mapper) { secondary_mocked_mapper.new({}) }
+
+      it { is_expected.not_to be_primary }
+    end
+  end
+
   describe '#parse' do
     subject(:parsed) { secondary_mocked_mapper.new(xml_node).parse.first }
 

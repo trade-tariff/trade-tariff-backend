@@ -182,6 +182,17 @@ class CdsImporter
           TradeTariffBackend.handle_soft_deletes?
       end
 
+      # In the CDS file we treat the parent node differently from the
+      # secondary child nodes when it comes to support for the destroy operation.
+      #
+      # Each entity mapper represents either a child or a parent node in the xml file.
+      #
+      # Parent nodes have the same assigned entity class as their derived class. Our internal naming
+      # for this has been to name this parent node the primary.
+      def primary?
+        derived_entity_class == entity_class
+      end
+
       private
 
       def build_instance(values)
@@ -203,17 +214,6 @@ class CdsImporter
         values[:approved_flag] = (values[:approved_flag] == APPROVED_FLAG) if values.key?(:approved_flag)
         values[:stopped_flag] = (values[:stopped_flag] == STOPPED_FLAG) if values.key?(:approved_flag)
         values
-      end
-
-      # In the CDS file we treat the parent node differently from the
-      # secondary child nodes when it comes to support for the destroy operation.
-      #
-      # Each entity mapper represents either a child or a parent node in the xml file.
-      #
-      # Parent nodes have the same assigned entity class as their derived class. Our internal naming
-      # for this has been to name this parent node the primary.
-      def primary?
-        derived_entity_class == entity_class
       end
 
       def derived_entity_class

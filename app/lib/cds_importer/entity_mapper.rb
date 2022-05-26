@@ -41,7 +41,7 @@ class CdsImporter
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
         mappers = mappers.map { |mapper| mapper.new(xml_node) }
 
-        primary_mapper = mappers.first
+        primary_mapper = mappers.find(&:primary?)
 
         if primary_mapper&.destroy_operation?
           [primary_mapper]
