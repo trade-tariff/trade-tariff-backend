@@ -12,7 +12,4 @@ class AdditionalCodeDescriptionPeriod < Sequel::Model
                                                    additional_code_sid],
                                            primary_key: %i[additional_code_description_period_sid
                                                            additional_code_sid]
-
-  # many_to_one :additional_code, key: :additional_code_sid
-  # many_to_one :additional_code_type, key: :additional_code_type_id
 end

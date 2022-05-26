@@ -25,6 +25,12 @@ FactoryBot.define do
         FactoryBot.create(:additional_code_description, :with_period, additional_code_sid: adco.additional_code_sid, description: evaluator.additional_code_description)
       end
     end
+
+    trait :with_footnote_association do
+      after(:build) do |additional_code, _evaluator|
+        create(:footnote_association_additional_code, additional_code_sid: additional_code.additional_code_sid)
+      end
+    end
   end
 
   factory :additional_code_description_period do
@@ -117,7 +123,7 @@ FactoryBot.define do
     f.validity_start_date     { 2.years.ago.beginning_of_day }
     f.validity_end_date       { nil }
 
-    f.measure_type         { create :measure_type, measure_type_id: measure_type_id }
-    f.additional_code_type { create :additional_code_type, additional_code_type_id: additional_code_type_id }
+    f.measure_type         { create :measure_type, measure_type_id: }
+    f.additional_code_type { create :additional_code_type, additional_code_type_id: }
   end
 end
