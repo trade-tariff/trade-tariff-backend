@@ -18,12 +18,6 @@ class CdsImporter
       self.primary_filters = {
         measure_sid: :measure_sid,
       }.freeze
-
-      self.primary_key_mapping = entity_mapping.slice(
-        'sid',
-        "#{mapping_path}.footnote.footnoteType.footnoteTypeId",
-        "#{mapping_path}.footnote.footnoteId",
-      )
     end
   end
 end
