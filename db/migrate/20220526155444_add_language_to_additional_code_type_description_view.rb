@@ -2,7 +2,7 @@
 
 Sequel.migration do
   up do
-    run %Q{
+    run %{
       CREATE OR REPLACE VIEW public.additional_code_type_descriptions AS
       SELECT
           additional_code_type_descriptions1.additional_code_type_id,
@@ -28,7 +28,7 @@ Sequel.migration do
   end
 
   down do
-    run %Q{
+    run %{
       CREATE OR REPLACE VIEW public.additional_code_type_descriptions AS
       SELECT
           additional_code_type_descriptions1.additional_code_type_id,
