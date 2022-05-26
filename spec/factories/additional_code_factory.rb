@@ -96,6 +96,22 @@ FactoryBot.define do
       end
     end
 
+    trait :with_measure_type do
+      after(:build) do |additional_code_type, _evaluator|
+        create(:additional_code_type_measure_type, additional_code_type_id: additional_code_type.additional_code_type_id)
+      end
+    end
+
+    trait :with_description do
+      transient do
+        language_id { 'EN' }
+      end
+
+      after(:create) do |additional_code_type, evaluator|
+        create(:additional_code_type_description, additional_code_type_id: additional_code_type.additional_code_type_id, language_id: evaluator.language_id)
+      end
+    end
+
     trait :xml do
       validity_end_date { 1.year.ago.beginning_of_day }
     end
@@ -104,6 +120,7 @@ FactoryBot.define do
   factory :additional_code_type_description do
     additional_code_type_id                { generate(:additional_code_type_id) }
     description                            { Forgery(:lorem_ipsum).sentence }
+    language_id                            { 'IT' }
 
     trait :xml do
       language_id { 'EN' }
