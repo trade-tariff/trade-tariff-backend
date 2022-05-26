@@ -27,10 +27,6 @@ class CdsImporter
         measure_sid: :measure_sid,
       }.freeze
 
-      self.primary_key_mapping = entity_mapping.slice(
-        "#{mapping_path}.sid",
-      )
-
       delete_missing_entities MeasureConditionComponentMapper
     end
   end

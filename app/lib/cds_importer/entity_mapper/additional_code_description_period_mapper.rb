@@ -15,6 +15,10 @@ class CdsImporter
         'additionalCodeType.additionalCodeTypeId' => :additional_code_type_id,
         'additionalCodeCode' => :additional_code,
       ).freeze
+
+      self.primary_filters = {
+        additional_code_sid: :additional_code_sid,
+      }.freeze
     end
   end
 end

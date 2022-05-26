@@ -21,11 +21,6 @@ class CdsImporter
       self.primary_filters = {
         measure_condition_sid: :measure_condition_sid,
       }
-
-      self.primary_key_mapping = entity_mapping.slice(
-        'measureCondition.sid',
-        "#{mapping_path}.dutyExpression.dutyExpressionId",
-      )
     end
   end
 end

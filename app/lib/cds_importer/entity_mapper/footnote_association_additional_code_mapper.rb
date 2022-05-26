@@ -1,7 +1,3 @@
-#
-# FootnoteAssociationAdditionalCode is nested in to AdditionalCode.
-#
-
 class CdsImporter
   class EntityMapper
     class FootnoteAssociationAdditionalCodeMapper < BaseMapper
@@ -20,6 +16,10 @@ class CdsImporter
         "#{mapping_path}.footnote.footnoteType.footnoteTypeId" => :footnote_type_id,
         "#{mapping_path}.footnote.footnoteId" => :footnote_id,
       ).freeze
+
+      self.primary_filters = {
+        additional_code_sid: :additional_code_sid,
+      }.freeze
     end
   end
 end
