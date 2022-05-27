@@ -2,7 +2,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
   let(:xml_node) do
     {
       'applicationCode' => '1',
-      'additionalCodeTypeId' => '3',
+      'additionalCodeTypeId' => additional_code_type_id,
       'validityStartDate' => '1970-01-01T00:00:00',
       'meursingTablePlan' => { 'meursingTablePlanId' => '01' },
       'metainfo' => {
@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
       'additionalCodeTypeMeasureType' => {
         'validityStartDate' => '1999-09-01T00:00:00',
         'measureType' => {
-          'measureTypeId' => '468',
+          'measureTypeId' => measure_type_id,
         },
         'metainfo' => {
           'opType' => operation,
@@ -24,7 +24,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
       'additionalCodeTypeDescription' => {
         'description' => 'Prohibition/Restriction/Surveillance',
         'language' => {
-          'languageId' => 'EN',
+          'languageId' => language_id,
         },
         'metainfo' => {
           'origin' => 'T',
@@ -36,6 +36,9 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
   end
 
   let(:operation) { 'U' }
+  let(:additional_code_type_id) { '3' }
+  let(:language_id) { 'EN' }
+  let(:measure_type_id) { '468' }
 
   it_behaves_like 'an entity mapper', 'AdditionalCodeType', 'AdditionalCodeType' do
     let(:expected_values) do
@@ -46,7 +49,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
         operation: 'U',
         operation_date: Date.parse('2016-07-27'),
         application_code: '1',
-        additional_code_type_id: '3',
+        additional_code_type_id:,
         meursing_table_plan_id: '01',
       }
     end
@@ -77,7 +80,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
           :additional_code_type,
           :with_description,
           :with_measure_type,
-          additional_code_type_id: '3',
+          additional_code_type_id:,
         )
       end
 
@@ -95,17 +98,17 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
           :additional_code_type,
           :with_description,
           :with_measure_type,
-          additional_code_type_id: '3',
+          additional_code_type_id:,
           language_id: 'NO',
         )
 
         # Control for a non-deleted entities
-        create(:additional_code_type_measure_type, measure_type_id: '468', additional_code_type_id: '3')
-        create(:additional_code_type_description, additional_code_type_id: '3', language_id: 'EN')
+        create(:additional_code_type_measure_type, measure_type_id:, additional_code_type_id:)
+        create(:additional_code_type_description, additional_code_type_id:, language_id:)
       end
 
-      it_behaves_like 'an entity mapper missing destroy operation', AdditionalCodeTypeDescription, additional_code_type_id: '3'
-      it_behaves_like 'an entity mapper missing destroy operation', AdditionalCodeTypeMeasureType, additional_code_type_id: '3'
+      it_behaves_like('an entity mapper missing destroy operation', AdditionalCodeTypeDescription, additional_code_type_id:)
+      it_behaves_like('an entity mapper missing destroy operation', AdditionalCodeTypeMeasureType, additional_code_type_id:)
     end
   end
 end
