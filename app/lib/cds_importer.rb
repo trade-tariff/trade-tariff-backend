@@ -72,6 +72,8 @@ class CdsImporter
 
   private
 
+  attr_reader :oplog_inserts
+
   def subscribe_to_oplog_inserts
     ActiveSupport::Notifications.subscribe('cds_importer.import.operations') do |*args|
       oplog_event = ActiveSupport::Notifications::Event.new(*args)
@@ -86,22 +88,22 @@ class CdsImporter
         entity = mapper.entity_class
         mapping_path = mapper.mapping_path
 
-        @oplog_inserts[:operations][operation][entity] ||= {}
-        @oplog_inserts[:operations][operation][entity][:count] ||= 0
-        @oplog_inserts[:operations][operation][entity][:allocations] ||= 0
-        @oplog_inserts[:operations][operation][entity][:duration] ||= 0
-        @oplog_inserts[:operations][operation][entity][:count] += count
-        @oplog_inserts[:operations][operation][entity][:allocations] += allocations
-        @oplog_inserts[:operations][operation][entity][:duration] += duration
-        @oplog_inserts[:operations][operation][entity][:mapping_path] = mapping_path
+        oplog_inserts[:operations][operation][entity] ||= {}
+        oplog_inserts[:operations][operation][entity][:count] ||= 0
+        oplog_inserts[:operations][operation][entity][:allocations] ||= 0
+        oplog_inserts[:operations][operation][entity][:duration] ||= 0
+        oplog_inserts[:operations][operation][entity][:count] += count
+        oplog_inserts[:operations][operation][entity][:allocations] += allocations
+        oplog_inserts[:operations][operation][entity][:duration] += duration
+        oplog_inserts[:operations][operation][entity][:mapping_path] = mapping_path
 
-        @oplog_inserts[:operations][operation][:count] += count
-        @oplog_inserts[:operations][operation][:allocations] += allocations
-        @oplog_inserts[:operations][operation][:duration] += duration
+        oplog_inserts[:operations][operation][:count] += count
+        oplog_inserts[:operations][operation][:allocations] += allocations
+        oplog_inserts[:operations][operation][:duration] += duration
 
-        @oplog_inserts[:total_count] += count
-        @oplog_inserts[:total_allocations] += allocations
-        @oplog_inserts[:total_duration] += duration
+        oplog_inserts[:total_count] += count
+        oplog_inserts[:total_allocations] += allocations
+        oplog_inserts[:total_duration] += duration
       end
     end
   end
