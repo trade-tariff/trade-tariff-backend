@@ -62,9 +62,22 @@ class CdsImporter
                 missing_entities = database_entities - xml_node_entities
                 missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
 
-                secondary_mapper.entity.where(missing_entity_filter).destroy
+                instrument('cds_importer.import.operations', mapper: secondary_mapper, operation: :destroy_missing, count: missing_entities.count) do
+                  secondary_mapper.entity.where(missing_entity_filter).destroy
+                end
               end
             end
+          end
+        end
+
+        def instrument_cascade_destroy
+          operation = :destroy_cascade
+          dataset = yield
+          count = dataset.count
+          mapper = "CdsImporter::EntityMapper::#{dataset.model.name}Mapper".constantize
+
+          instrument('cds_importer.import.operations', mapper:, operation:, count:) do
+            dataset.destroy
           end
         end
 
