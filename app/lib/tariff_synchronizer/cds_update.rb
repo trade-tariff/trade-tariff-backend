@@ -26,8 +26,6 @@ module TariffSynchronizer
       end
     end
 
-    attr_reader :oplog_inserts
-
     def import!
       instrument('apply_cds.tariff_synchronizer', filename:) do
         @oplog_inserts = CdsImporter.new(self).import
@@ -47,15 +45,15 @@ module TariffSynchronizer
       Date.new(*sequence_date)
     end
 
-    private
-
     def self.validate_file!(_gzip_string)
       true
     end
 
+    private
+
     def check_oplog_inserts
       return if filesize <= EMPTY_FILE_SIZE_THRESHOLD
-      return if oplog_inserts.values.sum > 0
+      return if @oplog_inserts[:total_count].positive?
 
       alert_potential_failed_import
     end

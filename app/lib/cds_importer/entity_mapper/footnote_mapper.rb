@@ -15,12 +15,13 @@ class CdsImporter
           footnote_id = model_instance.footnote_id
           footnote_type_id = model_instance.footnote_type_id
 
-          FootnoteAssociationAdditionalCode.where(footnote_type_id:, footnote_id:).destroy
-          FootnoteAssociationGoodsNomenclature.where(footnote_type: footnote_type_id, footnote_id:).destroy
-          FootnoteAssociationMeasure.where(footnote_type_id:, footnote_id:).destroy
-          FootnoteAssociationMeursingHeading.where(footnote_type: footnote_type_id, footnote_id:).destroy
-          FootnoteDescription.where(footnote_type_id:, footnote_id:).destroy
-          FootnoteDescriptionPeriod.where(footnote_type_id:, footnote_id:).destroy
+          cascade_destroy { FootnoteAssociationAdditionalCode.where(footnote_type_id:, footnote_id:) }
+          cascade_destroy { FootnoteAssociationGoodsNomenclature.where(footnote_type: footnote_type_id, footnote_id:) }
+
+          cascade_destroy { FootnoteAssociationMeasure.where(footnote_type_id:, footnote_id:) }
+          cascade_destroy { FootnoteAssociationMeursingHeading.where(footnote_type: footnote_type_id, footnote_id:) }
+          cascade_destroy { FootnoteDescription.where(footnote_type_id:, footnote_id:) }
+          cascade_destroy { FootnoteDescriptionPeriod.where(footnote_type_id:, footnote_id:) }
         end
       end
 
