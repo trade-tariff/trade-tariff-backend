@@ -331,7 +331,7 @@ CREATE VIEW public.additional_code_type_descriptions AS
    FROM public.additional_code_type_descriptions_oplog additional_code_type_descriptions1
   WHERE ((additional_code_type_descriptions1.oid IN ( SELECT max(additional_code_type_descriptions2.oid) AS max
            FROM public.additional_code_type_descriptions_oplog additional_code_type_descriptions2
-          WHERE ((additional_code_type_descriptions1.additional_code_type_id)::text = (additional_code_type_descriptions2.additional_code_type_id)::text))) AND ((additional_code_type_descriptions1.operation)::text <> 'D'::text));
+          WHERE (((additional_code_type_descriptions1.additional_code_type_id)::text = (additional_code_type_descriptions2.additional_code_type_id)::text) AND ((additional_code_type_descriptions1.language_id)::text = (additional_code_type_descriptions2.language_id)::text)))) AND ((additional_code_type_descriptions1.operation)::text <> 'D'::text));
 
 
 --
@@ -10939,3 +10939,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20220107134210_add_product
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220223091956_add_oplog_inserts_to_tariff_updates.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220328091515_add_show_on_banner_to_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220509104200_create_goods_nomenclature_export_function.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20220526155444_add_language_to_additional_code_type_description_view.rb');
