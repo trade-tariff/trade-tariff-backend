@@ -71,7 +71,7 @@ class CdsImporter
           end
         end
 
-        def cascade_destroy
+        def instrument_cascade_destroy
           operation = :destroy_cascade
           dataset = yield
           count = dataset.count

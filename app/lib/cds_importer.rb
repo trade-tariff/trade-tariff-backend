@@ -86,18 +86,18 @@ class CdsImporter
         entity = mapper.entity_class
         mapping_path = mapper.mapping_path
 
-        @oplog_inserts[operation][entity] ||= {}
-        @oplog_inserts[operation][entity][:count] ||= 0
-        @oplog_inserts[operation][entity][:allocations] ||= 0
-        @oplog_inserts[operation][entity][:duration] ||= 0
-        @oplog_inserts[operation][entity][:count] += count
-        @oplog_inserts[operation][entity][:allocations] += allocations
-        @oplog_inserts[operation][entity][:duration] += duration
-        @oplog_inserts[operation][entity][:mapping_path] = mapping_path
+        @oplog_inserts[:operations][operation][entity] ||= {}
+        @oplog_inserts[:operations][operation][entity][:count] ||= 0
+        @oplog_inserts[:operations][operation][entity][:allocations] ||= 0
+        @oplog_inserts[:operations][operation][entity][:duration] ||= 0
+        @oplog_inserts[:operations][operation][entity][:count] += count
+        @oplog_inserts[:operations][operation][entity][:allocations] += allocations
+        @oplog_inserts[:operations][operation][entity][:duration] += duration
+        @oplog_inserts[:operations][operation][entity][:mapping_path] = mapping_path
 
-        @oplog_inserts[operation][:count] += count
-        @oplog_inserts[operation][:allocations] += allocations
-        @oplog_inserts[operation][:duration] += duration
+        @oplog_inserts[:operations][operation][:count] += count
+        @oplog_inserts[:operations][operation][:allocations] += allocations
+        @oplog_inserts[:operations][operation][:duration] += duration
 
         @oplog_inserts[:total_count] += count
         @oplog_inserts[:total_allocations] += allocations

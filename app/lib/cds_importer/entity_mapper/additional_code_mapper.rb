@@ -15,8 +15,8 @@ class CdsImporter
         if mapper_instance.destroy_operation?
           additional_code_sid = model_instance.additional_code_sid
 
-          cascade_destroy { FootnoteAssociationAdditionalCode.where(additional_code_sid:) }
-          cascade_destroy { AdditionalCodeDescriptionPeriod.where(additional_code_sid:) }
+          instrument_cascade_destroy { FootnoteAssociationAdditionalCode.where(additional_code_sid:) }
+          instrument_cascade_destroy { AdditionalCodeDescriptionPeriod.where(additional_code_sid:) }
         end
       end
 

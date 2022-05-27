@@ -41,15 +41,15 @@ class CdsImporter
         if mapper_instance.destroy_operation?
           measure_sid = model_instance.measure_sid
 
-          cascade_destroy { FootnoteAssociationMeasure.where(measure_sid:) }
-          cascade_destroy { MeasureComponent.where(measure_sid:) }
-          cascade_destroy { MeasureExcludedGeographicalArea.where(measure_sid:) }
-          cascade_destroy { MeasurePartialTemporaryStop.where(measure_sid:) }
+          instrument_cascade_destroy { FootnoteAssociationMeasure.where(measure_sid:) }
+          instrument_cascade_destroy { MeasureComponent.where(measure_sid:) }
+          instrument_cascade_destroy { MeasureExcludedGeographicalArea.where(measure_sid:) }
+          instrument_cascade_destroy { MeasurePartialTemporaryStop.where(measure_sid:) }
 
-          cascade_destroy do
+          instrument_cascade_destroy do
             measure_conditions = MeasureCondition.where(measure_sid:)
 
-            cascade_destroy do
+            instrument_cascade_destroy do
               MeasureConditionComponent.where(measure_condition_sid: measure_conditions.pluck(:measure_condition_sid))
             end
 

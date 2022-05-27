@@ -15,8 +15,8 @@ class CdsImporter
         if mapper_instance.destroy_operation?
           additional_code_type_id = model_instance.additional_code_type_id
 
-          cascade_destroy { AdditionalCodeTypeMeasureType.where(additional_code_type_id:) }
-          cascade_destroy { AdditionalCodeTypeDescription.where(additional_code_type_id:) }
+          instrument_cascade_destroy { AdditionalCodeTypeMeasureType.where(additional_code_type_id:) }
+          instrument_cascade_destroy { AdditionalCodeTypeDescription.where(additional_code_type_id:) }
         end
       end
 
