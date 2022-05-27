@@ -3,8 +3,9 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
   let(:inserted_oplog_records) do
     {
-      'AdditionalCode::Operation' => 2,
-      'Measure::Operation' => 1,
+      total_count: 3,
+      total_duration: 0,
+      total_allocations: 0,
     }
   end
 
@@ -89,14 +90,15 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
       let(:inserted_oplog_records) do
         {
-          'AdditionalCode::Operation' => 1,
-          'Measure::Operation' => 5,
+          total_count: 1,
+          total_duration: 0,
+          total_allocations: 0,
         }
       end
 
       context 'with valid upload' do
         it 'will store the inserts on the update' do
-          expect(cds_update.reload.inserts).to eq('{"AdditionalCode::Operation":1,"Measure::Operation":5}')
+          expect(cds_update.reload.inserts).to include('"total_count":1')
         end
 
         it 'will check the import' do
@@ -113,8 +115,9 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
         let(:inserted_oplog_records) do
           {
-            'AdditionalCode::Operation' => 0,
-            'Measure::Operation' => 0,
+            total_count: 0,
+            total_duration: 0,
+            total_allocations: 0,
           }
         end
 
@@ -130,8 +133,9 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       context 'with missing inserts' do
         let(:inserted_oplog_records) do
           {
-            'AdditionalCode::Operation' => 0,
-            'Measure::Operation' => 0,
+            total_count: 0,
+            total_duration: 0,
+            total_allocations: 0,
           }
         end
 

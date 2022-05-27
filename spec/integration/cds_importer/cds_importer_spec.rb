@@ -1,4 +1,5 @@
 RSpec.describe CdsImporter do
+  # This xml file is empty
   let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20201004T235959.gzip') }
   let(:importer) { described_class.new(cds_update) }
 
@@ -19,7 +20,20 @@ RSpec.describe CdsImporter do
     end
 
     it 'returns hash of inserted records' do
-      expect(importer.import).to eql({})
+      expected_default_oplog_inserts = {
+        operations: {
+          create: { count: 0, duration: 0, allocations: 0 },
+          update: { count: 0, duration: 0, allocations: 0 },
+          destroy: { count: 0, duration: 0, allocations: 0 },
+          destroy_cascade: { count: 0, duration: 0, allocations: 0 },
+          destroy_missing: { count: 0, duration: 0, allocations: 0 },
+        },
+        total_count: 0,
+        total_duration: 0,
+        total_allocations: 0,
+      }
+
+      expect(importer.import).to eql(expected_default_oplog_inserts)
     end
   end
 

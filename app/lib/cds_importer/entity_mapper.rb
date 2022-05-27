@@ -24,7 +24,7 @@ class CdsImporter
 
           oplog_inserts_performed[model_instance.operation_klass.to_s] ||= 0
 
-          oplog_oid = logger_enabled? ? save_record(model_instance) : save_record!(model_instance)
+          oplog_oid = logger_enabled? ? save_record(model_instance, mapper) : save_record!(model_instance, mapper)
 
           oplog_inserts_performed[model_instance.operation_klass.to_s] += 1 if oplog_oid
         end
@@ -61,22 +61,24 @@ class CdsImporter
 
     private
 
-    def save_record!(record)
-      values = record.values.except(:oid)
+    def save_record!(record, mapper)
+      instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1) do
+        values = record.values.except(:oid)
 
-      values.merge!(filename: @filename)
+        values.merge!(filename: @filename)
 
-      operation_klass = record.class.operation_klass
+        operation_klass = record.class.operation_klass
 
-      if operation_klass.columns.include?(:created_at)
-        values.merge!(created_at: operation_klass.dataset.current_datetime)
+        if operation_klass.columns.include?(:created_at)
+          values.merge!(created_at: operation_klass.dataset.current_datetime)
+        end
+
+        operation_klass.insert(values)
       end
-
-      operation_klass.insert(values)
     end
 
-    def save_record(record)
-      save_record!(record)
+    def save_record(record, mapper)
+      save_record!(record, mapper)
     rescue StandardError => e
       instrument('cds_error.cds_importer', record:, xml_key: key, xml_node:, exception: e)
       nil
