@@ -9,7 +9,7 @@ Rails.application.routes.draw do
         end
       end
 
-      resources :updates, only: [:index]
+      resources :updates, only: %i[index show]
       resources :rollbacks, only: %i[create index]
       resources :footnotes, only: %i[index show update]
       resources :search_references, only: [:index]

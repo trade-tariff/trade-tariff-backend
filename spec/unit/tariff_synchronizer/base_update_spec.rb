@@ -233,4 +233,39 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       it { is_expected.to be_nil }
     end
   end
+
+  describe '.by_filename' do
+    subject(:update) {}
+
+    before do
+      allow(TradeTariffBackend).to receive(:service).and_return(service)
+    end
+
+    let(:uk_update) { create(:cds_update) }
+    let(:xi_update) { create(:taric_update) }
+
+    context 'when on the uk service and fetching the xi update' do
+      let(:service) { 'uk' }
+
+      it { expect { described_class.by_filename(xi_update.to_param) }.to raise_error(Sequel::RecordNotFound) }
+    end
+
+    context 'when on the uk service and fetching the uk update' do
+      let(:service) { 'uk' }
+
+      it { expect(described_class.by_filename(uk_update.to_param)).to be_a(TariffSynchronizer::CdsUpdate) }
+    end
+
+    context 'when on the xi service and fetching the uk update' do
+      let(:service) { 'xi' }
+
+      it { expect { described_class.by_filename(uk_update.to_param) }.to raise_error(Sequel::RecordNotFound) }
+    end
+
+    context 'when on the xi service and fetching the xi update' do
+      let(:service) { 'xi' }
+
+      it { expect(described_class.by_filename(xi_update.to_param)).to be_a(TariffSynchronizer::TaricUpdate) }
+    end
+  end
 end

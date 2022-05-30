@@ -49,6 +49,10 @@ module TariffSynchronizer
       true
     end
 
+    def to_param
+      filename.sub('.gzip', '')
+    end
+
     private
 
     def check_oplog_inserts

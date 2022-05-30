@@ -66,6 +66,10 @@ module TariffSynchronizer
       end
     end
 
+    def to_param
+      filename.sub('.xml', '')
+    end
+
     def import!
       instrument('apply_taric.tariff_synchronizer', filename:) do
         TaricImporter.new(self).import

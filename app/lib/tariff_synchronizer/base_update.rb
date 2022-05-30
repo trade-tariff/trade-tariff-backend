@@ -40,6 +40,16 @@ module TariffSynchronizer
     end
 
     dataset_module do
+      def by_filename(filename_without_suffix)
+        filename = if TradeTariffBackend.uk?
+                     "#{filename_without_suffix}.gzip"
+                   else
+                     "#{filename_without_suffix}.xml"
+                   end
+
+        where(filename:).take
+      end
+
       def applied
         filter(state: APPLIED_STATE)
       end

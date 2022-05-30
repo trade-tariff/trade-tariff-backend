@@ -7,6 +7,12 @@ module Api
         render json: Api::Admin::TariffUpdateSerializer.new(@collection.to_a, serialization_meta).serializable_hash
       end
 
+      def show
+        update = TariffSynchronizer::BaseUpdate.by_filename(params[:id])
+
+        render json: Api::Admin::TariffUpdateSerializer.new(update).serializable_hash
+      end
+
       private
 
       def collection
