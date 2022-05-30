@@ -20,15 +20,14 @@ class CdsImporter
     @cds_update = cds_update
     @oplog_inserts = {
       operations: {
-        create: { count: 0, duration: 0, allocations: 0 },
-        update: { count: 0, duration: 0, allocations: 0 },
-        destroy: { count: 0, duration: 0, allocations: 0 },
-        destroy_cascade: { count: 0, duration: 0, allocations: 0 },
-        destroy_missing: { count: 0, duration: 0, allocations: 0 },
+        create: { count: 0, duration: 0 },
+        update: { count: 0, duration: 0 },
+        destroy: { count: 0, duration: 0 },
+        destroy_cascade: { count: 0, duration: 0 },
+        destroy_missing: { count: 0, duration: 0 },
       },
       total_count: 0,
       total_duration: 0,
-      total_allocations: 0,
     }
   end
 
@@ -82,7 +81,6 @@ class CdsImporter
 
       if count.positive?
         duration = oplog_event.duration
-        allocations = oplog_event.allocations
         mapper = oplog_event.payload[:mapper]
         operation = oplog_event.payload[:operation]
         entity = mapper.entity_class
@@ -90,19 +88,15 @@ class CdsImporter
 
         oplog_inserts[:operations][operation][entity] ||= {}
         oplog_inserts[:operations][operation][entity][:count] ||= 0
-        oplog_inserts[:operations][operation][entity][:allocations] ||= 0
         oplog_inserts[:operations][operation][entity][:duration] ||= 0
         oplog_inserts[:operations][operation][entity][:count] += count
-        oplog_inserts[:operations][operation][entity][:allocations] += allocations
         oplog_inserts[:operations][operation][entity][:duration] += duration
         oplog_inserts[:operations][operation][entity][:mapping_path] = mapping_path
 
         oplog_inserts[:operations][operation][:count] += count
-        oplog_inserts[:operations][operation][:allocations] += allocations
         oplog_inserts[:operations][operation][:duration] += duration
 
         oplog_inserts[:total_count] += count
-        oplog_inserts[:total_allocations] += allocations
         oplog_inserts[:total_duration] += duration
       end
     end

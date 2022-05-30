@@ -22,15 +22,14 @@ RSpec.describe CdsImporter do
     it 'returns hash of inserted records' do
       expected_default_oplog_inserts = {
         operations: {
-          create: { count: 0, duration: 0, allocations: 0 },
-          update: { count: 0, duration: 0, allocations: 0 },
-          destroy: { count: 0, duration: 0, allocations: 0 },
-          destroy_cascade: { count: 0, duration: 0, allocations: 0 },
-          destroy_missing: { count: 0, duration: 0, allocations: 0 },
+          create: { count: 0, duration: 0 },
+          update: { count: 0, duration: 0 },
+          destroy: { count: 0, duration: 0 },
+          destroy_cascade: { count: 0, duration: 0 },
+          destroy_missing: { count: 0, duration: 0 },
         },
         total_count: 0,
         total_duration: 0,
-        total_allocations: 0,
       }
 
       expect(importer.import).to eql(expected_default_oplog_inserts)
