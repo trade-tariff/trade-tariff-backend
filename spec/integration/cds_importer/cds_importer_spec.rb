@@ -40,15 +40,12 @@ RSpec.describe CdsImporter do
     let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename) }
 
     context 'with valid import file' do
-      before do
-        allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
-        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
-      end
-
       it 'invokes EntityMapper' do
-        expect(processor.process_xml_node('AdditionalCode', {})).to eql({
-          'AdditionalCode::Operation' => 1,
-        })
+        allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
+
+        expect_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
+
+        processor.process_xml_node('AdditionalCode', {})
       end
     end
 

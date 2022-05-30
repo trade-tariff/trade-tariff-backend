@@ -54,7 +54,7 @@ class CdsImporter
 
         # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
         def delete_missing_entities(*secondary_mappers)
-          before_oplog_inserts do |xml_node, _mapper_instance, primary_model_instance|
+          before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance|
             if TradeTariffBackend.handle_soft_deletes?
               secondary_mappers.each do |secondary_mapper|
                 database_entities = secondary_mapper.database_entities_for(primary_model_instance)
@@ -62,22 +62,20 @@ class CdsImporter
                 missing_entities = database_entities - xml_node_entities
                 missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
 
-                instrument('cds_importer.import.operations', mapper: secondary_mapper, operation: :destroy_missing, count: missing_entities.count) do
-                  secondary_mapper.entity.where(missing_entity_filter).destroy
+                secondary_mapper.entity.where(missing_entity_filter).each do |missing_entity|
+                  CdsImporter::RecordInserter.destroy_missing_record(missing_entity, secondary_mapper, mapper_instance.filename)
                 end
               end
             end
           end
         end
 
-        def instrument_cascade_destroy
-          operation = :destroy_cascade
+        def instrument_cascade_destroy(filename)
           dataset = yield
-          count = dataset.count
           mapper = "CdsImporter::EntityMapper::#{dataset.model.name}Mapper".constantize
 
-          instrument('cds_importer.import.operations', mapper:, operation:, count:) do
-            dataset.destroy
+          dataset.each do |entity|
+            CdsImporter::RecordInserter.destroy_cascade_record(entity, mapper, filename)
           end
         end
 
@@ -150,6 +148,8 @@ class CdsImporter
         end
       end
 
+      attr_reader :xml_node
+
       def initialize(xml_node)
         @xml_node = xml_node
       end
@@ -204,6 +204,10 @@ class CdsImporter
       # for this has been to name this parent node the primary.
       def primary?
         derived_entity_class == entity_class
+      end
+
+      def filename
+        @xml_node['filename']
       end
 
       private

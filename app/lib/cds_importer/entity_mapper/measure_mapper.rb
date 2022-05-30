@@ -40,16 +40,17 @@ class CdsImporter
       before_oplog_inserts do |_xml_node, mapper_instance, model_instance|
         if mapper_instance.destroy_operation?
           measure_sid = model_instance.measure_sid
+          filename = mapper_instance.filename
 
-          instrument_cascade_destroy { FootnoteAssociationMeasure.where(measure_sid:) }
-          instrument_cascade_destroy { MeasureComponent.where(measure_sid:) }
-          instrument_cascade_destroy { MeasureExcludedGeographicalArea.where(measure_sid:) }
-          instrument_cascade_destroy { MeasurePartialTemporaryStop.where(measure_sid:) }
+          instrument_cascade_destroy(filename) { FootnoteAssociationMeasure.where(measure_sid:) }
+          instrument_cascade_destroy(filename) { MeasureComponent.where(measure_sid:) }
+          instrument_cascade_destroy(filename) { MeasureExcludedGeographicalArea.where(measure_sid:) }
+          instrument_cascade_destroy(filename) { MeasurePartialTemporaryStop.where(measure_sid:) }
 
-          instrument_cascade_destroy do
+          instrument_cascade_destroy(filename) do
             measure_conditions = MeasureCondition.where(measure_sid:)
 
-            instrument_cascade_destroy do
+            instrument_cascade_destroy(filename) do
               MeasureConditionComponent.where(measure_condition_sid: measure_conditions.pluck(:measure_condition_sid))
             end
 
