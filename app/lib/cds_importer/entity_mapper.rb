@@ -21,11 +21,12 @@ class CdsImporter
 
         instances.each do |model_instance|
           mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper, model_instance) }
+          record_inserter = CdsImporter::RecordInserter.new(model_instance, mapper, @filename)
 
           if logger_enabled?
-            CdsImporter::RecordInserter.save_record(model_instance, mapper, @filename, @key)
+            record_inserter.save_record(@key)
           else
-            CdsImporter::RecordInserter.save_record!(model_instance, mapper, @filename)
+            record_inserter.save_record!
           end
         end
       end

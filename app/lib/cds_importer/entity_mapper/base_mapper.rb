@@ -63,7 +63,9 @@ class CdsImporter
                 missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
 
                 secondary_mapper.entity.where(missing_entity_filter).each do |missing_entity|
-                  CdsImporter::RecordInserter.destroy_missing_record(missing_entity, secondary_mapper, mapper_instance.filename)
+                  inserter = CdsImporter::RecordInserter.new(missing_entity, secondary_mapper, mapper_instance.filename)
+
+                  inserter.destroy_missing_record
                 end
               end
             end
@@ -75,7 +77,9 @@ class CdsImporter
           mapper = "CdsImporter::EntityMapper::#{dataset.model.name}Mapper".constantize
 
           dataset.each do |entity|
-            CdsImporter::RecordInserter.destroy_cascade_record(entity, mapper, filename)
+            inserter = CdsImporter::RecordInserter.new(entity, mapper, filename)
+
+            inserter.destroy_cascade_record
           end
         end
 

@@ -1,6 +1,6 @@
 RSpec.describe CdsImporter::RecordInserter do
   shared_examples_for 'an insert operation' do |method_name|
-    subject(:do_insert) { described_class.public_send(method_name, *args) }
+    subject(:do_insert) { described_class.new(record, mapper, 'new_filename.gzip').public_send(method_name, *args) }
 
     it 'persists a new record with the correct filename and operation' do
       expect { do_insert }
@@ -21,18 +21,11 @@ RSpec.describe CdsImporter::RecordInserter do
 
   let(:mapper) { CdsImporter::EntityMapper::MeasureMapper.new({}) }
   let(:record) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
+  let(:args) { [] }
 
   describe '#destroy_cascade_record' do
     let(:expected_db_operation) { 'D' }
     let(:expected_instrument_operation) { :destroy_cascade }
-
-    let(:args) do
-      [
-        record,
-        mapper,
-        'new_filename.gzip',
-      ]
-    end
 
     it_behaves_like 'an insert operation', :destroy_cascade_record
   end
@@ -41,14 +34,6 @@ RSpec.describe CdsImporter::RecordInserter do
     let(:expected_db_operation) { 'D' }
     let(:expected_instrument_operation) { :destroy_missing }
 
-    let(:args) do
-      [
-        record,
-        mapper,
-        'new_filename.gzip',
-      ]
-    end
-
     it_behaves_like 'an insert operation', :destroy_missing_record
   end
 
@@ -56,34 +41,18 @@ RSpec.describe CdsImporter::RecordInserter do
     let(:expected_db_operation) { 'C' } # Copied from record
     let(:expected_instrument_operation) { :create }
 
-    let(:args) do
-      [
-        record,
-        mapper,
-        'new_filename.gzip',
-      ]
-    end
-
     it_behaves_like 'an insert operation', :save_record!
   end
 
   describe '#save_record' do
     let(:expected_db_operation) { 'C' } # Copied from record
     let(:expected_instrument_operation) { :create }
-
-    let(:args) do
-      [
-        record,
-        mapper,
-        'new_filename.gzip',
-        'Measure',
-      ]
-    end
+    let(:args) { %w[Measure] }
 
     it_behaves_like 'an insert operation', :save_record
 
     context 'when an error is propagated' do
-      subject(:do_insert) { described_class.save_record(*args) }
+      subject(:do_insert) { described_class.new(record, mapper, 'new_filename.gzip').save_record('Measure') }
 
       before do
         allow(record.class.operation_klass).to receive(:insert).and_raise(StandardError, 'foo')
