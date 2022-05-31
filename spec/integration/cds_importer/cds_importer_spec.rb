@@ -34,6 +34,14 @@ RSpec.describe CdsImporter do
 
       expect(importer.import).to eql(expected_default_oplog_inserts)
     end
+
+    it 'subscribes to oplog events' do
+      allow(ActiveSupport::Notifications).to receive(:subscribe).and_call_original
+
+      importer.import
+
+      expect(ActiveSupport::Notifications).to have_received(:subscribe).with('cds_importer.import.operations')
+    end
   end
 
   describe 'XmlProcessor' do

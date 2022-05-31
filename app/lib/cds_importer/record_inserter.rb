@@ -1,7 +1,7 @@
 class CdsImporter
   class RecordInserter
     class << self
-      delegate :instrument, :subscribe, to: ActiveSupport::Notifications
+      delegate :instrument, to: ActiveSupport::Notifications
 
       def destroy_cascade_record(record, mapper, filename)
         instrument('cds_importer.import.operations', mapper:, operation: :destroy_cascade, count: 1) do
