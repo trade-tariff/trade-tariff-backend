@@ -13,9 +13,9 @@ RSpec.shared_examples_for 'an entity mapper missing destroy operation' do |model
   end
 
   # TODO: Remove me once all is merged and tested
-  context 'when the handle_soft_deletes feature flag is disabled' do
+  context 'when the handle_missing_soft_deletes feature flag is disabled' do
     before do
-      allow(TradeTariffBackend).to receive(:handle_soft_deletes?).and_return(false)
+      allow(TradeTariffBackend).to receive(:handle_missing_soft_deletes?).and_return(false)
     end
 
     # rubocop:disable RSpec/MultipleExpectations

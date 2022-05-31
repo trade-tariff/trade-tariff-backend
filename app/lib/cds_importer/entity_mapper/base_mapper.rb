@@ -55,7 +55,7 @@ class CdsImporter
         # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
         def delete_missing_entities(*secondary_mappers)
           before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance|
-            if TradeTariffBackend.handle_soft_deletes?
+            if TradeTariffBackend.handle_missing_soft_deletes?
               secondary_mappers.each do |secondary_mapper|
                 database_entities = secondary_mapper.database_entities_for(primary_model_instance)
                 xml_node_entities = secondary_mapper.xml_entities_for(xml_node)
@@ -73,13 +73,15 @@ class CdsImporter
         end
 
         def instrument_cascade_destroy(filename)
-          dataset = yield
-          mapper = "CdsImporter::EntityMapper::#{dataset.model.name}Mapper".constantize
+          if TradeTariffBackend.handle_cascade_soft_deletes?
+            dataset = yield
+            mapper = "CdsImporter::EntityMapper::#{dataset.model.name}Mapper".constantize
 
-          dataset.each do |entity|
-            inserter = CdsImporter::RecordInserter.new(entity, mapper, filename)
+            dataset.each do |entity|
+              inserter = CdsImporter::RecordInserter.new(entity, mapper, filename)
 
-            inserter.destroy_cascade_record
+              inserter.destroy_cascade_record
+            end
           end
         end
 
@@ -195,8 +197,7 @@ class CdsImporter
 
       def destroy_operation?
         @xml_node.dig('metainfo', 'opType') == Sequel::Plugins::Oplog::DESTROY_OPERATION &&
-          primary? &&
-          TradeTariffBackend.handle_soft_deletes?
+          primary?
       end
 
       # In the CDS file we treat the parent node differently from the
