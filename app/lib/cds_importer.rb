@@ -83,15 +83,22 @@ class CdsImporter
         duration = oplog_event.duration
         mapper = oplog_event.payload[:mapper]
         operation = oplog_event.payload[:operation]
-        entity = mapper.entity_class
+        entity_class = mapper.entity_class
         mapping_path = mapper.mapping_path
+        record = oplog_event.payload[:record]
 
-        oplog_inserts[:operations][operation][entity] ||= {}
-        oplog_inserts[:operations][operation][entity][:count] ||= 0
-        oplog_inserts[:operations][operation][entity][:duration] ||= 0
-        oplog_inserts[:operations][operation][entity][:count] += count
-        oplog_inserts[:operations][operation][entity][:duration] += duration
-        oplog_inserts[:operations][operation][entity][:mapping_path] = mapping_path
+        oplog_inserts[:operations][operation][entity_class] ||= {}
+        oplog_inserts[:operations][operation][entity_class][:count] ||= 0
+        oplog_inserts[:operations][operation][entity_class][:duration] ||= 0
+        oplog_inserts[:operations][operation][entity_class][:count] += count
+        oplog_inserts[:operations][operation][entity_class][:duration] += duration
+        oplog_inserts[:operations][operation][entity_class][:mapping_path] = mapping_path
+
+        # We only accumulate missing destroy operations because we can work out from the file which record was inserted for non-missing operation types
+        if operation == CdsImporter::RecordInserter::DESTROY_MISSING_OPERATION
+          oplog_inserts[:operations][operation][entity_class][:records] ||= []
+          oplog_inserts[:operations][operation][entity_class][:records] << record.identification 
+        end
 
         oplog_inserts[:operations][operation][:count] += count
         oplog_inserts[:operations][operation][:duration] += duration

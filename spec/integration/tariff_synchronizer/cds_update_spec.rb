@@ -33,7 +33,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
             'destroy_missing' => {
               'count' => 1,
               'duration' => be_a(Float),
-              'MeasureCondition' => { 'count' => 1, 'duration' => be_a(Float), 'mapping_path' => 'measureCondition' },
+              'MeasureCondition' => { 'count' => 1, 'duration' => be_a(Float), 'mapping_path' => 'measureCondition', 'records' => [{ 'oid' => Integer, 'measure_condition_sid' => 20_115_851 }] },
             },
           },
           'total_count' => 3,
