@@ -20,6 +20,8 @@ FactoryBot.define do
       base_regulation_effective_end_date { nil }
     end
 
+    filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
+
     measure_sid { generate(:measure_sid) }
     measure_type_id { generate(:measure_type_id) }
     measure_generating_regulation_id { generate(:base_regulation_sid) }

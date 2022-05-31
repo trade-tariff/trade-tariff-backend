@@ -14,19 +14,20 @@ class CdsImporter
     end
 
     def import
-      applicable_mappers_for(@key, @xml_node).each.with_object({}) do |mapper, oplog_inserts_performed|
+      applicable_mappers_for(@key, @xml_node).each do |mapper|
         mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) }
 
         instances = mapper.parse
 
         instances.each do |model_instance|
           mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper, model_instance) }
+          record_inserter = CdsImporter::RecordInserter.new(model_instance, mapper, @filename)
 
-          oplog_inserts_performed[model_instance.operation_klass.to_s] ||= 0
-
-          oplog_oid = logger_enabled? ? save_record(model_instance, mapper) : save_record!(model_instance, mapper)
-
-          oplog_inserts_performed[model_instance.operation_klass.to_s] += 1 if oplog_oid
+          if logger_enabled?
+            record_inserter.save_record(@key)
+          else
+            record_inserter.save_record!
+          end
         end
       end
     end
@@ -60,29 +61,6 @@ class CdsImporter
     end
 
     private
-
-    def save_record!(record, mapper)
-      instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1) do
-        values = record.values.except(:oid)
-
-        values.merge!(filename: @filename)
-
-        operation_klass = record.class.operation_klass
-
-        if operation_klass.columns.include?(:created_at)
-          values.merge!(created_at: operation_klass.dataset.current_datetime)
-        end
-
-        operation_klass.insert(values)
-      end
-    end
-
-    def save_record(record, mapper)
-      save_record!(record, mapper)
-    rescue StandardError => e
-      instrument('cds_error.cds_importer', record:, xml_key: key, xml_node:, exception: e)
-      nil
-    end
 
     def instrument_warning(message, xml_node)
       instrument('apply.import_warnings', message:, xml_node:)

@@ -34,21 +34,26 @@ RSpec.describe CdsImporter do
 
       expect(importer.import).to eql(expected_default_oplog_inserts)
     end
+
+    it 'subscribes to oplog events' do
+      allow(ActiveSupport::Notifications).to receive(:subscribe).and_call_original
+
+      importer.import
+
+      expect(ActiveSupport::Notifications).to have_received(:subscribe).with('cds_importer.import.operations')
+    end
   end
 
   describe 'XmlProcessor' do
     let(:processor) { CdsImporter::XmlProcessor.new(cds_update.filename) }
 
     context 'with valid import file' do
-      before do
-        allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
-        allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
-      end
-
       it 'invokes EntityMapper' do
-        expect(processor.process_xml_node('AdditionalCode', {})).to eql({
-          'AdditionalCode::Operation' => 1,
-        })
+        allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
+
+        expect_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
+
+        processor.process_xml_node('AdditionalCode', {})
       end
     end
 

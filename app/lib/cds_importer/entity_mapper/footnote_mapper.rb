@@ -14,14 +14,15 @@ class CdsImporter
         if mapper_instance.destroy_operation?
           footnote_id = model_instance.footnote_id
           footnote_type_id = model_instance.footnote_type_id
+          filename = mapper_instance.filename
 
-          instrument_cascade_destroy { FootnoteAssociationAdditionalCode.where(footnote_type_id:, footnote_id:) }
-          instrument_cascade_destroy { FootnoteAssociationGoodsNomenclature.where(footnote_type: footnote_type_id, footnote_id:) }
+          instrument_cascade_destroy(filename) { FootnoteAssociationAdditionalCode.where(footnote_type_id:, footnote_id:) }
+          instrument_cascade_destroy(filename) { FootnoteAssociationGoodsNomenclature.where(footnote_type: footnote_type_id, footnote_id:) }
 
-          instrument_cascade_destroy { FootnoteAssociationMeasure.where(footnote_type_id:, footnote_id:) }
-          instrument_cascade_destroy { FootnoteAssociationMeursingHeading.where(footnote_type: footnote_type_id, footnote_id:) }
-          instrument_cascade_destroy { FootnoteDescription.where(footnote_type_id:, footnote_id:) }
-          instrument_cascade_destroy { FootnoteDescriptionPeriod.where(footnote_type_id:, footnote_id:) }
+          instrument_cascade_destroy(filename) { FootnoteAssociationMeasure.where(footnote_type_id:, footnote_id:) }
+          instrument_cascade_destroy(filename) { FootnoteAssociationMeursingHeading.where(footnote_type: footnote_type_id, footnote_id:) }
+          instrument_cascade_destroy(filename) { FootnoteDescription.where(footnote_type_id:, footnote_id:) }
+          instrument_cascade_destroy(filename) { FootnoteDescriptionPeriod.where(footnote_type_id:, footnote_id:) }
         end
       end
 

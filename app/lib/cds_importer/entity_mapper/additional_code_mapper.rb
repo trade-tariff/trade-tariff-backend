@@ -14,9 +14,10 @@ class CdsImporter
       before_oplog_inserts do |_xml_node, mapper_instance, model_instance|
         if mapper_instance.destroy_operation?
           additional_code_sid = model_instance.additional_code_sid
+          filename = mapper_instance.filename
 
-          instrument_cascade_destroy { FootnoteAssociationAdditionalCode.where(additional_code_sid:) }
-          instrument_cascade_destroy { AdditionalCodeDescriptionPeriod.where(additional_code_sid:) }
+          instrument_cascade_destroy(filename) { FootnoteAssociationAdditionalCode.where(additional_code_sid:) }
+          instrument_cascade_destroy(filename) { AdditionalCodeDescriptionPeriod.where(additional_code_sid:) }
         end
       end
 

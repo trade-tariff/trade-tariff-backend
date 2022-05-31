@@ -336,7 +336,6 @@ RSpec.describe CdsImporter::EntityMapper do
     end
 
     it { expect { entity_mapper.import }.to change(AdditionalCode, :count).by(1) }
-    it { expect(entity_mapper.import).to eql('AdditionalCode::Operation' => 1) }
 
     it 'saves all attributes for record' do
       entity_mapper.import
