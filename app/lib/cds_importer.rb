@@ -97,7 +97,7 @@ class CdsImporter
         # We only accumulate missing destroy operations because we can work out from the file which record was inserted for non-missing operation types
         if operation == CdsImporter::RecordInserter::DESTROY_MISSING_OPERATION
           oplog_inserts[:operations][operation][entity_class][:records] ||= []
-          oplog_inserts[:operations][operation][entity_class][:records] << record.identification 
+          oplog_inserts[:operations][operation][entity_class][:records] << record.identification
         end
 
         oplog_inserts[:operations][operation][:count] += count
