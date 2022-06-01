@@ -257,4 +257,39 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
       let(:mapper_class) { secondary_mocked_mapper }
     end
   end
+
+  describe '.instrument_cascade_destroy' do
+    before do
+      allow(CdsImporter::RecordInserter).to receive(:new).and_return(inserter)
+      allow(inserter).to receive(:destroy_cascade_record)
+      allow(TradeTariffBackend).to receive(:handle_cascade_soft_deletes?).and_return(handle_cascades)
+    end
+
+    let(:dataset) do
+      create(:measure)
+      Measure.dataset
+    end
+
+    let(:inserter) { instance_double('CdsImporter::RecordInserter') }
+
+    context 'when handle_cascade_soft_deletes is disabled' do
+      let(:handle_cascades) { false }
+
+      it 'does not call the record inserter to destroy the records' do
+        described_class.instrument_cascade_destroy('foo.gzip') { dataset }
+
+        expect(inserter).not_to have_received(:destroy_cascade_record)
+      end
+    end
+
+    context 'when handle_cascade_soft_deletes is enabled' do
+      let(:handle_cascades) { true }
+
+      it 'calls the record inserter to destroy the records' do
+        described_class.instrument_cascade_destroy('foo.gzip') { dataset }
+
+        expect(inserter).to have_received(:destroy_cascade_record)
+      end
+    end
+  end
 end

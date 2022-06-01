@@ -1,5 +1,8 @@
 class CdsImporter
   class RecordInserter
+    DESTROY_CASCADE_OPERATION = :destroy_cascade
+    DESTROY_MISSING_OPERATION = :destroy_missing
+
     delegate :instrument, to: ActiveSupport::Notifications
 
     def initialize(record, mapper, filename)
@@ -9,7 +12,7 @@ class CdsImporter
     end
 
     def destroy_cascade_record
-      instrument('cds_importer.import.operations', mapper:, operation: :destroy_cascade, count: 1) do
+      instrument('cds_importer.import.operations', mapper:, operation: DESTROY_CASCADE_OPERATION, count: 1, record:) do
         operation_klass = record.class.operation_klass
 
         values = record.values.except(:oid)
@@ -22,7 +25,7 @@ class CdsImporter
     end
 
     def destroy_missing_record
-      instrument('cds_importer.import.operations', mapper:, operation: :destroy_missing, count: 1) do
+      instrument('cds_importer.import.operations', mapper:, operation: DESTROY_MISSING_OPERATION, count: 1, record:) do
         operation_klass = record.class.operation_klass
 
         values = record.values.except(:oid)
@@ -35,7 +38,7 @@ class CdsImporter
     end
 
     def save_record!
-      instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1) do
+      instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1, record:) do
         values = record.values.except(:oid)
 
         values.merge!(filename:)

@@ -15,7 +15,7 @@ RSpec.describe CdsImporter::RecordInserter do
 
       expect(ActiveSupport::Notifications)
         .to have_received(:instrument)
-        .with('cds_importer.import.operations', mapper:, operation: expected_instrument_operation, count: 1)
+        .with('cds_importer.import.operations', mapper:, operation: expected_instrument_operation, count: 1, record:)
     end
   end
 

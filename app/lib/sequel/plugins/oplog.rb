@@ -41,6 +41,8 @@ module Sequel
 
         # Delegations
         model.delegate :operation_klass, to: model
+
+        model.plugin :identification
       end
 
       module InstanceMethods
