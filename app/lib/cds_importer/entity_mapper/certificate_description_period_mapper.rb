@@ -1,9 +1,3 @@
-#
-# CertificateDescriptionPeriod has attributes which are not present in CertificateDescriptionPeriod xml object
-# e.g. 'certificate_type_code' - present in parent object
-# So we will pass @values CertificateDescriptionPeriod the same as for Certificate
-#
-
 class CdsImporter
   class EntityMapper
     class CertificateDescriptionPeriodMapper < BaseMapper
@@ -18,6 +12,11 @@ class CdsImporter
         'certificateType.certificateTypeCode' => :certificate_type_code,
         'certificateCode' => :certificate_code,
       ).freeze
+
+      self.primary_filters = {
+        certificate_type_code: :certificate_type_code,
+        certificate_code: :certificate_code,
+      }.freeze
     end
   end
 end
