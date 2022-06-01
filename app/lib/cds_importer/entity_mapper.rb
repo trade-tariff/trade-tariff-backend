@@ -44,7 +44,7 @@ class CdsImporter
 
         primary_mapper = mappers.find(&:primary?)
 
-        if primary_mapper&.destroy_operation?
+        if TradeTariffBackend.handle_cascade_soft_deletes? && primary_mapper&.destroy_operation?
           [primary_mapper]
         else
           mappers
