@@ -551,39 +551,22 @@ jobs:
 workflows:
   version: 2
 
-  debug:
-    triggers:
-      - schedule:
-          # Every Saturday at midnight.
-          cron: "00 00 * * 1"
-          filters:
-            branches:
-              only:
-                - HOTT-1637-renew-xi-search-references
+  weekly:
+    # triggers:
+    #   - schedule:
+    #       # Every Saturday at midnight.
+    #       cron: "00 00 * * 6"
+    #       filters:
+    #         branches:
+    #           only:
+    #             - main
     jobs:
       - renew_xi_production_search_references:
           context: trade-tariff
           filters:
             branches:
               only:
-                - main
-
-  weekly:
-    triggers:
-      - schedule:
-          # Every Saturday at midnight.
-          cron: "00 00 * * 6"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      # - renew_xi_production_search_references:
-      #     context: trade-tariff
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
+                - HOTT-1637-renew-xi-search-references
       - refresh_staging_db:
           context: trade-tariff
           matrix:
@@ -714,4 +697,3 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
-
