@@ -260,6 +260,58 @@ jobs:
           service: << parameters.service >>
           environment_key: staging
 
+  renew_xi_production_search_references:
+    docker:
+      - image: cimg/ruby:3.1.2
+    steps:
+      - checkout
+      - cf_install:
+          space: 'staging'
+      - run:
+          name: "Install necessary dependencies"
+          command: |
+            cf install-plugin conduit -r CF-Community -f
+            sudo apt-get update -qq
+            sudo apt-get install postgresql-client
+      - run:
+          name: "Switch to staging space"
+          command: |
+            cf target -s staging
+      - run:
+          name: "Dump the uk staging search_references table"
+          command: |
+            cf conduit tariff-uk-staging-postgres -- pg_dump --file tariff-uk-staging-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
+      - run:
+          name: "Restore the staging uk search references into staging xi"
+          command: |
+            cf conduit tariff-xi-staging-postgres -- psql $PGDATABASE < tariff-uk-staging-postgres-search_references.psql
+      - run_migrations:
+          service: xi
+          environment_key: staging
+      # - checkout
+      # - cf_install:
+      #     space: 'production'
+      # - run:
+      #     name: "Install necessary dependencies"
+      #     command: |
+      #       cf install-plugin conduit -r CF-Community -f
+      #       sudo apt-get update -qq
+      #       sudo apt-get install postgresql-client
+      # - run:
+      #     name: "Switch to production space"
+      #     command: |
+      #       cf target -s production
+      # - run:
+      #     name: "Dump the uk production search_references table"
+      #     command: |
+      #       cf conduit tariff-uk-production-postgres -- pg_dump --file tariff-uk-production-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
+      # - run:
+      #     name: "Restore the production uk search references into staging xi"
+      #     command: |
+      #       cf conduit tariff-xi-production-postgres -- psql $PGDATABASE < tariff-uk-production-postgres-search_references.psql
+      # - run_migrations:
+      #     service: xi
+      #     environment_key: production
   linters:
     docker:
       - image: cimg/ruby:3.1.2
@@ -272,9 +324,6 @@ jobs:
             sudo apt update
             sudo apt install libcurl4-openssl-dev
       - ruby/install-deps
-      # - ruby/rubocop-check:
-      #     format: progress
-      #     label: Inspecting with Rubocop
       - run:
           name: Rubocop changed files
           when: always
@@ -512,6 +561,12 @@ workflows:
               only:
                 - main
     jobs:
+      - renew_xi_production_search_references:
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
       - refresh_staging_db:
           context: trade-tariff
           matrix:
