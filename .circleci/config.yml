@@ -266,7 +266,7 @@ jobs:
     steps:
       - checkout
       - cf_install:
-          space: 'staging'
+          space: 'production'
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -274,44 +274,21 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install postgresql-client
       - run:
-          name: "Switch to staging space"
+          name: "Switch to production space"
           command: |
-            cf target -s staging
+            cf target -s production
       - run:
-          name: "Dump the uk staging search_references table"
+          name: "Dump the uk production search_references table"
           command: |
-            cf conduit tariff-uk-staging-postgres -- pg_dump --file tariff-uk-staging-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
+            cf conduit tariff-uk-production-postgres -- pg_dump --file tariff-uk-production-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
       - run:
-          name: "Restore the staging uk search references into staging xi"
+          name: "Restore the production uk search references into production xi"
           command: |
-            cf conduit tariff-xi-staging-postgres -- psql $PGDATABASE < tariff-uk-staging-postgres-search_references.psql
+            cf conduit tariff-xi-production-postgres -- psql $PGDATABASE < tariff-uk-production-postgres-search_references.psql
       - run_migrations:
           service: xi
-          environment_key: staging
-      # - checkout
-      # - cf_install:
-      #     space: 'production'
-      # - run:
-      #     name: "Install necessary dependencies"
-      #     command: |
-      #       cf install-plugin conduit -r CF-Community -f
-      #       sudo apt-get update -qq
-      #       sudo apt-get install postgresql-client
-      # - run:
-      #     name: "Switch to production space"
-      #     command: |
-      #       cf target -s production
-      # - run:
-      #     name: "Dump the uk production search_references table"
-      #     command: |
-      #       cf conduit tariff-uk-production-postgres -- pg_dump --file tariff-uk-production-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
-      # - run:
-      #     name: "Restore the production uk search references into staging xi"
-      #     command: |
-      #       cf conduit tariff-xi-production-postgres -- psql $PGDATABASE < tariff-uk-production-postgres-search_references.psql
-      # - run_migrations:
-      #     service: xi
-      #     environment_key: production
+          environment_key: production
+
   linters:
     docker:
       - image: cimg/ruby:3.1.2
@@ -552,21 +529,21 @@ workflows:
   version: 2
 
   weekly:
-    # triggers:
-    #   - schedule:
-    #       # Every Saturday at midnight.
-    #       cron: "00 00 * * 6"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - main
+    triggers:
+      - schedule:
+          # Every Saturday at midnight.
+          cron: "00 00 * * 6"
+          filters:
+            branches:
+              only:
+                - main
     jobs:
       - renew_xi_production_search_references:
           context: trade-tariff
           filters:
             branches:
               only:
-                - HOTT-1637-renew-xi-search-references
+                - main
       - refresh_staging_db:
           context: trade-tariff
           matrix:
