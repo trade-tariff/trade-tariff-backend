@@ -11,9 +11,9 @@ module Sequel
       end
 
       module ClassMethods
-        attr_accessor :period_start_date_column, :period_end_date_column
+        attr_writer :period_start_date_column, :period_end_date_column
 
-        Plugins.def_dataset_methods self, [:actual, :with_actual]
+        Plugins.def_dataset_methods self, %i[actual with_actual]
 
         # Inheriting classes have the same start/end date columns
         def inherited(subclass)
@@ -52,10 +52,19 @@ module Sequel
           if self.class.point_in_time.present?
             klass.filter { |o| o.<=(self.class.period_start_date_column, self.class.point_in_time) & (o.>=(self.class.period_end_date_column, self.class.point_in_time) | ({ self.class.period_end_date_column => nil })) }
           elsif self.class.relevant_query?
-            klass.filter { |o| o.<=(klass.period_start_date_column, self.send(self.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, self.send(self.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
+            klass.filter { |o| o.<=(klass.period_start_date_column, send(self.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, send(self.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
           else
             klass
           end
+        end
+
+        def current?
+          now = Time.zone.now # This method will be called by a backgroung JOB, therefore it does not use Thread.current
+          period_end_date = self.class.period_end_date_column.column
+          period_start_date = self.class.period_start_date_column.column
+
+          public_send(period_start_date) <= now &&
+            (public_send(period_end_date).nil? || public_send(period_end_date) >= now)
         end
       end
 

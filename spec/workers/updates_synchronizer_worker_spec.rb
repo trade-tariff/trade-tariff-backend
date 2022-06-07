@@ -36,6 +36,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       it { expect(DataMigrator).not_to have_received(:migrate_up!) }
 
       it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
+      it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
       it { expect(described_class.jobs).to be_empty }
 
       context 'with reapply_data_migrations option' do
@@ -113,6 +114,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
           it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
+          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
           it { expect(described_class.jobs).to be_empty }
 
           context 'with reapply_data_migrations option' do
@@ -132,6 +134,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
           it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
+          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
           it { expect(described_class.jobs).to be_empty }
 
           context 'with reapply_data_migrations option' do
@@ -159,6 +162,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
         it { expect(DataMigrator).not_to have_received(:migrate_up!) }
 
         it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
+        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
         it { expect(described_class.jobs).to be_empty }
 
         context 'with reapply_data_migrations option' do
