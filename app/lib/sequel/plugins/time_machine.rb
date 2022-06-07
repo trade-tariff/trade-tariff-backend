@@ -11,7 +11,7 @@ module Sequel
       end
 
       module ClassMethods
-        attr_accessor :period_start_date_column, :period_end_date_column
+        attr_writer :period_start_date_column, :period_end_date_column
 
         Plugins.def_dataset_methods self, %i[actual with_actual]
 
