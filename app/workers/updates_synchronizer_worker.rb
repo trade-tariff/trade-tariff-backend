@@ -33,6 +33,7 @@ class UpdatesSynchronizerWorker
     migrate_data if reapply_data_migrations
 
     Sidekiq::Client.enqueue(ClearCacheWorker)
+    Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
   end
 
 private
