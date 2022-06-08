@@ -1,5 +1,5 @@
 {
-  "instance_min_count": 8,
+  "instance_min_count": 4,
   "instance_max_count": 12,
   "scaling_rules": [
     {
@@ -34,5 +34,26 @@
       "cool_down_secs": 120,
       "adjustment": "-1"
     }
-  ]
+  ],
+  "schedules": {
+    "timezone": "Europe/London",
+    "recurring_schedule": [
+      {
+        "start_time": "06:00",
+        "end_time": "18:00",
+        "days_of_week": [1, 2, 3, 4, 5],
+        "instance_min_count": 8,
+        "instance_max_count": 12,
+        "initial_min_instance_count": 4
+      },
+      {
+        "start_time": "06:00",
+        "end_time": "18:00",
+        "days_of_week": [6, 7],
+        "instance_min_count": 6,
+        "instance_max_count": 12,
+        "initial_min_instance_count": 4
+      }
+    ]
+  }
 }
