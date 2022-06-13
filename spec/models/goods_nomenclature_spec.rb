@@ -384,4 +384,180 @@ RSpec.describe GoodsNomenclature do
       it { is_expected.to eq('Chapter') }
     end
   end
+
+  describe '#chapter' do
+    before do
+      create(:chapter, goods_nomenclature_item_id: '0100000000')
+    end
+
+    context 'when the goods nomenclature is a chapter' do
+      subject(:chapter) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+
+      it { is_expected.to be_a(Chapter) }
+    end
+
+    context 'when the goods nomenclature is a heading' do
+      subject(:chapter) { create(:heading, goods_nomenclature_item_id: '0101000000').chapter }
+
+      it { is_expected.to be_a(Chapter) }
+    end
+
+    context 'when the goods nomenclature is a commodity' do
+      subject(:chapter) { create(:commodity, goods_nomenclature_item_id: '0111110000').chapter }
+
+      it { is_expected.to be_a(Chapter) }
+    end
+  end
+
+  describe '#ancestors' do
+    context 'when the goods nomenclature has ancestors' do
+      subject(:ancestors) { create(:goods_nomenclature, :with_ancestors).ancestors }
+
+      it { expect(ancestors).to include(an_instance_of(described_class)) }
+    end
+
+    context 'when the goods nomenclature has no ancestors' do
+      subject(:ancestors) { create(:goods_nomenclature, :without_ancestors).ancestors }
+
+      it { expect(ancestors).to be_empty }
+    end
+  end
+
+  describe '#parent' do
+    context 'when the goods nomenclature has an immediate parent' do
+      subject(:parent) { create(:goods_nomenclature, :with_parent).parent }
+
+      it { expect(parent).to be_a(described_class) }
+    end
+
+    context 'when the goods nomenclature has no parent' do
+      subject(:parent) { create(:goods_nomenclature, :without_parent).parent }
+
+      it { expect(parent).to be_nil }
+    end
+  end
+
+  describe '#siblings' do
+    context 'when the goods nomenclature has siblings' do
+      subject(:siblings) { create(:goods_nomenclature, :with_siblings).siblings }
+
+      it { expect(siblings).to include(an_instance_of(described_class)) }
+    end
+
+    context 'when the goods nomenclature has no siblings' do
+      subject(:siblings) { create(:goods_nomenclature, :without_siblings).siblings }
+
+      it { expect(siblings).to be_empty }
+    end
+  end
+
+  describe '#children' do
+    context 'when the goods nomenclature has children' do
+      subject(:child_sids) { create(:goods_nomenclature, :with_children).children.map(&:goods_nomenclature_sid) }
+
+      it { is_expected.to eq([2]) }
+    end
+
+    context 'when the goods nomenclature has no children' do
+      subject(:child_sids) { create(:goods_nomenclature, :without_children).children.map(&:goods_nomenclature_sid) }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '#descendants' do
+    context 'when the goods nomenclature has descendants' do
+      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).descendants.map(&:goods_nomenclature_sid) }
+
+      it { is_expected.to match_array([2, 3]) }
+    end
+
+    context 'when the goods nomenclature has no descendants' do
+      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).descendants.map(&:goods_nomenclature_sid) }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '#heading?' do
+    context 'when the goods nomenclature has a heading goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :heading) }
+
+      it { is_expected.to be_heading }
+    end
+
+    context 'when the goods nomenclature has a non-heading goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
+
+      it { is_expected.not_to be_heading }
+    end
+  end
+
+  describe '#not_heading?' do
+    context 'when the goods nomenclature has a heading goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :heading) }
+
+      it { is_expected.not_to be_not_heading }
+    end
+
+    context 'when the goods nomenclature has a non-heading goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
+
+      it { is_expected.to be_not_heading }
+    end
+  end
+
+  describe '#chapter?' do
+    context 'when the goods nomenclature has a chapter goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :chapter) }
+
+      it { is_expected.to be_chapter }
+    end
+
+    context 'when the goods nomenclature has a non-chapter goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
+
+      it { is_expected.not_to be_chapter }
+    end
+  end
+
+  describe '#not_chapter?' do
+    context 'when the goods nomenclature has a chapter goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :chapter) }
+
+      it { is_expected.not_to be_not_chapter }
+    end
+
+    context 'when the goods nomenclature has a non-chapter goods nomenclature item id' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
+
+      it { is_expected.to be_not_chapter }
+    end
+  end
+
+  describe '#declarable?' do
+    context 'when the goods nomenclature has children and a non grouping suffix' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :with_children, :non_grouping) }
+
+      it { is_expected.not_to be_declarable }
+    end
+
+    context 'when the goods nomenclature has children and a grouping suffix' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :with_children, :grouping) }
+
+      it { is_expected.not_to be_declarable }
+    end
+
+    context 'when the goods nomenclature has no children and a non grouping suffix' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :without_children, :non_grouping) }
+
+      it { is_expected.to be_declarable }
+    end
+
+    context 'when the goods nomenclature has no children and a grouping suffix' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, :without_children, :grouping) }
+
+      it { is_expected.not_to be_declarable }
+    end
+  end
 end

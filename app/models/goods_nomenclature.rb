@@ -33,9 +33,10 @@ class GoodsNomenclature < Sequel::Model
   one_to_many :ancestors, class_name: name, class: self do |_ds|
     if path.present?
       GoodsNomenclature
-        .dataset
         .actual
-        .where('goods_nomenclature_sid ANY ?', Sequel.pg_array(path, :integer))
+        .where('goods_nomenclature_sid = ANY(?)', Sequel.pg_array(path, :integer))
+    else
+      GoodsNomenclature.dataset.nullify
     end
   end
 
@@ -43,17 +44,16 @@ class GoodsNomenclature < Sequel::Model
     parent_sid = not_heading? ? path.last : chapter.goods_nomenclature_sid
 
     if parent_sid.present?
-      GoodsNomenclature
-        .dataset
-        .actual
-        .where(goods_nomenclature_sid: parent_sid)
+      GoodsNomenclature.actual.where(goods_nomenclature_sid: parent_sid)
+    else
+      GoodsNomenclature.nullify
     end
   end
 
   one_to_many :siblings, class_name: name, class: self do |_ds|
     GoodsNomenclature
-      .dataset
       .actual
+      .exclude(goods_nomenclature_sid:)
       .where(path:)
   end
 
@@ -61,14 +61,12 @@ class GoodsNomenclature < Sequel::Model
     child_path = Sequel.pg_array(path + [goods_nomenclature_sid], :integer)
 
     GoodsNomenclature
-      .dataset
       .actual
       .where(path: child_path)
   end
 
   one_to_many :descendants, class_name: name, class: self do |_ds|
     GoodsNomenclature
-      .dataset
       .actual
       .where('? = ANY(path)', goods_nomenclature_sid)
   end
@@ -151,7 +149,12 @@ class GoodsNomenclature < Sequel::Model
       class_name = self.class.sti_load(goods_nomenclature_item_id:).class.name
 
       return class_name unless class_name == 'Commodity'
-      Commodity.find(goods_nomenclature_sid:).goods_nomenclature_class
+
+      goods_nomenclature = where(goods_nomenclature_sid:).take
+
+      'Commodity' if goods_nomenclature.declarable?
+
+      'Subheading'
     end
   end
 
