@@ -3354,7 +3354,8 @@ CREATE VIEW public.goods_nomenclatures AS
     goods_nomenclatures1.oid,
     goods_nomenclatures1.operation,
     goods_nomenclatures1.operation_date,
-    goods_nomenclatures1.filename
+    goods_nomenclatures1.filename,
+    goods_nomenclatures1.path
    FROM public.goods_nomenclatures_oplog goods_nomenclatures1
   WHERE ((goods_nomenclatures1.oid IN ( SELECT max(goods_nomenclatures2.oid) AS max
            FROM public.goods_nomenclatures_oplog goods_nomenclatures2
@@ -3432,7 +3433,8 @@ CREATE TABLE public.language_descriptions_oplog (
     oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
-    filename text
+    filename text,
+    path integer[] DEFAULT ARRAY[]::integer[] NOT NULL
 );
 
 
@@ -9566,6 +9568,13 @@ CREATE INDEX goods_nomenclature_validity_dates ON public.goods_nomenclature_inde
 
 
 --
+-- Name: goods_nomenclatures_oplog_path_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_oplog_path_index ON public.goods_nomenclatures_oplog USING gin (path);
+
+
+--
 -- Name: index_additional_code_type_descriptions_on_language_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -10940,3 +10949,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20220223091956_add_oplog_i
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220328091515_add_show_on_banner_to_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220509104200_create_goods_nomenclature_export_function.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220526155444_add_language_to_additional_code_type_description_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20220609140555_add_path_to_goods_nomenclatures_oplog.rb');

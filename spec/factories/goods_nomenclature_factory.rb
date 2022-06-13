@@ -16,6 +16,7 @@ FactoryBot.define do
     producline_suffix   { '80' }
     validity_start_date { 2.years.ago.beginning_of_day }
     validity_end_date   { nil }
+    path   { Sequel.pg_array([], :integer) }
 
     # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
     #       what is passed to the individual factory and adds non-fun surprises for developers.
