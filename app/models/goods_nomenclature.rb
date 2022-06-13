@@ -24,6 +24,53 @@ class GoodsNomenclature < Sequel::Model
     end
   }
 
+  one_to_one :chapter, class_name: name, class: self do |_ds|
+    Chapter
+      .actual
+      .where(goods_nomenclature_item_id: chapter_id)
+  end
+
+  one_to_many :ancestors, class_name: name, class: self do |_ds|
+    if path.present?
+      GoodsNomenclature
+        .actual
+        .where('goods_nomenclature_sid = ANY(?)', Sequel.pg_array(path, :integer))
+    else
+      GoodsNomenclature.dataset.nullify
+    end
+  end
+
+  one_to_one :parent, class_name: name, class: self do |_ds|
+    parent_sid = !heading? ? path.last : chapter.goods_nomenclature_sid
+
+    if parent_sid.present?
+      GoodsNomenclature.actual.where(goods_nomenclature_sid: parent_sid)
+    else
+      GoodsNomenclature.dataset.nullify
+    end
+  end
+
+  one_to_many :siblings, class_name: name, class: self do |_ds|
+    GoodsNomenclature
+      .actual
+      .exclude(goods_nomenclature_sid:)
+      .where(path:)
+  end
+
+  one_to_many :children, class_name: name, class: self do |_ds|
+    child_path = Sequel.pg_array(path + [goods_nomenclature_sid], :integer)
+
+    GoodsNomenclature
+      .actual
+      .where(path: child_path)
+  end
+
+  one_to_many :descendants, class_name: name, class: self do |_ds|
+    GoodsNomenclature
+      .actual
+      .where('? = ANY(path)', goods_nomenclature_sid)
+  end
+
   one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
                                            primary_key: :goods_nomenclature_sid do |ds|
     ds.with_actual(GoodsNomenclatureIndent, self)
@@ -141,5 +188,17 @@ class GoodsNomenclature < Sequel::Model
 
   def bti_url
     'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
+  end
+
+  def heading?
+    !!goods_nomenclature_item_id.match(/\A\d{4}000000\z/)
+  end
+
+  def chapter?
+    !!goods_nomenclature_item_id.match(/\A\d{2}00000000\z/)
+  end
+
+  def declarable?
+    children.none? && producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
   end
 end

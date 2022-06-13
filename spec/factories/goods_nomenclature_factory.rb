@@ -16,6 +16,7 @@ FactoryBot.define do
     producline_suffix   { '80' }
     validity_start_date { 2.years.ago.beginning_of_day }
     validity_end_date   { nil }
+    path { Sequel.pg_array([], :integer) }
 
     # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
     #       what is passed to the individual factory and adds non-fun surprises for developers.
@@ -28,6 +29,82 @@ FactoryBot.define do
         number_indents: evaluator.indents,
         productline_suffix: gono.producline_suffix,
       )
+    end
+
+    trait :with_ancestors do
+      path { Sequel.pg_array([1, 2], :integer) }
+
+      after(:create) do
+        create(:goods_nomenclature, goods_nomenclature_sid: 1)
+        create(:goods_nomenclature, goods_nomenclature_sid: 2)
+      end
+    end
+
+    trait :without_ancestors do
+      path { Sequel.pg_array([], :integer) }
+    end
+
+    trait :with_parent do
+      path { Sequel.pg_array([1], :integer) }
+
+      after(:create) { create(:goods_nomenclature, goods_nomenclature_sid: 1) }
+    end
+
+    trait :without_parent do
+      path { Sequel.pg_array([1], :integer) }
+    end
+
+    trait :with_siblings do
+      path { Sequel.pg_array([1, 2], :integer) }
+
+      after(:create) { create(:goods_nomenclature, path: Sequel.pg_array([1, 2], :integer)) }
+    end
+
+    trait :without_siblings do
+      path { Sequel.pg_array([1, 2], :integer) }
+    end
+
+    trait :with_children do
+      goods_nomenclature_sid { 1 }
+      path { Sequel.pg_array([], :integer) }
+
+      after(:create) do
+        create(
+          :goods_nomenclature,
+          goods_nomenclature_sid: 2,
+          path: Sequel.pg_array([1], :integer),
+        )
+        create(
+          :goods_nomenclature,
+          goods_nomenclature_sid: 3,
+          path: Sequel.pg_array([1, 2], :integer),
+        )
+      end
+    end
+
+    trait :without_children do
+      goods_nomenclature_sid { 1 }
+      path { Sequel.pg_array([], :integer) }
+    end
+
+    trait :with_descendants do
+      with_children
+    end
+
+    trait :without_descendants do
+      without_children
+    end
+
+    trait :chapter do
+      goods_nomenclature_item_id { '0100000000' }
+    end
+
+    trait :heading do
+      goods_nomenclature_item_id { '0101000000' }
+    end
+
+    trait :commodity do
+      goods_nomenclature_item_id { '0102901019' }
     end
 
     trait :grouping do

@@ -1,6 +1,12 @@
 require 'data_migrator'
 
 RSpec.describe UpdatesSynchronizerWorker, type: :worker do
+  shared_examples_for 'a synchronizer worker that queues other workers' do
+    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue).with(GenerateMaterializedPathsWorker) }
+  end
+
   describe '#perform' do
     subject(:perform) { described_class.new.perform }
 
@@ -14,8 +20,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
       allow(Sidekiq::Client).to receive(:enqueue)
 
-      migrations_dir =
-        Rails.root.join(file_fixture_path).join('data_migrations')
+      migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
       allow(DataMigrator).to receive(:migrations_dir).and_return(migrations_dir)
       allow(DataMigrator).to receive(:migrate_up!).and_return(true)
     end
@@ -35,8 +40,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
       it { expect(DataMigrator).not_to have_received(:migrate_up!) }
 
-      it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
-      it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
+      it_behaves_like 'a synchronizer worker that queues other workers'
+
       it { expect(described_class.jobs).to be_empty }
 
       context 'with reapply_data_migrations option' do
@@ -113,8 +118,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
-          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
-          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
+          it_behaves_like 'a synchronizer worker that queues other workers'
+
           it { expect(described_class.jobs).to be_empty }
 
           context 'with reapply_data_migrations option' do
@@ -133,8 +138,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
-          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
-          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
+          it_behaves_like 'a synchronizer worker that queues other workers'
+
           it { expect(described_class.jobs).to be_empty }
 
           context 'with reapply_data_migrations option' do
@@ -161,8 +166,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
         it { expect(DataMigrator).not_to have_received(:migrate_up!) }
 
-        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
-        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
+        it_behaves_like 'a synchronizer worker that queues other workers'
+
         it { expect(described_class.jobs).to be_empty }
 
         context 'with reapply_data_migrations option' do

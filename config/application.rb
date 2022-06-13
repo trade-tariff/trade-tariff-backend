@@ -32,6 +32,8 @@ module TradeTariffBackend
       Sequel::Model.db.extension :pagination
       Sequel::Model.db.extension :server_block
       Sequel::Model.db.extension :auto_literal_strings
+      Sequel::Model.db.extension :pg_array
+      Sequel::Model.db.extension :null_dataset
     end
 
     config.sequel.allow_missing_migration_files = \
