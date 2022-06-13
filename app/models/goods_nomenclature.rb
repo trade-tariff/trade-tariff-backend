@@ -1,7 +1,7 @@
 class GoodsNomenclature < Sequel::Model
   extend ActiveModel::Naming
 
-  set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id))
+  set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
   set_primary_key [:goods_nomenclature_sid]
 
   plugin :time_machine
