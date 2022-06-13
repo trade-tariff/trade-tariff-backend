@@ -1,4 +1,28 @@
 RSpec.describe GoodsNomenclature do
+  describe 'ordering' do
+    subject(:goods_nomenclatures) { described_class.all.pluck(:goods_nomenclature_item_id, :producline_suffix) }
+
+    before do
+      create(:commodity, producline_suffix: '80', goods_nomenclature_item_id: '0101210000')
+      create(:heading, producline_suffix: '80', goods_nomenclature_item_id: '0102000000')
+      create(:chapter, producline_suffix: '80', goods_nomenclature_item_id: '0100000000')
+      create(:heading, producline_suffix: '80', goods_nomenclature_item_id: '0101000000')
+      create(:commodity, producline_suffix: '10', goods_nomenclature_item_id: '0101210000')
+    end
+
+    let(:expected_goods_nomenclatures) do
+      [
+        %w[0100000000 80],
+        %w[0101000000 80],
+        %w[0101210000 10], # Included producline suffix in composite ordering
+        %w[0101210000 80],
+        %w[0102000000 80],
+      ]
+    end
+
+    it { expect(goods_nomenclatures).to eq(expected_goods_nomenclatures) }
+  end
+
   describe 'associations' do
     describe 'goods nomenclature indent' do
       context 'fetching with absolute date' do
