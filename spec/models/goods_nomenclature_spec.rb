@@ -493,20 +493,6 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#not_heading?' do
-    context 'when the goods nomenclature has a heading goods nomenclature item id' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :heading) }
-
-      it { is_expected.not_to be_not_heading }
-    end
-
-    context 'when the goods nomenclature has a non-heading goods nomenclature item id' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
-
-      it { is_expected.to be_not_heading }
-    end
-  end
-
   describe '#chapter?' do
     context 'when the goods nomenclature has a chapter goods nomenclature item id' do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :chapter) }
@@ -518,20 +504,6 @@ RSpec.describe GoodsNomenclature do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
 
       it { is_expected.not_to be_chapter }
-    end
-  end
-
-  describe '#not_chapter?' do
-    context 'when the goods nomenclature has a chapter goods nomenclature item id' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :chapter) }
-
-      it { is_expected.not_to be_not_chapter }
-    end
-
-    context 'when the goods nomenclature has a non-chapter goods nomenclature item id' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
-
-      it { is_expected.to be_not_chapter }
     end
   end
 

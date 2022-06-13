@@ -41,12 +41,12 @@ class GoodsNomenclature < Sequel::Model
   end
 
   one_to_one :parent, class_name: name, class: self do |_ds|
-    parent_sid = not_heading? ? path.last : chapter.goods_nomenclature_sid
+    parent_sid = !heading? ? path.last : chapter.goods_nomenclature_sid
 
     if parent_sid.present?
       GoodsNomenclature.actual.where(goods_nomenclature_sid: parent_sid)
     else
-      GoodsNomenclature.nullify
+      GoodsNomenclature.dataset.nullify
     end
   end
 
@@ -150,11 +150,7 @@ class GoodsNomenclature < Sequel::Model
 
       return class_name unless class_name == 'Commodity'
 
-      goods_nomenclature = where(goods_nomenclature_sid:).take
-
-      'Commodity' if goods_nomenclature.declarable?
-
-      'Subheading'
+      Commodity.find(goods_nomenclature_sid:).goods_nomenclature_class
     end
   end
 
@@ -198,16 +194,8 @@ class GoodsNomenclature < Sequel::Model
     !!goods_nomenclature_item_id.match(/\A\d{4}000000\z/)
   end
 
-  def not_heading?
-    !heading?
-  end
-
   def chapter?
     !!goods_nomenclature_item_id.match(/\A\d{2}00000000\z/)
-  end
-
-  def not_chapter?
-    !chapter?
   end
 
   def declarable?

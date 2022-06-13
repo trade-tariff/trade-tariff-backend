@@ -3336,7 +3336,8 @@ CREATE TABLE public.goods_nomenclatures_oplog (
     oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
-    filename text
+    filename text,
+    path integer[] DEFAULT ARRAY[]::integer[] NOT NULL
 );
 
 
@@ -3433,8 +3434,7 @@ CREATE TABLE public.language_descriptions_oplog (
     oid integer NOT NULL,
     operation character varying(1) DEFAULT 'C'::character varying,
     operation_date date,
-    filename text,
-    path integer[] DEFAULT ARRAY[]::integer[] NOT NULL
+    filename text
 );
 
 

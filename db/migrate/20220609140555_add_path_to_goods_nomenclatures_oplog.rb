@@ -38,12 +38,10 @@ Sequel.migration do
   end
 
   down do
-    alter_table :goods_nomenclatures_oplog do
-      drop_column :path
-    end
-
+    # We need to DROP the view and recreated because we're removing columns from it
     run %{
-      CREATE OR REPLACE VIEW public.goods_nomenclatures AS
+      DROP VIEW public.goods_nomenclatures;
+      CREATE VIEW public.goods_nomenclatures AS
       SELECT
           goods_nomenclatures1.goods_nomenclature_sid,
           goods_nomenclatures1.goods_nomenclature_item_id,
@@ -66,5 +64,9 @@ Sequel.migration do
                   goods_nomenclatures1.goods_nomenclature_sid = goods_nomenclatures2.goods_nomenclature_sid))
       AND goods_nomenclatures1.operation::text <> 'D'::text;
     }
+
+    alter_table :goods_nomenclatures_oplog do
+      drop_column :path
+    end
   end
 end
