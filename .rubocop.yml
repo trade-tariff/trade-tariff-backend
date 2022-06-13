@@ -52,6 +52,9 @@ Rails/ActiveRecordAliases:
 Rails/CreateTableWithTimestamps:
   Enabled: false # doesn't recognise
 
+Rails/FindBy:
+  Enabled: false # We use sequel not active record
+
 Rails/SaveBang:
   Enabled: false
 

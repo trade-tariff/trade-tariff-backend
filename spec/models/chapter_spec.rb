@@ -220,19 +220,19 @@ RSpec.describe Chapter do
     end
   end
 
-  describe '#relevant_commodities' do
+  describe '#relevant_goods_nomenclature' do
     let!(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
 
     it 'includes short_code' do
-      expect(chapter.send(:relevant_commodities)).to include(chapter.short_code)
+      expect(chapter.send(:relevant_goods_nomenclature)).to include(chapter.short_code)
     end
 
     it 'includes suffix __000000' do
-      expect(chapter.send(:relevant_commodities)).to include('________')
+      expect(chapter.send(:relevant_goods_nomenclature)).to include('________')
     end
 
     it 'has valid format' do
-      expect(chapter.send(:relevant_commodities)).to eq("#{chapter.short_code}________")
+      expect(chapter.send(:relevant_goods_nomenclature)).to eq("#{chapter.short_code}________")
     end
   end
 end

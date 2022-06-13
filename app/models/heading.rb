@@ -16,6 +16,14 @@ class Heading < GoodsNomenclature
              .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
   }
 
+  one_to_many :goods_nomenclatures do |_ds|
+    GoodsNomenclature
+      .actual
+      .filter('goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature)
+      .exclude(goods_nomenclature_item_id:)
+      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+  end
+
   one_to_one :chapter, dataset: lambda {
     actual_or_relevant(Chapter).filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
   }
@@ -87,8 +95,8 @@ class Heading < GoodsNomenclature
       :operation,
       Sequel.as(depth, :depth),
     ).where(pk_hash)
-     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_commodities, '____000000']))
-     .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_commodities]))
+     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000']))
+     .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|
@@ -114,7 +122,7 @@ class Heading < GoodsNomenclature
 
   private
 
-  def relevant_commodities
+  def relevant_goods_nomenclature
     "#{short_code}______"
   end
 end
