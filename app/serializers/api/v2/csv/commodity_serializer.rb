@@ -2,7 +2,7 @@ module Api
   module V2
     module Csv
       class CommoditySerializer
-        include CsvSerializer
+        include Api::Shared::CsvSerializer
 
         columns :description,
                 :number_indents,

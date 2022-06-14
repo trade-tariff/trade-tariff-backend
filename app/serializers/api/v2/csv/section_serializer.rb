@@ -2,7 +2,7 @@ module Api
   module V2
     module Csv
       class SectionSerializer
-        include CsvSerializer
+        include Api::Shared::CsvSerializer
 
         columns :id,
                 :numeral,

@@ -21,7 +21,7 @@ FactoryBot.define do
     # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
     #       what is passed to the individual factory and adds non-fun surprises for developers.
     after(:build) do |gono, evaluator|
-      FactoryBot.create(
+      create(
         :goods_nomenclature_indent,
         goods_nomenclature_sid: gono.goods_nomenclature_sid,
         validity_start_date: gono.validity_start_date,
@@ -29,6 +29,10 @@ FactoryBot.define do
         number_indents: evaluator.indents,
         productline_suffix: gono.producline_suffix,
       )
+    end
+
+    trait :non_current do
+      validity_end_date { 1.day.ago }
     end
 
     trait :with_ancestors do
@@ -121,9 +125,9 @@ FactoryBot.define do
 
     trait :non_declarable do
       after(:create) do |heading, _evaluator|
-        FactoryBot.create(:goods_nomenclature, :with_description,
-                          :with_indent,
-                          goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
+        create(:goods_nomenclature, :with_description,
+               :with_indent,
+               goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
       end
     end
 
@@ -205,11 +209,11 @@ FactoryBot.define do
 
     trait :with_description do
       before(:create) do |gono, evaluator|
-        FactoryBot.create(:goods_nomenclature_description, goods_nomenclature_sid: gono.goods_nomenclature_sid,
-                                                           goods_nomenclature_item_id: gono.goods_nomenclature_item_id,
-                                                           validity_start_date: gono.validity_start_date,
-                                                           validity_end_date: gono.validity_end_date,
-                                                           description: evaluator.description)
+        create(:goods_nomenclature_description, goods_nomenclature_sid: gono.goods_nomenclature_sid,
+                                                goods_nomenclature_item_id: gono.goods_nomenclature_item_id,
+                                                validity_start_date: gono.validity_start_date,
+                                                validity_end_date: gono.validity_end_date,
+                                                description: evaluator.description)
       end
     end
 
@@ -219,107 +223,8 @@ FactoryBot.define do
     end
   end
 
-  factory :commodity, parent: :goods_nomenclature, class: 'Commodity' do
-    trait :declarable do
-      producline_suffix { '80' }
-    end
-
-    trait :non_declarable do
-      producline_suffix { '10' }
-    end
-
-    trait :with_indent do
-      after(:create) do |commodity, evaluator|
-        FactoryBot.create(:goods_nomenclature_indent,
-                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                          goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                          validity_start_date: commodity.validity_start_date,
-                          validity_end_date: commodity.validity_end_date,
-                          productline_suffix: commodity.producline_suffix,
-                          number_indents: evaluator.indents)
-      end
-    end
-
-    trait :with_chapter do
-      after(:create) do |commodity, _evaluator|
-        FactoryBot.create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
-      end
-    end
-
-    trait :with_heading do
-      after(:create) do |commodity, _evaluator|
-        FactoryBot.create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
-        commodity.reload
-      end
-    end
-
-    trait :with_children do
-      after(:create) do |commodity, _evaluator|
-        # Prepare some intermediate item ids
-        item_id = commodity.goods_nomenclature_item_id.to_i
-
-        # Make the commodity a parent
-        commodity.producline_suffix = '80'
-        commodity.save
-        FactoryBot.create(:goods_nomenclature_indent,
-                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                          goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                          validity_start_date: commodity.validity_start_date,
-                          validity_end_date: commodity.validity_end_date,
-                          productline_suffix: commodity.producline_suffix,
-                          number_indents: 1)
-
-        # Add another intermediate level
-        FactoryBot.create(:commodity,
-                          :with_indent,
-                          goods_nomenclature_item_id: (item_id + 1).to_s,
-                          producline_suffix: '10',
-                          indents: 2)
-
-        # Add two leaf commodities
-        FactoryBot.create(:commodity,
-                          :with_indent,
-                          goods_nomenclature_item_id: (item_id + 1).to_s,
-                          indents: 3)
-        FactoryBot.create(:commodity,
-                          :with_indent,
-                          goods_nomenclature_item_id: (item_id + 2).to_s,
-                          indents: 3)
-        commodity.reload
-      end
-    end
-  end
-
   trait :without_children do
     # This is just a labelling trait
-  end
-
-  factory :heading, parent: :goods_nomenclature, class: 'Heading' do
-    # +1 is needed to avoid creating heading with gono id in form of
-    # xx00xxxxxx which is a Chapter
-    goods_nomenclature_item_id { "#{4.times.map { Random.rand(1..8) }.join}000000" }
-
-    trait :declarable do
-      producline_suffix { '80' }
-    end
-
-    trait :non_declarable do
-      after(:create) do |heading, _evaluator|
-        FactoryBot.create(:goods_nomenclature, :with_description,
-                          :with_indent,
-                          goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
-      end
-    end
-
-    trait :with_chapter do
-      after(:create) do |heading, _evaluator|
-        FactoryBot.create(:chapter, :with_section,
-                          :with_note,
-                          :with_description,
-                          :with_guide,
-                          goods_nomenclature_item_id: heading.chapter_id)
-      end
-    end
   end
 
   factory :goods_nomenclature_indent do
@@ -360,11 +265,11 @@ FactoryBot.define do
     goods_nomenclature_description_period_sid { generate(:sid) }
 
     before(:create) do |gono_description, evaluator|
-      FactoryBot.create(:goods_nomenclature_description_period, goods_nomenclature_description_period_sid: gono_description.goods_nomenclature_description_period_sid,
-                                                                goods_nomenclature_sid: gono_description.goods_nomenclature_sid,
-                                                                goods_nomenclature_item_id: gono_description.goods_nomenclature_item_id,
-                                                                validity_start_date: evaluator.validity_start_date,
-                                                                validity_end_date: evaluator.validity_end_date)
+      create(:goods_nomenclature_description_period, goods_nomenclature_description_period_sid: gono_description.goods_nomenclature_description_period_sid,
+                                                     goods_nomenclature_sid: gono_description.goods_nomenclature_sid,
+                                                     goods_nomenclature_item_id: gono_description.goods_nomenclature_item_id,
+                                                     validity_start_date: evaluator.validity_start_date,
+                                                     validity_end_date: evaluator.validity_end_date)
     end
 
     trait :xml do

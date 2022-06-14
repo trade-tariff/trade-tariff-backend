@@ -5,16 +5,14 @@ module Api
       before_action :authenticate_user!
 
       def show
-        render json: Api::Admin::Commodities::CommoditySerializer.new(@commodity, { is_collection: false }).serializable_hash
+        render json: Api::Admin::GoodsNomenclatureSerializer.new(@commodity, { is_collection: false }).serializable_hash
       end
 
       def index
-        commodities = ::Admin::QueryAllCommodities.call(actual_date.iso8601)
-
         respond_to do |format|
           format.csv do
             send_data(
-              Api::Admin::Commodities::CommodityCsvSerializer.new(commodities).serialized_csv,
+              serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
               disposition: "attachment; filename=#{TradeTariffBackend.service}-commodities-#{actual_date.iso8601}.csv",
             )
@@ -39,6 +37,12 @@ module Api
 
       def productline_suffix
         params[:id].split('-', 2)[1] || '80'
+      end
+
+      def serialized_csv
+        TariffSynchronizer::FileService
+          .get("#{TradeTariffBackend.service}/goods_nomenclatures/#{Time.zone.today.iso8601}.csv")
+          .read
       end
     end
   end

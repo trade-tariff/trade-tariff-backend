@@ -5,12 +5,14 @@ RSpec.describe Api::Admin::CommoditiesController, type: :request do
       response.body
     end
 
-    it 'passes the actual date to the query service' do
-      allow(Admin::QueryAllCommodities).to receive(:call)
+    before do
+      allow(TariffSynchronizer::FileService).to receive(:get).and_return(StringIO.new("foo,bar\nqux,qul"))
+    end
 
+    it 'gets the csv from the FileService' do
       do_request
 
-      expect(Admin::QueryAllCommodities).to have_received(:call).with(Time.zone.today.iso8601)
+      expect(TariffSynchronizer::FileService).to have_received(:get).with("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv")
     end
 
     it_behaves_like 'a successful csv response' do

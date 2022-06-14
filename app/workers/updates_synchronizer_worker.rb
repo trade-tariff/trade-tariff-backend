@@ -35,6 +35,7 @@ class UpdatesSynchronizerWorker
     Sidekiq::Client.enqueue(ClearCacheWorker)
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(GenerateMaterializedPathsWorker)
+    Sidekiq::Client.enqueue(GenerateGoodsNomenclaturesCsvReportWorker)
   end
 
 private
