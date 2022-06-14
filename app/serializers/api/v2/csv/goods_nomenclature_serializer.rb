@@ -2,7 +2,7 @@ module Api
   module V2
     module Csv
       class GoodsNomenclatureSerializer
-        include CsvSerializer
+        include Api::Shared::CsvSerializer
 
         column :goods_nomenclature_sid, column_name: 'SID'
         column :goods_nomenclature_item_id, column_name: 'Goods Nomenclature Item ID'

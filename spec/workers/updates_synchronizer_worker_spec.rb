@@ -5,6 +5,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(GenerateMaterializedPathsWorker) }
+    it { expect(Sidekiq::Client).to have_received(:enqueue).with(GenerateGoodsNomenclaturesReportWorker) }
   end
 
   describe '#perform' do
