@@ -40,7 +40,9 @@ module Api
       end
 
       def serialized_csv
-        TariffSynchronizer::FileService.get("#{TradeTariffBackend.service}/goods_nomenclatures/#{Time.zone.today.iso8601}.csv")
+        TariffSynchronizer::FileService
+          .get("#{TradeTariffBackend.service}/goods_nomenclatures/#{Time.zone.today.iso8601}.csv")
+          .read
       end
     end
   end

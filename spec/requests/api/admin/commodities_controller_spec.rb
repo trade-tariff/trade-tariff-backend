@@ -6,7 +6,7 @@ RSpec.describe Api::Admin::CommoditiesController, type: :request do
     end
 
     before do
-      allow(TariffSynchronizer::FileService).to receive(:get).and_return("foo,bar\nqux,qul")
+      allow(TariffSynchronizer::FileService).to receive(:get).and_return(StringIO.new("foo,bar\nqux,qul"))
     end
 
     it 'gets the csv from the FileService' do
