@@ -32,7 +32,7 @@ module Api
 
       delegate :column_options, to: :class
 
-        private
+      private
 
       def header_row
         column_options.pluck(:column_name)

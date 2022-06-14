@@ -1,4 +1,4 @@
-class GenerateGoodsNomenclaturesReportWorker
+class GenerateGoodsNomenclaturesCsvReportWorker
   include Sidekiq::Worker
 
   sidekiq_options retry: false
@@ -20,10 +20,11 @@ class GenerateGoodsNomenclaturesReportWorker
   end
 
   def goods_nomenclatures
-    GoodsNomenclature
+    Chapter
       .dataset
       .eager(:goods_nomenclature_indents)
       .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
       .all
+      .flat_map(&:goods_nomenclatures)
   end
 end
