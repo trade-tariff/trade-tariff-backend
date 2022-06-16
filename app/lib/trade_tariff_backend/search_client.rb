@@ -10,7 +10,7 @@ module TradeTariffBackend
     cattr_accessor :server_namespace, default: 'tariff'.freeze
     cattr_accessor :search_operation_options, default: {}
 
-    attr_reader :indexed_models,
+    attr_reader :indexes,
                 :index_page_size,
                 :search_operation_options,
                 :namespace
@@ -30,7 +30,7 @@ module TradeTariffBackend
     end
 
     def initialize(search_client, options = {})
-      @indexed_models = options.fetch(:indexed_models, [])
+      @indexes = options.fetch(:indexes, [])
       @index_page_size = options.fetch(:index_page_size, 1000)
       @search_operation_options = options.fetch(:search_operation_options,
                                                 self.class.search_operation_options)
@@ -48,26 +48,22 @@ module TradeTariffBackend
     end
 
     def reindex_all
-      indexed_models.each(&method(:reindex))
+      indexes.each(&method(:reindex))
     end
 
-    def reindex(model)
-      search_index_for(namespace, model).tap do |index|
-        drop_index(index)
-        create_index(index)
-        build_index(index)
-      end
+    def reindex(index)
+      drop_index(index)
+      create_index(index)
+      build_index(index)
     end
 
     def update_all
-      indexed_models.each(&method(:update))
+      indexes.each(&method(:update))
     end
 
-    def update(model)
-      search_index_for(namespace, model).tap do |index|
-        create_index(index)
-        build_index(index)
-      end
+    def update(index)
+      create_index(index)
+      build_index(index)
     end
 
     def create_index(index)
