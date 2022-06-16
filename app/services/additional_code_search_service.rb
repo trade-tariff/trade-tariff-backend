@@ -60,7 +60,7 @@ class AdditionalCodeSearchService
 
   def fetch
     search_client = ::TradeTariffBackend.cache_client
-    index = ::Cache::AdditionalCodeIndex.new(TradeTariffBackend.search_namespace).name
+    index = ::Cache::AdditionalCodeIndex.new.name
     result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w[additional_code_type_id additional_code] }
     @pagination_record_count = result&.hits&.total&.value || 0
     @result = result&.hits&.hits&.map(&:_source)

@@ -102,7 +102,6 @@ module TradeTariffBackend
         Elasticsearch::Client.new,
         indexed_models:,
         index_page_size: 500,
-        search_operation_options:,
       )
     end
 
@@ -112,25 +111,15 @@ module TradeTariffBackend
         namespace: 'cache',
         indexed_models: cached_models,
         index_page_size: 5,
-        search_operation_options:,
       )
     end
-
-    def search_namespace
-      @search_namespace ||= 'tariff'
-    end
-    attr_writer :search_namespace, :search_operation_options
 
     # Returns search index instance for given model instance or
     # model class instance
     def search_index_for(namespace, model)
       index_name = model.is_a?(Class) ? model : model.class
 
-      "::#{namespace.capitalize}::#{index_name}Index".constantize.new(search_namespace)
-    end
-
-    def search_operation_options
-      @search_operation_options || {}
+      "::#{namespace.capitalize}::#{index_name}Index".constantize.new
     end
 
     def indexed_models
@@ -207,7 +196,7 @@ module TradeTariffBackend
 
     def search_indexes
       indexed_models.map do |model|
-        "::Search::#{model}Index".constantize.new(search_namespace)
+        "::Search::#{model}Index".constantize.new
       end
     end
 

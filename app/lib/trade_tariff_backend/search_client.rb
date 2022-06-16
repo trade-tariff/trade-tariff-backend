@@ -5,6 +5,9 @@ module TradeTariffBackend
     # Raised if Elasticsearch returns an error from query
     QueryError = Class.new(StandardError)
 
+    cattr_accessor :server_namespace, default: 'tariff'.freeze
+    cattr_accessor :search_operation_options, default: {}
+
     attr_reader :indexed_models,
                 :index_page_size,
                 :search_operation_options,
@@ -15,7 +18,8 @@ module TradeTariffBackend
     def initialize(search_client, options = {})
       @indexed_models = options.fetch(:indexed_models, [])
       @index_page_size = options.fetch(:index_page_size, 1000)
-      @search_operation_options = options.fetch(:search_operation_options, {})
+      @search_operation_options = options.fetch(:search_operation_options,
+                                                self.class.search_operation_options)
       @namespace = options.fetch(:namespace, 'search')
 
       super(search_client)
