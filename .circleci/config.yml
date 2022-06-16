@@ -67,15 +67,15 @@ commands:
 
       - when:
           condition:
-            equal: [ 'development', << parameters.space >> ]
+            equal: ["development", << parameters.space >>]
           steps:
-          - run:
-              name: "Recreate review app network policies"
-              command: |
-                for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
-                do
-                  cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
-                done
+            - run:
+                name: "Recreate review app network policies"
+                command: |
+                  for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
+                  do
+                    cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
+                  done
       - run:
           name: "Verify new version is working on dark URL."
           command: |
@@ -184,21 +184,19 @@ commands:
     parameters:
       url:
         type: string
+      space:
+        type: string
+        default: DEVELOPMENT
     steps:
       - run:
           name: "Checkout tests repo"
           command: git clone --depth=1 "https://github.com/trade-tariff/trade-tariff-testing/"
-      - run:
-          name: "Check environment being tested"
-          environment:
-            CYPRESS_BASE_URL: '<< parameters.url >>'
-          command: 'echo "Testing: ${CYPRESS_BASE_URL}"'
       - restore_cache:
           keys:
             - v2-smoketest-deps-{{ checksum "trade-tariff-testing/yarn.lock" }}
       - run:
           name: "Install NPM packages"
-          command: 'cd trade-tariff-testing && yarn install'
+          command: "cd trade-tariff-testing && yarn install"
       - save_cache:
           key: v2-smoketest-deps-{{ checksum "trade-tariff-testing/yarn.lock" }}
           paths:
@@ -207,8 +205,12 @@ commands:
       - run:
           name: "Cypress Smoke tests"
           environment:
-            CYPRESS_BASE_URL: '<< parameters.url >>'
-          command: 'cd trade-tariff-testing && yarn run cypress run --spec "/*/**/HOTT-Shared/devSmokeTestCI.spec.js"'
+            CYPRESS_BASE_URL: "<< parameters.url >>"
+            CYPRESS_SPACE: "<< parameters.space >>"
+          command: |
+            cd trade-tariff-testing
+
+            yarn run cypress run --spec "/*/**/HOTT-Shared/devSmokeTestCI.spec.js"
 
   sentry-release:
     steps:
@@ -250,7 +252,7 @@ jobs:
     steps:
       - checkout
       - cf_install:
-          space: 'production'
+          space: "production"
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -300,7 +302,7 @@ jobs:
       - run:
           name: Inspecting with Brakeman
           when: always
-          command: 'bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models'
+          command: "bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models"
       - store_test_results:
           path: test-results/brakeman/
       - store_artifacts:
@@ -338,7 +340,6 @@ jobs:
             docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
             docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
 
-
   test:
     docker:
       - image: cimg/ruby:3.1.2
@@ -369,8 +370,8 @@ jobs:
       - run:
           name: "Install OS packages"
           command: |
-           sudo apt-get update
-           sudo apt-get install libcurl4-openssl-dev postgresql-client
+            sudo apt-get update
+            sudo apt-get install libcurl4-openssl-dev postgresql-client
       - ruby/install-deps
       - run:
           name: "Setup DB"
@@ -390,17 +391,19 @@ jobs:
 
   smoketest_dev:
     docker:
-      - image: 'cypress/base:16.5.0'
+      - image: "cypress/base:16.5.0"
     steps:
       - smoketest:
           url: https://dev.trade-tariff.service.gov.uk
+          space: DEVELOPMENT
 
   smoketest_staging:
     docker:
-      - image: 'cypress/base:16.5.0'
+      - image: "cypress/base:16.5.0"
     steps:
       - smoketest:
           url: https://staging.trade-tariff.service.gov.uk
+          space: STAGING
 
   deploy_dev:
     docker:
@@ -412,7 +415,7 @@ jobs:
         type: string
     steps:
       - queue/until_front_of_line:
-          time: '10'
+          time: "10"
           consider-branch: false
           dont-quit: true
       - cf_deploy_docker_tasks:
@@ -442,7 +445,7 @@ jobs:
         type: string
     steps:
       - queue/until_front_of_line:
-          time: '10'
+          time: "10"
           dont-quit: true
       - cf_deploy_docker_tasks:
           space: "staging"
@@ -468,7 +471,7 @@ jobs:
         type: string
     steps:
       - queue/until_front_of_line:
-          time: '10'
+          time: "10"
           dont-quit: true
       - cf_deploy_docker_tasks:
           space: "production"
@@ -513,11 +516,11 @@ workflows:
       - linters:
           context: trade-tariff
       - test:
-           context: trade-tariff
-           filters:
-             branches:
-               ignore:
-                 - main
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
       - build:
           name: build_dev
           context: trade-tariff
@@ -528,20 +531,20 @@ workflows:
                 - main
                 - /^dependabot\/.*/
       - deploy_dev:
-           matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
-           context: trade-tariff
-           filters:
-             branches:
-               ignore:
-                 - main
-                 - /^dependabot\/.*/
-           requires:
-             - test
-             - build_dev
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot\/.*/
+          requires:
+            - test
+            - build_dev
       - smoketest_dev:
           name: smoketest_dev
           context: trade-tariff
@@ -560,14 +563,14 @@ workflows:
               only:
                 - main
       - deploy_staging:
-           matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
-           context: trade-tariff
-           requires:
-             - build_live
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          requires:
+            - build_live
       - smoketest_staging:
           name: smoketest_staging
           context: trade-tariff
@@ -578,23 +581,23 @@ workflows:
           requires:
             - deploy_staging
       - hold_production:
-           type: approval
-           filters:
-             branches:
-               only:
-                 - main
-           requires:
-             - deploy_staging
+          type: approval
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - deploy_staging
       - deploy_production:
-           matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
-           context: trade-tariff
-           filters:
-             branches:
-               only:
-                 - main
-           requires:
-             - hold_production
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - hold_production
