@@ -1,20 +1,28 @@
 class SearchIndex
-  delegate :dataset, to: :model
+  delegate :dataset, to: :model_class
 
-  def initialize(namespace)
-    @namespace = namespace
+  def initialize(server_namespace)
+    @server_namespace = server_namespace
   end
 
   def name
-    [@namespace, type.pluralize].join('-')
+    [@server_namespace, type.pluralize].join('-')
   end
 
   def type
-    model.to_s.underscore
+    model_class.to_s.underscore
   end
 
-  def model
+  def model_class
     self.class.name.split('::').last.chomp('Index').constantize
+  end
+
+  def serializer
+    self.class.name.gsub(/Index\z/, 'Serializer').constantize
+  end
+
+  def serialize_record(record)
+    serializer.new(record).as_json
   end
 
   def goods_nomenclature?
