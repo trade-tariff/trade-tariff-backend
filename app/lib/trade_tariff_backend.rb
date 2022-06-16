@@ -211,10 +211,6 @@ module TradeTariffBackend
       end
     end
 
-    def model_serializer_for(namespace, model)
-      "::#{namespace.capitalize}::#{model}Serializer".constantize
-    end
-
     def api_version(request)
       request.headers['Accept']&.scan(/application\/vnd.uktt.v(\d+)/)&.flatten&.first || '1'
     end
