@@ -1,5 +1,4 @@
 {
-    "last_update": "2022-06-16",
     "A001": {
         "guidance_cds": "- Enter the reference number of the Certificate of authenticity for fresh 'EMPEROR' table grapes.\n\n- Where a sequentially numbered range of certificates covers the goods, enter the lowest to the highest reference numbers of the certificates concerned, e.g. document code + 0054037-0054047: status code.\n\n- Where certificates are not sequentially numbered, enter the reference number of each certificate concerned.\n\n- Use the following [document status code](https://www.gov.uk/government/publications/uk-trade-tariff-document-status-codes-for-harmonised-declarations/uk-trade-tariff-document-status-codes-for-harmonised-declarations): <abbr title='Document attached for certification by customs'>AC</abbr>",
         "guidance_chief": "- Use status code <abbr title='Document attached for certification by customs'>AC</abbr>."
