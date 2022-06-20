@@ -1,7 +1,7 @@
 class SearchIndex
   delegate :dataset, to: :model_class
 
-  def initialize(server_namespace)
+  def initialize(server_namespace = TradeTariffBackend::SearchClient.server_namespace)
     @server_namespace = server_namespace
   end
 

@@ -27,7 +27,7 @@ module HeadingService
 
     def fetch_result
       search_client = ::TradeTariffBackend.cache_client
-      index = ::Cache::HeadingIndex.new(TradeTariffBackend.search_namespace).name
+      index = ::Cache::HeadingIndex.new.name
       result = search_client.search index: index, body: { query: { match: { _id: heading.goods_nomenclature_sid } } }
       result&.hits&.hits&.first&._source
     end

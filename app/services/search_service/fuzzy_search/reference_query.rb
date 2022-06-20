@@ -3,7 +3,7 @@ class SearchService
     class ReferenceQuery < FuzzyQuery
       def query(*)
         {
-          index: "#{TradeTariffBackend.search_namespace}-search_references",
+          index: "#{TradeTariffBackend::SearchClient.server_namespace}-search_references",
           search: {
             query: {
               bool: {
