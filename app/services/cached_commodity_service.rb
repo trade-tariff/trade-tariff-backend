@@ -1,5 +1,5 @@
 class CachedCommodityService
-  CACHE_VERSION = TradeTariffBackend.permutations? ? 2 : 1
+  CACHE_VERSION = 2
 
   DEFAULT_INCLUDES = [
     'section',
