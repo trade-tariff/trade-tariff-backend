@@ -76,14 +76,14 @@ module TradeTariffBackend
 
     def reindex(indexer = search_client)
       TimeMachine.with_relevant_validity_periods do
-        indexer.update
+        indexer.update_all
       rescue StandardError => e
         Mailer.reindex_exception(e).deliver_now
       end
     end
 
     def recache(indexer = cache_client)
-      indexer.update
+      indexer.update_all
     rescue StandardError => e
       Mailer.reindex_exception(e).deliver_now
     end
@@ -209,10 +209,6 @@ module TradeTariffBackend
       indexed_models.map do |model|
         "::Search::#{model}Index".constantize.new(search_namespace)
       end
-    end
-
-    def model_serializer_for(namespace, model)
-      "::#{namespace.capitalize}::#{model}Serializer".constantize
     end
 
     def api_version(request)

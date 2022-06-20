@@ -84,7 +84,7 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
       )
 
       Sidekiq::Testing.inline! do
-        TradeTariffBackend.cache_client.reindex
+        TradeTariffBackend.cache_client.reindex(Certificate)
         sleep(1)
       end
     end

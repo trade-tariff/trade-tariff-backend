@@ -79,7 +79,7 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
 
     before do
       Sidekiq::Testing.inline! do
-        TradeTariffBackend.cache_client.reindex
+        TradeTariffBackend.cache_client.reindex(AdditionalCode)
         sleep(1)
       end
     end
