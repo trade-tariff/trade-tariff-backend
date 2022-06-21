@@ -16,8 +16,8 @@ class SearchService
       def query_options
         {
           goods_nomenclature_match: {
-            "#{TradeTariffBackend::SearchClient.server_namespace}-sections" => { fields: ['title'] }
-          }
+            "#{TradeTariffBackend::SearchClient.server_namespace}-sections" => { fields: %w[title] },
+          },
         }
       end
 
@@ -31,7 +31,7 @@ class SearchService
 
         each_query.each_with_index do |(match_type, search_index, _), idx|
           search_results[idx].tap do |search_result|
-            raise TradeTariffBackend::SearchClient::QueryError.new(search_result.error) if search_result.error?
+            raise TradeTariffBackend::SearchClient::QueryError, search_result.error if search_result.error?
 
             yield match_type, search_index, search_results[idx].hits!.hits!
           end
@@ -44,18 +44,21 @@ class SearchService
         ).responses
       end
 
-      def each_query(&block)
+      def each_query(&_block)
         return to_enum(:each_query) unless block_given?
 
-        TradeTariffBackend.search_indexes.select(&:goods_nomenclature?).each do |search_index|
+        TradeTariffBackend.search_indexes
+                          .select(&:include_in_search?)
+                          .each do |search_index|
           [
             GoodsNomenclatureQuery.new(@query_string, @date, search_index),
-            ReferenceQuery.new(@query_string, @date, search_index)
+            ReferenceQuery.new(@query_string, @date, search_index),
           ].each do |search_query|
             yield search_query.match_type,
                   search_query.index,
                   search_query.query(
-                    query_options.fetch(search_query.match_type, {}).fetch(search_query.index.name, {}),
+                    query_options.fetch(search_query.match_type, {})
+                                 .fetch(search_query.index.name, {}),
                   )
           end
         end

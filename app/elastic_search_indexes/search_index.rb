@@ -32,4 +32,8 @@ class SearchIndex
   def goods_nomenclature?
     false
   end
+
+  def include_in_search?
+    goods_nomenclature?
+  end
 end
