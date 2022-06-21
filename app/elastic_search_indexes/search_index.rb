@@ -9,12 +9,16 @@ class SearchIndex
     [@server_namespace, type.pluralize].join('-')
   end
 
+  def name_without_namespace
+    self.class.name.split('::').last
+  end
+
   def type
     model_class.to_s.underscore
   end
 
   def model_class
-    self.class.name.split('::').last.chomp('Index').constantize
+    name_without_namespace.chomp('Index').constantize
   end
 
   def serializer

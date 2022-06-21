@@ -75,7 +75,7 @@ module TradeTariffBackend
     def build_index(index)
       total_pages = (index.dataset.count / index_page_size.to_f).ceil
       (1..total_pages).each do |page_number|
-        BuildIndexPageWorker.perform_async(namespace, index.model_class.to_s, page_number, index_page_size)
+        BuildIndexPageWorker.perform_async(namespace, index.name_without_namespace, page_number, index_page_size)
       end
     end
 

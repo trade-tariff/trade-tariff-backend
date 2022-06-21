@@ -114,14 +114,6 @@ module TradeTariffBackend
       )
     end
 
-    # Returns search index instance for given model instance or
-    # model class instance
-    def search_index_for(namespace, model)
-      index_name = model.is_a?(Class) ? model : model.class
-
-      "::#{namespace.capitalize}::#{index_name}Index".constantize.new
-    end
-
     def search_indexes
       [
         Search::ChapterIndex,
