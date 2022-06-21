@@ -61,5 +61,8 @@ Rails.application.configure do
     # Elasticsearch has a 1 second interval between index refreshes
     # by default.
     TradeTariffBackend::SearchClient.search_operation_options = { refresh: true }
+
+    # ensure server config matches expected behaviour
+    TradeTariffBackend::SearchClient.update_server_config
   end
 end

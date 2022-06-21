@@ -18,6 +18,8 @@ module Sequel
 
           self.class.elasticsearch_indexes.each do |index_class|
             TradeTariffBackend.search_client.index(index_class, self)
+          rescue ::Elasticsearch::Transport::Transport::Errors::NotFound
+            false
           end
         end
 
@@ -26,6 +28,8 @@ module Sequel
 
           self.class.elasticsearch_indexes.each do |index_class|
             TradeTariffBackend.search_client.index(index_class, self)
+          rescue ::Elasticsearch::Transport::Transport::Errors::NotFound
+            false
           end
         end
 
@@ -35,7 +39,7 @@ module Sequel
           self.class.elasticsearch_indexes.each do |index_class|
             TradeTariffBackend.search_client.delete(index_class, self)
           rescue ::Elasticsearch::Transport::Transport::Errors::NotFound
-            true
+            false
           end
         end
       end

@@ -50,32 +50,53 @@ RSpec.describe TradeTariffBackend::SearchClient do
   end
 
   describe '#search' do
-    before { commodity } # trigger creation and indexing prior to test results
-
     let(:commodity) do
       create :commodity, :with_description, description: 'test description'
     end
 
-    let(:index_name) do
-      "#{described_class.server_namespace}-commodities"
+    let(:index) do
+      TradeTariffBackend.search_indexes.find do |index|
+        index.name == "#{described_class.server_namespace}-commodities"
+      end
     end
 
     let(:search_result) do
-      TradeTariffBackend.search_client.search q: 'test', index: index_name
+      TradeTariffBackend.search_client.search q: 'test', index: index.name
     end
 
-    it 'searches in supplied index' do
-      expect(search_result.hits.total.value).to be >= 1
+    context 'with existing index' do
+      before { commodity } # trigger creation and indexing prior to test results
+
+      it 'searches in supplied index' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'returns expected results' do
+        expect(search_result.hits.hits.map do |hit|
+          hit._source.goods_nomenclature_item_id
+        end).to include commodity.goods_nomenclature_item_id
+      end
+
+      it 'returns results wrapped in Hashie::Mash structure' do
+        expect(search_result).to be_kind_of Hashie::Mash
+      end
     end
 
-    it 'returns expected results' do
-      expect(search_result.hits.hits.map do |hit|
-        hit._source.goods_nomenclature_item_id
-      end).to include commodity.goods_nomenclature_item_id
-    end
+    context 'for newly defined index' do
+      subject(:index_exists) do
+        TradeTariffBackend.search_client.indices.exists index: index.name
+      end
 
-    it 'returns results wrapped in Hashie::Mash structure' do
-      expect(search_result).to be_kind_of Hashie::Mash
+      before do
+        TradeTariffBackend.search_client.drop_index index
+        commodity # trigger creation and indexing prior to test results
+      end
+
+      after { TradeTariffBackend.search_client.create_index index }
+
+      it 'does not create the index' do
+        expect(index_exists).to be false
+      end
     end
   end
 end
