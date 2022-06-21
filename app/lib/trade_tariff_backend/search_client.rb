@@ -2,6 +2,8 @@ require 'hashie'
 
 module TradeTariffBackend
   class SearchClient < SimpleDelegator
+    SEARCH_SERVER_CONFIG_FILE = Rails.root.join('config/config_for_search_server.yml')
+
     # Raised if Elasticsearch returns an error from query
     QueryError = Class.new(StandardError)
 
@@ -14,6 +16,18 @@ module TradeTariffBackend
                 :namespace
 
     delegate :search_index_for, to: TradeTariffBackend
+
+    class << self
+      def update_server_config
+        Elasticsearch::Client.new
+                             .cluster
+                             .put_settings(body: config_for_server.to_json)
+      end
+
+      def config_for_server
+        YAML.load_file SEARCH_SERVER_CONFIG_FILE
+      end
+    end
 
     def initialize(search_client, options = {})
       @indexed_models = options.fetch(:indexed_models, [])
