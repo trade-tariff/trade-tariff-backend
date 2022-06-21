@@ -50,12 +50,18 @@ RSpec.describe TradeTariffBackend::SearchClient do
   end
 
   describe '#search' do
+    before { commodity } # trigger creation and indexing prior to test results
+
     let(:commodity) do
       create :commodity, :with_description, description: 'test description'
     end
 
+    let(:index_name) do
+      "#{described_class.server_namespace}-commodities"
+    end
+
     let(:search_result) do
-      TradeTariffBackend.search_client.search q: 'test', index: TradeTariffBackend.search_index_for('search', commodity).name
+      TradeTariffBackend.search_client.search q: 'test', index: index_name
     end
 
     it 'searches in supplied index' do

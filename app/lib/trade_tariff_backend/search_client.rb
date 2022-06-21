@@ -15,8 +15,6 @@ module TradeTariffBackend
                 :search_operation_options,
                 :namespace
 
-    delegate :search_index_for, to: TradeTariffBackend
-
     class << self
       def update_server_config
         Elasticsearch::Client.new
@@ -81,23 +79,21 @@ module TradeTariffBackend
       end
     end
 
-    def index(model)
-      search_index_for(namespace, model.class).tap do |model_index|
-        super({
-          index: model_index.name,
-          id: model.id,
-          body: model_index.serialize_record(model).as_json,
-        }.merge(search_operation_options))
-      end
+    def index(index_class, model)
+      model_index = index_class.new
+
+      super({
+        index: model_index.name,
+        id: model.id,
+        body: model_index.serialize_record(model).as_json,
+      }.merge(search_operation_options))
     end
 
-    def delete(model)
-      search_index_for(namespace, model.class).tap do |model_index|
-        super({
-          index: model_index.name,
-          id: model.id,
-        }.merge(search_operation_options))
-      end
+    def delete(index_class, model)
+      super({
+        index: index_class.new.name,
+        id: model.id,
+      }.merge(search_operation_options))
     end
   end
 end
