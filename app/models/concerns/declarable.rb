@@ -29,7 +29,7 @@ module Declarable
                      .with_actual(BaseRegulation)
                      .where({ measures__export_refund_nomenclature_sid: export_refund_uptree.map(&:export_refund_nomenclature_sid) })
                      .where { Sequel.~(measures__measure_type_id: MeasureType.excluded_measure_types) }
-                     .order(*COMMON_UNION_MEASURE_ORDER)
+                     .order(*COMMON_UNION_MEASURE_ORDER),
                  ) if export_refund_uptree.present?
                }
        .union(
@@ -44,10 +44,10 @@ module Declarable
                            .with_actual(ModificationRegulation)
                            .where({ measures__export_refund_nomenclature_sid: export_refund_uptree.map(&:export_refund_nomenclature_sid) })
                            .where { Sequel.~(measures__measure_type_id: MeasureType.excluded_measure_types) }
-                           .order(*COMMON_UNION_MEASURE_ORDER)
+                           .order(*COMMON_UNION_MEASURE_ORDER),
                   ) if export_refund_uptree.present?
                 },
-         alias: :measures
+         alias: :measures,
        )
        .with_actual(Measure)
        .order(Sequel.asc(:measures__geographical_area_id),
@@ -56,7 +56,7 @@ module Declarable
               Sequel.asc(:measures__additional_code_id),
               Sequel.asc(:measures__ordernumber),
               Sequel.desc(:effective_start_date)),
-        t1__measure_sid: :measures__measure_sid
+        t1__measure_sid: :measures__measure_sid,
       )
     }
 

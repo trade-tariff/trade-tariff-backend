@@ -50,7 +50,7 @@ module TariffSynchronizer
           format('(%{class_name}) %{sql} %{binds}',
                  class_name: event.payload[:name],
                  sql: event.payload[:sql].squeeze(' '),
-                 binds:)
+                 binds:),
         )
       end
     end
@@ -63,7 +63,7 @@ module TariffSynchronizer
         TariffSynchronizer::TariffUpdatePresenceError.create(
           base_update: @base_update,
           model_name: klass,
-          details: details.to_json
+          details: details.to_json,
         )
       end
     end
@@ -83,7 +83,7 @@ module TariffSynchronizer
             xml_key: xml_key,
             xml_node: xml_node,
             exception: exception.class.to_s + ': ' + exception.message.to_s
-          }.to_json
+          }.to_json,
         )
       end
     end
@@ -99,7 +99,7 @@ module TariffSynchronizer
         'failed_update.tariff_synchronizer',
         exception:,
         update: @base_update,
-        database_queries: @database_queries
+        database_queries: @database_queries,
       )
     end
   end

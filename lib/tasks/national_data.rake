@@ -7,7 +7,7 @@ namespace :tariff do
     # create tables
     tables.each do |table|
       Sequel::Model.db.run(
-        "CREATE TABLE IF NOT EXISTS national_#{table} AS SELECT * FROM #{table} #{table}1 WHERE #{table}1.national IS TRUE;"
+        "CREATE TABLE IF NOT EXISTS national_#{table} AS SELECT * FROM #{table} #{table}1 WHERE #{table}1.national IS TRUE;",
       )
     end
 
@@ -22,7 +22,7 @@ namespace :tariff do
     # drop tables
     tables.each do |table|
       Sequel::Model.db.run(
-        "DROP TABLE IF EXISTS national_#{table};"
+        "DROP TABLE IF EXISTS national_#{table};",
       )
     end
   end

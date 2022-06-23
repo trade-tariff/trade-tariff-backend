@@ -147,7 +147,7 @@ class Commodity < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(conditions)
      .where(Sequel.~(operation_date: nil))
      .limit(TradeTariffBackend.change_count)
@@ -160,13 +160,13 @@ class Commodity < GoodsNomenclature
       :oid,
       :operation_date,
       :operation,
-      Sequel.as(depth, :depth)
+      Sequel.as(depth, :depth),
     ).where(pk_hash)
      .union(
        Measure.changes_for(
          depth + 1,
-         Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id
-       )
+         Sequel.qualify(:measures_oplog, :goods_nomenclature_item_id) => goods_nomenclature_item_id,
+       ),
      )
      .from_self
      .where(Sequel.~(operation_date: nil))
