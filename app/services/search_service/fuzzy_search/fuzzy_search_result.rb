@@ -40,7 +40,7 @@ class SearchService
 
       def search_results
         @search_results ||= TradeTariffBackend.search_client.msearch(
-          body: each_query.map { |_, _, query| query }
+          body: each_query.map { |_, _, query| query },
         ).responses
       end
 
@@ -55,7 +55,7 @@ class SearchService
             yield search_query.match_type,
                   search_query.index,
                   search_query.query(
-                    query_options.fetch(search_query.match_type, {}).fetch(search_query.index.name, {})
+                    query_options.fetch(search_query.match_type, {}).fetch(search_query.index.name, {}),
                   )
           end
         end

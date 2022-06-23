@@ -59,7 +59,7 @@ module TariffSynchronizer
       request.set_form_data(
         client_id: ENV['HMRC_CLIENT_ID'],
         client_secret: ENV['HMRC_CLIENT_SECRET'],
-        grant_type: 'client_credentials'
+        grant_type: 'client_credentials',
       )
 
       response = https.request(request)
