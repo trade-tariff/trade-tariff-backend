@@ -1,7 +1,5 @@
 RSpec.describe MeasureCollection do
-  subject(:collection) { described_class.new(measures, declarable) }
-
-  let(:declarable) { build(:commodity) }
+  subject(:collection) { described_class.new(measures) }
 
   describe '#filter' do
     before do
