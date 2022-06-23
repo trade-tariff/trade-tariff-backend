@@ -26,9 +26,14 @@ class Commodity < GoodsNomenclature
            .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
   }
 
-  one_to_many :overview_measures, key: {}, primary_key: {}, dataset: -> {
-    measures_dataset.filter(measures__measure_type_id: MeasureType::OVERVIEW_MEASURE_TYPES)
-  }, class_name: 'Measure'
+  one_to_many :overview_measures, key: {}, primary_key: {}, class_name: 'Measure', dataset: lambda {
+    measures_dataset
+      .filter(measures__measure_type_id: MeasureType::OVERVIEW_MEASURE_TYPES)
+      .or(
+        measures__measure_type_id: MeasureType::THIRD_COUNTRY,
+        measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+      )
+  }
 
   one_to_many :search_references, key: :referenced_id, primary_key: :code, reciprocal: :referenced, conditions: { referenced_class: 'Commodity' },
                                   adder: proc { |search_reference| search_reference.update(referenced_id: code, productline_suffix: producline_suffix, referenced_class: 'Commodity') },
