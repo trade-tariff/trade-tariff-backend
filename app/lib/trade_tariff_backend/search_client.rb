@@ -2,7 +2,7 @@ require 'hashie'
 
 module TradeTariffBackend
   class SearchClient < SimpleDelegator
-    SEARCH_SERVER_CONFIG_FILE = Rails.root.join('config/config_for_search_server.yml')
+    SEARCH_SERVER_CONFIG_FILE = Rails.root.join('config/elasticsearch_server_options.yml')
 
     # Raised if Elasticsearch returns an error from query
     QueryError = Class.new(StandardError)

@@ -32,15 +32,19 @@ RSpec.describe TradeTariffBackend::SearchClient do
 
   describe '.update_server_config' do
     before do
-      stub_request(:put, 'http://localhost:9200/_cluster/settings')
+      stub_request(:put, "#{elasticsearch_url}/_cluster/settings")
         .to_return(status: 200)
 
       described_class.update_server_config
     end
 
+    let(:elasticsearch_url) do
+      ENV.fetch('ELASTICSEARCH_URL', 'http://localhost:9200')
+    end
+
     it 'PUTs the config onto the server' do
       expect(WebMock).to \
-        have_requested(:put, 'http://localhost:9200/_cluster/settings')
+        have_requested(:put, "#{elasticsearch_url}/_cluster/settings")
           .with(body: described_class.config_for_server.to_json)
     end
   end
