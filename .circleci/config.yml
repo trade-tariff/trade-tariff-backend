@@ -541,6 +541,7 @@ workflows:
             branches:
               ignore:
                 - main
+                - /^hotfix\/.+/
                 - /^dependabot\/.*/
       - deploy_dev:
           matrix:
@@ -554,6 +555,7 @@ workflows:
               ignore:
                 - main
                 - /^dependabot\/.*/
+                - /^hotfix\/.+/
           requires:
             - test
             - build_dev
@@ -564,6 +566,7 @@ workflows:
             branches:
               ignore:
                 - main
+                - /^hotfix\/.+/
                 - /^dependabot\/.*/
           requires:
             - deploy_dev
@@ -574,6 +577,7 @@ workflows:
             branches:
               only:
                 - main
+                - /^hotfix\/.+/
       - deploy_main_to_staging:
           matrix:
             parameters:
@@ -590,6 +594,7 @@ workflows:
             branches:
               only:
                 - main
+                - /^hotfix\/.+/
           requires:
             - deploy_main_to_staging
       - hold_create_release:
@@ -598,6 +603,7 @@ workflows:
             branches:
               only:
                 - main
+                - /^hotfix\/.+/
           requires:
             - deploy_main_to_staging
       - tariff/create-production-release:
@@ -607,6 +613,7 @@ workflows:
             branches:
               only:
                 - main
+                - /^hotfix\/.+/
           requires:
             - hold_create_release
       - deploy_release_to_staging:
