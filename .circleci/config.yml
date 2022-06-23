@@ -6,13 +6,31 @@ orbs:
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
   queue: eddiewebb/queue@1.6.4
-  tariff: trade-tariff/trade-tariff-ci-orb@0 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
 
 commands:
+  cf_install:
+    parameters:
+      space:
+        type: string
+    steps:
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb --retry 3 'https://packages.cloudfoundry.org/stable?release=debian64&version=7.4.0&source=github-rel'
+            file cf.deb
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+
   cf_deploy_docker:
     parameters:
-      docker_image_tag:
-        type: string
+      dev-release:
+        default: false
+        type: boolean
       space:
         type: string
       service:
@@ -21,7 +39,7 @@ commands:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - cf_install:
           space: << parameters.space >>
       - run:
           name: "Fetch existing manifest"
@@ -31,7 +49,7 @@ commands:
           name: "Push new app in dark mode"
           command: |
             export DOCKER_IMAGE=tariff-backend
-            export DOCKER_TAG="<< parameters.docker_image_tag >>"
+            export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
 
             # Push as "dark" instance
             CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
@@ -104,8 +122,9 @@ commands:
           template: basic_success_1
   cf_deploy_docker_worker:
     parameters:
-      docker_image_tag:
-        type: string
+      dev-release:
+        default: false
+        type: boolean
       space:
         type: string
       service:
@@ -114,7 +133,7 @@ commands:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - cf_install:
           space: << parameters.space >>
       - run:
           name: "Fetch existing manifest"
@@ -124,13 +143,14 @@ commands:
           name: "Push Worker"
           command: |
             export DOCKER_IMAGE=tariff-backend
-            export DOCKER_TAG="<< parameters.docker_image_tag >>"
+            export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
             CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
 
   cf_deploy_docker_tasks:
     parameters:
-      docker_image_tag:
-        type: string
+      dev-release:
+        default: false
+        type: boolean
       space:
         type: string
       service:
@@ -139,7 +159,7 @@ commands:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - cf_install:
           space: << parameters.space >>
       - run:
           name: "Create tasks app manifest"
@@ -149,7 +169,7 @@ commands:
           name: "Push Tasks app"
           command: |
             export DOCKER_IMAGE=tariff-backend
-            export DOCKER_TAG="<< parameters.docker_image_tag >>"
+            export DOCKER_TAG=<<# parameters.dev-release >>dev-<</ parameters.dev-release >>${CIRCLE_SHA1}
             CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
                                                                -f tasks_deploy_manifest.yml \
                                                                --no-route \
@@ -231,7 +251,7 @@ jobs:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - cf_install:
           space: "production"
       - run:
           name: "Install necessary dependencies"
@@ -399,23 +419,23 @@ jobs:
           consider-branch: false
           dont-quit: true
       - cf_deploy_docker_tasks:
-          docker_image_tag: dev-$CIRCLE_SHA1
+          dev-release: true
           space: "development"
           environment_key: "dev"
           service: << parameters.service >>
       - cf_deploy_docker_worker:
-          docker_image_tag: dev-$CIRCLE_SHA1
+          dev-release: true
           space: "development"
           environment_key: "dev"
           service: << parameters.service >>
       - cf_deploy_docker:
-          docker_image_tag: dev-$CIRCLE_SHA1
+          dev-release: true
           space: "development"
           environment_key: "dev"
           service: << parameters.service >>
       - sentry-release
 
-  deploy_main_to_staging:
+  deploy_staging:
     docker:
       - image: cimg/ruby:3.1.2
     environment:
@@ -428,46 +448,18 @@ jobs:
           time: "10"
           dont-quit: true
       - cf_deploy_docker_tasks:
-          docker_image_tag: $CIRCLE_SHA1
           space: "staging"
           environment_key: "staging"
           service: << parameters.service >>
       - cf_deploy_docker_worker:
-          docker_image_tag: $CIRCLE_SHA1
           space: "staging"
           environment_key: "staging"
           service: << parameters.service >>
       - cf_deploy_docker:
-          docker_image_tag: $CIRCLE_SHA1
           space: "staging"
           environment_key: "staging"
           service: << parameters.service >>
       - sentry-release
-
-  deploy_release_to_staging:
-    docker:
-      - image: cimg/ruby:3.1.2
-    environment:
-      SENTRY_ENVIRONMENT: "staging"
-    parameters:
-      service:
-        type: string
-    steps:
-      - cf_deploy_docker_tasks:
-          docker_image_tag: $CIRCLE_TAG
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
-      - cf_deploy_docker_worker:
-          docker_image_tag: $CIRCLE_TAG
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
-      - cf_deploy_docker:
-          docker_image_tag: $CIRCLE_TAG
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
 
   deploy_production:
     docker:
@@ -478,26 +470,22 @@ jobs:
       service:
         type: string
     steps:
+      - queue/until_front_of_line:
+          time: "10"
+          dont-quit: true
       - cf_deploy_docker_tasks:
-          docker_image_tag: $CIRCLE_TAG
           space: "production"
           environment_key: "production"
           service: << parameters.service >>
       - cf_deploy_docker_worker:
-          docker_image_tag: $CIRCLE_TAG
           space: "production"
           environment_key: "production"
           service: << parameters.service >>
       - cf_deploy_docker:
-          docker_image_tag: $CIRCLE_TAG
           space: "production"
           environment_key: "production"
           service: << parameters.service >>
       - sentry-release
-      - tariff/notify-production-release:
-          app-name: Backend
-          slack-channel: trade_tariff
-          release-tag: $CIRCLE_TAG
 
 workflows:
   version: 2
@@ -574,7 +562,7 @@ workflows:
             branches:
               only:
                 - main
-      - deploy_main_to_staging:
+      - deploy_staging:
           matrix:
             parameters:
               service:
@@ -591,55 +579,25 @@ workflows:
               only:
                 - main
           requires:
-            - deploy_main_to_staging
-      - hold_create_release:
+            - deploy_staging
+      - hold_production:
           type: approval
           filters:
             branches:
               only:
                 - main
           requires:
-            - deploy_main_to_staging
-      - tariff/create-production-release:
-          context: trade-tariff
-          image-name: tariff-backend
-          filters:
-            branches:
-              only:
-                - main
-          requires:
-            - hold_create_release
-      - deploy_release_to_staging:
-          matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
-          context: trade-tariff
-          filters:
-            tags:
-              only: /^release-202[\d-]+/
-            branches:
-              ignore: /.*/
-      - hold_deploy_production:
-          type: approval
-          filters:
-            tags:
-              only: /^release-202[\d-]+/
-            branches:
-              ignore: /.*/
+            - deploy_staging
       - deploy_production:
           matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
+            parameters:
+              service:
+                - xi
+                - uk
           context: trade-tariff
           filters:
-            tags:
-              only: /^release-202[\d-]+/
             branches:
-              ignore: /.*/
+              only:
+                - main
           requires:
-            - hold_deploy_production
-
+            - hold_production
