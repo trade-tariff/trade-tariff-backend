@@ -13,7 +13,7 @@ class MeasureType < Sequel::Model
   DEFAULT_EXCLUDED_TYPES = %w[442 447 SPL].freeze
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
-  OVERVIEW_MEASURE_TYPES = MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES + MeasureType::THIRD_COUNTRY # Used for a frontend overview of the most important applicable measures
+  OVERVIEW_MEASURE_TYPES = MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES # See Commodity#overview_measures
 
   DEFENSE_MEASURES = [
     '551', # Provisional anti-dumping duty

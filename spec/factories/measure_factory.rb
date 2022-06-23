@@ -155,6 +155,11 @@ FactoryBot.define do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end
 
+    trait :third_country_overview do
+      geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
+      third_country
+    end
+
     trait :vat do
       measure_type_id { '305' }
     end

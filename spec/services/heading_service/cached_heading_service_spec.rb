@@ -3,7 +3,6 @@ RSpec.describe HeadingService::CachedHeadingService do
     create :heading, :non_grouping,
            :with_description
   end
-  let(:measure_type) { create :measure_type, measure_type_id: '103' }
   let(:actual_date) { Time.zone.today }
 
   describe '#serializable_hash' do
@@ -21,13 +20,7 @@ RSpec.describe HeadingService::CachedHeadingService do
                  :with_indent,
                  goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}"
         end
-        let!(:measure) do
-          create :measure,
-                :with_base_regulation,
-                 measure_type_id: measure_type.measure_type_id,
-                 goods_nomenclature: commodity,
-                 goods_nomenclature_sid: commodity.goods_nomenclature_sid
-        end
+        let!(:measure) { create(:measure, :with_base_regulation, :third_country_overview, goods_nomenclature_sid: commodity.goods_nomenclature_sid) }
         let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'contains chapter' do
@@ -58,12 +51,7 @@ RSpec.describe HeadingService::CachedHeadingService do
                  :with_indent,
                  goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}"
         end
-        let!(:measure) do
-          create :measure,
-                 measure_type_id: measure_type.measure_type_id,
-                 goods_nomenclature: commodity,
-                 goods_nomenclature_sid: commodity.goods_nomenclature_sid
-        end
+        let!(:measure) { create(:measure, :with_base_regulation, :third_country_overview, goods_nomenclature_sid: commodity.goods_nomenclature_sid) }
         let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'does not contain footnotes' do
@@ -86,12 +74,7 @@ RSpec.describe HeadingService::CachedHeadingService do
                  :with_indent,
                  goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}"
         end
-        let!(:measure) do
-          create :measure,
-                 measure_type_id: measure_type.measure_type_id,
-                 goods_nomenclature: commodity,
-                 goods_nomenclature_sid: commodity.goods_nomenclature_sid
-        end
+        let!(:measure) { create(:measure, :with_base_regulation, :third_country_overview, goods_nomenclature_sid: commodity.goods_nomenclature_sid) }
         let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'does not contain chapter' do
@@ -115,12 +98,7 @@ RSpec.describe HeadingService::CachedHeadingService do
                  validity_end_date: Time.zone.yesterday,
                  goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}"
         end
-        let!(:measure) do
-          create :measure,
-                 measure_type_id: measure_type.measure_type_id,
-                 goods_nomenclature: commodity,
-                 goods_nomenclature_sid: commodity.goods_nomenclature_sid
-        end
+        let!(:measure) { create(:measure, :third_country_overview, goods_nomenclature_sid: commodity.goods_nomenclature_sid) }
         let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }
 
         it 'does not contain commodities' do
@@ -143,10 +121,10 @@ RSpec.describe HeadingService::CachedHeadingService do
         end
         let!(:measure) do
           create :measure,
+                 :with_base_regulation,
+                 :third_country_overview,
                  validity_start_date: 1.week.ago.beginning_of_day,
                  validity_end_date: Time.zone.yesterday,
-                 measure_type_id: measure_type.measure_type_id,
-                 goods_nomenclature: commodity,
                  goods_nomenclature_sid: commodity.goods_nomenclature_sid
         end
         let(:serializable_hash) { described_class.new(heading.reload, actual_date).serializable_hash }

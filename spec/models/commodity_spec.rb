@@ -180,6 +180,66 @@ RSpec.describe Commodity do
       end
     end
 
+    describe '#overview_measures' do
+      subject(:overview_measures) { commodity.overview_measures }
+
+      let(:commodity) { create(:commodity) }
+
+      before { measure }
+
+      context 'when a third country measure that is not explicitly erga omnes' do
+        let(:measure) do
+          create(
+            :measure,
+            :with_base_regulation,
+            :third_country,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+          )
+        end
+
+        it { is_expected.not_to include(measure) }
+      end
+
+      context 'when a third country measure that is explicitly erga omnes' do
+        let(:measure) do
+          create(
+            :measure,
+            :with_base_regulation,
+            :third_country_overview,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+          )
+        end
+
+        it { is_expected.to include(measure) }
+      end
+
+      context 'when a vat measure' do
+        let(:measure) do
+          create(
+            :measure,
+            :with_base_regulation,
+            :vat,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+          )
+        end
+
+        it { is_expected.to include(measure) }
+      end
+
+      context 'when a supplementary unit measure' do
+        let(:measure) do
+          create(
+            :measure,
+            :with_base_regulation,
+            :supplementary,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+          )
+        end
+
+        it { is_expected.to include(measure) }
+      end
+    end
+
     describe 'measure duplication' do
       # sometimes measures have the same base regulation id and
       # validity_start date
@@ -188,21 +248,21 @@ RSpec.describe Commodity do
       let(:commodity)    { create :commodity, :with_indent, validity_start_date: 3.years.ago.beginning_of_day }
       let!(:measure1)    do
         create :measure, :with_base_regulation, measure_sid: 1,
-                         measure_type_id: measure_type.measure_type_id,
-                         additional_code_type_id: nil,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         validity_start_date: 1.year.ago.beginning_of_day
+                                                measure_type_id: measure_type.measure_type_id,
+                                                additional_code_type_id: nil,
+                                                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                                                validity_start_date: 1.year.ago.beginning_of_day
       end
       let!(:measure2) do
         create :measure, :with_base_regulation, measure_sid: 2,
-                         measure_generating_regulation_id: measure1.measure_generating_regulation_id,
-                         geographical_area_id: measure1.geographical_area_id,
-                         measure_type_id: measure_type.measure_type_id,
-                         geographical_area_sid: measure1.geographical_area_sid,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         additional_code_type_id: measure1.additional_code_type_id,
-                         additional_code_id: measure1.additional_code_id,
-                         validity_start_date: 2.years.ago.beginning_of_day
+                                                measure_generating_regulation_id: measure1.measure_generating_regulation_id,
+                                                geographical_area_id: measure1.geographical_area_id,
+                                                measure_type_id: measure_type.measure_type_id,
+                                                geographical_area_sid: measure1.geographical_area_sid,
+                                                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                                                additional_code_type_id: measure1.additional_code_type_id,
+                                                additional_code_id: measure1.additional_code_id,
+                                                validity_start_date: 2.years.ago.beginning_of_day
       end
 
       it 'groups measures by measure_generating_regulation_id and picks latest one' do
@@ -219,14 +279,14 @@ RSpec.describe Commodity do
         let(:commodity1)          { create :commodity, :with_indent }
         let(:export_measure)      do
           create :measure, :with_base_regulation, measure_type_id: export_measure_type.measure_type_id,
-                           goods_nomenclature_sid: commodity1.goods_nomenclature_sid
+                                                  goods_nomenclature_sid: commodity1.goods_nomenclature_sid
         end
 
         let(:import_measure_type) { create :measure_type, :import }
         let(:commodity2)          { create :commodity, :with_indent }
         let(:import_measure)      do
           create :measure, :with_base_regulation, measure_type_id: import_measure_type.measure_type_id,
-                           goods_nomenclature_sid: commodity2.goods_nomenclature_sid
+                                                  goods_nomenclature_sid: commodity2.goods_nomenclature_sid
         end
 
         it 'fetches measures that have measure type with proper trade movement code' do
@@ -252,7 +312,7 @@ RSpec.describe Commodity do
         end
         let!(:export_measure) do
           create :measure, :with_base_regulation, export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
-                           goods_nomenclature_item_id: commodity.goods_nomenclature_item_id
+                                                  goods_nomenclature_item_id: commodity.goods_nomenclature_item_id
         end
 
         it 'includes measures that belongs to related export refund nomenclature' do
@@ -321,30 +381,30 @@ RSpec.describe Commodity do
       let!(:modification_regulation) { create :modification_regulation, effective_end_date: Time.zone.now.ago(1.month) }
       let!(:measure1) do
         create :measure, :with_base_regulation,
-                         measure_generating_regulation_id: modification_regulation.modification_regulation_id,
-                         validity_end_date: Time.zone.now.ago(30.months),
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         validity_start_date: Time.zone.now.ago(10.years),
-                         measure_type_id: measure_type.measure_type_id,
-                         geographical_area_sid: 1
+               measure_generating_regulation_id: modification_regulation.modification_regulation_id,
+               validity_end_date: Time.zone.now.ago(30.months),
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               validity_start_date: Time.zone.now.ago(10.years),
+               measure_type_id: measure_type.measure_type_id,
+               geographical_area_sid: 1
       end
       let!(:measure2) do
         create :measure, :with_base_regulation,
-                         measure_generating_regulation_id: modification_regulation.modification_regulation_id,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         measure_type_id: measure_type.measure_type_id,
-                         validity_start_date: Time.zone.now.ago(10.years),
-                         validity_end_date: Time.zone.now.ago(18.months),
-                         geographical_area_sid: 2
+               measure_generating_regulation_id: modification_regulation.modification_regulation_id,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               measure_type_id: measure_type.measure_type_id,
+               validity_start_date: Time.zone.now.ago(10.years),
+               validity_end_date: Time.zone.now.ago(18.months),
+               geographical_area_sid: 2
       end
       let!(:measure3) do
         create :measure, :with_base_regulation,
-                         measure_generating_regulation_id: modification_regulation.modification_regulation_id,
-                         goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                         measure_type_id: measure_type.measure_type_id,
-                         validity_start_date: Time.zone.now.ago(10.years),
-                         validity_end_date: nil,
-                         geographical_area_sid: 3
+               measure_generating_regulation_id: modification_regulation.modification_regulation_id,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               measure_type_id: measure_type.measure_type_id,
+               validity_start_date: Time.zone.now.ago(10.years),
+               validity_end_date: nil,
+               geographical_area_sid: 3
       end
 
       it 'measure validity date supercedes regulation validity date' do
