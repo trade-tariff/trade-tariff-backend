@@ -114,13 +114,11 @@ class CachedCommodityService
   attr_reader :commodity, :actual_date, :filter_params
 
   def presented_commodity
-    Api::V2::Commodities::CommodityPresenter.new(commodity, presented_measures)
+    Api::V2::Commodities::CommodityPresenter.new(commodity, filtered_measures)
   end
 
-  def presented_measures
-    # TODO: This should be Api::V2::Measures::MeasurePresenter. It works currently because the real presenter used by the CommodityPresenter uses the correct V2 measures presenter.
-    #       Also, why are we validating in a presenter?
-    MeasureCollection.new(measures, commodity).deduplicate.filter
+  def filtered_measures
+    MeasureCollection.new(measures).filter
   end
 
   def options
