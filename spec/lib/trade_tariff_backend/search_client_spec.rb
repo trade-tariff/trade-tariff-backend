@@ -51,7 +51,7 @@ RSpec.describe TradeTariffBackend::SearchClient do
 
   describe '#search' do
     let(:commodity) do
-      create :commodity, :with_description, description: 'test description'
+      create(:commodity, :with_description, description: 'test description')
     end
 
     let(:index) do
@@ -64,17 +64,19 @@ RSpec.describe TradeTariffBackend::SearchClient do
       TradeTariffBackend.search_client.search q: 'test', index: index.name
     end
 
+    let(:search_result_commodity_ids) do
+      search_result.hits.hits.map(&:_source).map(&:goods_nomenclature_item_id)
+    end
+
     context 'with existing index' do
-      before { commodity } # trigger creation and indexing prior to test results
+      before { commodity }
 
       it 'searches in supplied index' do
         expect(search_result.hits.total.value).to be >= 1
       end
 
       it 'returns expected results' do
-        expect(search_result.hits.hits.map do |hit|
-          hit._source.goods_nomenclature_item_id
-        end).to include commodity.goods_nomenclature_item_id
+        expect(search_result_commodity_ids).to include commodity.goods_nomenclature_item_id
       end
 
       it 'returns results wrapped in Hashie::Mash structure' do
@@ -89,7 +91,7 @@ RSpec.describe TradeTariffBackend::SearchClient do
 
       before do
         TradeTariffBackend.search_client.drop_index index
-        commodity # trigger creation and indexing prior to test results
+        create :commodity, :with_description
       end
 
       after { TradeTariffBackend.search_client.create_index index }

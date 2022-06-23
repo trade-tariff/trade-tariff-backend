@@ -33,7 +33,7 @@ class SearchIndex
     false
   end
 
-  def include_in_search?
-    goods_nomenclature?
+  def exclude_from_search_results?
+    !goods_nomenclature?
   end
 end

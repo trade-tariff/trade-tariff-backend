@@ -48,7 +48,7 @@ class SearchService
         return to_enum(:each_query) unless block_given?
 
         TradeTariffBackend.search_indexes
-                          .select(&:include_in_search?)
+                          .reject(&:exclude_from_search_results?)
                           .each do |search_index|
           [
             GoodsNomenclatureQuery.new(@query_string, @date, search_index),

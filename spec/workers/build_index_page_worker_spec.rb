@@ -1,5 +1,12 @@
 RSpec.describe BuildIndexPageWorker, type: :worker do
   describe '#methods' do
+    let :search_result_commodity_ids do
+      search_result.hits
+                   .hits
+                   .map(&:_source)
+                   .map(&:goods_nomenclature_item_id)
+    end
+
     describe 'build index page' do
       before do
         # Make sure index is fresh
@@ -20,12 +27,8 @@ RSpec.describe BuildIndexPageWorker, type: :worker do
         TradeTariffBackend.search_client.search q: 'test', index: search_index.name
       end
 
-      it 'bulk indexes all model entries' do
-        expect(search_result.hits.total.value).to be >= 1
-      end
-
       it 'has bulk indexed the expected commodity' do
-        expect(search_result.hits.hits.map(&:_source).map(&:goods_nomenclature_item_id)).to \
+        expect(search_result_commodity_ids).to \
           eq(commodities.map(&:goods_nomenclature_item_id))
       end
     end
@@ -49,12 +52,8 @@ RSpec.describe BuildIndexPageWorker, type: :worker do
         TradeTariffBackend.search_client.search q: 'test', index: search_index.name
       end
 
-      it 'bulk indexes all model entries' do
-        expect(search_result.hits.total.value).to be >= 1
-      end
-
       it 'has bulk indexed the expected commodity' do
-        expect(search_result.hits.hits.first._source.goods_nomenclature_item_id).to eq commodity.goods_nomenclature_item_id
+        expect(search_result_commodity_ids.first).to eq commodity.goods_nomenclature_item_id
       end
     end
   end
