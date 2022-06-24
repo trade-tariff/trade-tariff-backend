@@ -61,19 +61,15 @@ module HeadingService
           has_valid_dates(measure, :effective_start_date, :effective_end_date)
         end
 
-        commodity.overview_measures = OverviewMeasurePresenter.new(commodity.overview_measures, commodity).validate!
-
-        commodity.overview_measure_ids = commodity.overview_measures.map do |measure|
-          measure.measure_sid
-        end
+        commodity.overview_measure_ids = commodity.overview_measures.map(&:measure_sid)
 
         commodity.goods_nomenclature_indents.keep_if do |ident|
           has_valid_dates(ident)
         end
 
-        indent = commodity.goods_nomenclature_indents.sort_by do |ident|
+        indent = commodity.goods_nomenclature_indents.sort_by { |ident|
           Date.parse ident.validity_start_date
-        end.last
+        }.last
 
         commodity.number_indents = indent.number_indents
         commodity.producline_suffix = indent.productline_suffix
@@ -82,9 +78,9 @@ module HeadingService
           has_valid_dates(description)
         end
 
-        description = commodity.goods_nomenclature_descriptions.sort_by do |description|
+        description = commodity.goods_nomenclature_descriptions.sort_by { |description|
           Date.parse description.validity_start_date
-        end.last
+        }.last
 
         commodity.description = description.description
         commodity.formatted_description = description.formatted_description
