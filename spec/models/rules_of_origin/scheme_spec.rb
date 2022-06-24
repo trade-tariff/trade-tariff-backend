@@ -126,7 +126,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     subject(:scheme) do
       build :rules_of_origin_scheme,
             fta_intro_file: intro_file,
-            scheme_set: scheme_set
+            scheme_set:
     end
 
     before do
@@ -153,7 +153,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     subject(:scheme) do
       build :rules_of_origin_scheme,
             introductory_notes_file: notes_file,
-            scheme_set: scheme_set
+            scheme_set:
     end
 
     before do
@@ -175,5 +175,14 @@ RSpec.describe RulesOfOrigin::Scheme do
 
       it { expect(scheme).to have_attributes introductory_notes: '' }
     end
+  end
+
+  describe '#articles' do
+    subject { scheme.articles }
+
+    let(:scheme) { build :rules_of_origin_scheme, :with_articles }
+
+    it { is_expected.to be_any }
+    it { is_expected.to all be_instance_of RulesOfOrigin::Article }
   end
 end

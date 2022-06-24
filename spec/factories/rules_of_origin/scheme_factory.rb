@@ -19,5 +19,14 @@ FactoryBot.define do
     trait :with_proofs do
       proofs { attributes_for_list :rules_of_origin_proof, 2 }
     end
+
+    trait :in_scheme_set do
+      scheme_set { build :rules_of_origin_scheme_set }
+    end
+
+    trait :with_articles do
+      in_scheme_set
+      scheme_code { 'test' }
+    end
   end
 end
