@@ -32,4 +32,9 @@ namespace :opensearch do
       TradeTariffBackend.cache_client.reindex_all
     end
   end
+
+  desc 'Configure the opensearch server'
+  task configure: :environment do
+    TradeTariffBackend::SearchClient.update_server_config
+  end
 end
