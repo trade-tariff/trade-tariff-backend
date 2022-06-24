@@ -260,13 +260,16 @@ jobs:
           service: << parameters.service >>
           environment_key: staging
 
-  renew_xi_production_search_references:
+  renew_search_references:
+    parameters:
+      environment_key:
+        type: string
     docker:
       - image: cimg/ruby:3.1.2
     steps:
       - checkout
-      - cf_install:
-          space: 'staging'
+      - tariff/cf-install:
+          space: << parameters.environment_key >>
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -274,20 +277,16 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install postgresql-client
       - run:
-          name: "Switch to staging space"
+          name: "Dump the uk search_references table"
           command: |
-            cf target -s staging
+            cf conduit "tariff-uk-<< parameters.environment_key >>-postgres" -- pg_dump --file tariff-uk-<< parameters.environment_key >>-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
       - run:
-          name: "Dump the uk staging search_references table"
+          name: "Restore the uk search references into xi"
           command: |
-            cf conduit tariff-uk-staging-postgres -- pg_dump --file tariff-uk-staging-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
-      - run:
-          name: "Restore the staging uk search references into staging xi"
-          command: |
-            cf conduit tariff-xi-staging-postgres -- psql $PGDATABASE < tariff-uk-staging-postgres-search_references.psql
+            cf conduit tariff-xi-<< parameters.environment_key >>-postgres -- psql $PGDATABASE < tariff-uk-<< parameters.environment_key >>-postgres-search_references.psql
       - run_migrations:
           service: xi
-          environment_key: staging
+          environment_key: << parameters.environment_key >>
 
   linters:
     docker:
@@ -529,32 +528,33 @@ workflows:
   version: 2
 
   weekly:
-    # triggers:
-    #   - schedule:
-    #       # Every Saturday at midnight.
-    #       cron: "00 00 * * 6"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - main
+    triggers:
+      - schedule:
+          # Every Saturday at midnight.
+          cron: "00 00 * * 6"
+          filters:
+            branches:
+              only:
+                - main
     jobs:
-      - renew_xi_production_search_references:
+      - renew_search_references:
           context: trade-tariff
+          environment_key: staging
           filters:
             branches:
               only:
-                - HOTT-1637-renew-xi-search-references
-      - refresh_staging_db:
-          context: trade-tariff
-          matrix:
-            parameters:
-              service:
-                - xi
-                - uk
-          filters:
-            branches:
-              only:
-                - HOTT-1637-renew-xi-search-references
+                - main
+      # - refresh_staging_db:
+      #     context: trade-tariff
+      #     matrix:
+      #       parameters:
+      #         service:
+      #           - xi
+      #           - uk
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
   ci:
     jobs:
       - linters:
