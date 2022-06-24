@@ -260,6 +260,34 @@ jobs:
           service: << parameters.service >>
           environment_key: staging
 
+  renew_search_references:
+    parameters:
+      environment_key:
+        type: string
+    docker:
+      - image: cimg/ruby:3.1.2
+    steps:
+      - checkout
+      - tariff/cf-install:
+          space: << parameters.environment_key >>
+      - run:
+          name: "Install necessary dependencies"
+          command: |
+            cf install-plugin conduit -r CF-Community -f
+            sudo apt-get update -qq
+            sudo apt-get install postgresql-client
+      - run:
+          name: "Dump the uk search_references table"
+          command: |
+            cf conduit "tariff-uk-<< parameters.environment_key >>-postgres" -- pg_dump --file tariff-uk-<< parameters.environment_key >>-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
+      - run:
+          name: "Restore the uk search references into xi"
+          command: |
+            cf conduit tariff-xi-<< parameters.environment_key >>-postgres -- psql $PGDATABASE < tariff-uk-<< parameters.environment_key >>-postgres-search_references.psql
+      - run_migrations:
+          service: xi
+          environment_key: << parameters.environment_key >>
+
   linters:
     docker:
       - image: cimg/ruby:3.1.2
@@ -272,9 +300,6 @@ jobs:
             sudo apt update
             sudo apt install libcurl4-openssl-dev
       - ruby/install-deps
-      # - ruby/rubocop-check:
-      #     format: progress
-      #     label: Inspecting with Rubocop
       - run:
           name: Rubocop changed files
           when: always
@@ -512,17 +537,24 @@ workflows:
               only:
                 - main
     jobs:
-      - refresh_staging_db:
+      - renew_search_references:
           context: trade-tariff
-          matrix:
-            parameters:
-              service:
-                - xi
-                - uk
+          environment_key: staging
           filters:
             branches:
               only:
                 - main
+      # - refresh_staging_db:
+      #     context: trade-tariff
+      #     matrix:
+      #       parameters:
+      #         service:
+      #           - xi
+      #           - uk
+      #     filters:
+      #       branches:
+      #         only:
+      #           - main
   ci:
     jobs:
       - linters:
@@ -642,4 +674,3 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
-
