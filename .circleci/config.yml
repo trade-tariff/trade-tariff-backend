@@ -225,7 +225,7 @@ commands:
 jobs:
   refresh_staging_db:
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/base:current-22.04
     parameters:
       service:
         type: string
@@ -265,7 +265,7 @@ jobs:
       environment_key:
         type: string
     docker:
-      - image: cimg/ruby:3.1.2
+      - image: cimg/base:current-22.04
     steps:
       - checkout
       - tariff/cf-install:
@@ -544,17 +544,20 @@ workflows:
             branches:
               only:
                 - main
-      # - refresh_staging_db:
-      #     context: trade-tariff
-      #     matrix:
-      #       parameters:
-      #         service:
-      #           - xi
-      #           - uk
-      #     filters:
-      #       branches:
-      #         only:
-      #           - main
+      - refresh_staging_db:
+          context: trade-tariff
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          filters:
+            branches:
+              only:
+                - main
+          # TODO: When we promote renewing search refrences to production uncomment these lines
+          # requires:
+          #   - renew_search_references
   ci:
     jobs:
       - linters:
