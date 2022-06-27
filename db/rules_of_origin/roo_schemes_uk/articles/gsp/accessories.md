@@ -1,0 +1,1 @@
+Accessories, spare parts and tools dispatched with a piece of equipment, machine, apparatus or vehicle which are part of the normal equipment and included in its price or which are not separately invoiced are to be regarded as having the same origin as the piece of equipment, machine, apparatus or vehicle.
