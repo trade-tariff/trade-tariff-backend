@@ -5,7 +5,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
 
   let :scheme do
     build :rules_of_origin_scheme, :with_links, :with_proofs,
-          scheme_set: scheme_set, unilateral: true
+          scheme_set:, unilateral: true
   end
 
   let :rules do
@@ -72,6 +72,9 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
                 type: :rules_of_origin_rule,
               },
             ],
+          },
+          articles: {
+            data: [],
           },
         },
       },

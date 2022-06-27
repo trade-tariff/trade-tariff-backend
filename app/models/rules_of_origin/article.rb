@@ -23,6 +23,10 @@ module RulesOfOrigin
       end
     end
 
+    def id
+      @id ||= "#{scheme.scheme_code}/#{article}"
+    end
+
     def content
       @content ||= scheme.scheme_set.read_referenced_file('articles',
                                                           scheme.scheme_code,

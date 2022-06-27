@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
   subject(:presenter) { described_class.new scheme, rules }
 
-  let(:scheme) { build :rules_of_origin_scheme, :with_links }
+  let(:scheme) { build :rules_of_origin_scheme, :with_links, :with_articles }
 
   let(:rules) do
     build_list :rules_of_origin_rule, 3, scheme_code: scheme.scheme_code
@@ -9,10 +9,11 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
 
   it { is_expected.to be_instance_of described_class }
   it { is_expected.to respond_to :rules }
-  it { is_expected.to have_attributes rules: rules }
+  it { is_expected.to have_attributes rules: }
   it { is_expected.to have_attributes rule_ids: rules.map(&:id_rule) }
   it { is_expected.to have_attributes link_ids: scheme.links.map(&:id) }
   it { is_expected.to have_attributes proof_ids: scheme.proofs.map(&:id) }
+  it { is_expected.to have_attributes article_ids: scheme.articles.map(&:id) }
 
   describe '.for_many' do
     subject(:presenters) { described_class.for_many query.schemes, query.rules }
@@ -36,10 +37,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
 
     context 'with scheme_set with extra links' do
       let(:scheme_set) { build :rules_of_origin_scheme_set }
-
-      let(:scheme) do
-        build :rules_of_origin_scheme, :with_links, scheme_set: scheme_set
-      end
+      let(:scheme) { build :rules_of_origin_scheme, :with_links, scheme_set: }
 
       it { is_expected.to have_attributes length: 3 }
 

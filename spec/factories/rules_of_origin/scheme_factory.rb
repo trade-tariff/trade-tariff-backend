@@ -21,7 +21,7 @@ FactoryBot.define do
     end
 
     trait :in_scheme_set do
-      scheme_set { build :rules_of_origin_scheme_set }
+      scheme_set { build :rules_of_origin_scheme_set, :without_data }
     end
 
     trait :with_articles do

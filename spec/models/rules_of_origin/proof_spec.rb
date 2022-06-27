@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe RulesOfOrigin::Proof do
   describe 'attributes' do
+    it { is_expected.to respond_to :id }
     it { is_expected.to respond_to :scheme }
     it { is_expected.to respond_to :summary }
     it { is_expected.to respond_to :detail }
@@ -27,7 +28,7 @@ RSpec.describe RulesOfOrigin::Proof do
   describe '#id' do
     subject(:proof) { first_proof.id }
 
-    let(:first_proof) { build :rules_of_origin_proof, id: id }
+    let(:first_proof) { build :rules_of_origin_proof, id: }
     let(:second_proof) { build :rules_of_origin_proof }
 
     let :third_proof do
@@ -53,17 +54,12 @@ RSpec.describe RulesOfOrigin::Proof do
   end
 
   describe '#url' do
-    subject do
-      build(:rules_of_origin_proof, proof_class:, scheme:).url
-    end
+    subject { build(:rules_of_origin_proof, proof_class:, scheme:).url }
 
-    let(:scheme) { build :rules_of_origin_scheme, scheme_set: scheme_set }
+    let(:scheme) { build :rules_of_origin_scheme, scheme_set: }
     let(:proof_urls) { { 'origin-declaration' => 'https://www.gov.uk/' } }
     let(:proof_class) { 'origin-declaration' }
-
-    let(:scheme_set) do
-      instance_double RulesOfOrigin::SchemeSet, proof_urls: proof_urls
-    end
+    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet, proof_urls: }
 
     context 'without proof_class' do
       let(:proof_class) { nil }
