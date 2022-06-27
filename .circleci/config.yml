@@ -6,7 +6,7 @@ orbs:
   cloudfoundry: circleci/cloudfoundry@1.0
   slack: circleci/slack@4.3.0
   queue: eddiewebb/queue@1.6.4
-  tariff: trade-tariff/trade-tariff-ci-orb@0.1.6 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
+  tariff: trade-tariff/trade-tariff-ci-orb@0 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
 
 commands:
   cf_deploy_docker:
