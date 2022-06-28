@@ -5,6 +5,7 @@ RSpec.describe Search::ChapterIndex do
 
   it { is_expected.to have_attributes type: 'chapter' }
   it { is_expected.to have_attributes name: 'testnamespace-chapters' }
+  it { is_expected.to have_attributes name_without_namespace: 'ChapterIndex' }
   it { is_expected.to have_attributes model_class: Chapter }
   it { is_expected.to have_attributes serializer: Search::ChapterSerializer }
 
