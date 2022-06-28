@@ -5,7 +5,6 @@ RSpec.describe Search::HeadingIndex do
 
   it { is_expected.to have_attributes type: 'heading' }
   it { is_expected.to have_attributes name: 'testnamespace-headings' }
-  it { is_expected.to have_attributes name_without_namespace: 'HeadingIndex' }
   it { is_expected.to have_attributes model_class: Heading }
   it { is_expected.to have_attributes serializer: Search::HeadingSerializer }
 

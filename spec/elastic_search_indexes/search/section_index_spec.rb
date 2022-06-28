@@ -5,7 +5,6 @@ RSpec.describe Search::SectionIndex do
 
   it { is_expected.to have_attributes type: 'section' }
   it { is_expected.to have_attributes name: 'testnamespace-sections' }
-  it { is_expected.to have_attributes name_without_namespace: 'SectionIndex' }
   it { is_expected.to have_attributes model_class: Section }
   it { is_expected.to have_attributes serializer: Search::SectionSerializer }
 
