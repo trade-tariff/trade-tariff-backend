@@ -3,7 +3,10 @@ class Chapter < GoodsNomenclature
   plugin :elasticsearch
 
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000')
-              .order(Sequel.asc(:goods_nomenclature_item_id))
+              .order(
+                Sequel.asc(:goods_nomenclature_item_id),
+                Sequel.asc(:goods_nomenclatures__producline_suffix),
+              )
 
   set_primary_key [:goods_nomenclature_sid]
 
