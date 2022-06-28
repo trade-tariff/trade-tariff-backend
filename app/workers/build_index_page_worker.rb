@@ -3,10 +3,13 @@ class BuildIndexPageWorker
 
   sidekiq_options queue: :default, retry: false
 
-  def perform(index_namespace, index_name, page_number, page_size)
+  attr_reader :namespace
+
+  def perform(index_namespace, model_name, page_number, page_size)
+    @index_namespace = index_namespace
     client = Elasticsearch::Client.new
-    index_name = "#{index_name}Index" unless index_name.ends_with?('Index')
-    index = "#{index_namespace.camelize}::#{index_name}".constantize.new
+    model = model_name.constantize
+    index = TradeTariffBackend.search_index_for(index_namespace, model)
 
     client.bulk(
       body: serialize_for(

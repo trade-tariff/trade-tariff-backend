@@ -117,7 +117,7 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
     create(:footnote_association_measure, measure: measure_no_goods_nomenclature, footnote:)
 
     Sidekiq::Testing.inline! do
-      TradeTariffBackend.cache_client.reindex(Cache::FootnoteIndex.new)
+      TradeTariffBackend.cache_client.reindex(Footnote)
       sleep(2)
     end
   end

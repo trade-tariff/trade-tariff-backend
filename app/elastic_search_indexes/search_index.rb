@@ -9,16 +9,12 @@ class SearchIndex
     [@server_namespace, type.pluralize].join('-')
   end
 
-  def name_without_namespace
-    self.class.name.split('::').last
-  end
-
   def type
     model_class.to_s.underscore
   end
 
   def model_class
-    name_without_namespace.chomp('Index').constantize
+    self.class.name.split('::').last.chomp('Index').constantize
   end
 
   def serializer
@@ -31,9 +27,5 @@ class SearchIndex
 
   def goods_nomenclature?
     false
-  end
-
-  def exclude_from_search_results?
-    !goods_nomenclature?
   end
 end

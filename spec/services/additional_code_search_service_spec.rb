@@ -18,7 +18,7 @@ RSpec.describe AdditionalCodeSearchService do
 
     before do
       Sidekiq::Testing.inline! do
-        TradeTariffBackend.cache_client.reindex(Cache::AdditionalCodeIndex.new)
+        TradeTariffBackend.cache_client.reindex(AdditionalCode)
         sleep(1)
       end
     end

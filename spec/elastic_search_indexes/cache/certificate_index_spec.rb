@@ -5,7 +5,6 @@ RSpec.describe Cache::CertificateIndex do
 
   it { is_expected.to have_attributes type: 'certificate' }
   it { is_expected.to have_attributes name: 'testnamespace-certificates-cache' }
-  it { is_expected.to have_attributes name_without_namespace: 'CertificateIndex' }
   it { is_expected.to have_attributes model_class: Certificate }
   it { is_expected.to have_attributes serializer: Cache::CertificateSerializer }
 
