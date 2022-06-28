@@ -33,6 +33,10 @@ class SearchIndex
     false
   end
 
+  def eager_load_graph
+    []
+  end
+
   def exclude_from_search_results?
     !goods_nomenclature?
   end

@@ -9,16 +9,21 @@ RSpec.describe ReindexModelsWorker, type: :worker do
 
       allow(BuildIndexPageWorker).to receive(:perform_async).and_call_original
       allow(TradeTariffBackend).to receive(:reindex).and_call_original
+      allow(TradeTariffBackend).to receive(:v2_reindex).and_call_original
 
       perform
     end
 
-    it 'calls recache' do
+    it 'calls reindex' do
       expect(TradeTariffBackend).to have_received(:reindex)
     end
 
+    it 'calls v2_reindex' do
+      expect(TradeTariffBackend).to have_received(:v2_reindex)
+    end
+
     it 'queues workers to build the index' do
-      expect(BuildIndexPageWorker).to have_received(:perform_async)
+      expect(BuildIndexPageWorker).to have_received(:perform_async).twice
     end
   end
 end

@@ -82,6 +82,12 @@ module TradeTariffBackend
       end
     end
 
+    def v2_reindex(indexer = v2_search_client)
+      indexer.update_all
+    rescue StandardError => e
+      Mailer.reindex_exception(e).deliver_now
+    end
+
     def recache(indexer = cache_client)
       indexer.update_all
     rescue StandardError => e
@@ -105,6 +111,14 @@ module TradeTariffBackend
       )
     end
 
+    def v2_search_client
+      @v2_search_client ||= SearchClient.new(
+        Elasticsearch::Client.new,
+        indexes: v2_search_indexes,
+        index_page_size: 2000,
+      )
+    end
+
     def cache_client
       @cache_client ||= SearchClient.new(
         Elasticsearch::Client.new,
@@ -121,6 +135,12 @@ module TradeTariffBackend
         Search::HeadingIndex,
         Search::SearchReferenceIndex,
         Search::SectionIndex,
+      ].map(&:new)
+    end
+
+    def v2_search_indexes
+      [
+        Search::GoodsNomenclatureIndex,
       ].map(&:new)
     end
 
