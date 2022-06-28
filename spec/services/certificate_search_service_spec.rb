@@ -40,7 +40,7 @@ RSpec.describe CertificateSearchService do
 
     before do
       Sidekiq::Testing.inline! do
-        TradeTariffBackend.cache_client.reindex(Certificate)
+        TradeTariffBackend.cache_client.reindex(Cache::CertificateIndex.new)
         sleep(1)
       end
     end

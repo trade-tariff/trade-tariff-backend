@@ -100,7 +100,7 @@ module TradeTariffBackend
     def search_client
       @search_client ||= SearchClient.new(
         Elasticsearch::Client.new,
-        indexed_models:,
+        indexes: search_indexes,
         index_page_size: 500,
       )
     end
@@ -109,36 +109,28 @@ module TradeTariffBackend
       @cache_client ||= SearchClient.new(
         Elasticsearch::Client.new,
         namespace: 'cache',
-        indexed_models: cached_models,
+        indexes: cache_indexes,
         index_page_size: 5,
       )
     end
 
-    # Returns search index instance for given model instance or
-    # model class instance
-    def search_index_for(namespace, model)
-      index_name = model.is_a?(Class) ? model : model.class
-
-      "::#{namespace.capitalize}::#{index_name}Index".constantize.new
+    def search_indexes
+      [
+        Search::ChapterIndex,
+        Search::CommodityIndex,
+        Search::HeadingIndex,
+        Search::SearchReferenceIndex,
+        Search::SectionIndex,
+      ].map(&:new)
     end
 
-    def indexed_models
+    def cache_indexes
       [
-        Chapter,
-        Commodity,
-        Heading,
-        SearchReference,
-        Section,
-      ]
-    end
-
-    def cached_models
-      [
-        Heading,
-        Certificate,
-        AdditionalCode,
-        Footnote,
-      ]
+        Cache::HeadingIndex,
+        Cache::CertificateIndex,
+        Cache::AdditionalCodeIndex,
+        Cache::FootnoteIndex,
+      ].map(&:new)
     end
 
     def clearable_models
@@ -192,12 +184,6 @@ module TradeTariffBackend
         QuotaOrderNumberOrigin,
         QuotaSuspensionPeriod,
       ]
-    end
-
-    def search_indexes
-      indexed_models.map do |model|
-        "::Search::#{model}Index".constantize.new
-      end
     end
 
     def api_version(request)

@@ -5,6 +5,7 @@ RSpec.describe Search::SearchReferenceIndex do
 
   it { is_expected.to have_attributes type: 'search_reference' }
   it { is_expected.to have_attributes name: 'testnamespace-search_references' }
+  it { is_expected.to have_attributes name_without_namespace: 'SearchReferenceIndex' }
   it { is_expected.to have_attributes model_class: SearchReference }
   it { is_expected.to have_attributes serializer: Search::SearchReferenceSerializer }
 
