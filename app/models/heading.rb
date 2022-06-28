@@ -6,7 +6,10 @@ class Heading < GoodsNomenclature
 
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '____000000')
               .filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '__00______')
-              .order(Sequel.asc(:goods_nomenclature_item_id))
+              .order(
+                Sequel.asc(:goods_nomenclature_item_id),
+                Sequel.asc(:goods_nomenclatures__producline_suffix),
+              )
 
   set_primary_key [:goods_nomenclature_sid]
 
