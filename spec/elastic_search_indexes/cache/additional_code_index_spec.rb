@@ -5,6 +5,7 @@ RSpec.describe Cache::AdditionalCodeIndex do
 
   it { is_expected.to have_attributes type: 'additional_code' }
   it { is_expected.to have_attributes name: 'testnamespace-additional_codes-cache' }
+  it { is_expected.to have_attributes name_without_namespace: 'AdditionalCodeIndex' }
   it { is_expected.to have_attributes model_class: AdditionalCode }
   it { is_expected.to have_attributes serializer: Cache::AdditionalCodeSerializer }
 

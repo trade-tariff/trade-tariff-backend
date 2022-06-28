@@ -10,12 +10,10 @@ module TradeTariffBackend
     cattr_accessor :server_namespace, default: 'tariff'.freeze
     cattr_accessor :search_operation_options, default: {}
 
-    attr_reader :indexed_models,
+    attr_reader :indexes,
                 :index_page_size,
                 :search_operation_options,
                 :namespace
-
-    delegate :search_index_for, to: TradeTariffBackend
 
     class << self
       def update_server_config
@@ -30,7 +28,7 @@ module TradeTariffBackend
     end
 
     def initialize(search_client, options = {})
-      @indexed_models = options.fetch(:indexed_models, [])
+      @indexes = options.fetch(:indexes, [])
       @index_page_size = options.fetch(:index_page_size, 1000)
       @search_operation_options = options.fetch(:search_operation_options,
                                                 self.class.search_operation_options)
@@ -48,26 +46,22 @@ module TradeTariffBackend
     end
 
     def reindex_all
-      indexed_models.each(&method(:reindex))
+      indexes.each(&method(:reindex))
     end
 
-    def reindex(model)
-      search_index_for(namespace, model).tap do |index|
-        drop_index(index)
-        create_index(index)
-        build_index(index)
-      end
+    def reindex(index)
+      drop_index(index)
+      create_index(index)
+      build_index(index)
     end
 
     def update_all
-      indexed_models.each(&method(:update))
+      indexes.each(&method(:update))
     end
 
-    def update(model)
-      search_index_for(namespace, model).tap do |index|
-        create_index(index)
-        build_index(index)
-      end
+    def update(index)
+      create_index(index)
+      build_index(index)
     end
 
     def create_index(index)
@@ -81,27 +75,25 @@ module TradeTariffBackend
     def build_index(index)
       total_pages = (index.dataset.count / index_page_size.to_f).ceil
       (1..total_pages).each do |page_number|
-        BuildIndexPageWorker.perform_async(namespace, index.model_class.to_s, page_number, index_page_size)
+        BuildIndexPageWorker.perform_async(namespace, index.name_without_namespace, page_number, index_page_size)
       end
     end
 
-    def index(model)
-      search_index_for(namespace, model.class).tap do |model_index|
-        super({
-          index: model_index.name,
-          id: model.id,
-          body: model_index.serialize_record(model).as_json,
-        }.merge(search_operation_options))
-      end
+    def index(index_class, model)
+      model_index = index_class.new
+
+      super({
+        index: model_index.name,
+        id: model.id,
+        body: model_index.serialize_record(model).as_json,
+      }.merge(search_operation_options))
     end
 
-    def delete(model)
-      search_index_for(namespace, model.class).tap do |model_index|
-        super({
-          index: model_index.name,
-          id: model.id,
-        }.merge(search_operation_options))
-      end
+    def delete(index_class, model)
+      super({
+        index: index_class.new.name,
+        id: model.id,
+      }.merge(search_operation_options))
     end
   end
 end
