@@ -519,6 +519,11 @@ jobs:
           environment_key: "production"
           service: << parameters.service >>
       - sentry-release
+
+  notify_production_deployment:
+    docker:
+      - image: cimg/ruby:3.1.2
+    steps:
       - tariff/notify-production-release:
           app-name: Backend
           slack-channel: trade_tariff
@@ -677,3 +682,12 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
+      - notify_production_deployment:
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - deploy_production
