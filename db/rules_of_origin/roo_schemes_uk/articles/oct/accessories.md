@@ -1,0 +1,1 @@
+Accessories, spare parts and tools dispatched with a piece of equipment, machine, apparatus or vehicle which are part of the normal equipment and included in the ex-works price thereof, will be regarded as one with the piece of equipment, machine, apparatus or vehicle in question.

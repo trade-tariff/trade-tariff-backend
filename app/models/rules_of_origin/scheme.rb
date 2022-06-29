@@ -42,6 +42,10 @@ module RulesOfOrigin
       @proofs || []
     end
 
+    def articles
+      @articles ||= Article.for_scheme(self)
+    end
+
     def fta_intro
       @fta_intro ||= if fta_intro_file.present?
                        read_referenced_file('fta_intro', fta_intro_file)

@@ -18,5 +18,11 @@ FactoryBot.define do
         }
       end
     end
+
+    trait :without_data do
+      links { [] }
+      schemes { [] }
+      proof_urls { {} }
+    end
   end
 end

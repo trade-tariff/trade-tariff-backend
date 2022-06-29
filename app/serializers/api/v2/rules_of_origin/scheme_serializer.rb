@@ -14,6 +14,7 @@ module Api
         has_many :rules, serializer: Api::V2::RulesOfOrigin::RuleSerializer
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
         has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
+        has_many :articles, serializer: Api::V2::RulesOfOrigin::ArticleSerializer
       end
     end
   end

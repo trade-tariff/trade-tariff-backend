@@ -48,7 +48,7 @@ module RulesOfOrigin
     def rule(id_rule)
       rule = @rules[id_rule.to_i]
 
-      Rule.new rule.merge(id_rule: id_rule.to_i) if rule
+      ::RulesOfOrigin::Rule.new rule.merge(id_rule: id_rule.to_i) if rule
     end
 
     def rules_for_ids(id_rules)
@@ -58,7 +58,7 @@ module RulesOfOrigin
     def invalid_rules
       [].tap do |invalid|
         @rules.each do |id_rule, rule|
-          rule = Rule.new rule.merge(id_rule:)
+          rule = ::RulesOfOrigin::Rule.new rule.merge(id_rule:)
 
           invalid << rule if rule.invalid?
         end

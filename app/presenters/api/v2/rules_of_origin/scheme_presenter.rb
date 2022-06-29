@@ -30,6 +30,10 @@ module Api
         def proof_ids
           @proof_ids ||= proofs.map(&:id)
         end
+
+        def article_ids
+          @article_ids ||= articles.map(&:id)
+        end
       end
     end
   end
