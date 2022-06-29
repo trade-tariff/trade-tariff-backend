@@ -202,10 +202,6 @@ module TradeTariffBackend
       @chief_cds_guidance ||= ChiefCdsGuidance.load_default
     end
 
-    def normalised_measure_units?
-      ENV['NORMALISED_MEASURE_UNITS'].to_s == 'true'
-    end
-
     def handle_cascade_soft_deletes?
       ENV['SOFT_DELETES_CASCADE'].to_s == 'true'
     end
