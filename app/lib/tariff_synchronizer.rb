@@ -223,52 +223,37 @@ module TariffSynchronizer
 
   def rollback_cds(rollback_date, keep: false)
     Rails.autoloaders.main.eager_load
+
     TradeTariffBackend.with_redis_lock do
       date = Date.parse(rollback_date.to_s)
 
-      (date..Time.zone.today).to_a.reverse.each do |date_for_rollback|
-        Sequel::Model.db.transaction do
-          if keep
-            TariffSynchronizer::CdsUpdate.applied_or_failed.where { issue_date > date_for_rollback }.each do |cds_update|
-              # Delete actual data
-              oplog_based_models.each do |model|
-                model.operation_klass.where('filename = ?', cds_update.filename).delete
-              end
+      updates = TariffSynchronizer::CdsUpdate.where { issue_date > date }
+      update_filenames = updates.pluck(:filename)
 
-              instrument('rollback_update.tariff_synchronizer',
-                         update_type: :cds,
-                         filename: cds_update.filename)
-
-              cds_update.mark_as_pending
-              cds_update.clear_applied_at
-
-              # delete cds errors
-              cds_update.cds_errors_dataset.destroy
-            end
-          else
-            TariffSynchronizer::CdsUpdate.where { issue_date > date_for_rollback }.each do |cds_update|
-              # Delete actual data
-              oplog_based_models.each do |model|
-                model.operation_klass.where('filename = ?', cds_update.filename).delete
-              end
-
-              instrument('rollback_update.tariff_synchronizer',
-                         update_type: :cds,
-                         filename: cds_update.filename)
-
-              # delete cds errors
-              cds_update.cds_errors_dataset.destroy
-
-              cds_update.delete
-            end
-          end
-
-          # Requeue data migrations
-          # Rollback leaves 'date_for_rollback's data intact, it removes only
-          # removes data for subsequent days - so look for migrations after
-          # the end of the date_for_rollback day
-          DataMigration.since(date_for_rollback.end_of_day).delete
+      Sequel::Model.db.transaction do
+        # Delete actual data
+        oplog_based_models.each do |model|
+          model.operation_klass
+            .where(filename: update_filenames)
+            .delete
         end
+
+        update_filenames.each do |filename|
+          instrument('rollback_update.tariff_synchronizer', update_type: :cds, filename:)
+        end
+
+        updates.each do |cds_update|
+          cds_update.mark_as_pending
+          cds_update.clear_applied_at
+          cds_update.cds_errors_dataset.destroy
+          cds_update.delete unless keep
+        end
+
+        # Requeue data migrations
+        # Rollback leaves 'date_for_rollback's data intact, it removes only
+        # removes data for subsequent days - so look for migrations after
+        # the end of the date_for_rollback day
+        DataMigration.since(date.end_of_day).delete
       end
 
       instrument('rollback.tariff_synchronizer', date:, keep:)
