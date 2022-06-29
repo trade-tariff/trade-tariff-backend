@@ -23,7 +23,7 @@ FactoryBot.define do
     trait :with_ancestors do
       with_description
       path { Sequel.pg_array([1, 2], :integer) }
-      description { 'Horses' }
+      description { 'Horses, other than lemmings' }
       goods_nomenclature_sid { 3 }
 
       after(:create) do |commodity, _evaluator|

@@ -1,4 +1,6 @@
 class GoodsNomenclatureDescription < Sequel::Model
+  DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not including).*\z)/
+
   include Formatter
 
   plugin :time_machine
@@ -21,6 +23,10 @@ class GoodsNomenclatureDescription < Sequel::Model
 
   def description
     super.try(:gsub, %r/( ?<br> ?){2,}/, '<br>') || ''
+  end
+
+  def description_indexed
+    description.match(DESCRIPTION_NEGATION_REGEX).try(:[], :keep).presence || description
   end
 
   def formatted_description

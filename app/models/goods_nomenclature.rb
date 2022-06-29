@@ -111,7 +111,7 @@ class GoodsNomenclature < Sequel::Model
     end
   end
 
-  delegate :description, :formatted_description, to: :goods_nomenclature_description, allow_nil: true
+  delegate :description, :description_indexed, :formatted_description, to: :goods_nomenclature_description, allow_nil: true
 
   one_to_one :goods_nomenclature_origin, key: %i[goods_nomenclature_item_id
                                                  productline_suffix],

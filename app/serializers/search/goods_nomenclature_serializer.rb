@@ -8,11 +8,13 @@ module Search
         producline_suffix:,
         goods_nomenclature_class:,
         description:,
-        description_indexed: description,
+        description_indexed:,
         chapter_description:,
         heading_description:,
         search_references:,
         ancestors:,
+        validity_start_date:,
+        validity_end_date:,
       }
     end
 
@@ -65,6 +67,14 @@ module Search
           description: ancestor.description,
         }
       end
+    end
+
+    def validity_start_date
+      super&.iso8601
+    end
+
+    def validity_end_date
+      super&.iso8601
     end
   end
 end
