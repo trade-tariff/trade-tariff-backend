@@ -12,7 +12,7 @@ class BuildIndexPageWorker
       body: serialize_for(
         :index,
         index,
-        index.dataset.paginate(page_number, page_size),
+        index.dataset.eager(index.eager_load_graph).paginate(page_number, page_size),
       ),
     )
   end

@@ -27,7 +27,11 @@ class GoodsNomenclature < Sequel::Model
   one_to_one :chapter, class_name: name, class: self do |_ds|
     Chapter
       .actual
-      .where(goods_nomenclature_item_id: chapter_id)
+      .where(goods_nomenclature_item_id: chapter_code)
+  end
+
+  one_to_one :heading, class_name: name, class: self do |_ds|
+    Heading.actual.where(goods_nomenclature_item_id: heading_code)
   end
 
   one_to_many :ancestors, class_name: name, class: self do |_ds|
@@ -180,6 +184,22 @@ class GoodsNomenclature < Sequel::Model
 
   def chapter_id
     goods_nomenclature_item_id.first(2) + '0' * 8
+  end
+
+  def heading_code
+    heading_short_code + '0' * 6
+  end
+
+  def chapter_code
+    chapter_short_code + '0' * 8
+  end
+
+  def heading_short_code
+    goods_nomenclature_item_id.first(4)
+  end
+
+  def chapter_short_code
+    goods_nomenclature_item_id.first(2)
   end
 
   def code

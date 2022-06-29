@@ -11,12 +11,36 @@ FactoryBot.define do
     trait :with_indent do
       after(:create) do |commodity, evaluator|
         create(:goods_nomenclature_indent,
-                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                          goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                          validity_start_date: commodity.validity_start_date,
-                          validity_end_date: commodity.validity_end_date,
-                          productline_suffix: commodity.producline_suffix,
-                          number_indents: evaluator.indents)
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               validity_start_date: commodity.validity_start_date,
+               validity_end_date: commodity.validity_end_date,
+               productline_suffix: commodity.producline_suffix,
+               number_indents: evaluator.indents)
+      end
+    end
+
+    trait :with_ancestors do
+      with_description
+      path { Sequel.pg_array([1, 2], :integer) }
+      description { 'Horses' }
+      goods_nomenclature_sid { 3 }
+
+      after(:create) do |commodity, _evaluator|
+        create(
+          :chapter,
+          :with_description,
+          description: 'Live horses, asses, mules and hinnies',
+          goods_nomenclature_sid: 1,
+          goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(2)}00000000",
+        )
+        create(
+          :heading,
+          :with_description,
+          description: 'Live animals',
+          goods_nomenclature_sid: 2,
+          goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
+        )
       end
     end
 
@@ -42,29 +66,29 @@ FactoryBot.define do
         commodity.producline_suffix = '80'
         commodity.save
         create(:goods_nomenclature_indent,
-                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                          goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-                          validity_start_date: commodity.validity_start_date,
-                          validity_end_date: commodity.validity_end_date,
-                          productline_suffix: commodity.producline_suffix,
-                          number_indents: 1)
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               validity_start_date: commodity.validity_start_date,
+               validity_end_date: commodity.validity_end_date,
+               productline_suffix: commodity.producline_suffix,
+               number_indents: 1)
 
         # Add another intermediate level
         create(:commodity,
-                          :with_indent,
-                          goods_nomenclature_item_id: (item_id + 1).to_s,
-                          producline_suffix: '10',
-                          indents: 2)
+               :with_indent,
+               goods_nomenclature_item_id: (item_id + 1).to_s,
+               producline_suffix: '10',
+               indents: 2)
 
         # Add two leaf commodities
         create(:commodity,
-                          :with_indent,
-                          goods_nomenclature_item_id: (item_id + 1).to_s,
-                          indents: 3)
+               :with_indent,
+               goods_nomenclature_item_id: (item_id + 1).to_s,
+               indents: 3)
         create(:commodity,
-                          :with_indent,
-                          goods_nomenclature_item_id: (item_id + 2).to_s,
-                          indents: 3)
+               :with_indent,
+               goods_nomenclature_item_id: (item_id + 2).to_s,
+               indents: 3)
         commodity.reload
       end
     end
