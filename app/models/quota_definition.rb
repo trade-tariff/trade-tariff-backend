@@ -98,6 +98,7 @@ class QuotaDefinition < Sequel::Model
 
 private
 
+  # We only care about Open, Exhausted and Critical statuses from a UI perspective
   def has_active_critical_event?
     last_event.status == QuotaBalanceEvent.status && last_critical_event&.active?
   end

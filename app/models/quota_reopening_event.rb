@@ -7,6 +7,6 @@ class QuotaReopeningEvent < Sequel::Model
                                  primary_key: :quota_definition_sid
 
   def self.status
-    'Reopened'
+    'Open'
   end
 end

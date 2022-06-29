@@ -7,6 +7,6 @@ class QuotaUnsuspensionEvent < Sequel::Model
                                  primary_key: :quota_definition_sid
 
   def self.status
-    'Unsuspended'
+    'Open'
   end
 end
