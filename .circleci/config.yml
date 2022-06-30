@@ -189,8 +189,7 @@ commands:
             CYPRESS_SPACE: "<< parameters.space >>"
           command: |
             cd trade-tariff-testing
-
-            yarn run cypress run --spec "/*/**/HOTT-Shared/devSmokeTestCI.spec.js"
+            yarn run dev-tariff-backend-smoketests
 
   sentry-release:
     steps:
@@ -658,10 +657,10 @@ workflows:
             - hold_create_release
       - deploy_release_to_staging:
           matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
+            parameters:
+              service:
+                - xi
+                - uk
           context: trade-tariff
           filters:
             tags:
@@ -677,10 +676,10 @@ workflows:
               ignore: /.*/
       - deploy_production:
           matrix:
-             parameters:
-               service:
-                 - xi
-                 - uk
+            parameters:
+              service:
+                - xi
+                - uk
           context: trade-tariff
           filters:
             tags:
