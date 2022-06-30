@@ -13,7 +13,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         goods_nomenclature_class: 'Commodity',
         chapter_description: 'Live horses, asses, mules and hinnies',
         heading_description: 'Live animals',
-        description: 'Horses',
+        description: 'Horses, other than lemmings',
         description_indexed: 'Horses',
         search_references: 'secret sauce',
         ancestors: [
@@ -30,6 +30,8 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
             description: 'Live animals',
           },
         ],
+        validity_start_date: '2020-06-29T00:00:00Z',
+        validity_end_date: nil,
       }
     end
 
