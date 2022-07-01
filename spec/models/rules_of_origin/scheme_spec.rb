@@ -185,4 +185,23 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to be_any }
     it { is_expected.to all be_instance_of RulesOfOrigin::Article }
   end
+
+  describe '#rule_sets' do
+    subject { scheme.rule_sets }
+
+    let(:scheme) { build :rules_of_origin_scheme, :in_scheme_set, scheme_code: }
+
+    context 'with valid rule_set' do
+      let(:scheme_code) { 'test' }
+
+      it { is_expected.to have_attributes length: 1 }
+      it { is_expected.to all be_instance_of RulesOfOrigin::V2::RuleSet }
+    end
+
+    context 'with unknown rule set' do
+      let(:scheme_code) { 'unknown' }
+
+      it { is_expected.to have_attributes length: 0 }
+    end
+  end
 end

@@ -8,6 +8,8 @@ module RulesOfOrigin
                   :fta_intro_file, :countries, :rule_offset, :footnote,
                   :adopted_by_uk, :country_code, :notes, :unilateral
 
+    attr_writer :rule_sets
+
     delegate :read_referenced_file, to: :scheme_set
 
     def links=(links_data)
@@ -63,10 +65,20 @@ module RulesOfOrigin
                               end
     end
 
+    def rule_sets
+      @rule_sets ||= RulesOfOrigin::V2::RuleSet.build_for_scheme(self, read_rule_sets)
+    end
+
     private
 
     def new_proof(proof_attrs)
       Proof.new proof_attrs.merge(scheme: self)
+    end
+
+    def read_rule_sets
+      JSON.parse(read_referenced_file('rule_sets', "#{scheme_code}.json"))
+    rescue Errno::ENOENT
+      { 'rule_sets' => [] }
     end
   end
 end

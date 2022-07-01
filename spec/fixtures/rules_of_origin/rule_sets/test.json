@@ -1,0 +1,22 @@
+{
+  "rule_sets": [
+    {
+      "heading": "0101-0106",
+      "subdivision": "",
+      "prefix": "",
+      "min": "0101000000",
+      "max": "0106999999",
+      "rules": [
+        {
+                "rule": "All animals of Chapter 1 are wholly obtained",
+                "original": "All animals of Chapter 1 are wholly obtained.",
+                "class": [
+                      "WO"
+                ],
+                "operator": null
+          }
+      ],
+      "valid": true
+    }
+  ]
+}
