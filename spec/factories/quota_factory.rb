@@ -85,6 +85,16 @@ FactoryBot.define do
         qon.geographical_area_sid = geographical_area.geographical_area_sid
       end
     end
+
+    trait :with_quota_order_number_origin_exclusion do
+      after(:create) do |quota_order_number_origin, _evaluator|
+        create(
+          :quota_order_number_origin_exclusion,
+          quota_order_number_origin_sid: quota_order_number_origin.quota_order_number_origin_sid,
+          excluded_geographical_area_sid: '1',
+        )
+      end
+    end
   end
 
   factory :quota_order_number_origin_exclusion do

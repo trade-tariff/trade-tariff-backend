@@ -55,7 +55,6 @@ class CdsImporter
         # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
         def delete_missing_entities(*secondary_mappers)
           before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance|
-            # binding.pry
             if TradeTariffBackend.handle_missing_soft_deletes?
               secondary_mappers.each do |secondary_mapper|
                 database_entities = secondary_mapper.database_entities_for(primary_model_instance)
