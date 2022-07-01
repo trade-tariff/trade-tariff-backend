@@ -44,14 +44,24 @@ FactoryBot.define do
 
     trait :with_quota_definition do
       after(:create) do |quota_order_number, evaluator|
-        result = create(
+        create(
           :quota_definition,
           quota_order_number_id: quota_order_number.quota_order_number_id,
           quota_order_number_sid: quota_order_number.quota_order_number_sid,
           quota_definition_sid: evaluator.quota_definition_sid,
           validity_end_date: evaluator.quota_definition_validity_end_date,
         )
-        result
+      end
+    end
+
+    trait :with_quota_order_number_origin do
+      after(:create) do |quota_order_number, _evaluator|
+        create(
+          :quota_order_number_origin,
+          # quota_order_number_id: quota_order_number.quota_order_number_id,
+          quota_order_number_sid: quota_order_number.quota_order_number_sid,
+          # quota_definition_sid: evaluator.quota_definition_sid,
+        )
       end
     end
   end

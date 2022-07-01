@@ -19,6 +19,10 @@ class CdsImporter
         "#{mapping_path}.geographicalArea.geographicalAreaId" => :geographical_area_id,
         "#{mapping_path}.geographicalArea.sid" => :geographical_area_sid,
       ).freeze
+
+      self.primary_filters = {
+        quota_order_number_sid: :quota_order_number_sid,
+      }.freeze
     end
   end
 end
