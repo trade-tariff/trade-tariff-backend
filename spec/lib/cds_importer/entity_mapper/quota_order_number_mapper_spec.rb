@@ -6,11 +6,13 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberMapper do
       'validityStartDate' => '1970-01-01T00:00:00',
       'validityEndDate' => '1972-01-01T00:00:00',
       'metainfo' => {
-        'opType' => 'U',
+        'opType' => operation,
         'transactionDate' => '2016-07-27T09:20:17',
       },
     }
   end
+
+  let(:operation) { 'U' }
 
   it_behaves_like 'an entity mapper', 'QuotaOrderNumber', 'QuotaOrderNumber' do
     let(:expected_values) do
@@ -27,6 +29,36 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberMapper do
 
   describe '#import' do
     subject(:entity_mapper) { CdsImporter::EntityMapper.new('QuotaOrderNumber', xml_node) }
+
+    context 'when the quota_order_number is being created' do
+      before do
+        create(:quota_order_number, :with_quota_order_number_origin, quota_order_number_sid: 12_348)
+      end
+
+      let(:operation) { 'C' }
+
+      it_behaves_like 'an entity mapper create operation', QuotaOrderNumber
+    end
+
+    context 'when the quota_order_number is being deleted' do
+      before do
+        create(:quota_order_number, :with_quota_order_number_origin, quota_order_number_sid: 12_348)
+      end
+
+      let(:operation) { 'D' }
+
+      it_behaves_like 'an entity mapper destroy operation', QuotaOrderNumber
+    end
+
+    context 'when the quota_order_number is being updated' do
+      before do
+        create(:quota_order_number, :with_quota_order_number_origin, quota_order_number_sid: 12_348)
+      end
+
+      let(:operation) { 'U' }
+
+      it_behaves_like 'an entity mapper update operation', QuotaOrderNumber
+    end
 
     context 'when there are missing secondary entities to be soft deleted' do
       before do
