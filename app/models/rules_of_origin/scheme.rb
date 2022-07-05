@@ -69,6 +69,10 @@ module RulesOfOrigin
       @rule_sets ||= RulesOfOrigin::V2::RuleSet.build_for_scheme(self, read_rule_sets)
     end
 
+    def rule_sets_for_subheading(subheading_code)
+      rule_sets.select { |rs| rs.for_subheading? subheading_code }
+    end
+
     private
 
     def new_proof(proof_attrs)

@@ -204,4 +204,24 @@ RSpec.describe RulesOfOrigin::Scheme do
       it { is_expected.to have_attributes length: 0 }
     end
   end
+
+  describe '#rule_sets_for_subheading' do
+    subject { scheme.rule_sets_for_subheading code }
+
+    let(:scheme) { build :rules_of_origin_scheme, rule_sets: }
+    let(:rule_sets) { build_pair :rules_of_origin_v2_rule_set }
+
+    context 'with matching subheading code' do
+      let(:code) { rule_sets.first.min.first(6) }
+
+      it { is_expected.to include rule_sets.first }
+      it { is_expected.not_to include rule_sets.second }
+    end
+
+    context 'with non-matching subheading code' do
+      let(:code) { (rule_sets.first.min.first(6).to_i - 1).to_s }
+
+      it { is_expected.to be_empty }
+    end
+  end
 end

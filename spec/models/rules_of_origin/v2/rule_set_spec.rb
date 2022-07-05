@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe RulesOfOrigin::V2::RuleSet do
-  subject { described_class.new scheme }
+  subject { described_class.new scheme: }
 
   let(:scheme) { build :rules_of_origin_scheme }
 
@@ -26,7 +26,7 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
   end
 
   describe '#headings_range' do
-    subject(:rule_set) { described_class.new(scheme, min:, max:).headings_range }
+    subject(:rule_set) { described_class.new(scheme:, min:, max:).headings_range }
 
     let(:min) { 10 }
     let(:max) { 20 }
@@ -56,11 +56,49 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
   end
 
   describe '#rules' do
-    subject { described_class.new(scheme, rules: [rule]).rules }
+    subject { described_class.new(scheme:, rules: [rule]).rules }
 
     let(:rule) { attributes_for :rules_of_origin_v2_rule, rule: 'test rule' }
 
     it { is_expected.to all be_instance_of RulesOfOrigin::V2::Rule }
     it { is_expected.to all have_attributes rule: 'test rule' }
+  end
+
+  describe '#for_subheading?' do
+    subject { rule_set.for_subheading? subheading_code }
+
+    let :rule_set do
+      build :rules_of_origin_v2_rule_set, min: '2000000000', max: '2999999999'
+    end
+
+    context 'with 10 digit code in range' do
+      let(:subheading_code) { '2000000000' }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with 10 digit code at end of range' do
+      let(:subheading_code) { '2999999999' }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with 10 digit code out of range' do
+      let(:subheading_code) { '3000000000' }
+
+      it { is_expected.to be false }
+    end
+
+    context 'with short code in range' do
+      let(:subheading_code) { '202020' }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with short code out of range' do
+      let(:subheading_code) { '3000' }
+
+      it { is_expected.to be false }
+    end
   end
 end
