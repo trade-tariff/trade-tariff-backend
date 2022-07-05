@@ -1,13 +1,11 @@
 module RulesOfOrigin
   class Proof
     include ActiveModel::Model
+    include ContentAddressableId
+    self.content_addressable_fields = %i[summary proof_class]
 
     attr_accessor :scheme, :summary, :detail, :proof_class, :subtext
     attr_writer :id
-
-    def id
-      @id ||= Digest::MD5.hexdigest("#{summary}-#{proof_class}")
-    end
 
     def url
       all_proof_urls[proof_class] if proof_class.present?
