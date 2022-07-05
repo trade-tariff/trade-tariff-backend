@@ -5,13 +5,13 @@ default: &default
 
 development:
   <<: *default
-  database: tariff_development
-  host: localhost
+  database: tariff_uk_production
+  host: 127.0.0.1
 
 test:
   <<: *default
   database: tariff_test
-  host: localhost
+  host: 127.0.0.1
 
 production:
   <<: *default
