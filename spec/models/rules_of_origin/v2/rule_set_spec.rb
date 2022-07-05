@@ -5,6 +5,7 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
 
   let(:scheme) { build :rules_of_origin_scheme }
 
+  it { is_expected.to respond_to :id }
   it { is_expected.to respond_to :scheme }
   it { is_expected.to respond_to :heading }
   it { is_expected.to respond_to :subdivision }
@@ -23,6 +24,12 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
 
     it { is_expected.to have_attributes length: 2 }
     it { is_expected.to all be_instance_of described_class }
+  end
+
+  describe '#id' do
+    subject { build(:rules_of_origin_v2_rule_set).id }
+
+    it { is_expected.to be_present }
   end
 
   describe '#headings_range' do

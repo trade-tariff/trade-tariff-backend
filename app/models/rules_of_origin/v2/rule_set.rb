@@ -3,6 +3,11 @@
 module RulesOfOrigin
   module V2
     class RuleSet
+      include ContentAddressableId
+      self.content_addressable_fields = %i[scheme_code heading min max rule_ids]
+
+      delegate :scheme_code, to: :scheme
+
       HEADING_FORMAT = %r{\A\d{10}\z}
 
       attr_accessor :scheme,
@@ -51,6 +56,10 @@ module RulesOfOrigin
         padded_code = "#{code}#{'0' * (10 - code.to_s.length)}"
 
         headings_range.include? padded_code.to_i
+      end
+
+      def rule_ids
+        rules.map(&:id)
       end
 
       class InvalidHeadingRange < StandardError; end
