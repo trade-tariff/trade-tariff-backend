@@ -61,6 +61,11 @@ module HeadingService
           has_valid_dates(measure, :effective_start_date, :effective_end_date)
         end
 
+        if TradeTariffBackend.xi?
+          # TODO: Removes CHIEF VAT measures that are no longer relevant and need pulling from to the UK service
+          commodity.overview_measures = OverviewMeasurePresenter.new(commodity.overview_measures, commodity).validate!
+        end
+
         commodity.overview_measure_ids = commodity.overview_measures.map(&:measure_sid)
 
         commodity.goods_nomenclature_indents.keep_if do |ident|
