@@ -63,7 +63,7 @@ module HeadingService
 
         if TradeTariffBackend.xi?
           # TODO: Removes CHIEF VAT measures that are no longer relevant and need pulling from to the UK service
-          commodity.overview_measures = OverviewMeasurePresenter.new(commodity.overview_measures, commodity).validate!
+          commodity.overview_measures = ::OverviewMeasurePresenter.new(commodity.overview_measures, commodity).validate!
         end
 
         commodity.overview_measure_ids = commodity.overview_measures.map(&:measure_sid)
