@@ -376,6 +376,10 @@ FactoryBot.define do
       trade_movement_code { 0 }
     end
 
+    trait :vat do
+      measure_type_id { 'VTZ' } # CHIEF VAT type
+    end
+
     trait :import_and_export do
       trade_movement_code { 2 }
     end

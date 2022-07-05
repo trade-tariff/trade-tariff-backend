@@ -13,7 +13,6 @@ class MeasureType < Sequel::Model
   DEFAULT_EXCLUDED_TYPES = %w[442 447 SPL].freeze
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
-  OVERVIEW_MEASURE_TYPES = MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES # See Commodity#overview_measures
 
   DEFENSE_MEASURES = [
     '551', # Provisional anti-dumping duty
@@ -104,6 +103,15 @@ class MeasureType < Sequel::Model
 
   def rules_of_origin_apply?
     measure_type_id.in?(RULES_OF_ORIGIN_MEASURES)
+  end
+
+  # See Commodity#overview_measures
+  def self.overview_measure_types
+    if TradeTariffBackend.xi?
+      MeasureType::SUPPLEMENTARY_TYPES
+    else
+      MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES
+    end
   end
 
   def self.excluded_measure_types

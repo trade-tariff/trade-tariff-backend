@@ -28,7 +28,7 @@ class Commodity < GoodsNomenclature
 
   one_to_many :overview_measures, key: {}, primary_key: {}, class_name: 'Measure', dataset: lambda {
     measures_dataset
-      .filter(measures__measure_type_id: MeasureType::OVERVIEW_MEASURE_TYPES)
+      .filter(measures__measure_type_id: MeasureType.overview_measure_types)
       .or(
         measures__measure_type_id: MeasureType::THIRD_COUNTRY,
         measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
