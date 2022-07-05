@@ -194,4 +194,24 @@ RSpec.describe MeasureType do
       it { is_expected.not_to be_rules_of_origin_apply }
     end
   end
+
+  describe '.overview_measures_types' do
+    subject(:measure_type) { described_class.overview_measure_types }
+
+    before do
+      allow(TradeTariffBackend).to receive(:service).and_return(service)
+    end
+
+    context 'when on the xi service' do
+      let(:service) { 'xi' }
+
+      it { is_expected.to eq(%w[109 110 111]) }
+    end
+
+    context 'when on the uk service' do
+      let(:service) { 'uk' }
+
+      it { is_expected.to eq(%w[VTA VTE VTS VTZ 305 109 110 111]) }
+    end
+  end
 end
