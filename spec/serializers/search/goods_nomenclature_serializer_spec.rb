@@ -41,6 +41,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         :with_ancestors,
         goods_nomenclature_item_id: '0101210000',
         producline_suffix: '80',
+        validity_start_date: Date.parse('2020-06-29'),
       )
 
       create(:search_reference, referenced: commodity, title: 'secret sauce')
