@@ -1,7 +1,8 @@
 RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
-  subject(:presenter) { described_class.new scheme, rules }
+  subject(:presenter) { described_class.new scheme, rules, scheme_rule_sets }
 
   let(:scheme) { build :rules_of_origin_scheme, :with_links, :with_articles }
+  let(:scheme_rule_sets) { build_pair :rules_of_origin_v2_rule_set }
 
   let(:rules) do
     build_list :rules_of_origin_rule, 3, scheme_code: scheme.scheme_code
@@ -14,9 +15,12 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
   it { is_expected.to have_attributes link_ids: scheme.links.map(&:id) }
   it { is_expected.to have_attributes proof_ids: scheme.proofs.map(&:id) }
   it { is_expected.to have_attributes article_ids: scheme.articles.map(&:id) }
+  it { is_expected.to have_attributes rule_set_ids: scheme_rule_sets.map(&:id) }
 
   describe '.for_many' do
-    subject(:presenters) { described_class.for_many query.schemes, query.rules }
+    subject(:presenters) do
+      described_class.for_many query.schemes, query.rules, query.scheme_rule_sets
+    end
 
     let(:query) do
       RulesOfOrigin::Query.new(roo_data_set, roo_heading_code, roo_country_code)

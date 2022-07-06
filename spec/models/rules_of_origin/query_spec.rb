@@ -90,4 +90,42 @@ RSpec.describe RulesOfOrigin::Query do
     it { is_expected.to include roo_data_set.scheme_set.links.first }
     it { is_expected.to include roo_scheme.links.first }
   end
+
+  describe '#rule_sets' do
+    subject(:scheme_rule_sets) { query.scheme_rule_sets }
+
+    before do
+      scheme_set = roo_data_set.scheme_set
+
+      scheme_set.instance_variable_set('@_schemes', schemes)
+      scheme_set.instance_variable_set(
+        '@_countries',
+        scheme_set.send(:build_countries_to_schemes_index),
+      )
+    end
+
+    let(:schemes) do
+      [
+        build(:rules_of_origin_scheme, rule_sets:, countries: %w[FR]),
+        build(:rules_of_origin_scheme, rule_sets:, countries: %w[FR ES]),
+        build(:rules_of_origin_scheme, rule_sets:, countries: %w[ES]),
+      ].index_by(&:scheme_code)
+    end
+
+    let(:rule_sets) { build_list :rules_of_origin_v2_rule_set, 3, min: '0000000001' }
+    let(:heading_code) { rule_sets.second.max.first(6) }
+
+    it { is_expected.to be_instance_of Hash }
+    it { is_expected.to include schemes.keys.first }
+    it { is_expected.to include schemes.keys.second }
+    it { is_expected.not_to include schemes.keys.third }
+
+    describe 'matched rule sets' do
+      subject { scheme_rule_sets.values.first.map(&:id) }
+
+      it { is_expected.not_to include rule_sets.first.id }
+      it { is_expected.to include rule_sets.second.id }
+      it { is_expected.to include rule_sets.third.id }
+    end
+  end
 end

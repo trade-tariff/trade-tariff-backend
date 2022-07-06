@@ -14,8 +14,8 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
 
   let :serializer do
     described_class.new \
-      Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules),
-      include: %i[links proofs rules]
+      Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules, []),
+      include: %i[links proofs rules articles rule_sets rule_sets.rules]
   end
 
   let :expected do
@@ -74,6 +74,9 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             ],
           },
           articles: {
+            data: [],
+          },
+          rule_sets: {
             data: [],
           },
         },

@@ -36,6 +36,11 @@ module RulesOfOrigin
       scheme_set.links + schemes.map(&:links).flatten
     end
 
+    def scheme_rule_sets
+      schemes.index_by(&:scheme_code)
+             .transform_values { |sc| sc.rule_sets_for_subheading(@heading_code) }
+    end
+
     class InvalidParams < ArgumentError; end
 
     private
