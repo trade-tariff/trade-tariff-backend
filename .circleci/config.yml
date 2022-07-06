@@ -166,7 +166,7 @@ commands:
         type: string
       space:
         type: string
-        default: DEVELOPMENT
+        default: development
     steps:
       - run:
           name: "Checkout tests repo"
@@ -184,12 +184,17 @@ commands:
             - /root/.cache/Cypress
       - run:
           name: "Cypress Smoke tests"
-          environment:
-            CYPRESS_BASE_URL: "<< parameters.url >>"
-            CYPRESS_SPACE: "<< parameters.space >>"
           command: |
             cd trade-tariff-testing
-            yarn run dev-tariff-backend-smoketests
+
+            if [[ << parameters.space >> = "staging" ]]; then
+              yarn run staging-tariff-backend-smoketests
+            elif [[ << parameters.space >> = "development" ]]; then
+              yarn run dev-tariff-backend-smoketests
+            else
+              echo "You specified an invalid space"
+              exit 1
+            fi
 
   sentry-release:
     steps:
@@ -399,7 +404,7 @@ jobs:
     steps:
       - smoketest:
           url: https://dev.trade-tariff.service.gov.uk
-          space: DEVELOPMENT
+          space: development
 
   smoketest_staging:
     docker:
@@ -407,7 +412,7 @@ jobs:
     steps:
       - smoketest:
           url: https://staging.trade-tariff.service.gov.uk
-          space: STAGING
+          space: staging
 
   deploy_dev:
     docker:
