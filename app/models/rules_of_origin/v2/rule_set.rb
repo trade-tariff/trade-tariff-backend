@@ -22,9 +22,9 @@ module RulesOfOrigin
 
       class << self
         def build_for_scheme(scheme, rule_sets_data)
-          rule_sets_data['rule_sets'].map do |rule_set_data|
-            new rule_set_data.merge(scheme:)
-          end
+          rule_sets_data['rule_sets']
+            .map { |rs| new rs.merge(scheme:) }
+            .select(&:valid?)
         end
       end
 
@@ -46,6 +46,12 @@ module RulesOfOrigin
 
           Range.new(min.to_i, max.to_i)
         end
+      end
+
+      def valid?
+        !!headings_range
+      rescue InvalidHeadingRange
+        false
       end
 
       def rules=(rules)

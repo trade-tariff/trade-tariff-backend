@@ -62,6 +62,29 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
     end
   end
 
+  describe '#valid?' do
+    subject { described_class.new(scheme:, min:, max:).valid? }
+
+    let(:min) { 10 }
+    let(:max) { 20 }
+
+    context 'for valid heading range' do
+      it { is_expected.to be true }
+    end
+
+    context 'with invalid min' do
+      let(:min) { 'foo' }
+
+      it { is_expected.to be false }
+    end
+
+    context 'with invalid max' do
+      let(:max) { '20foo' }
+
+      it { is_expected.to be false }
+    end
+  end
+
   describe '#rules' do
     subject { described_class.new(scheme:, rules: [rule]).rules }
 
