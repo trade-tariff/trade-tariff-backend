@@ -1,6 +1,6 @@
 module Beta
   module Search
-    class SearchResult
+    class OpenSearchResult
       delegate :id, to: :search_query_parser_result, prefix: true
 
       attr_accessor :took,

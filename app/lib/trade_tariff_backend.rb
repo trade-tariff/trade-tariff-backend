@@ -14,10 +14,6 @@ module TradeTariffBackend
       ENV['TARIFF_QUERY_SEARCH_PARSER_URL']
     end
 
-    def search_query_parser_connection_pool_count
-      ENV.fetch('TARIFF_QUERY_SEARCH_PARSER_CONNECTION_POOL_COUNT', 3)
-    end
-
     # Lock key used for DB locks to keep just one instance of synchronizer
     # running in cluster environment
     def db_lock_key
@@ -213,10 +209,6 @@ module TradeTariffBackend
         QuotaOrderNumberOrigin,
         QuotaSuspensionPeriod,
       ]
-    end
-
-    def default_api_version
-      ENV.fetch('DEFAULT_API_VERSION', '1')
     end
 
     def api_version(request)

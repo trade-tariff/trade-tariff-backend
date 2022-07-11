@@ -12,9 +12,9 @@ module Api
         result = v2_search_client
           .search(index: DEFAULT_SEARCH_INDEX, body: generated_search_query)
 
-        result = ::Beta::Search::SearchResult.build(result, search_query_parser_result)
+        search_result = ::Beta::Search::OpenSearchResult.build(result, search_query_parser_result)
 
-        Api::Beta::SearchResultSerializer.new(result, include: DEFAULT_INCLUDES).serializable_hash
+        Api::Beta::SearchResultSerializer.new(search_result, include: DEFAULT_INCLUDES).serializable_hash
       end
 
       private

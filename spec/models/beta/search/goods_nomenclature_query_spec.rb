@@ -78,7 +78,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       it { is_expected.to eq(expected_query) }
     end
 
-    context 'when there are nouns' do
+    context 'when there are only nouns' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, nouns: %w[man]).query }
 
       let(:expected_query) do
@@ -112,7 +112,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       it { is_expected.to eq(expected_query) }
     end
 
-    context 'when there are noun_chunks' do
+    context 'when there are only noun_chunks' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, noun_chunks: ['clothing sets']).query }
 
       let(:expected_query) do
@@ -146,7 +146,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       it { is_expected.to eq(expected_query) }
     end
 
-    context 'when there are verbs' do
+    context 'when there are only verbs' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, verbs: %w[running]).query }
 
       let(:expected_query) do
@@ -180,7 +180,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       it { is_expected.to eq(expected_query) }
     end
 
-    context 'when there are adjectives' do
+    context 'when there are only adjectives' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, verbs: %w[tall]).query }
 
       let(:expected_query) do

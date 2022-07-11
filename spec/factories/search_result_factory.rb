@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :search_result, class: 'Beta::Search::SearchResult' do
+  factory :search_result, class: 'Beta::Search::OpenSearchResult' do
     multiple_hits
 
     trait :no_hits do
@@ -26,9 +26,9 @@ FactoryBot.define do
     initialize_with do
       fixture_filename = Rails.root.join("spec/fixtures/beta/search/goods_nomenclatures/#{result_fixture}.json")
       search_result = JSON.parse(File.read(fixture_filename))
-      search_result = Hashie::TariffMash.new(search_result)
+      presented_search_result = Hashie::TariffMash.new(search_result)
 
-      Beta::Search::SearchResult.build(search_result, search_query_parser_result)
+      Beta::Search::OpenSearchResult.build(presented_search_result, search_query_parser_result)
     end
   end
 end

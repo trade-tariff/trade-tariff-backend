@@ -34,7 +34,7 @@ FactoryBot.define do
 
       adjectives { [] }
       noun_chunks { %w[ricotta] }
-      nouns { [] }
+      nouns { %w[ricotta] }
       verbs { [] }
     end
 

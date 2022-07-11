@@ -1,13 +1,13 @@
 require 'rails_helper'
 
-RSpec.describe Beta::Search::SearchResult do
+RSpec.describe Beta::Search::OpenSearchResult do
   describe '.build' do
     subject(:result) { described_class.build(search_result, search_query_parser_result) }
 
     let(:search_result) do
-      test_filename = Rails.root.join(file_fixture_path, 'beta/search/goods_nomenclatures/multiple_hits.json')
+      fixture = file_fixture('beta/search/goods_nomenclatures/multiple_hits.json')
 
-      Hashie::TariffMash.new(JSON.parse(File.read(test_filename)))
+      Hashie::TariffMash.new(JSON.parse(fixture.read))
     end
 
     let(:search_query_parser_result) { build(:search_query_parser_result, :multiple_hits) }
