@@ -1,5 +1,5 @@
 class GoodsNomenclatureDescription < Sequel::Model
-  DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not including).*\z)/
+  DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not).*\z)/
 
   include Formatter
 
