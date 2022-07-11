@@ -21,6 +21,17 @@ class CdsImporter
         'measurementUnitQualifier.measurementUnitQualifierCode' => :measurement_unit_qualifier_code,
         'description' => :description,
       ).freeze
+
+      delete_missing_entities QuotaReopeningEventMapper
+      # TODO: add the following:
+      #       QuotaUnsuspensionEventMapper,
+      #       QuotaAssociationMapper,
+      #       QuotaBalanceEventMapper,
+      #       QuotaBlockingPeriodMapper,
+      #       QuotaCriticalEventMapper,
+      #       QuotaExhaustionEventMapper,
+      #       QuotaSuspensionPeriodMapper,
+      #       QuotaUnblockingEventMapper
     end
   end
 end
