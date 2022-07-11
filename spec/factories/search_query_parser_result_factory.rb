@@ -17,5 +17,35 @@ FactoryBot.define do
     noun_chunks { ['halibut sausage stenolepis cheese binocular parsnip pharmacy paper'] }
     original_search_query { 'halbiut sausadge stenolepsis chese bnoculars parnsip farmacy pape' }
     corrected_search_query { 'halibut sausage stenolepis cheese binocular parsnip pharmacy paper' }
+
+    trait :no_hits do
+      original_search_query { 'flibble' }
+      corrected_search_query { 'ribble' }
+
+      adjectives { [] }
+      noun_chunks { [] }
+      nouns { [] }
+      verbs { %w[ribble] }
+    end
+
+    trait :single_hit do
+      original_search_query { 'ricotta' }
+      corrected_search_query { 'ricotta' }
+
+      adjectives { [] }
+      noun_chunks { %w[ricotta] }
+      nouns { [] }
+      verbs { [] }
+    end
+
+    trait :multiple_hits do
+      original_search_query { 'horses' }
+      corrected_search_query { 'horses' }
+
+      adjectives { [] }
+      noun_chunks { %w[horses] }
+      nouns { %w[horses] }
+      verbs { [] }
+    end
   end
 end
