@@ -60,7 +60,7 @@ Rails.application.routes.draw do
     # We should adjust this carefully since it's old behaviour
 
     scope module: :beta, constraints: ApiConstraints.new(version: 'beta') do
-      get 'search' => 'search#index', as: :beta_search
+      get 'search' => 'search#index'
     end
 
     scope module: :v2, constraints: ApiConstraints.new(version: 2) do
