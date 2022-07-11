@@ -6,6 +6,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
 
     let(:pattern) do
       {
+        id: Integer,
         goods_nomenclature_item_id: '0101210000',
         heading_id: '0101',
         chapter_id: '01',
@@ -18,16 +19,20 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         search_references: 'secret sauce',
         ancestors: [
           {
+            id: Integer,
             goods_nomenclature_item_id: '0100000000',
             productline_suffix: '80',
             goods_nomenclature_class: 'Chapter',
             description: 'Live horses, asses, mules and hinnies',
+            description_indexed: 'Live horses, asses, mules and hinnies',
           },
           {
+            id: Integer,
             goods_nomenclature_item_id: '0101000000',
             productline_suffix: '80',
             goods_nomenclature_class: 'Heading',
             description: 'Live animals',
+            description_indexed: 'Live animals',
           },
         ],
         validity_start_date: '2020-06-29T00:00:00Z',
