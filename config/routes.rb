@@ -43,8 +43,25 @@ Rails.application.routes.draw do
   end
 
   namespace :api, defaults: { format: 'json' }, path: '/' do
-    # How (or even if) API versioning will be implemented is still an open question. We can defer
-    # the choice until we need to expose the API to clients which we don't control.
+    # TODO: The api versioning is hierarchical as far as the defined order of the routes below.
+    #
+    # If your default api scope (as defined in env['DEFAULT_API_VERSION']) comes before the scopes that are defined below it, then the default scope will always match.
+    #
+    # For example (broken/incorrect scoping arrangement):
+    #   v2 scope (default)
+    #   v1 scope (unreachable)
+    #   beta scope (unreachable)
+    #
+    # For example (correct scoping arrangement): (correct)
+    #   beta scope (reachable)
+    #   v1 scope (reachable)
+    #   v2 scope (default)
+    #
+    # We should adjust this carefully since it's old behaviour
+
+    scope module: :beta, constraints: ApiConstraints.new(version: 'beta') do
+      get 'search' => 'search#index'
+    end
 
     scope module: :v2, constraints: ApiConstraints.new(version: 2) do
       resources :sections, only: %i[index show] do

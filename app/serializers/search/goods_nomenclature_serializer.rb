@@ -2,6 +2,7 @@ module Search
   class GoodsNomenclatureSerializer < ::Serializer
     def serializable_hash(_opts = {})
       {
+        id:,
         goods_nomenclature_item_id:,
         heading_id: heading_short_code,
         chapter_id: chapter_short_code,
@@ -61,10 +62,12 @@ module Search
     def ancestors
       super.map do |ancestor|
         {
+          id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
-          productline_suffix: ancestor.producline_suffix,
+          producline_suffix: ancestor.producline_suffix,
           goods_nomenclature_class: goods_nomenclature_class(ancestor),
           description: ancestor.description,
+          description_indexed: ancestor.description_indexed,
         }
       end
     end

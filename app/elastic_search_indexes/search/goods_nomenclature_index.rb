@@ -66,6 +66,7 @@ module Search
         },
         mappings: {
           properties: {
+            id: { type: 'text' },
             goods_nomenclature_class: {
               analyzer: 'english',
               type: 'text',
@@ -120,12 +121,18 @@ module Search
             ancestors: {
               type: 'nested',
               properties: {
+                id: { type: 'text' },
                 goods_nomenclature_item_id: { type: 'text' },
                 producline_suffix: { type: 'text' },
-                class: { type: 'text' },
+                goods_nomenclature_class: { type: 'text' },
                 description: { type: 'text' },
+                description_indexed: {
+                  analyzer: 'english',
+                  type: 'text',
+                },
               },
             },
+            ancestor_ids: { type: 'nested' },
             validity_start_date: {
               type: 'text',
             },

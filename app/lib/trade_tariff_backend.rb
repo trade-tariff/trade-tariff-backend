@@ -9,6 +9,11 @@ module TradeTariffBackend
       yield self
     end
 
+    # URL used to specify the location of the search query parser application
+    def search_query_parser_url
+      ENV['TARIFF_QUERY_SEARCH_PARSER_URL']
+    end
+
     # Lock key used for DB locks to keep just one instance of synchronizer
     # running in cluster environment
     def db_lock_key
