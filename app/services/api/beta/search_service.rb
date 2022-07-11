@@ -26,7 +26,7 @@ module Api
       end
 
       def search_query_parser_result
-        @search_query_parser_result ||= SearchQueryParser.new(@search_query).call
+        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query).call
       end
     end
   end

@@ -21,7 +21,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           {
             id: Integer,
             goods_nomenclature_item_id: '0100000000',
-            productline_suffix: '80',
+            producline_suffix: '80',
             goods_nomenclature_class: 'Chapter',
             description: 'Live horses, asses, mules and hinnies',
             description_indexed: 'Live horses, asses, mules and hinnies',
@@ -29,7 +29,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           {
             id: Integer,
             goods_nomenclature_item_id: '0101000000',
-            productline_suffix: '80',
+            producline_suffix: '80',
             goods_nomenclature_class: 'Heading',
             description: 'Live animals',
             description_indexed: 'Live animals',

@@ -1,4 +1,4 @@
-RSpec.describe SearchQueryParser do
+RSpec.describe Api::Beta::SearchQueryParserService do
   let(:search_query_parser_service_url) { 'http://localhost:5000/api/search' }
 
   describe '#call' do

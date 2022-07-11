@@ -14,7 +14,7 @@ RSpec.describe Beta::Search::SearchResult do
 
     it { is_expected.to be_a(described_class) }
     it { expect(result.took).to eq(3) }
-    it { expect(result.time_out).to eq(false) }
+    it { expect(result.timed_out).to eq(false) }
     it { expect(result.max_score).to eq(161.34302) }
     it { expect(result.hits.count).to eq(10) }
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }
