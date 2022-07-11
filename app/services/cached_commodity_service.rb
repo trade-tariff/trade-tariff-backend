@@ -1,56 +1,18 @@
 class CachedCommodityService
+  include DeclarableSerialization
+
   CACHE_VERSION = 2
 
-  DEFAULT_INCLUDES = [
-    'section',
-    'chapter',
-    'chapter.guides',
-    'heading',
-    'ancestors',
-    'footnotes',
-    'import_measures',
-    'import_measures.resolved_measure_components',
-    'import_measures.resolved_measure_components.measurement_unit',
-    'import_measures.duty_expression',
-    'import_measures.measure_type',
-    'import_measures.legal_acts',
-    'import_measures.suspending_regulation',
-    'import_measures.measure_conditions',
-    'import_measures.measure_condition_permutation_groups',
-    'import_measures.measure_condition_permutation_groups.permutations',
-    'import_measures.measure_conditions.measure_condition_components',
-    'import_measures.measure_components',
-    'import_measures.measure_components.measurement_unit',
-    'import_measures.national_measurement_units',
-    'import_measures.geographical_area',
-    'import_measures.geographical_area.contained_geographical_areas',
-    'import_measures.excluded_geographical_areas',
-    'import_measures.footnotes',
-    'import_measures.additional_code',
-    'import_measures.order_number',
-    'import_measures.order_number.definition',
-    'export_measures',
-    'export_measures.resolved_measure_components',
-    'export_measures.resolved_measure_components.measurement_unit',
-    'export_measures.duty_expression',
-    'export_measures.measure_type',
-    'export_measures.legal_acts',
-    'export_measures.suspending_regulation',
-    'export_measures.measure_conditions',
-    'export_measures.measure_condition_permutation_groups',
-    'export_measures.measure_condition_permutation_groups.permutations',
-    'export_measures.measure_conditions.measure_condition_components',
-    'export_measures.measure_components',
-    'export_measures.measure_components.measurement_unit',
-    'export_measures.national_measurement_units',
-    'export_measures.geographical_area',
-    'export_measures.geographical_area.contained_geographical_areas',
-    'export_measures.excluded_geographical_areas',
-    'export_measures.footnotes',
-    'export_measures.additional_code',
-    'export_measures.order_number',
-    'export_measures.order_number.definition',
-  ].freeze
+  DEFAULT_INCLUDES = (DECLARABLE_INCLUDES + %w[
+    heading
+    ancestors
+    import_measures.resolved_measure_components
+    import_measures.resolved_measure_components.measurement_unit
+    import_measures.measure_components.measurement_unit
+    export_measures.resolved_measure_components
+    export_measures.resolved_measure_components.measurement_unit
+    export_measures.measure_components.measurement_unit
+  ]).freeze
 
   MEASURES_EAGER_LOAD_GRAPH = [
     { footnotes: :footnote_descriptions },
