@@ -40,10 +40,10 @@ gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
 gem 'ox'
 gem 'plek'
+gem 'routing-filter', github: 'svenfuchs/routing-filter'
 gem 'sentry-rails'
 gem 'sentry-sidekiq'
 gem 'slack-notifier'
-gem 'routing-filter', github: 'svenfuchs/routing-filter'
 
 # API related
 gem 'ansi'
