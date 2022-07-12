@@ -47,7 +47,7 @@ class RequirementDutyExpressionFormatter
                   end
       elsif monetary_unit.present?
         output << if opts[:formatted]
-                    "#{monetary_unit}"
+                    monetary_unit.to_s
                   else
                     monetary_unit
                   end
