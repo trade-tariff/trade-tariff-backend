@@ -15,6 +15,8 @@ commands:
         type: string
       space:
         type: string
+      domain_prefix:
+        type: string
       service:
         type: string
       environment_key:
@@ -80,10 +82,12 @@ commands:
             cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
             # Start sending traffic to new version
-            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/api/beta/search"
 
             # Stop sending traffic to previous version
             cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            cf unmap-route "$CF_APP-<< parameters.environment_key >>" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/api/beta/search"
 
             # stop previous version
             cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
@@ -441,6 +445,7 @@ jobs:
           docker_image_tag: dev-$CIRCLE_SHA1
           space: "development"
           environment_key: "dev"
+          domain_prefix: "dev"
           service: << parameters.service >>
       - sentry-release
 
@@ -470,6 +475,7 @@ jobs:
           docker_image_tag: $CIRCLE_SHA1
           space: "staging"
           environment_key: "staging"
+          domain_prefix: "staging"
           service: << parameters.service >>
       - sentry-release
 
@@ -496,6 +502,7 @@ jobs:
           docker_image_tag: $CIRCLE_TAG
           space: "staging"
           environment_key: "staging"
+          domain_prefix: "staging"
           service: << parameters.service >>
 
   deploy_production:
@@ -521,6 +528,7 @@ jobs:
           docker_image_tag: $CIRCLE_TAG
           space: "production"
           environment_key: "production"
+          domain_prefix: "www"
           service: << parameters.service >>
       - sentry-release
 

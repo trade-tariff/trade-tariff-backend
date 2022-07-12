@@ -1,10 +1,7 @@
 RSpec.describe Api::Beta::SearchController, type: :request do
   describe 'GET #index' do
     subject(:do_request) do
-      # TODO: We're going to make the version just `beta` in a separate PR
-      headers = { 'Accept' => 'application/vnd.uktt.vbeta' }
-
-      get '/search', params: { q: 'ricotta' }, headers: headers
+      get '/api/beta/search?q=ricotta'
 
       response
     end
@@ -22,7 +19,6 @@ RSpec.describe Api::Beta::SearchController, type: :request do
 
     let(:expected_serialized_result) do
       fixture_file = file_fixture('beta/search/goods_nomenclatures/serialized_result.json')
-
       JSON.parse(fixture_file.read)
     end
 

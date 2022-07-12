@@ -1,6 +1,12 @@
 Rails.application.routes.draw do
   get 'healthcheck' => 'healthcheck#index'
 
+  scope :api, module: :api do
+    scope :beta, module: :beta do
+      resources :search, only: %i[index]
+    end
+  end
+
   namespace :api, defaults: { format: 'json' }, path: '/admin' do
     scope module: :admin do
       resources :sections, only: %i[index show] do
@@ -58,10 +64,6 @@ Rails.application.routes.draw do
     #   v2 scope (default)
     #
     # We should adjust this carefully since it's old behaviour
-
-    scope module: :beta, constraints: ApiConstraints.new(version: 'beta') do
-      get 'search' => 'search#index'
-    end
 
     scope module: :v2, constraints: ApiConstraints.new(version: 2) do
       resources :sections, only: %i[index show] do
