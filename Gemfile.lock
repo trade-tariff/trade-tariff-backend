@@ -1,3 +1,11 @@
+GIT
+  remote: https://github.com/svenfuchs/routing-filter.git
+  revision: e7418d1306b2bb88220b63c790fd0dab321437c2
+  specs:
+    routing-filter (0.7.0)
+      actionpack (>= 6.1)
+      activesupport (>= 6.1)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -468,6 +476,7 @@ DEPENDENCIES
   redis-elasticache
   redlock
   responders
+  routing-filter!
   rspec-json_expectations
   rspec-rails
   rspec_junit_formatter
