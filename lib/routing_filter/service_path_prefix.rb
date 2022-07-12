@@ -7,5 +7,9 @@ module RoutingFilter
 
       yield
     end
+
+    def around_generate(_params)
+      yield
+    end
   end
 end
