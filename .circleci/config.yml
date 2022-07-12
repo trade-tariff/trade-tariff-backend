@@ -48,6 +48,7 @@ commands:
             cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
             cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
             cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
 
       - when:
           condition:
