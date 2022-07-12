@@ -1,7 +1,11 @@
+require 'routing_filter/service_path_prefix'
+
 Rails.application.routes.draw do
   get 'healthcheck' => 'healthcheck#index'
 
   scope :api, module: :api do
+    filter :service_path_prefix
+
     scope :beta, module: :beta do
       resources :search, only: %i[index]
     end

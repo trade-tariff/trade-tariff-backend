@@ -83,7 +83,7 @@ commands:
 
             # Start sending traffic to new version
             cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
-            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/api/beta/search"
+            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/search"
 
             # Stop sending traffic to previous version
             cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"

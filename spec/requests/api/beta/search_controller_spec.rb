@@ -1,11 +1,5 @@
 RSpec.describe Api::Beta::SearchController, type: :request do
   describe 'GET #index' do
-    subject(:do_request) do
-      get '/api/beta/search?q=ricotta'
-
-      response
-    end
-
     before do
       allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
       allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(search_query_parser_service)
@@ -25,7 +19,19 @@ RSpec.describe Api::Beta::SearchController, type: :request do
     let(:search_query_parser_service) { instance_double('Api::Beta::SearchQueryParserService', call: search_query_parser_result) }
     let(:search_query_parser_result) { build(:search_query_parser_result, :single_hit) }
 
-    it { is_expected.to have_http_status(:ok) }
-    it { expect(do_request.body).to match_json_expression(expected_serialized_result) }
+    shared_examples_for 'a working search request' do |prefix|
+      subject(:do_request) do
+        get "#{prefix}/api/beta/search?q=ricotta"
+
+        response
+      end
+
+      it { is_expected.to have_http_status(:ok) }
+      it { expect(do_request.body).to match_json_expression(expected_serialized_result) }
+    end
+
+    it_behaves_like 'a working search request', '/xi'
+    it_behaves_like 'a working search request', '/uk'
+    it_behaves_like 'a working search request', ''
   end
 end

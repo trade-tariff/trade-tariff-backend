@@ -43,6 +43,7 @@ gem 'plek'
 gem 'sentry-rails'
 gem 'sentry-sidekiq'
 gem 'slack-notifier'
+gem 'routing-filter', github: 'svenfuchs/routing-filter'
 
 # API related
 gem 'ansi'
