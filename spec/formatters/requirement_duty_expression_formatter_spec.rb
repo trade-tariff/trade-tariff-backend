@@ -66,6 +66,38 @@ RSpec.describe RequirementDutyExpressionFormatter do
       end
     end
 
+    context 'monetary unit is present' do
+      subject do
+        described_class.format(
+          duty_amount: 3.50,
+          monetary_unit: 'EUR',
+          formatted:,
+        )
+      end
+
+      let(:formatted) { false }
+
+      it 'does not check the currency' do
+        allow(TradeTariffBackend).to receive(:currency)
+
+        subject
+
+        expect(TradeTariffBackend).not_to have_received(:currency)
+      end
+
+      it 'properly formats result' do
+        expect(subject).to eq("3.50 EUR")
+      end
+
+      context 'when formatted in html' do
+        let(:formatted) { true }
+
+        it 'properly formats result' do
+          expect(subject).to eq("<span>3.50</span> EUR")
+        end
+      end
+    end
+
     context 'measurement unit is present' do
       subject do
         described_class.format(measurement_unit:)

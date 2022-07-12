@@ -45,6 +45,12 @@ class RequirementDutyExpressionFormatter
                   else
                     measurement_unit
                   end
+      elsif monetary_unit.present?
+        output << if opts[:formatted]
+                    "#{monetary_unit}"
+                  else
+                    monetary_unit
+                  end
       end
       output.join(' ').html_safe
     end
