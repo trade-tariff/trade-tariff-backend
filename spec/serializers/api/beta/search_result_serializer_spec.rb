@@ -2,7 +2,7 @@ RSpec.describe Api::Beta::SearchResultSerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
-    let(:serializable) { build(:search_result, :multiple_hits) }
+    let(:serializable) { build(:search_result, :multiple_hits, :generate_statistics) }
 
     let(:expected) do
       {
@@ -29,6 +29,16 @@ RSpec.describe Api::Beta::SearchResultSerializer do
                 { id: '27624', type: :heading },
                 { id: '93994', type: :commodity },
                 { id: '95674', type: :commodity },
+              ],
+            },
+            heading_statistics: { data: [
+              { id: '0101', type: :heading_statistic },
+              { id: '0302', type: :heading_statistic },
+            ] },
+            chapter_statistics: {
+              data: [
+                { id: '01', type: :chapter_statistic },
+                { id: '03', type: :chapter_statistic },
               ],
             },
           },
