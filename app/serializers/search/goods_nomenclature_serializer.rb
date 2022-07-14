@@ -1,5 +1,7 @@
 module Search
   class GoodsNomenclatureSerializer < ::Serializer
+    MAX_ANCESTORS = 13
+
     def serializable_hash(_opts = {})
       {
         id:,
@@ -91,56 +93,10 @@ module Search
       super&.iso8601
     end
 
-    def ancestor_1_description_indexed
-      ancestors[0].try(:[], :description_indexed)
-    end
-
-    def ancestor_2_description_indexed
-      ancestors[1].try(:[], :description_indexed)
-    end
-
-    def ancestor_3_description_indexed
-      ancestors[2].try(:[], :description_indexed)
-    end
-
-    def ancestor_4_description_indexed
-      ancestors[3].try(:[], :description_indexed)
-    end
-
-    def ancestor_5_description_indexed
-      ancestors[4].try(:[], :description_indexed)
-    end
-
-    def ancestor_6_description_indexed
-      ancestors[5].try(:[], :description_indexed)
-    end
-
-    def ancestor_7_description_indexed
-      ancestors[6].try(:[], :description_indexed)
-    end
-
-    def ancestor_8_description_indexed
-      ancestors[7].try(:[], :description_indexed)
-    end
-
-    def ancestor_9_description_indexed
-      ancestors[8].try(:[], :description_indexed)
-    end
-
-    def ancestor_10_description_indexed
-      ancestors[9].try(:[], :description_indexed)
-    end
-
-    def ancestor_11_description_indexed
-      ancestors[10].try(:[], :description_indexed)
-    end
-
-    def ancestor_12_description_indexed
-      ancestors[11].try(:[], :description_indexed)
-    end
-
-    def ancestor_13_description_indexed
-      ancestors[12].try(:[], :description_indexed)
+    1.upto(MAX_ANCESTORS) do |ancestor_number|
+      define_method("ancestor_#{ancestor_number}_description_indexed") do
+        ancestors[ancestor_number - 1].try(:[], :description_indexed)
+      end
     end
   end
 end
