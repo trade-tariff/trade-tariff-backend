@@ -67,77 +67,31 @@ module Search
         mappings: {
           properties: {
             id: { type: 'text' },
-            goods_nomenclature_class: {
-              analyzer: 'english',
-              type: 'text',
-              fields: {
-                raw: {
-                  type: 'keyword',
-                },
-              },
-            },
-            goods_nomenclature_item_id: {
-              type: 'text',
-              fields: {
-                raw: {
-                  type: 'keyword',
-                },
-              },
-            },
-            producline_suffix: {
-              type: 'text',
-              fields: {
-                raw: {
-                  type: 'keyword',
-                },
-              },
-            },
-            description_indexed: {
-              analyzer: 'english',
-              type: 'text',
-            },
-            chapter_description: {
-              analyzer: 'english',
-              type: 'text',
-            },
-            heading_description: {
-              type: 'text',
-              analyzer: 'english',
-            },
-            search_references: {
-              analyzer: 'english',
-              type: 'text',
-            },
-            ancestors: {
-              type: 'nested',
-              properties: {
-                id: { type: 'text' },
-                goods_nomenclature_item_id: { type: 'text' },
-                producline_suffix: { type: 'text' },
-                goods_nomenclature_class: { type: 'text' },
-                description: { type: 'text' },
-                description_indexed: {
-                  analyzer: 'english',
-                  type: 'text',
-                },
-              },
-            },
-            ancestor_ids: { type: 'nested' },
-            validity_start_date: {
-              type: 'text',
-            },
-            validity_end_date: {
-              type: 'text',
-            },
-            heading_id: {
-              type: 'text',
-              analyzer: 'english',
-            },
-            chapter_id: {
-              type: 'text',
-              analyzer: 'english',
-            },
+            goods_nomenclature_class: { type: 'keyword' },
+            goods_nomenclature_item_id: { type: 'text' },
+            producline_suffix: { type: 'keyword' },
+            search_references: { analyzer: 'english', type: 'text' },
+            description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_1_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_2_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_3_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_4_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_5_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_6_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_7_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_8_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_9_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_10_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_11_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_12_description_indexed: { analyzer: 'english', type: 'text' },
+            ancestor_13_description_indexed: { analyzer: 'english', type: 'text' },
             description: { enabled: false },
+            ancestors: { enabled: false },
+            ancestor_ids: { enabled: false },
+            validity_start_date: { enabled: false },
+            validity_end_date: { enabled: false },
+            heading_id: { enabled: false },
+            chapter_id: { enabled: false },
           },
         },
       }

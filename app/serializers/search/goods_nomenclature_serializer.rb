@@ -10,12 +10,23 @@ module Search
         goods_nomenclature_class:,
         description:,
         description_indexed:,
-        chapter_description:,
-        heading_description:,
         search_references:,
         ancestors:,
         validity_start_date:,
         validity_end_date:,
+        ancestor_1_description_indexed:, # Chapter
+        ancestor_2_description_indexed:, # Heading
+        ancestor_3_description_indexed:,
+        ancestor_4_description_indexed:,
+        ancestor_5_description_indexed:,
+        ancestor_6_description_indexed:,
+        ancestor_7_description_indexed:,
+        ancestor_8_description_indexed:,
+        ancestor_9_description_indexed:,
+        ancestor_10_description_indexed:,
+        ancestor_11_description_indexed:,
+        ancestor_12_description_indexed:,
+        ancestor_13_description_indexed:,
       }
     end
 
@@ -60,7 +71,7 @@ module Search
     end
 
     def ancestors
-      super.map do |ancestor|
+      @ancestors ||= super.map do |ancestor|
         {
           id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
@@ -78,6 +89,58 @@ module Search
 
     def validity_end_date
       super&.iso8601
+    end
+
+    def ancestor_1_description_indexed
+      ancestors[0].try(:[], :description_indexed)
+    end
+
+    def ancestor_2_description_indexed
+      ancestors[1].try(:[], :description_indexed)
+    end
+
+    def ancestor_3_description_indexed
+      ancestors[2].try(:[], :description_indexed)
+    end
+
+    def ancestor_4_description_indexed
+      ancestors[3].try(:[], :description_indexed)
+    end
+
+    def ancestor_5_description_indexed
+      ancestors[4].try(:[], :description_indexed)
+    end
+
+    def ancestor_6_description_indexed
+      ancestors[5].try(:[], :description_indexed)
+    end
+
+    def ancestor_7_description_indexed
+      ancestors[6].try(:[], :description_indexed)
+    end
+
+    def ancestor_8_description_indexed
+      ancestors[7].try(:[], :description_indexed)
+    end
+
+    def ancestor_9_description_indexed
+      ancestors[8].try(:[], :description_indexed)
+    end
+
+    def ancestor_10_description_indexed
+      ancestors[9].try(:[], :description_indexed)
+    end
+
+    def ancestor_11_description_indexed
+      ancestors[10].try(:[], :description_indexed)
+    end
+
+    def ancestor_12_description_indexed
+      ancestors[11].try(:[], :description_indexed)
+    end
+
+    def ancestor_13_description_indexed
+      ancestors[12].try(:[], :description_indexed)
     end
   end
 end
