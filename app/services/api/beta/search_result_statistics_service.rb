@@ -3,8 +3,8 @@ module Api
     class SearchResultStatisticsService
       def initialize(goods_nomenclature_hits)
         @goods_nomenclature_hits = goods_nomenclature_hits
-        @chapter_statistics = Hashie::TariffMash.new
-        @heading_statistics = Hashie::TariffMash.new
+        @chapter_statistics = {}
+        @heading_statistics = {}
       end
 
       def call
@@ -21,43 +21,28 @@ module Api
       attr_reader :goods_nomenclature_hits
 
       def generate_chapter_statistics
-        goods_nomenclature_hits.each do |goods_nomenclature_hit|
-          @chapter_statistics[goods_nomenclature_hit.chapter_id] ||= Hashie::TariffMash.new
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['id'] ||= goods_nomenclature_hit.chapter_id
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['description'] ||= goods_nomenclature_hit.chapter_description
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['score'] ||= 0
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['cnt'] ||= 0
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['cnt'] += 1
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['score'] += goods_nomenclature_hit.score
-          @chapter_statistics[goods_nomenclature_hit.chapter_id]['avg'] ||= mean_average_chapter_score_for(goods_nomenclature_hit.chapter_id)
+        goods_nomenclature_hits.each do |hit|
+          chapter_statistic = @chapter_statistics[hit.chapter_id] ||= {}
+
+          @chapter_statistics[hit.chapter_id] = accumulate_chapter_statistic_for(hit, chapter_statistic)
         end
 
-        @chapter_statistics
+        @chapter_statistics = Hashie::TariffMash.new(@chapter_statistics)
       end
 
       def generate_heading_statistics
-        accumulations = 0
-        goods_nomenclature_hits_with_headings.each do |goods_nomenclature_hit|
-          accumulations += 1
-          @heading_statistics[goods_nomenclature_hit.heading_id] ||= Hashie::TariffMash.new
-          @heading_statistics[goods_nomenclature_hit.heading_id]['id'] ||= goods_nomenclature_hit.heading_id
-          @heading_statistics[goods_nomenclature_hit.heading_id]['description'] ||= goods_nomenclature_hit.heading_description
-          @heading_statistics[goods_nomenclature_hit.heading_id]['chapter_id'] ||= goods_nomenclature_hit.chapter_id
-          @heading_statistics[goods_nomenclature_hit.heading_id]['chapter_description'] ||= goods_nomenclature_hit.chapter_description
-          @heading_statistics[goods_nomenclature_hit.heading_id]['score'] ||= 0
-          @heading_statistics[goods_nomenclature_hit.heading_id]['score'] += goods_nomenclature_hit.score
-          @heading_statistics[goods_nomenclature_hit.heading_id]['cnt'] ||= 0
-          @heading_statistics[goods_nomenclature_hit.heading_id]['cnt'] += 1
-          @heading_statistics[goods_nomenclature_hit.heading_id]['avg'] ||= mean_average_heading_score_for(goods_nomenclature_hit.heading_id)
-          @heading_statistics[goods_nomenclature_hit.heading_id]['chapter_score'] ||= @chapter_statistics[goods_nomenclature_hit.chapter_id]['score']
+        goods_nomenclature_hits_with_headings.each do |hit|
+          heading_statistic = @heading_statistics[hit.heading_id] ||= {}
+
+          @heading_statistics[hit.heading_id] = accumulate_heading_statistic_for(hit, heading_statistic)
         end
 
-        @heading_statistics
+        @heading_statistics = Hashie::TariffMash.new(@heading_statistics)
       end
 
       def goods_nomenclature_hits_with_headings
-        goods_nomenclature_hits.reject do |goods_nomenclature_hit|
-          goods_nomenclature_hit.goods_nomenclature_class.chapter?
+        goods_nomenclature_hits.reject do |hit|
+          hit.goods_nomenclature_class.chapter?
         end
       end
 
@@ -75,16 +60,39 @@ module Api
 
       def mean_average_scores
         scores = []
-        count = 0
 
         goods_nomenclature_hits_with_headings.each do |goods_nomenclature_hit|
           if yield goods_nomenclature_hit
             scores << goods_nomenclature_hit.score
-            count += 1
           end
         end
 
-        scores.inject(0, :+) / count
+        scores.inject(0, :+) / scores.length
+      end
+
+      def accumulate_chapter_statistic_for(hit, chapter_statistic)
+        chapter_statistic['id'] ||= hit.chapter_id
+        chapter_statistic['description'] ||= hit.chapter_description
+        chapter_statistic['score'] ||= 0
+        chapter_statistic['cnt'] ||= 0
+        chapter_statistic['cnt'] += 1
+        chapter_statistic['score'] += hit.score
+        chapter_statistic['avg'] ||= mean_average_chapter_score_for(hit.chapter_id)
+        chapter_statistic
+      end
+
+      def accumulate_heading_statistic_for(hit, heading_statistic)
+        heading_statistic['id'] ||= hit.heading_id
+        heading_statistic['description'] ||= hit.heading_description
+        heading_statistic['chapter_id'] ||= hit.chapter_id
+        heading_statistic['chapter_description'] ||= hit.chapter_description
+        heading_statistic['score'] ||= 0
+        heading_statistic['score'] += hit.score
+        heading_statistic['cnt'] ||= 0
+        heading_statistic['cnt'] += 1
+        heading_statistic['avg'] ||= mean_average_heading_score_for(hit.heading_id)
+        heading_statistic['chapter_score'] ||= @chapter_statistics[hit.chapter_id]['score']
+        heading_statistic
       end
     end
   end
