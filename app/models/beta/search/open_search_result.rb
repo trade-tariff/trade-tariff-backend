@@ -1,7 +1,9 @@
 module Beta
   module Search
     class OpenSearchResult
-      delegate :id, to: :search_query_parser_result, prefix: true
+      delegate :id, to: :chapter_statistics, prefix: true, allow_nil: true
+      delegate :id, to: :heading_statistics, prefix: true, allow_nil: true
+      delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
 
       attr_accessor :took,
                     :timed_out,
@@ -26,7 +28,7 @@ module Beta
           hit = Hashie::TariffMash.new
 
           hit.score = hit_result._score
-          hit.goods_nomenclature_class = hit_result._source.goods_nomenclature_class
+          hit.goods_nomenclature_class = ActiveSupport::StringInquirer.new(hit_result._source.goods_nomenclature_class)
           hit.id = hit_result._source.id
           hit.goods_nomenclature_item_id = hit_result._source.goods_nomenclature_item_id
           hit.producline_suffix = hit_result._source.producline_suffix
@@ -58,6 +60,26 @@ module Beta
 
       def total_results
         hits.count
+      end
+
+      def chapter_statistics
+        @chapter_statistics&.values || []
+      end
+
+      def chapter_statistic_ids
+        chapter_statistics.pluck(:id)
+      end
+
+      def heading_statistics
+        @heading_statistics&.values || []
+      end
+
+      def heading_statistic_ids
+        heading_statistics.pluck(:id)
+      end
+
+      def generate_statistics
+        @chapter_statistics, @heading_statistics = Api::Beta::SearchResultStatisticsService.new(hits).call
       end
     end
   end

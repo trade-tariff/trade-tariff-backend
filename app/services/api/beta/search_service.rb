@@ -1,7 +1,12 @@
 module Api
   module Beta
     class SearchService
-      DEFAULT_INCLUDES = ['hits.ancestors', :search_query_parser_result].freeze
+      DEFAULT_INCLUDES = [
+        'hits.ancestors',
+        :search_query_parser_result,
+        :heading_statistics,
+        :chapter_statistics,
+      ].freeze
       DEFAULT_SEARCH_INDEX = 'tariff-goods_nomenclatures'.freeze
 
       def initialize(search_query)
@@ -13,6 +18,7 @@ module Api
           .search(index: DEFAULT_SEARCH_INDEX, body: generated_search_query)
 
         search_result = ::Beta::Search::OpenSearchResult.build(result, search_query_parser_result)
+        search_result.generate_statistics
 
         Api::Beta::SearchResultSerializer.new(search_result, include: DEFAULT_INCLUDES).serializable_hash
       end

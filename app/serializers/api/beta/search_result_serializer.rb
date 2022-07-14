@@ -19,6 +19,9 @@ module Api
           Api::Beta::GoodsNomenclatureSerializer
         end
       }
+
+      has_many :heading_statistics, serializer: HeadingStatisticsSerializer
+      has_many :chapter_statistics, serializer: ChapterStatisticsSerializer
     end
   end
 end

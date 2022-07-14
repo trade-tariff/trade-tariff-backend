@@ -43,4 +43,104 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
     it { is_expected.to eq(10) }
   end
+
+  describe '#chapter_statistics' do
+    context 'when statistics have been generated' do
+      subject(:chapter_statistics) { build(:search_result, :generate_statistics).chapter_statistics }
+
+      let(:expected_chapter_statistics) do
+        [
+          {
+            'id' => '01',
+            'description' => 'LIVE ANIMALS',
+            'score' => 1133.32071,
+            'cnt' => 8,
+            'avg' => 141.66508875,
+          },
+          {
+            'id' => '03',
+            'description' => 'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES',
+            'score' => 138.529,
+            'cnt' => 2,
+            'avg' => 69.2645,
+          },
+        ]
+      end
+
+      it { is_expected.to eq(expected_chapter_statistics) }
+    end
+
+    context 'when statistics have not been generated' do
+      subject(:chapter_statistics) { build(:search_result, :no_generate_statistics).chapter_statistics }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '#heading_statistics' do
+    context 'when statistics have been generated' do
+      subject(:heading_statistics) { build(:search_result, :generate_statistics).heading_statistics }
+
+      let(:expected_heading_statistics) do
+        [
+          {
+            'id' => '0101',
+            'description' => 'Live horses, asses, mules and hinnies',
+            'chapter_id' => '01',
+            'chapter_description' => 'LIVE ANIMALS',
+            'score' => 1133.32071,
+            'cnt' => 8,
+            'avg' => 141.66508875,
+            'chapter_score' => 1133.32071,
+          },
+          {
+            'id' => '0302',
+            'description' => 'Fish, fresh or chilled, excluding fish fillets and other fish meat of heading 0304',
+            'chapter_id' => '03',
+            'chapter_description' => 'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES',
+            'score' => 138.529,
+            'cnt' => 2,
+            'avg' => 69.2645,
+            'chapter_score' => 138.529,
+          },
+        ]
+      end
+
+      it { is_expected.to eq(expected_heading_statistics) }
+    end
+
+    context 'when statistics have not been generated' do
+      subject(:heading_statistics) { build(:search_result, :no_generate_statistics).heading_statistics }
+
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '#chapter_statistic_ids' do
+    context 'when there are chapter statistics' do
+      subject(:chapter_statistics) { build(:search_result, :generate_statistics).chapter_statistic_ids }
+
+      it { is_expected.to eq(%w[01 03]) }
+    end
+
+    context 'when there are no chapter statistics' do
+      subject(:chapter_statistics) { build(:search_result, :no_generate_statistics).chapter_statistic_ids }
+
+      it { is_expected.to eq(%w[]) }
+    end
+  end
+
+  describe '#heading_statistic_ids' do
+    context 'when there are heading statistics' do
+      subject(:heading_statistics) { build(:search_result, :generate_statistics).heading_statistic_ids }
+
+      it { is_expected.to eq(%w[0101 0302]) }
+    end
+
+    context 'when there are no heading statistics' do
+      subject(:heading_statistics) { build(:search_result, :no_generate_statistics).heading_statistic_ids }
+
+      it { is_expected.to eq(%w[]) }
+    end
+  end
 end

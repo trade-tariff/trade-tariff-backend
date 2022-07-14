@@ -195,7 +195,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def heading_short_code
-    goods_nomenclature_item_id.first(4)
+    goods_nomenclature_item_id.first(4) unless chapter?
   end
 
   def chapter_short_code

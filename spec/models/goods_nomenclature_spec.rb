@@ -366,9 +366,17 @@ RSpec.describe GoodsNomenclature do
   end
 
   describe '#heading_short_code' do
-    subject(:heading_short_code) { build(:goods_nomenclature, goods_nomenclature_item_id: '0101210000').heading_short_code }
+    context 'when the goods nomenclature is `not` a chapter' do
+      subject(:heading_short_code) { build(:goods_nomenclature, goods_nomenclature_item_id: '0101210000').heading_short_code }
 
-    it { is_expected.to eq('0101') }
+      it { is_expected.to eq('0101') }
+    end
+
+    context 'when the goods nomenclature is a chapter' do
+      subject(:heading_short_code) { build(:goods_nomenclature, goods_nomenclature_item_id: '0100000000').heading_short_code }
+
+      it { is_expected.to be_nil }
+    end
   end
 
   describe '#to_s' do
