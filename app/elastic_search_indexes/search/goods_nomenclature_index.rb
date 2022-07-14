@@ -92,16 +92,6 @@ module Search
                 },
               },
             },
-            description: {
-              analyzer: 'english',
-              type: 'text',
-              fields: {
-                exact: {
-                  type: 'text',
-                  analyzer: 'english_exact',
-                },
-              },
-            },
             description_indexed: {
               analyzer: 'english',
               type: 'text',
@@ -147,6 +137,7 @@ module Search
               type: 'text',
               analyzer: 'english',
             },
+            description: { enabled: false },
           },
         },
       }
