@@ -3,6 +3,25 @@ module Beta
     class GoodsNomenclatureQuery
       attr_writer :nouns, :verbs, :adjectives, :noun_chunks
 
+      MULTI_MATCH_FIELDS = [
+        'search_references^12',
+        'ancestor_1_description_indexed^10', # chapter
+        'ancestor_2_description_indexed^8', # heading
+        'description_indexed^6',
+        'ancestor_3_description_indexed^4',
+        'ancestor_4_description_indexed^4',
+        'ancestor_5_description_indexed^4',
+        'ancestor_6_description_indexed^4',
+        'ancestor_7_description_indexed^4',
+        'ancestor_8_description_indexed^4',
+        'ancestor_9_description_indexed^4',
+        'ancestor_10_description_indexed^4',
+        'ancestor_11_description_indexed^4',
+        'ancestor_12_description_indexed^4',
+        'ancestor_13_description_indexed^4',
+        'goods_nomenclature_item_id',
+      ].freeze
+
       def self.build(search_query_parser_result)
         query = new
 
@@ -51,30 +70,9 @@ module Beta
               prefix_length: 2,
               tie_breaker: 0.3,
               type: 'best_fields',
-              fields: [
-                'search_references^12',
-                'chapter_description^10',
-                'heading_description^8',
-                'description.exact^6',
-                'description_indexed^6',
-                'goods_nomenclature_item_id',
-              ],
+              fields: MULTI_MATCH_FIELDS,
             },
           },
-          # TODO: Search for a match in the nested ancestors if possible
-          # {
-          #   nested: {
-          #     path: 'ancestors',
-          #     query: {
-          #       multi_match: {
-          #         query: nouns,
-          #         fields: [
-          #           'description_indexed^6',
-          #         ],
-          #       },
-          #     },
-          #   },
-          # },
         ]
       end
 
@@ -87,14 +85,7 @@ module Beta
               prefix_length: 2,
               tie_breaker: 0.3,
               type: 'best_fields',
-              fields: [
-                'search_references^12',
-                'chapter_description^10',
-                'heading_description^8',
-                'description.exact^6',
-                'description_indexed^6',
-                'goods_nomenclature_item_id',
-              ],
+              fields: MULTI_MATCH_FIELDS,
             },
           },
         ]
@@ -109,14 +100,7 @@ module Beta
               prefix_length: 2,
               tie_breaker: 0.3,
               type: 'best_fields',
-              fields: [
-                'search_references^12',
-                'chapter_description^10',
-                'heading_description^8',
-                'description.exact^6',
-                'description_indexed^6',
-                'goods_nomenclature_item_id',
-              ],
+              fields: MULTI_MATCH_FIELDS,
             },
           },
         ]
