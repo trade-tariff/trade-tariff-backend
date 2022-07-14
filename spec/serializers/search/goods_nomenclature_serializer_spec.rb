@@ -6,20 +6,18 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
 
     let(:pattern) do
       {
-        id: Integer,
+        id: 3,
         goods_nomenclature_item_id: '0101210000',
         heading_id: '0101',
         chapter_id: '01',
         producline_suffix: '80',
         goods_nomenclature_class: 'Commodity',
-        chapter_description: 'Live horses, asses, mules and hinnies',
-        heading_description: 'Live animals',
         description: 'Horses, other than lemmings',
         description_indexed: 'Horses',
         search_references: 'secret sauce',
         ancestors: [
           {
-            id: Integer,
+            id: 1,
             goods_nomenclature_item_id: '0100000000',
             producline_suffix: '80',
             goods_nomenclature_class: 'Chapter',
@@ -27,7 +25,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
             description_indexed: 'Live horses, asses, mules and hinnies',
           },
           {
-            id: Integer,
+            id: 2,
             goods_nomenclature_item_id: '0101000000',
             producline_suffix: '80',
             goods_nomenclature_class: 'Heading',
@@ -37,6 +35,19 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         ],
         validity_start_date: '2020-06-29T00:00:00Z',
         validity_end_date: nil,
+        ancestor_1_description_indexed: 'Live horses, asses, mules and hinnies',
+        ancestor_2_description_indexed: 'Live animals',
+        ancestor_3_description_indexed: nil,
+        ancestor_4_description_indexed: nil,
+        ancestor_5_description_indexed: nil,
+        ancestor_6_description_indexed: nil,
+        ancestor_7_description_indexed: nil,
+        ancestor_8_description_indexed: nil,
+        ancestor_9_description_indexed: nil,
+        ancestor_10_description_indexed: nil,
+        ancestor_11_description_indexed: nil,
+        ancestor_12_description_indexed: nil,
+        ancestor_13_description_indexed: nil,
       }
     end
 
