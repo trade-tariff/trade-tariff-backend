@@ -208,6 +208,7 @@ GEM
     jwt (2.3.0)
     launchy (2.5.0)
       addressable (~> 2.7)
+    lemmatizer (0.2.2)
     letter_opener (1.8.1)
       launchy (>= 2.2, < 3)
     lograge (0.12.0)
@@ -458,6 +459,7 @@ DEPENDENCIES
   holidays
   json_expressions
   jsonapi-serializer
+  lemmatizer
   letter_opener
   lograge
   logstash-event
