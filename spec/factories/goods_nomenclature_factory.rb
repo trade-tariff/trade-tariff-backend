@@ -217,6 +217,18 @@ FactoryBot.define do
       end
     end
 
+    trait :stop_words_description do
+      description { 'Live animals with some stop words' }
+    end
+
+    trait :negated_description do
+      description { 'Live animals, other than cheese' }
+    end
+
+    trait :special_chars_description do
+      description { "Live#~#? (animals,) $* £' '" }
+    end
+
     trait :xml do
       validity_end_date           { 1.year.ago.beginning_of_day }
       statistical_indicator       { 1 }

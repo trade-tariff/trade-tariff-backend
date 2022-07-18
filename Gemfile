@@ -34,6 +34,7 @@ gem 'bootsnap', require: false
 gem 'gds-sso'
 gem 'hashie'
 gem 'holidays'
+gem 'lemmatizer'
 gem 'lograge'
 gem 'logstash-event'
 gem 'nokogiri'
