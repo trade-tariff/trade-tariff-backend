@@ -14,6 +14,16 @@ module Api
         TimeMachine.now(&method(:enumerate_tokens))
       end
 
+      def self.lemmatizer
+        @lemmatizer ||= Lemmatizer.new
+      end
+
+      def self.stop_words
+        @stop_words ||= YAML.load_file(STOP_WORDS_FILE)[:stop_words]
+      end
+
+      private
+
       def enumerate_tokens
         all_tokens = @goods_nomenclatures.each_with_object([]) do |ancestor, tokens|
           ancestor.description_indexed.split(WHITESPACE).each do |candidate_token|
@@ -31,14 +41,6 @@ module Api
         end
 
         all_tokens.reverse
-      end
-
-      def self.lemmatizer
-        @lemmatizer ||= Lemmatizer.new
-      end
-
-      def self.stop_words
-        @stop_words ||= YAML.load_file(STOP_WORDS_FILE)[:stop_words]
       end
     end
   end
