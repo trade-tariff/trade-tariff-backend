@@ -1,0 +1,36 @@
+[
+    {
+        "fresh": [
+            "fresh"
+        ]
+    },
+    {
+        "chilled": [
+            "chilled"
+        ]
+    },
+    {
+        "frozen": [
+            "frozen"
+        ]
+    },
+    {
+        "prepared or preserved": [
+            "prepared",
+            "preserved"
+        ]
+    },
+    {
+        "dried": [
+            "dried"
+        ]
+    },
+    {
+        "jam, purée, paste or jelly": [
+            "jam",
+            "purée",
+            "paste",
+            "jelly"
+        ]
+    }
+]

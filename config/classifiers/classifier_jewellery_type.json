@@ -1,0 +1,30 @@
+[
+    {
+        "necklace": [
+            "necklace",
+            "choker"
+        ]
+    },
+    {
+        "ring": [
+            "ring"
+        ]
+    },
+    {
+        "bracelet": [
+            "bracelet",
+            "bangle"
+        ]
+    },
+    {
+        "anklet": [
+            "anklet",
+            "ankle bracelet"
+        ]
+    },
+    {
+        "earring": [
+            "earring"
+        ]
+    }
+]

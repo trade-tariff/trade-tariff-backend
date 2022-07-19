@@ -5,6 +5,8 @@ module TradeTariffBackend
       'xi' => 'EUR',
     }.freeze
 
+    STOP_WORDS_FILE = Rails.root.join('db/beta/search/stop_words.yml')
+
     def configure
       yield self
     end
@@ -225,6 +227,18 @@ module TradeTariffBackend
 
     def chief_cds_guidance
       @chief_cds_guidance ||= ChiefCdsGuidance.load_default
+    end
+
+    def search_facet_classifier_configuration
+      @search_facet_classifier_configuration ||= Api::Beta::ClassificationConverterService.new.call
+    end
+
+    def lemmatizer
+      @lemmatizer ||= Lemmatizer.new
+    end
+
+    def stop_words
+      @stop_words ||= YAML.load_file(STOP_WORDS_FILE)[:stop_words]
     end
 
     def handle_cascade_soft_deletes?

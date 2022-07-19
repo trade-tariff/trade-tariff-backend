@@ -1,0 +1,38 @@
+[
+    {
+        "Of a cylinder capacity not exceeding 1 000 cm3": [
+            "Of a cylinder capacity not exceeding 1 000 cm3"
+        ]
+    },
+    {
+        "Of a cylinder capacity exceeding 1 000 cm3 but not exceeding 1 500 cm3": [
+            "Of a cylinder capacity exceeding 1 000 cm3 but not exceeding 1 500 cm3"
+        ]
+    },
+    {
+        "Of a cylinder capacity exceeding 1 500 cm3 but not exceeding 3 000 cm3": [
+            "Of a cylinder capacity exceeding 1 500 cm3 but not exceeding 3 000 cm3"
+        ]
+    },
+    {
+        "Of a cylinder capacity exceeding 3 000 cm3": [
+            "Of a cylinder capacity exceeding 3 000 cm3"
+        ]
+    },
+    {
+        "Of a cylinder capacity not exceeding 1 500 cm3": [
+            "Of a cylinder capacity not exceeding 1 500 cm3"
+        ]
+    },
+    {
+        "Of a cylinder capacity exceeding 1 500 cm3 but not exceeding 2 500 cm3": [
+            "Of a cylinder capacity exceeding 1 500 cm3 but not exceeding 2 500 cm3"
+        ]
+    },
+    {
+        "Of a cylinder capacity exceeding 2 500 cm3": [
+            "Of a cylinder capacity exceeding 2 500 cm3"
+        ]
+    }    
+]
+

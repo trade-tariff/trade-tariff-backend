@@ -1,0 +1,68 @@
+[
+    {
+        "breeding": [
+            "breeding",
+            "bulls",
+            "0102299100"
+        ]
+    },
+    {
+        "fattening": [
+            "fattening",
+            "0102290000"
+        ]
+    },
+    {
+        "dairy": [
+            "heifer",
+            "cow"
+        ]
+    },
+    {
+        "laying": [
+            "laying"
+        ]
+    },
+    {
+        "human consumption": [
+            "slaughter",
+            "0103910000",
+            "0104103000",
+            "0104201000",
+            "0105000000",
+            "consumption"
+        ]
+    },
+    {
+        "pharmaceutical": [
+            "pharmaceutical"
+        ]
+    },
+    {
+        "aircraft": [
+            "aircraft"
+        ]
+    },
+    {
+        "aircraft": [
+            "aircraft"
+        ]
+    },
+    {
+        "motor vehicles": [
+            "motor vehicles"
+        ]
+    },
+    {
+        "christmas trees": [
+            "christmas trees"
+        ]
+    },
+    {
+        "other": [
+            "9401310000",
+            "9401919000",
+            "9401999000"
+        ]
+    }
+]

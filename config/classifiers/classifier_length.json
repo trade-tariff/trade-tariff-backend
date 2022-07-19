@@ -1,0 +1,24 @@
+[
+    {
+        "< 12 cm": [
+            "Of a length of less than 12 cm"
+        ]
+    },
+    {
+        ">= 12 cm and < 20 cm": [
+            "Of a length of 12 cm or more but less than 20 cm"
+        ]
+    },
+    {
+        ">= 20 cm": [
+            "Of a length of 20 cm or more"
+        ]
+    }
+    
+]
+
+
+
+
+
+

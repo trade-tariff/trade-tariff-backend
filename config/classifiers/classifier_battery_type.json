@@ -1,0 +1,68 @@
+[
+    {
+        "lead-acid, of a kind used for starting piston engines": [
+            "850710"
+        ]
+    },
+    {
+        "other lead-acid accumulators": [
+            "850720"
+        ]
+    },
+    {
+        "nickel-cadmium": [
+            "850730"
+        ]
+    },
+    {
+        "nickel-metal hydride": [
+            "850750"
+        ]
+    },
+    {
+        "lithium-ion": [
+            "850760"
+        ]
+    },
+    {
+        "other accumulators": [
+            "850780"
+        ]
+    },
+    {
+        "parts": [
+            "850690",
+            "850790"
+        ]
+    },
+    {
+        "manganese dioxide": [
+            "850610"
+        ]
+    },
+    {
+        "mercuric oxide": [
+            "850630"
+        ]
+    },
+    {
+        "silver oxide": [
+            "850640"
+        ]
+    },
+    {
+        "lithium": [
+            "850650"
+        ]
+    },
+    {
+        "air-zinc": [
+            "850660"
+        ]
+    },
+    {
+        "other primary cells and primary batteries": [
+            "850680"
+        ]
+    }
+]

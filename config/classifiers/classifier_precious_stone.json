@@ -1,0 +1,26 @@
+[
+    {
+        "diamond": [
+            "diamonds",
+            "diamond"
+        ]
+    },
+    {
+        "ruby": [
+            "ruby",
+            "rubies"
+        ]
+    },
+    {
+        "emerald": [
+            "emeralds",
+            "emerald"
+        ]
+    },
+    {
+        "sapphire": [
+            "sapphires",
+            "sapphire"
+        ]
+    }
+]

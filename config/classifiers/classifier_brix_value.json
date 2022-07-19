@@ -1,0 +1,22 @@
+[
+    {
+        "0 to 20": [
+            "not exceeding 20"
+        ]
+    },
+    {
+        "20 to 67": [
+            "not exceeding 20"
+        ]
+    },
+    {
+        "More than 67": [
+            "exceeding 67"
+        ]
+    },
+    {
+        "Not exceeding 67": [
+            "not exceeding 67"
+        ]
+    }
+]

@@ -1,0 +1,12 @@
+[
+    {
+        "<= 80 cm": [
+            "Not exceeding 80 cm in height"
+        ]
+    },
+    {
+        "> 80 cm": [
+            "Exceeding 80 cm"
+        ]
+    }
+]

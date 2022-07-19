@@ -1,0 +1,34 @@
+[
+    {
+        "tobacco, not stemmed or stripped": [
+            "tobacco not stemmed stripped"
+        ]
+    },
+    {
+        "tobacco, partly or wholly stemmed/stripped": [
+            "partly or wholly stemmed stripped"
+        ]
+    },
+    {
+        "tobacco refuse": [
+            "refuse"
+        ]
+    },
+    {
+        "cigars, cheroots, cigarillos": [
+            "cigars",
+            "cheroots",
+            "cigarillos"
+        ]
+    },
+    {
+        "cigarettes": [
+            "cigarettes"
+        ]
+    },
+    {
+        "other": [
+            "2403000000"
+        ]
+    }
+]

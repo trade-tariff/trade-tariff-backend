@@ -1,0 +1,49 @@
+[
+    {
+        "mineral waters and aerated waters": [
+            "mineral"
+        ]
+    },
+    {
+        "beer": [
+            "beer"
+        ]
+    },
+    {
+        "wine": [
+            "wine"
+        ]
+    },
+    {
+        "sprits": [
+            "rum",
+            "brandy",
+            "vodka",
+            "gin",
+            "whisky",
+            "whiskey",
+            "tequila"
+        ]
+    },
+    {
+        "natural water, not containing added sugar, other sweetening matter or flavoured": [
+            "2201900000"
+        ]
+    },
+    {
+        "water, containing fruit or vegetable juice": [
+            "fruit juice",
+            "vegetable juice"
+        ]
+    },
+    {
+        "non-alcoholic beer": [
+            "non-alcoholic beer"
+        ]
+    },
+    {
+        "soya-based": [
+            "soya-based"
+        ]
+    }
+]

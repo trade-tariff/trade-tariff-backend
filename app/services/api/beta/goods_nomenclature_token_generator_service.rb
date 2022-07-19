@@ -1,9 +1,8 @@
 module Api
   module Beta
     class GoodsNomenclatureTokenGeneratorService
-      delegate :lemmatizer, :stop_words, to: :class
+      delegate :lemmatizer, :stop_words, to: TradeTariffBackend
 
-      STOP_WORDS_FILE = Rails.root.join('db/beta/search/stop_words.yml')
       WHITESPACE = /\s+/
 
       def initialize(goods_nomenclatures)
@@ -12,14 +11,6 @@ module Api
 
       def call
         TimeMachine.now(&method(:enumerate_tokens))
-      end
-
-      def self.lemmatizer
-        @lemmatizer ||= Lemmatizer.new
-      end
-
-      def self.stop_words
-        @stop_words ||= YAML.load_file(STOP_WORDS_FILE)[:stop_words]
       end
 
       private

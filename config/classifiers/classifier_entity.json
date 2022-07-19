@@ -1,0 +1,958 @@
+[
+    {
+        "live animal": [
+            "01"
+        ]
+    },
+    {
+        "meat / edible meat offal": [
+            "02"
+        ]
+    },
+    {
+        "fish / fish product": [
+            "03"
+        ]
+    },
+    {
+        "dairy produce": [
+            "0401",
+            "0402",
+            "0403",
+            "0404",
+            "0405",
+            "0406"
+        ]
+    },
+    {
+        "bird's egg": [
+            "0407",
+            "0408"
+        ]
+    },
+    {
+        "honey": [
+            "0409"
+        ]
+    },
+    {
+        "insect (edible)": [
+            "0410"
+        ]
+    },
+    {
+        "product of animal origin": [
+            "05"
+        ]
+    },
+    {
+        "tree, plant": [
+            "06"
+        ]
+    },
+    {
+        "edible vegetable, root or tuber": [
+            "07"
+        ]
+    },
+    {
+        "fruit, nuts or peel": [
+            "08"
+        ]
+    },
+    {
+        "coffee, tea, maté, spices": [
+            "09"
+        ]
+    },
+    {
+        "cereal": [
+            "10"
+        ]
+    },
+    {
+        "flour, malt, starch, wheat gluten": [
+            "11"
+        ]
+    },
+    {
+        "oil seeds": [
+            "1201",
+            "1202",
+            "1203",
+            "1204",
+            "1205",
+            "1206",
+            "1207"
+        ]
+    },
+    {
+        "don't know - read HSEN": [
+            "1208",
+            "1209",
+            "1210",
+            "1211",
+            "1212",
+            "1213",
+            "1214"
+        ]
+    },
+    {
+        "gum, resin or sap": [
+            "13"
+        ]
+    },
+    {
+        "plaiting material": [
+            "14"
+        ]
+    },
+    {
+        "fat, oil": [
+            "15"
+        ]
+    },
+    {
+        "preparation of meat, fish": [
+            "16"
+        ]
+    },
+    {
+        "sugar, confectionery": [
+            "17"
+        ]
+    },
+    {
+        "cocoa": [
+            "18"
+        ]
+    },
+    {
+        "cereal preparation": [
+            "19"
+        ]
+    },
+    {
+        "prepared fruit, vegetables": [
+            "20"
+        ]
+    },
+    {
+        "extracts essences or concentrate": [
+            "2101"
+        ]
+    },
+    {
+        "yeast": [
+            "2102"
+        ]
+    },
+    {
+        "sauce": [
+            "2103"
+        ]
+    },
+    {
+        "soup or broth": [
+            "2104"
+        ]
+    },
+    {
+        "ice cream": [
+            "2105"
+        ]
+    },
+    {
+        "food preparation": [
+            "2106"
+        ]
+    },
+    {
+        "beverage, spirit vinegar": [
+            "2201",
+            "2202",
+            "2203",
+            "2204",
+            "2205",
+            "2206"
+        ]
+    },
+    {
+        "spirit": [
+            "2207",
+            "2208"
+        ]
+    },
+    {
+        "vinegar": [
+            "2209"
+        ]
+    },
+    {
+        "animal fodder, food industry waste": [
+            "23"
+        ]
+    },
+    {
+        "tobacco, tobacco product": [
+            "24"
+        ]
+    },
+    {
+        "Salt, sulphur, earths and stone, plastering materials, lime and cement": [
+            "25"
+        ]
+    },
+    {
+        "ores, slag, ash": [
+            "26"
+        ]
+    },
+    {
+        "mineral fuel, oil": [
+            "27"
+        ]
+    },
+    {
+        "chemical (inorganic)": [
+            "28"
+        ]
+    },
+    {
+        "chemical (organic)": [
+            "29"
+        ]
+    },
+    {
+        "pharmaceutical product": [
+            "30"
+        ]
+    },
+    {
+        "fertiliser": [
+            "31"
+        ]
+    },
+    {
+        "tanning extract, dye, colour, paint, mastic, ink": [
+            "32"
+        ]
+    },
+    {
+        "essential oils": [
+            "33"
+        ]
+    },
+    {
+        "soap": [
+            "34"
+        ]
+    },
+    {
+        "albumin": [
+            "35"
+        ]
+    },
+    {
+        "explosives": [
+            "36"
+        ]
+    },
+    {
+        "photo": [
+            "37"
+        ]
+    },
+    {
+        "chemical product": [
+            "38"
+        ]
+    },
+    {
+        "plastic product": [
+            "39"
+        ]
+    },
+    {
+        "rubber product": [
+            "40"
+        ]
+    },
+    {
+        "hide / skin": [
+            "41"
+        ]
+    },
+    {
+        "leather article": [
+            "42"
+        ]
+    },
+    {
+        "furskin or article of fur": [
+            "43"
+        ]
+    },
+    {
+        "wooden article": [
+            "44"
+        ]
+    },
+    {
+        "cork article": [
+            "45"
+        ]
+    },
+    {
+        "straw": [
+            "46"
+        ]
+    },
+    {
+        "pulp of wood": [
+            "47"
+        ]
+    },
+    {
+        "paper": [
+            "48"
+        ]
+    },
+    {
+        "book": [
+            "49"
+        ]
+    },
+    {
+        "silk": [
+            "50"
+        ]
+    },
+    {
+        "wool": [
+            "51"
+        ]
+    },
+    {
+        "cotton": [
+            "52"
+        ]
+    },
+    {
+        "veg fibre": [
+            "53"
+        ]
+    },
+    {
+        "man-made filament": [
+            "54"
+        ]
+    },
+    {
+        "man-made staple fibre": [
+            "55"
+        ]
+    },
+    {
+        "wadding": [
+            "56"
+        ]
+    },
+    {
+        "carp": [
+            "57"
+        ]
+    },
+    {
+        "woven fabrics": [
+            "58"
+        ]
+    },
+    {
+        "coated fabrics": [
+            "59"
+        ]
+    },
+    {
+        "crocheted fabrics": [
+            "60"
+        ]
+    },
+    {
+        "clothing (knitted / corcheetd)": [
+            "61"
+        ]
+    },
+    {
+        "clothing (not knitted)": [
+            "62"
+        ]
+    },
+    {
+        "made-up textile": [
+            "63"
+        ]
+    },
+    {
+        "footwear": [
+            "64"
+        ]
+    },
+    {
+        "headgear": [
+            "65"
+        ]
+    },
+    {
+        "umbrella": [
+            "66"
+        ]
+    },
+    {
+        "feather": [
+            "67"
+        ]
+    },
+    {
+        "stone": [
+            "68"
+        ]
+    },
+    {
+        "ceramic": [
+            "69"
+        ]
+    },
+    {
+        "glass": [
+            "70"
+        ]
+    },
+    {
+        "pearl": [
+            "71"
+        ]
+    },
+    {
+        "iron, steel": [
+            "72"
+        ]
+    },
+    {
+        "article of iron, steel": [
+            "73"
+        ]
+    },
+    {
+        "copper": [
+            "74"
+        ]
+    },
+    {
+        "nickel": [
+            "75"
+        ]
+    },
+    {
+        "aluminium": [
+            "76"
+        ]
+    },
+    {
+        "lead": [
+            "78"
+        ]
+    },
+    {
+        "zinc": [
+            "79"
+        ]
+    },
+    {
+        "tin": [
+            "80"
+        ]
+    },
+    {
+        "base metal": [
+            "81"
+        ]
+    },
+    {
+        "tools": [
+            "82"
+        ]
+    },
+    {
+        "article of base metal": [
+            "83"
+        ]
+    },
+    {
+        "nuclear reactor, part": [
+            "8401"
+        ]
+    },
+    {
+        "boiler, part": [
+            "8402",
+            "8403",
+            "8404"
+        ]
+    },
+    {
+        "turbine, engine, motor": [
+            "8406",
+            "8407",
+            "8408",
+            "8409",
+            "8410",
+            "8411",
+            "8412"
+        ]
+    },
+    {
+        "pump": [
+            "8413",
+            "8414"
+        ]
+    },
+    {
+        "air-conditioning": [
+            "8415"
+        ]
+    },
+    {
+        "furnace": [
+            "8416",
+            "8417"
+        ]
+    },
+    {
+        "refrigerator": [
+            "8418"
+        ]
+    },
+    {
+        "machinery": [
+            "8420",
+            "8421",
+            "8422",
+            "8423",
+            "8424",
+            "8425",
+            "8426",
+            "8427",
+            "8428",
+            "8429",
+            "8430",
+            "8431",
+            "8432",
+            "8433",
+            "8434",
+            "8435",
+            "8436",
+            "8437",
+            "8438",
+            "8439",
+            "8440",
+            "8441",
+            "8442",
+            "8443",
+            "8444",
+            "8445",
+            "8446",
+            "8447",
+            "8448",
+            "8449",
+            "8450",
+            "8451",
+            "8452",
+            "8453",
+            "8454",
+            "8455",
+            "8456",
+            "8457",
+            "8458",
+            "8459",
+            "8460",
+            "8461",
+            "8462",
+            "8463",
+            "8464",
+            "8465",
+            "8466",
+            "8467",
+            "8468",
+            "8469",
+            "8470",
+            "8472",
+            "8473",
+            "8474",
+            "8475",
+            "8476",
+            "8477",
+            "8478",
+            "8479",
+            "8480",
+            "8482",
+            "8483",
+            "8484",
+            "8486",
+            "8487"
+        ]
+    },
+    {
+        "electric motor, generator": [
+            "8501"
+        ]
+    },
+    {
+        "electric generating set": [
+            "8502"
+        ]
+    },
+    {
+        "part for motors, generating sets": [
+            "8503"
+        ]
+    },
+    {
+        "electrical transformer": [
+            "8504"
+        ]
+    },
+    {
+        "electromagnet": [
+            "8505"
+        ]
+    },
+    {
+        "primary cell battery": [
+            "8506"
+        ]
+    },
+    {
+        "accumulator, rechargeable battery": [
+            "8507"
+        ]
+    },
+    {
+        "vacuum cleaner": [
+            "8508"
+        ]
+    },
+    {
+        "domestic appliance": [
+            "8509"
+        ]
+    },
+    {
+        "shaver, hair clippers": [
+            "8510"
+        ]
+    },
+    {
+        "ignition equipment": [
+            "8511"
+        ]
+    },
+    {
+        "lighting, signalling, demisting equipment": [
+            "8512"
+        ]
+    },
+    {
+        "portable lamp": [
+            "8513"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8514"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8515"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8516"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8517"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8518"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8519"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8520"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8521"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8522"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8523"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8524"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8525"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8526"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8527"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8528"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8529"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8530"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8531"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8532"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8533"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8534"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8535"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8536"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8537"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8538"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8539"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8540"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8541"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8542"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8543"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8544"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8545"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8546"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8547"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8548"
+        ]
+    },
+    {
+        "electrical machinery": [
+            "8549"
+        ]
+    },
+    {
+        "computer, peripherals": [
+            "8471"
+        ]
+    },
+    {
+        "machinery, plant or laboratory equipment": [
+            "8419"
+        ]
+    },
+    {
+        "taps, cocks, valves": [
+            "8419"
+        ]
+    },
+    {
+        "Machines for additive manufacturing": [
+            "8485"
+        ]
+    },
+    {
+        "train, railway goods": [
+            "86"
+        ]
+    },
+    {
+        "vehicle": [
+            "87"
+        ]
+    },
+    {
+        "aircraft, spacecraft": [
+            "88"
+        ]
+    },
+    {
+        "Ship, boat, floating structure": [
+            "89"
+        ]
+    },
+    {
+        "optical, photographic, cinematographic, measuring, checking, precision, medical or surgical instrument": [
+            "90"
+        ]
+    },
+    {
+        "clock, watch": [
+            "91"
+        ]
+    },
+    {
+        "musical instrument": [
+            "92"
+        ]
+    },
+    {
+        "arms, ammunition": [
+            "93"
+        ]
+    },
+    {
+        "furniture": [
+            "9401",
+            "9402",
+            "9403",
+            "9404"
+        ]
+    },
+    {
+        "lighting": [
+            "9405"
+        ]
+    },
+    {
+        "lighting": [
+            "9406"
+        ]
+    },
+    {
+        "prefabricated building": [
+            "9407"
+        ]
+    },
+    {
+        "toy, game": [
+            "95"
+        ]
+    },
+    {
+        "manufactured article": [
+            "96"
+        ]
+    },
+    {
+        "work of art": [
+            "97"
+        ]
+    },
+    {
+        "industrial plant": [
+            "98"
+        ]
+    },
+    {
+        "special": [
+            "99"
+        ]
+    }
+]
