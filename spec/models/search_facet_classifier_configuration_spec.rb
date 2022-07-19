@@ -1,11 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe SearchFacetClassifierConfiguration do
-  describe '.build' do
-    it { is_expected.to respond_to :text }
-    it { is_expected.to respond_to :url }
-  end
-
   describe '.each_classification' do
     context 'when passed a block' do
       it { expect { |block| described_class.each_classification(&block) }.to yield_control.exactly(69).times }
