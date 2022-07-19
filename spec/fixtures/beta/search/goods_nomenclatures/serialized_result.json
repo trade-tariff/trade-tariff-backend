@@ -5,7 +5,7 @@
     "attributes": {
       "took": 1,
       "timed_out": false,
-      "max_score": 74.98428,
+      "max_score": 77.73483,
       "total_results": 1
     },
     "relationships": {
@@ -38,6 +38,9 @@
             "type": "chapter_statistic"
           }
         ]
+      },
+      "guide": {
+        "data": null
       }
     }
   },
@@ -47,7 +50,7 @@
       "type": "ancestor",
       "attributes": {
         "goods_nomenclature_item_id": "0400000000",
-        "producline_suffix": null,
+        "producline_suffix": "80",
         "description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
         "description_indexed": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED"
       }
@@ -57,7 +60,7 @@
       "type": "ancestor",
       "attributes": {
         "goods_nomenclature_item_id": "0406000000",
-        "producline_suffix": null,
+        "producline_suffix": "80",
         "description": "Cheese and curd",
         "description_indexed": "Cheese and curd"
       }
@@ -67,7 +70,7 @@
       "type": "ancestor",
       "attributes": {
         "goods_nomenclature_item_id": "0406100000",
-        "producline_suffix": null,
+        "producline_suffix": "80",
         "description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
         "description_indexed": "Fresh (unripened or uncured) cheese, including whey cheese, and curd"
       }
@@ -77,7 +80,7 @@
       "type": "ancestor",
       "attributes": {
         "goods_nomenclature_item_id": "0406103000",
-        "producline_suffix": null,
+        "producline_suffix": "10",
         "description": "Of a fat content, by weight, not exceeding 40 %",
         "description_indexed": "Of a fat content, by weight"
       }
@@ -87,7 +90,7 @@
       "type": "ancestor",
       "attributes": {
         "goods_nomenclature_item_id": "0406105000",
-        "producline_suffix": null,
+        "producline_suffix": "80",
         "description": "Other",
         "description_indexed": "Other"
       }
@@ -104,9 +107,9 @@
         "validity_start_date": "2015-01-01T00:00:00Z",
         "validity_end_date": null,
         "chapter_id": "04",
-        "score": 74.98428,
-        "chapter_description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
-        "heading_description": "Cheese and curd",
+        "score": 77.73483,
+        "chapter_description": null,
+        "heading_description": null,
         "heading_id": "0406"
       },
       "relationships": {
@@ -160,23 +163,23 @@
       "id": "0406",
       "type": "heading_statistic",
       "attributes": {
-        "description": "Cheese and curd",
+        "description": null,
         "chapter_id": "04",
-        "chapter_description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
-        "score": 74.98428,
+        "chapter_description": null,
+        "score": 77.73483,
         "cnt": 1,
-        "avg": 74.98428,
-        "chapter_score": 74.98428
+        "avg": 77.73483,
+        "chapter_score": 77.73483
       }
     },
     {
       "id": "04",
       "type": "chapter_statistic",
       "attributes": {
-        "description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
+        "description": null,
         "cnt": 1,
-        "score": 74.98428,
-        "avg": 74.98428
+        "score": 77.73483,
+        "avg": 77.73483
       }
     }
   ]

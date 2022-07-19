@@ -15,24 +15,8 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         description: 'Horses, other than lemmings',
         description_indexed: 'Horses',
         search_references: 'secret sauce',
-        ancestors: [
-          {
-            id: 1,
-            goods_nomenclature_item_id: '0100000000',
-            producline_suffix: '80',
-            goods_nomenclature_class: 'Chapter',
-            description: 'Live horses, asses, mules and hinnies',
-            description_indexed: 'Live horses, asses, mules and hinnies',
-          },
-          {
-            id: 2,
-            goods_nomenclature_item_id: '0101000000',
-            producline_suffix: '80',
-            goods_nomenclature_class: 'Heading',
-            description: 'Live animals',
-            description_indexed: 'Live animals',
-          },
-        ],
+        ancestors: [{ id: 1, goods_nomenclature_item_id: '0101000000', producline_suffix: '80', goods_nomenclature_class: 'Heading', description: 'Live horses, asses, mules and hinnies', description_indexed: 'Live horses, asses, mules and hinnies' },
+                    { id: 2, goods_nomenclature_item_id: '0101000000', producline_suffix: '80', goods_nomenclature_class: 'Heading', description: 'Live animals', description_indexed: 'Live animals' }],
         validity_start_date: '2020-06-29T00:00:00Z',
         validity_end_date: nil,
         ancestor_1_description_indexed: 'Live horses, asses, mules and hinnies',
@@ -65,12 +49,15 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       commodity = create(
         :commodity,
         :with_ancestors,
-        :with_guide,
         goods_nomenclature_item_id: '0101210000',
         producline_suffix: '80',
         validity_start_date: Date.parse('2020-06-29'),
       )
 
+      heading = create(:heading, goods_nomenclature_item_id: commodity.heading_code)
+      guide = create(:guide, :aircraft_parts)
+
+      create(:guides_goods_nomenclature, guide:, goods_nomenclature: heading)
       create(:search_reference, referenced: commodity, title: 'secret sauce')
     end
 
