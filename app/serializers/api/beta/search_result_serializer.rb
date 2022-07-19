@@ -10,7 +10,7 @@ module Api
                  :max_score,
                  :total_results
 
-      has_one :search_query_parser_result, serializer: SearchQueryParserResultSerializer
+      has_one :search_query_parser_result, serializer: Api::Beta::SearchQueryParserResultSerializer
 
       has_many :hits, serializer: proc { |record, _params|
         if record && record.respond_to?(:goods_nomenclature_class)
@@ -20,8 +20,9 @@ module Api
         end
       }
 
-      has_many :heading_statistics, serializer: HeadingStatisticsSerializer
-      has_many :chapter_statistics, serializer: ChapterStatisticsSerializer
+      has_many :heading_statistics, serializer: Api::Beta::HeadingStatisticsSerializer
+      has_many :chapter_statistics, serializer: Api::Beta::ChapterStatisticsSerializer
+      has_one :guide, serializer: Api::Beta::GuideSerializer
     end
   end
 end

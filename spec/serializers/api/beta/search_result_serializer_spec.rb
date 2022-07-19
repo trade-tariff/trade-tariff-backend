@@ -2,44 +2,53 @@ RSpec.describe Api::Beta::SearchResultSerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
-    let(:serializable) { build(:search_result, :multiple_hits, :generate_statistics) }
+    let(:serializable) { build(:search_result, :clothing, :generate_statistics, :generate_guide_statistics) }
 
     let(:expected) do
       {
         data: {
-          id: '40d70a67aafa270656c01738cfec041b',
+          id: '6fc22ae4ee7f6fbe9b4988a4557dd3f9',
           type: :search_result,
-          attributes: { took: 3, timed_out: false, max_score: 161.34302, total_results: 10 },
+          attributes: {
+            took: 6,
+            timed_out: false,
+            max_score: 77.81122,
+            total_results: 10,
+          },
           relationships: {
             search_query_parser_result: {
               data: {
-                id: '52b14869c15726dda86b87cb93666a74',
+                id: '50cf19912960f65490b334ea9c196eea',
                 type: :search_query_parser_result,
               },
             },
             hits: {
               data: [
-                { id: '93797', type: :subheading },
-                { id: '93796', type: :commodity },
-                { id: '93798', type: :subheading },
-                { id: '93799', type: :commodity },
-                { id: '93800', type: :commodity },
-                { id: '93801', type: :commodity },
-                { id: '72763', type: :commodity },
-                { id: '27624', type: :heading },
-                { id: '93994', type: :commodity },
-                { id: '95674', type: :commodity },
+                { id: '43821', type: :subheading },
+                { id: '43606', type: :subheading },
+                { id: '43607', type: :commodity },
+                { id: '43608', type: :commodity },
+                { id: '43609', type: :commodity },
+                { id: '43522', type: :commodity },
+                { id: '43530', type: :commodity },
+                { id: '43486', type: :subheading },
+                { id: '43487', type: :commodity },
+                { id: '43488', type: :commodity },
               ],
             },
-            heading_statistics: { data: [
-              { id: '0101', type: :heading_statistic },
-              { id: '0302', type: :heading_statistic },
-            ] },
-            chapter_statistics: {
+            heading_statistics: {
               data: [
-                { id: '01', type: :chapter_statistic },
-                { id: '03', type: :chapter_statistic },
+                { id: '6307', type: :heading_statistic },
+                { id: '6217', type: :heading_statistic },
+                { id: '6211', type: :heading_statistic },
+                { id: '6209', type: :heading_statistic },
               ],
+            },
+            chapter_statistics: {
+              data: [{ id: '63', type: :chapter_statistic }, { id: '62', type: :chapter_statistic }],
+            },
+            guide: {
+              data: { id: '18', type: :guide },
             },
           },
         },
