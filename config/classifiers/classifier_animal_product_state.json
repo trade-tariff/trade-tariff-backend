@@ -1,0 +1,35 @@
+[
+    {
+        "fresh": [
+            "fresh"
+        ]
+    },
+    {
+        "chilled": [
+            "chilled"
+        ]
+    },
+    {
+        "frozen": [
+            "frozen"
+        ]
+    },
+    {
+        "dried, salted, smoked or in brine": [
+            "dried",
+            "salted",
+            "smoked",
+            "brine"
+        ]
+    },
+    {
+        "live": [
+            "live"
+        ]
+    },
+    {
+        "prepared or preserved": [
+            "prepared or preserved"
+        ]
+    }
+]

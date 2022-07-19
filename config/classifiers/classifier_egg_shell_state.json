@@ -1,0 +1,17 @@
+[
+    {
+        "in shell": [
+            "in shell"
+        ]
+    },
+    {
+        "not in shell": [
+            "not in shell"
+        ]
+    },
+    {
+        "yolks only": [
+            "yolk"
+        ]
+    }
+]

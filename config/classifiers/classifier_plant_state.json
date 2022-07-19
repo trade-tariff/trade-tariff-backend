@@ -1,0 +1,28 @@
+[
+    {
+        "bulbs - dormant": [
+            "dormant"
+        ]
+    },
+    {
+        "bulbs - in growth or in flower": [
+            "in growth or in flower"
+        ]
+    },
+    {
+        "live": [
+            "live"
+        ]
+    },
+    {
+        "fresh": [
+            "fresh"
+        ]
+    },
+    {
+        "other": [
+            "0603900000",
+            "0604900000"
+        ]
+    }
+]

@@ -1,0 +1,132 @@
+[
+    {
+        "equine animals": [
+            "horses",
+            "mules",
+            "asses",
+            "hinnies"
+        ]
+    },
+    {
+        "bovine animals": [
+            "beef",
+            "veal",
+            "cow",
+            "cattle",
+            "bovine",
+            "heifer",
+            "calf",
+            "bull",
+            "buffalo",
+            "bison"
+        ]
+    },
+    {
+        "swine": [
+            "swine",
+            "sow",
+            "pig",
+            "ham",
+            "bacon",
+            "pork"
+        ]
+    },
+    {
+        "sheep and goats": [
+            "sheep",
+            "lamb",
+            "goat",
+            "mutton"
+        ]
+    },
+    {
+        "poultry and other birds": [
+            "poultry",
+            "chick",
+            "turkey",
+            "gallus",
+            "hen",
+            "chicken",
+            "duck",
+            "goose",
+            "geese",
+            "guinea-fowl"
+        ]
+    },
+    {
+        "fish": [
+            "fish",
+            "salmonidae",
+            "pleuronectidae",
+            "tuna",
+            "herring",
+            "moridae",
+            "tilapia",
+            "salmon",
+            "trout",
+            "halibut",
+            "cod",
+            "swordfish",
+            "toothfish",
+            "dogfish",
+            "ray",
+            "skate",
+            "bream",
+            "bass",
+            "bogue",
+            "bream",
+            "redfish",
+            "catfish",
+            "perch",
+            "eel",
+            "carp",
+            "pollock",
+            "surimi",
+            "freshwater",
+            "megrim",
+            "mackerel",
+            "flatfish",
+            "bass"
+        ]
+    },
+    {
+        "aquatic invertebrates": [
+            "lobster",
+            "crawfish",
+            "rayfish",
+            "crab",
+            "shrimp",
+            "prawn",
+            "oyster",
+            "mollusc",
+            "mussel",
+            "squid",
+            "octopus",
+            "clam",
+            "abalone",
+            "whelk",
+            "invertebrate",
+            "sea urchin",
+            "sea cucumber"
+        ]
+    },
+    {
+        "other": [
+            "mammal",
+            "primate",
+            "whale",
+            "camel",
+            "rabbit",
+            "parrot",
+            "emu",
+            "pigeon",
+            "insect",
+            "bee",
+            "frog",
+            "snake",
+            "turtle",
+            "reindeer",
+            "pigeon"
+        ]
+    }
+]

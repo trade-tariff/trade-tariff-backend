@@ -1,0 +1,73 @@
+[
+    {
+        "locks": [
+            "locks"
+        ]
+    },
+    {
+        "hinges": [
+            "hinges"
+        ]
+    },
+    {
+        "castors": [
+            "castors"
+        ]
+    },
+    {
+        "buildings": [
+            "doors",
+            "windows"
+        ]
+    },
+    {
+        "furniture": [
+            "furniture"
+        ]
+    },
+    {
+        "luggage": [
+            "luggage"
+        ]
+    },
+    {
+        "safes": [
+            "safes"
+        ]
+    },
+    {
+        "stationery": [
+            "ring binder",
+            "lever arch"
+        ]
+    },
+    {
+        "musical instruments": [
+            "bells",
+            "gongs"
+        ]
+    },
+    {
+        "statues": [
+            "statues",
+            "statuettes"
+        ]
+    },
+    {
+        "tubing": [
+            "tubing"
+        ]
+    },
+    {
+        "clasps, buckles etc.": [
+            "clasps",
+            "buckles",
+            "eyelets"
+        ]
+    },
+    {
+        "rivets": [
+            "rivets"
+        ]
+    }
+]

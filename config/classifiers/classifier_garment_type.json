@@ -1,0 +1,107 @@
+[
+    {
+        "t-shirt": [
+            "t-shirt",
+            "tshirt"
+        ]
+    },
+    {
+        "shirts and blouses": [
+            "shirt",
+            "blouse"
+        ]
+    },
+    {
+        "dresses": [
+            "dress",
+            "frock",
+            "gown",
+            "robe"
+        ]
+    },
+    {
+        "jackets and blazers": [
+            "jacket",
+            "blazer"
+        ]
+    },
+    {
+        "underwear": [
+            "underpants",
+            "briefs",
+            "knickers",
+            "socks",
+            "bras",
+            "brassieres"
+        ]
+    },
+    {
+        "jumpers and cardigans": [
+            "jumper",
+            "cardigan",
+            "sweater",
+            "jersey",
+            "pullover"
+        ]
+    },
+    {
+        "sleepwear": [
+            "pyjama",
+            "nightshirt",
+            "dressing gown"
+        ]
+    },
+    {
+        "outerwear": [
+            "coat",
+            "cloak",
+            "cape",
+            "overcoat",
+            "parka",
+            "windcheater",
+            "ski jacket",
+            "wind jacket",
+            "^coated"
+        ]
+    },
+    {
+        "trousers and shorts": [
+            "trousers",
+            "pants",
+            "breeches",
+            "shorts"
+        ]
+    },
+    {
+        "belts and braces": [
+            "belts",
+            "braces"
+        ]
+    },
+    {
+        "footwear": [
+            "shoes",
+            "galoshes",
+            "wellingtons",
+            "slippers",
+            "waders",
+            "boots"
+        ]
+    },
+    {
+        "headgear": [
+            "headgear",
+            "hat",
+            "cap",
+            "headband"
+        ]
+    },
+    {
+        "gloves, mitts and mittens": [
+            "gloves",
+            "mitts",
+            "mittens",
+            "muffs"
+        ]
+    }
+]
