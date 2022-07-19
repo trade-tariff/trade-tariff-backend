@@ -229,6 +229,10 @@ module TradeTariffBackend
       @chief_cds_guidance ||= ChiefCdsGuidance.load_default
     end
 
+    def search_facet_classifier_configuration
+      @search_facet_classifier_configuration ||= Api::Beta::ClassificationConverterService.new.call
+    end
+
     def lemmatizer
       @lemmatizer ||= Lemmatizer.new
     end
