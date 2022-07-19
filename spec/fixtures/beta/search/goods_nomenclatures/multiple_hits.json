@@ -1,5 +1,5 @@
 {
-  "took": 3,
+  "took": 2,
   "timed_out": false,
   "_shards": {
     "total": 1,
@@ -9,16 +9,16 @@
   },
   "hits": {
     "total": {
-      "value": 98,
+      "value": 168,
       "relation": "eq"
     },
-    "max_score": 161.34302,
+    "max_score": 83.69403,
     "hits": [
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93797",
-        "_score": 161.34302,
+        "_score": 83.69403,
         "_source": {
           "id": 93797,
           "goods_nomenclature_item_id": "0101210000",
@@ -28,14 +28,12 @@
           "goods_nomenclature_class": "Subheading",
           "description": "Horses",
           "description_indexed": "Horses",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -43,21 +41,40 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": null,
+          "ancestor_4_description_indexed": null,
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93796",
-        "_score": 138.9776,
+        "_score": 70.387886,
         "_source": {
           "id": 93796,
           "goods_nomenclature_item_id": "0101210000",
@@ -67,14 +84,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Pure-bred breeding animals",
           "description_indexed": "Pure-bred breeding animals",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -82,7 +97,7 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
@@ -90,21 +105,40 @@
             {
               "id": 93797,
               "goods_nomenclature_item_id": "0101210000",
-              "productline_suffix": "10",
+              "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Horses",
               "description_indexed": "Horses"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": "Horses",
+          "ancestor_4_description_indexed": null,
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93798",
-        "_score": 138.9776,
+        "_score": 70.387886,
         "_source": {
           "id": 93798,
           "goods_nomenclature_item_id": "0101290000",
@@ -114,14 +148,12 @@
           "goods_nomenclature_class": "Subheading",
           "description": "Other",
           "description_indexed": "Other",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -129,7 +161,7 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
@@ -137,21 +169,40 @@
             {
               "id": 93797,
               "goods_nomenclature_item_id": "0101210000",
-              "productline_suffix": "10",
+              "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Horses",
               "description_indexed": "Horses"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": "Horses",
+          "ancestor_4_description_indexed": null,
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93799",
-        "_score": 138.9776,
+        "_score": 70.387886,
         "_source": {
           "id": 93799,
           "goods_nomenclature_item_id": "0101291000",
@@ -161,14 +212,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "For slaughter",
           "description_indexed": "For slaughter",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -176,7 +225,7 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
@@ -184,7 +233,7 @@
             {
               "id": 93797,
               "goods_nomenclature_item_id": "0101210000",
-              "productline_suffix": "10",
+              "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Horses",
               "description_indexed": "Horses"
@@ -192,21 +241,40 @@
             {
               "id": 93798,
               "goods_nomenclature_item_id": "0101290000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
               "description_indexed": "Other"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": "Horses",
+          "ancestor_4_description_indexed": "Other",
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93800",
-        "_score": 138.9776,
+        "_score": 70.387886,
         "_source": {
           "id": 93800,
           "goods_nomenclature_item_id": "0101299000",
@@ -216,14 +284,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Other",
           "description_indexed": "Other",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -231,7 +297,7 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
@@ -239,7 +305,7 @@
             {
               "id": 93797,
               "goods_nomenclature_item_id": "0101210000",
-              "productline_suffix": "10",
+              "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Horses",
               "description_indexed": "Horses"
@@ -247,21 +313,184 @@
             {
               "id": 93798,
               "goods_nomenclature_item_id": "0101290000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
               "description_indexed": "Other"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": "Horses",
+          "ancestor_4_description_indexed": "Other",
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
+        }
+      },
+      {
+        "_index": "tariff-goods_nomenclatures",
+        "_type": "_doc",
+        "_id": "28100",
+        "_score": 63.439774,
+        "_source": {
+          "id": 28100,
+          "goods_nomenclature_item_id": "0206809100",
+          "heading_id": "0206",
+          "chapter_id": "02",
+          "producline_suffix": "80",
+          "goods_nomenclature_class": "Commodity",
+          "description": "Of horses, asses, mules and hinnies",
+          "description_indexed": "Of horses, asses, mules and hinnies",
+          "search_references": "",
+          "ancestors": [
+            {
+              "id": 27809,
+              "goods_nomenclature_item_id": "0200000000",
+              "producline_suffix": "80",
+              "goods_nomenclature_class": "Chapter",
+              "description": "MEAT AND EDIBLE MEAT OFFAL",
+              "description_indexed": "MEAT AND EDIBLE MEAT OFFAL"
+            },
+            {
+              "id": 28044,
+              "goods_nomenclature_item_id": "0206000000",
+              "producline_suffix": "80",
+              "goods_nomenclature_class": "Heading",
+              "description": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
+              "description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen"
+            },
+            {
+              "id": 28097,
+              "goods_nomenclature_item_id": "0206800000",
+              "producline_suffix": "80",
+              "goods_nomenclature_class": "Subheading",
+              "description": "Other, fresh or chilled",
+              "description_indexed": "Other, fresh or chilled"
+            },
+            {
+              "id": 28099,
+              "goods_nomenclature_item_id": "0206809100",
+              "producline_suffix": "10",
+              "goods_nomenclature_class": "Subheading",
+              "description": "Other",
+              "description_indexed": "Other"
+            }
+          ],
+          "validity_start_date": "1972-01-01T00:00:00Z",
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "MEAT AND EDIBLE MEAT OFFAL",
+          "ancestor_2_description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
+          "ancestor_3_description_indexed": "Other, fresh or chilled",
+          "ancestor_4_description_indexed": "Other",
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
+        }
+      },
+      {
+        "_index": "tariff-goods_nomenclatures",
+        "_type": "_doc",
+        "_id": "28105",
+        "_score": 63.439774,
+        "_source": {
+          "id": 28105,
+          "goods_nomenclature_item_id": "0206909100",
+          "heading_id": "0206",
+          "chapter_id": "02",
+          "producline_suffix": "80",
+          "goods_nomenclature_class": "Commodity",
+          "description": "Of horses, asses, mules and hinnies",
+          "description_indexed": "Of horses, asses, mules and hinnies",
+          "search_references": "",
+          "ancestors": [
+            {
+              "id": 27809,
+              "goods_nomenclature_item_id": "0200000000",
+              "producline_suffix": "80",
+              "goods_nomenclature_class": "Chapter",
+              "description": "MEAT AND EDIBLE MEAT OFFAL",
+              "description_indexed": "MEAT AND EDIBLE MEAT OFFAL"
+            },
+            {
+              "id": 28044,
+              "goods_nomenclature_item_id": "0206000000",
+              "producline_suffix": "80",
+              "goods_nomenclature_class": "Heading",
+              "description": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
+              "description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen"
+            },
+            {
+              "id": 28102,
+              "goods_nomenclature_item_id": "0206900000",
+              "producline_suffix": "80",
+              "goods_nomenclature_class": "Subheading",
+              "description": "Other, frozen",
+              "description_indexed": "Other, frozen"
+            },
+            {
+              "id": 28104,
+              "goods_nomenclature_item_id": "0206909100",
+              "producline_suffix": "10",
+              "goods_nomenclature_class": "Subheading",
+              "description": "Other",
+              "description_indexed": "Other"
+            }
+          ],
+          "validity_start_date": "1972-01-01T00:00:00Z",
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "MEAT AND EDIBLE MEAT OFFAL",
+          "ancestor_2_description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
+          "ancestor_3_description_indexed": "Other, frozen",
+          "ancestor_4_description_indexed": "Other",
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93801",
-        "_score": 138.9776,
+        "_score": 60.377693,
         "_source": {
           "id": 93801,
           "goods_nomenclature_item_id": "0101300000",
@@ -271,14 +500,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Asses",
           "description_indexed": "Asses",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -286,21 +513,40 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": null,
+          "ancestor_4_description_indexed": null,
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "72763",
-        "_score": 138.9776,
+        "_score": 60.377693,
         "_source": {
           "id": 72763,
           "goods_nomenclature_item_id": "0101900000",
@@ -310,14 +556,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Other",
           "description_indexed": "Other",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": "Live horses, asses, mules and hinnies",
           "search_references": "",
           "ancestors": [
             {
               "id": 27623,
               "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
               "description_indexed": "LIVE ANIMALS"
@@ -325,52 +569,40 @@
             {
               "id": 27624,
               "goods_nomenclature_item_id": "0101000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
               "description_indexed": "Live horses, asses, mules and hinnies"
             }
           ],
           "validity_start_date": "2002-01-01T00:00:00Z",
-          "validity_end_date": null
-        }
-      },
-      {
-        "_index": "tariff-goods_nomenclatures",
-        "_type": "_doc",
-        "_id": "27624",
-        "_score": 138.11209,
-        "_source": {
-          "id": 27624,
-          "goods_nomenclature_item_id": "0101000000",
-          "heading_id": "0101",
-          "chapter_id": "01",
-          "producline_suffix": "80",
-          "goods_nomenclature_class": "Heading",
-          "description": "Live horses, asses, mules and hinnies",
-          "description_indexed": "Live horses, asses, mules and hinnies",
-          "chapter_description": "LIVE ANIMALS",
-          "heading_description": null,
-          "search_references": "",
-          "ancestors": [
-            {
-              "id": 27623,
-              "goods_nomenclature_item_id": "0100000000",
-              "productline_suffix": "80",
-              "goods_nomenclature_class": "Chapter",
-              "description": "LIVE ANIMALS",
-              "description_indexed": "LIVE ANIMALS"
-            }
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "LIVE ANIMALS",
+          "ancestor_2_description_indexed": "Live horses, asses, mules and hinnies",
+          "ancestor_3_description_indexed": null,
+          "ancestor_4_description_indexed": null,
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
           ],
-          "validity_start_date": "1972-01-01T00:00:00Z",
-          "validity_end_date": null
+          "guide_ids": [
+
+          ]
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93994",
-        "_score": 69.2645,
+        "_score": 54.07968,
         "_source": {
           "id": 93994,
           "goods_nomenclature_item_id": "0302451000",
@@ -380,14 +612,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Atlantic horse mackerel (Trachurus trachurus)",
           "description_indexed": "Atlantic horse mackerel (Trachurus trachurus)",
-          "chapter_description": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
-          "heading_description": "Fish, fresh or chilled, excluding fish fillets and other fish meat of heading 0304",
           "search_references": "",
           "ancestors": [
             {
               "id": 28373,
               "goods_nomenclature_item_id": "0300000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
               "description_indexed": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES"
@@ -395,7 +625,7 @@
             {
               "id": 28402,
               "goods_nomenclature_item_id": "0302000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Fish, fresh or chilled, excluding fish fillets and other fish meat of heading 0304",
               "description_indexed": "Fish, fresh or chilled"
@@ -403,7 +633,7 @@
             {
               "id": 93985,
               "goods_nomenclature_item_id": "0302410000",
-              "productline_suffix": "10",
+              "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae), excluding edible fish offal of subheadings 0302 91 to 0302 99",
               "description_indexed": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae)"
@@ -411,77 +641,33 @@
             {
               "id": 93993,
               "goods_nomenclature_item_id": "0302450000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Jack and horse mackerel (Trachurus spp.)",
               "description_indexed": "Jack and horse mackerel (Trachurus spp.)"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
-        }
-      },
-      {
-        "_index": "tariff-goods_nomenclatures",
-        "_type": "_doc",
-        "_id": "95674",
-        "_score": 69.2645,
-        "_source": {
-          "id": 95674,
-          "goods_nomenclature_item_id": "0302459010",
-          "heading_id": "0302",
-          "chapter_id": "03",
-          "producline_suffix": "80",
-          "goods_nomenclature_class": "Commodity",
-          "description": "Horse mackerel (scad) (Caranx trachurus)",
-          "description_indexed": "Horse mackerel (scad) (Caranx trachurus)",
-          "chapter_description": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
-          "heading_description": "Fish, fresh or chilled, excluding fish fillets and other fish meat of heading 0304",
-          "search_references": "",
-          "ancestors": [
-            {
-              "id": 28373,
-              "goods_nomenclature_item_id": "0300000000",
-              "productline_suffix": "80",
-              "goods_nomenclature_class": "Chapter",
-              "description": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
-              "description_indexed": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES"
-            },
-            {
-              "id": 28402,
-              "goods_nomenclature_item_id": "0302000000",
-              "productline_suffix": "80",
-              "goods_nomenclature_class": "Heading",
-              "description": "Fish, fresh or chilled, excluding fish fillets and other fish meat of heading 0304",
-              "description_indexed": "Fish, fresh or chilled"
-            },
-            {
-              "id": 93985,
-              "goods_nomenclature_item_id": "0302410000",
-              "productline_suffix": "10",
-              "goods_nomenclature_class": "Subheading",
-              "description": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae), excluding edible fish offal of subheadings 0302 91 to 0302 99",
-              "description_indexed": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae)"
-            },
-            {
-              "id": 93993,
-              "goods_nomenclature_item_id": "0302450000",
-              "productline_suffix": "80",
-              "goods_nomenclature_class": "Subheading",
-              "description": "Jack and horse mackerel (Trachurus spp.)",
-              "description_indexed": "Jack and horse mackerel (Trachurus spp.)"
-            },
-            {
-              "id": 93996,
-              "goods_nomenclature_item_id": "0302459000",
-              "productline_suffix": "80",
-              "goods_nomenclature_class": "Subheading",
-              "description": "Other",
-              "description_indexed": "Other"
-            }
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
+          "ancestor_2_description_indexed": "Fish, fresh or chilled",
+          "ancestor_3_description_indexed": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae)",
+          "ancestor_4_description_indexed": "Jack and horse mackerel (Trachurus spp.)",
+          "ancestor_5_description_indexed": null,
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
           ],
-          "validity_start_date": "2012-01-01T00:00:00Z",
-          "validity_end_date": null
+          "guide_ids": [
+
+          ]
         }
       }
     ]
