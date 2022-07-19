@@ -47,5 +47,15 @@ FactoryBot.define do
       nouns { %w[horses] }
       verbs { [] }
     end
+
+    trait :clothing do
+      original_search_query { 'clothing' }
+      corrected_search_query { 'clothing' }
+
+      adjectives { [] }
+      noun_chunks { %w[clothing] }
+      nouns { %w[clothing] }
+      verbs { [] }
+    end
   end
 end

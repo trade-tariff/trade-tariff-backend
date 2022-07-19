@@ -29,6 +29,8 @@ module Search
         ancestor_11_description_indexed:,
         ancestor_12_description_indexed:,
         ancestor_13_description_indexed:,
+        guides:,
+        guide_ids:,
       }
     end
 
@@ -91,6 +93,25 @@ module Search
 
     def validity_end_date
       super&.iso8601
+    end
+
+    def guides
+      # NB: We're not currently interested in chapter guides and prefer more specific guidance currently
+      return [] if chapter?
+
+      heading.guides.map do |guide|
+        {
+          id: guide.id,
+          title: guide.title,
+          image: guide.image,
+          url: guide.url,
+          strapline: guide.strapline,
+        }
+      end
+    end
+
+    def guide_ids
+      guides.map { |guide| guide[:id] }
     end
 
     1.upto(MAX_ANCESTORS) do |ancestor_number|

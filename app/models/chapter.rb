@@ -33,9 +33,6 @@ class Chapter < GoodsNomenclature
                                   remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
                                   clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
 
-  many_to_many :guides, left_key: :goods_nomenclature_sid,
-                        join_table: :chapters_guides
-
   def guide_ids
     guides.pluck(:id)
   end
@@ -101,7 +98,7 @@ class Chapter < GoodsNomenclature
       Sequel.as(depth, :depth),
     ).where(pk_hash)
      .union(Heading.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_headings, '__00______']))
-     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000'])) .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
+     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000'])).union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|

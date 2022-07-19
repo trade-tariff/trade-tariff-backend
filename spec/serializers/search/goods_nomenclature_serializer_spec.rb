@@ -17,20 +17,20 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         search_references: 'secret sauce',
         ancestors: [
           {
-            id: 1,
-            goods_nomenclature_item_id: '0100000000',
-            producline_suffix: '80',
-            goods_nomenclature_class: 'Chapter',
             description: 'Live horses, asses, mules and hinnies',
             description_indexed: 'Live horses, asses, mules and hinnies',
+            goods_nomenclature_class: 'Chapter',
+            goods_nomenclature_item_id: '0100000000',
+            id: 1,
+            producline_suffix: '80',
           },
           {
-            id: 2,
-            goods_nomenclature_item_id: '0101000000',
-            producline_suffix: '80',
-            goods_nomenclature_class: 'Heading',
             description: 'Live animals',
             description_indexed: 'Live animals',
+            goods_nomenclature_class: 'Heading',
+            goods_nomenclature_item_id: '0101000000',
+            id: 2,
+            producline_suffix: '80',
           },
         ],
         validity_start_date: '2020-06-29T00:00:00Z',
@@ -48,6 +48,16 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         ancestor_11_description_indexed: nil,
         ancestor_12_description_indexed: nil,
         ancestor_13_description_indexed: nil,
+        guides: [
+          {
+            id: 1,
+            title: 'Aircraft parts',
+            image: 'aircraft.png',
+            url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories',
+            strapline: 'Get help to classify drones and aircraft parts for import and export.',
+          },
+        ],
+        guide_ids: [1],
       }
     end
 
@@ -63,6 +73,6 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       create(:search_reference, referenced: commodity, title: 'secret sauce')
     end
 
-    it { is_expected.to match_json_expression(pattern) }
+    it { is_expected.to eq(pattern) }
   end
 end

@@ -12,13 +12,13 @@
       "value": 1,
       "relation": "eq"
     },
-    "max_score": 74.98428,
+    "max_score": 77.73483,
     "hits": [
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "98910",
-        "_score": 74.98428,
+        "_score": 77.73483,
         "_source": {
           "id": 98910,
           "goods_nomenclature_item_id": "0406105090",
@@ -28,14 +28,12 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Other",
           "description_indexed": "Other",
-          "chapter_description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
-          "heading_description": "Cheese and curd",
           "search_references": "ricotta, mascarpone",
           "ancestors": [
             {
               "id": 29417,
               "goods_nomenclature_item_id": "0400000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
               "description_indexed": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED"
@@ -43,7 +41,7 @@
             {
               "id": 29719,
               "goods_nomenclature_item_id": "0406000000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Cheese and curd",
               "description_indexed": "Cheese and curd"
@@ -51,7 +49,7 @@
             {
               "id": 29720,
               "goods_nomenclature_item_id": "0406100000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
               "description_indexed": "Fresh (unripened or uncured) cheese, including whey cheese, and curd"
@@ -59,7 +57,7 @@
             {
               "id": 98904,
               "goods_nomenclature_item_id": "0406103000",
-              "productline_suffix": "10",
+              "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Of a fat content, by weight, not exceeding 40 %",
               "description_indexed": "Of a fat content, by weight"
@@ -67,14 +65,33 @@
             {
               "id": 98906,
               "goods_nomenclature_item_id": "0406105000",
-              "productline_suffix": "80",
+              "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
               "description_indexed": "Other"
             }
           ],
           "validity_start_date": "2015-01-01T00:00:00Z",
-          "validity_end_date": null
+          "validity_end_date": null,
+          "ancestor_1_description_indexed": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
+          "ancestor_2_description_indexed": "Cheese and curd",
+          "ancestor_3_description_indexed": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
+          "ancestor_4_description_indexed": "Of a fat content, by weight",
+          "ancestor_5_description_indexed": "Other",
+          "ancestor_6_description_indexed": null,
+          "ancestor_7_description_indexed": null,
+          "ancestor_8_description_indexed": null,
+          "ancestor_9_description_indexed": null,
+          "ancestor_10_description_indexed": null,
+          "ancestor_11_description_indexed": null,
+          "ancestor_12_description_indexed": null,
+          "ancestor_13_description_indexed": null,
+          "guides": [
+
+          ],
+          "guide_ids": [
+
+          ]
         }
       }
     ]

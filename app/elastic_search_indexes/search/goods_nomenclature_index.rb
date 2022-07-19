@@ -105,6 +105,8 @@ module Search
             validity_end_date: { enabled: false },
             heading_id: { enabled: false },
             chapter_id: { enabled: false },
+            guides: { enabled: false },
+            guide_ids: { enabled: false },
           },
         },
       }

@@ -1,6 +1,6 @@
 RSpec.describe Api::Beta::HeadingSerializer do
   describe '#serializable_hash' do
-    subject(:serializable_hash) { described_class.new(serializable, include: %w[ancestors]).serializable_hash }
+    subject(:serializable_hash) { described_class.new(serializable, include: %w[ancestors guides]).serializable_hash }
 
     let(:serializable) do
       Hashie::TariffMash.new(
@@ -27,6 +27,16 @@ RSpec.describe Api::Beta::HeadingSerializer do
           },
         ],
         ancestor_ids: [40_952],
+        guides: [
+          {
+            id: 1,
+            title: 'Aircraft parts',
+            image: 'aircraft.png',
+            url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories',
+            strapline: 'Get help to classify drones and aircraft parts for import and export.',
+          },
+        ],
+        guide_ids: [1],
         validity_start_date: '1972-01-01T00:00:00Z',
         validity_end_date: nil,
       )
@@ -49,7 +59,10 @@ RSpec.describe Api::Beta::HeadingSerializer do
             score: 10.24,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
           },
-          relationships: { ancestors: { data: [{ id: '40952', type: :ancestor }] } },
+          relationships: {
+            ancestors: { data: [{ id: '40952', type: :ancestor }] },
+            guides: { data: [{ id: '1', type: :guide }] },
+          },
         },
         included: [
           {
@@ -61,6 +74,16 @@ RSpec.describe Api::Beta::HeadingSerializer do
               description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
               description_indexed: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
             },
+          },
+          {
+            attributes: {
+              image: 'aircraft.png',
+              strapline: 'Get help to classify drones and aircraft parts for import and export.',
+              title: 'Aircraft parts',
+              url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories',
+            },
+            id: '1',
+            type: :guide,
           },
         ],
       }

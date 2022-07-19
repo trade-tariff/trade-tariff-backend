@@ -114,9 +114,7 @@ namespace :tariff do
     namespace :taric do
       desc 'Add Sections and associate to Chapters'
       task sections: :environment do
-        ENV['RUNNING_TASK'] = 'enabled'
         load(Rails.root.join('db/import_sections.rb'))
-        ENV.delete('RUNNING_TASK')
       end
 
       desc 'Dump Section notes'

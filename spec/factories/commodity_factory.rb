@@ -34,13 +34,17 @@ FactoryBot.define do
           goods_nomenclature_sid: 1,
           goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(2)}00000000",
         )
-        create(
+
+        heading = create(
           :heading,
           :with_description,
           description: 'Live animals',
           goods_nomenclature_sid: 2,
           goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
         )
+
+        guide = create(:guide, :aircraft_parts)
+        create(:guides_goods_nomenclature, guide:, goods_nomenclature: heading)
       end
     end
 

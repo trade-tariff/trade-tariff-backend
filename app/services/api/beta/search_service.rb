@@ -6,6 +6,7 @@ module Api
         :search_query_parser_result,
         :heading_statistics,
         :chapter_statistics,
+        :guide,
       ].freeze
       DEFAULT_SEARCH_INDEX = 'tariff-goods_nomenclatures'.freeze
 
@@ -19,6 +20,7 @@ module Api
 
         search_result = ::Beta::Search::OpenSearchResult.build(result, search_query_parser_result)
         search_result.generate_statistics
+        search_result.generate_guide_statistics
 
         Api::Beta::SearchResultSerializer.new(search_result, include: DEFAULT_INCLUDES).serializable_hash
       end
