@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
-require 'digest'
-
 module RulesOfOrigin
   class Link
     include ActiveModel::Model
+    include ContentAddressableId
+    self.content_addressable_fields = %i[url text]
 
     attr_accessor :text, :url
     attr_writer :id
@@ -16,10 +16,6 @@ module RulesOfOrigin
 
         new(attrs)
       end
-    end
-
-    def id
-      @id ||= Digest::MD5.hexdigest("#{url}-#{text}")
     end
   end
 end

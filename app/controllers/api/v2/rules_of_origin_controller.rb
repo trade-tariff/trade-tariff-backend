@@ -11,11 +11,12 @@ module Api
         presented_schemes = Api::V2::RulesOfOrigin::SchemePresenter.for_many(
           query.schemes,
           query.rules,
+          query.scheme_rule_sets,
         )
 
         @serializer = Api::V2::RulesOfOrigin::SchemeSerializer.new(
           presented_schemes,
-          include: %i[links proofs rules articles],
+          include: %i[links proofs rules articles rule_sets rule_sets.rules],
         )
 
         render json: @serializer.serializable_hash
