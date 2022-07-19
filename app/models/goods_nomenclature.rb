@@ -34,6 +34,9 @@ class GoodsNomenclature < Sequel::Model
     Heading.actual.where(goods_nomenclature_item_id: heading_code)
   end
 
+  many_to_many :guides, left_key: :goods_nomenclature_sid,
+                        join_table: :guides_goods_nomenclatures
+
   one_to_many :ancestors, class_name: name, class: self do |_ds|
     if path.present?
       GoodsNomenclature
