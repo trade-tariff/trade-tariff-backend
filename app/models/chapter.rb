@@ -98,7 +98,7 @@ class Chapter < GoodsNomenclature
       Sequel.as(depth, :depth),
     ).where(pk_hash)
      .union(Heading.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_headings, '__00______']))
-     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000'])) .union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
+     .union(Commodity.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE ?', relevant_goods_nomenclature, '____000000'])).union(Measure.changes_for(depth + 1, ['goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature]))
      .from_self
      .where(Sequel.~(operation_date: nil))
      .tap! { |criteria|

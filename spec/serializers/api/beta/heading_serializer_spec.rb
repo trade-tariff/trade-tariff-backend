@@ -61,7 +61,7 @@ RSpec.describe Api::Beta::HeadingSerializer do
           },
           relationships: {
             ancestors: { data: [{ id: '40952', type: :ancestor }] },
-            guides: { data: [ { id: '1', type: :guide }, ], },
+            guides: { data: [{ id: '1', type: :guide }] },
           },
         },
         included: [
