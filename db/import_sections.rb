@@ -1,5 +1,3 @@
-return unless ENV['RUNNING_TASK']
-
 sections = [
   {position: 1, numeral: 'I',     title: "Live animals; animal products", chapters: ("01".."05")},
   {position: 2, numeral: 'II',    title: "Vegetable products", chapters: ("06".."14")},

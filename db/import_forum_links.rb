@@ -1,5 +1,3 @@
-return unless ENV['RUNNING_TASK']
-
 forum_links = [
   {:chapter=>"01", :url=>"https://forum.trade-tariff.service.gov.uk/c/classification/01/8"},
   {:chapter=>"02", :url=>"https://forum.trade-tariff.service.gov.uk/c/classification/02/10"},
