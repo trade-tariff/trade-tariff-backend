@@ -48,6 +48,16 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         ancestor_11_description_indexed: nil,
         ancestor_12_description_indexed: nil,
         ancestor_13_description_indexed: nil,
+        guides: [
+          {
+            id: 1,
+            title: 'Aircraft parts',
+            image: 'aircraft.png',
+            url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories',
+            strapline: 'Get help to classify drones and aircraft parts for import and export.',
+          },
+        ],
+        guide_ids: [1],
       }
     end
 
@@ -55,6 +65,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       commodity = create(
         :commodity,
         :with_ancestors,
+        :with_guide,
         goods_nomenclature_item_id: '0101210000',
         producline_suffix: '80',
         validity_start_date: Date.parse('2020-06-29'),

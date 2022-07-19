@@ -123,6 +123,14 @@ FactoryBot.define do
       # TODO: Populate this trait
     end
 
+    trait :with_guide do
+      after(:create) do |goods_nomenclature, _evaluator|
+        guide = create(:guide, :aircraft_parts)
+
+        create(:guides_goods_nomenclature, guide:, goods_nomenclature:)
+      end
+    end
+
     trait :non_declarable do
       after(:create) do |heading, _evaluator|
         create(:goods_nomenclature, :with_description,
