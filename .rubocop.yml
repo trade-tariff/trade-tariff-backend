@@ -11,7 +11,8 @@ AllCops:
     - 'db/schema.rb'
     - 'vendor/**/*'
     - 'bin/**'
-    - 'db/**/*'
+    - 'db/migrate/*'
+    - 'db/data_migrations/*'
     - 'tmp/**/*'
     - 'config/puma.rb'
 
