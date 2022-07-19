@@ -4,6 +4,9 @@ module Beta
       delegate :id, to: :chapter_statistics, prefix: true, allow_nil: true
       delegate :id, to: :heading_statistics, prefix: true, allow_nil: true
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
+      delegate :id, to: :guide, prefix: true, allow_nil: true
+
+      GUIDE_PERCENTAGE_THRESHOLD = 25
 
       attr_accessor :took,
                     :timed_out,
@@ -43,6 +46,8 @@ module Beta
           hit.heading_id = hit_result._source.heading_id
           hit.ancestors = hit_result._source.ancestors
           hit.ancestor_ids = hit_result._source.ancestors.map(&:id)
+          hit.guides = hit_result._source.guides
+          hit.guides_ids = hit_result._source.guide_ids
 
           hit
         end
@@ -78,8 +83,28 @@ module Beta
         heading_statistics.pluck(:id)
       end
 
+      def guide
+        if guide_statistics?
+          candidate_guide = guide_statistics.max_by(&:percentage)
+
+          candidate_guide if candidate_guide.percentage > GUIDE_PERCENTAGE_THRESHOLD
+        end
+      end
+
+      def guide_statistics
+        @guide_statistics&.values || []
+      end
+
+      def guide_statistics?
+        @guide_statistics&.any?
+      end
+
       def generate_statistics
         @chapter_statistics, @heading_statistics = Api::Beta::SearchResultStatisticsService.new(hits).call
+      end
+
+      def generate_guide_statistics
+        @guide_statistics = Api::Beta::GuideStatisticsService.new(hits).call
       end
     end
   end
