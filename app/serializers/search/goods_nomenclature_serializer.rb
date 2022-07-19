@@ -96,7 +96,10 @@ module Search
     end
 
     def guides
-      super.map do |guide|
+      # NB: We're not currently interested in chapter guides and prefer more specific guidance currently
+      return [] if chapter?
+
+      heading.guides.map do |guide|
         {
           id: guide.id,
           title: guide.title,
