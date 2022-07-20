@@ -5,6 +5,7 @@ RSpec.describe Api::Beta::SearchService do
     before do
       allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
       allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(search_query_parser_service)
+      allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(goods_nomenclature_query)
       allow(Beta::Search::OpenSearchResult).to receive(:build).and_call_original
 
       call
@@ -18,6 +19,7 @@ RSpec.describe Api::Beta::SearchService do
 
     let(:search_query_parser_service) { instance_double('Api::Beta::SearchQueryParserService', call: search_query_parser_result) }
     let(:search_query_parser_result) { build(:search_query_parser_result, :single_hit) }
+    let(:goods_nomenclature_query) { build(:goods_nomenclature_query, :single_hit) }
 
     let(:expected_search_args) do
       {
@@ -68,7 +70,7 @@ RSpec.describe Api::Beta::SearchService do
 
     it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta') }
     it { expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args) }
-    it { expect(Beta::Search::OpenSearchResult).to have_received(:build).with(search_result, search_query_parser_result) }
-    it { expect(call.to_json).to match_json_expression(expected_serialized_result) }
+    it { expect(Beta::Search::OpenSearchResult).to have_received(:build).with(search_result, search_query_parser_result, goods_nomenclature_query) }
+    it { expect(call).to be_a(Beta::Search::OpenSearchResult) }
   end
 end

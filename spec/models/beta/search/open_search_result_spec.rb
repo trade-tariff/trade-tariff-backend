@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Beta::Search::OpenSearchResult do
   describe '.build' do
-    subject(:result) { described_class.build(search_result, search_query_parser_result) }
+    subject(:result) { described_class.build(search_result, search_query_parser_result, goods_nomenclature_query) }
 
     let(:search_result) do
       fixture = file_fixture('beta/search/goods_nomenclatures/multiple_hits.json')
@@ -11,6 +11,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
     end
 
     let(:search_query_parser_result) { build(:search_query_parser_result, :multiple_hits) }
+    let(:goods_nomenclature_query) { build(:goods_nomenclature_query, :full_query) }
 
     it { is_expected.to be_a(described_class) }
     it { expect(result.took).to eq(2) }
@@ -18,6 +19,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
     it { expect(result.max_score).to eq(83.69403) }
     it { expect(result.hits.count).to eq(10) }
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }
+    it { expect(result.goods_nomenclature_query).to eq(goods_nomenclature_query) }
   end
 
   describe '#id' do
