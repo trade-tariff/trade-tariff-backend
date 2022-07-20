@@ -5,7 +5,7 @@ module Beta
                   :verbs,
                   :adjectives,
                   :noun_chunks,
-                  :filters
+                  :filters,
                   :numeric
 
       attr_accessor :original_search_query

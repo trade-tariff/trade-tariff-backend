@@ -29,8 +29,27 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       ]
     end
 
+    context 'when the search query is a numeric' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :numeric).query }
+
+      let(:expected_query) do
+        {
+          query: {
+            term: {
+              goods_nomenclature_item_id: {
+                value: '0101000000',
+              },
+            },
+          },
+        }
+      end
+
+      it { is_expected.to eq(expected_query) }
+    end
+
     context 'when there are nouns, noun_chunks, verbs and adjectives' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :full_query).query }
+
 
       let(:expected_query) do
         {
@@ -185,5 +204,8 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
 
       it { is_expected.to eq(expected_query) }
     end
+  end
+
+  describe '#goods_nomencalture_item_id' do
   end
 end

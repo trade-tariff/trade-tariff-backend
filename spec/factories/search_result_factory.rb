@@ -1,8 +1,15 @@
 FactoryBot.define do
   factory :search_result, class: 'Beta::Search::OpenSearchResult' do
+    transient do
+      goods_nomenclature_item_id {}
+    end
+
     multiple_hits
     no_generate_statistics
     no_generate_guide_statistics
+    no_redirect
+
+    goods_nomenclature_query {}
 
     trait :no_hits do
       transient do
@@ -60,15 +67,53 @@ FactoryBot.define do
       end
     end
 
+    trait :redirect do
+      goods_nomenclature_query { build(:goods_nomenclature_query, :numeric, original_search_query: goods_nomenclature_item_id || '0101') }
+      transient { redirect { true } }
+    end
+
+    trait :heading do
+      transient do
+        goods_nomenclature_item_id { '0101' }
+      end
+    end
+
+    trait :chapter do
+      transient do
+        goods_nomenclature_item_id { '01' }
+      end
+    end
+
+    trait :commodity do
+      transient do
+        goods_nomenclature_item_id { '0101210000' }
+      end
+    end
+
+    trait :partial_goods_nomenclature do
+      transient do
+        goods_nomenclature_item_id { '010110' }
+      end
+    end
+
+    trait :no_redirect do
+      transient { redirect { false } }
+    end
+
     initialize_with do
       fixture_filename = Rails.root.join("spec/fixtures/beta/search/goods_nomenclatures/#{result_fixture}.json")
       search_result = JSON.parse(File.read(fixture_filename))
       presented_search_result = Hashie::TariffMash.new(search_result)
 
-      search_result = Beta::Search::OpenSearchResult.build(presented_search_result, search_query_parser_result)
+      search_result = Beta::Search::OpenSearchResult.build(
+        presented_search_result,
+        search_query_parser_result,
+        goods_nomenclature_query || build(:goods_nomenclature_query),
+      )
 
       search_result.generate_statistics if generate_statistics
       search_result.generate_guide_statistics if generate_guide_statistics
+      search_result.redirect! if redirect
 
       search_result
     end
