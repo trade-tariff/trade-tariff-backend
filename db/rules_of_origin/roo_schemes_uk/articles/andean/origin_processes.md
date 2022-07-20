@@ -8,7 +8,7 @@
 
 2. Notwithstanding paragraph 1, originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 25, benefit from the Agreement without it being necessary to submit any of the documents referred to above.
 
-{{ top }}
+
 
 ## Article 16 - Procedure for the Issuance of a Movement Certificate EUR.1
 
@@ -26,7 +26,7 @@
 
 7. A movement certificate EUR.1 shall be issued by the competent authorities or customs authorities and made available to the exporter as soon as the actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 17 - Movement Certificate EUR.1 Issued Retrospectively
 
@@ -48,7 +48,7 @@
  
 5. The endorsement referred to in paragraph 4 shall be inserted in the 'Remarks' box of the movement certificate EUR.1.
 
-{{ top }}
+
 
 ## Article 18 - Issuance of a Duplicate Movement Certificate EUR.1
 
@@ -64,13 +64,13 @@
 
 4. The duplicate, which must bear the date of issue of the original movement certificate EUR.1 shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 19 - Issuance of Movement Certificates EUR.1 on the Basis of a Proof of Origin Previously Issued or Made Out
 
 When originating products are placed under the control of a customs authority in the UK, it shall be possible to replace the original proof of origin by one or more movement certificates EUR.1 for the purpose of sending all or some of these products elsewhere within the UK or the signatory Andean Countries. The replacement movement certificate(s) EUR.1 shall be issued by the competent authority or by the customs authority, in this last case, under whose control the products are placed.
 
-{{ top }}
+
 
 ## Article 20 - Conditions for Making Out an Invoice Declaration
 
@@ -90,7 +90,7 @@ When originating products are placed under the control of a customs authority in
 
 6. An invoice declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing Party no longer than two years after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 21 - Approved exporter
 
@@ -104,7 +104,7 @@ When originating products are placed under the control of a customs authority in
 
 5. The competent authorities or customs authorities may withdraw the auth-orisation at any time. Such authorities shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 22 - Validity of Proof of Origin
 
@@ -116,19 +116,19 @@ When originating products are placed under the control of a customs authority in
 
 4. For the purposes of applying paragraphs 2 and 3, if a proof of origin is not presented at the time of importation, the importer must declare to the custom authorities of the importing Party the intention of requesting preferential tariff treatment for the products concerned.
 
-{{ top }}
+
 
 ## Article 23 - Submission of Proof of Origin
 
 Proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that Party. The UK authorities may require a translation of a proof of origin and the import declaration to be accompanied by a statement from the importer that the products meet the conditions required for benefiting from the application of the Agreement.
 
-{{ top }}
+
 
 ## Article 24 - Importation by Instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the UK, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2007 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 25 - Exemptions from Proof of Origin
 
@@ -140,7 +140,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 4. For the purposes of paragraph 3, in cases where the products are invoiced in a currency other than euro or USD, amounts in the national currencies of the UK equivalent to the amounts expressed in euro or US dollars shall be fixed in accordance with the current exchange rate applicable in the UK.
 
-{{ top }}
+
 
 ## Article 26 - Supporting Documents
 
@@ -154,7 +154,7 @@ The documents referred to in Articles 16, paragraph 3 and 20 paragraph 3 used fo
 
 - movement certificates EUR.1 or invoice declarations proving the originating status of materials used, issued or made out in a Party in accordance with this Origin Reference Document. 
 
-{{ top }}
+
 
 ## Article 27 - Preservation of Proof of Origin and Supporting Documents
 
@@ -166,7 +166,7 @@ The documents referred to in Articles 16, paragraph 3 and 20 paragraph 3 used fo
 
 4. The customs authorities of the importing Party or the importer, according to domestic law of the importing Party, shall keep for at least three years the movement certificates EUR.1 and the invoice declarations presented to or by them.
 
-{{ top }}
+
 
 ## Article 28 - Discrepancies and Formal Errors
 
@@ -174,7 +174,7 @@ The documents referred to in Articles 16, paragraph 3 and 20 paragraph 3 used fo
 
 2. Obvious formal errors, such as typing errors, on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 29 - Amounts Expressed in Euro
 
@@ -186,6 +186,6 @@ The documents referred to in Articles 16, paragraph 3 and 20 paragraph 3 used fo
 
 4. The UK may round up or down the amount resulting from the conversion into its national currency of an amount expressed in euro. The rounded-off amount may not differ from the amount resulting from the conversion by more than five per cent. The UK may retain unchanged its national currency equivalent of an amount expressed in euro if, at the time of the annual adjustment provided   for in paragraph 3, the conversion of that amount, prior to any rounding off, results in an increase of less than 15 per cent in the national currency equivalent. The national currency equivalent may be retained unchanged if the conversion would result in a decrease in that equivalent value. 
 
-{{ top }}
+
 
 {{ Articles 15 to 29 }}

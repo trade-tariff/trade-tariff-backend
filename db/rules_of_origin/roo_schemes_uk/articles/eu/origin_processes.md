@@ -10,7 +10,7 @@
 
 3. The importer making the claim for preferential tariff treatment based on a statement on origin as referred to in point (a) of paragraph 2 shall keep the statement on origin and, when required by the customs authority of the importing Party, shall provide a copy thereof to that customs authority.
 
-{{ top }}
+
 
 ## Article 18a - Time of the Claim for Preferential Tariff Treatment
 
@@ -26,7 +26,7 @@
 
     The other obligations applicable to the importer under Article 18 remain unchanged.
 
-{{ top }}
+
 
 ## Article 19 - Statement on Origin
 
@@ -44,13 +44,13 @@
 
 5. If, at the request of the importer, unassembled or disassembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom that fall within Sections XV to XXI of HS 2017are imported by instalments, a single statement on origin for such products may be used in accordance with the requirements laid down by the customs authority of the importing Party.
 
-{{ top }}
+
 
 ## Article 20 - Discrepancies
 
 The customs authority of the importing Party shall not reject a claim for preferential tariff treatment due to minor errors or discrepancies in the statement on origin, or for the sole reason that an invoice was issued in a third country.
 
-{{ top }}
+
 
 ## Article 21 - Importer's Knowledge
 
@@ -58,7 +58,7 @@ The customs authority of the importing Party shall not reject a claim for prefer
 
 2. Before claiming the preferential treatment, in the event that an importer is unable to obtain the information referred to in paragraph 1 of this Article as a result of the exporter deeming it to be confidential information or for any other reason, the exporter may provide a statement on origin so that the importer may claim the preferential tariff treatment on the basis of point (a) of Article 18(2).
 
-{{ top }}
+
 
 ## Article 22 - Record-Keeping Requirements
 
@@ -72,7 +72,7 @@ The customs authority of the importing Party shall not reject a claim for prefer
 
 3. The records to be kept in accordance with this Article may be held in electronic format.
 
-{{ top }}
+
 
 ## Article 23 - Small Consignments
 
@@ -98,6 +98,6 @@ The customs authority of the importing Party shall not reject a claim for prefer
 
 3. The importer shall be responsible for the correctness of the declaration and for the compliance with the requirements provided for in this Origin Reference Document. The record-keeping requirements set out in Article 22 shall not apply to the importer under this Article.
 
-{{ top }}
+
 
 {{ Articles 18 to 23 }}

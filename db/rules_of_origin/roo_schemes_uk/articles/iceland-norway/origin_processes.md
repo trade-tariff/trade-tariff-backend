@@ -22,7 +22,7 @@
 
    5. the certificate may be issued in any of the official languages of the Parties.
 
-{{ top }}
+
 
 ## Article 16 - Procedure for the Issue of a Movement Certificate EUR.1 or EUR-MED
 
@@ -62,7 +62,7 @@
 
 9. A movement certificate EUR.1 or EUR-MED shall be issued by the customs authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 17 - Movement Certificates EUR.1 or EUR-MED issued Retrospectively
 
@@ -88,7 +88,7 @@
 
 6. The endorsement referred to in paragraph 5 shall be inserted in box 7 of the movement certificate EUR.1 or EUR-MED.
 
-{{ top }}
+
 
 ## Article 18 - Issue of a Duplicate Movement Certificate EUR.1 or EUR-MED
 
@@ -103,13 +103,13 @@
 
 4. The duplicate, which shall bear the date of issue of the original movement certificate EUR.1 or EUR-MED, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 19 - Issue of Movement Certificates EUR.1 or EUR-MED on the Basis of a Proof of Origin issued or made out previously
 
 When originating products are placed under the control of a customs office in a Party, it shall be possible to replace the original proof of origin by one or more movement certificates EUR.1 or EUR-MED for the purpose of sending all or some of these products elsewhere within that Party. The replacement movement certificate(s) EUR.1 or EUR-MED shall be issued by the customs office under whose control the products are placed.
 
-{{ top }}
+
 
 ## Article 20 - Accounting Segregation
 
@@ -125,7 +125,7 @@ When originating products are placed under the control of a customs office in a 
 
 6. The customs authorities shall monitor the use made of the authorisation and may withdraw it whenever the beneficiary makes improper use of the authorisation in any manner whatsoever or fails to fulfil any of the other conditions laid down in this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 21 - Conditions for making out an Origin Declaration or an Origin Declaration EUR-MED
 
@@ -167,7 +167,7 @@ When originating products are placed under the control of a customs office in a 
 
 8. An origin declaration or an origin declaration EUR-MED may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing Party at the latest two years after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 22 - Approved Exporter
 
@@ -181,7 +181,7 @@ When originating products are placed under the control of a customs office in a 
 
 5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 23 - Validity of Proof of Origin
 
@@ -191,19 +191,19 @@ When originating products are placed under the control of a customs office in a 
 
 3. In other cases of belated presentation, the customs authorities of the importing Party may accept the proofs of origin where the products have been submitted before the said final date.
 
-{{ top }}
+
 
 ## Article 24 - Submission of Proof of Origin
 
 Proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that country. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the implementation of the United Kingdom-Iceland Agreement.
 
-{{ top }}
+
 
 ## Article 25 - Importation by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of General Interpretive Rule 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within sections XVI and XVII or headings 7308 and 9406 of HS 2007 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 26 - Exemptions from proof of origin
 
@@ -213,7 +213,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. Furthermore, the total value of these products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 27 - Supplier's Declaration
 
@@ -235,7 +235,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 6. The supplier making out a declaration must be prepared to submit at any time, at the request of the customs authorities of the country where the declaration is made out, or of the exporting Party for a supplier’s declaration made out in the European Union, all appropriate documents proving that the information given on this declaration is correct.
 
-{{ top }}
+
 
 ## Article 28 - Supporting Documents
 
@@ -253,7 +253,7 @@ The documents referred to in Articles 16(3), 21(5) and 27(6) used for the purpos
 
 - appropriate evidence concerning working or processing undergone outside the Party by application of Article 11, proving that the requirements of that Article have been satisfied.
 
-{{ top }}
+
 
 ## Article 29 - Preservation of Proof of Origin, Supplier's Declarations and Supporting Documents
 
@@ -269,7 +269,7 @@ The documents referred to in Articles 16(3), 21(5) and 27(6) used for the purpos
 
 5. The customs authorities of the importing Party shall keep for at least three years the movement certificates EUR.1 and EUR-MED and the origin declarations and origin declarations EUR-MED submitted to them.
 
-{{ top }}
+
 
 ## Article 30 - Discrepancies and Formal Errors
 
@@ -277,7 +277,7 @@ The documents referred to in Articles 16(3), 21(5) and 27(6) used for the purpos
 
 2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 31 - Amounts Expressed in Euro
 
@@ -291,6 +291,6 @@ The documents referred to in Articles 16(3), 21(5) and 27(6) used for the purpos
 
 5. The amounts expressed in euro shall be reviewed by the Joint Committee at the request of the Parties. When carrying out this review, the Joint Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 15 to 31 }}

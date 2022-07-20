@@ -4,7 +4,7 @@
 
 2. The importing Party may deny that claim for preferential treatment if any importer, exporter or party fails to comply with any requirement of this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 18 - Origin declaration
 
@@ -16,7 +16,7 @@
 
 2. Each Party shall permit an origin declaration to be sent electronically and directly from the exporter in one Party to an importer in the other Party. Such an approach will allow the use of electronic signatures or identification codes. 
 
-{{ top }}
+
 
 ## Article 19 - Validity of the origin declaration
 
@@ -32,7 +32,7 @@
 
 4. If unassembled or disassembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XV to XXI of HS 2017 are imported by instalments, a single origin declaration for such products may be used on request of the importer and in accordance with the requirements laid down by the customs authority of the importing Party. 
 
-{{ top }}
+
 
 ## Article 20 - Exemptions from origin declaration requirements
 
@@ -42,13 +42,13 @@
 
 3. Each Party may set value limits for products referred to in paragraph 1, and shall exchange information with the other Party regarding those limits.
 
-{{ top }}
+
 
 ## Article 21 - Delayed claims for preferential treatment
 
 Each Party shall, in conformity with its laws and regulations, provide that, if a good would have qualified as originating when it was imported into the territory of that Party but the importer did not have an origin declaration at the time of importation, the importer of the good may, within a period of time of no less than two years after the date of importation, apply for a refund of duties paid as a result of the good not having been accorded preferential tariff treatment.
 
-{{ top }}
+
 
 ## Article 22 - Incorrect claims for preferential treatment
 
@@ -58,7 +58,7 @@ Each Party shall, in conformity with its laws and regulations, provide that, if 
 
    2. an importer that becomes aware of or has reason to believe that an origin declaration for a good which it has imported and to which preferential treatment has been granted contains incorrect information shall immediately notify the customs authority of the importing Party in writing of any change affecting the originating status of that good and pay any duties owing. 
 
-{{ top }}
+
 
 ## Article 23 - Discrepancies
 
@@ -70,7 +70,7 @@ Each Party shall, in conformity with its laws and regulations, provide that, if 
 
 4. The customs authority of the importing Party shall not reject a claim for preferential tariff treatment for the sole reason that the invoice or other commercial document was issued in a third country.
 
-{{ top }}
+
 
 ## Article 25 - Record keeping requirements 
 
@@ -92,6 +92,6 @@ Each Party shall, in conformity with its laws and regulations, provide that, if 
 
    2. denies access to those records or that documentation.
 
-{{ top }}
+
 
 {{ Articles 17 to 25 }}

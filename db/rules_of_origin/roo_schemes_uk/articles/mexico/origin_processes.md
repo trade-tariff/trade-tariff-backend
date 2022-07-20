@@ -8,7 +8,7 @@
 
 2. Notwithstanding paragraph 1, originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 25, benefit from the United Kingdom-Mexico Agreement without it being necessary to submit any of the documents referred to above.
 
-{{ top }}
+
 
 ## Article 16 - Procedure for the issue of an EUR.1 movement certificate
 
@@ -26,7 +26,7 @@
 
 7. An EUR.1 movement certificate shall be issued by the customs authority or the competent governmental authority and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 17 - EUR.1 movement certificates issued retrospectively
 
@@ -48,7 +48,7 @@
 
 5. The endorsement referred to in paragraph 4 shall be inserted in the 'Remarks' box of the EUR.1 movement certificate.
 
-{{ top }}
+
 
 ## Article 18 - Issue of a duplicate EUR.1 movement certificate
 
@@ -64,7 +64,7 @@
 
 4. The duplicate, which must bear the date of issue of the original EUR.1 movement certificate, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 19 - Issue of EUR.1 movement certificates on the basis of proof of origin issued or made out previously
 
@@ -74,7 +74,7 @@
 
 3. The replacement certificate shall be issued on the basis of a written request from the re-exporter, after the authorities concerned have verified the information supplied in the applicant's request.
 
-{{ top }}
+
 
 ## Article 20 - Conditions for making out an invoice declaration
 
@@ -94,7 +94,7 @@
 
 6. An invoice declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented to the customs authority of the importing country no longer than the period established in the domestic law of each Party, as set out under Appendix V.
 
-{{ top }}
+
 
 ## Article 21 - Approved exporter
 
@@ -108,7 +108,7 @@
 
 5. The customs authorities or the competent governmental authority may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, does not fulfil the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 22 - Validity of proof of origin
 
@@ -118,19 +118,19 @@
 
 3. In other cases of belated presentation, the customs authorities of the importing country may accept the proofs of origin where the products have been submitted before the said final date.
 
-{{ top }}
+
 
 ## Article 23 - Submission of proof of origin
 
 Proofs of origin shall be submitted to the customs authorities of the importing country in accordance with the procedures applicable in that country. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the implementation of this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 24 - Import by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing country, dismantled or non-assembled products within the meaning of paragraph 2 (a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or heading Nos 7308 and 9406 of HS 2002 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities on importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 25 - Exemptions from proof of origin
 
@@ -140,7 +140,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. Furthermore, the total value of these products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 26 - Supporting documents
 
@@ -154,7 +154,7 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 - EUR.1 movement certificates or invoice declarations proving the originating status of materials used, issued or made out in Mexico or the United Kingdom in accordance with this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 27 - Preservation of proof of origin and supporting documents
 
@@ -166,7 +166,7 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 4. The customs authorities of the importing country shall keep for at least three years the EUR.1 movement certificates and the invoice declarations submitted to them.
 
-{{ top }}
+
 
 ## Article 28 - Discrepancies and formal errors
 
@@ -174,7 +174,7 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 29 - Amounts expressed in euro
 
@@ -186,6 +186,6 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 4. The amounts expressed in euro in this Origin Reference Document and their equivalents in the national currencies of the United Kingdom and Mexico shall be reviewed by the Joint Committee at the request of Mexico or the United Kingdom. When carrying out this review, the Joint Committee shall ensure that there will be no decrease in the amounts to be used in any national currency and shall furthermore consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro in this Origin Reference Document.
 
-{{ top }}
+
 
 {{ Articles 15 to 29 }}

@@ -14,7 +14,7 @@
 
 5. For the purposes of applying the provisions of this Title, exporters shall endeavour to use English or French.
 
-{{ top }}
+
 
 ## Article 18 - Procedure for the issue of a movement certificate EUR.1
 
@@ -32,7 +32,7 @@
 
 7. A movement certificate EUR.1 shall be issued by the customs authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 19 - Movement certificates EUR.1 issued retrospectively
 
@@ -52,7 +52,7 @@
 
 5. The endorsement referred to in paragraph 4 of this Article shall be inserted in the 'Remarks' box of the movement certificate EUR.1.
 
-{{ top }}
+
 
 ## Article 20 - Issue of a duplicate movement certificate EUR.1
 
@@ -66,7 +66,7 @@
 
 4. The duplicate, which must bear the date of issue of the original movement certificate EUR.1, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 21 - Conditions for making out an origin declaration
 
@@ -92,7 +92,7 @@
 
 6. An origin declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing country no longer than two (2) years after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 22 - Approved exporter
 
@@ -106,7 +106,7 @@
 
 5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1 of this Article, no longer fulfils the conditions referred to in paragraph 2 of this Article or otherwise makes incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 23 - Validity of proof of origin
 
@@ -116,19 +116,19 @@
 
 3. In other cases of belated presentation, the customs authorities of the importing country may accept the proof of origin where the products have been submitted before the final date.
 
-{{ top }}
+
 
 ## Article 24 - Submission of proof of origin
 
 Proof of origin shall be submitted to the customs authorities of the importing country in accordance with the procedures applicable in that country. Those authorities may require proof of origin to be translated. They may also require that the import declaration be accompanied by a statement from the importer to the effect that the products meet the requisite conditions for implementation of the United Kingdom-Côte d'Ivoire Agreement.
 
-{{ top }}
+
 
 ## Article 25 - Importation by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing country, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2012 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment
 
-{{ top }}
+
 
 ## Article 26 - Exemptions from proof of origin
 
@@ -138,7 +138,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. Furthermore, the total value of those products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 27 - Information procedure for cumulation purposes
 
@@ -162,7 +162,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 10. Suppliers' declarations made and information certificates issued before the date of entry into force of this Origin Reference Document in accordance with any previously applicable agreement or arrangement shall remain valid.
 
-{{ top }}
+
 
 ## Article 28 - Supporting documents
 
@@ -176,7 +176,7 @@ The documents referred to in Articles 18(3) and 21(3) of this Origin Reference D
 
 - movement certificates EUR.1 or origin declarations proving the originating status of materials used, issued or made out in Côte d'Ivoire, in the United Kingdom or in one of the other countries or territories referred to in Articles 6, 7 and 8 of this Origin Reference Document, and in accordance with this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 29 - Preservation of proof of origin and supporting documents
 
@@ -190,7 +190,7 @@ The documents referred to in Articles 18(3) and 21(3) of this Origin Reference D
 
 5. The customs authorities of the importing country shall keep the movement certificates EUR.1 and the origin declarations submitted to them for at least three (3) years.
 
-{{ top }}
+
 
 ## Article 30 - Discrepancies and clerical errors
 
@@ -198,7 +198,7 @@ The documents referred to in Articles 18(3) and 21(3) of this Origin Reference D
 
 2. Obvious clerical errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the accuracy of the entries made in this document.
 
-{{ top }}
+
 
 ## Article 31 - Amounts expressed in euro
 
@@ -212,6 +212,6 @@ The documents referred to in Articles 18(3) and 21(3) of this Origin Reference D
 
 5. The amounts expressed in euro shall be reviewed by the Committee at the request of the United Kingdom or of Côte d'Ivoire. When carrying out this review, the Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 17 to 31 }}

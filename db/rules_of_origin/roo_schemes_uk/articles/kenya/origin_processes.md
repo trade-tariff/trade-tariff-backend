@@ -12,7 +12,7 @@
 
 4. For the purpose of applying the provisions of this Title, the exporters shall endeavour to use a language common to both the EAC Partner States and the UK.
 
-{{ top }}
+
 
 ## Article 18 - Procedure for the issue of a movement certificate EUR 1
 
@@ -30,7 +30,7 @@
 
 7. A movement certificate EUR 1 shall be issued by the customs authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 19 - Movement certificates EUR 1 issued retrospectively
 
@@ -50,7 +50,7 @@
 
 5. The endorsement referred to in paragraph 4 shall be inserted in the "Remarks" box of the movement certificate EUR 1.
 
-{{ top }}
+
 
 ## Article 20 - Issue of a duplicate movement certificate EUR 1
 
@@ -62,13 +62,13 @@
 
 4. The duplicate, which must bear the date of issue of the original movement certificate EUR 1, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 21 - Issue of movement certificates EUR 1 on the basis of a proof of origin issued or made out previously
 
 When originating products are placed under the control of a customs office in an EAC Partner State or in the UK, it shall be possible to replace the original proof of origin by one or more movement certificates EUR 1 for the purpose of sending all or some of these products elsewhere within the EAC Partner States or within the UK. The replacement movement certificate(s) EUR 1 shall be issued by the customs office under whose control the products are placed and endorsed by the customs authority under whose control the products are placed.
 
-{{ top }}
+
 
 ## Article 22 - Conditions for making out an origin declaration
 
@@ -88,7 +88,7 @@ When originating products are placed under the control of a customs office in an
 
 6. An origin declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing country no longer than two years after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 23 - Approved exporter
 
@@ -102,7 +102,7 @@ When originating products are placed under the control of a customs office in an
 
 5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, does not fulfil the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorization.
 
-{{ top }}
+
 
 ## Article 24 - Validity of proof of origin
 
@@ -112,19 +112,19 @@ When originating products are placed under the control of a customs office in an
 
 3. In other cases of belated presentation, the customs authorities of the importing country may accept the proofs of origin where the products have been submitted before the said final date.
 
-{{ top }}
+
 
 ## Article 25 - Submission of proof of origin
 
 Proofs of origin shall be submitted to the customs authorities of the importing country in accordance with the procedures applicable in that country. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the implementation of the United Kingdom-EAC Agreement.
 
-{{ top }}
+
 
 ## Article 26 - Importation by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing country, dismantled or non-assembled products within the meaning of General Rule 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or heading 7308 and 9406 of HS 2012 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 27 - Exemptions from proof of origin
 
@@ -134,7 +134,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. Furthermore, the total value of these products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 28 - Information procedure for cumulation purposes
 
@@ -160,7 +160,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 11. The supplier or long term supplier making out a declaration must be prepared to submit at any time, at the request of the customs authorities of the country where the declaration is made out, all appropriate documents proving that the information given on this declaration is correct.
 
-{{ top }}
+
 
 ## Article 29 - Supporting documents
 
@@ -174,7 +174,7 @@ The documents referred to in Articles 18(3) and 22(3) used for the purpose of pr
 
 - movement certificates EUR 1 or origin declarations proving the originating status of materials used, issued or made out in an EAC Partner State, in the UK or in one of the other countries or territories referred to in Articles 4, 5 and 6(2) and in accordance with this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 30 - Preservation of proof of origin and supporting documents
 
@@ -188,7 +188,7 @@ The documents referred to in Articles 18(3) and 22(3) used for the purpose of pr
 
 5. The customs authorities of the importing country shall keep the movement certificates EUR 1 and the origin declarations submitted to them for five (5) years in EAC Partner States and at least three (3) years in the UK.
 
-{{ top }}
+
 
 ## Article 31 - Discrepancies and formal errors
 
@@ -196,7 +196,7 @@ The documents referred to in Articles 18(3) and 22(3) used for the purpose of pr
 
 2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 32 - Amounts expressed in euro for goods referred to in articles 22(1)(b) and article 27(3)
 
@@ -210,6 +210,6 @@ The documents referred to in Articles 18(3) and 22(3) used for the purpose of pr
 
 5. The amounts expressed in euro shall be reviewed by the Committee at the request of the UK or of the EAC Partner States. When carrying out this review, the Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 17 to 32 }}

@@ -4,7 +4,7 @@
 
 2. Originating products within the meaning of this Origin Reference Document, in the cases specified in Article 22 (Exemptions from Origin Declaration), shall benefit from preferential tariff treatment of the United Kingdom-Singapore Agreement without it being necessary to submit any of the documents referred to in paragraph 1.
 
-{{ top }}
+
 
 ## Article 17 - Conditions for Making Out an Origin Declaration
 
@@ -32,7 +32,7 @@
 
 6. By derogation from paragraph 1, an origin declaration may exceptionally be made out after exportation ("retrospective statement") on condition that it is presented in the importing Party no later than two years, in the case of the UK, and one year, in the case of Singapore, after the entry of the goods into the territory.
 
-{{ top }}
+
 
 ## Article 18 - Approved Exporter
 
@@ -46,7 +46,7 @@
 
 5. The customs authorities of the UK may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 19 - Validity of Origin Declaration
 
@@ -56,19 +56,19 @@
 
 3. In cases of belated presentation other than those of paragraph 2, the customs authorities of the importing Party may accept the origin declarations where the products have been submitted before such final date.
 
-{{ top }}
+
 
 ## Article 20 - Submission of Origin Declaration
 
 For the purposes of claiming preferential tariff treatment, origin declarations shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that Party.
 
-{{ top }}
+
 
 ## Article 21 - Importation in Instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2017 are imported in instalments, a single origin declaration for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 22 - Exemptions from Origin Declaration
 
@@ -78,7 +78,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. The total value of these products shall not exceed 500 euro in the case of small packages or 1 200 euro in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 23 - Supporting Documents
 
@@ -90,7 +90,7 @@ The documents referred to in paragraph 3 of Article 17 (Conditions for Making Ou
 
 - documents proving the working or processing of materials in a Party, issued or made out in a Party, where these documents are used in accordance with domestic law.
 
-{{ top }}
+
 
 ## Article 24 - Preservation of Origin Declaration and Supporting Documents
 
@@ -100,7 +100,7 @@ The documents referred to in paragraph 3 of Article 17 (Conditions for Making Ou
 
 3. Each Party shall permit, in accordance with that Party's laws and regulations, exporters in its territory to maintain documentation or records in any medium, provided that the documentation or records can be retrieved and printed.
 
-{{ top }}
+
 
 ## Article 25 - Discrepancies and Formal Errors
 
@@ -108,7 +108,7 @@ The documents referred to in paragraph 3 of Article 17 (Conditions for Making Ou
 
 2. Obvious formal errors such as typing errors on a origin declaration should not cause the document to be rejected if those errors are not such as to create doubts concerning the correctness of the statements made in the document.
 
-{{ top }}
+
 
 ## Article 26 - Amounts Expressed in Euro
 
@@ -120,6 +120,6 @@ The documents referred to in paragraph 3 of Article 17 (Conditions for Making Ou
 
 4. The UK may round up or down the amount resulting from the conversion into its national currency of an amount expressed in euro. The rounded amount may not differ from the amount resulting from the conversion by more than five percent. The UK may retain unchanged its national currency equivalent of an amount expressed in euro if, at the time of the annual adjustment provided for in paragraph 3, the conversion of that amount, prior to any rounding-off, results in an increase of less than fifteen percent in the national currency equivalent. The national currency equivalent may be retained unchanged if the conversion would result in a decrease in that equivalent value.
 
-{{ top }}
+
 
 {{ Articles 16 to 26 }}

@@ -8,7 +8,7 @@
 
 2. Notwithstanding paragraph 1, originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 24, benefit from the Agreement without it being necessary to submit any of the documents referred to above.
 
-{{ top }}
+
 
 ## Article 15 - Procedure for the issue of a movement certificate EUR.1
 
@@ -26,7 +26,7 @@
 
 7. A movement certificate EUR.1 shall be issued by the competent public authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 16 - Movement certificates EUR.1 issued retrospectively
 
@@ -48,7 +48,7 @@
 
 5. The endorsement referred to in paragraph 4 shall be inserted in the "Remarks" box of the movement certificate EUR.1.
 
-{{ top }}
+
 
 ## Article 17 - Issue of a duplicate movement certificate EUR.1
 
@@ -64,13 +64,13 @@
 
 4. The duplicate, which must bear the date of issue of the original movement certificate EUR.1, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 18 - Issue of movement certificates EUR.1 on the basis of a proof of origin issued or made out previously
 
 When originating products are placed under the control of a customs office in a Party, it shall be possible to replace the original proof of origin by one or more movement certificates EUR.1 for the purpose of sending all or some of these products elsewhere within the United Kingdom or Central America. The replacement movement certificate(s) EUR.1 shall be issued by the customs office under whose control the products are placed.
 
-{{ top }}
+
 
 ## Article 19 - Conditions for making out an invoice declaration
 
@@ -90,7 +90,7 @@ When originating products are placed under the control of a customs office in a 
 
 6. An invoice declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing Party no longer than the period established in Appendix 5.
 
-{{ top }}
+
 
 ## Article 20 - Approved exporter
 
@@ -104,7 +104,7 @@ When originating products are placed under the control of a customs office in a 
 
 5. The competent public authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 21 - Validity of proof of origin
 
@@ -116,19 +116,19 @@ When originating products are placed under the control of a customs office in a 
 
 4. According to the domestic legislation of the importing Party, a preferential tariff treatment may be awarded, when it proceeds, through the reimbursement of the tariffs in a period no longer than the period established in Appendix 5 from the date of acceptance of the import declaration, where a proof of origin is presented indicating that the imported goods were at that date eligible for preferential tariff treatment.
 
-{{ top }}
+
 
 ## Article 22 - Submission of proof of origin
 
 Proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that Party. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the implementation of the Agreement.
 
-{{ top }}
+
 
 ## Article 23 - Importation by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing Party, dismantled or nonassembled products within the meaning of paragraph 2(a) of Part Two, Section 1 of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of the HS 2007 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities of the importing Party upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 24 - Exemptions from proof of origin
 
@@ -138,7 +138,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. Furthermore, the total value of these products shall not exceed in the case of small packages or of products forming part of travellers' personal luggage, the amounts in Euros established in Appendix 6 (Amounts referred to in Articles 19, paragraph 1(b) and 24, paragraph 3 of this Origin Reference Document, concerning the Definition of the Concept of "Originating Products" and Methods of Administrative Cooperation).
 
-{{ top }}
+
 
 ## Article 25 - Supporting documents
 
@@ -152,7 +152,7 @@ The documents referred to in Articles 15, paragraph 3 and 19, paragraph 3 used f
 
 - movement certificates EUR.1 or invoice declarations proving the originating status of materials used, issued or made out in a Party in accordance with this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 26 - Preservation of proof of origin and supporting documents
 
@@ -164,7 +164,7 @@ The documents referred to in Articles 15, paragraph 3 and 19, paragraph 3 used f
 
 4. The customs authorities of the importing Party shall keep for at least three years the movement certificates EUR.1 and the invoice declarations submitted to them, which may be kept in electronic format.
 
-{{ top }}
+
 
 ## Article 27 - Discrepancies and formal errors
 
@@ -172,7 +172,7 @@ The documents referred to in Articles 15, paragraph 3 and 19, paragraph 3 used f
 
 2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 28 - Amounts expressed in euro
 
@@ -186,6 +186,6 @@ The documents referred to in Articles 15, paragraph 3 and 19, paragraph 3 used f
 
 5. The amounts expressed in euro shall be reviewed by the Association Committee at the request of a Party. When carrying out this review, the Association Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 14 to 28 }}
