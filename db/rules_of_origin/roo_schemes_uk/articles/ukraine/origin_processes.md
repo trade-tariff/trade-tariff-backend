@@ -12,7 +12,7 @@
 
 3. Notwithstanding paragraph 5 of Article 17 and paragraph 3 of Article 22 below, where cumulation involves only the United Kingdom and the 'Contracting Parties' to the Regional Convention on Pan-Euro Mediterranean preferential rules of origin (other than the participants in the Barcelona Process , with the exception of Turkey) the proof of origin may be a movement certificate EUR.1 or an origin declaration.
 
-{{ top }}
+
 
 ## Article 17 - Procedure for the issue of a movement certificate EUR.1 or EUR-MED
 
@@ -52,7 +52,7 @@
 
 9.  A movement certificate EUR.1 or EUR-MED shall be issued by the customs authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 18 - Movement certificates EUR.1 or EUR-MED issued retrospectively
 
@@ -78,7 +78,7 @@
 
 6. The endorsement referred to in paragraph 5 shall be inserted in Box 7 of the movement certificate EUR.1 or EUR-MED.
 
-{{ top }}
+
 
 ## Article 19 - Issue of a duplicate movement certificate EUR.1 or EUR-MED
 
@@ -92,7 +92,7 @@
 
 4. The duplicate, which shall bear the date of issue of the original movement certificate EUR.1 or EUR-MED, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 20
 
@@ -100,7 +100,7 @@ Issue of movement certificates EUR.1 or EUR-MED on the basis of a proof of origi
 
 When originating products are placed under the control of a customs office in the United Kingdom or Ukraine, it shall be possible to replace the original proof of origin by one or more movement certificates EUR.1 or EUR-MED for the purpose of sending all or some of these products elsewhere within the United Kingdom or Ukraine. The replacement movement certificate(s) EUR.1 or EUR-MED shall be issued by the customs office under whose control the products are placed.
 
-{{ top }}
+
 
 ## Article 21 - Accounting segregation
 
@@ -116,7 +116,7 @@ When originating products are placed under the control of a customs office in th
 
 6. The customs authorities shall monitor the use made of the authorisation and may withdraw it whenever the beneficiary makes improper use of the authorisation in any manner whatsoever or fails to fulfil any of the other conditions laid down in this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 22 - Conditions for making out an origin declaration or an origin declaration EUR-MED
 
@@ -158,7 +158,7 @@ When originating products are placed under the control of a customs office in th
 
 8. An origin declaration or an origin declaration EUR-MED may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing country at the latest two years after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 23 - Approved exporter
 
@@ -172,7 +172,7 @@ When originating products are placed under the control of a customs office in th
 
 5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 24 - Validity of proof of origin
 
@@ -182,19 +182,19 @@ When originating products are placed under the control of a customs office in th
 
 3. In other cases of belated presentation, the customs authorities of the importing Party may accept the proofs of origin where the products have been submitted before the said final date.
 
-{{ top }}
+
 
 ## Article 25 - Submission of proof of origin
 
 Proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that country. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the implementation of the United Kingdom-Ukraine Agreement.
 
-{{ top }}
+
 
 ## Article 26 - Importation by instalments
 
 Where, at the request of the importer and subject to the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2007 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 27 - Exemptions from proof of origin
 
@@ -204,7 +204,7 @@ Where, at the request of the importer and subject to the conditions laid down by
 
 3. Furthermore, the total value of these products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 28 - Supporting documents
 
@@ -220,7 +220,7 @@ The documents referred to in Articles 17(3) and 22(5) used for the purpose of pr
 
 - appropriate evidence concerning working or processing undergone outside the United Kingdom, Ukraine or the other countries referred to in Articles 3 and 4 by application of Article 12, proving that the requirements of that Article have been satisfied.
 
-{{ top }}
+
 
 ## Article 29 - Preservation of proof of origin and supporting documents
 
@@ -232,7 +232,7 @@ The documents referred to in Articles 17(3) and 22(5) used for the purpose of pr
 
 4. The customs authorities of the importing Party shall keep for at least three years the movement certificates EUR.1 and EUR-MED and the origin declarations and origin declarations EUR-MED submitted to them.
 
-{{ top }}
+
 
 ## Article 30 - Discrepancies and formal errors
 
@@ -240,7 +240,7 @@ The documents referred to in Articles 17(3) and 22(5) used for the purpose of pr
 
 2. Obvious formal errors, such as typing errors, on a proof of origin shall not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 31 - Amounts expressed in euro
 
@@ -254,6 +254,6 @@ The documents referred to in Articles 17(3) and 22(5) used for the purpose of pr
 
 5. The amounts expressed in euro shall be reviewed by the Customs Sub-Committee at the request of any of the Parties. When carrying out this review, the Customs Sub-Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 16 to 31 }}

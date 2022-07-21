@@ -8,7 +8,7 @@
 
 2. Notwithstanding paragraph 1, originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 25, benefit from the United Kingdom-Chile Agreement without it being necessary to submit any of the documents referred to above.
 
-{{ top }}
+
 
 ## Article 16 - Procedure for the issue of a movement certificate EUR.1
 
@@ -26,7 +26,7 @@
 
 7. A movement certificate EUR.1 shall be issued by the customs authorities or competent governmental authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 17 - Movement certificate EUR.1 issued retrospectively
 
@@ -48,7 +48,7 @@
 
 5. The endorsement referred to in paragraph 4 shall be inserted in the ‘Remarks’ box of the movement certificate EUR.1.
 
-{{ top }}
+
 
 ## Article 18 - Issue of a duplicate movement certificate EUR.1
 
@@ -64,13 +64,13 @@
 
 4. The duplicate, which must bear the date of issue of the original movement certificate EUR.1, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 19 - Issue of movement certificates EUR.1 on the basis of a proof of origin issued or made out previously
 
 When originating products are placed under the control of a customs office in the United Kingdom or in Chile, it shall be possible to replace the original proof of origin by one or more movement certificates EUR.1 for the purpose of sending all or some of these products elsewhere within the United Kingdom or Chile. The replacement movement certificate(s) EUR.1 shall be issued by the customs office of first entry in the United Kingdom or in Chile under whose control the products are placed.
 
-{{ top }}
+
 
 ## Article 20 - Conditions for making out an invoice declaration
 
@@ -90,7 +90,7 @@ When originating products are placed under the control of a customs office in th
 
 6. An invoice declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented to the customs authorities of the importing country no longer than two years after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 21 - Approved exporter
 
@@ -104,7 +104,7 @@ When originating products are placed under the control of a customs office in th
 
 5. The customs authorities or competent governmental authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 22 - Validity of proof of origin
 
@@ -122,13 +122,13 @@ When originating products are placed under the control of a customs office in th
 
 2. The requirements mentioned in paragraph 1 relating to translation and the statement by the importer shall not be systematic and should only be imposed with a view to clarifying the submitted information or to ensuring that the importer endorses the full responsibility for the declared origin.
 
-{{ top }}
+
 
 ## Article 24 - Importation by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing country, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom classified within Sections XVI and XVII or headings 7308 and 9406 of HS 2002 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 25 - Exemptions from proof of origin
 
@@ -138,7 +138,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 3. Furthermore, the total value of these products shall not exceed EUR 500, in the case of products sent from private persons to private persons or EUR 1 200, in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 26 - Supporting documents
 
@@ -152,7 +152,7 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 - movement certificates EUR.1 or invoice declarations proving the originating status of materials used, issued or made out in the United Kingdom or Chile in accordance with this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 27 - Preservation of proof of origin and supporting documents
 
@@ -164,7 +164,7 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 4. The customs authorities in the United Kingdom shall keep for at least three years the movement certificates EUR.1 and the invoice declarations submitted to them on importation. The customs authorities of Chile must have at their disposal for five years the movement certificates EUR.1 and the invoice declarations submitted to them on importation.
 
-{{ top }}
+
 
 ## Article 28 - Discrepancies and formal errors
 
@@ -172,7 +172,7 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 29 - Amounts expressed in euro
 
@@ -184,6 +184,6 @@ The documents referred to in Articles 16(3) and 20(3) used for the purpose of pr
 
 4. A country may round up or down the amount resulting from the conversion into its national currency of an amount expressed in euro. The rounded-off amount may not differ from the amount resulting from the conversion by more than 5 per cent. A country may retain unchanged its national currency equivalent of an amount expressed in euro if, at the time of the annual adjustment provided for in paragraph 3, the conversion of that amount, prior to any rounding-off, results in an increase of less than 15 per cent in the national currency equivalent. The national currency equivalent may be retained unchanged if the conversion would result in a decrease in that equivalent value.
 
-{{ top }}
+
 
 {{ Articles 15 to 29 }}

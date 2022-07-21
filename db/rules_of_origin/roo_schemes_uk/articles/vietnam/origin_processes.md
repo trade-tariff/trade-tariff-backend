@@ -22,7 +22,7 @@
 
 3. Originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 24 (Exemptions from Proof of Origin), benefit from the United Kingdom-Viet Nam Agreement without requiring the submission of any of the documents referred to in this Article.
 
-{{ top }}
+
 
 ## Article 16 - Procedure for the Issuance of a Certificate of Origin
 
@@ -40,7 +40,7 @@
 
 7. The certificate of origin shall be issued as soon as possible to but not later than three working days after the date of exportation (the declared shipment date).
 
-{{ top }}
+
 
 ## Article 17 - Certificates of Origin Issued Retrospectively
 
@@ -59,7 +59,7 @@
 
 5. The endorsement referred to in paragraph 4 shall be inserted in Box 7 of the certificate of origin. 
 
-{{ top }}
+
 
 ## Article 18 - Issuance of a Duplicate Certificate of Origin
 
@@ -73,7 +73,7 @@
 
 4. The duplicate, which must bear the date of issue of the original certificate of origin, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 19 - Conditions for Making out an Origin Declaration
 
@@ -89,7 +89,7 @@
 
 6. The conditions for making out an origin declaration referred to in paragraphs 1 to 5 apply mutatis mutandis to statements of origin made out by an exporter registered as provided for in subparagraphs 1(c) and 2(c) of Article 15 (General Requirements). 
 
-{{ top }}
+
 
 ## Article 20 - Approved Exporter
 
@@ -103,7 +103,7 @@
 
 5. The competent authorities may withdraw the authorisation at any time. They shall do so when the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation. 
 
-{{ top }}
+
 
 ## Article 21 - Validity of Proof of Origin
 
@@ -113,19 +113,19 @@
 
 3. In other cases of belated presentation, the customs authorities of the importing Party may accept the proofs of origin when the products have been imported within the period of validity referred to in paragraph 1.
 
-{{ top }}
+
 
 ## Article 22 - Submission of Proof of Origin
 
 For the purpose of claiming preferential tariff treatment, proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that Party. Those authorities may request a translation of the proof of origin if it is not issued in English. 
 
-{{ top }}
+
 
 ## Article 23 - Importation by Instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2012 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 24 - Exemptions from Proof of Origin
 
@@ -139,7 +139,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
    2. when entering Viet Nam, USD 200, both in the case of small packages and in the case of products forming part of travellers' personal luggage.
 
-{{ top }}
+
 
 ## Article 25 - Supporting Documents
 
@@ -153,7 +153,7 @@ The documents referred to in paragraph 3 of Article 16 (Procedure for the Issuan
 
 - proof of origin proving the originating status of materials used, issued or made out in a Party in accordance with this Origin Reference Document.
 
-{{ top }}
+
 
 ## Article 26 - Preservation of Proof of Origin and Supporting Documents
 
@@ -165,7 +165,7 @@ The documents referred to in paragraph 3 of Article 16 (Procedure for the Issuan
 
 4. Each Party shall permit, in accordance with that Party's laws and regulations, exporters in its territory to maintain documentation or records in any form or medium, provided that the documentation or records can be retrieved and printed.
 
-{{ top }}
+
 
 ## Article 27 - Discrepancies and Formal Errors
 
@@ -175,7 +175,7 @@ The documents referred to in paragraph 3 of Article 16 (Procedure for the Issuan
 
 3. For multiple goods declared under the same proof of origin, a problem encountered with one of the goods listed shall not affect or delay the granting of preferential tariff treatment and customs clearance of the remaining goods listed in the proof of origin.
 
-{{ top }}
+
 
 ## Article 28 - Amounts Expressed in Euro
 
@@ -187,6 +187,6 @@ The documents referred to in paragraph 3 of Article 16 (Procedure for the Issuan
 
 4. A Party may round up or down the amount resulting from the conversion into its national currency of an amount expressed in euro. The rounded-off amount may not differ from the amount resulting from the conversion by more than 5 per cent. A Party may retain unchanged its national currency equivalent of an amount expressed in euro if, at the time of the annual adjustment provided for in paragraph 3, the conversion of that amount, prior to any rounding-off, results in an increase of less than 15 per cent in the national currency equivalent. The national currency equivalent may be retained unchanged if the conversion would result in a decrease in that equivalent value.
 
-{{ top }}
+
 
 {{ Articles 15 to 28 }}

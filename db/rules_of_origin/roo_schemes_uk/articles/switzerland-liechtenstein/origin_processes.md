@@ -1,4 +1,4 @@
-{{ top }}
+
 
 ## Article 17 - General requirements
 
@@ -16,7 +16,7 @@
 
 4. For the purpose of Article 7, if Article 8(5) applies, the exporter established in a Party who issues a proof of origin on the basis of another proof of origin which benefits from a waiver from the obligation to include the statement as otherwise required by Article 8(4) shall take all necessary steps to ensure that the conditions for applying cumulation are fulfilled and shall be prepared to submit all relevant documents to the customs authorities.
 
-{{ top }}
+
 
 ## Article 18 - Conditions for making out an origin declaration
 
@@ -38,7 +38,7 @@
 
     Where the splitting of a consignment takes place in accordance with Article 14(3) and provided that the same two-year deadline is respected, the retrospective origin declaration shall be made out by the approved exporter of the exporting Party of the products.
 
-{{ top }}
+
 
 ## Article 19 - Approved exporter
 
@@ -50,7 +50,7 @@
 
 4. The customs authorities shall verify the proper use of an authorisation. They may withdraw the authorisation if the approved exporter makes improper use of it and shall do so if the approved exporter no longer offers the guarantees referred to in paragraph 2.
 
-{{ top }}
+
 
 ## Article 20 - Procedure for issuing of a movement certificate EUR.1
 
@@ -68,7 +68,7 @@
 
 7. A movement certificate EUR.1 shall be issued by the customs authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-{{ top }}
+
 
 ## Article 20 bis - Electronically issued movement certificates EUR.1
 
@@ -88,7 +88,7 @@
 
    5. it may be issued in any of the official languages of the Parties or in English.
 
-{{ top }}
+
 
 ## Article 21 - Movement certificates EUR.1 issued retrospectively
 
@@ -112,7 +112,7 @@
 
 5. The endorsement referred to in paragraph 4 shall be inserted in Box 7 of the movement certificate EUR.1.
 
-{{ top }}
+
 
 ## Article 22 - Issue of a duplicate movement certificate EUR.1
 
@@ -124,7 +124,7 @@
 
 4. The duplicate, which shall bear the date of issue of the original movement certificate EUR.1, shall take effect as from that date.
 
-{{ top }}
+
 
 ## Article 23 - Validity of proof of origin
 
@@ -134,19 +134,19 @@
 
 3. In other cases of belated presentation, the customs authorities of the importing Party may accept the proofs of origin where the products have been presented to customs before the said final date.
 
-{{ top }}
+
 
 ## Article 25 - Importation requirements
 
 Proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that Party.
 
-{{ top }}
+
 
 ## Article 26 - Importation by instalments
 
 Where, at the request of the importer and subject to the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2017 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities on importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 27 - Exemptions from proof of origin
 
@@ -162,7 +162,7 @@ Where, at the request of the importer and subject to the conditions laid down by
 
 3. The total value of those products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers’ personal luggage.
 
-{{ top }}
+
 
 ## Article 28 - Discrepancies and formal errors
 
@@ -170,7 +170,7 @@ Where, at the request of the importer and subject to the conditions laid down by
 
 2. Obvious formal errors such as typing errors on a proof of origin shall not cause the documents referred to in paragraph 1 to be rejected if those errors are not such as to create doubts concerning the correctness of the statements made in those documents.
 
-{{ top }}
+
 
 ## Article 29 - Supplier’s declarations
 
@@ -186,7 +186,7 @@ Where, at the request of the importer and subject to the conditions laid down by
 
 6. The supplier making out a declaration shall be prepared to submit at any time, at the request of the customs authorities of the Party or the relevant country referred to in Annex VIII where the declaration is made out, all appropriate documents proving that the information given on that declaration is correct.
 
-{{ top }}
+
 
 ## Article 30 - Amounts expressed in euro
 
@@ -200,6 +200,6 @@ Where, at the request of the importer and subject to the conditions laid down by
 
 5. The amounts expressed in euro shall be reviewed by the Joint Committee at the request of a Party. When carrying out that review, the Joint Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For that purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 17 to 30 }}

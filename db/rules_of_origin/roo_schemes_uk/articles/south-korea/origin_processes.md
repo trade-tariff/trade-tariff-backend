@@ -4,7 +4,7 @@
 
 2. Notwithstanding paragraph 1, originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 20, benefit from preferential tariff treatment of the UK-Korea Agreement without it being necessary to submit any of the documents referred to in paragraph 1.
 
-{{ top }}
+
 
 ## Article 15 - Conditions for making out an origin declaration
 
@@ -24,7 +24,7 @@
 
 6. An origin declaration may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing Party no longer than two years or the period specified in the legislation of the importing Party after the importation of the products to which it relates.
 
-{{ top }}
+
 
 ## Article 16 - Approved exporter
 
@@ -38,7 +38,7 @@
 
 5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
 
-{{ top }}
+
 
 ## Article 17 - Validity of proof of origin
 
@@ -48,19 +48,19 @@
 
 3. In cases of belated presentation other than those of paragraph 2, the customs authorities of the importing Party may accept the proofs of origin in accordance with the procedures of the Parties where the products have been presented before the said final date.
 
-{{ top }}
+
 
 ## Article 18 - Claims for preferential tariff treatment and submission of proof of origin
 
 For the purpose of claiming preferential tariff treatment, proofs of origin shall, if required by the laws and regulations of the importing Party, be submitted to the customs authorities of the importing Party. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the application of the UK-Korea Agreement.
 
-{{ top }}
+
 
 ## Article 19 - Importation by instalments
 
 Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of paragraph 2(a) of the Tariff of the United Kingdom falling within Sections XVI and XVII or headings 7308 and 9406 of HS 2007 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 20 - Exemptions from proof of origin
 
@@ -76,7 +76,7 @@ Where, at the request of the importer and on the conditions laid down by the cus
 
 4. For the purpose of paragraph 3, in cases where the products are invoiced in a currency other than euro or US dollars, amounts in the national currencies of the Parties equivalent to the amounts expressed in euro or US dollars shall be fixed in accordance with the current exchange rate applicable in the importing Party.
 
-{{ top }}
+
 
 ## Article 21 - Supporting documents
 
@@ -92,7 +92,7 @@ The documents referred to in Article 15.3 used for the purpose of proving that p
 
 - appropriate evidence concerning working or processing undergone outside territories of the Parties by application of Article 12, proving that the requirements of that Article have been satisfied.
 
-{{ top }}
+
 
 ## Article 22 - Preservation of proof of origin and supporting documents
 
@@ -104,7 +104,7 @@ The documents referred to in Article 15.3 used for the purpose of proving that p
 
 4. The records to be kept in accordance with paragraphs 1 through 3 may include electronic records.
 
-{{ top }}
+
 
 ## Article 23 - Discrepancies and formal errors
 
@@ -112,7 +112,7 @@ The documents referred to in Article 15.3 used for the purpose of proving that p
 
 2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
 
-{{ top }}
+
 
 ## Article 24 - Amounts expressed in euro
 
@@ -126,6 +126,6 @@ The documents referred to in Article 15.3 used for the purpose of proving that p
 
 5. The amounts expressed in euro shall be reviewed by the Customs Committee at the request of a Party. When carrying out this review, the Customs Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
 
-{{ top }}
+
 
 {{ Articles 14 to 24 }}

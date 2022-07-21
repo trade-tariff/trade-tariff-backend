@@ -6,7 +6,7 @@
 
 3. The different linguistic versions of the text of the origin declaration are set out in Annex 2.
 
-{{ top }}
+
 
 ## Article 19 - Obligations Regarding Exportations
 
@@ -28,7 +28,7 @@
 
 7. The Parties may allow the establishment of a system that permits an origin declaration to be submitted electronically and directly from the exporter in the territory of a Party to an importer in the territory of the other Party, including the replacement of the exporter's signature on the origin declaration with an electronic signature or identification code.
 
-{{ top }}
+
 
 ## Article 20 - Validity of Origin Declaration
 
@@ -36,7 +36,7 @@
 
 2. The Party of import may accept an origin declaration submitted to its customs authority after the validity period referred to in paragraph 1 for the purpose of preferential tariff treatment in accordance with that Party's laws.
 
-{{ top }}
+
 
 ## Article 21 - Obligations Regarding Importations
 
@@ -54,7 +54,7 @@
 
 4. A Party shall, in conformity with its laws, provide that, if a product would have qualified as an originating product when it was imported into the territory of that Party but the importer did not have an origin declaration at the time of importation, the importer of the product may, within a period of time of no less than three years after the date of importation, apply for a refund of duties paid as a result of the product not having been accorded preferential tariff treatment.
 
-{{ top }}
+
 
 ## Article 22 - Proof Related to Transport Thorugh a Third Country
 
@@ -64,13 +64,13 @@ Each Party, through its customs authority, may require an importer to demonstrat
 
 - when the product is shipped through or transhipped outside the territories of the Parties, a copy of the customs control documents indicating to that customs authority that the product remained under customs control while outside the territories of the Parties.
 
-{{ top }}
+
 
 ## Article 23 - Importation by Instalments
 
 Each Party shall provide that if dismantled or non-assembled products within the meaning of paragraph 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within Sections XVI and XVII or heading 7308 and 9406 of HS 2012 are imported by instalments at the request of the importer and on the conditions set out by the customs authority of the Party of import, a single origin declaration for these products shall be submitted, as required, to that customs authority upon importation of the first instalment.
 
-{{ top }}
+
 
 ## Article 24 - Exemptions from Origin Declarations 
 
@@ -80,7 +80,7 @@ Each Party shall provide that if dismantled or non-assembled products within the
 
 3. The Parties may set value limits for products referred to in paragraph 1, and shall exchange information regarding those limits.
 
-{{ top }}
+
 
 ## Article 25 - Supporting Documents
 
@@ -94,7 +94,7 @@ The documents referred to in Article 19.2 may include documents relating to the 
 
 - the shipment of the product.
 
-{{ top }}
+
 
 ## Article 26 - Preservation of Records
 
@@ -112,7 +112,7 @@ The documents referred to in Article 19.2 may include documents relating to the 
 
    2. denies access to those records or documentation.
 
-{{ top }}
+
 
 ## Article 27 - Discrepancies and Formal Errors
 
@@ -120,6 +120,6 @@ The documents referred to in Article 19.2 may include documents relating to the 
 
 2. Obvious formal errors such as typing errors on an origin declaration shall not cause this document to be rejected if these errors do not create doubts concerning the correctness of the statements made in the document.
 
-{{ top }}
+
 
 {{ Articles 18 to 29 }}
