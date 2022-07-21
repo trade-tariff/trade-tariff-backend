@@ -190,7 +190,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def heading_code
-    heading_short_code + '0' * 6
+    heading_short_code + '0' * 6 unless chapter?
   end
 
   def chapter_code
