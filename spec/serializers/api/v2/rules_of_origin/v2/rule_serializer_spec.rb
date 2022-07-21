@@ -11,7 +11,6 @@ RSpec.describe Api::V2::RulesOfOrigin::V2::RuleSerializer do
         type: :rules_of_origin_v2_rule,
         attributes: {
           rule: rule.rule,
-          original: rule.original,
           rule_class: rule.rule_class,
           operator: rule.operator,
         },
