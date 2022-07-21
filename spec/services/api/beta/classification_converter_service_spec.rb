@@ -76,11 +76,11 @@ RSpec.describe Api::Beta::ClassificationConverterService do
       ]
     end
 
-    it { is_expected.to be_a(SearchFacetClassifierConfiguration) }
+    it { is_expected.to be_a(::Beta::Search::SearchFacetClassifierConfiguration) }
 
     it { expect(call.word_phrases).to include('2 litres or less') }
     it { expect(call.word_classifications['asses']).to eq('animal_type' => 'equine animals') }
     it { expect(call.word_classifications['ass']).to eq('animal_type' => 'equine animals') }
-    it { expect(call.facet_classifiers).to eq(expected_facet_classifiers) }
+    it { expect(call.facet_classifiers.keys).to eq(expected_facet_classifiers) }
   end
 end
