@@ -14,9 +14,12 @@ module Api
           query.scheme_rule_sets,
         )
 
+        includes = %i[links proofs rules articles]
+        includes += %i[rule_sets rule_sets.rules] if TradeTariffBackend.roo_v2_data
+
         @serializer = Api::V2::RulesOfOrigin::SchemeSerializer.new(
           presented_schemes,
-          include: %i[links proofs rules articles rule_sets rule_sets.rules],
+          include: includes,
         )
 
         render json: @serializer.serializable_hash

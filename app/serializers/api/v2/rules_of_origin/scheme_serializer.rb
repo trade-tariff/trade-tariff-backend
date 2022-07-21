@@ -15,7 +15,10 @@ module Api
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
         has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
         has_many :articles, serializer: Api::V2::RulesOfOrigin::ArticleSerializer
-        has_many :rule_sets, serializer: Api::V2::RulesOfOrigin::V2::RuleSetSerializer
+
+        if TradeTariffBackend.roo_v2_data
+          has_many :rule_sets, serializer: Api::V2::RulesOfOrigin::V2::RuleSetSerializer
+        end
       end
     end
   end

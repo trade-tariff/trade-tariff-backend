@@ -248,5 +248,9 @@ module TradeTariffBackend
     def handle_missing_soft_deletes?
       ENV['SOFT_DELETES_MISSING'].to_s == 'true'
     end
+
+    def roo_v2_data
+      ENV['ROO_V2_DATA'].to_s == 'true'
+    end
   end
 end
