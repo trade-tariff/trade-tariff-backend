@@ -11,7 +11,7 @@ The following shall be considered as wholly obtained in an EAC Partner State or 
 
 5. products from **slaughtered animals** born and raised there;
 
-6.
+6. 
     1. products obtained by **hunting or fishing** conducted there;
 
     2. products of **aquaculture**, including mariculture, where the fish are born and raised there;
