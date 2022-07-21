@@ -3,7 +3,7 @@ module Search
     MAX_ANCESTORS = 13
 
     def serializable_hash(_opts = {})
-      {
+      serializable = {
         id:,
         goods_nomenclature_item_id:,
         heading_id: heading_short_code,
@@ -32,6 +32,8 @@ module Search
         guides:,
         guide_ids:,
       }
+
+      serializable.merge(serializable_classifications)
     end
 
     private
@@ -117,6 +119,32 @@ module Search
     1.upto(MAX_ANCESTORS) do |ancestor_number|
       define_method("ancestor_#{ancestor_number}_description_indexed") do
         ancestors[ancestor_number - 1].try(:[], :description_indexed)
+      end
+    end
+
+    def serializable_classifications
+      serializable = {}
+
+      TradeTariffBackend.search_facet_classifier_configuration.serializable_classifications.each do |facet|
+        classification = send("filter_#{facet}")
+
+        serializable["filter_#{facet.to_sym}".to_sym] = classification if classification
+      end
+
+      serializable
+    end
+
+    def classifications
+      @classifications ||= if chapter?
+                             {}
+                           else
+                             Beta::Search::FacetClassification.build(self).classifications
+                           end
+    end
+
+    TradeTariffBackend.search_facet_classifier_configuration.serializable_classifications.each do |facet_classifier|
+      define_method("filter_#{facet_classifier}") do
+        classifications[facet_classifier]
       end
     end
   end
