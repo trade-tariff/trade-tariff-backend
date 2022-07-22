@@ -24,6 +24,7 @@ FactoryBot.define do
       with_description
       path { Sequel.pg_array([1, 2], :integer) }
       description { 'Horses, other than lemmings' }
+      goods_nomenclature_item_id { '0101210000' }
       goods_nomenclature_sid { 3 }
 
       after(:create) do |commodity, _evaluator|
