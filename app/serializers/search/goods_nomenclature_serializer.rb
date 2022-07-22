@@ -123,28 +123,18 @@ module Search
     end
 
     def serializable_classifications
-      serializable = {}
+      facet_classification.classifications.each_with_object({}) do |(facet, classification_values), acc|
+        classification_values = classification_values.sort.join('|')
 
-      TradeTariffBackend.search_facet_classifier_configuration.serializable_classifications.each do |facet|
-        classification = send("filter_#{facet}")
-
-        serializable["filter_#{facet.to_sym}".to_sym] = classification if classification
+        acc["filter_#{facet}".to_sym] = classification_values
       end
-
-      serializable
     end
 
-    def classifications
-      @classifications ||= if chapter?
-                             {}
-                           else
-                             Beta::Search::FacetClassification.build(self).classifications
-                           end
-    end
+    def facet_classification
+      @facet_classification ||= begin
+        return Beta::Search::FacetClassification.empty if chapter?
 
-    TradeTariffBackend.search_facet_classifier_configuration.serializable_classifications.each do |facet_classifier|
-      define_method("filter_#{facet_classifier}") do
-        classifications[facet_classifier]
+        Beta::Search::FacetClassification.build(self)
       end
     end
   end
