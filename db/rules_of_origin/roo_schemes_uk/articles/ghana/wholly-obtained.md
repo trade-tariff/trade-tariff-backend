@@ -8,7 +8,7 @@ The following shall be considered as wholly obtained in Ghana or the UK:
 
 4. **products from live animals** raised there;
 
-5.
+5. 
    1. products obtained by **hunting or fishing** conducted there;
 
    2. products of **aquaculture**, including mariculture, where the animals are raised there from eggs, spawning, larvae or fry;
