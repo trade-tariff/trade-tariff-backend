@@ -3,41 +3,47 @@ module Api
     # Generates tokens which are classified later to indicate facet categories the current
     # goods nomenclature belongs too.
     #
-    # The input goods nomenclatures include the initial goods nomenclature and its ancestors.
-    # The result is reversed because we accumulate classifications later and the lowest ancestor
-    # description needs to set the facet classification to be more price. This is especially true where chapters, headings and subheadings may have multiple classifications for a given facet.
+    # This includes phrase tokens and word tokens that have been lemmatized and the stop words removed
     class GoodsNomenclatureTokenGeneratorService
       delegate :lemmatizer, :stop_words, to: TradeTariffBackend
 
       WHITESPACE = /\s+/
 
-      def initialize(goods_nomenclatures)
-        @goods_nomenclatures = goods_nomenclatures
+      def initialize(goods_nomenclature)
+        @goods_nomenclature = goods_nomenclature
       end
 
       def call
-        TimeMachine.now(&method(:enumerate_tokens))
+        all_tokens = []
+        candidate_description = @goods_nomenclature.description_indexed.downcase
+
+        possible_phrases.each do |phrase|
+          all_tokens << phrase if candidate_description.include?(phrase)
+        end
+
+        candidate_tokens = candidate_description.split(WHITESPACE)
+
+        candidate_tokens.each do |candidate_token|
+          candidate_token = candidate_token.gsub(/\W+/, '')
+
+          next if invalid_token?(candidate_token)
+
+          lemmatized_token = lemmatizer.lemma(candidate_token)
+
+          all_tokens << lemmatized_token
+        end
+
+        all_tokens
       end
 
       private
 
-      def enumerate_tokens
-        all_tokens = @goods_nomenclatures.each_with_object([]) do |ancestor, tokens|
-          ancestor.description_indexed.split(WHITESPACE).each do |candidate_token|
-            original_token = candidate_token
-            candidate_token = candidate_token.downcase
-            candidate_token = candidate_token.gsub(/\W+/, '')
+      def invalid_token?(candidate_token)
+        candidate_token.blank? || stop_words.include?(candidate_token)
+      end
 
-            next if candidate_token.blank?
-            next if stop_words.include?(candidate_token)
-
-            analysed_token = lemmatizer.lemma(candidate_token)
-
-            tokens << { analysed_token:, original_token: }
-          end
-        end
-
-        all_tokens.reverse
+      def possible_phrases
+        TradeTariffBackend.search_facet_classifier_configuration.word_phrases
       end
     end
   end
