@@ -1,29 +1,36 @@
 module Beta
   module Search
-    # Encapsulates a set a facet classifications for a given goods nomenclature
+    # Encapsulates a set of facet classifications for a given goods nomenclature
     #
-    # These will either be single (e.g. for a specific commodity) => animal_type: [swine]
-    # Or multiple (e.g. for a heading) => animal_type: [swine, horses, etc]
-    #
-    # These enable filtering on search results based on semantic categories.
+    # These enable filtering on search results based on semantic categories (filter[animal_type]=swine).
     class FacetClassification
       attr_accessor :classifications
 
       class << self
-        def build(goods_nomenclature)
-          classifications = {}
-          goods_nomenclatures = goods_nomenclature.ancestors << goods_nomenclature
+        def build(goods_nomenclature, classifications = {})
           applicable_facet_classifiers = heading_facet_mappings[goods_nomenclature.heading.short_code]
 
-          classifiables_for(goods_nomenclatures).each do |classifiable|
-            matching_facet_classifications = word_classifications[classifiable] || {}
+          goods_nomenclature.classifiable_goods_nomenclatures.each do |gn|
+            tokens_for(gn).each do |token|
+              matching_facet_classifications = word_classifications[token] || {}
 
-            matching_facet_classifications.slice(*applicable_facet_classifiers).each do |facet, classification|
-              if classifications[facet].blank?
-                classifications[facet] = classification
+              matching_facet_classifications.slice(*applicable_facet_classifiers).each do |facet, classification|
+                classifications[facet] ||= {}
+
+                # We always want the most precise classifications
+                #
+                # In practice this means we bail extending classifications if the lowest goods_nomenclature
+                # node in the tree has found any for the given facet category
+                next if classifications[facet].except(gn.goods_nomenclature_sid).any?
+
+                classifications[facet][gn.goods_nomenclature_sid] ||= Set.new
+                classifications[facet][gn.goods_nomenclature_sid] << classification
               end
             end
           end
+
+          # Facet category classifications can only belong to one goods_nomenclature
+          classifications = classifications.transform_values(&:values).transform_values(&:first)
 
           facet_classification = new
 
@@ -32,23 +39,16 @@ module Beta
           facet_classification
         end
 
-        def classifiables_for(goods_nomenclatures)
-          all_classifiables = []
+        def empty
+          facet_classification = new
 
-          all_classifiables.concat(phrases_for(goods_nomenclatures))
-          all_classifiables.concat(tokens_for(goods_nomenclatures))
+          facet_classification.classifications = {}
 
-          all_classifiables
+          facet_classification
         end
 
-        def phrases_for(goods_nomenclatures)
-          Api::Beta::GoodsNomenclaturePhraseTokenGeneratorService.new(goods_nomenclatures).call
-        end
-
-        def tokens_for(goods_nomenclatures)
-          tokens = Api::Beta::GoodsNomenclatureTokenGeneratorService.new(goods_nomenclatures).call
-
-          tokens.pluck(:analysed_token)
+        def tokens_for(goods_nomenclature)
+          Api::Beta::GoodsNomenclatureTokenGeneratorService.new(goods_nomenclature).call
         end
 
         def word_classifications
