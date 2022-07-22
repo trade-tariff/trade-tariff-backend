@@ -564,4 +564,25 @@ RSpec.describe GoodsNomenclature do
       it { is_expected.not_to be_declarable }
     end
   end
+
+  describe '#classifiable_goods_nomenclatures' do
+    subject(:classifiable_goods_nomenclatures) do
+      described_class
+        .find(goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid)
+        .classifiable_goods_nomenclatures
+        .pluck(:goods_nomenclature_sid)
+    end
+
+    context 'when there are ancestors for the current goods nomenclature' do
+      let(:goods_nomenclature) { create(:commodity, :with_ancestors) }
+
+      it { expect(classifiable_goods_nomenclatures).to eq([3, 2, 1]) }
+    end
+
+    context 'when there are no ancestors for the current goods nomenclature' do
+      let(:goods_nomenclature) { create(:commodity, goods_nomenclature_sid: 1) }
+
+      it { expect(classifiable_goods_nomenclatures).to eq([1]) }
+    end
+  end
 end
