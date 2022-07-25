@@ -21,8 +21,9 @@ module Api
           search_result.redirect!
         end
 
-        search_result.generate_statistics
+        search_result.generate_heading_and_chapter_statistics
         search_result.generate_guide_statistics
+        search_result.generate_facet_statistics
 
         search_result
       end

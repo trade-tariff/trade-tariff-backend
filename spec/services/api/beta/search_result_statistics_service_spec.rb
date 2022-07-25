@@ -4,6 +4,7 @@ RSpec.describe Api::Beta::SearchResultStatisticsService do
 
     context 'when there are multiple hits' do
       let(:hits) { build(:search_result, :multiple_hits).hits }
+
       let(:expected_heading_statistics) do
         {
           '0101' => {
@@ -11,30 +12,30 @@ RSpec.describe Api::Beta::SearchResultStatisticsService do
             'description' => nil,
             'chapter_id' => '01',
             'chapter_description' => nil,
-            'score' => 486.00095999999996,
+            'score' => 485.68718800000005,
             'cnt' => 7,
-            'avg' => 69.42870857142857,
-            'chapter_score' => 486.00095999999996,
+            'avg' => 69.38388400000001,
+            'chapter_score' => 485.68718800000005,
           },
           '0206' => {
             'id' => '0206',
             'description' => nil,
             'chapter_id' => '02',
             'chapter_description' => nil,
-            'score' => 126.879548,
+            'score' => 126.686088,
             'cnt' => 2,
-            'avg' => 63.439774,
-            'chapter_score' => 126.879548,
+            'avg' => 63.343044,
+            'chapter_score' => 126.686088,
           },
           '0302' => {
             'id' => '0302',
             'description' => nil,
             'chapter_id' => '03',
             'chapter_description' => nil,
-            'score' => 54.07968,
+            'score' => 53.984024,
             'cnt' => 1,
-            'avg' => 54.07968,
-            'chapter_score' => 54.07968,
+            'avg' => 53.984024,
+            'chapter_score' => 53.984024,
           },
         }
       end
@@ -44,23 +45,23 @@ RSpec.describe Api::Beta::SearchResultStatisticsService do
           '01' => {
             'id' => '01',
             'description' => nil,
-            'score' => 486.00095999999996,
+            'score' => 485.68718800000005,
             'cnt' => 7,
-            'avg' => 69.42870857142857,
+            'avg' => 69.38388400000001,
           },
           '02' => {
             'id' => '02',
             'description' => nil,
-            'score' => 126.879548,
+            'score' => 126.686088,
             'cnt' => 2,
-            'avg' => 63.439774,
+            'avg' => 63.343044,
           },
           '03' => {
             'id' => '03',
             'description' => nil,
-            'score' => 54.07968,
+            'score' => 53.984024,
             'cnt' => 1,
-            'avg' => 54.07968,
+            'avg' => 53.984024,
           },
         }
       end

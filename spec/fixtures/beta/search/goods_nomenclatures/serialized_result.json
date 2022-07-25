@@ -158,10 +158,13 @@
         "corrected_search_query": "ricotta",
         "original_search_query": "ricotta",
         "verbs": [
+
         ],
         "adjectives": [
+
         ],
         "nouns": [
+
         ],
         "noun_chunks": [
           "ricotta"
@@ -205,7 +208,9 @@
       "type": "facet_filter_statistic",
       "attributes": {
         "facet_filter": "filter_cheese_type",
-        "facet_count": 1
+        "facet_count": 1,
+        "display_name": "Cheese type",
+        "question": "Pick one of Cheese type"
       },
       "relationships": {
         "facet_classification_statistics": {
