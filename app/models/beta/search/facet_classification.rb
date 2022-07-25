@@ -19,9 +19,11 @@ module Beta
 
                 # We always want the most precise classifications
                 #
-                # In practice this means we bail extending classifications if the lowest goods_nomenclature
-                # node in the tree has found any for the given facet category
-                next if classifications[facet].except(gn.goods_nomenclature_sid).any?
+                # This means we skip assigning classifications for facets that have
+                # previously been assigned lower down the tree.
+                encountered_facet = classifications[facet].except(gn.goods_nomenclature_sid).any?
+
+                next if encountered_facet
 
                 classifications[facet][gn.goods_nomenclature_sid] ||= Set.new
                 classifications[facet][gn.goods_nomenclature_sid] << classification
@@ -29,12 +31,11 @@ module Beta
             end
           end
 
-          # Facet category classifications can only belong to one goods_nomenclature
-          classifications = classifications.transform_values(&:values).transform_values(&:first)
-
           facet_classification = new
 
-          facet_classification.classifications = classifications
+          facet_classification.classifications = classifications.transform_values do |goods_nomenclature_values|
+            goods_nomenclature_values.values.first
+          end
 
           facet_classification
         end
