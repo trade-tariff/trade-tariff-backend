@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Beta::Search::FacetClassification do
   describe '.build' do
     subject(:result) { described_class.build(goods_nomenclature) }

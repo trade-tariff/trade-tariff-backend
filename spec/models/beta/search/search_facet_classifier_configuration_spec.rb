@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Beta::Search::SearchFacetClassifierConfiguration do
   describe '.each_classification' do
     context 'when passed a block' do

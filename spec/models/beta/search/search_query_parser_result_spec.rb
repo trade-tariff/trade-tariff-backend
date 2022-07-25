@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Beta::Search::SearchQueryParserResult do
   describe '.build' do
     subject(:result) { described_class.build(attributes) }
