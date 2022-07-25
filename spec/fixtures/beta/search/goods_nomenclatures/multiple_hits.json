@@ -1,5 +1,5 @@
 {
-  "took": 2,
+  "took": 1,
   "timed_out": false,
   "_shards": {
     "total": 1,
@@ -12,13 +12,13 @@
       "value": 168,
       "relation": "eq"
     },
-    "max_score": 83.69403,
+    "max_score": 83.56923,
     "hits": [
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93797",
-        "_score": 83.69403,
+        "_score": 83.56923,
         "_source": {
           "id": 93797,
           "goods_nomenclature_item_id": "0101210000",
@@ -67,14 +67,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "live"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93796",
-        "_score": 70.387886,
+        "_score": 70.354416,
         "_source": {
           "id": 93796,
           "goods_nomenclature_item_id": "0101210000",
@@ -131,14 +133,17 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_purpose": "breeding",
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "live"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93798",
-        "_score": 70.387886,
+        "_score": 70.354416,
         "_source": {
           "id": 93798,
           "goods_nomenclature_item_id": "0101290000",
@@ -195,14 +200,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "live"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93799",
-        "_score": 70.387886,
+        "_score": 70.354416,
         "_source": {
           "id": 93799,
           "goods_nomenclature_item_id": "0101291000",
@@ -267,14 +274,17 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_purpose": "human consumption",
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "live"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93800",
-        "_score": 70.387886,
+        "_score": 70.354416,
         "_source": {
           "id": 93800,
           "goods_nomenclature_item_id": "0101299000",
@@ -339,14 +349,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "live"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "28100",
-        "_score": 63.439774,
+        "_score": 63.343044,
         "_source": {
           "id": 28100,
           "goods_nomenclature_item_id": "0206809100",
@@ -411,14 +423,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "chilled|fresh"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "28105",
-        "_score": 63.439774,
+        "_score": 63.343044,
         "_source": {
           "id": 28105,
           "goods_nomenclature_item_id": "0206909100",
@@ -483,14 +497,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "frozen"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93801",
-        "_score": 60.377693,
+        "_score": 60.350147,
         "_source": {
           "id": 93801,
           "goods_nomenclature_item_id": "0101300000",
@@ -539,14 +555,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals",
+          "filter_animal_product_state": "live"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "72763",
-        "_score": 60.377693,
+        "_score": 60.350147,
         "_source": {
           "id": 72763,
           "goods_nomenclature_item_id": "0101900000",
@@ -595,14 +613,16 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_product_state": "live",
+          "filter_animal_type": "equine animals"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "93994",
-        "_score": 54.07968,
+        "_score": 53.984024,
         "_source": {
           "id": 93994,
           "goods_nomenclature_item_id": "0302451000",
@@ -667,7 +687,10 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_animal_type": "equine animals|fish",
+          "filter_fish_classification": "mackerel",
+          "filter_animal_product_state": "chilled|fresh"
         }
       }
     ]

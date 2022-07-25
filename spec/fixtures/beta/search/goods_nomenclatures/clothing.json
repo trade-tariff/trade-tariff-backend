@@ -1,5 +1,5 @@
 {
-  "took": 6,
+  "took": 1,
   "timed_out": false,
   "_shards": {
     "total": 1,
@@ -12,13 +12,13 @@
       "value": 1100,
       "relation": "eq"
     },
-    "max_score": 77.81122,
+    "max_score": 76.96534,
     "hits": [
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43821",
-        "_score": 77.81122,
+        "_score": 76.96534,
         "_source": {
           "id": 43821,
           "goods_nomenclature_item_id": "6307100000",
@@ -80,7 +80,7 @@
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43606",
-        "_score": 72.28049,
+        "_score": 72.263435,
         "_source": {
           "id": 43606,
           "goods_nomenclature_item_id": "6217100000",
@@ -142,7 +142,7 @@
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43607",
-        "_score": 72.28049,
+        "_score": 72.263435,
         "_source": {
           "id": 43607,
           "goods_nomenclature_item_id": "6217100010",
@@ -212,7 +212,7 @@
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43608",
-        "_score": 72.28049,
+        "_score": 72.263435,
         "_source": {
           "id": 43608,
           "goods_nomenclature_item_id": "6217100090",
@@ -282,7 +282,7 @@
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43609",
-        "_score": 72.28049,
+        "_score": 72.263435,
         "_source": {
           "id": 43609,
           "goods_nomenclature_item_id": "6217900000",
@@ -344,7 +344,7 @@
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43522",
-        "_score": 70.60782,
+        "_score": 70.386185,
         "_source": {
           "id": 43522,
           "goods_nomenclature_item_id": "6211321000",
@@ -415,14 +415,16 @@
           ],
           "guide_ids": [
             18
-          ]
+          ],
+          "filter_material": "cotton",
+          "filter_clothing_gender": "men's and boys'"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43530",
-        "_score": 70.60782,
+        "_score": 70.386185,
         "_source": {
           "id": 43530,
           "goods_nomenclature_item_id": "6211331000",
@@ -493,14 +495,15 @@
           ],
           "guide_ids": [
             18
-          ]
+          ],
+          "filter_clothing_gender": "men's and boys'"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43486",
-        "_score": 67.78986,
+        "_score": 67.77372,
         "_source": {
           "id": 43486,
           "goods_nomenclature_item_id": "6209200000",
@@ -555,14 +558,15 @@
           ],
           "guide_ids": [
             18
-          ]
+          ],
+          "filter_material": "cotton"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43487",
-        "_score": 67.78986,
+        "_score": 67.77372,
         "_source": {
           "id": 43487,
           "goods_nomenclature_item_id": "6209200010",
@@ -625,14 +629,16 @@
           ],
           "guide_ids": [
             18
-          ]
+          ],
+          "filter_garment_type": "gloves, mitts and mittens",
+          "filter_material": "cotton"
         }
       },
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "43488",
-        "_score": 67.78986,
+        "_score": 67.77372,
         "_source": {
           "id": 43488,
           "goods_nomenclature_item_id": "6209200020",
@@ -695,7 +701,9 @@
           ],
           "guide_ids": [
             18
-          ]
+          ],
+          "filter_garment_type": "underwear",
+          "filter_material": "cotton"
         }
       }
     ]
