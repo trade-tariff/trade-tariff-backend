@@ -4,14 +4,20 @@ module ContentAddressableId
   extend ActiveSupport::Concern
 
   module ClassMethods
-    attr_accessor :content_addressable_fields
+    def content_addressable_fields(*fields)
+      if fields.any?
+        @content_addressable_fields = fields
+      else
+        @content_addressable_fields
+      end
+    end
   end
 
   def id
     @id ||= Digest::MD5.hexdigest(addressable_content)
   end
 
-private
+  private
 
   def addressable_content
     self.class.content_addressable_fields

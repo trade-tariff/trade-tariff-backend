@@ -1,7 +1,8 @@
 module MeasureConditionPermutations
   class Permutation
     include ContentAddressableId
-    self.content_addressable_fields = %i[measure_condition_ids]
+
+    content_addressable_fields 'measure_condition_ids'
 
     attr_reader :measure_conditions
 
