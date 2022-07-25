@@ -229,6 +229,10 @@ FactoryBot.define do
       description { "Live#~#? (animals,) $* £' '" }
     end
 
+    trait :word_phrase do
+      description { '2 LiTres Or Less' }
+    end
+
     trait :xml do
       validity_end_date           { 1.year.ago.beginning_of_day }
       statistical_indicator       { 1 }

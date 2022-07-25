@@ -190,7 +190,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def heading_code
-    heading_short_code + '0' * 6
+    heading_short_code + '0' * 6 unless chapter?
   end
 
   def chapter_code
@@ -223,5 +223,9 @@ class GoodsNomenclature < Sequel::Model
 
   def declarable?
     children.none? && producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+  end
+
+  def classifiable_goods_nomenclatures
+    ancestors.dup.push(self).reverse
   end
 end

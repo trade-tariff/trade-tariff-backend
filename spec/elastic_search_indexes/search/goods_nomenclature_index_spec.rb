@@ -11,7 +11,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   describe '#serialize_record' do
     subject { instance.serialize_record record }
 
-    let(:record) { create :heading }
+    let(:record) { create :heading, :with_description }
 
     it { is_expected.to include 'goods_nomenclature_item_id' => record.goods_nomenclature_item_id }
   end

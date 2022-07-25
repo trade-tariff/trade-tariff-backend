@@ -3,7 +3,7 @@ module Search
     MAX_ANCESTORS = 13
 
     def serializable_hash(_opts = {})
-      {
+      serializable = {
         id:,
         goods_nomenclature_item_id:,
         heading_id: heading_short_code,
@@ -32,6 +32,8 @@ module Search
         guides:,
         guide_ids:,
       }
+
+      serializable.merge(serializable_classifications)
     end
 
     private
@@ -117,6 +119,22 @@ module Search
     1.upto(MAX_ANCESTORS) do |ancestor_number|
       define_method("ancestor_#{ancestor_number}_description_indexed") do
         ancestors[ancestor_number - 1].try(:[], :description_indexed)
+      end
+    end
+
+    def serializable_classifications
+      facet_classification.classifications.each_with_object({}) do |(facet, classification_values), acc|
+        classification_values = classification_values.sort.join('|')
+
+        acc["filter_#{facet}".to_sym] = classification_values
+      end
+    end
+
+    def facet_classification
+      @facet_classification ||= begin
+        return Beta::Search::FacetClassification.empty if chapter?
+
+        Beta::Search::FacetClassification.build(self)
       end
     end
   end

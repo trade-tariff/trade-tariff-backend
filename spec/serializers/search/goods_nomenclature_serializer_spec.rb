@@ -58,6 +58,8 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           },
         ],
         guide_ids: [1],
+        filter_animal_product_state: 'live',
+        filter_animal_type: 'equine animals',
       }
     end
 

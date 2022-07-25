@@ -1,7 +1,11 @@
 module Beta
   module Search
     class GoodsNomenclatureQuery
-      attr_writer :nouns, :verbs, :adjectives, :noun_chunks
+      attr_writer :nouns,
+                  :verbs,
+                  :adjectives,
+                  :noun_chunks,
+                  :filters
 
       MULTI_MATCH_FIELDS = [
         'search_references^12',
@@ -22,13 +26,14 @@ module Beta
         'goods_nomenclature_item_id',
       ].freeze
 
-      def self.build(search_query_parser_result)
+      def self.build(search_query_parser_result, filters = [])
         query = new
 
         query.nouns = search_query_parser_result.nouns
         query.noun_chunks = search_query_parser_result.noun_chunks
         query.verbs = search_query_parser_result.verbs
         query.adjectives = search_query_parser_result.adjectives
+        query.filters = filters
 
         query
       end
@@ -36,6 +41,7 @@ module Beta
       def query
         candidate_query = { query: { bool: {} } }
 
+        candidate_query[:query][:bool][:filter] = filter_part if filters.any?
         candidate_query[:query][:bool][:must] = must_part if must_part.any?
         candidate_query[:query][:bool][:should] = should_part if should_part.any?
 
@@ -104,6 +110,10 @@ module Beta
             },
           },
         ]
+      end
+
+      def filters
+        @filters.presence || []
       end
 
       def nouns
