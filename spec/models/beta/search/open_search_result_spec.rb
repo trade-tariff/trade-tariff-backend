@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Beta::Search::OpenSearchResult do
   describe '.build' do
     subject(:result) { described_class.build(search_result, search_query_parser_result, goods_nomenclature_query) }
@@ -14,9 +12,9 @@ RSpec.describe Beta::Search::OpenSearchResult do
     let(:goods_nomenclature_query) { build(:goods_nomenclature_query, :full_query) }
 
     it { is_expected.to be_a(described_class) }
-    it { expect(result.took).to eq(2) }
+    it { expect(result).to respond_to(:took) }
     it { expect(result.timed_out).to eq(false) }
-    it { expect(result.max_score).to eq(83.69403) }
+    it { expect(result).to respond_to(:max_score) }
     it { expect(result.hits.count).to eq(10) }
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }
     it { expect(result.goods_nomenclature_query).to eq(goods_nomenclature_query) }
@@ -48,30 +46,30 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
   describe '#chapter_statistics' do
     context 'when statistics have been generated' do
-      subject(:chapter_statistics) { build(:search_result, :generate_statistics).chapter_statistics }
+      subject(:chapter_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).chapter_statistics }
 
       let(:expected_chapter_statistics) do
         [
           {
             'id' => '01',
             'description' => nil,
-            'score' => 486.00095999999996,
+            'score' => 485.68718800000005,
             'cnt' => 7,
-            'avg' => 69.42870857142857,
+            'avg' => 69.38388400000001,
           },
           {
             'id' => '02',
             'description' => nil,
-            'score' => 126.879548,
+            'score' => 126.686088,
             'cnt' => 2,
-            'avg' => 63.439774,
+            'avg' => 63.343044,
           },
           {
             'id' => '03',
             'description' => nil,
-            'score' => 54.07968,
+            'score' => 53.984024,
             'cnt' => 1,
-            'avg' => 54.07968,
+            'avg' => 53.984024,
           },
         ]
       end
@@ -80,7 +78,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
     end
 
     context 'when statistics have not been generated' do
-      subject(:chapter_statistics) { build(:search_result, :no_generate_statistics).chapter_statistics }
+      subject(:chapter_statistics) { build(:search_result, :no_generate_heading_and_chapter_statistics).chapter_statistics }
 
       it { is_expected.to be_empty }
     end
@@ -88,7 +86,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
   describe '#heading_statistics' do
     context 'when statistics have been generated' do
-      subject(:heading_statistics) { build(:search_result, :generate_statistics).heading_statistics }
+      subject(:heading_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).heading_statistics }
 
       let(:expected_heading_statistics) do
         [
@@ -97,30 +95,30 @@ RSpec.describe Beta::Search::OpenSearchResult do
             'description' => nil,
             'chapter_id' => '01',
             'chapter_description' => nil,
-            'score' => 486.00095999999996,
+            'score' => 485.68718800000005,
             'cnt' => 7,
-            'avg' => 69.42870857142857,
-            'chapter_score' => 486.00095999999996,
+            'avg' => 69.38388400000001,
+            'chapter_score' => 485.68718800000005,
           },
           {
             'id' => '0206',
             'description' => nil,
             'chapter_id' => '02',
             'chapter_description' => nil,
-            'score' => 126.879548,
+            'score' => 126.686088,
             'cnt' => 2,
-            'avg' => 63.439774,
-            'chapter_score' => 126.879548,
+            'avg' => 63.343044,
+            'chapter_score' => 126.686088,
           },
           {
             'id' => '0302',
             'description' => nil,
             'chapter_id' => '03',
             'chapter_description' => nil,
-            'score' => 54.07968,
+            'score' => 53.984024,
             'cnt' => 1,
-            'avg' => 54.07968,
-            'chapter_score' => 54.07968,
+            'avg' => 53.984024,
+            'chapter_score' => 53.984024,
           },
         ]
       end
@@ -129,7 +127,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
     end
 
     context 'when statistics have not been generated' do
-      subject(:heading_statistics) { build(:search_result, :no_generate_statistics).heading_statistics }
+      subject(:heading_statistics) { build(:search_result, :no_generate_heading_and_chapter_statistics).heading_statistics }
 
       it { is_expected.to be_empty }
     end
@@ -137,13 +135,13 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
   describe '#chapter_statistic_ids' do
     context 'when there are chapter statistics' do
-      subject(:chapter_statistics) { build(:search_result, :generate_statistics).chapter_statistic_ids }
+      subject(:chapter_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).chapter_statistic_ids }
 
       it { is_expected.to eq(%w[01 02 03]) }
     end
 
     context 'when there are no chapter statistics' do
-      subject(:chapter_statistics) { build(:search_result, :no_generate_statistics).chapter_statistic_ids }
+      subject(:chapter_statistics) { build(:search_result, :no_generate_heading_and_chapter_statistics).chapter_statistic_ids }
 
       it { is_expected.to eq(%w[]) }
     end
@@ -151,13 +149,13 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
   describe '#heading_statistic_ids' do
     context 'when there are heading statistics' do
-      subject(:heading_statistics) { build(:search_result, :generate_statistics).heading_statistic_ids }
+      subject(:heading_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).heading_statistic_ids }
 
       it { is_expected.to eq(%w[0101 0206 0302]) }
     end
 
     context 'when there are no heading statistics' do
-      subject(:heading_statistics) { build(:search_result, :no_generate_statistics).heading_statistic_ids }
+      subject(:heading_statistics) { build(:search_result, :no_generate_heading_and_chapter_statistics).heading_statistic_ids }
 
       it { is_expected.to eq(%w[]) }
     end
@@ -170,7 +168,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
   end
 
   describe '#generate_guide_statistics' do
-    subject(:search_result) { build(:search_result, :no_generate_statistics, :clothing) }
+    subject(:search_result) { build(:search_result, :no_generate_heading_and_chapter_statistics, :clothing) }
 
     let(:expected_guide_statistics) do
       [
@@ -266,5 +264,28 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
     it { expect(result.redirect!).to eq(true) }
     it { expect { result.redirect! }.to change(result, :redirect?).from(nil).to(true) }
+  end
+
+  describe '#facet_filter_statistics' do
+    context 'when filter statistics have been generated' do
+      subject(:search_result) { build(:search_result, :generate_facet_statistics).facet_filter_statistics.map(&:id) }
+
+      let(:expected_filter_statistic_ids) do
+        %w[
+          82daf4c6437dc8d7e507aa906ca5d8a1
+          eccb53b0914b1e33430ac80de39c1ae5
+          0ae963502c0515639087a35157e8e671
+          8a34fc49e7461bf91bb00b4527081f31
+        ]
+      end
+
+      it { is_expected.to eq(expected_filter_statistic_ids) }
+    end
+
+    context 'when filter statistics have not been generated' do
+      subject(:search_result) { build(:search_result, :no_generate_facet_statistics).facet_filter_statistics.map(&:id) }
+
+      it { is_expected.to eq([]) }
+    end
   end
 end

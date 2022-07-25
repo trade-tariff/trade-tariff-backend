@@ -52,6 +52,13 @@ module Beta
           hit.ancestor_ids = hit_result._source.ancestors.map(&:id)
           hit.guides = hit_result._source.guides
           hit.guides_ids = hit_result._source.guide_ids
+          hit.facet_filters = []
+          hit_result._source.keys.grep(/^filter_.*$/).each do |filter|
+            filter_classifications = hit_result._source.public_send(filter)
+            hit.facet_filters << filter
+
+            hit.public_send("#{filter}=", filter_classifications)
+          end
 
           hit
         end
@@ -103,12 +110,24 @@ module Beta
         @guide_statistics&.any?
       end
 
-      def generate_statistics
+      def facet_filter_statistics
+        @facet_filter_statistics || []
+      end
+
+      def facet_filter_statistic_ids
+        facet_filter_statistics.map(&:id)
+      end
+
+      def generate_heading_and_chapter_statistics
         @chapter_statistics, @heading_statistics = Api::Beta::SearchResultStatisticsService.new(hits).call
       end
 
       def generate_guide_statistics
         @guide_statistics = Api::Beta::GuideStatisticsService.new(hits).call
+      end
+
+      def generate_facet_statistics
+        @facet_filter_statistics = Api::Beta::SearchFacetStatisticService.new(hits).call
       end
 
       def redirect!
