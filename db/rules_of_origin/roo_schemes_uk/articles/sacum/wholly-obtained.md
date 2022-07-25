@@ -10,7 +10,7 @@ The following shall be considered as wholly obtained in the territory of a SACU 
 
 5. products from **slaughtered animals** born and raised there;
 
-6.
+6. 
    1. products obtained by **hunting or fishing** conducted there;
 
    2. Products of **aquaculture**, where the fish, crustaceans, molluscs and other aquatic invertebrates are born or raised there from eggs, larvae or fry;

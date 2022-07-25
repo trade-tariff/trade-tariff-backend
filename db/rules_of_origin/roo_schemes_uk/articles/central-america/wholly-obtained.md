@@ -8,7 +8,7 @@ The following shall be considered as wholly obtained in the United Kingdom or in
 
 4. **products from live animals** raised there;
 
-5.
+5. 
    1. products obtained by **hunting** conducted there;
 
    2. products obtained by fishing conducted in their inland waters or within twelve nautical miles measured from the baselines of the United Kingdom or of the Republics of the CA Party;

@@ -8,7 +8,7 @@ The following shall be considered as wholly obtained in an ESA State or in the U
 
 4. **products from live animals** raised there;
 
-5.
+5. 
    1. products obtained by **hunting or fishing** conducted there;
 
    2. products of **aquaculture**, including mariculture, where the fish are born and raised there;

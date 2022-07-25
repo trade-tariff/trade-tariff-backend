@@ -19,4 +19,28 @@ RSpec.describe 'Rules of Origin Data', :roo_data do
         end
     end
   end
+
+  describe 'UK articles' do
+    RulesOfOrigin::SchemeSet::DEFAULT_SOURCE_PATH
+      .join('roo_schemes_uk', 'articles')
+      .children
+      .select(&:directory?)
+      .each do |country_folder|
+        country_folder
+        .children
+        .select { |c| c.file? && c.extname == '.md' }
+        .each do |file|
+          context "for #{country_folder.basename}/#{file.basename}" do
+            subject(:markdown) { IO.read(file) }
+
+            it 'has parseable numbered lists' do
+              # Empty list entries are invalid markdown.
+              # To fix, add a space after the period following the number
+              # eg `5._`
+              expect(markdown).not_to match(/^\d+\.$/m)
+            end
+          end
+        end
+      end
+  end
 end
