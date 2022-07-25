@@ -79,7 +79,7 @@ module Beta
       end
 
       def multi_match_query
-        candidate_query = { query: { bool: {} } }
+        candidate_query = { size:, query: { bool: {} } }
 
         candidate_query[:query][:bool][:filter] = filter_part if filters.any?
         candidate_query[:query][:bool][:must] = must_part if must_part.any?
@@ -168,6 +168,10 @@ module Beta
 
       def adjectives
         @adjectives.try(:join, ' ') || ''
+      end
+
+      def size
+        TradeTariffBackend.beta_search_max_hits
       end
     end
   end
