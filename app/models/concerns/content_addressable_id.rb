@@ -4,9 +4,9 @@ module ContentAddressableId
   extend ActiveSupport::Concern
 
   module ClassMethods
-    def content_addressable_fields(*fields)
-      if fields.any?
-        @content_addressable_fields = fields
+    def content_addressable_fields(*fields, &block)
+      if fields.any? || block_given?
+        @content_addressable_fields = fields.presence || block
       else
         @content_addressable_fields
       end
@@ -20,9 +20,13 @@ module ContentAddressableId
   private
 
   def addressable_content
-    self.class.content_addressable_fields
-              .map(&method(:stringify_field_for_addressable_content))
-              .join("\n")
+    addressable_fields = self.class.content_addressable_fields
+
+    if addressable_fields.respond_to?(:call)
+      addressable_fields.call(self)
+    else
+      addressable_fields.map(&method(:stringify_field_for_addressable_content)).join("\n")
+    end
   end
 
   def stringify_field_for_addressable_content(field)
