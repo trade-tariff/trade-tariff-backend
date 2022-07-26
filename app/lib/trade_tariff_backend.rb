@@ -252,5 +252,9 @@ module TradeTariffBackend
     def frontend_host
       ENV['FRONTEND_HOST']
     end
+
+    def beta_search_max_hits
+      ENV['BETA_SEARCH_MAX_HITS']
+    end
   end
 end

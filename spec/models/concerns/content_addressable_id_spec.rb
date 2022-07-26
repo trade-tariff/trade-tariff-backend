@@ -7,7 +7,7 @@ RSpec.describe ContentAddressableId do
     let :model do
       Class.new do
         include ContentAddressableId
-        self.content_addressable_fields = %i[first_name last_name]
+        content_addressable_fields 'first_name', 'last_name'
 
         attr_accessor :first_name, :last_name, :age
 

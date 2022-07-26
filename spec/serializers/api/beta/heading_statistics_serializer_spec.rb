@@ -2,7 +2,7 @@ RSpec.describe Api::Beta::HeadingStatisticsSerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
-    let(:serializable) { build(:search_result, :single_hit, :generate_statistics).heading_statistics }
+    let(:serializable) { build(:search_result, :single_hit, :generate_heading_and_chapter_statistics).heading_statistics }
 
     let(:expected) do
       {
@@ -14,10 +14,10 @@ RSpec.describe Api::Beta::HeadingStatisticsSerializer do
               description: nil,
               chapter_id: '04',
               chapter_description: nil,
-              score: 77.73483,
+              score: 74.98428,
               cnt: 1,
-              avg: 77.73483,
-              chapter_score: 77.73483,
+              avg: 74.98428,
+              chapter_score: 74.98428,
             },
           },
         ],

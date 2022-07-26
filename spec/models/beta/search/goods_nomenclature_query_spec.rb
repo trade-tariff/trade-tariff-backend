@@ -52,6 +52,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
 
       let(:expected_query) do
         {
+          size: '10',
           query: {
             bool: {
               must: [
@@ -101,6 +102,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
 
       let(:expected_query) do
         {
+          size: '10',
           query: {
             bool: {
               must: [
@@ -128,6 +130,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
 
       let(:expected_query) do
         {
+          size: '10',
           query: {
             bool: {
               must: [
@@ -155,6 +158,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
 
       let(:expected_query) do
         {
+          size: '10',
           query: {
             bool: {
               should: [
@@ -182,6 +186,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
 
       let(:expected_query) do
         {
+          size: '10',
           query: {
             bool: {
               should: [

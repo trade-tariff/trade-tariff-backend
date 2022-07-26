@@ -23,6 +23,7 @@ module Api
       has_many :heading_statistics, serializer: Api::Beta::HeadingStatisticsSerializer
       has_many :chapter_statistics, serializer: Api::Beta::ChapterStatisticsSerializer
       has_one :guide, serializer: Api::Beta::GuideSerializer
+      has_many :facet_filter_statistics, serializer: Api::Beta::FacetFilterStatisticSerializer
     end
   end
 end

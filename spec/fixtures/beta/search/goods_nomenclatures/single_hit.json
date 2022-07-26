@@ -12,13 +12,13 @@
       "value": 1,
       "relation": "eq"
     },
-    "max_score": 77.73483,
+    "max_score": 74.98428,
     "hits": [
       {
         "_index": "tariff-goods_nomenclatures",
         "_type": "_doc",
         "_id": "98910",
-        "_score": 77.73483,
+        "_score": 74.98428,
         "_source": {
           "id": 98910,
           "goods_nomenclature_item_id": "0406105090",
@@ -91,7 +91,8 @@
           ],
           "guide_ids": [
 
-          ]
+          ],
+          "filter_cheese_type": "fresh"
         }
       }
     ]

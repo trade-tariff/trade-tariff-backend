@@ -4,7 +4,8 @@ module RulesOfOrigin
   module V2
     class RuleSet
       include ContentAddressableId
-      self.content_addressable_fields = %i[scheme_code heading min max rule_ids]
+
+      content_addressable_fields 'scheme_code', 'heading', 'min', 'max', 'rule_ids'
 
       delegate :scheme_code, to: :scheme
 

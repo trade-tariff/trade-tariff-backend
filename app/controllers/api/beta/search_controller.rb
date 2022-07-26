@@ -7,6 +7,8 @@ module Api
         :heading_statistics,
         :chapter_statistics,
         :guide,
+        'facet_filter_statistics',
+        'facet_filter_statistics.facet_classification_statistics',
       ].freeze
 
       def index

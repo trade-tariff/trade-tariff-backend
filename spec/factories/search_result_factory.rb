@@ -5,8 +5,9 @@ FactoryBot.define do
     end
 
     multiple_hits
-    no_generate_statistics
+    no_generate_heading_and_chapter_statistics
     no_generate_guide_statistics
+    no_generate_facet_statistics
     no_redirect
 
     goods_nomenclature_query {}
@@ -43,15 +44,15 @@ FactoryBot.define do
       multiple_hits
     end
 
-    trait :no_generate_statistics do
+    trait :no_generate_heading_and_chapter_statistics do
       transient do
-        generate_statistics { false }
+        generate_heading_and_chapter_statistics { false }
       end
     end
 
-    trait :generate_statistics do
+    trait :generate_heading_and_chapter_statistics do
       transient do
-        generate_statistics { true }
+        generate_heading_and_chapter_statistics { true }
       end
     end
 
@@ -65,11 +66,6 @@ FactoryBot.define do
       transient do
         generate_guide_statistics { true }
       end
-    end
-
-    trait :redirect do
-      goods_nomenclature_query { build(:goods_nomenclature_query, :numeric, original_search_query: goods_nomenclature_item_id || '0101') }
-      transient { redirect { true } }
     end
 
     trait :heading do
@@ -105,6 +101,18 @@ FactoryBot.define do
       transient { redirect { false } }
     end
 
+    trait :no_generate_facet_statistics do
+      transient do
+        generate_facet_statistics { false }
+      end
+    end
+
+    trait :generate_facet_statistics do
+      transient do
+        generate_facet_statistics { true }
+      end
+    end
+
     initialize_with do
       fixture_filename = Rails.root.join("spec/fixtures/beta/search/goods_nomenclatures/#{result_fixture}.json")
       search_result = JSON.parse(File.read(fixture_filename))
@@ -116,8 +124,9 @@ FactoryBot.define do
         goods_nomenclature_query || build(:goods_nomenclature_query),
       )
 
-      search_result.generate_statistics if generate_statistics
+      search_result.generate_heading_and_chapter_statistics if generate_heading_and_chapter_statistics
       search_result.generate_guide_statistics if generate_guide_statistics
+      search_result.generate_facet_statistics if generate_facet_statistics
       search_result.redirect! if redirect
 
       search_result

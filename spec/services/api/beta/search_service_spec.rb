@@ -25,6 +25,7 @@ RSpec.describe Api::Beta::SearchService do
     let(:expected_search_args) do
       {
         body: {
+          size: '10',
           query: {
             bool: {
               must: [

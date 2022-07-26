@@ -4,7 +4,8 @@ module RulesOfOrigin
   module V2
     class Rule
       include ContentAddressableId
-      self.content_addressable_fields = %i[rule original operator rule_class]
+
+      content_addressable_fields 'rule', 'original', 'operator', 'rule_class'
 
       attr_accessor :rule,
                     :original,

@@ -4,7 +4,8 @@ module RulesOfOrigin
   class Link
     include ActiveModel::Model
     include ContentAddressableId
-    self.content_addressable_fields = %i[url text]
+
+    content_addressable_fields 'url', 'text'
 
     attr_accessor :text, :url
     attr_writer :id

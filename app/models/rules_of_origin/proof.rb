@@ -2,7 +2,8 @@ module RulesOfOrigin
   class Proof
     include ActiveModel::Model
     include ContentAddressableId
-    self.content_addressable_fields = %i[summary proof_class]
+
+    content_addressable_fields 'summary', 'proof_class'
 
     attr_accessor :scheme, :summary, :detail, :proof_class, :subtext
     attr_writer :id
