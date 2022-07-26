@@ -1,5 +1,6 @@
 class GoodsNomenclatureDescription < Sequel::Model
   DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not).*\z)/
+  NO_BREAKING_SPACE = "\u00A0".freeze
 
   include Formatter
 
@@ -21,12 +22,14 @@ class GoodsNomenclatureDescription < Sequel::Model
   custom_format :formatted_description, with: DescriptionFormatter,
                                         using: :description
 
+  custom_format :description_indexed, with: DescriptionFormatter,
+                                      using: :description
   def description
     super.try(:gsub, %r/( ?<br> ?){2,}/, '<br>') || ''
   end
 
   def description_indexed
-    description.match(DESCRIPTION_NEGATION_REGEX).try(:[], :keep).presence || description
+    (super.match(DESCRIPTION_NEGATION_REGEX).try(:[], :keep).presence || description).try(:gsub, NO_BREAKING_SPACE, ' ')
   end
 
   def formatted_description

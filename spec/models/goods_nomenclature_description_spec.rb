@@ -63,6 +63,12 @@ RSpec.describe GoodsNomenclatureDescription do
 
       it { is_expected.to eq('I do not include a handled negation') }
     end
+
+    context 'when the description value has a non-breaking space character' do
+      subject(:description_indexed) { build(:goods_nomenclature_description, description: "I have a\u00A0non-breaking space").description_indexed }
+
+      it { is_expected.to eq('I have a non-breaking space') }
+    end
   end
 
   describe '#to_s' do
