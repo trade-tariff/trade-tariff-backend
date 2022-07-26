@@ -50,7 +50,6 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
     context 'when there are nouns, noun_chunks, verbs and adjectives' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :full_query).query }
 
-
       let(:expected_query) do
         {
           query: {

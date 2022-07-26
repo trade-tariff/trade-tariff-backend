@@ -57,11 +57,5 @@ module Api
         URI.join(TradeTariffBackend.frontend_host, resource_path).to_s
       end
     end
-
   end
 end
-
-
-
-
-
