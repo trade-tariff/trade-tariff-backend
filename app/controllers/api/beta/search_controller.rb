@@ -10,17 +10,23 @@ module Api
       ].freeze
 
       def index
-        if search_result.redirect?
-          redirect_to frontend_url_for(search_result.short_code)
-        else
-          render json: serialized_result
-        end
+        render json: serialized_result
       end
 
       private
 
       def serialized_result
-        Api::Beta::SearchResultSerializer.new(search_result, include: DEFAULT_INCLUDES).serializable_hash
+        Api::Beta::SearchResultSerializer.new(
+          search_result,
+          include: DEFAULT_INCLUDES,
+          meta:,
+        ).serializable_hash
+      end
+
+      def meta
+        frontend_url = search_result.redirect? ? frontend_url_for(search_result.short_code) : nil
+
+        { redirect: !!search_result.redirect?, redirect_to: frontend_url }
       end
 
       def search_result
@@ -44,10 +50,18 @@ module Api
                           '/headings/:id'
                         end
 
+        resource_path.prepend('/xi/') if TradeTariffBackend.xi?
+
         resource_path = resource_path.sub(':id', short_code)
 
         URI.join(TradeTariffBackend.frontend_host, resource_path).to_s
       end
     end
+
   end
 end
+
+
+
+
+
