@@ -260,4 +260,11 @@ RSpec.describe Beta::Search::OpenSearchResult do
       it { expect(search_result.guide).to eq(above_threshold_guide_statistic) }
     end
   end
+
+  describe '#redirect!' do
+    subject(:result) { build(:search_result) }
+
+    it { expect(result.redirect!).to eq(true) }
+    it { expect { result.redirect! }.to change(result, :redirect?).from(nil).to(true) }
+  end
 end

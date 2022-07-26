@@ -96,6 +96,11 @@ FactoryBot.define do
       end
     end
 
+    trait :redirect do
+      goods_nomenclature_query { build(:goods_nomenclature_query, :numeric, original_search_query: goods_nomenclature_item_id || '0101') }
+      transient { redirect { true } }
+    end
+
     trait :no_redirect do
       transient { redirect { false } }
     end

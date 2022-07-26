@@ -78,30 +78,6 @@ module Beta
         }
       end
 
-      def goods_nomenclature_item_id_prefix_query
-        {
-          query: {
-            prefix: {
-              goods_nomenclature_item_id: {
-                value: original_search_query,
-              },
-            },
-          },
-        }
-      end
-
-      def goods_nomenclature_item_id_prefix_query
-        {
-          query: {
-            prefix: {
-              goods_nomenclature_item_id: {
-                value: original_search_query,
-              },
-            },
-          },
-        }
-      end
-
       def multi_match_query
         candidate_query = { query: { bool: {} } }
 

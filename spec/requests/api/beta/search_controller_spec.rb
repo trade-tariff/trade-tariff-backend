@@ -32,41 +32,77 @@ RSpec.describe Api::Beta::SearchController, type: :request do
       context 'when the search result tells us to redirect and the search query is a heading' do
         let(:search_result) { build(:search_result, :redirect, :heading) }
 
+        let(:pattern) do
+          {
+            meta: {
+              redirect: true,
+              redirect_to: 'http://localhost:3001/headings/0101',
+            },
+          }.ignore_extra_keys!
+        end
+
         before do
           allow(Beta::Search::OpenSearchResult).to receive(:build).and_return(search_result)
         end
 
-        it { expect(do_request).to redirect_to('http://localhost:3001/headings/0101') }
+        it { expect(do_request.body).to match_json_expression(pattern) }
       end
 
       context 'when the search result tells us to redirect and the search query is a chapter' do
         let(:search_result) { build(:search_result, :redirect, :chapter) }
 
+        let(:pattern) do
+          {
+            meta: {
+              redirect: true,
+              redirect_to: 'http://localhost:3001/chapters/01',
+            },
+          }.ignore_extra_keys!
+        end
+
         before do
           allow(Beta::Search::OpenSearchResult).to receive(:build).and_return(search_result)
         end
 
-        it { expect(do_request).to redirect_to('http://localhost:3001/chapters/01') }
+        it { expect(do_request.body).to match_json_expression(pattern) }
       end
 
       context 'when the search result tells us to redirect and the search query is a commodity' do
         let(:search_result) { build(:search_result, :redirect, :commodity) }
 
+        let(:pattern) do
+          {
+            meta: {
+              redirect: true,
+              redirect_to: 'http://localhost:3001/commodities/0101210000',
+            },
+          }.ignore_extra_keys!
+        end
+
         before do
           allow(Beta::Search::OpenSearchResult).to receive(:build).and_return(search_result)
         end
 
-        it { expect(do_request).to redirect_to('http://localhost:3001/commodities/0101210000') }
+        it { expect(do_request.body).to match_json_expression(pattern) }
       end
 
       context 'when the search result tells us to redirect and the search query is a partial commodity code' do
         let(:search_result) { build(:search_result, :redirect, :partial_goods_nomenclature) }
 
+        let(:pattern) do
+          {
+            meta: {
+              redirect: true,
+              redirect_to: 'http://localhost:3001/headings/0101',
+            },
+          }.ignore_extra_keys!
+        end
+
         before do
           allow(Beta::Search::OpenSearchResult).to receive(:build).and_return(search_result)
         end
 
-        it { expect(do_request).to redirect_to('http://localhost:3001/headings/0101') }
+        it { expect(do_request.body).to match_json_expression(pattern) }
       end
     end
 
