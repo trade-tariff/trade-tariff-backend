@@ -44,6 +44,10 @@
       }
     }
   },
+  "meta": {
+    "redirect": false,
+    "redirect_to": null
+  },
   "included": [
     {
       "id": "29417",

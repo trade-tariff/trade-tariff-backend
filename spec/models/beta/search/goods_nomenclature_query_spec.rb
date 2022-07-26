@@ -29,6 +29,24 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       ]
     end
 
+    context 'when the search query is a numeric' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :numeric).query }
+
+      let(:expected_query) do
+        {
+          query: {
+            term: {
+              goods_nomenclature_item_id: {
+                value: '0101000000',
+              },
+            },
+          },
+        }
+      end
+
+      it { is_expected.to eq(expected_query) }
+    end
+
     context 'when there are nouns, noun_chunks, verbs and adjectives' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :full_query).query }
 
@@ -184,6 +202,28 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       end
 
       it { is_expected.to eq(expected_query) }
+    end
+  end
+
+  describe '#goods_nomenclature_item_id' do
+    subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :numeric) }
+
+    it 'returns the padded original_search_query' do
+      expect(goods_nomenclature_query.goods_nomenclature_item_id).to eq('0101000000')
+    end
+  end
+
+  describe '#numeric?' do
+    context 'when the numeric value is set' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :numeric) }
+
+      it { is_expected.to be_numeric }
+    end
+
+    context 'when the numeric value is not set' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query) }
+
+      it { is_expected.not_to be_numeric }
     end
   end
 end

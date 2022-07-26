@@ -248,5 +248,9 @@ module TradeTariffBackend
     def handle_missing_soft_deletes?
       ENV['SOFT_DELETES_MISSING'].to_s == 'true'
     end
+
+    def frontend_host
+      ENV['FRONTEND_HOST']
+    end
   end
 end

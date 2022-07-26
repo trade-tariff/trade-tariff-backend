@@ -6,16 +6,19 @@ module Beta
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
 
+      delegate :goods_nomenclature_item_id, :numeric?, :short_code, to: :goods_nomenclature_query, allow_nil: true
+
       GUIDE_PERCENTAGE_THRESHOLD = 25
 
       attr_accessor :took,
                     :timed_out,
                     :hits,
                     :max_score,
-                    :search_query_parser_result
+                    :search_query_parser_result,
+                    :goods_nomenclature_query
 
       class << self
-        def build(result, search_query_parser_result)
+        def build(result, search_query_parser_result, goods_nomenclature_query)
           search_result = new
 
           search_result.took = result.took
@@ -23,6 +26,7 @@ module Beta
           search_result.max_score = result.hits.max_score
           search_result.hits = result.hits.hits.map(&method(:build_hit))
           search_result.search_query_parser_result = search_query_parser_result
+          search_result.goods_nomenclature_query = goods_nomenclature_query
 
           search_result
         end
@@ -105,6 +109,14 @@ module Beta
 
       def generate_guide_statistics
         @guide_statistics = Api::Beta::GuideStatisticsService.new(hits).call
+      end
+
+      def redirect!
+        @redirect = true
+      end
+
+      def redirect?
+        @redirect
       end
     end
   end

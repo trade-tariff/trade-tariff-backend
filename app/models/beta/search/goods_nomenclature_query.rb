@@ -5,7 +5,11 @@ module Beta
                   :verbs,
                   :adjectives,
                   :noun_chunks,
-                  :filters
+                  :filters,
+                  :numeric
+
+      attr_accessor :original_search_query
+      alias_method :short_code, :original_search_query
 
       MULTI_MATCH_FIELDS = [
         'search_references^12',
@@ -29,16 +33,52 @@ module Beta
       def self.build(search_query_parser_result, filters = [])
         query = new
 
+        is_numeric = search_query_parser_result.original_search_query.match(/^\d+$/).is_a?(MatchData)
+
         query.nouns = search_query_parser_result.nouns
         query.noun_chunks = search_query_parser_result.noun_chunks
         query.verbs = search_query_parser_result.verbs
         query.adjectives = search_query_parser_result.adjectives
         query.filters = filters
+        query.numeric = is_numeric
+        query.original_search_query = search_query_parser_result.original_search_query
 
         query
       end
 
       def query
+        if numeric?
+          goods_nomenclature_item_id_term_query
+        else
+          multi_match_query
+        end
+      end
+
+      def goods_nomenclature_item_id
+        padding = 10 - original_search_query.length
+
+        original_search_query + '0' * padding
+      end
+
+      def numeric?
+        @numeric
+      end
+
+      private
+
+      def goods_nomenclature_item_id_term_query
+        {
+          query: {
+            term: {
+              goods_nomenclature_item_id: {
+                value: goods_nomenclature_item_id,
+              },
+            },
+          },
+        }
+      end
+
+      def multi_match_query
         candidate_query = { query: { bool: {} } }
 
         candidate_query[:query][:bool][:filter] = filter_part if filters.any?
@@ -47,8 +87,6 @@ module Beta
 
         candidate_query
       end
-
-      private
 
       def must_part
         part = []
