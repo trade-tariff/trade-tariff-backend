@@ -131,4 +131,10 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
       it { is_expected.to be false }
     end
   end
+
+  describe '#subdivision' do
+    subject { described_class.new(subdivision: '').subdivision }
+
+    it { is_expected.to be_nil }
+  end
 end

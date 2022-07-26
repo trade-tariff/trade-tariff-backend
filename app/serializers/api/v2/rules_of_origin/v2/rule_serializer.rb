@@ -7,7 +7,7 @@ module Api
 
           set_type :rules_of_origin_v2_rule
 
-          attributes :rule, :original, :rule_class, :operator
+          attributes :rule, :rule_class, :operator
         end
       end
     end

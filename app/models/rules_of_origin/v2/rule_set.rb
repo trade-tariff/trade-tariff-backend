@@ -13,13 +13,12 @@ module RulesOfOrigin
 
       attr_accessor :scheme,
                     :heading,
-                    :subdivision,
                     :prefix,
                     :min,
                     :max,
                     :valid
 
-      attr_reader :rules
+      attr_reader :rules, :subdivision
 
       class << self
         def build_for_scheme(scheme, rule_sets_data)
@@ -33,6 +32,10 @@ module RulesOfOrigin
         attributes.each do |attribute_name, attribute_value|
           public_send "#{attribute_name}=", attribute_value
         end
+      end
+
+      def subdivision=(value)
+        @subdivision = value.presence
       end
 
       def headings_range
