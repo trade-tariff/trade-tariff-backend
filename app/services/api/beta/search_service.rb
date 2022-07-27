@@ -3,8 +3,9 @@ module Api
     class SearchService
       DEFAULT_SEARCH_INDEX = 'tariff-goods_nomenclatures'.freeze
 
-      def initialize(search_query)
+      def initialize(search_query, search_filters = {})
         @search_query = search_query
+        @search_filters = search_filters
       end
 
       def call
@@ -33,7 +34,7 @@ module Api
       delegate :v2_search_client, to: TradeTariffBackend
 
       def generated_search_query
-        @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(search_query_parser_result)
+        @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(search_query_parser_result, @search_filters)
       end
 
       def search_query_parser_result

@@ -161,7 +161,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
-              should: [
+              must: [
                 {
                   multi_match: {
                     query: 'running',
@@ -189,7 +189,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
-              should: [
+              must: [
                 {
                   multi_match: {
                     query: 'tall',
@@ -207,6 +207,59 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       end
 
       it { is_expected.to eq(expected_query) }
+    end
+
+    context 'when a filter is included' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :filter).query }
+
+      let(:expected_query) do
+        {
+          size: '10',
+          query: {
+            bool: {
+              filter: {
+                bool: {
+                  must: [
+                    {
+                      terms: {
+                        filter_cheese_type: [
+                          'containing veins produced by Penicillium roqueforti|fresh|grated or powdered|processed',
+                          'fresh|grated or powdered|processed',
+                          'fresh|processed',
+                          'fresh',
+                        ],
+                        boost: 1,
+                      },
+                    },
+                  ],
+                },
+              },
+              must: [
+                {
+                  multi_match: {
+                    query: 'ricotta',
+                    fuzziness: 0.1,
+                    prefix_length: 2,
+                    tie_breaker: 0.3,
+                    type: 'best_fields',
+                    fields: expected_multi_match_fields,
+                  },
+                },
+              ],
+            },
+          },
+        }
+      end
+
+      it { is_expected.to eq(expected_query) }
+
+      it 'calls out to the filter generator service with the correct filters' do
+        allow(Api::Beta::GoodsNomenclatureFilterGeneratorService).to receive(:new).and_call_original
+
+        goods_nomenclature_query
+
+        expect(Api::Beta::GoodsNomenclatureFilterGeneratorService).to have_received(:new).with('cheese_type' => 'fresh')
+      end
     end
   end
 

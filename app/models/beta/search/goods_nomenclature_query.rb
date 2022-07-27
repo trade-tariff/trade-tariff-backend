@@ -30,7 +30,7 @@ module Beta
         'goods_nomenclature_item_id',
       ].freeze
 
-      def self.build(search_query_parser_result, filters = [])
+      def self.build(search_query_parser_result, filters = {})
         query = new
 
         is_numeric = search_query_parser_result.original_search_query.match(/^\d+$/).is_a?(MatchData)
@@ -88,10 +88,24 @@ module Beta
         candidate_query
       end
 
+      def filter_part
+        {
+          bool: {
+            must: Api::Beta::GoodsNomenclatureFilterGeneratorService.new(@filters).call,
+          },
+        }
+      end
+
       def must_part
         part = []
 
-        part.concat(noun_part) if nouns.present? || noun_chunks.present?
+        # When there are only should verbs and adjectives coming back from the spacy tokenizer we need to move adjectives and verbs to the must part.
+        if nouns.present? || noun_chunks.present?
+          part.concat(noun_part)
+        else
+          part.concat(verb_part) if verbs.present?
+          part.concat(adjective_part) if adjectives.present?
+        end
 
         part
       end
@@ -99,8 +113,11 @@ module Beta
       def should_part
         part = []
 
-        part.concat(verb_part) if verbs.present?
-        part.concat(adjective_part) if adjectives.present?
+        # When there are only should verbs and adjectives coming back from the spacy tokenizer we need to move adjectives and verbs to the must part
+        if nouns.present? || noun_chunks.present?
+          part.concat(verb_part) if verbs.present?
+          part.concat(adjective_part) if adjectives.present?
+        end
 
         part
       end

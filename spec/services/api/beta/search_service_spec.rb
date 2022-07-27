@@ -6,6 +6,7 @@ RSpec.describe Api::Beta::SearchService do
     before do
       allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
       allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(search_query_parser_service)
+      allow(Api::Beta::GoodsNomenclatureFilterGeneratorService).to receive(:new).and_call_original
       allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(goods_nomenclature_query)
       allow(Beta::Search::OpenSearchResult).to receive(:build).and_call_original
 
@@ -73,6 +74,7 @@ RSpec.describe Api::Beta::SearchService do
     it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta') }
     it { expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args) }
     it { expect(Beta::Search::OpenSearchResult).to have_received(:build).with(search_result, search_query_parser_result, goods_nomenclature_query) }
+    it { expect(Beta::Search::GoodsNomenclatureQuery).to have_received(:build).with(search_query_parser_result, {}) }
     it { expect(call).to be_a(Beta::Search::OpenSearchResult) }
 
     context 'when the search result has no hits and the query is numeric' do
