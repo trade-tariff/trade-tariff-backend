@@ -3,10 +3,6 @@ module Api
     UnrecognisedFilterError = Class.new(ArgumentError)
 
     class GoodsNomenclatureFilterGeneratorService
-      delegate :lemmatizer, :stop_words, to: TradeTariffBackend
-
-      WHITESPACE = /\s+/
-
       def initialize(filters)
         @filters = filters
       end

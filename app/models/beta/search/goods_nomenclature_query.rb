@@ -114,8 +114,6 @@ module Beta
         part = []
 
         # When there are only should verbs and adjectives coming back from the spacy tokenizer we need to move adjectives and verbs to the must part
-        #
-        # This should occur infrequently/when the spacy tokenizer is misbehaving
         if nouns.present? || noun_chunks.present?
           part.concat(verb_part) if verbs.present?
           part.concat(adjective_part) if adjectives.present?
