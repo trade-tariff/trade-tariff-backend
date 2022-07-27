@@ -21,7 +21,7 @@ RSpec.describe Api::Beta::SearchController, type: :request do
 
     shared_examples_for 'a working search request' do |prefix|
       subject(:do_request) do
-        get "#{prefix}/api/beta/search?q=ricotta"
+        get "#{prefix}/api/beta/search?q=ricotta&filter[cheese_type]=fresh"
 
         response
       end

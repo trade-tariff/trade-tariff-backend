@@ -7,7 +7,6 @@ module Api
         :heading_statistics,
         :chapter_statistics,
         :guide,
-        'facet_filter_statistics',
         'facet_filter_statistics.facet_classification_statistics',
       ].freeze
 
@@ -32,11 +31,15 @@ module Api
       end
 
       def search_result
-        @search_result ||= Beta::SearchService.new(search_query).call
+        @search_result ||= Beta::SearchService.new(search_query, search_filters).call
       end
 
       def search_query
         params[:q]
+      end
+
+      def search_filters
+        (params[:filter].try(:permit, *all_filters) || {}).to_h
       end
 
       def frontend_url_for(short_code)
@@ -57,6 +60,10 @@ module Api
         resource_path = resource_path.sub(':id', short_code)
 
         URI.join(TradeTariffBackend.frontend_host, resource_path).to_s
+      end
+
+      def all_filters
+        TradeTariffBackend.search_facet_classifier_configuration.all_filters
       end
     end
   end
