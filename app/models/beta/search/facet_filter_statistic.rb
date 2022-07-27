@@ -48,10 +48,8 @@ module Beta
           filter_configuration.dig(facet, :question) || "Pick one of #{display_name_for(facet)}"
         end
 
-        def boost_for(facet)
-          return 10 if facet == BOOSTED_FACET
-
-          1
+        def boost_for(filter)
+          TradeTariffBackend.search_facet_classifier_configuration.boost_for(filter)
         end
 
         def filter_configuration
