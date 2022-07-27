@@ -22,5 +22,10 @@ FactoryBot.define do
       original_search_query { '0101' }
       numeric { true }
     end
+
+    trait :filter do
+      single_hit
+      filters { { 'cheese_type' => 'fresh' } }
+    end
   end
 end
