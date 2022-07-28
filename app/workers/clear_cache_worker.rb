@@ -8,8 +8,9 @@ class ClearCacheWorker
     Rails.cache.clear
     logger.info 'Clearing Rails cache completed'
 
-    Sidekiq::Client.enqueue(PrewarmSubheadingsWorker)
-    Sidekiq::Client.enqueue(RecacheModelsWorker)
     Sidekiq::Client.enqueue(ReindexModelsWorker)
+    Sidekiq::Client.enqueue(PrewarmSubheadingsWorker)
+    # TODO: Recaching takes ages (c 5 hours) and shouldn't really take more than 20 minutes
+    Sidekiq::Client.enqueue(RecacheModelsWorker)
   end
 end
