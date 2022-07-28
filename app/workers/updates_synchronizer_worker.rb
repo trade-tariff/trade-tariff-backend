@@ -32,9 +32,10 @@ class UpdatesSynchronizerWorker
 
     migrate_data if reapply_data_migrations
 
-    Sidekiq::Client.enqueue(ClearCacheWorker)
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(GenerateMaterializedPathsWorker)
+    # Repopulation of the goods nomenclature index depends on the materialised paths being present
+    Sidekiq::Client.enqueue(ClearCacheWorker)
     Sidekiq::Client.enqueue(GenerateGoodsNomenclaturesCsvReportWorker)
   end
 
