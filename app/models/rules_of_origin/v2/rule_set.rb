@@ -30,7 +30,9 @@ module RulesOfOrigin
 
       def initialize(attributes = {})
         attributes.each do |attribute_name, attribute_value|
-          public_send "#{attribute_name}=", attribute_value
+          if respond_to?("#{attribute_name}=")
+            public_send "#{attribute_name}=", attribute_value
+          end
         end
       end
 

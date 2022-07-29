@@ -17,7 +17,7 @@ module RulesOfOrigin
         attributes.each do |attribute_name, attribute_value|
           if attribute_name.to_s == 'class'
             self.rule_class = attribute_value
-          else
+          elsif respond_to?("#{attribute_name}=")
             public_send "#{attribute_name}=", attribute_value
           end
         end
