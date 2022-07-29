@@ -557,11 +557,12 @@ workflows:
     jobs:
       - renew_search_references:
           context: trade-tariff
-          environment_key: staging
+          environment_key: production
           filters:
             branches:
               only:
                 - main
+
       - refresh_staging_db:
           context: trade-tariff
           matrix:
@@ -569,13 +570,12 @@ workflows:
               service:
                 - xi
                 - uk
+          requires:
+            - renew_search_references
           filters:
             branches:
               only:
                 - main
-          # TODO: When we promote renewing search refrences to production uncomment these lines
-          # requires:
-          #   - renew_search_references
   ci:
     jobs:
       - linters:
