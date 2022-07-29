@@ -6,8 +6,7 @@ class ReindexModelsWorker
   def perform
     logger.info 'Reindexing models in Elastic Search...'
     TradeTariffBackend.reindex
-    # Drops and completely recreates the index
-    TradeTariffBackend.v2_search_client.reindex_all
+    TradeTariffBackend.v2_reindex
     logger.info 'Reindexing of models completed'
   end
 end
