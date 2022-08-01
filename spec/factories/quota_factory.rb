@@ -57,10 +57,20 @@ FactoryBot.define do
   end
 
   factory :quota_order_number_origin do
+    transient do
+      geographical_area {}
+    end
     quota_order_number_origin_sid  { generate(:sid) }
     quota_order_number_sid         { generate(:sid) }
-    geographical_area_id           { Forgery(:basic).text(exactly: 2) }
-    geographical_area_sid          { generate(:sid) }
+
+    geographical_area_id do
+      geographical_area&.geographical_area_id || Forgery(:basic).text(exactly: 2)
+    end
+
+    geographical_area_sid do
+      geographical_area&.geographical_area_sid || generate(:sid)
+    end
+
     validity_start_date            { 4.years.ago.beginning_of_day }
     validity_end_date              { nil }
 

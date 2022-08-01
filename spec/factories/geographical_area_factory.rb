@@ -28,6 +28,18 @@ FactoryBot.define do
       geographical_code { '1' }
     end
 
+    trait :with_members do
+      after(:create) do |geographical_area, _evaluator|
+        member = create(:geographical_area, :country)
+
+        create(
+          :geographical_area_membership,
+          geographical_area_group_sid: geographical_area.geographical_area_sid,
+          geographical_area_sid: member.geographical_area_sid,
+        )
+      end
+    end
+
     trait :region do
       geographical_code { '2' }
     end

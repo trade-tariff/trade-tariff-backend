@@ -8,13 +8,13 @@ RSpec.describe QuotaSearchService do
 
   let(:validity_start_date) { Time.zone.yesterday }
   let(:quota_order_number1) { create :quota_order_number }
-  let!(:measure1) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number1.quota_order_number_id, validity_start_date: validity_start_date }
+  let!(:measure1) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number1.quota_order_number_id, validity_start_date: }
   let!(:quota_definition1) do
     create :quota_definition,
            quota_order_number_sid: quota_order_number1.quota_order_number_sid,
            quota_order_number_id: quota_order_number1.quota_order_number_id,
            critical_state: 'Y',
-           validity_start_date: validity_start_date
+           validity_start_date:
   end
   let!(:quota_order_number_origin1) do
     create :quota_order_number_origin,
@@ -24,18 +24,22 @@ RSpec.describe QuotaSearchService do
   let!(:duplicate_measure) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number1.quota_order_number_id, validity_start_date: validity_start_date + 1.hour }
 
   let(:quota_order_number2) { create :quota_order_number }
-  let!(:measure2) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number2.quota_order_number_id, validity_start_date: validity_start_date }
+  let!(:measure2) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number2.quota_order_number_id, validity_start_date: }
   let!(:quota_definition2) do
     create :quota_definition,
            quota_order_number_sid: quota_order_number2.quota_order_number_sid,
            quota_order_number_id: quota_order_number2.quota_order_number_id,
            critical_state: 'N',
-           validity_start_date: validity_start_date
+           validity_start_date:
   end
+  let(:geographical_area_with_members) { create(:geographical_area, :with_members) }
+  let(:geographical_area_member) { geographical_area_with_members.contained_geographical_areas.first }
   let!(:quota_order_number_origin2) do
-    create :quota_order_number_origin,
-           :with_geographical_area,
-           quota_order_number_sid: quota_order_number2.quota_order_number_sid
+    create(
+      :quota_order_number_origin,
+      geographical_area: geographical_area_with_members,
+      quota_order_number_sid: quota_order_number2.quota_order_number_sid,
+    )
   end
   let(:current_page) { 1 }
   let(:per_page) { 20 }
@@ -83,6 +87,14 @@ RSpec.describe QuotaSearchService do
 
       it 'returns the correct quota definition' do
         expect(service.call).to eq([quota_definition1])
+      end
+    end
+
+    context 'when filtering by the geographical_area_id of a member' do
+      let(:filter) { { 'geographical_area_id' => geographical_area_member.geographical_area_id } }
+
+      it 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_definition2])
       end
     end
 
