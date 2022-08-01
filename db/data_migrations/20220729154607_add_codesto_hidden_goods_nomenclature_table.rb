@@ -5,18 +5,18 @@ Sequel.migration do
     up do
       HiddenGoodsNomenclature.unrestrict_primary_key
 
-      codes.each do |code|
-        next unless HiddenGoodsNomenclature.where(goods_nomenclature_item_id: code).count.zero?
+      codes.each do |goods_nomenclature_item_id|
+        next unless HiddenGoodsNomenclature.where(goods_nomenclature_item_id:).count.zero?
 
-        HiddenGoodsNomenclature.create(goods_nomenclature_item_id: code)
+        HiddenGoodsNomenclature.create(goods_nomenclature_item_id:)
       end
 
       HiddenGoodsNomenclature.restrict_primary_key
     end
 
     down do
-      codes.each do |code|
-        HiddenGoodsNomenclature.where(goods_nomenclature_item_id: code).delete
+      codes.each do |goods_nomenclature_item_id|
+        HiddenGoodsNomenclature.where(goods_nomenclature_item_id:).delete
       end
     end
   end
