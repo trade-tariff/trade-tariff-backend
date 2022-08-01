@@ -69,11 +69,17 @@ FactoryBot.define do
     end
 
     trait :with_geographical_area do
+      transient { group_member { false }}
+
       after(:build) do |qon|
         geographical_area = create(:geographical_area)
         qon.geographical_area_id = geographical_area.geographical_area_id
         qon.geographical_area_sid = geographical_area.geographical_area_sid
       end
+    end
+
+    trait :group_member do
+      transient { group_member { true }}
     end
   end
 

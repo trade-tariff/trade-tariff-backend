@@ -35,6 +35,7 @@ RSpec.describe QuotaSearchService do
   let!(:quota_order_number_origin2) do
     create :quota_order_number_origin,
            :with_geographical_area,
+           # :group_member,
            quota_order_number_sid: quota_order_number2.quota_order_number_sid
   end
   let(:current_page) { 1 }

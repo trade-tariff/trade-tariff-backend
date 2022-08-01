@@ -71,7 +71,10 @@ class QuotaSearchService
   end
 
   def apply_geographical_area_id_filter
-    @scope = scope.where(measures__geographical_area_id: geographical_area_id)
+    geographical_area_ids = GeographicalArea.where(geographical_area_id:).actual.take.included_geographical_areas.pluck(:geographical_area_id)
+    geographical_area_ids << geographical_area_id
+
+    @scope = scope.where(measures__geographical_area_id: geographical_area_ids)
   end
 
   def apply_order_number_filter
