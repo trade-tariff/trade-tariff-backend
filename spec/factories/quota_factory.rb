@@ -57,10 +57,20 @@ FactoryBot.define do
   end
 
   factory :quota_order_number_origin do
+    transient do
+      geographical_area {}
+    end
     quota_order_number_origin_sid  { generate(:sid) }
     quota_order_number_sid         { generate(:sid) }
-    geographical_area_id           { Forgery(:basic).text(exactly: 2) }
-    geographical_area_sid          { generate(:sid) }
+
+    geographical_area_id do
+      geographical_area&.geographical_area_id || Forgery(:basic).text(exactly: 2)
+    end
+
+    geographical_area_sid do
+      geographical_area&.geographical_area_sid || generate(:sid)
+    end
+
     validity_start_date            { 4.years.ago.beginning_of_day }
     validity_end_date              { nil }
 
@@ -69,17 +79,11 @@ FactoryBot.define do
     end
 
     trait :with_geographical_area do
-      transient { group_member { false }}
-
       after(:build) do |qon|
         geographical_area = create(:geographical_area)
         qon.geographical_area_id = geographical_area.geographical_area_id
         qon.geographical_area_sid = geographical_area.geographical_area_sid
       end
-    end
-
-    trait :group_member do
-      transient { group_member { true }}
     end
   end
 
