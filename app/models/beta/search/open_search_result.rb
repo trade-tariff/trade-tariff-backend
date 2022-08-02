@@ -137,6 +137,15 @@ module Beta
       def redirect?
         @redirect
       end
+
+      def intercept_message
+        searched_term = search_query_parser_result.corrected_search_query
+
+        {
+          term: (I18n.t "#{searched_term}.title"),
+          message: (I18n.t "#{searched_term}.message"),
+        }
+      end
     end
   end
 end

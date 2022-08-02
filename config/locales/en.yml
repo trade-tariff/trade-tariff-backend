@@ -31,3 +31,19 @@
 
 en:
   hello: "Hello world"
+  gifts:
+    title: "gifts"
+    message: "There isn't a single commodity code for gifts. Classification is specific to the type of good being imported so, to find the right code, you need to know the details about your product.
+              This may include the: type of product; purpose of the product; materials used to make it; production methods used to make it; way it's packaged.
+              You may also be interested in the following guidance on the duty implications of importing gifts at: [https://www.gov.uk/goods-sent-from-abroad/tax-and-duty](https://www.gov.uk/goods-sent-from-abroad/tax-and-duty)"
+  lantern:
+    title: "lantern"
+    message: "Based on your search term we have provided the subheading for non-electrical lighting. If your product is electrical, you should consider lamps or lightsources of [chapter 85](/chapters/85)"
+
+  horses:
+    title: "horses"
+    message: "Based on your search term we have provided the subheading for horses."
+
+  clothing:
+    title: "clothing"
+    message: "Based on your search term we have provided the subheading for clothing"

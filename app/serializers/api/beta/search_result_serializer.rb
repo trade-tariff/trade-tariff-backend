@@ -8,7 +8,8 @@ module Api
       attributes :took,
                  :timed_out,
                  :max_score,
-                 :total_results
+                 :total_results,
+                 :intercept_message
 
       has_one :search_query_parser_result, serializer: Api::Beta::SearchQueryParserResultSerializer
 
