@@ -47,3 +47,7 @@ en:
   clothing:
     title: "clothing"
     message: "Based on your search term we have provided the subheading for clothing"
+
+  ricotta:
+    title: "ricotta"
+    message: "Based on your search term we have provided the subheading for ricotta"

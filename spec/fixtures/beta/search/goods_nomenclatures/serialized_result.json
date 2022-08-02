@@ -6,7 +6,11 @@
       "took": 1,
       "timed_out": false,
       "max_score": 74.98428,
-      "total_results": 1
+      "total_results": 1,
+      "intercept_message": {
+        "term": "ricotta",
+        "message": "Based on your search term we have provided the subheading for ricotta"
+      }
     },
     "relationships": {
       "search_query_parser_result": {
