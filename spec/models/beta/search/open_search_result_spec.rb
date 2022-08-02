@@ -273,6 +273,11 @@ RSpec.describe Beta::Search::OpenSearchResult do
       searched_term = result.search_query_parser_result.corrected_search_query
       expect(searched_term).to eq((I18n.t "#{searched_term}.title"))
     end
+
+    it 'will not match the object in the yaml file' do
+      searched_term = 'random_string'
+      expect(searched_term).not_to eq((I18n.t "#{searched_term}.title"))
+    end
   end
 
   describe '#facet_filter_statistics' do

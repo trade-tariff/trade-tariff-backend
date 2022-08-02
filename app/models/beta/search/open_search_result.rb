@@ -141,6 +141,8 @@ module Beta
       def intercept_message
         searched_term = search_query_parser_result.corrected_search_query
 
+        return unless searched_term.eql?((I18n.t "#{searched_term}.title"))
+
         {
           term: (I18n.t "#{searched_term}.title"),
           message: (I18n.t "#{searched_term}.message"),
