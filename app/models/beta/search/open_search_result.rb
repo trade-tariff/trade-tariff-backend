@@ -5,6 +5,7 @@ module Beta
       delegate :id, to: :heading_statistics, prefix: true, allow_nil: true
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
+      delegate :id, to: :intercept_message, prefix: true, allow_nil: true
 
       delegate :goods_nomenclature_item_id, :numeric?, :short_code, to: :goods_nomenclature_query, allow_nil: true
 
@@ -139,14 +140,7 @@ module Beta
       end
 
       def intercept_message
-        searched_term = search_query_parser_result.corrected_search_query
-
-        return unless searched_term.eql?((I18n.t "#{searched_term}.title"))
-
-        {
-          term: (I18n.t "#{searched_term}.title"),
-          message: (I18n.t "#{searched_term}.message"),
-        }
+        @intercept_message ||= ::Beta::Search::InterceptMessage.build(search_query_parser_result.original_search_query)
       end
     end
   end

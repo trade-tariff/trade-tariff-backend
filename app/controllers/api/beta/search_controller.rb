@@ -7,6 +7,7 @@ module Api
         :heading_statistics,
         :chapter_statistics,
         :guide,
+        :intercept_message,
         'facet_filter_statistics.facet_classification_statistics',
       ].freeze
 

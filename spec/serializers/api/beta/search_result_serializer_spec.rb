@@ -22,14 +22,13 @@ RSpec.describe Api::Beta::SearchResultSerializer do
             timed_out: false,
             max_score: 76.96534,
             total_results: 10,
-            intercept_message: {
-              term: 'clothing',
-              message: 'Based on your search term we have provided the subheading for clothing',
-            },
           },
           relationships: {
             search_query_parser_result: {
               data: { id: '50cf19912960f65490b334ea9c196eea', type: :search_query_parser_result },
+            },
+            intercept_message: {
+              data: { id: 'd41d8cd98f00b204e9800998ecf8427e', type: :intercept_message },
             },
             hits: {
               data: [
