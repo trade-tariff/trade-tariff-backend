@@ -1,7 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe Search::HeadingIndex do
-  subject(:instance) { described_class.new 'testnamespace' }
+  subject(:index) { described_class.new 'testnamespace' }
+
+  let(:record) { create(:heading) }
 
   it { is_expected.to have_attributes type: 'heading' }
   it { is_expected.to have_attributes name: 'testnamespace-headings' }
@@ -10,10 +12,12 @@ RSpec.describe Search::HeadingIndex do
   it { is_expected.to have_attributes serializer: Search::HeadingSerializer }
 
   describe '#serialize_record' do
-    subject { instance.serialize_record record }
-
-    let(:record) { create :heading }
+    subject { index.serialize_record(record) }
 
     it { is_expected.to include 'id' => record.goods_nomenclature_sid }
+  end
+
+  describe '#skip?' do
+    it { expect(index.skip?(record)).to be(false) }
   end
 end

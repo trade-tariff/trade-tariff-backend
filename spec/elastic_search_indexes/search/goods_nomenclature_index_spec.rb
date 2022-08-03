@@ -1,7 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Search::GoodsNomenclatureIndex do
-  subject(:instance) { described_class.new 'testnamespace' }
+  subject(:index) { described_class.new('testnamespace') }
 
   it { is_expected.to have_attributes type: 'goods_nomenclature' }
   it { is_expected.to have_attributes name: 'testnamespace-goods_nomenclatures' }
@@ -9,7 +9,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   it { is_expected.to have_attributes serializer: Search::GoodsNomenclatureSerializer }
 
   describe '#serialize_record' do
-    subject { instance.serialize_record record }
+    subject { index.serialize_record record }
 
     let(:record) { create :heading, :with_description }
 
@@ -21,5 +21,19 @@ RSpec.describe Search::GoodsNomenclatureIndex do
 
     it { is_expected.to be_a(Sequel::Postgres::Dataset) }
     it { expect(dataset.sql).to match(/(validity_start_date|validity_end_date)/) }
+  end
+
+  describe '#skip?' do
+    context 'when the goods nomenclature is grouping and not a heading' do
+      let(:record) { build(:commodity, :grouping) }
+
+      it { expect(index.skip?(record)).to be(false) }
+    end
+
+    context 'when the goods nomenclature is grouping and a heading' do
+      let(:record) { build(:heading, :grouping) }
+
+      it { expect(index.skip?(record)).to be(true) }
+    end
   end
 end

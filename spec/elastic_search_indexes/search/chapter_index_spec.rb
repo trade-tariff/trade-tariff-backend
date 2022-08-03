@@ -1,7 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe Search::ChapterIndex do
-  subject(:instance) { described_class.new 'testnamespace' }
+  subject(:index) { described_class.new('testnamespace') }
+
+  let(:record) { create(:chapter) }
 
   it { is_expected.to have_attributes type: 'chapter' }
   it { is_expected.to have_attributes name: 'testnamespace-chapters' }
@@ -10,11 +12,13 @@ RSpec.describe Search::ChapterIndex do
   it { is_expected.to have_attributes serializer: Search::ChapterSerializer }
 
   describe '#serialize_record' do
-    subject { instance.serialize_record record }
-
-    let(:record) { create :chapter }
+    subject { index.serialize_record record }
 
     it { is_expected.to include 'id' => record.goods_nomenclature_sid }
     it { is_expected.to include 'description' => record.description.presence }
+  end
+
+  describe '#skip?' do
+    it { expect(index.skip?(record)).to be(false) }
   end
 end
