@@ -1,9 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Search::SectionIndex do
-  subject(:index) { described_class.new('testnamespace') }
-
-  let(:record) { create :section }
+  subject(:instance) { described_class.new 'testnamespace' }
 
   it { is_expected.to have_attributes type: 'section' }
   it { is_expected.to have_attributes name: 'testnamespace-sections' }
@@ -12,12 +10,10 @@ RSpec.describe Search::SectionIndex do
   it { is_expected.to have_attributes serializer: Search::SectionSerializer }
 
   describe '#serialize_record' do
-    subject { index.serialize_record record }
+    subject { instance.serialize_record record }
 
-    it { is_expected.to include('id' => record.id) }
-  end
+    let(:record) { create :section }
 
-  describe '#skip?' do
-    it { expect(index.skip?(record)).to be(false) }
+    it { is_expected.to include 'id' => record.id }
   end
 end

@@ -1,9 +1,7 @@
 require 'rails_helper'
 
 RSpec.describe Search::CommodityIndex do
-  subject(:index) { described_class.new('testnamespace') }
-
-  let(:record) { create(:commodity) }
+  subject(:instance) { described_class.new 'testnamespace' }
 
   it { is_expected.to have_attributes type: 'commodity' }
   it { is_expected.to have_attributes name: 'testnamespace-commodities' }
@@ -12,8 +10,10 @@ RSpec.describe Search::CommodityIndex do
   it { is_expected.to have_attributes serializer: Search::CommoditySerializer }
 
   describe '#serialize_record' do
-    subject { index.serialize_record record }
+    subject { instance.serialize_record record }
 
-    it { is_expected.to include('id' => record.goods_nomenclature_sid) }
+    let(:record) { create :commodity }
+
+    it { is_expected.to include 'id' => record.goods_nomenclature_sid }
   end
 end
