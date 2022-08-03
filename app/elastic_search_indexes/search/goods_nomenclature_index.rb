@@ -6,6 +6,13 @@ module Search
       end
     end
 
+    # Headings are grouped by other grouping headings and we do not want
+    # these grouping headings in the search results since they're mainly for
+    # display purposes.
+    def skip?(goods_nomenclature)
+      goods_nomenclature.heading_grouping?
+    end
+
     def eager_load_graph
       %i[
         goods_nomenclature_indents
