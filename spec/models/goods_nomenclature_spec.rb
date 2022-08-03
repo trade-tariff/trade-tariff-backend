@@ -585,4 +585,36 @@ RSpec.describe GoodsNomenclature do
       it { expect(classifiable_goods_nomenclatures).to eq([1]) }
     end
   end
+
+  describe '#heading_grouping?' do
+    shared_examples 'a non grouping heading goods nomenclature' do |goods_nomenclature_item_id, producline_suffix|
+      subject(:goods_nomenclature) { build(:goods_nomenclature, goods_nomenclature_item_id:, producline_suffix:) }
+
+      it { is_expected.not_to be_heading_grouping }
+    end
+
+    context 'when a grouping heading' do
+      subject(:goods_nomenclature) { build(:goods_nomenclature, goods_nomenclature_item_id: '0101000000', producline_suffix: '10') }
+
+      it { is_expected.to be_heading_grouping }
+    end
+
+    it_behaves_like 'a non grouping heading goods nomenclature', '0101210000', '10'
+    it_behaves_like 'a non grouping heading goods nomenclature', '0101210000', '80'
+    it_behaves_like 'a non grouping heading goods nomenclature', '0101000000', '80'
+  end
+
+  describe '#grouping?' do
+    context 'when the producline suffix is 80' do
+      subject(:goods_nomenclature) { build(:goods_nomenclature, producline_suffix: '80') }
+
+      it { is_expected.not_to be_grouping }
+    end
+
+    context 'when the producline suffix is not 80' do
+      subject(:goods_nomenclature) { build(:goods_nomenclature, producline_suffix: '10') }
+
+      it { is_expected.to be_grouping }
+    end
+  end
 end
