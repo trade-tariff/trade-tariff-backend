@@ -2,7 +2,9 @@ module Search
   class GoodsNomenclatureIndex < ::SearchIndex
     def dataset
       TimeMachine.now do
-        GoodsNomenclature.actual
+        GoodsNomenclature.actual.exclude(
+          "goods_nomenclatures.goods_nomenclature_item_id LIKE '____000000' AND producline_suffix != '80'",
+        )
       end
     end
 
