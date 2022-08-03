@@ -228,12 +228,4 @@ class GoodsNomenclature < Sequel::Model
   def classifiable_goods_nomenclatures
     ancestors.dup.push(self).reverse
   end
-
-  def heading_grouping?
-    heading? && grouping?
-  end
-
-  def grouping?
-    producline_suffix != GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
-  end
 end

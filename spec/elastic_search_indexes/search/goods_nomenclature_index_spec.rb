@@ -9,7 +9,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   it { is_expected.to have_attributes serializer: Search::GoodsNomenclatureSerializer }
 
   describe '#serialize_record' do
-    subject { index.serialize_record record }
+    subject { index.serialize_record(record) }
 
     let(:record) { create :heading, :with_description }
 
@@ -20,20 +20,13 @@ RSpec.describe Search::GoodsNomenclatureIndex do
     subject(:dataset) { described_class.new('testnamespace').dataset }
 
     it { is_expected.to be_a(Sequel::Postgres::Dataset) }
-    it { expect(dataset.sql).to match(/(validity_start_date|validity_end_date)/) }
-  end
 
-  describe '#skip?' do
-    context 'when the goods nomenclature is grouping and not a heading' do
-      let(:record) { build(:commodity, :grouping) }
-
-      it { expect(index.skip?(record)).to be(false) }
+    it 'uses the time machine' do
+      expect(dataset.sql).to match(/(validity_start_date|validity_end_date)/)
     end
 
-    context 'when the goods nomenclature is grouping and a heading' do
-      let(:record) { build(:heading, :grouping) }
-
-      it { expect(index.skip?(record)).to be(true) }
+    it 'excludes headings that are grouping' do
+      expect(dataset.sql).to include("AND NOT (goods_nomenclatures.goods_nomenclature_item_id LIKE '____000000' AND producline_suffix != '80')")
     end
   end
 end

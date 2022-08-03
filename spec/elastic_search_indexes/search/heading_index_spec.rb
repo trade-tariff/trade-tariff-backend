@@ -16,8 +16,4 @@ RSpec.describe Search::HeadingIndex do
 
     it { is_expected.to include 'id' => record.goods_nomenclature_sid }
   end
-
-  describe '#skip?' do
-    it { expect(index.skip?(record)).to be(false) }
-  end
 end

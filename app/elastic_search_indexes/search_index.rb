@@ -40,8 +40,4 @@ class SearchIndex
   def exclude_from_search_results?
     !goods_nomenclature?
   end
-
-  def skip?(_entity)
-    false
-  end
 end

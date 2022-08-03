@@ -16,8 +16,4 @@ RSpec.describe Search::SearchReferenceIndex do
 
     it { is_expected.to include('title' => record.title) }
   end
-
-  describe '#skip?' do
-    it { expect(index.skip?(record)).to be(false) }
-  end
 end

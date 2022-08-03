@@ -21,8 +21,6 @@ class BuildIndexPageWorker
 
   def serialize_for(operation, index, entries)
     entries.each_with_object([]) do |model, memo|
-      next if index.skip?(model)
-
       memo.push(
         operation => {
           _index: index.name,
