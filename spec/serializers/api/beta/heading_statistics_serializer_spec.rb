@@ -11,9 +11,9 @@ RSpec.describe Api::Beta::HeadingStatisticsSerializer do
             id: '0406',
             type: :heading_statistic,
             attributes: {
-              description: nil,
+              description: 'Cheese and curd',
               chapter_id: '04',
-              chapter_description: nil,
+              chapter_description: "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
               score: 74.98428,
               cnt: 1,
               avg: 74.98428,

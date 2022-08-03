@@ -52,21 +52,22 @@ RSpec.describe Beta::Search::OpenSearchResult do
         [
           {
             'id' => '01',
-            'description' => nil,
+            'description' => 'LIVE ANIMALS',
             'score' => 485.68718800000005,
             'cnt' => 7,
             'avg' => 69.38388400000001,
           },
           {
             'id' => '02',
-            'description' => nil,
+            'description' => 'MEAT AND EDIBLE MEAT OFFAL',
             'score' => 126.686088,
             'cnt' => 2,
             'avg' => 63.343044,
           },
           {
             'id' => '03',
-            'description' => nil,
+            'description' =>
+            'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES',
             'score' => 53.984024,
             'cnt' => 1,
             'avg' => 53.984024,
@@ -92,9 +93,9 @@ RSpec.describe Beta::Search::OpenSearchResult do
         [
           {
             'id' => '0101',
-            'description' => nil,
+            'description' => 'Live horses, asses, mules and hinnies',
             'chapter_id' => '01',
-            'chapter_description' => nil,
+            'chapter_description' => 'LIVE ANIMALS',
             'score' => 485.68718800000005,
             'cnt' => 7,
             'avg' => 69.38388400000001,
@@ -102,9 +103,9 @@ RSpec.describe Beta::Search::OpenSearchResult do
           },
           {
             'id' => '0206',
-            'description' => nil,
+            'description' => 'Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen',
             'chapter_id' => '02',
-            'chapter_description' => nil,
+            'chapter_description' => 'MEAT AND EDIBLE MEAT OFFAL',
             'score' => 126.686088,
             'cnt' => 2,
             'avg' => 63.343044,
@@ -112,9 +113,9 @@ RSpec.describe Beta::Search::OpenSearchResult do
           },
           {
             'id' => '0302',
-            'description' => nil,
+            'description' => 'Fish, fresh or chilled',
             'chapter_id' => '03',
-            'chapter_description' => nil,
+            'chapter_description' => 'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES',
             'score' => 53.984024,
             'cnt' => 1,
             'avg' => 53.984024,

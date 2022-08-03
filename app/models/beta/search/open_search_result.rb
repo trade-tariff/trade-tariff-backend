@@ -41,8 +41,8 @@ module Beta
           hit.producline_suffix = hit_result._source.producline_suffix
           hit.description = hit_result._source.description
           hit.description_indexed = hit_result._source.description_indexed
-          hit.chapter_description = hit_result._source.chapter_description
-          hit.heading_description = hit_result._source.heading_description
+          hit.chapter_description = hit_result._source.ancestor_1_description_indexed
+          hit.heading_description = hit_result._source.ancestor_2_description_indexed
           hit.search_references = hit_result._source.search_references
           hit.validity_start_date = hit_result._source.validity_start_date
           hit.validity_end_date = hit_result._source.validity_end_date
