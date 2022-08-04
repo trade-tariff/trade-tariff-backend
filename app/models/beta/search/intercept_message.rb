@@ -12,8 +12,8 @@ module Beta
 
         result = new
 
-        result.term = (I18n.t "#{search_query}.title")
-        result.message = (I18n.t "#{search_query}.message")
+        result.term = I18n.t "#{search_query}.title"
+        result.message = I18n.t "#{search_query}.message"
 
         result
       end
