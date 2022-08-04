@@ -8,12 +8,14 @@ module Beta
       attr_accessor :intercept_message, :term, :message
 
       def self.build(search_query)
-        return unless search_query.eql?((I18n.t "#{search_query}.title"))
+        query = search_query.downcase
+
+        return unless query.eql?((I18n.t "#{query}.title"))
 
         result = new
 
-        result.term = I18n.t "#{search_query}.title"
-        result.message = I18n.t "#{search_query}.message"
+        result.term = I18n.t "#{query}.title"
+        result.message = I18n.t "#{query}.message"
 
         result
       end
