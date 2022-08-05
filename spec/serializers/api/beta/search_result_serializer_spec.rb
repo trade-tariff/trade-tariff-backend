@@ -38,16 +38,16 @@ RSpec.describe Api::Beta::SearchResultSerializer do
             },
             heading_statistics: {
               data: [
-                { id: '6307', type: :heading_statistic },
                 { id: '6217', type: :heading_statistic },
-                { id: '6211', type: :heading_statistic },
                 { id: '6209', type: :heading_statistic },
+                { id: '6211', type: :heading_statistic },
+                { id: '6307', type: :heading_statistic },
               ],
             },
             chapter_statistics: {
               data: [
-                { id: '63', type: :chapter_statistic },
                 { id: '62', type: :chapter_statistic },
+                { id: '63', type: :chapter_statistic },
               ],
             },
             guide: {
