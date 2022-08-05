@@ -61,7 +61,7 @@ module Api
       def mean_average_scores
         scores = []
 
-        goods_nomenclature_hits_with_headings.each do |goods_nomenclature_hit|
+        goods_nomenclature_hits.each do |goods_nomenclature_hit|
           if yield goods_nomenclature_hit
             scores << goods_nomenclature_hit.score
           end
