@@ -89,7 +89,7 @@ module Beta
       end
 
       def chapter_statistics
-        @chapter_statistics&.values || []
+        (@chapter_statistics&.values || []).sort_by(&:score).reverse
       end
 
       def chapter_statistic_ids
@@ -97,7 +97,7 @@ module Beta
       end
 
       def heading_statistics
-        @heading_statistics&.values || []
+        (@heading_statistics&.values || []).sort_by(&:cnt).reverse
       end
 
       def heading_statistic_ids
