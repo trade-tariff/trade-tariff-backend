@@ -1,8 +1,6 @@
 module Beta
   module Search
     class OpenSearchResult
-      delegate :id, to: :chapter_statistics, prefix: true, allow_nil: true
-      delegate :id, to: :heading_statistics, prefix: true, allow_nil: true
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
 
