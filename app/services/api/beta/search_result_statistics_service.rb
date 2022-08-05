@@ -42,7 +42,7 @@ module Api
 
       def goods_nomenclature_hits_with_headings
         goods_nomenclature_hits.reject do |hit|
-          hit.goods_nomenclature_class.chapter?
+          hit.goods_nomenclature_class == 'Chapter'
         end
       end
 

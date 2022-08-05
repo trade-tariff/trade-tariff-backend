@@ -33,7 +33,7 @@ module Beta
           hit = Hashie::TariffMash.new
 
           hit.score = hit_result._score
-          hit.goods_nomenclature_class = ActiveSupport::StringInquirer.new(hit_result._source.goods_nomenclature_class)
+          hit.goods_nomenclature_class = hit_result._source.goods_nomenclature_class
           hit.id = hit_result._source.id
           hit.goods_nomenclature_item_id = hit_result._source.goods_nomenclature_item_id
           hit.producline_suffix = hit_result._source.producline_suffix
