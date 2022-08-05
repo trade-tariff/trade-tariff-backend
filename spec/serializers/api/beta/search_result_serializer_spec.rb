@@ -17,10 +17,18 @@ RSpec.describe Api::Beta::SearchResultSerializer do
         data: {
           id: '6fc22ae4ee7f6fbe9b4988a4557dd3f9',
           type: :search_result,
-          attributes: { took: 1, timed_out: false, max_score: 76.96534, total_results: 10 },
+          attributes: {
+            took: 1,
+            timed_out: false,
+            max_score: 76.96534,
+            total_results: 10,
+          },
           relationships: {
             search_query_parser_result: {
               data: { id: '50cf19912960f65490b334ea9c196eea', type: :search_query_parser_result },
+            },
+            intercept_message: {
+              data: { id: '70201b59ccf1f7afde3975fa2c2da023', type: :intercept_message },
             },
             hits: {
               data: [

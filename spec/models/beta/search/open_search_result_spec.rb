@@ -267,6 +267,20 @@ RSpec.describe Beta::Search::OpenSearchResult do
     it { expect { result.redirect! }.to change(result, :redirect?).from(nil).to(true) }
   end
 
+  describe '#intercept_message' do
+    subject(:result) { build(:search_result) }
+
+    it 'will match the object in the yaml file' do
+      searched_term = result.search_query_parser_result.corrected_search_query
+      expect(searched_term).to eq(I18n.t("#{searched_term}.title"))
+    end
+
+    it 'will not match the object in the yaml file' do
+      searched_term = 'random_string'
+      expect(searched_term).not_to eq(I18n.t("#{searched_term}.title"))
+    end
+  end
+
   describe '#facet_filter_statistics' do
     context 'when filter statistics have been generated' do
       subject(:search_result) { build(:search_result, :generate_facet_statistics).facet_filter_statistics.map(&:id) }

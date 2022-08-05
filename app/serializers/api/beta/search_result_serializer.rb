@@ -11,6 +11,7 @@ module Api
                  :total_results
 
       has_one :search_query_parser_result, serializer: Api::Beta::SearchQueryParserResultSerializer
+      has_one :intercept_message, serializer: Api::Beta::InterceptMessageSerializer
 
       has_many :hits, serializer: proc { |record, _params|
         if record && record.respond_to?(:goods_nomenclature_class)

@@ -5,6 +5,7 @@ module Beta
       delegate :id, to: :heading_statistics, prefix: true, allow_nil: true
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
+      delegate :id, to: :intercept_message, prefix: true, allow_nil: true
 
       delegate :goods_nomenclature_item_id, :numeric?, :short_code, to: :goods_nomenclature_query, allow_nil: true
 
@@ -136,6 +137,10 @@ module Beta
 
       def redirect?
         @redirect
+      end
+
+      def intercept_message
+        @intercept_message ||= ::Beta::Search::InterceptMessage.build(search_query_parser_result.original_search_query)
       end
     end
   end
