@@ -19,7 +19,7 @@ module Api
       def serialized_result
         Api::Beta::SearchResultSerializer.new(
           search_result,
-          include: DEFAULT_INCLUDES,
+          include: includes,
           meta:,
         ).serializable_hash
       end
@@ -64,6 +64,14 @@ module Api
 
       def all_filters
         TradeTariffBackend.search_facet_classifier_configuration.all_filters
+      end
+
+      def includes
+        if TradeTariffBackend.beta_search_debug?
+          [:goods_nomenclature_query].concat(DEFAULT_INCLUDES)
+        else
+          DEFAULT_INCLUDES
+        end
       end
     end
   end
