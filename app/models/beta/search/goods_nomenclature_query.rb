@@ -11,6 +11,10 @@ module Beta
       attr_accessor :original_search_query
       alias_method :short_code, :original_search_query
 
+      include ContentAddressableId
+
+      content_addressable_fields :query
+
       MULTI_MATCH_FIELDS = [
         'search_references^12',
         'ancestor_1_description_indexed^10', # chapter
@@ -47,11 +51,11 @@ module Beta
       end
 
       def query
-        if numeric?
-          goods_nomenclature_item_id_term_query
-        else
-          multi_match_query
-        end
+        @query ||= if numeric?
+                     goods_nomenclature_item_id_term_query
+                   else
+                     multi_match_query
+                   end
       end
 
       def goods_nomenclature_item_id

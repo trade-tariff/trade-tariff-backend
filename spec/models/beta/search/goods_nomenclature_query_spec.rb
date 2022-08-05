@@ -7,6 +7,11 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
     it { is_expected.to be_a(described_class) }
   end
 
+  describe '#id' do
+    subject(:id) { build(:goods_nomenclature_query, :full_query).id }
+    it { is_expected.to eq('cbbc8118105b8e1c3cb4bb74a978fa83')}
+  end
+
   describe '#query' do
     let(:expected_multi_match_fields) do
       [
