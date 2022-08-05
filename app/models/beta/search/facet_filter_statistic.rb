@@ -26,6 +26,8 @@ module Beta
           classifications = statistic['classifications']
             .values
             .map(&Beta::Search::FacetFilterClassificationStatistic.method(:build))
+            .sort_by(&:count)
+            .reverse
 
           facet_filter_statistic = new
 

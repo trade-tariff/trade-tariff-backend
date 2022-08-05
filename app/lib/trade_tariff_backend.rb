@@ -256,5 +256,9 @@ module TradeTariffBackend
     def beta_search_max_hits
       ENV['BETA_SEARCH_MAX_HITS']
     end
+
+    def beta_search_debug?
+      ENV['BETA_SEARCH_DEBUG'] == 'true'
+    end
   end
 end

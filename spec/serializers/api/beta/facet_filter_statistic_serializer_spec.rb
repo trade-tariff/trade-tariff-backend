@@ -10,7 +10,12 @@ RSpec.describe Api::Beta::FacetFilterStatisticSerializer do
           {
             id: '2ecbb6c19ee6282b0c79dda2aeaf0192',
             type: :facet_filter_statistic,
-            attributes: { facet_filter: 'filter_material', facet_count: 4, display_name: 'Material', question: 'Pick one of Material' },
+            attributes: {
+              facet_filter: 'filter_material',
+              facet_count: 4,
+              display_name: 'Material',
+              question: 'Pick one of Material',
+            },
             relationships: {
               facet_classification_statistics: {
                 data: [
@@ -30,7 +35,9 @@ RSpec.describe Api::Beta::FacetFilterStatisticSerializer do
             },
             relationships: {
               facet_classification_statistics: {
-                data: [{ id: '0f9f895e9a6bb156694dd9c8bca33545', type: :facet_classification_statistic }],
+                data: [
+                  { id: '0f9f895e9a6bb156694dd9c8bca33545', type: :facet_classification_statistic },
+                ],
               },
             },
           },
@@ -46,8 +53,8 @@ RSpec.describe Api::Beta::FacetFilterStatisticSerializer do
             relationships: {
               facet_classification_statistics: {
                 data: [
-                  { id: '52fe3def5c7edf22d27bfa0b2fc63208', type: :facet_classification_statistic },
                   { id: 'e1ff51f7d55ca6f6bbfb508996d174b1', type: :facet_classification_statistic },
+                  { id: '52fe3def5c7edf22d27bfa0b2fc63208', type: :facet_classification_statistic },
                 ],
               },
             },

@@ -1,9 +1,8 @@
 module Beta
   module Search
     class OpenSearchResult
-      delegate :id, to: :chapter_statistics, prefix: true, allow_nil: true
-      delegate :id, to: :heading_statistics, prefix: true, allow_nil: true
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
+      delegate :id, to: :goods_nomenclature_query, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
       delegate :id, to: :intercept_message, prefix: true, allow_nil: true
 
@@ -36,14 +35,25 @@ module Beta
           hit = Hashie::TariffMash.new
 
           hit.score = hit_result._score
-          hit.goods_nomenclature_class = ActiveSupport::StringInquirer.new(hit_result._source.goods_nomenclature_class)
+          hit.goods_nomenclature_class = hit_result._source.goods_nomenclature_class
           hit.id = hit_result._source.id
           hit.goods_nomenclature_item_id = hit_result._source.goods_nomenclature_item_id
           hit.producline_suffix = hit_result._source.producline_suffix
           hit.description = hit_result._source.description
           hit.description_indexed = hit_result._source.description_indexed
-          hit.chapter_description = hit_result._source.ancestor_1_description_indexed
-          hit.heading_description = hit_result._source.ancestor_2_description_indexed
+
+          case hit.goods_nomenclature_class
+          when 'Chapter'
+            hit.chapter_description = hit_result._source.description_indexed
+            hit.heading_description = nil
+          when 'Heading'
+            hit.chapter_description = hit_result._source.ancestor_1_description_indexed
+            hit.heading_description = hit_result._source.description_indexed
+          else
+            hit.chapter_description = hit_result._source.ancestor_1_description_indexed
+            hit.heading_description = hit_result._source.ancestor_2_description_indexed
+          end
+
           hit.search_references = hit_result._source.search_references
           hit.validity_start_date = hit_result._source.validity_start_date
           hit.validity_end_date = hit_result._source.validity_end_date
@@ -80,7 +90,7 @@ module Beta
       end
 
       def chapter_statistics
-        @chapter_statistics&.values || []
+        (@chapter_statistics&.values || []).sort_by(&:score).reverse
       end
 
       def chapter_statistic_ids
@@ -88,7 +98,7 @@ module Beta
       end
 
       def heading_statistics
-        @heading_statistics&.values || []
+        (@heading_statistics&.values || []).sort_by(&:cnt).reverse
       end
 
       def heading_statistic_ids
