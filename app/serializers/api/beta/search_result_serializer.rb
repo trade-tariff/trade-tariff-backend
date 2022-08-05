@@ -12,6 +12,10 @@ module Api
 
       has_one :search_query_parser_result, serializer: Api::Beta::SearchQueryParserResultSerializer
 
+      if TradeTariffBackend.beta_search_debug?
+        has_one :goods_nomenclature_query, serializer: Api::Beta::GoodsNomenclatureQuerySerializer
+      end
+
       has_many :hits, serializer: proc { |record, _params|
         if record && record.respond_to?(:goods_nomenclature_class)
           "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize

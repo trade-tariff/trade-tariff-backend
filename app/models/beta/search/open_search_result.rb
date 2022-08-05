@@ -2,6 +2,7 @@ module Beta
   module Search
     class OpenSearchResult
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
+      delegate :id, to: :goods_nomenclature_query, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
 
       delegate :goods_nomenclature_item_id, :numeric?, :short_code, to: :goods_nomenclature_query, allow_nil: true
