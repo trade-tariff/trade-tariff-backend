@@ -13,7 +13,9 @@ module Api
                  :validity_start_date,
                  :validity_end_date,
                  :chapter_id,
-                 :score
+                 :score,
+                 :end_line,
+                 :declarable?
 
       has_many :ancestors, serializer: Api::Beta::AncestorSerializer
     end
