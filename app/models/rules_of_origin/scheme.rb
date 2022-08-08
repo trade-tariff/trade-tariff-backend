@@ -5,7 +5,7 @@ module RulesOfOrigin
     include ActiveModel::Model
 
     attr_accessor :scheme_set, :scheme_code, :title, :introductory_notes_file,
-                  :fta_intro_file, :countries, :rule_offset, :footnote,
+                  :fta_intro_file, :countries, :footnote,
                   :adopted_by_uk, :country_code, :notes, :unilateral
 
     attr_writer :rule_sets
