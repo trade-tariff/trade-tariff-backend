@@ -67,6 +67,8 @@ RSpec.describe Api::Beta::CommoditySerializer do
             search_references: '',
             validity_start_date: '1972-01-01T00:00:00Z',
             validity_end_date: nil,
+            end_line: nil,
+            declarable?: false,
             chapter_id: '51',
             score: 10.231,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',

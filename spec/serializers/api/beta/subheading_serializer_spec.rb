@@ -57,6 +57,8 @@ RSpec.describe Api::Beta::SubheadingSerializer do
             validity_end_date: nil,
             chapter_id: '51',
             score: nil,
+            end_line: nil,
+            declarable?: false,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
             heading_id: '5102',
             heading_description: 'Fine or coarse animal hair, not carded or combed',
