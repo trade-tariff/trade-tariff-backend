@@ -8,7 +8,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
 
   let :scheme do
     build :rules_of_origin_scheme, :with_links, :with_proofs, ord: origin_reference_document_data,
-          scheme_set:, unilateral: true
+                                                              scheme_set:, unilateral: true
   end
 
   let :rules do
@@ -167,7 +167,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             ord_title: scheme.origin_reference_document.ord_title,
             ord_version: scheme.origin_reference_document.ord_version,
           },
-        }
+        },
       ],
     }
   end

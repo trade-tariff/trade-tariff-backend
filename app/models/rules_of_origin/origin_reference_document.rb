@@ -8,7 +8,7 @@ module RulesOfOrigin
     attr_writer :id
 
     def id
-      @id = "origin_reference_document_id"
+      @id = 'origin_reference_document_id'
     end
   end
 end

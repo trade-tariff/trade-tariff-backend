@@ -43,7 +43,7 @@ module Api
         end
 
         def origin_reference_document_id
-          @origin_reference_document = "origin_reference_document_id"
+          @origin_reference_document = 'origin_reference_document_id'
         end
       end
     end
