@@ -16,6 +16,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :country_code }
     it { is_expected.to respond_to :notes }
     it { is_expected.to respond_to :proofs }
+    it { is_expected.to respond_to :ord }
   end
 
   describe '#links=' do
@@ -53,6 +54,34 @@ RSpec.describe RulesOfOrigin::Scheme do
 
       it { is_expected.to have_attributes length: 0 }
     end
+  end
+
+  describe '#origin_reference_document' do
+    subject(:scheme) do
+      build :rules_of_origin_scheme, ord: data
+    end
+
+    let(:data) do
+      { 'ord_title' => 'Some title', 'ord_version' => '1.1', 'ord_date' => '28 December 2021', 'ord_original' => '211203_ORD_Japan_V1.1.odt' }
+    end
+
+    let(:origin_reference_document) { scheme.origin_reference_document }
+
+    it 'will read the origin_reference_document' do
+      expect(scheme).to have_attributes ord: data
+    end
+
+    context 'with blank origin_reference_document' do
+      let(:data) { '' }
+
+      it { expect(scheme).to have_attributes ord: '' }
+    end
+
+    it { expect(origin_reference_document).to be_instance_of RulesOfOrigin::OriginReferenceDocument }
+    it { expect(origin_reference_document).to have_attributes ord_title: 'Some title' }
+    it { expect(origin_reference_document).to have_attributes ord_version: '1.1' }
+    it { expect(origin_reference_document).to have_attributes ord_date: '28 December 2021' }
+    it { expect(origin_reference_document).to have_attributes ord_original: '211203_ORD_Japan_V1.1.odt' }
   end
 
   describe '#explainers=' do

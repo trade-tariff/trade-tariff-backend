@@ -4,7 +4,7 @@ module RulesOfOrigin
   class Scheme
     include ActiveModel::Model
 
-    attr_accessor :scheme_set, :scheme_code, :title, :introductory_notes_file,
+    attr_accessor :scheme_set, :scheme_code, :title, :ord, :introductory_notes_file,
                   :fta_intro_file, :countries, :rule_offset, :footnote,
                   :adopted_by_uk, :country_code, :notes, :unilateral
 
@@ -54,6 +54,10 @@ module RulesOfOrigin
                      else
                        ''
                      end
+    end
+
+    def origin_reference_document
+      @origin_reference_document = ::RulesOfOrigin::OriginReferenceDocument.new(ord)
     end
 
     def introductory_notes

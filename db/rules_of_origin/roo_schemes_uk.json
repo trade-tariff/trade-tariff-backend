@@ -24,8 +24,13 @@
                     "detail": "importers-knowledge.md"
                 }
             ],
-            "rule_offset": 10000000,
             "title": "UK / EU Trade and Co-operation Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Trade and Cooperation Agreement between the European Union and the European Atomic Energy Community, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, signed on 30 December 2020 ('the European Union Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "2021.12.23_EU_ORD_.docx"
+            },
             "introductory_notes_file": "eu_intro.md",
             "fta_intro_file": "eu.md",
             "links": [
@@ -92,8 +97,13 @@
                     "detail": "importers-knowledge.md"
                 }
             ],
-            "rule_offset": 13000000,
-            "title": "Comprehensive Economic Partnership Agreement UK Japan",
+            "title": "UK-Japan Comprehensive Economic Partnership Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland and Japan for a Comprehensive Economic Partnership, signed on 23 October 2020 ('the Japan Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211203_ORD_Japan_V1.1.odt"
+            },
             "introductory_notes_file": "japan_intro.md",
             "fta_intro_file": "japan.md",
             "links": [
@@ -201,6 +211,12 @@
                 }
             ],
             "title": "UK-Albania partnership, Trade and Cooperation Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Albania, signed on 5th February 2021 ('the Albania Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 November 2021",
+                "ord_original": "211228_ORD_Albania_V1.1.odt"
+            },
             "introductory_notes_file": "albania_intro.md",
             "fta_intro_file": "albania.md",
             "links": [
@@ -229,6 +245,12 @@
             ],
             "country_code": "CA",
             "title": "UK-Canada Trade Continuity Agreement",
+            "ord": {
+                "ord_title": "The Canada Origin Reference Document",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211223_ORD_Canada_V1.1.odt"
+            },
             "introductory_notes_file": "canada_intro.md",
             "fta_intro_file": "canada.md",
             "links": [
@@ -256,8 +278,13 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "rule_offset": 11000000,
             "title": "UK-South Korea trade agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland, of the one part, and the Republic of  Korea, of the other part, signed on 22 August 2019 ('the Korea Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28th December 2021",
+                "ord_original": "211208_ORD_Korea__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "south-korea_intro.md",
             "fta_intro_file": "south-korea.md",
             "links": [
@@ -295,6 +322,12 @@
                 }
             ],
             "title": "Comprehensive Economic Partnership Agreement UK Kenya",
+            "ord": {
+                "ord_title": "The Kenya Origin Reference Document",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "221205_ORD_Kenya_V1.1.odt"
+            },
             "footnote": "This agreement is open to accession by other members of East African Community.",
             "introductory_notes_file": "kenya_intro.md",
             "fta_intro_file": "kenya.md",
@@ -329,6 +362,12 @@
                 }
             ],
             "title": "ESA-UK economic partnership agreement (EPA)",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement establishing an Economic Partnership Agreement between the Eastern and Southern African States, on the one part, and the United Kingdom of Great Britain and Northern Ireland, on the other part, signed by the Republic of Mauritius, the Republic of the Seychelles and the Republic of Zimbabwe on 31st January 2019 ('the Eastern and Southern African States Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28th December 2021",
+                "ord_original": "211223_ORD_ESA_V1.1.odt"
+            },
             "introductory_notes_file": "esa_intro.md",
             "fta_intro_file": "esa.md",
             "links": [
@@ -364,6 +403,12 @@
                 }
             ],
             "title": "UK-Central America association agreement",
+            "ord": {
+                "ord_title": "The Origin Reference Document implementing the Agreement between the United Kingdom and Central America signed on 18 July 2019 ('the Central America Origin Reference Document')",
+                "ord_version": "1.2",
+                "ord_date": "22 February 2022",
+                "ord_original": "220214_ORD_Central_America_V1.2.odt"
+            },
             "introductory_notes_file": "central_america_intro.md",
             "fta_intro_file": "central_america.md",
             "links": [
@@ -403,6 +448,12 @@
                 }
             ],
             "title": "UK-Andean countries trade agreement",
+            "ord": {
+                "ord_title": "The Andean Countries Origin Reference Document Version 1.3, Dated 28th December 2021",
+                "ord_version": "1.3",
+                "ord_date": "31 May 2022",
+                "ord_original": "310522_Andean_ORD.odt"
+            },
             "introductory_notes_file": "andean_intro.md",
             "fta_intro_file": "andean.md",
             "links": [
@@ -439,6 +490,12 @@
                 }
             ],
             "title": "UK-Cameroon Economic Partnership Agreement",
+            "ord": {
+                "ord_title": "The Cameroon Origin Reference Document",
+                "ord_version": "1.3",
+                "ord_date": "28 December 2021",
+                "ord_original": "211223_Cameroon_ORD__HS_UPDATE__.odt"
+            },
             "introductory_notes_file": "cameroon_intro.md",
             "fta_intro_file": "cameroon.md",
             "links": [
@@ -472,6 +529,12 @@
                 }
             ],
             "title": "CARIFORUM-UK economic partnership agreement",
+            "ord": {
+                "ord_title": "The CARIFORUM Origin Reference Document",
+                "ord_version": "1.2",
+                "ord_date": "28 December 2021",
+                "ord_original": "211223_ORD_CARIFORUM_V1.2.odt"
+            },
             "introductory_notes_file": "cariforum_intro.md",
             "fta_intro_file": "cariforum.md",
             "links": [
@@ -518,6 +581,12 @@
                 }
             ],
             "title": "UK-Chile association agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Republic of Chile signed on 30 January 2019 ('the Chile Origin Reference Document')",
+                "ord_version": "1.2",
+                "ord_date": "22 February 2022",
+                "ord_original": "220214_ORD_Chile__v1.2.odt"
+            },
             "introductory_notes_file": "chile_intro.md",
             "fta_intro_file": "chile.md",
             "links": [
@@ -551,6 +620,12 @@
                 }
             ],
             "title": "UK-Côte d’Ivoire Stepping Stone Economic Partnership Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Stepping Stone Economic Partnership Agreement between the Republic of Côte d'Ivoire and the United Kingdom of Great Britain and Northern Ireland, signed on 15 October 2020 ('the Côte d'Ivoire Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 November 2021",
+                "ord_original": "211223_ORD_Cote_d_Ivoire_-__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "cotedivoire_intro.md",
             "fta_intro_file": "cotedivoire.md",
             "links": [
@@ -584,6 +659,12 @@
                 }
             ],
             "title": "UK-Egypt Association Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Arab Republic of Egypt, signed on 5th December 2020 ('the Egypt Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "20211223_ORD_Egypt_V1.1.odt"
+            },
             "introductory_notes_file": "egypt_intro.md",
             "fta_intro_file": "egypt.md",
             "links": [
@@ -617,6 +698,12 @@
                 }
             ],
             "title": "UK-Faroe Islands free trade agreement (FTA)",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Kingdom of Denmark in respect of the Faroe Islands, signed on 31st January 2019 ('the Faroe Islands Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "20121223_ORD_Faroe_Islands_V1.1.odt"
+            },
             "introductory_notes_file": "faroe-islands_intro.md",
             "fta_intro_file": "faroe-islands.md",
             "links": [
@@ -650,6 +737,12 @@
                 }
             ],
             "title": "UK-Georgia strategic partnership and cooperation agreement",
+            "ord": {
+                "ord_title": "The Origin Reference Document implementing the Agreement establishing a Strategic Partnership and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and Georgia signed on 21st October 2019 ('the Georgia Origin Reference Document')",
+                "ord_version": "1.2",
+                "ord_date": "22 February 2022",
+                "ord_original": "220214_ORD_Georgia_V1.2.odt"
+            },
             "introductory_notes_file": "georgia_intro.md",
             "fta_intro_file": "georgia.md",
             "links": [
@@ -683,6 +776,12 @@
                 }
             ],
             "title": "UK-Ghana Interim Trade Partnership Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Interim Trade Partnership Agreement between the Republic of Ghana, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, signed on 2nd March 2021 ('the Ghana Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211223_ORD_Ghana_-_HS.odt"
+            },
             "introductory_notes_file": "ghana_intro.md",
             "fta_intro_file": "ghana.md",
             "links": [
@@ -716,6 +815,12 @@
                 }
             ],
             "title": "Agreement on trade in goods between Iceland, Norway and the UK",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland, Iceland and the Kingdom of Norway on Trade in Goods, dated 8th December 2020 ('the Iceland Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211202_Iceland_ORD_V1.1__2_.odt"
+            },
             "introductory_notes_file": "iceland-norway_intro.md",
             "fta_intro_file": "iceland-norway.md",
             "links": [
@@ -750,6 +855,12 @@
                 }
             ],
             "title": "UK-Israel trade and partnership agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Trade and Partnership Agreement between the United Kingdom of Great Britain and Northern Ireland and the Government of the State of Israel, signed on 18th February 2019 (“the Israel Origin Reference Document”)",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "20211202_ORD_Israel_V1.1.odt"
+            },
             "introductory_notes_file": "israel_intro.md",
             "fta_intro_file": "israel.md",
             "links": [
@@ -783,6 +894,12 @@
                 }
             ],
             "title": "UK-Kosovo partnership, trade and cooperation agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Kosovo, signed on 3rd December 2019 ('the Kosovo Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211203_ORD_Kosovo_V1.1.odt"
+            },
             "introductory_notes_file": "kosovo_intro.md",
             "fta_intro_file": "kosovo.md",
             "links": [
@@ -802,7 +919,13 @@
         {
             "scheme_code": "jordan",
             "proofs": [],
-            "title": "UK-Kosovo partnership, trade and cooperation agreement",
+            "title": "UK-Jordan Association Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement Establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Hashemite Kingdom of Jordan, signed on 5 November 2019 ('the Jordan Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "20211202_ORD_Jordan__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "jordan_intro.md",
             "fta_intro_file": "jordan.md",
             "links": [
@@ -836,6 +959,12 @@
                 }
             ],
             "title": "UK-Lebanon association agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement establishing an association between the United Kingdom of Great Britain and Northern Ireland and The Republic of Lebanon signed on 19th September 2019 (“the Lebanon Origin Reference Document”)",
+                "ord_version": "2.1",
+                "ord_date": "28th December 2021",
+                "ord_original": "211208_ORD_Lebanon__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "lebanon_intro.md",
             "fta_intro_file": "lebanon.md",
             "links": [
@@ -869,6 +998,12 @@
                 }
             ],
             "title": "UK-Mexico Trade Continuity Agreement",
+            "ord": {
+                "ord_title": "The Mexico Origin Reference Document",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211203_Mexico_ORD_V1.1.odt"
+            },
             "introductory_notes_file": "mexico_intro.md",
             "fta_intro_file": "mexico.md",
             "links": [
@@ -902,6 +1037,12 @@
                 }
             ],
             "title": "UK-Switzerland-Liechtenstein Trade Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Swiss Confederation signed on 11 February 2019 and the Additional Agreement between the United Kingdom of Great Britain and Northern Ireland, the Swiss Confederation and the Principality of Liechtenstein signed on 11 February 2019 ('the Switzerland and Liechtenstein Origin Reference Document')",
+                "ord_version": "1.0",
+                "ord_date": "22 February 2022",
+                "ord_original": "220215_ORD_Switzerland_and_Liechtenstein_v.1.odt"
+            },
             "introductory_notes_file": "switzerland-liechtenstein_intro.md",
             "fta_intro_file": "switzerland-liechtenstein.md",
             "links": [
@@ -936,6 +1077,12 @@
                 }
             ],
             "title": "UK-Moldova Strategic Partnership, Trade and Cooperation Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Strategic Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Moldova , signed on 24th December 2020 ('the Moldova Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211203_ORD_Moldova_V1.1.odt"
+            },
             "introductory_notes_file": "moldova_intro.md",
             "fta_intro_file": "moldova.md",
             "links": [
@@ -969,6 +1116,12 @@
                 }
             ],
             "title": "UK-Morocco association agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement establishing an association between the United Kingdom of Great Britain and Northern Ireland and the Kingdom of Morocco, signed on 26th October 2019 ('the Morocco Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211203_ORD_Morocco_V1.1.odt"
+            },
             "introductory_notes_file": "morocco_intro.md",
             "fta_intro_file": "morocco.md",
             "links": [
@@ -1006,7 +1159,7 @@
             "fta_intro_file": "north-macedonia.md",
             "links": [
                 {
-                    "text": "UK-North Macedonia Partnership, Trade and Cooperation agreement",
+                    "text": "UK-North Macedonia Partnership, Trade and Cooperation agreement",
                     "url": "https://www.gov.uk/government/collections/uk-north-macedonia-partnership-trade-andcooperationagreement"
                 },
                 {
@@ -1035,6 +1188,12 @@
                 }
             ],
             "title": "UK-Pacific Economic Partnership Agreement (EPA)",
+            "ord": {
+                "ord_title": "The Pacific States Origin Reference Document",
+                "ord_version": "2.3",
+                "ord_date": "22 February 2022",
+                "ord_original": "220215_Pacific_States_ORD_V2.3.odt"
+            },
             "footnote": "Samoa and the Solomon Islands have not yet acceded to the Pacific States-UK Interim Economic Partnership Agreement (pending a decision on their accession), however preferences under the agreement took effect on 1 January 2021 through a Memorandum of Understanding.",
             "introductory_notes_file": "pacific_intro.md",
             "fta_intro_file": "pacific.md",
@@ -1071,6 +1230,12 @@
                 }
             ],
             "title": "UK-Palestinian Authority political, trade and partnership agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Interim Political, Trade and Partnership Agreement between the United Kingdom of Great Britain and Northern Ireland, of the one part, and Palestine Liberation Organization ('PLO') for the benefit of the Palestinian Authority of the West Bank and the Gaza Strip ('the Palestinian Authority'), of the other part, signed on 18th February 2019 ('the Palestine Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211204_ORD_Palestine__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "palestinian-authority_intro.md",
             "fta_intro_file": "palestinian-authority.md",
             "links": [
@@ -1104,8 +1269,13 @@
                     "detail": "approved-exporter.md"
                 }
             ],
-            "rule_offset": 14000000,
             "title": "UK-Singapore Trade Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Singapore, signed on 10th December 2020 ('the Singapore Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211204_ORD_Singapore_V1.1.odt"
+            },
             "introductory_notes_file": "singapore_intro.md",
             "fta_intro_file": "singapore.md",
             "links": [
@@ -1139,6 +1309,12 @@
                 }
             ],
             "title": " UK-Serbia partnership, trade and cooperation agreement ",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Serbia signed on 16th April 2021 ('the Serbia Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211204_Serbia_ORD_V1.1.odt"
+            },
             "introductory_notes_file": "serbia_intro.md",
             "fta_intro_file": "serbia.md",
             "links": [
@@ -1172,6 +1348,12 @@
                 }
             ],
             "title": "SACUM-UK economic partnership agreement (EPA)",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Economic Partnership Agreement between the Southern African Customs Union Member States and Mozambique, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, signed on 9 October 2019 (“the Southern African Customs Union and Mozambique Origin Reference Document”)",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211204_ORD_SACUM__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "sacum_intro.md",
             "fta_intro_file": "sacum.md",
             "links": [
@@ -1210,6 +1392,12 @@
                 }
             ],
             "title": "UK-Tunisia association agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement Establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Republic of Tunisia, signed on 4th October 2019 (“the Tunisia Origin Reference Document”)",
+                "ord_version": "1.1",
+                "ord_date": "28th December 2021",
+                "ord_original": "21205_ORD_Tunisia_V1.1.odt"
+            },
             "introductory_notes_file": "tunisia_intro.md",
             "fta_intro_file": "tunisia.md",
             "links": [
@@ -1237,8 +1425,13 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "rule_offset": 12000000,
             "title": "UK-Turkey trade agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Turkey signed on 29th December 2020 ('the Turkey Origin Reference Document')",
+                "ord_version": "1.2",
+                "ord_date": "28th December 2021",
+                "ord_original": "211224_ORD_Turkey__HS_UPDATE_.odt"
+            },
             "introductory_notes_file": "turkey_intro.md",
             "fta_intro_file": "turkey.md",
             "links": [
@@ -1272,6 +1465,12 @@
                 }
             ],
             "title": "UK-Ukraine political, free trade and strategic partnership agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Political, Free Trade and Strategic Partnership Agreement between the United Kingdom of Great Britain and Northern Ireland, of the one part, and Ukraine, of the other part, signed on 8 October 2020 ('the Ukraine Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "2211223_ORD_Ukraine_V1.1.odt"
+            },
             "introductory_notes_file": "ukraine_intro.md",
             "fta_intro_file": "ukraine.md",
             "links": [
@@ -1280,7 +1479,7 @@
                     "url": "https://www.gov.uk/government/collections/uk-ukraine-political-free-trade-and-strategic-partnership-agreement"
                 },
                 {
-                    "text": "Trade with Ukraine",
+                    "text": "Trade with Ukraine",
                     "url": "https://www.gov.uk/guidance/summary-of-the-uk-ukraine-political-free-trade-and-strategic-partnership-agreement"
                 }
             ],
@@ -1305,6 +1504,12 @@
                 }
             ],
             "title": "UK-Vietnam Free Trade Agreement",
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Socialist Republic of Viet Nam, signed on 29th December 2020 (“the Viet Nam Origin Reference Document”)",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211223_ORD_Vietnam__V1.1.odt"
+            },
             "introductory_notes_file": "vietnam_intro.md",
             "fta_intro_file": "vietnam.md",
             "links": [
@@ -1338,8 +1543,13 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "rule_offset": 15000000,
             "title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
+            "ord": {
+                "ord_title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
+                "ord_version": "",
+                "ord_date": "9 November 2020",
+                "ord_original": "Ref-Doc-2020.11.09-Overseas-Territories-arrangement.odt"
+            },
             "introductory_notes_file": "oct_intro.md",
             "fta_intro_file": "oct.md",
             "links": [
@@ -1379,8 +1589,13 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "rule_offset": 16000000,
             "title": "Generalised Scheme of Preferences (GSP)",
+            "ord": {
+                "ord_title": "",
+                "ord_version": "",
+                "ord_date": "",
+                "ord_original": ""
+            },
             "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
             "introductory_notes_file": "gsp_intro.md",
             "fta_intro_file": "gsp.md",

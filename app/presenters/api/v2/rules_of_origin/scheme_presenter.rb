@@ -41,6 +41,10 @@ module Api
         def rule_set_ids
           @rule_set_ids ||= rule_sets.map(&:id)
         end
+
+        def origin_reference_document_id
+          @origin_reference_document = "origin_reference_document_id"
+        end
       end
     end
   end

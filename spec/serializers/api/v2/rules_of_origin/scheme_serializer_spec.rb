@@ -2,9 +2,12 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   subject { serializer.serializable_hash }
 
   let(:scheme_set) { build :rules_of_origin_scheme_set, links: [], schemes: [] }
+  let(:origin_reference_document_data) do
+    { 'ord_title' => 'Some title', 'ord_version' => '1.1', 'ord_date' => '28 December 2021', 'ord_original' => '211203_ORD_Japan_V1.1.odt' }
+  end
 
   let :scheme do
-    build :rules_of_origin_scheme, :with_links, :with_proofs,
+    build :rules_of_origin_scheme, :with_links, :with_proofs, ord: origin_reference_document_data,
           scheme_set:, unilateral: true
   end
 
@@ -15,7 +18,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   let :serializer do
     described_class.new \
       Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules, []),
-      include: %i[links proofs rules articles rule_sets rule_sets.rules]
+      include: %i[links proofs rules articles rule_sets rule_sets.rules origin_reference_document]
   end
 
   let :expected do
@@ -44,6 +47,12 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
                 type: :rules_of_origin_link,
               },
             ],
+          },
+          origin_reference_document: {
+            data: {
+              id: scheme.origin_reference_document.id,
+              type: :rules_of_origin_origin_reference_document,
+            },
           },
           proofs: {
             data: [
@@ -149,6 +158,16 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             alternate_rule: nil,
           },
         },
+        {
+          id: scheme.origin_reference_document.id,
+          type: :rules_of_origin_origin_reference_document,
+          attributes: {
+            ord_date: scheme.origin_reference_document.ord_date,
+            ord_original: scheme.origin_reference_document.ord_original,
+            ord_title: scheme.origin_reference_document.ord_title,
+            ord_version: scheme.origin_reference_document.ord_version,
+          },
+        }
       ],
     }
   end
