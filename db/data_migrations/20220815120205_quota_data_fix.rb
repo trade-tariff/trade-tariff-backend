@@ -49,6 +49,5 @@ Sequel.migration do
     QuotaCriticalEvent.where(quota_definition_sid: 21_917).last.destroy
     QuotaCriticalEvent.where(quota_definition_sid: 21_929).last.destroy
     QuotaCriticalEvent.where(quota_definition_sid: 21_930).last.destroy
-
   end
 end
