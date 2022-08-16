@@ -39,15 +39,5 @@ Sequel.migration do
     QuotaDefinition.restrict_primary_key
   end
 
-  down do
-    QuotaDefinition.where(quota_definition_sid: 21_419).last.destroy
-    QuotaDefinition.where(quota_definition_sid: 21_917).last.destroy
-    QuotaDefinition.where(quota_definition_sid: 21_929).last.destroy
-    QuotaDefinition.where(quota_definition_sid: 21_930).last.destroy
-
-    QuotaCriticalEvent.where(quota_definition_sid: 21_419).last.destroy
-    QuotaCriticalEvent.where(quota_definition_sid: 21_917).last.destroy
-    QuotaCriticalEvent.where(quota_definition_sid: 21_929).last.destroy
-    QuotaCriticalEvent.where(quota_definition_sid: 21_930).last.destroy
-  end
+  down {}
 end
