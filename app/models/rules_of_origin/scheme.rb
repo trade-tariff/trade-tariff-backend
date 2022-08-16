@@ -7,7 +7,7 @@ module RulesOfOrigin
     attr_accessor :scheme_set, :scheme_code, :title, :ord, :introductory_notes_file,
                   :fta_intro_file, :countries, :footnote, :adopted_by_uk, :country_code, :notes,
                   :unilateral
-                  
+
     attr_writer :rule_sets
 
     delegate :read_referenced_file, to: :scheme_set
