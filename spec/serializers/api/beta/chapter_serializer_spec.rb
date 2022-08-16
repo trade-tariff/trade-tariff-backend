@@ -48,6 +48,8 @@ RSpec.describe Api::Beta::ChapterSerializer do
             search_references: '',
             validity_start_date: '1971-12-31T00:00:00Z',
             validity_end_date: nil,
+            end_line: nil,
+            declarable?: false,
             chapter_id: '52',
             score: 10.231,
           },

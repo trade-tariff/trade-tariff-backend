@@ -212,7 +212,6 @@
         },
         {
             "scheme_code": "south-korea",
-            "rule_offset": 30000000,
             "adopted_by_uk": true,
             "title": "EU-South Korea free trade agreement",
             "introductory_notes_file": "south-korea_intro.md",
@@ -821,7 +820,6 @@
         },
         {
             "scheme_code": "turkey",
-            "rule_offset": 20000000,
             "adopted_by_uk": true,
             "title": "EU-Turkey Customs Union",
             "introductory_notes_file": "turkey_intro.md",

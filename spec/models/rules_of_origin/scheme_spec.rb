@@ -9,7 +9,6 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :links }
     it { is_expected.to respond_to :explainers }
     it { is_expected.to respond_to :countries }
-    it { is_expected.to respond_to :rule_offset }
     it { is_expected.to respond_to :footnote }
     it { is_expected.to respond_to :adopted_by_uk }
     it { is_expected.to respond_to :unilateral }
