@@ -4,6 +4,8 @@ module Api
       class SchemePresenter < SimpleDelegator
         attr_reader :rules, :links, :rule_sets
 
+        delegate :id, to: :origin_reference_document, prefix: true
+
         class << self
           def for_many(schemes, rules, rule_sets)
             schemes.map do |scheme|
@@ -40,10 +42,6 @@ module Api
 
         def rule_set_ids
           @rule_set_ids ||= rule_sets.map(&:id)
-        end
-
-        def origin_reference_document_id
-          @origin_reference_document = 'origin_reference_document_id'
         end
       end
     end

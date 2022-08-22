@@ -61,7 +61,12 @@ RSpec.describe RulesOfOrigin::Scheme do
     end
 
     let(:data) do
-      { 'ord_title' => 'Some title', 'ord_version' => '1.1', 'ord_date' => '28 December 2021', 'ord_original' => '211203_ORD_Japan_V1.1.odt' }
+      {
+        'ord_title' => 'Some title',
+        'ord_version' => '1.1',
+        'ord_date' => '28 December 2021',
+        'ord_original' => '211203_ORD_Japan_V1.1.odt',
+      }
     end
 
     let(:origin_reference_document) { scheme.origin_reference_document }

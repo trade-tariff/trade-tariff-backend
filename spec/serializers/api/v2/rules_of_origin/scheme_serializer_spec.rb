@@ -4,8 +4,12 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   let(:scheme_set) { build :rules_of_origin_scheme_set, links: [], schemes: [] }
 
   let :scheme do
-    build :rules_of_origin_scheme, :with_links, :with_proofs, ord: { 'ord_title' => 'Some title', 'ord_version' => '1.1', 'ord_date' => '28 December 2021', 'ord_original' => '211203_ORD_Japan_V1.1.odt' },
-                                                              scheme_set:, unilateral: true
+    build :rules_of_origin_scheme,
+          :with_links,
+          :with_proofs,
+          :with_origin_reference_document,
+          scheme_set:,
+          unilateral: true
   end
 
   let :rules do

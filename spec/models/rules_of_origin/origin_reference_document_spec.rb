@@ -16,6 +16,6 @@ RSpec.describe RulesOfOrigin::OriginReferenceDocument do
     it { is_expected.to have_attributes ord_version: '1.1' }
     it { is_expected.to have_attributes ord_date: '28 December 2021' }
     it { is_expected.to have_attributes ord_original: '211203_ORD_Japan_V1.1.odt' }
-    it { is_expected.to have_attributes id: 'origin_reference_document_id' }
+    it { is_expected.to have_attributes id: 'aee30471c8034e951d77eedff818cdad' }
   end
 end
