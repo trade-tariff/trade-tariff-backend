@@ -4,8 +4,12 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   let(:scheme_set) { build :rules_of_origin_scheme_set, links: [], schemes: [] }
 
   let :scheme do
-    build :rules_of_origin_scheme, :with_links, :with_proofs,
-          scheme_set:, unilateral: true
+    build :rules_of_origin_scheme,
+          :with_links,
+          :with_proofs,
+          :with_origin_reference_document,
+          scheme_set:,
+          unilateral: true
   end
 
   let :rules do
@@ -15,7 +19,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
   let :serializer do
     described_class.new \
       Api::V2::RulesOfOrigin::SchemePresenter.new(scheme, rules, []),
-      include: %i[links proofs rules articles rule_sets rule_sets.rules]
+      include: %i[links proofs rules articles rule_sets rule_sets.rules origin_reference_document]
   end
 
   let :expected do
@@ -44,6 +48,12 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
                 type: :rules_of_origin_link,
               },
             ],
+          },
+          origin_reference_document: {
+            data: {
+              id: scheme.origin_reference_document.id,
+              type: :rules_of_origin_origin_reference_document,
+            },
           },
           proofs: {
             data: [
@@ -147,6 +157,16 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
             description: rules[2].description,
             rule: rules[2].rule,
             alternate_rule: nil,
+          },
+        },
+        {
+          id: scheme.origin_reference_document.id,
+          type: :rules_of_origin_origin_reference_document,
+          attributes: {
+            ord_date: scheme.origin_reference_document.ord_date,
+            ord_original: scheme.origin_reference_document.ord_original,
+            ord_title: scheme.origin_reference_document.ord_title,
+            ord_version: scheme.origin_reference_document.ord_version,
           },
         },
       ],

@@ -16,7 +16,7 @@ module Api
 
         @serializer = Api::V2::RulesOfOrigin::SchemeSerializer.new(
           presented_schemes,
-          include: %i[links proofs rules articles rule_sets rule_sets.rules],
+          include: %i[links proofs rules articles rule_sets rule_sets.rules origin_reference_document],
         )
 
         render json: @serializer.serializable_hash

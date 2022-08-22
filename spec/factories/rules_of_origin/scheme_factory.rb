@@ -20,6 +20,10 @@ FactoryBot.define do
       proofs { attributes_for_list :rules_of_origin_proof, 2 }
     end
 
+    trait :with_origin_reference_document do
+      ord { attributes_for :rules_of_origin_origin_reference_document }
+    end
+
     trait :in_scheme_set do
       scheme_set { build :rules_of_origin_scheme_set, :without_data }
     end

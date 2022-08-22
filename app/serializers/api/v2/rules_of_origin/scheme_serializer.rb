@@ -16,6 +16,7 @@ module Api
         has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
         has_many :articles, serializer: Api::V2::RulesOfOrigin::ArticleSerializer
         has_many :rule_sets, serializer: Api::V2::RulesOfOrigin::V2::RuleSetSerializer
+        has_one :origin_reference_document, serializer: Api::V2::RulesOfOrigin::OriginReferenceDocumentSerializer
       end
     end
   end
