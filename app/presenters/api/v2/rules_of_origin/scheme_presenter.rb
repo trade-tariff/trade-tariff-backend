@@ -4,7 +4,7 @@ module Api
       class SchemePresenter < SimpleDelegator
         attr_reader :rules, :links, :rule_sets
 
-        delegate :id, to: :origin_reference_document, prefix: true
+        delegate :id, to: :origin_reference_document, prefix: true, allow_nil: true
 
         class << self
           def for_many(schemes, rules, rule_sets)
