@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class ChiefCdsGuidance
   DEFAULT_SOURCE_PATH = Rails.root.join('db/')
   DEFAULT_FILE = 'chief_cds_guidance.json'

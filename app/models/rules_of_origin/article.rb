@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module RulesOfOrigin
   class Article
     include ActiveModel::Model

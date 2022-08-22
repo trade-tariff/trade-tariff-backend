@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 module RulesOfOrigin
   class SchemeSet
     DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
