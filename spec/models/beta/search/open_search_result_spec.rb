@@ -264,7 +264,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
     subject(:result) { build(:search_result) }
 
     it { expect(result.redirect!).to eq(true) }
-    it { expect { result.redirect! }.to change(result, :redirect?).from(nil).to(true) }
+    it { expect { result.redirect! }.to change(result, :redirect?).from(false).to(true) }
   end
 
   describe '#intercept_message' do
@@ -278,6 +278,38 @@ RSpec.describe Beta::Search::OpenSearchResult do
     it 'will not match the object in the yaml file' do
       searched_term = 'random_string'
       expect(searched_term).not_to eq(I18n.t("#{searched_term}.title"))
+    end
+  end
+
+  describe '#redirect_to' do
+    context 'when the search result tells us to redirect and the search query is a chapter' do
+      subject(:redirect_to) { build(:search_result, :redirect, :chapter).redirect_to }
+
+      it { is_expected.to eq('http://localhost:3001/chapters/01') }
+    end
+
+    context 'when the search result tells us to redirect and the search query is a heading' do
+      subject(:redirect_to) { build(:search_result, :redirect, :heading).redirect_to }
+
+      it { is_expected.to eq('http://localhost:3001/headings/0101') }
+    end
+
+    context 'when the search result tells us to redirect and the search query is a commodity' do
+      subject(:redirect_to) { build(:search_result, :redirect, :commodity).redirect_to }
+
+      it { is_expected.to eq('http://localhost:3001/commodities/0101210000') }
+    end
+
+    context 'when the search result tells us to redirect and the search query is a partial commodity code' do
+      subject(:redirect_to) { build(:search_result, :redirect, :partial_goods_nomenclature).redirect_to }
+
+      it { is_expected.to eq('http://localhost:3001/headings/0101') }
+    end
+
+    context 'when the search result is not a redirect' do
+      subject(:redirect_to) { build(:search_result).redirect_to }
+
+      it { is_expected.to be_nil }
     end
   end
 

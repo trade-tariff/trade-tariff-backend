@@ -56,11 +56,11 @@
           }
         ]
       }
+    },
+    "meta": {
+      "redirect": false,
+      "redirect_to": null
     }
-  },
-  "meta": {
-    "redirect": false,
-    "redirect_to": null
   },
   "included": [
     {

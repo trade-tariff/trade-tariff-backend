@@ -146,7 +146,33 @@ module Beta
       end
 
       def redirect?
-        @redirect
+        !!@redirect
+      end
+
+      alias_method :redirect, :redirect?
+
+      def redirect_to
+        return nil unless redirect?
+
+        id = short_code
+
+        resource_path = case short_code.length
+                        when 2
+                          '/chapters/:id'
+                        when 4
+                          '/headings/:id'
+                        when 10
+                          '/commodities/:id'
+                        else
+                          id = short_code.first(4)
+                          '/headings/:id'
+                        end
+
+        resource_path.prepend('/xi/') if TradeTariffBackend.xi?
+
+        resource_path = resource_path.sub(':id', id)
+
+        URI.join(TradeTariffBackend.frontend_host, resource_path).to_s
       end
 
       def intercept_message
