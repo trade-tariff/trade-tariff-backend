@@ -22,6 +22,14 @@
     "original_unit": null,
     "compound_units": ["ASV", "HLT"]
   },
+  "BRX": {
+    "measurement_unit_code": "BRX",
+    "measurement_unit_qualifier_code": "",
+    "abbreviation": "% sucrose",
+    "unit_question": "What is the percentage of sucrose (Brix) in your goods?",
+    "unit_hint": "If you do not know the percentage sucrose content (Brix value), check the footnotes for the commodity code to identify how to calculate it.",
+    "unit": "percent"
+  },
   "CCT": {
     "measurement_unit_code": "CCT",
     "measurement_unit_qualifier_code": null,
@@ -170,11 +178,9 @@
     "measurement_unit_qualifier_code": "Z",
     "abbreviation": "100 kg/net/%sacchar.",
     "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
-    "unit_hint": "Enter the value in kilograms",
-    "unit": "kilograms",
-    "multiplier": "0.01",
-    "coerced_measurement_unit_code": "KGM",
-    "original_unit": "x 100 kg"
+    "unit_hint": "Enter the value in decitonnes (100kg)",
+    "unit": "x 100 kg",
+    "compound_units": ["DTN", "BRX"]
   },
   "EUR": {
     "measurement_unit_code": "EUR",
