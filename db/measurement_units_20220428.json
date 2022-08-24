@@ -28,7 +28,7 @@
     "abbreviation": "% sucrose",
     "unit_question": "What is the percentage of sucrose (Brix) in your goods?",
     "unit_hint": "If you do not know the percentage sucrose content (Brix value), check the footnotes for the commodity code to identify how to calculate it.",
-    "unit": "percent"
+    "unit": "% sucrose"
   },
   "CCT": {
     "measurement_unit_code": "CCT",
