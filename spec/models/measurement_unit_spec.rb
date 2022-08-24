@@ -37,7 +37,7 @@ RSpec.describe MeasurementUnit do
     context 'with a compound measurement unit where one is only in the file' do
       subject(:result) { described_class.units('DTN', 'DTNZ') }
 
-      it { is_expected.to include_json([{ 'unit' => 'kilograms' }, { 'unit' => 'percent' }]) }
+      it { is_expected.to include_json([{ 'unit' => 'kilograms' }, { 'unit' => '% sucrose' }]) }
     end
 
     context 'with missing measurement unit present in database' do
