@@ -13,13 +13,17 @@ module TariffSynchronizer
     def perform
       return if update_exists?
 
-      downloader = download(@update)
+      response = download(@update)
 
-      while downloader.success?
+      # Download this years updates until we encounter a failure
+      while response.success?
         @update = @update.next_update
 
-        downloader = download(@update)
+        response = download(@update)
       end
+
+      # Once we've exhausted this year's updates, try the next years - in most circumstances there will not be one
+      download(@update.next_rollover_update)
     end
 
     private
