@@ -173,6 +173,20 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
   end
 
+  describe '#next_update' do
+    subject(:next_update) { build(:taric_update, :applied, example_date: Date.parse('2022-08-25')).next_update }
+
+    it { is_expected.to have_attributes(issue_date: Time.zone.today, filename: '2022-08-26_TGB22238.xml') }
+  end
+
+  describe '#next_rollover_update' do
+    subject(:next_update) { build(:taric_update, :applied, example_date: Date.parse('2022-08-25')).next_rollover_update }
+
+    let(:issue_date) { (Time.zone.today + 1.year).beginning_of_year }
+
+    it { is_expected.to have_attributes(issue_date:, filename: '2023-01-01_TGB23001.xml') }
+  end
+
   describe '#url_filename' do
     subject(:url_filename) { create(:taric_update, :pending, example_date: Date.parse('2021-12-03'), sequence_number: '203').url_filename }
 
