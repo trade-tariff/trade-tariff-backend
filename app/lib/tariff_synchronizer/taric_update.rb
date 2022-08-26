@@ -94,13 +94,31 @@ module TariffSynchronizer
       )
     end
 
+    def next_rollover_update
+      self.class.new(
+        filename: next_update_sequence_rollover_update_filename,
+        issue_date: next_update_rollover_issue_date,
+      )
+    end
+
     def next_update_sequence_update_filename
       "#{next_update_issue_date.iso8601}_#{next_update_sequence_url_filename}"
+    end
+
+    def next_update_sequence_rollover_update_filename
+      "#{next_update_rollover_issue_date.iso8601}_#{next_update_sequence_rollover_url_filename}"
     end
 
     def next_update_sequence_url_filename
       padded_sequence = next_update_sequence.to_s.rjust(3, '0')
       year = next_update_issue_date.strftime('%y')
+
+      "TGB#{year}#{padded_sequence}.xml"
+    end
+
+    def next_update_sequence_rollover_url_filename
+      padded_sequence = NEW_YEAR_STARTING_SEQUENCE_NUMBER.to_s.rjust(3, '0')
+      year = next_update_rollover_issue_date.strftime('%y')
 
       "TGB#{year}#{padded_sequence}.xml"
     end
@@ -119,6 +137,10 @@ module TariffSynchronizer
 
     def next_update_issue_date
       issue_date + 1.day
+    end
+
+    def next_update_rollover_issue_date
+      (issue_date + 1.year).beginning_of_year
     end
 
     def next_update_year
