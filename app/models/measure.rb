@@ -410,11 +410,10 @@ class Measure < Sequel::Model
   end
 
   def relevant_for_country?(country)
-    country_and_memberships = country.included_geographical_areas.pluck(:geographical_area_id) << country.geographical_area_id
     country_id = country.geographical_area_id
 
     is_excluded = measure_excluded_geographical_areas.select { |measure_excluded_geographical_area|
-      measure_excluded_geographical_area.excluded_geographical_area.in?(country_and_memberships)
+      measure_excluded_geographical_area.excluded_geographical_area.in?(country.candidate_excluded_geographical_area_ids)
     }.any?
 
     return false if is_excluded

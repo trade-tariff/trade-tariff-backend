@@ -137,4 +137,9 @@ RSpec.describe GeographicalArea do
       end
     end
   end
+
+  describe '#excluded_geographical_area_ids' do
+    subject(:excluded_geographical_area_ids) { }
+    it { is_expected.to eq() }
+  end
 end

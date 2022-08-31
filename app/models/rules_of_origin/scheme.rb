@@ -43,7 +43,7 @@ module RulesOfOrigin
     end
 
     def articles
-      @articles ||= Article.for_scheme(self)
+      @articles ||= RulesOfOrigin::Article.for_scheme(self)
     end
 
     def fta_intro

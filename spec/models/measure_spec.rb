@@ -816,10 +816,18 @@ RSpec.describe Measure do
     context 'when the measure excludes the country id' do
       subject(:measure) { create(:measure, :with_measure_excluded_geographical_area) }
 
-      let(:exclusion) { measure.measure_excluded_geographical_areas.first }
+      let(:country) { measure.measure_excluded_geographical_areas.first.geographical_area }
 
-      it { expect(measure.relevant_for_country?(exclusion.excluded_geographical_area)).to eq(false) }
+      it { expect(measure.relevant_for_country?(country)).to eq(false) }
     end
+
+#     context 'when the measure excludes a group the country belongs to' do
+#       subject(:measure) { create(:measure, :with_measure_excluded_geographical_area_group) }
+
+#       let(:country) { measure.measure_excluded_geographical_areas.first.geographical_area }
+
+#       it { expect(measure.relevant_for_country?(country)).to eq(false) }
+#     end
 
     context 'when the measure is a national measure and its geographical area is the world' do
       subject(:measure) { create(:measure, :national, geographical_area_id: '1011') }

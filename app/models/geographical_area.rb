@@ -48,6 +48,10 @@ class GeographicalArea < Sequel::Model
     ds.with_actual(GeographicalAreaMembership).order(Sequel.asc(:geographical_area_id))
   end
 
+  def candidate_excluded_geographical_area_ids
+    @candidate_excluded_geographical_area_ids ||= included_geographical_areas.pluck(:geographical_area_id) << geographical_area_id
+  end
+
   def contained_geographical_area_ids
     contained_geographical_areas.pluck(:geographical_area_id)
   end
