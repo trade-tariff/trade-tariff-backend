@@ -138,8 +138,9 @@ RSpec.describe GeographicalArea do
     end
   end
 
-  describe '#excluded_geographical_area_ids' do
-    subject(:excluded_geographical_area_ids) { }
-    it { is_expected.to eq() }
+  describe '#candidate_excluded_geographical_area_ids' do
+    subject(:candidate_excluded_geographical_area_ids) { create(:geographical_area, :group, :with_members, geographical_area_id: '1013').contained_geographical_areas.first.candidate_excluded_geographical_area_ids }
+
+    it { is_expected.to eq(%w[1013 RO]) }
   end
 end
