@@ -3,6 +3,14 @@
 # 1 2 3 4 5 6 7 8 9 0
 
 class MeasureType < Sequel::Model
+  # TODO: consider to refactor all the constants bellow with the use of enum
+  # Example:
+  # enum :measure_type, {
+  #     third_country: %w[103 105],
+  #     tariff_preference: %w[142 145],
+  #     preferential_quota: %w[143 146],
+  #   }
+
   IMPORT_MOVEMENT_CODES = [0, 2].freeze
   EXPORT_MOVEMENT_CODES = [1, 2].freeze
   THIRD_COUNTRY = %w[103 105].freeze # 105 measure types are for end use Third Country duties. 103 are for everything else
@@ -13,6 +21,9 @@ class MeasureType < Sequel::Model
   DEFAULT_EXCLUDED_TYPES = %w[442 447 SPL].freeze
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
+
+  TARIFF_PREFERENCE = %(142 145).freeze
+  PREFERENTIAL_QUOTA = %w[143 146].freeze
 
   DEFENSE_MEASURES = [
     '551', # Provisional anti-dumping duty
@@ -91,6 +102,14 @@ class MeasureType < Sequel::Model
 
   def meursing?
     measure_type_id.in?(MEURSING_MEASURES)
+  end
+
+  def tariff_preference?
+    measure_type_id.in?(TARIFF_PREFERENCE)
+  end
+
+  def preferential_quota?
+    measure_type_id.in?(PREFERENTIAL_QUOTA)
   end
 
   # The VAT standard rate has measure type 305 and no additional code.

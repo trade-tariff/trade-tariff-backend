@@ -4,6 +4,7 @@ module DeclarableSerialization
     chapter
     chapter.guides
     footnotes
+    import_trade_summary
     import_measures
     import_measures.duty_expression
     import_measures.measure_type
@@ -39,6 +40,6 @@ module DeclarableSerialization
     export_measures.footnotes
     export_measures.additional_code
     export_measures.order_number
-    export_measures.order_number.definition
+    export_measures.order_number.definitio
   ].freeze
 end

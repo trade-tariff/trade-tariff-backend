@@ -151,6 +151,10 @@ FactoryBot.define do
       measure_type_id { '142' }
     end
 
+    trait :preferential_quota do
+      measure_type_id { '143' }
+    end
+
     trait :third_country do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end
