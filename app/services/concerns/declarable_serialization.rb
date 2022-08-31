@@ -40,6 +40,6 @@ module DeclarableSerialization
     export_measures.footnotes
     export_measures.additional_code
     export_measures.order_number
-    export_measures.order_number.definitio
+    export_measures.order_number.definition
   ].freeze
 end
