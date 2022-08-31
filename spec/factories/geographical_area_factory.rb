@@ -8,14 +8,6 @@ FactoryBot.define do
     validity_start_date   { 3.years.ago.beginning_of_day }
     validity_end_date     { nil }
 
-    trait :fifteen_years do
-      validity_start_date { 15.years.ago.beginning_of_day }
-    end
-
-    trait :twenty_years do
-      validity_start_date { 20.years.ago.beginning_of_day }
-    end
-
     trait :erga_omnes do
       geographical_area_id { '1011' }
     end
