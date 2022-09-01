@@ -8,7 +8,7 @@ class ImportTradeSummary
                              :preferential_quota_duty
 
   def self.build(import_measures)
-    trade_summary = new()
+    trade_summary = new
 
     trade_summary.import_measures = import_measures
 
@@ -37,15 +37,15 @@ class ImportTradeSummary
 
   def third_country_measures
     @third_country_measures ||= import_measures.select do |m|
-      m.measure_type.third_country? && m.geographical_area.erga_omnes?
+      m.measure_type.third_country? && m.erga_omnes?
     end
   end
 
   def tariff_preference_measures
-    @tariff_preference_measures ||= import_measures.select{ |m| m.measure_type.tariff_preference? }
+    @tariff_preference_measures ||= import_measures.select { |m| m.measure_type.tariff_preference? }
   end
 
   def preferential_quota_measures
-    @preferential_quota_measures ||= import_measures.select{ |m| m.measure_type.preferential_quota? }
+    @preferential_quota_measures ||= import_measures.select { |m| m.measure_type.preferential_quota? }
   end
 end

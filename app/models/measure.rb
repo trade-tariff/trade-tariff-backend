@@ -410,12 +410,22 @@ class Measure < Sequel::Model
   end
 
   def relevant_for_country?(country_id)
+<<<<<<< HEAD
     return false if excluded_country?(country_id)
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && measure_type.meursing?
+=======
+    return false if measure_excluded_geographical_areas.map(&:excluded_geographical_area).include?(country_id)
+    return true if erga_omnes? && national?
+    return true if erga_omnes? && measure_type.meursing?
+>>>>>>> ea1cdf0c... HOTT-1902 Fix commodities_controller_spec.
     return true if geographical_area_id.blank? || geographical_area_id == country_id
 
     geographical_area.contained_geographical_areas.map(&:geographical_area_id).include?(country_id)
+  end
+
+  def erga_omnes?
+    geographical_area_id == GeographicalArea::ERGA_OMNES_ID
   end
 
   def self.changes_for(depth = 1, conditions = {})
