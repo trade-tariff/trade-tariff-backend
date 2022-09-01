@@ -31,6 +31,7 @@ class QuotaSearchService
   def call
     @scope = Measure
       .actual
+      .with_actual(QuotaDefinition)
       .join(:quota_definitions, [%i[measures__ordernumber quota_definitions__quota_order_number_id]])
       .eager(eager_load_graph)
       .distinct(:measures__ordernumber)
@@ -45,7 +46,7 @@ class QuotaSearchService
 
     @scope = @scope.paginate(current_page, per_page)
 
-    @scope.map(&:quota_definition).compact
+    @scope.map(&:quota_definition)
   end
 
   private

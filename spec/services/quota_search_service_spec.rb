@@ -171,7 +171,7 @@ RSpec.describe QuotaSearchService do
     context 'when a quota definition is end dated' do
       before do
         # Modifying records directly because oplog plugin doesn't support dataset CRUD operations
-        QuotaDefinition.dataset.each do |qd|
+        QuotaDefinition.each do |qd|
           qd.validity_end_date = Date.yesterday
           qd.save
         end
@@ -195,7 +195,7 @@ RSpec.describe QuotaSearchService do
     context 'with end dated quota definitions' do
       before do
         # Modifying records directly because oplog plugin doesn't support dataset CRUD operations
-        QuotaDefinition.dataset.each do |qd|
+        QuotaDefinition.each do |qd|
           qd.validity_end_date = Date.yesterday
           qd.save
         end
