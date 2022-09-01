@@ -409,10 +409,8 @@ class Measure < Sequel::Model
     end
   end
 
-  def relevant_for_country?(country)
-    country_id = country.geographical_area_id
-
-    return false if excluded_country?(country)
+  def relevant_for_country?(country_id)
+    return false if excluded_country?(country_id)
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && measure_type.meursing?
     return true if geographical_area_id.blank? || geographical_area_id == country_id
@@ -488,8 +486,8 @@ class Measure < Sequel::Model
 
   private
 
-  def excluded_country?(country)
-    country.geographical_area_id.in?(measure_excluded_geographical_area_ids)
+  def excluded_country?(country_id)
+    country_id.in?(measure_excluded_geographical_area_ids)
   end
 
   def measure_excluded_geographical_area_ids

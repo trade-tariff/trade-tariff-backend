@@ -115,7 +115,7 @@ class CachedCommodityService
 
   def apply_filter(measures, filtering_country)
     measures.select do |measure|
-      measure.relevant_for_country?(filtering_country)
+      measure.relevant_for_country?(filtering_country.geographical_area_id)
     end
   end
 end

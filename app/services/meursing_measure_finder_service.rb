@@ -28,6 +28,6 @@ class MeursingMeasureFinderService
   attr_reader :root_measure, :additional_code_id
 
   def relevant_for_country?(measure)
-    measure.relevant_for_country?(root_measure.geographical_area)
+    measure.relevant_for_country?(root_measure.geographical_area_id)
   end
 end
