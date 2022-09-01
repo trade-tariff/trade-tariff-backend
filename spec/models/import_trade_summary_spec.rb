@@ -8,40 +8,56 @@ RSpec.describe ImportTradeSummary do
   end
 
   describe '#id' do
-    it 'is not nil' do
-      import_trade_summary = ImportTradeSummary.new
+    subject(:id) { described_class.build([build(:measure)]).id }
 
-      expect(import_trade_summary).not_to be_nil
-    end
+    it { is_expected.to be_present }
   end
 
   describe '#basic_third_country_duty' do
-    let(:import_measures) { [create(:measure, :third_country_overview)] }
+    subject(:basic_third_country_duty) { described_class.build(import_measures).basic_third_country_duty }
 
-    it 'is present' do
-      import_trade_summary = ImportTradeSummary.build(import_measures)
+    context 'when there are third country measures' do
+      let(:import_measures) { [create(:measure, :third_country, :erga_omnes, :with_measure_components)] }
 
-      expect(import_trade_summary.basic_third_country_duty).not_to be_nil
+      it { is_expected.to be_present }
+    end
+
+    context 'when there are no third country measures' do
+      let(:import_measures) { [] }
+
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#preferential_tariff_duty' do
-    let(:import_measures) { [create(:measure, :tariff_preference)] }
+    subject(:preferential_tariff_duty) { described_class.build(import_measures).preferential_tariff_duty }
 
-    it 'is present' do
-      import_trade_summary = ImportTradeSummary.build(import_measures)
+    context 'when there are tariff preference measures' do
+      let(:import_measures) { [create(:measure, :tariff_preference, :with_measure_components)] }
 
-      expect(import_trade_summary.preferential_tariff_duty).not_to be_nil
+      it { is_expected.to be_present }
+    end
+
+    context 'when there are no tariff preference measures' do
+      let(:import_measures) { [] }
+
+      it { is_expected.to be_nil }
     end
   end
 
   describe '#preferential_quota_duty' do
-    let(:import_measures) { [create(:measure, :preferential_quota)] }
+    subject(:preferential_quota_duty) { described_class.build(import_measures).preferential_quota_duty }
 
-    it 'return something' do
-      import_trade_summary = ImportTradeSummary.build(import_measures)
+    context 'when there are quota measures' do
+      let(:import_measures) { [create(:measure, :preferential_quota, :with_measure_components)] }
 
-      expect(import_trade_summary.preferential_quota_duty).not_to be_nil
+      it { is_expected.to be_present }
+    end
+
+    context 'when there are no quota measures' do
+      let(:import_measures) { [] }
+
+      it { is_expected.to be_nil }
     end
   end
 end

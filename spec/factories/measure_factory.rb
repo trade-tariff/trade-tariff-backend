@@ -159,6 +159,10 @@ FactoryBot.define do
       measure_type_id { MeasureType::THIRD_COUNTRY.sample }
     end
 
+    trait :erga_omnes do
+      geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
+    end
+
     trait :third_country_overview do
       geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
       third_country
@@ -217,6 +221,7 @@ FactoryBot.define do
         create_list(
           :measure_component,
           evaluator.measure_components_count,
+          :with_duty_expression,
           measure_sid: measure.measure_sid,
           duty_amount: evaluator.duty_amount,
           duty_expression_id: evaluator.duty_expression_id,

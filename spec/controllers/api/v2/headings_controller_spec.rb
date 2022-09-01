@@ -126,6 +126,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
                 export_measures: Hash,
                 footnotes: Hash,
                 section: Hash,
+                import_trade_summary: Hash,
               },
               meta: {
                 duty_calculator: {
