@@ -50,7 +50,7 @@ class GeographicalArea < Sequel::Model
   end
 
   def candidate_excluded_geographical_area_ids
-    @candidate_excluded_geographical_area_ids ||= contained_geographical_areas.pluck(:geographical_area_id) << geographical_area_id
+    @candidate_excluded_geographical_area_ids ||= contained_geographical_area_ids << geographical_area_id
   end
 
   def referenced
