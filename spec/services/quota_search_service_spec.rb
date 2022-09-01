@@ -167,6 +167,42 @@ RSpec.describe QuotaSearchService do
         expect(service.call).to eq([quota_definition2])
       end
     end
+
+    context 'when a quota definition is end dated' do
+      before do
+        # Modifying records directly because oplog plugin doesn't support dataset CRUD operations
+        QuotaDefinition.dataset.each do |qd|
+          qd.validity_end_date = Date.yesterday
+          qd.save
+        end
+      end
+
+      let(:filter) { {} }
+
+      it { expect(service.call).to be_empty }
+    end
+  end
+
+  describe '#pagination_record_count' do
+    subject { service.tap(&:call).pagination_record_count }
+
+    let(:filter) { {} }
+
+    context 'with records' do
+      it { is_expected.to eq 2 }
+    end
+
+    context 'with end dated quota definitions' do
+      before do
+        # Modifying records directly because oplog plugin doesn't support dataset CRUD operations
+        QuotaDefinition.dataset.each do |qd|
+          qd.validity_end_date = Date.yesterday
+          qd.save
+        end
+      end
+
+      it { is_expected.to eq 0 }
+    end
   end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers
