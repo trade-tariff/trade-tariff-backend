@@ -105,5 +105,11 @@ module Declarable
   def meursing_code?
     measures.any?(&:meursing?)
   end
-  alias :meursing_code :meursing_code?
+  alias_method :meursing_code, :meursing_code?
+
+  def import_trade_summary
+    ImportTradeSummary.build(import_measures)
+  end
+
+  delegate :id, to: :import_trade_summary, prefix: true
 end
