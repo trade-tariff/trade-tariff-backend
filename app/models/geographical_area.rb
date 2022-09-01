@@ -2,6 +2,7 @@ class GeographicalArea < Sequel::Model
   COUNTRIES_CODES = %w[0 2].freeze
   AREAS_CODES = %w[0 1 2].freeze
   ERGA_OMNES_ID = '1011'.freeze
+  REFERENCED_GEOGRAPHICAL_AREAS = { 'EU' => '1013' }.freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :geographical_area_sid
@@ -49,7 +50,11 @@ class GeographicalArea < Sequel::Model
   end
 
   def candidate_excluded_geographical_area_ids
-    @candidate_excluded_geographical_area_ids ||= included_geographical_areas.pluck(:geographical_area_id) << geographical_area_id
+    @candidate_excluded_geographical_area_ids ||= contained_geographical_areas.pluck(:geographical_area_id) << geographical_area_id
+  end
+
+  def referenced
+    self.class.where(geographical_area_id: referenced_id).actual.first
   end
 
   def contained_geographical_area_ids
@@ -83,5 +88,11 @@ class GeographicalArea < Sequel::Model
 
   def id
     geographical_area_id
+  end
+
+  private
+
+  def referenced_id
+    REFERENCED_GEOGRAPHICAL_AREAS[geographical_area_id]
   end
 end

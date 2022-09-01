@@ -4,7 +4,13 @@ FactoryBot.define do
 
     measure_sid { generate(:measure_sid) }
     geographical_area_sid { generate(:geographical_area_sid) }
-    excluded_geographical_area { Forgery(:basic).text(exactly: 2).upcase }
+    excluded_geographical_area do
+      if referenced
+        'EU'
+      else
+        Forgery(:basic).text(exactly: 2).upcase
+      end
+    end
 
     trait :with_geographical_area do
       after(:create) do |measure_excluded_geographical_area, evaluator|
@@ -12,12 +18,28 @@ FactoryBot.define do
         geographical_area_sid = measure_excluded_geographical_area.geographical_area_sid
 
         if evaluator.group
-          group = create(
-            :geographical_area,
-            :group,
-            geographical_area_id:,
-            geographical_area_sid:,
-          )
+          group = if evaluator.referenced
+                    # referencing area
+                    create(
+                      :geographical_area,
+                      :country,
+                      geographical_area_id:,
+                      geographical_area_sid:,
+                    )
+                    # referenced area
+                    create(
+                      :geographical_area,
+                      :group,
+                      geographical_area_id: '1013',
+                    )
+                  else
+                    create(
+                      :geographical_area,
+                      :group,
+                      geographical_area_id:,
+                      geographical_area_sid:,
+                    )
+                  end
 
           country = create(
             :geographical_area,
@@ -40,14 +62,23 @@ FactoryBot.define do
       end
     end
 
+    trait :referenced_group do
+      transient do
+        referenced { true }
+        group { true }
+      end
+    end
+
     trait :group do
       transient do
+        referenced { false }
         group { true }
       end
     end
 
     trait :country do
       transient do
+        referenced { false }
         group { false }
       end
     end

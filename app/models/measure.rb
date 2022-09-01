@@ -412,11 +412,7 @@ class Measure < Sequel::Model
   def relevant_for_country?(country)
     country_id = country.geographical_area_id
 
-    is_excluded = measure_excluded_geographical_areas.select { |measure_excluded_geographical_area|
-      measure_excluded_geographical_area.excluded_geographical_area.in?(country.candidate_excluded_geographical_area_ids)
-    }.any?
-
-    return false if is_excluded
+    return false if excluded_country?(country)
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?
     return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && measure_type.meursing?
     return true if geographical_area_id.blank? || geographical_area_id == country_id
@@ -491,6 +487,22 @@ class Measure < Sequel::Model
   end
 
   private
+
+  def excluded_country?(country)
+    country.geographical_area_id.in?(measure_excluded_geographical_area_ids)
+  end
+
+  def measure_excluded_geographical_area_ids
+    excluded_geographical_areas = measure_excluded_geographical_areas_dataset
+      .eager(:geographical_area)
+      .map(&:geographical_area)
+
+    excluded_geographical_areas.each_with_object([]) do |geographical_area, acc|
+      actual_area = geographical_area.referenced.presence || geographical_area
+
+      acc.concat(actual_area.candidate_excluded_geographical_area_ids)
+    end
+  end
 
   def resolves_meursing_measures?
     meursing? && meursing_additional_code_id.present? && meursing_measures.present?

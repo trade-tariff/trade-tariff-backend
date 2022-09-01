@@ -139,8 +139,34 @@ RSpec.describe GeographicalArea do
   end
 
   describe '#candidate_excluded_geographical_area_ids' do
-    subject(:candidate_excluded_geographical_area_ids) { create(:geographical_area, :group, :with_members, geographical_area_id: '1013').contained_geographical_areas.first.candidate_excluded_geographical_area_ids }
+    subject(:candidate_excluded_geographical_area_ids) do
+      create(
+        :geographical_area,
+        :group,
+        :with_members,
+        geographical_area_id: '1011',
+      ).candidate_excluded_geographical_area_ids
+    end
 
-    it { is_expected.to eq(%w[1013 RO]) }
+    it { is_expected.to eq(%w[RO 1011]) }
+  end
+
+  describe '.referenced' do
+    context 'when the geographical area is a reference area' do
+      subject(:refeenced) { create(:geographical_area, geographical_area_id: 'EU').referenced }
+
+      before do
+        create(:geographical_area, geographical_area_id: '1013')
+      end
+
+      it { is_expected.to have_attributes(geographical_area_id: '1013') }
+      it { is_expected.to be_a(described_class) }
+    end
+
+    context 'when the geographical area is not a reference area' do
+      subject(:refeenced) { create(:geographical_area).referenced }
+
+      it { is_expected.to be_nil }
+    end
   end
 end

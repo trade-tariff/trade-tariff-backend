@@ -836,6 +836,19 @@ RSpec.describe Measure do
       it { expect(measure.relevant_for_country?(country)).to eq(false) }
     end
 
+    context 'when the measure excludes a referenced group the country belongs to' do
+      subject(:measure) { create(:measure, :with_measure_excluded_geographical_area_referenced_group) }
+
+      let(:country) do
+        measure
+          .measure_excluded_geographical_areas
+          .first
+          .geographical_area
+      end
+
+      it { expect(measure.relevant_for_country?(country)).to eq(false) }
+    end
+
     context 'when the measure is a national measure and its geographical area is the world' do
       subject(:measure) { create(:measure, :national, geographical_area_id: '1011') }
 
