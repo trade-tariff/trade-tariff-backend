@@ -30,7 +30,7 @@ module Api
         has_many :import_measures, record_type: :measure, serializer: Api::V2::Measures::MeasureSerializer
         has_many :export_measures, record_type: :measure, serializer: Api::V2::Measures::MeasureSerializer
 
-        has_one :import_trade_summary, serializer: Api::V2::Commodities::ImportTradeSummarySerializer
+        has_one :import_trade_summary, serializer: Api::V2::Shared::ImportTradeSummarySerializer
 
         meta do |commodity|
           {
