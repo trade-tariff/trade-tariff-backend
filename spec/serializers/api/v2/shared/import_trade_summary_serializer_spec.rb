@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Commodities::ImportTradeSummarySerializer do
+RSpec.describe Api::V2::Shared::ImportTradeSummarySerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 

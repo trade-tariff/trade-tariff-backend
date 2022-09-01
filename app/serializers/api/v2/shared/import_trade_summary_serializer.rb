@@ -1,6 +1,6 @@
 module Api
   module V2
-    module Commodities
+    module Shared
       class ImportTradeSummarySerializer
         include JSONAPI::Serializer
 
