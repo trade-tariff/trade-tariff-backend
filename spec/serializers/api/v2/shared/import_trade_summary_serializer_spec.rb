@@ -2,16 +2,16 @@ RSpec.describe Api::V2::Shared::ImportTradeSummarySerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
-    let(:serializable) {
+    let(:serializable) do
       Hashie::TariffMash.new(
         {
           id: '1',
           basic_third_country_duty: 'aaa',
           preferential_tariff_duty: 'bbb',
-          preferential_quota_duty: 'ccc'
-        }
+          preferential_quota_duty: 'ccc',
+        },
       )
-    }
+    end
 
     let(:expected_pattern) do
       {
@@ -19,10 +19,10 @@ RSpec.describe Api::V2::Shared::ImportTradeSummarySerializer do
           attributes: {
             basic_third_country_duty: 'aaa',
             preferential_tariff_duty: 'bbb',
-            preferential_quota_duty: 'ccc'
+            preferential_quota_duty: 'ccc',
           },
           id: '1',
-          type: :import_trade_summary
+          type: :import_trade_summary,
         },
       }
     end
