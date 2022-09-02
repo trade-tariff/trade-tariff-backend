@@ -47,11 +47,13 @@ RSpec.describe RulesOfOrigin::Scheme do
 
     let(:instance) { described_class.new }
 
+    let(:expected_response) { { 'bilateral' => %w[GB CA], 'extended' => %w[EU AD], 'diagonal' => %w[EU AD] } }
+
     let(:data) do
-      { 'bilateral' => { 'countries' => ['GB', 'CA'] }, 'extended' => { 'countries' => ['EU', 'AD'] }, 'diagonal' => { 'countries' => ['EU', 'AD'] } }
+      { 'bilateral' => { 'countries' => %w[GB CA] }, 'extended' => { 'countries' => %w[EU AD] }, 'diagonal' => { 'countries' => %w[EU AD] } }
     end
 
-    it { is_expected.to have_attributes length: 3 }
+    it { is_expected.to eq expected_response }
   end
 
   describe '#links' do

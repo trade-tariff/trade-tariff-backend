@@ -7,6 +7,7 @@ FactoryBot.define do
     countries               { %w[FR ES IT DE] }
     footnote                { 'This scheme may be expanded in the future' }
     unilateral              { nil }
+    cumulation_methods      { { 'bilateral' => { 'countries' => %w[GB CA] }, 'extended' => { 'countries' => %w[EU AD] }, 'diagonal' => { 'countries' => %w[EU AD] } } }
 
     trait :with_links do
       links { attributes_for_list :rules_of_origin_link, 2 }

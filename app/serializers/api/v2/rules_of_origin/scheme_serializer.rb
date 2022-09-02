@@ -9,7 +9,7 @@ module Api
         set_id :scheme_code
 
         attributes :scheme_code, :title, :countries, :footnote, :unilateral,
-                   :fta_intro, :introductory_notes
+                   :fta_intro, :introductory_notes, :cumulation_methods
 
         has_many :rules, serializer: Api::V2::RulesOfOrigin::RuleSerializer
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
