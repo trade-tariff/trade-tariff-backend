@@ -267,8 +267,20 @@ FactoryBot.define do
     end
 
     trait :with_measure_excluded_geographical_area do
-      after(:build) do |measure, _evaluator|
-        create(:measure_excluded_geographical_area, measure_sid: measure.measure_sid)
+      after(:create) do |measure, _evaluator|
+        create(:measure_excluded_geographical_area, :with_geographical_area, measure_sid: measure.measure_sid)
+      end
+    end
+
+    trait :with_measure_excluded_geographical_area_group do
+      after(:create) do |measure, _evaluator|
+        create(:measure_excluded_geographical_area, :with_geographical_area_group_and_members, measure_sid: measure.measure_sid)
+      end
+    end
+
+    trait :with_measure_excluded_geographical_area_referenced_group do
+      after(:create) do |measure, _evaluator|
+        create(:measure_excluded_geographical_area, :with_referenced_geographical_area_group_and_members, measure_sid: measure.measure_sid)
       end
     end
 

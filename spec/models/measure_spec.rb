@@ -816,41 +816,69 @@ RSpec.describe Measure do
     context 'when the measure excludes the country id' do
       subject(:measure) { create(:measure, :with_measure_excluded_geographical_area) }
 
-      let(:exclusion) { measure.measure_excluded_geographical_areas.first }
+      let(:country) { measure.measure_excluded_geographical_areas.first.geographical_area }
 
-      it { expect(measure.relevant_for_country?(exclusion.excluded_geographical_area)).to eq(false) }
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(false) }
+    end
+
+    context 'when the measure excludes a group the country belongs to' do
+      subject(:measure) { create(:measure, :with_measure_excluded_geographical_area_group) }
+
+      let(:country) do
+        measure
+          .measure_excluded_geographical_areas
+          .first
+          .geographical_area
+          .contained_geographical_areas
+          .first
+      end
+
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(false) }
+    end
+
+    context 'when the measure excludes a referenced group the country belongs to' do
+      subject(:measure) { create(:measure, :with_measure_excluded_geographical_area_referenced_group) }
+
+      let(:country) do
+        measure
+          .measure_excluded_geographical_areas
+          .first
+          .geographical_area
+      end
+
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(false) }
     end
 
     context 'when the measure is a national measure and its geographical area is the world' do
       subject(:measure) { create(:measure, :national, geographical_area_id: '1011') }
 
-      it 'returns true' do
-        expect(measure.relevant_for_country?('foo')).to eq(true)
-      end
+      let(:country) { build(:geographical_area) }
+
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(true) }
     end
 
     context 'when the measure has a meursing measure type and its geographical area is the world' do
       subject(:measure) { create(:measure, :flour, geographical_area_id: '1011') }
 
-      it 'returns true' do
-        expect(measure.relevant_for_country?('foo')).to eq(true)
-      end
+      let(:country) { build(:geographical_area) }
+
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(true) }
     end
 
     context 'when the measure has no geographical area' do
       subject(:measure) { create(:measure, geographical_area_sid: nil, geographical_area_id: nil) }
 
-      it 'returns true' do
-        expect(measure.relevant_for_country?('foo')).to eq(true)
-      end
+      let(:country) { build(:geographical_area) }
+
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(true) }
     end
 
     context 'when the measure has a geographical area that is the country' do
       subject(:measure) { create(:measure) }
 
-      it 'returns true' do
-        expect(measure.relevant_for_country?(measure.geographical_area_id)).to eq(true)
-      end
+      let(:country) { measure.geographical_area }
+
+      it { expect(measure.relevant_for_country?(country.geographical_area_id)).to eq(true) }
     end
 
     context 'when the measure has a contained geographical area that is the country' do
@@ -859,11 +887,15 @@ RSpec.describe Measure do
       let(:geographical_area) { create(:geographical_area, :group) }
       let(:contained_geographical_area) { create(:geographical_area, :country) }
 
-      let!(:membership) { create(:geographical_area_membership, geographical_area_sid: contained_geographical_area.geographical_area_sid, geographical_area_group_sid: geographical_area.geographical_area_sid) }
-
-      it 'returns true' do
-        expect(measure.relevant_for_country?(contained_geographical_area.geographical_area_id)).to eq(true)
+      before do
+        create(
+          :geographical_area_membership,
+          geographical_area_sid: contained_geographical_area.geographical_area_sid,
+          geographical_area_group_sid: geographical_area.geographical_area_sid,
+        )
       end
+
+      it { expect(measure.relevant_for_country?(contained_geographical_area.geographical_area_id)).to eq(true) }
     end
   end
 
