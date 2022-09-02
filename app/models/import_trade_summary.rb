@@ -36,16 +36,16 @@ class ImportTradeSummary
   private
 
   def third_country_measures
-    @third_country_measures ||= import_measures.select do |m|
-      m.measure_type.third_country? && m.erga_omnes?
-    end
+    @third_country_measures ||= import_measures
+                                  .select(&:third_country?)
+                                  .select(&:erga_omnes?)
   end
 
   def tariff_preference_measures
-    @tariff_preference_measures ||= import_measures.select { |m| m.measure_type.tariff_preference? }
+    @tariff_preference_measures ||= import_measures.select(&:tariff_preference?)
   end
 
   def preferential_quota_measures
-    @preferential_quota_measures ||= import_measures.select { |m| m.measure_type.preferential_quota? }
+    @preferential_quota_measures ||= import_measures.select(&:preferential_quota?)
   end
 end

@@ -101,7 +101,13 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
-  delegate :rules_of_origin_apply?, :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
+  delegate :rules_of_origin_apply?,
+           :third_country?,
+           :excise?,
+           :vat?,
+           :preferential_quota?,
+           :tariff_preference?,
+           :trade_remedy?, to: :measure_type, allow_nil: true
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)
@@ -410,15 +416,9 @@ class Measure < Sequel::Model
   end
 
   def relevant_for_country?(country_id)
-<<<<<<< HEAD
     return false if excluded_country?(country_id)
-    return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?
-    return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && measure_type.meursing?
-=======
-    return false if measure_excluded_geographical_areas.map(&:excluded_geographical_area).include?(country_id)
     return true if erga_omnes? && national?
     return true if erga_omnes? && measure_type.meursing?
->>>>>>> ea1cdf0c... HOTT-1902 Fix commodities_controller_spec.
     return true if geographical_area_id.blank? || geographical_area_id == country_id
 
     geographical_area.contained_geographical_areas.map(&:geographical_area_id).include?(country_id)
