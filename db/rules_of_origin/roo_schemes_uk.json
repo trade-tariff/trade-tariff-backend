@@ -9,7 +9,7 @@
     "schemes": [
         {
             "scheme_code": "eu",
-            "country_code": "eu",
+            "title": "UK / EU Trade and Co-operation Agreement",
             "proofs": [
                 {
                     "summary": "Statement on origin",
@@ -24,12 +24,77 @@
                     "detail": "importers-knowledge.md"
                 }
             ],
-            "title": "UK / EU Trade and Co-operation Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "BE",
+                        "GR",
+                        "LT",
+                        "PT",
+                        "BG",
+                        "ES",
+                        "LU",
+                        "RO",
+                        "CZ",
+                        "FR",
+                        "HU",
+                        "SI",
+                        "DK",
+                        "HR",
+                        "MT",
+                        "SK",
+                        "DE",
+                        "IT",
+                        "NL",
+                        "FI",
+                        "EE",
+                        "CY",
+                        "AT",
+                        "SE",
+                        "IE",
+                        "LV",
+                        "PL"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Trade and Cooperation Agreement between the European Union and the European Atomic Energy Community, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, signed on 30 December 2020 ('the European Union Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "2021.12.23_EU_ORD_.docx"
+            },
+            "articles": {
+                "article 1": "general",
+                "article 2": "definitions",
+                "article 3": "general requirements",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "tolerances",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "packing materials - shipment",
+                "article 10": "packing materials - retail",
+                "article 11": "accessories",
+                "article 12": "sets",
+                "article 13": "neutral elements",
+                "article 14": "accounting segregation",
+                "article 15": "returned products",
+                "article 16": "non-alteration",
+                "article 24": "verification",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "eu_intro.md",
             "fta_intro_file": "eu.md",
@@ -82,7 +147,7 @@
         },
         {
             "scheme_code": "japan",
-            "country_code": "JP",
+            "title": "UK-Japan Comprehensive Economic Partnership Agreement",
             "proofs": [
                 {
                     "summary": "Statement on origin",
@@ -97,12 +162,50 @@
                     "detail": "importers-knowledge.md"
                 }
             ],
-            "title": "UK-Japan Comprehensive Economic Partnership Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "JP"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland and Japan for a Comprehensive Economic Partnership, signed on 23 October 2020 ('the Japan Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211203_ORD_Japan_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "insufficient working",
+                "article 5": "cumulation",
+                "article 6": "tolerances",
+                "article 7": "unit of qualification",
+                "article 8": "accounting segregation",
+                "article 9": "sets",
+                "article 10": "non-alteration",
+                "article 11": "returned products",
+                "article 12": "accessories",
+                "article 13": "neutral elements",
+                "article 14": "packing materials - shipment",
+                "article 15": "packing materials - retail",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": true,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "japan_intro.md",
             "fta_intro_file": "japan.md",
@@ -196,6 +299,7 @@
         },
         {
             "scheme_code": "albania",
+            "title": "UK-Albania Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -210,12 +314,71 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "title": "UK-Albania partnership, Trade and Cooperation Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "AL"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XK",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "XS",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Albania, signed on 5th February 2021 ('the Albania Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 November 2021",
                 "ord_original": "211228_ORD_Albania_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": true,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "albania_intro.md",
             "fta_intro_file": "albania.md",
@@ -235,6 +398,7 @@
         },
         {
             "scheme_code": "canada",
+            "title": "UK-Canada Trade Continuity Agreement",
             "proofs": [
                 {
                     "summary": "Statement on origin",
@@ -243,13 +407,64 @@
                     "detail": "statement-on-origin.md"
                 }
             ],
-            "country_code": "CA",
-            "title": "UK-Canada Trade Continuity Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "CA"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XX",
+                        "JP",
+                        "MX",
+                        "SG",
+                        "VN",
+                        "CL",
+                        "CO",
+                        "CR",
+                        "IS",
+                        "LI",
+                        "NO",
+                        "CH",
+                        "HO",
+                        "IL",
+                        "KR",
+                        "PE",
+                        "UA"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Canada Origin Reference Document",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211223_ORD_Canada_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "tolerances",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "packing materials - shipment",
+                "article 10": "accounting segregation",
+                "article 11": "accessories",
+                "article 12": "sets",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "canada_intro.md",
             "fta_intro_file": "canada.md",
@@ -269,7 +484,7 @@
         },
         {
             "scheme_code": "south-korea",
-            "country_code": "KR",
+            "title": "UK-South Korea Trade Agreement",
             "proofs": [
                 {
                     "summary": "Origin declaration",
@@ -278,12 +493,48 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "title": "UK-South Korea trade agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "KR"
+                    ]
+                },
+                "diagonal": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland, of the one part, and the Republic of  Korea, of the other part, signed on 22 August 2019 ('the Korea Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28th December 2021",
                 "ord_original": "211208_ORD_Korea__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "accounting segregation",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "south-korea_intro.md",
             "fta_intro_file": "south-korea.md",
@@ -307,6 +558,7 @@
         },
         {
             "scheme_code": "kenya",
+            "title": "Comprehensive Economic Partnership Agreement UK Kenya",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -321,12 +573,160 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "Comprehensive Economic Partnership Agreement UK Kenya",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "KE"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "CD",
+                        "BI",
+                        "KE",
+                        "RW",
+                        "SS",
+                        "UG",
+                        "TZ",
+                        "BJ",
+                        "BF",
+                        "CV",
+                        "GM",
+                        "GH",
+                        "GN",
+                        "GW",
+                        "CI",
+                        "LR",
+                        "ML",
+                        "MR",
+                        "NE",
+                        "NG",
+                        "SN",
+                        "SL",
+                        "TG",
+                        "CM",
+                        "CF",
+                        "TD",
+                        "CD",
+                        "CG",
+                        "GQ",
+                        "GA",
+                        "ST",
+                        "BI",
+                        "KE",
+                        "RW",
+                        "SS",
+                        "TZ",
+                        "UG",
+                        "KM",
+                        "DJ",
+                        "ER",
+                        "ET",
+                        "MG",
+                        "MW",
+                        "MU",
+                        "SC",
+                        "SO",
+                        "SD",
+                        "ZM",
+                        "ZW",
+                        "AO",
+                        "BW",
+                        "SZ",
+                        "LS",
+                        "MZ",
+                        "NA",
+                        "ZA",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "CU",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "HT",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "FJ",
+                        "CK",
+                        "KI",
+                        "MH",
+                        "FM",
+                        "NR",
+                        "NU",
+                        "PW",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "TL",
+                        "TO",
+                        "TV",
+                        "VU",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "TF",
+                        "WF",
+                        "BL",
+                        "PM",
+                        "AW",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Kenya Origin Reference Document",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "221205_ORD_Kenya_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "duty-free",
+                "article 4": "cumulation",
+                "article 5": "cumulation",
+                "article 6": "cumulation",
+                "article 7": "wholly obtained",
+                "article 8": "sufficient working",
+                "article 9": "insufficient working",
+                "article 10": "unit of qualification",
+                "article 11": "accessories",
+                "article 12": "sets",
+                "article 13": "neutral elements",
+                "article 14": "principle of territoriality",
+                "article 15": "non-alteration",
+                "article 16": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "footnote": "This agreement is open to accession by other members of East African Community.",
             "introductory_notes_file": "kenya_intro.md",
@@ -347,6 +747,7 @@
         },
         {
             "scheme_code": "esa",
+            "title": "ESA-UK Economic Partnership Agreement (EPA)",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -361,12 +762,150 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "ESA-UK economic partnership agreement (EPA)",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "ZW",
+                        "SC",
+                        "MU"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AO",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "BJ",
+                        "BW",
+                        "BF",
+                        "BI",
+                        "CM",
+                        "CV",
+                        "CF",
+                        "TD",
+                        "CK",
+                        "CI",
+                        "CD",
+                        "DJ",
+                        "DM",
+                        "DO",
+                        "GQ",
+                        "ER",
+                        "SZ",
+                        "ET",
+                        "FM",
+                        "FJ",
+                        "GA",
+                        "GM",
+                        "GH",
+                        "GD",
+                        "GN",
+                        "GW",
+                        "GY",
+                        "HT",
+                        "JM",
+                        "KE",
+                        "KI",
+                        "LS",
+                        "LR",
+                        "MW",
+                        "ML",
+                        "MH",
+                        "MR",
+                        "MZ",
+                        "NA",
+                        "NR",
+                        "NE",
+                        "NU",
+                        "NG",
+                        "PW",
+                        "PG",
+                        "CG",
+                        "RW",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "WS",
+                        "ST",
+                        "SN",
+                        "SL",
+                        "SB",
+                        "SO",
+                        "SD",
+                        "SR",
+                        "TZ",
+                        "TG",
+                        "TO",
+                        "TT",
+                        "TV",
+                        "UG",
+                        "VU",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "TF",
+                        "WF",
+                        "YT",
+                        "PM",
+                        "AW",
+                        "AN",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG",
+                        "DZ",
+                        "EG",
+                        "LY",
+                        "MA",
+                        "TN",
+                        "MV"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement establishing an Economic Partnership Agreement between the Eastern and Southern African States, on the one part, and the United Kingdom of Great Britain and Northern Ireland, on the other part, signed by the Republic of Mauritius, the Republic of the Seychelles and the Republic of Zimbabwe on 31st January 2019 ('the Eastern and Southern African States Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28th December 2021",
                 "ord_original": "211223_ORD_ESA_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "cumulation",
+                "article 6": "wholly obtained",
+                "article 7": "sufficient working",
+                "article 8": "insufficient working",
+                "article 9": "unit of qualification",
+                "article 10": "accessories",
+                "article 11": "sets",
+                "article 12": "neutral elements",
+                "article 13": "principle of territoriality",
+                "article 14": "direct transport",
+                "article 15": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "esa_intro.md",
             "fta_intro_file": "esa.md",
@@ -388,6 +927,7 @@
         },
         {
             "scheme_code": "central-america",
+            "title": "UK-Central America Association Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -402,12 +942,82 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Central America association agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "HO",
+                        "NI",
+                        "SV",
+                        "GT",
+                        "PA",
+                        "CR"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "VE",
+                        "CO",
+                        "EC",
+                        "PE",
+                        "BO",
+                        "CL",
+                        "AR",
+                        "UR",
+                        "BR",
+                        "GF",
+                        "SR",
+                        "GY",
+                        "MX",
+                        "ID",
+                        "AG",
+                        "BB",
+                        "BS",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "SR",
+                        "TT",
+                        "VC"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Origin Reference Document implementing the Agreement between the United Kingdom and Central America signed on 18 July 2019 ('the Central America Origin Reference Document')",
                 "ord_version": "1.2",
                 "ord_date": "22 February 2022",
                 "ord_original": "220214_ORD_Central_America_V1.2.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 3a": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "principle of territoriality",
+                "article 12": "direct transport",
+                "article 13": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "central_america_intro.md",
             "fta_intro_file": "central_america.md",
@@ -433,6 +1043,7 @@
         },
         {
             "scheme_code": "andean",
+            "title": "UK-Andean Countries Trade Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -447,12 +1058,81 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Andean countries trade agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "CO",
+                        "EC",
+                        "PE"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AG",
+                        "BB",
+                        "BS",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "SR",
+                        "TT",
+                        "VC",
+                        "MX",
+                        "GT",
+                        "HO",
+                        "NI",
+                        "SV",
+                        "CR",
+                        "PA",
+                        "BR",
+                        "VE",
+                        "GF",
+                        "BO",
+                        "PY",
+                        "UY",
+                        "AR",
+                        "CL"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Andean Countries Origin Reference Document Version 1.3, Dated 28th December 2021",
                 "ord_version": "1.3",
                 "ord_date": "31 May 2022",
                 "ord_original": "310522_Andean_ORD.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 3a": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "andean_intro.md",
             "fta_intro_file": "andean.md",
@@ -475,6 +1155,7 @@
         },
         {
             "scheme_code": "cameroon",
+            "title": "UK-Cameroon Economic Partnership Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -489,12 +1170,97 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Cameroon Economic Partnership Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "CM"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "BW",
+                        "CI",
+                        "DM",
+                        "DO",
+                        "FJ",
+                        "GH",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KE",
+                        "LS",
+                        "MG",
+                        "MU",
+                        "MZ",
+                        "NA",
+                        "PG",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SC",
+                        "SR",
+                        "SZ",
+                        "TT",
+                        "ZW",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "PM",
+                        "BL",
+                        "TF",
+                        "WF",
+                        "AW",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Cameroon Origin Reference Document",
                 "ord_version": "1.3",
                 "ord_date": "28 December 2021",
                 "ord_original": "211223_Cameroon_ORD__HS_UPDATE__.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "sufficient working",
+                "article 5": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "principle of territoriality",
+                "article 12": "direct transport",
+                "article 13": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "cameroon_intro.md",
             "fta_intro_file": "cameroon.md",
@@ -514,6 +1280,7 @@
         },
         {
             "scheme_code": "cariforum",
+            "title": "CARIFORUM-UK Economic Partnership Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -528,12 +1295,148 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "CARIFORUM-UK economic partnership agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "AO",
+                        "BJ",
+                        "BW",
+                        "Faso BF",
+                        "BI",
+                        "CM",
+                        "CV",
+                        "CF",
+                        "TD",
+                        "CK",
+                        "KM",
+                        "CI",
+                        "CD",
+                        "DJ",
+                        "GQ",
+                        "ER",
+                        "ET",
+                        "FM",
+                        "FJ",
+                        "GA",
+                        "GM",
+                        "GH",
+                        "GN",
+                        "GW",
+                        "KE",
+                        "KI",
+                        "LS",
+                        "LR",
+                        "MG",
+                        "MW",
+                        "ML",
+                        "MH",
+                        "MR",
+                        "MU",
+                        "MZ",
+                        "NA",
+                        "NR",
+                        "NE",
+                        "NU",
+                        "NG",
+                        "PW",
+                        "PG",
+                        "CG",
+                        "RW",
+                        "WS",
+                        "ST",
+                        "SN",
+                        "SC",
+                        "SL",
+                        "SB",
+                        "SO",
+                        "SD",
+                        "SZ",
+                        "TZ",
+                        "TG",
+                        "TO",
+                        "TV",
+                        "UG",
+                        "VU",
+                        "ZM",
+                        "ZW",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "PM",
+                        "BL",
+                        "TF",
+                        "WF",
+                        "AW",
+                        "BQ",
+                        "CW",
+                        "BQ",
+                        "SX",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The CARIFORUM Origin Reference Document",
                 "ord_version": "1.2",
                 "ord_date": "28 December 2021",
                 "ord_original": "211223_ORD_CARIFORUM_V1.2.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "cumulation",
+                "article 6": "wholly obtained",
+                "article 7": "sufficient working",
+                "article 8": "insufficient working",
+                "article 9": "unit of qualification",
+                "article 10": "accessories",
+                "article 11": "sets",
+                "article 12": "neutral elements",
+                "article 13": "principle of territoriality",
+                "article 14": "direct transport",
+                "article 15": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "cariforum_intro.md",
             "fta_intro_file": "cariforum.md",
@@ -566,6 +1469,7 @@
         },
         {
             "scheme_code": "chile",
+            "title": "UK-Chile Association Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -580,18 +1484,55 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Chile association agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "CL"
+                    ]
+                },
+                "diagonal": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Republic of Chile signed on 30 January 2019 ('the Chile Origin Reference Document')",
                 "ord_version": "1.2",
                 "ord_date": "22 February 2022",
                 "ord_original": "220214_ORD_Chile__v1.2.odt"
             },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 3a": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "principle of territoriality",
+                "article 12": "direct transport",
+                "article 13": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
+            },
             "introductory_notes_file": "chile_intro.md",
             "fta_intro_file": "chile.md",
             "links": [
                 {
-                    "text": "UK-Chile association agreement",
+                    "text": "UK-Chile Association Agreement",
                     "url": "https://www.gov.uk/government/collections/uk-chile-association-agreement"
                 },
                 {
@@ -605,6 +1546,7 @@
         },
         {
             "scheme_code": "cotedivoire",
+            "title": "UK-Côte d’Ivoire Stepping Stone Economic Partnership Agreement",
             "proofs": [
                 {
                     "summary": "Origin declaration",
@@ -619,12 +1561,117 @@
                     "detail": "eur1.md"
                 }
             ],
-            "title": "UK-Côte d’Ivoire Stepping Stone Economic Partnership Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "CI"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "BJ",
+                        "BF",
+                        "CV",
+                        "GM",
+                        "GH",
+                        "GN",
+                        "GW",
+                        "LR",
+                        "ML",
+                        "MR",
+                        "NE",
+                        "NG",
+                        "SN",
+                        "SL",
+                        "TG",
+                        "FJ",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "CM",
+                        "KE",
+                        "BW",
+                        "ZW",
+                        "ZA",
+                        "LS",
+                        "SZ",
+                        "MZ",
+                        "SC",
+                        "MU",
+                        "ZA",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "LC",
+                        "VC",
+                        "KN",
+                        "SR",
+                        "TT",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "PM",
+                        "BL",
+                        "TF",
+                        "WF",
+                        "AW",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Stepping Stone Economic Partnership Agreement between the Republic of Côte d'Ivoire and the United Kingdom of Great Britain and Northern Ireland, signed on 15 October 2020 ('the Côte d'Ivoire Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 November 2021",
                 "ord_original": "211223_ORD_Cote_d_Ivoire_-__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "sufficient working",
+                "article 5": "insufficient working",
+                "article 6": "duty-free",
+                "article 7": "cumulation",
+                "article 8": "cumulation",
+                "article 9": "unit of qualification",
+                "article 10": "accessories",
+                "article 11": "sets",
+                "article 12": "neutral elements",
+                "article 13": "accounting segregation",
+                "article 14": "principle of territoriality",
+                "article 15": "non-alteration",
+                "article 16": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "cotedivoire_intro.md",
             "fta_intro_file": "cotedivoire.md",
@@ -644,6 +1691,7 @@
         },
         {
             "scheme_code": "egypt",
+            "title": "UK-Egypt Association Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -658,12 +1706,71 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Egypt Association Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "EG"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AL",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "XK",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "XS",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Arab Republic of Egypt, signed on 5th December 2020 ('the Egypt Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "20211223_ORD_Egypt_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "egypt_intro.md",
             "fta_intro_file": "egypt.md",
@@ -683,6 +1790,7 @@
         },
         {
             "scheme_code": "faroe-islands",
+            "title": "UK-Faroe Islands Free Trade Agreement (FTA)",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -697,12 +1805,72 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Faroe Islands free trade agreement (FTA)",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "FO"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AL",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "XK",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "XS",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Kingdom of Denmark in respect of the Faroe Islands, signed on 31st January 2019 ('the Faroe Islands Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "20121223_ORD_Faroe_Islands_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "faroe-islands_intro.md",
             "fta_intro_file": "faroe-islands.md",
@@ -722,6 +1890,7 @@
         },
         {
             "scheme_code": "georgia",
+            "title": "UK-Georgia Strategic Partnership and Cooperation Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -736,12 +1905,145 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Georgia strategic partnership and cooperation agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "GE"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "CH",
+                        "LI",
+                        "NO",
+                        "IS",
+                        "TR",
+                        "FO",
+                        "DZ",
+                        "TN",
+                        "MA",
+                        "IL",
+                        "PS",
+                        "EG",
+                        "JO",
+                        "LB",
+                        "SY",
+                        "MK",
+                        "AL",
+                        "BA",
+                        "ME",
+                        "XS",
+                        "XK",
+                        "MD",
+                        "UA",
+                        "AL",
+                        "MX",
+                        "CL",
+                        "PE",
+                        "CO",
+                        "EC",
+                        "GT",
+                        "HO",
+                        "NI",
+                        "SV",
+                        "CR",
+                        "PA",
+                        "KR",
+                        "CA",
+                        "JP",
+                        "SG",
+                        "VN",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG",
+                        "AN",
+                        "PF",
+                        "TF",
+                        "ZF",
+                        "GL",
+                        "NC",
+                        "BQ",
+                        "BL",
+                        "BQ",
+                        "SX",
+                        "PM",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "BW",
+                        "LS",
+                        "NA",
+                        "ZA",
+                        "SZ",
+                        "MZ",
+                        "KM",
+                        "MG",
+                        "MU",
+                        "SC",
+                        "ZW",
+                        "FJ",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "CM",
+                        "CI",
+                        "KE",
+                        "GH"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Origin Reference Document implementing the Agreement establishing a Strategic Partnership and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and Georgia signed on 21st October 2019 ('the Georgia Origin Reference Document')",
                 "ord_version": "1.2",
                 "ord_date": "22 February 2022",
                 "ord_original": "220214_ORD_Georgia_V1.2.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "georgia_intro.md",
             "fta_intro_file": "georgia.md",
@@ -761,6 +2063,7 @@
         },
         {
             "scheme_code": "ghana",
+            "title": "UK-Ghana Interim Trade Partnership Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -775,12 +2078,115 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Ghana Interim Trade Partnership Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "GH"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "SM",
+                        "AD",
+                        "BJ",
+                        "BF",
+                        "CV",
+                        "GM",
+                        "CI",
+                        "GN",
+                        "GW",
+                        "LR",
+                        "ML",
+                        "MR",
+                        "NE",
+                        "NG",
+                        "SN",
+                        "SL",
+                        "TG",
+                        "FJ",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "CM",
+                        "KE",
+                        "BW",
+                        "ZW",
+                        "ZA",
+                        "LS",
+                        "SZ",
+                        "MZ",
+                        "SC",
+                        "MU",
+                        "ZA",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "LC",
+                        "VC",
+                        "KN",
+                        "SR",
+                        "TT",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "PM",
+                        "BL",
+                        "TF",
+                        "WF",
+                        "AW",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Interim Trade Partnership Agreement between the Republic of Ghana, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, signed on 2nd March 2021 ('the Ghana Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211223_ORD_Ghana_-_HS.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "sufficient working",
+                "article 5": "insufficient working",
+                "article 6": "duty-free",
+                "article 7": "cumulation",
+                "article 8": "cumulation",
+                "article 9": "unit of qualification",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "accounting segregation",
+                "article 13": "principle of territoriality",
+                "article 14": "non-alteration",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "ghana_intro.md",
             "fta_intro_file": "ghana.md",
@@ -800,6 +2206,7 @@
         },
         {
             "scheme_code": "iceland-norway",
+            "title": "Agreement on Trade in Goods between Iceland, Norway and the UK",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -814,12 +2221,69 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "Agreement on trade in goods between Iceland, Norway and the UK",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "IS",
+                        "NO"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XK",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "XS",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "AL",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland, Iceland and the Kingdom of Norway on Trade in Goods, dated 8th December 2020 ('the Iceland Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211202_Iceland_ORD_V1.1__2_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "principle of territoriality",
+                "article 12": "direct transport",
+                "article 13": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "iceland-norway_intro.md",
             "fta_intro_file": "iceland-norway.md",
@@ -840,6 +2304,7 @@
         },
         {
             "scheme_code": "israel",
+            "title": "UK-Israel Trade and Partnership Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -854,12 +2319,71 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Israel trade and partnership agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "IL"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AL",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "JO",
+                        "EG",
+                        "XK",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "XS",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Trade and Partnership Agreement between the United Kingdom of Great Britain and Northern Ireland and the Government of the State of Israel, signed on 18th February 2019 (“the Israel Origin Reference Document”)",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "20211202_ORD_Israel_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "israel_intro.md",
             "fta_intro_file": "israel.md",
@@ -879,6 +2403,7 @@
         },
         {
             "scheme_code": "kosovo",
+            "title": "UK-Kosovo Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -893,18 +2418,77 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Kosovo partnership, trade and cooperation agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "XK"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AL",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "XS",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Kosovo, signed on 3rd December 2019 ('the Kosovo Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211203_ORD_Kosovo_V1.1.odt"
             },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
+            },
             "introductory_notes_file": "kosovo_intro.md",
             "fta_intro_file": "kosovo.md",
             "links": [
                 {
-                    "text": "UK-Kosovo partnership, trade and cooperation agreement",
+                    "text": "UK-Kosovo partnership, trade and cooperation agreement",
                     "url": "https://www.gov.uk/government/collections/uk-kosovopartnership-trade-and-cooperationagreement"
                 },
                 {
@@ -918,13 +2502,86 @@
         },
         {
             "scheme_code": "jordan",
-            "proofs": [],
             "title": "UK-Jordan Association Agreement",
+            "proofs": [
+                {
+                    "summary": "EUR1 or EUR.MED movement certificate",
+                    "subtext": "",
+                    "proof_class": "eur1-eur-med",
+                    "detail": "eur1.md"
+                },
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": "origin-declaration.md"
+                }
+            ],
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "JO"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AL",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "EG",
+                        "XK",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "XS",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement Establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Hashemite Kingdom of Jordan, signed on 5 November 2019 ('the Jordan Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "20211202_ORD_Jordan__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "jordan_intro.md",
             "fta_intro_file": "jordan.md",
@@ -944,6 +2601,7 @@
         },
         {
             "scheme_code": "lebanon",
+            "title": "UK-Lebanon Association Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -958,12 +2616,56 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Lebanon association agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "AL"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "DZ",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "MA",
+                        "PS",
+                        "SY"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement establishing an association between the United Kingdom of Great Britain and Northern Ireland and The Republic of Lebanon signed on 19th September 2019 (“the Lebanon Origin Reference Document”)",
                 "ord_version": "2.1",
                 "ord_date": "28th December 2021",
                 "ord_original": "211208_ORD_Lebanon__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "lebanon_intro.md",
             "fta_intro_file": "lebanon.md",
@@ -983,6 +2685,7 @@
         },
         {
             "scheme_code": "mexico",
+            "title": "UK-Mexico Trade Continuity Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -997,12 +2700,49 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Mexico Trade Continuity Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "MX"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Mexico Origin Reference Document",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211203_Mexico_ORD_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 3a": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accounting segregation",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "mexico_intro.md",
             "fta_intro_file": "mexico.md",
@@ -1022,6 +2762,7 @@
         },
         {
             "scheme_code": "switzerland-liechtenstein",
+            "title": "UK-Switzerland-Liechtenstein Trade Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1036,12 +2777,71 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Switzerland-Liechtenstein Trade Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "CH",
+                        "LI"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XK",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "XS",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "AL",
+                        "SY",
+                        "UA",
+                        "NO",
+                        "IS",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Swiss Confederation signed on 11 February 2019 and the Additional Agreement between the United Kingdom of Great Britain and Northern Ireland, the Swiss Confederation and the Principality of Liechtenstein signed on 11 February 2019 ('the Switzerland and Liechtenstein Origin Reference Document')",
                 "ord_version": "1.0",
                 "ord_date": "22 February 2022",
                 "ord_original": "220215_ORD_Switzerland_and_Liechtenstein_v.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "sufficient working",
+                "article 5": "tolerances",
+                "article 6": "insufficient working",
+                "article 7": "cumulation",
+                "article 8": "cumulation - conditions",
+                "article 9": "unit of qualification",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "accounting segregation",
+                "article 13": "principle of territoriality",
+                "article 14": "non-alteration",
+                "article 15": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "switzerland-liechtenstein_intro.md",
             "fta_intro_file": "switzerland-liechtenstein.md",
@@ -1062,6 +2862,7 @@
         },
         {
             "scheme_code": "moldova",
+            "title": "UK-Moldova Strategic Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1076,12 +2877,71 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Moldova Strategic Partnership, Trade and Cooperation Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "MD"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XK",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "XS",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "AL",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Strategic Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Moldova , signed on 24th December 2020 ('the Moldova Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211203_ORD_Moldova_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "moldova_intro.md",
             "fta_intro_file": "moldova.md",
@@ -1101,6 +2961,7 @@
         },
         {
             "scheme_code": "morocco",
+            "title": "UK-Morocco Association Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1115,12 +2976,66 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Morocco association agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "MA"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "CH",
+                        "LI",
+                        "NO",
+                        "IS",
+                        "TR",
+                        "DZ",
+                        "EG",
+                        "IL",
+                        "JO",
+                        "LB",
+                        "PS",
+                        "SY",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement establishing an association between the United Kingdom of Great Britain and Northern Ireland and the Kingdom of Morocco, signed on 26th October 2019 ('the Morocco Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211203_ORD_Morocco_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "morocco_intro.md",
             "fta_intro_file": "morocco.md",
@@ -1140,6 +3055,7 @@
         },
         {
             "scheme_code": "north-macedonia",
+            "title": "UK-North Macedonia Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1154,7 +3070,73 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-North Macedonia Partnership, Trade and Cooperation agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "MK"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XK",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "AL",
+                        "SY",
+                        "UA",
+                        "XS",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
+            "ord": {
+                "ord_title": "Origin Reference Document implementing the Partnership, Trade and Cooperation Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of North Macedonia, signed on 3 December 2020 ('the North Macedonia Origin Reference Document')",
+                "ord_version": "1.1",
+                "ord_date": "28 December 2021",
+                "ord_original": "211203_ORD_North_Macedonia_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
+            },
             "introductory_notes_file": "north-macedonia_intro.md",
             "fta_intro_file": "north-macedonia.md",
             "links": [
@@ -1173,6 +3155,7 @@
         },
         {
             "scheme_code": "pacific",
+            "title": "UK-Pacific Economic Partnership Agreement (EPA)",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1187,12 +3170,147 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Pacific Economic Partnership Agreement (EPA)",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "FJ",
+                        "SB",
+                        "WS"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AO",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "BJ",
+                        "BW",
+                        "BF",
+                        "BI",
+                        "CM",
+                        "CV",
+                        "CF",
+                        "TD",
+                        "CK",
+                        "KM",
+                        "CI",
+                        "CD",
+                        "DJ",
+                        "DM",
+                        "DO",
+                        "GQ",
+                        "ER",
+                        "SZ",
+                        "ET",
+                        "FM",
+                        "GA",
+                        "GM",
+                        "GH",
+                        "GD",
+                        "GN",
+                        "GW",
+                        "GY",
+                        "HT",
+                        "JM",
+                        "KE",
+                        "KI",
+                        "LS",
+                        "LR",
+                        "MG",
+                        "MW",
+                        "ML",
+                        "MH",
+                        "MR",
+                        "MU",
+                        "MZ",
+                        "NA",
+                        "NR",
+                        "NE",
+                        "NU",
+                        "NG",
+                        "PW",
+                        "CG",
+                        "RW",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "WS",
+                        "ST",
+                        "SN",
+                        "SC",
+                        "SL",
+                        "SB",
+                        "SO",
+                        "SD",
+                        "SR",
+                        "TZ",
+                        "TG",
+                        "TO",
+                        "TT",
+                        "TV",
+                        "UG",
+                        "VU",
+                        "ZM",
+                        "ZW",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "TF",
+                        "WF",
+                        "YT",
+                        "PM",
+                        "AW",
+                        "AN",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "The Pacific States Origin Reference Document",
                 "ord_version": "2.3",
                 "ord_date": "22 February 2022",
                 "ord_original": "220215_Pacific_States_ORD_V2.3.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "footnote": "Samoa and the Solomon Islands have not yet acceded to the Pacific States-UK Interim Economic Partnership Agreement (pending a decision on their accession), however preferences under the agreement took effect on 1 January 2021 through a Memorandum of Understanding.",
             "introductory_notes_file": "pacific_intro.md",
@@ -1215,6 +3333,7 @@
         },
         {
             "scheme_code": "palestinian-authority",
+            "title": "UK-Palestinian Authority Political, Trade and Partnership Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1229,12 +3348,54 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Palestinian Authority political, trade and partnership agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "PS"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "CH",
+                        "LI",
+                        "NO",
+                        "IS",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Interim Political, Trade and Partnership Agreement between the United Kingdom of Great Britain and Northern Ireland, of the one part, and Palestine Liberation Organization ('PLO') for the benefit of the Palestinian Authority of the West Bank and the Gaza Strip ('the Palestinian Authority'), of the other part, signed on 18th February 2019 ('the Palestine Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211204_ORD_Palestine__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "palestinian-authority_intro.md",
             "fta_intro_file": "palestinian-authority.md",
@@ -1254,7 +3415,7 @@
         },
         {
             "scheme_code": "singapore",
-            "country_code": "SG",
+            "title": "UK-Singapore Trade Agreement",
             "proofs": [
                 {
                     "summary": "Origin declaration",
@@ -1269,12 +3430,58 @@
                     "detail": "approved-exporter.md"
                 }
             ],
-            "title": "UK-Singapore Trade Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "SG"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "BN",
+                        "KH",
+                        "ID",
+                        "LA",
+                        "MY",
+                        "MM",
+                        "PH",
+                        "VN",
+                        "TH"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Singapore, signed on 10th December 2020 ('the Singapore Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211204_ORD_Singapore_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "accounting segregation",
+                "article 12": "principle of territoriality",
+                "article 13": "non-alteration",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "singapore_intro.md",
             "fta_intro_file": "singapore.md",
@@ -1294,6 +3501,7 @@
         },
         {
             "scheme_code": "serbia",
+            "title": "UK-Serbia Partnership, Trade and Cooperation Agreement ",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1308,12 +3516,71 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": " UK-Serbia partnership, trade and cooperation agreement ",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "XS"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "XK",
+                        "DZ",
+                        "BA",
+                        "FO",
+                        "GE",
+                        "IL",
+                        "JO",
+                        "EG",
+                        "LB",
+                        "MD",
+                        "ME",
+                        "MA",
+                        "MK",
+                        "PS",
+                        "AL",
+                        "SY",
+                        "UA",
+                        "CH",
+                        "LI",
+                        "IS",
+                        "NO",
+                        "TR"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Serbia signed on 16th April 2021 ('the Serbia Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211204_Serbia_ORD_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "serbia_intro.md",
             "fta_intro_file": "serbia.md",
@@ -1333,6 +3600,7 @@
         },
         {
             "scheme_code": "sacum",
+            "title": "SACUM-UK Economic Partnership Agreement (EPA)",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1347,12 +3615,113 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "SACUM-UK economic partnership agreement (EPA)",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "ZA",
+                        "LS",
+                        "SZ",
+                        "NA",
+                        "BW",
+                        "MZ"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "ZW",
+                        "SC",
+                        "MU",
+                        "CM",
+                        "GH",
+                        "CI",
+                        "KE",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "CK",
+                        "FJ",
+                        "KI",
+                        "MH",
+                        "FM",
+                        "NR",
+                        "NU",
+                        "PW",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "TO",
+                        "TV",
+                        "VU",
+                        "GL",
+                        "NC",
+                        "PF",
+                        "TF",
+                        "WF",
+                        "BL",
+                        "PM",
+                        "AW",
+                        "CW",
+                        "SX",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Economic Partnership Agreement between the Southern African Customs Union Member States and Mozambique, of the one part, and the United Kingdom of Great Britain and Northern Ireland, of the other part, signed on 9 October 2019 (“the Southern African Customs Union and Mozambique Origin Reference Document”)",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211204_ORD_SACUM__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "duty-free",
+                "article 4": "cumulation",
+                "article 5": "cumulation",
+                "article 6": "cumulation",
+                "article 7": "wholly obtained",
+                "article 8": "sufficient working",
+                "article 9": "insufficient working",
+                "article 10": "unit of qualification",
+                "article 11": "accessories",
+                "article 12": "sets",
+                "article 13": "neutral elements",
+                "article 14": "principle of territoriality",
+                "article 15": "non-alteration",
+                "article 16": "accounting segregation",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "sacum_intro.md",
             "fta_intro_file": "sacum.md",
@@ -1377,6 +3746,7 @@
         },
         {
             "scheme_code": "tunisia",
+            "title": "UK-Tunisia Association Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1391,12 +3761,145 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Tunisia association agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "TN"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "CH",
+                        "LI",
+                        "NO",
+                        "IS",
+                        "TR",
+                        "FO",
+                        "DZ",
+                        "UA",
+                        "MA",
+                        "IL",
+                        "PS",
+                        "EG",
+                        "JO",
+                        "LB",
+                        "SY",
+                        "MK",
+                        "AL",
+                        "BA",
+                        "ME",
+                        "XS",
+                        "XK",
+                        "MD",
+                        "UA",
+                        "AL",
+                        "MX",
+                        "CL",
+                        "PE",
+                        "CO",
+                        "EC",
+                        "GT",
+                        "HO",
+                        "NI",
+                        "SV",
+                        "CR",
+                        "PA",
+                        "KR",
+                        "CA",
+                        "JP",
+                        "SG",
+                        "VN",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG",
+                        "AN",
+                        "PF",
+                        "TF",
+                        "ZF",
+                        "GL",
+                        "NC",
+                        "BQ",
+                        "BL",
+                        "BQ",
+                        "SX",
+                        "PM",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "BW",
+                        "LS",
+                        "NA",
+                        "ZA",
+                        "SZ",
+                        "MZ",
+                        "KM",
+                        "MG",
+                        "MU",
+                        "SC",
+                        "ZW",
+                        "FJ",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "CM",
+                        "CI",
+                        "KE",
+                        "GH"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement Establishing an Association between the United Kingdom of Great Britain and Northern Ireland and the Republic of Tunisia, signed on 4th October 2019 (“the Tunisia Origin Reference Document”)",
                 "ord_version": "1.1",
                 "ord_date": "28th December 2021",
                 "ord_original": "21205_ORD_Tunisia_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "tunisia_intro.md",
             "fta_intro_file": "tunisia.md",
@@ -1416,7 +3919,7 @@
         },
         {
             "scheme_code": "turkey",
-            "country_code": "TR",
+            "title": "UK-Turkey Trade Agreement",
             "proofs": [
                 {
                     "summary": "Origin declaration",
@@ -1425,12 +3928,50 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "title": "UK-Turkey trade agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "TR"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Agreement between the United Kingdom of Great Britain and Northern Ireland and the Republic of Turkey signed on 29th December 2020 ('the Turkey Origin Reference Document')",
                 "ord_version": "1.2",
                 "ord_date": "28th December 2021",
                 "ord_original": "211224_ORD_Turkey__HS_UPDATE_.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "tolerances",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "packing materials - shipment",
+                "article 9": "packing materials - retail",
+                "article 10": "accessories",
+                "article 11": "sets",
+                "article 12": "neutral elements",
+                "article 13": "accounting segregation",
+                "article 14": "returned products",
+                "article 15": "non-alteration",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "turkey_intro.md",
             "fta_intro_file": "turkey.md",
@@ -1450,6 +3991,7 @@
         },
         {
             "scheme_code": "ukraine",
+            "title": "UK-Ukraine Political, Free Trade and Strategic Partnership Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1464,12 +4006,145 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "UK-Ukraine political, free trade and strategic partnership agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "UA"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "CH",
+                        "LI",
+                        "NO",
+                        "IS",
+                        "TR",
+                        "FO",
+                        "DZ",
+                        "TN",
+                        "MA",
+                        "IL",
+                        "PS",
+                        "EG",
+                        "JO",
+                        "LB",
+                        "SY",
+                        "MK",
+                        "AL",
+                        "BA",
+                        "ME",
+                        "XS",
+                        "XK",
+                        "MD",
+                        "GE",
+                        "AL",
+                        "MX",
+                        "CL",
+                        "PE",
+                        "CO",
+                        "EC",
+                        "GT",
+                        "HO",
+                        "NI",
+                        "SV",
+                        "CR",
+                        "PA",
+                        "KR",
+                        "CA",
+                        "JP",
+                        "SG",
+                        "VN",
+                        "AI",
+                        "BM",
+                        "KY",
+                        "FK",
+                        "GS",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "ZU",
+                        "IO",
+                        "TC",
+                        "VG",
+                        "AN",
+                        "PF",
+                        "TF",
+                        "ZF",
+                        "GL",
+                        "NC",
+                        "BQ",
+                        "BL",
+                        "BQ",
+                        "SX",
+                        "PM",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "BW",
+                        "LS",
+                        "NA",
+                        "ZA",
+                        "SZ",
+                        "MZ",
+                        "KM",
+                        "MG",
+                        "MU",
+                        "SC",
+                        "ZW",
+                        "FJ",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "CM",
+                        "CI",
+                        "KE",
+                        "GH"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Political, Free Trade and Strategic Partnership Agreement between the United Kingdom of Great Britain and Northern Ireland, of the one part, and Ukraine, of the other part, signed on 8 October 2020 ('the Ukraine Origin Reference Document')",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "2211223_ORD_Ukraine_V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "cumulation",
+                "article 5": "wholly obtained",
+                "article 6": "sufficient working",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "accessories",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "principle of territoriality",
+                "article 13": "direct transport",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "ukraine_intro.md",
             "fta_intro_file": "ukraine.md",
@@ -1489,6 +4164,7 @@
         },
         {
             "scheme_code": "vietnam",
+            "title": "UK-Vietnam Free Trade Agreement",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1503,12 +4179,58 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "title": "UK-Vietnam Free Trade Agreement",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "VN"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "BN",
+                        "KH",
+                        "ID",
+                        "LA",
+                        "MY",
+                        "MM",
+                        "PH",
+                        "SG",
+                        "TH"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Origin Reference Document implementing the Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and the Socialist Republic of Viet Nam, signed on 29th December 2020 (“the Viet Nam Origin Reference Document”)",
                 "ord_version": "1.1",
                 "ord_date": "28 December 2021",
                 "ord_original": "211223_ORD_Vietnam__V1.1.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "insufficient working",
+                "article 7": "unit of qualification",
+                "article 8": "accessories",
+                "article 9": "sets",
+                "article 10": "neutral elements",
+                "article 11": "accounting segregation",
+                "article 12": "principle of territoriality",
+                "article 13": "non-alteration",
+                "article 14": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "vietnam_intro.md",
             "fta_intro_file": "vietnam.md",
@@ -1528,7 +4250,7 @@
         },
         {
             "scheme_code": "oct",
-            "country_code": "OCT",
+            "title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
             "proofs": [
                 {
                     "summary": "EUR1 or EUR.MED movement certificate",
@@ -1543,12 +4265,163 @@
                     "detail": "invoice-declaration.md"
                 }
             ],
-            "title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "AI",
+                        "BM",
+                        "ZU",
+                        "IO",
+                        "VG",
+                        "KY",
+                        "FK",
+                        "MS",
+                        "PN",
+                        "SH",
+                        "GS",
+                        "TC"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "AF",
+                        "AO",
+                        "BD",
+                        "BF",
+                        "BI",
+                        "BJ",
+                        "BO",
+                        "BT",
+                        "CD",
+                        "CF",
+                        "CG",
+                        "CK",
+                        "CV",
+                        "DJ",
+                        "ER",
+                        "ET",
+                        "FM",
+                        "GM",
+                        "GN",
+                        "GW",
+                        "HT",
+                        "ID",
+                        "IN",
+                        "KE",
+                        "KG",
+                        "KH",
+                        "KI",
+                        "KM",
+                        "LA",
+                        "LK",
+                        "LR",
+                        "LS",
+                        "MG",
+                        "ML",
+                        "MM",
+                        "MN",
+                        "MR",
+                        "MW",
+                        "MZ",
+                        "NE",
+                        "NG",
+                        "NP",
+                        "NU",
+                        "PH",
+                        "PK",
+                        "RW",
+                        "SB",
+                        "SD",
+                        "SL",
+                        "SN",
+                        "SO",
+                        "SS",
+                        "ST",
+                        "SY",
+                        "TD",
+                        "TG",
+                        "TJ",
+                        "TL",
+                        "TV",
+                        "TZ",
+                        "UG",
+                        "UZ",
+                        "VN",
+                        "VU",
+                        "YE",
+                        "ZM",
+                        "AG",
+                        "BS",
+                        "BB",
+                        "BZ",
+                        "DM",
+                        "DO",
+                        "GD",
+                        "GY",
+                        "JM",
+                        "KN",
+                        "LC",
+                        "VC",
+                        "SR",
+                        "TT",
+                        "BW",
+                        "LS",
+                        "NA",
+                        "ZA",
+                        "SZ",
+                        "MZ",
+                        "KM",
+                        "MG",
+                        "MU",
+                        "SC",
+                        "ZW",
+                        "FJ",
+                        "PG",
+                        "WS",
+                        "SB",
+                        "CM",
+                        "CI",
+                        "KE",
+                        "GH"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
                 "ord_version": "",
                 "ord_date": "9 November 2020",
                 "ord_original": "Ref-Doc-2020.11.09-Overseas-Territories-arrangement.odt"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "sufficient working",
+                "article 5": "insufficient working",
+                "article 6": "cumulation",
+                "article 7": "cumulation",
+                "article 8": "cumulation",
+                "article 9": "cumulation",
+                "article 10": "cumulation",
+                "article 11": "unit of qualification",
+                "article 12": "accessories",
+                "article 13": "sets",
+                "article 14": "neutral elements",
+                "article 15": "accounting segregation",
+                "article 16": "principle of territoriality",
+                "article 17": "non-alteration",
+                "article 18": "exhibitions",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "introductory_notes_file": "oct_intro.md",
             "fta_intro_file": "oct.md",
@@ -1575,6 +4448,7 @@
         },
         {
             "scheme_code": "gsp",
+            "title": "Generalised Scheme of Preferences (GSP)",
             "proofs": [
                 {
                     "summary": "Generalised Scheme of Preferences form A",
@@ -1589,12 +4463,118 @@
                     "detail": "origin-declaration.md"
                 }
             ],
-            "title": "Generalised Scheme of Preferences (GSP)",
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "AF",
+                        "AO",
+                        "BD",
+                        "BF",
+                        "BI",
+                        "BJ",
+                        "BO",
+                        "BT",
+                        "CD",
+                        "CF",
+                        "CG",
+                        "CK",
+                        "CV",
+                        "DJ",
+                        "ER",
+                        "ET",
+                        "FM",
+                        "GM",
+                        "GN",
+                        "GW",
+                        "HT",
+                        "ID",
+                        "IN",
+                        "KE",
+                        "KG",
+                        "KH",
+                        "KI",
+                        "KM",
+                        "LA",
+                        "LK",
+                        "LR",
+                        "LS",
+                        "MG",
+                        "ML",
+                        "MM",
+                        "MN",
+                        "MR",
+                        "MW",
+                        "MZ",
+                        "NE",
+                        "NG",
+                        "NP",
+                        "NU",
+                        "PH",
+                        "PK",
+                        "RW",
+                        "SB",
+                        "SD",
+                        "SL",
+                        "SN",
+                        "SO",
+                        "SS",
+                        "ST",
+                        "SY",
+                        "TD",
+                        "TG",
+                        "TJ",
+                        "TL",
+                        "TV",
+                        "TZ",
+                        "UG",
+                        "UZ",
+                        "VN",
+                        "VU",
+                        "YE",
+                        "ZM"
+                    ]
+                },
+                "extended": {
+                    "countries": [
+                        "EU",
+                        "AD",
+                        "SM",
+                        "NO",
+                        "IS",
+                        "CH",
+                        "LI"
+                    ]
+                }
+            },
             "ord": {
                 "ord_title": "",
                 "ord_version": "",
                 "ord_date": "",
                 "ord_original": ""
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "wholly obtained",
+                "article 4": "sufficient working",
+                "article 5": "tolerances",
+                "article 6": "insufficient working",
+                "article 7": "cumulation",
+                "article 8": "cumulation - conditions",
+                "article 9": "unit of qualification",
+                "article 10": "sets",
+                "article 11": "neutral elements",
+                "article 12": "accounting segregation",
+                "article 13": "principle of territoriality",
+                "article 14": "non-alteration",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true
             },
             "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
             "introductory_notes_file": "gsp_intro.md",
@@ -1621,36 +4601,35 @@
                 "BF",
                 "BI",
                 "BJ",
-                "BO",
                 "BT",
                 "CD",
                 "CF",
                 "CG",
                 "CK",
-                "CV",
+                "CMx",
                 "DJ",
                 "DZ",
                 "ER",
                 "ET",
                 "FM",
+                "GHx",
                 "GM",
                 "GN",
                 "GW",
                 "HT",
                 "ID",
                 "IN",
-                "KG",
+                "KEx",
                 "KH",
                 "KI",
                 "KM",
                 "LA",
-                "LK",
                 "LR",
                 "LS",
+                "MDx",
                 "MG",
                 "ML",
                 "MM",
-                "MN",
                 "MR",
                 "MW",
                 "MZ",
@@ -1658,8 +4637,6 @@
                 "NG",
                 "NP",
                 "NU",
-                "PH",
-                "PK",
                 "RW",
                 "SB",
                 "SD",
@@ -1679,7 +4656,6 @@
                 "UZ",
                 "VN",
                 "VU",
-                "WS",
                 "YE",
                 "ZM"
             ]
