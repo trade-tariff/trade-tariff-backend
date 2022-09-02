@@ -16,6 +16,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :notes }
     it { is_expected.to respond_to :proofs }
     it { is_expected.to respond_to :ord }
+    it { is_expected.to respond_to :cumulation_methods }
   end
 
   describe '#links=' do
@@ -37,6 +38,20 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to all be_instance_of RulesOfOrigin::Link }
     it { expect(links.first).to have_attributes text: 'HMRC' }
     it { expect(links.first).to have_attributes url: 'https://www.hmrc.gov.uk' }
+  end
+
+  describe '#cumulation_methods=' do
+    subject(:cumulation_methods) { instance.cumulation_methods }
+
+    before { instance.cumulation_methods = data }
+
+    let(:instance) { described_class.new }
+
+    let(:data) do
+      { 'bilateral' => { 'countries' => ['GB', 'CA'] }, 'extended' => { 'countries' => ['EU', 'AD'] }, 'diagonal' => { 'countries' => ['EU', 'AD'] } }
+    end
+
+    it { is_expected.to have_attributes length: 3 }
   end
 
   describe '#links' do
