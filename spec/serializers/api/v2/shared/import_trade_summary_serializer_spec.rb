@@ -3,30 +3,32 @@ RSpec.describe Api::V2::Shared::ImportTradeSummarySerializer do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) do
-      Hashie::TariffMash.new(
-        {
-          id: '1',
-          basic_third_country_duty: 'aaa',
-          preferential_tariff_duty: 'bbb',
-          preferential_quota_duty: 'ccc',
-        },
-      )
+      import_measures = [
+        create(
+          :measure,
+          :third_country,
+          :erga_omnes,
+          :with_measure_components,
+        ),
+      ]
+
+      ImportTradeSummary.build(import_measures)
     end
 
     let(:expected_pattern) do
       {
         data: {
-          attributes: {
-            basic_third_country_duty: 'aaa',
-            preferential_tariff_duty: 'bbb',
-            preferential_quota_duty: 'ccc',
-          },
-          id: '1',
+          id: String,
           type: :import_trade_summary,
+          attributes: {
+            basic_third_country_duty: String,
+            preferential_tariff_duty: nil,
+            preferential_quota_duty: nil,
+          },
         },
       }
     end
 
-    it { is_expected.to eq(expected_pattern) }
+    it { is_expected.to match_json_expression(expected_pattern) }
   end
 end
