@@ -7,6 +7,19 @@ RSpec.describe Measure do
     end
   end
 
+  describe 'methods delegated to measure_type' do
+    it do
+      expect(subject).to respond_to :rules_of_origin_apply?,
+                                    :third_country?,
+                                    :excise?,
+                                    :vat?,
+                                    :preferential_quota?,
+                                    :tariff_preference?,
+                                    :trade_remedy?,
+                                    :excise?
+    end
+  end
+
   describe '#goods_nomenclature' do
     around { |example| TimeMachine.now { example.run } }
 

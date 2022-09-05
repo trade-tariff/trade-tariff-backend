@@ -2,7 +2,11 @@ module Api
   module V2
     module Commodities
       class CommodityPresenter < SimpleDelegator
-        attr_reader :commodity, :footnotes, :import_measures, :export_measures, :unit_measures
+        attr_reader :commodity,
+                    :footnotes,
+                    :import_measures,
+                    :export_measures,
+                    :unit_measures
 
         def initialize(commodity, measures)
           super(commodity)

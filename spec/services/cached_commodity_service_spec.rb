@@ -27,6 +27,7 @@ RSpec.describe CachedCommodityService do
             ancestors: Hash,
             import_measures: Hash,
             export_measures: Hash,
+            import_trade_summary: Hash,
           },
           meta: {
             duty_calculator: Hash,
@@ -121,6 +122,11 @@ RSpec.describe CachedCommodityService do
             relationships: {
               measure_conditions: Hash,
             },
+          },
+          {
+            id: String,
+            type: 'import_trade_summary',
+            attributes: Hash,
           },
         ],
       }

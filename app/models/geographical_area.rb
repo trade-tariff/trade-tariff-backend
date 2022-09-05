@@ -95,4 +95,8 @@ class GeographicalArea < Sequel::Model
   def referenced_id
     REFERENCED_GEOGRAPHICAL_AREAS[geographical_area_id]
   end
+
+  def erga_omnes?
+    id == ERGA_OMNES_ID
+  end
 end

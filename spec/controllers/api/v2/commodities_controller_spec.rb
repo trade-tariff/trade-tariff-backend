@@ -61,7 +61,6 @@ RSpec.describe Api::V2::CommoditiesController do
 
       it 'passes the correct meursing additional code to the MeursingMeasureFinderService' do
         allow(MeursingMeasureFinderService).to receive(:new).and_call_original
-
         do_response
 
         expect(MeursingMeasureFinderService).to have_received(:new).with(an_instance_of(Measure), '000')

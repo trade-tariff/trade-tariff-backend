@@ -5,6 +5,7 @@ RSpec.describe Search::ChapterSerializer do
         create(:chapter, :with_section, :with_description),
       )
     end
+
     let(:pattern) do
       {
         goods_nomenclature_item_id: chapter.goods_nomenclature_item_id,

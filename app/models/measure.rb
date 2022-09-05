@@ -101,7 +101,13 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
-  delegate :rules_of_origin_apply?, :third_country?, :excise?, :vat?, :trade_remedy?, to: :measure_type, allow_nil: true
+  delegate :rules_of_origin_apply?,
+           :third_country?,
+           :excise?,
+           :vat?,
+           :preferential_quota?,
+           :tariff_preference?,
+           :trade_remedy?, to: :measure_type, allow_nil: true
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)
@@ -411,11 +417,15 @@ class Measure < Sequel::Model
 
   def relevant_for_country?(country_id)
     return false if excluded_country?(country_id)
-    return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && national?
-    return true if geographical_area_id == GeographicalArea::ERGA_OMNES_ID && measure_type.meursing?
+    return true if erga_omnes? && national?
+    return true if erga_omnes? && measure_type.meursing?
     return true if geographical_area_id.blank? || geographical_area_id == country_id
 
     geographical_area.contained_geographical_areas.map(&:geographical_area_id).include?(country_id)
+  end
+
+  def erga_omnes?
+    geographical_area_id == GeographicalArea::ERGA_OMNES_ID
   end
 
   def self.changes_for(depth = 1, conditions = {})

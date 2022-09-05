@@ -4,6 +4,7 @@ module DeclarableSerialization
     chapter
     chapter.guides
     footnotes
+    import_trade_summary
     import_measures
     import_measures.duty_expression
     import_measures.measure_type
