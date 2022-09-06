@@ -8,6 +8,8 @@ module Api
                     :unit_measures,
                     :third_country_measures
 
+        delegate :id, to: :import_trade_summary, prefix: true
+
         def initialize(heading, measures)
           super(heading)
           @heading = heading
@@ -71,8 +73,6 @@ module Api
         def import_trade_summary
           ImportTradeSummary.build(import_measures)
         end
-
-        delegate :id, to: :import_trade_summary, prefix: true
       end
     end
   end

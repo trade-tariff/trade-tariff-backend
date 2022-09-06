@@ -26,7 +26,6 @@ class MeasureCollection < SimpleDelegator
                  @measures.select do |measure|
                    measure.relevant_for_country?(filtering_country.geographical_area_id)
                  end
-
                else
                  @measures
                end
