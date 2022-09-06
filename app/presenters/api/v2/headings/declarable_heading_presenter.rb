@@ -67,6 +67,12 @@ module Api
         def applicable_vat_options
           ApplicableVatOptionsService.new(import_measures).call
         end
+
+        def import_trade_summary
+          ImportTradeSummary.build(import_measures)
+        end
+
+        delegate :id, to: :import_trade_summary, prefix: true
       end
     end
   end
