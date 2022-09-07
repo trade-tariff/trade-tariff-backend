@@ -6,7 +6,7 @@ module Api
       before_action :find_heading
 
       def show
-        service = ::HeadingService::HeadingSerializationService.new(@heading, actual_date)
+        service = ::HeadingService::HeadingSerializationService.new(@heading, actual_date, filter_params)
         render json: service.serializable_hash
       end
 
@@ -61,6 +61,10 @@ module Api
 
       def cached_heading
         HeadingService::CachedHeadingService.new(@heading, actual_date).serializable_hash
+      end
+
+      def filter_params
+        params.fetch(:filter, {}).permit(:geographical_area_id)
       end
     end
   end

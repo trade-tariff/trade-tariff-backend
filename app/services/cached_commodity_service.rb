@@ -59,10 +59,10 @@ class CachedCommodityService
 
   TTL = 24.hours
 
-  def initialize(commodity, actual_date, filter_params)
+  def initialize(commodity, actual_date, filters = {})
     @commodity = commodity
     @actual_date = actual_date
-    @filter_params = filter_params || {}
+    @filters = filters
   end
 
   def call
@@ -73,14 +73,14 @@ class CachedCommodityService
 
   private
 
-  attr_reader :commodity, :actual_date, :filter_params
+  attr_reader :commodity, :actual_date, :filters
 
   def presented_commodity
     Api::V2::Commodities::CommodityPresenter.new(commodity, filtered_measures)
   end
 
   def filtered_measures
-    MeasureCollection.new(measures).filter
+    MeasureCollection.new(measures, filters).filter
   end
 
   def options
@@ -91,14 +91,11 @@ class CachedCommodityService
   end
 
   def measures
-    measures = commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
-    return measures unless geographical_area_id.present? && filtering_country.present?
-
-    apply_filter(measures, filtering_country)
+    commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
   end
 
   def geographical_area_id
-    filter_params[:geographical_area_id]
+    filters[:geographical_area_id]
   end
 
   def meursing_additional_code_id
@@ -107,15 +104,5 @@ class CachedCommodityService
 
   def cache_key
     "_commodity-v#{CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
-  end
-
-  def filtering_country
-    @filtering_country ||= GeographicalArea.find(geographical_area_id: filter_params[:geographical_area_id])
-  end
-
-  def apply_filter(measures, filtering_country)
-    measures.select do |measure|
-      measure.relevant_for_country?(filtering_country.geographical_area_id)
-    end
   end
 end

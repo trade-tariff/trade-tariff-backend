@@ -8,6 +8,8 @@ module Api
                     :export_measures,
                     :unit_measures
 
+        delegate :id, to: :import_trade_summary, prefix: true
+
         def initialize(commodity, measures)
           super(commodity)
           @commodity = commodity
@@ -82,6 +84,10 @@ module Api
 
         def applicable_vat_options
           ApplicableVatOptionsService.new(import_measures).call
+        end
+
+        def import_trade_summary
+          ImportTradeSummary.build(import_measures)
         end
       end
     end
