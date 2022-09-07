@@ -25,12 +25,13 @@ module RulesOfOrigin
 
     def cumulation_methods=(cumulation_methods_data)
       @cumulation_methods = cumulation_methods_data.transform_values do |value|
-                              case value
-                              when Hash then Array.wrap(value['countries'])
-                              else Array.wrap(value)
-                              end
-                            end
+        case value
+        when Hash then Array.wrap(value['countries'])
+        else Array.wrap(value)
+        end
+      end
     end
+
     def articles=(value); end
     def features=(value); end
 
