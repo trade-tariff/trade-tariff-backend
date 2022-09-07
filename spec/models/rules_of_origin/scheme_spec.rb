@@ -53,7 +53,13 @@ RSpec.describe RulesOfOrigin::Scheme do
       { 'bilateral' => { 'countries' => %w[GB CA] }, 'extended' => { 'countries' => %w[EU AD] }, 'diagonal' => { 'countries' => %w[EU AD] } }
     end
 
-    it { is_expected.to eq expected_response }
+    it { is_expected.to include(expected_response) }
+
+    context 'with direct countries list' do
+      let(:data) { { 'bilateral' => %w[GB CA] } }
+
+      it { is_expected.to include('bilateral' => %w[GB CA]) }
+    end
   end
 
   describe '#links' do
