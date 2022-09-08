@@ -38,14 +38,6 @@ RSpec.describe Commodity do
         end
       end
 
-      context 'fetching relevant' do
-        it 'fetches correct chapter' do
-          TimeMachine.with_relevant_validity_periods do
-            expect(gono2.reload.heading.pk).to eq heading2.pk
-          end
-        end
-      end
-
       context 'heading with sub-headings' do
         # Example from real world scenario
         # https://www.pivotaltracker.com/story/show/55703384
@@ -106,14 +98,6 @@ RSpec.describe Commodity do
           end
           TimeMachine.at('2010-1-1') do
             expect(gono1.reload.chapter.pk).to eq chapter2.pk
-          end
-        end
-      end
-
-      context 'fetching relevant' do
-        it 'fetches correct chapter' do
-          TimeMachine.with_relevant_validity_periods do
-            expect(gono2.reload.chapter.pk).to eq chapter2.pk
           end
         end
       end
