@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.10
--- Dumped by pg_dump version 10.10
+-- Dumped from database version 10.21 (Debian 10.21-1.pgdg90+1)
+-- Dumped by pg_dump version 14.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -3260,7 +3260,12 @@ CREATE VIEW public.goods_nomenclatures AS
     goods_nomenclatures1.operation,
     goods_nomenclatures1.operation_date,
     goods_nomenclatures1.filename,
-    goods_nomenclatures1.path
+    goods_nomenclatures1.path,
+        CASE
+            WHEN ((goods_nomenclatures1.goods_nomenclature_item_id)::text ~~ '__00000000'::text) THEN NULL::text
+            ELSE "left"((goods_nomenclatures1.goods_nomenclature_item_id)::text, 4)
+        END AS heading_short_code,
+    "left"((goods_nomenclatures1.goods_nomenclature_item_id)::text, 2) AS chapter_short_code
    FROM public.goods_nomenclatures_oplog goods_nomenclatures1
   WHERE ((goods_nomenclatures1.oid IN ( SELECT max(goods_nomenclatures2.oid) AS max
            FROM public.goods_nomenclatures_oplog goods_nomenclatures2
@@ -10906,3 +10911,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20220609140555_add_path_to
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220614130523_drop_function_fetch_chapter_commodities_for_date.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220713145800_add_strapline_to_guides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220714165446_create_guides_goods_nomenclatures.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20220908105343_adds_heading_and_chapter_id_to_goods_nomenclatures_view.rb');
