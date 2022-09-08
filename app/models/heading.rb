@@ -13,11 +13,10 @@ class Heading < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
-  one_to_many :commodities, dataset: lambda {
-    actual_or_relevant(Commodity)
-             .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
-             .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
-  }
+  one_to_many :commodities, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
+    ds.with_actual(Commodity)
+      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+  end
 
   one_to_many :goods_nomenclatures do |_ds|
     GoodsNomenclature
