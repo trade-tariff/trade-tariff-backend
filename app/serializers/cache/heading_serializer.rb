@@ -112,6 +112,16 @@ module Cache
           }
         end
 
+        overview_measures = if commodity.respond_to?(:overview_measures_dataset)
+                              commodity.overview_measures_dataset.eager(
+                                [
+                                  { measure_type: [:measure_type_description] },
+                                  { duty_expression: [:duty_expression_description] },
+                                ],
+                              )
+                            else
+                              commodity.overview_measures
+                            end
         commodity_attributes[:overview_measures] = commodity.overview_measures.map do |measure|
           {
             measure_sid: measure.measure_sid,
