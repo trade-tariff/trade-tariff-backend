@@ -131,7 +131,7 @@ module TradeTariffBackend
         Elasticsearch::Client.new,
         namespace: 'cache',
         indexes: cache_indexes,
-        index_page_size: 5,
+        index_page_size: 200,
       )
     end
 
