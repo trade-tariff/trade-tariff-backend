@@ -116,13 +116,13 @@ module Cache
                               commodity.overview_measures_dataset.eager(
                                 [
                                   { measure_type: [:measure_type_description] },
-                                  { duty_expression: [:duty_expression_description] },
+                                  { measure_components: [{ duty_expression_description: :duty_expression_description }, :measurement_unit_qualifier] },
                                 ],
                               )
                             else
                               commodity.overview_measures
                             end
-        commodity_attributes[:overview_measures] = commodity.overview_measures.map do |measure|
+        commodity_attributes[:overview_measures] = overview_measures.map do |measure|
           {
             measure_sid: measure.measure_sid,
             effective_start_date: measure.effective_start_date&.strftime('%FT%T.%LZ'),
