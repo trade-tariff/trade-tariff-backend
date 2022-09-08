@@ -819,12 +819,6 @@ RSpec.describe Commodity do
     it { expect(result).to eq([non_declarable_commodity]) }
   end
 
-  describe '.heading_short_code' do
-    subject(:heading_short_code) { build(:commodity, goods_nomenclature_item_id: '0101000000').heading_short_code }
-
-    it { is_expected.to eq('0101') }
-  end
-
   describe '#goods_nomenclature_class' do
     context 'when the Commodity is declarable' do
       subject(:goods_nomenclature_class) { create(:commodity, :declarable, :with_heading).goods_nomenclature_class }
