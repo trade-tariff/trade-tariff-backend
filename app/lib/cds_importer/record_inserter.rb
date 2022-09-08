@@ -15,7 +15,7 @@ class CdsImporter
       instrument('cds_importer.import.operations', mapper:, operation: DESTROY_CASCADE_OPERATION, count: 1, record:) do
         operation_klass = record.class.operation_klass
 
-        values = record.values.except(:oid)
+        values = record.values.slice(*operation_klass.columns).except(:oid)
         values[:filename] = filename
         values[:operation] = Sequel::Plugins::Oplog::DESTROY_OPERATION
         values[:created_at] = operation_klass.dataset.current_datetime if operation_klass.columns.include?(:created_at)
@@ -28,7 +28,7 @@ class CdsImporter
       instrument('cds_importer.import.operations', mapper:, operation: DESTROY_MISSING_OPERATION, count: 1, record:) do
         operation_klass = record.class.operation_klass
 
-        values = record.values.except(:oid)
+        values = record.values.slice(*operation_klass.columns).except(:oid)
         values[:filename] = filename
         values[:operation] = Sequel::Plugins::Oplog::DESTROY_OPERATION
         values[:created_at] = operation_klass.dataset.current_datetime if operation_klass.columns.include?(:created_at)
@@ -39,11 +39,11 @@ class CdsImporter
 
     def save_record!
       instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1, record:) do
-        values = record.values.except(:oid)
+        operation_klass = record.class.operation_klass
+
+        values = record.values.slice(*operation_klass.columns).except(:oid)
 
         values.merge!(filename:)
-
-        operation_klass = record.class.operation_klass
 
         if operation_klass.columns.include?(:created_at)
           values.merge!(created_at: operation_klass.dataset.current_datetime)
