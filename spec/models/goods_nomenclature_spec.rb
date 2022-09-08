@@ -348,7 +348,7 @@ RSpec.describe GoodsNomenclature do
   end
 
   describe '#chapter_code' do
-    subject(:chapter_code) { build(:goods_nomenclature, goods_nomenclature_item_id: '0101210000').chapter_code }
+    subject(:chapter_code) { create(:goods_nomenclature, goods_nomenclature_item_id: '0101210000').chapter_code }
 
     it { is_expected.to eq('0100000000') }
   end
