@@ -21,9 +21,10 @@ class Certificate < Sequel::Model
   one_to_many :measure_conditions, key: %i[certificate_type_code certificate_code],
                                    primary_key: %i[certificate_type_code certificate_code]
 
-  many_to_many :measures, join_table: :measure_conditions,
-                          left_key: %i[certificate_code certificate_type_code],
-                          right_key: :measure_sid
+  many_to_many :measures, join_table: :measure_conditions, left_key: %i[certificate_code certificate_type_code], right_key: :measure_sid do |ds|
+    ds.exclude(goods_nomenclature_item_id: nil)
+      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+  end
 
   one_to_many :certificate_types, key: :certificate_type_code,
                                   primary_key: :certificate_type_code do |ds|
