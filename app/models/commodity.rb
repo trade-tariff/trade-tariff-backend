@@ -103,6 +103,10 @@ class Commodity < GoodsNomenclature
     end
   end
 
+  def fast_declarable?
+    non_grouping? && descendants_dataset.count.zero?
+  end
+
   def non_grouping?
     producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
   end

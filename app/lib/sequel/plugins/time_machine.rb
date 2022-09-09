@@ -46,18 +46,6 @@ module Sequel
       end
 
       module InstanceMethods
-        # Use for fetching associated records with relevant validity period
-        # to parent record.
-        def actual_or_relevant(klass)
-          if self.class.point_in_time.present?
-            klass.filter { |o| o.<=(self.class.period_start_date_column, self.class.point_in_time) & (o.>=(self.class.period_end_date_column, self.class.point_in_time) | ({ self.class.period_end_date_column => nil })) }
-          elsif self.class.relevant_query?
-            klass.filter { |o| o.<=(klass.period_start_date_column, send(self.class.period_start_date_column.column)) & (o.>=(klass.period_end_date_column, send(self.class.period_end_date_column.column)) | ({ klass.period_end_date_column => nil })) }
-          else
-            klass
-          end
-        end
-
         def current?
           now = Time.zone.now # This method will be called by a backgroung JOB, therefore it does not use Thread.current
           period_end_date = self.class.period_end_date_column.column
