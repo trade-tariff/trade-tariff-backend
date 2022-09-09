@@ -77,7 +77,7 @@ module Sequel
         def _insert_raw(_dataset)
           self.operation = :create
 
-          values = self.values.except(:oid)
+          values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end
@@ -88,7 +88,7 @@ module Sequel
         def _destroy_delete
           self.operation = :destroy
 
-          values = self.values.except(:oid)
+          values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end
@@ -99,7 +99,7 @@ module Sequel
         def _update_columns(_columns)
           self.operation = :update
 
-          values = self.values.except(:oid)
+          values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end

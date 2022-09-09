@@ -13,11 +13,10 @@ class Heading < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
-  one_to_many :commodities, dataset: lambda {
-    actual_or_relevant(Commodity)
-             .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
-             .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
-  }
+  one_to_many :commodities, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
+    ds.with_actual(Commodity)
+      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+  end
 
   one_to_many :goods_nomenclatures do |_ds|
     GoodsNomenclature
@@ -27,9 +26,9 @@ class Heading < GoodsNomenclature
       .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
   end
 
-  one_to_one :chapter, dataset: lambda {
-    actual_or_relevant(Chapter).filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
-  }
+  one_to_one :chapter, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
+    ds.with_actual(Chapter)
+  end
 
   one_to_many :search_references, key: :referenced_id, primary_key: :short_code, reciprocal: :referenced, conditions: { referenced_class: 'Heading' },
                                   adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Heading') },

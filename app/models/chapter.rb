@@ -13,11 +13,9 @@ class Chapter < GoodsNomenclature
   many_to_many :sections, left_key: :goods_nomenclature_sid,
                           join_table: :chapters_sections
 
-  one_to_many :headings, dataset: lambda {
-    Heading.actual
-           .filter("goods_nomenclature_item_id LIKE ? AND goods_nomenclature_item_id NOT LIKE '__00______'", relevant_headings)
-           .where(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
-  }
+  one_to_many :headings, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
+    ds.with_actual(Heading).exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+  end
 
   one_to_many :goods_nomenclatures do |_ds|
     GoodsNomenclature

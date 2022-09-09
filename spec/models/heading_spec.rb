@@ -45,16 +45,6 @@ RSpec.describe Heading do
           end
         end
       end
-
-      context 'fetching relevant' do
-        it 'fetches correct chapter' do
-          TimeMachine.with_relevant_validity_periods do
-            expect(
-              heading2.reload.chapter.pk,
-            ).to eq chapter2.pk
-          end
-        end
-      end
     end
 
     describe '#measures' do

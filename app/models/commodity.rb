@@ -15,16 +15,14 @@ class Commodity < GoodsNomenclature
     "#{goods_nomenclature_item_id}-#{producline_suffix}"
   end
 
-  one_to_one :heading, dataset: -> {
-    actual_or_relevant(Heading)
-           .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', heading_id)
-           .filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
-  }
+  one_to_one :heading, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
+    ds.with_actual(Heading)
+      .filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+  end
 
-  one_to_one :chapter, dataset: -> {
-    actual_or_relevant(Chapter)
-           .filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', chapter_id)
-  }
+  one_to_one :chapter, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
+    ds.with_actual(Chapter)
+  end
 
   one_to_many :overview_measures, key: {}, primary_key: {}, class_name: 'Measure', dataset: lambda {
     measures_dataset
@@ -127,10 +125,6 @@ class Commodity < GoodsNomenclature
 
       mapped.try(:children) || []
     end
-  end
-
-  def heading_short_code
-    goods_nomenclature_item_id.first(4)
   end
 
   def to_param
