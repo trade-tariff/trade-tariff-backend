@@ -7,7 +7,7 @@ class CertificateDescription < Sequel::Model
   set_primary_key [:certificate_description_period_sid]
 
   custom_format :formatted_description, with: DescriptionFormatter,
-                                 using: :description
+                                        using: :description
 
   def to_s
     description
