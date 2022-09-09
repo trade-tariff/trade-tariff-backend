@@ -287,23 +287,6 @@ RSpec.describe Commodity do
           expect(commodity2.import_measures.map(&:measure_sid)).not_to include export_measure.measure_sid
         end
       end
-
-      context 'export refund nomenclature' do
-        let!(:commodity) { create :commodity, :with_indent }
-        let!(:export_refund_nomenclature) do
-          create :export_refund_nomenclature, :with_indent,
-                 goods_nomenclature_sid: commodity.goods_nomenclature_sid
-        end
-        let!(:export_measure) do
-          create :measure, :with_base_regulation, export_refund_nomenclature_sid: export_refund_nomenclature.export_refund_nomenclature_sid,
-                                                  goods_nomenclature_item_id: commodity.goods_nomenclature_item_id
-        end
-
-        it 'includes measures that belongs to related export refund nomenclature' do
-          expect(commodity.measures).not_to be_blank
-          expect(commodity.measures.map(&:measure_sid)).to include export_measure.measure_sid
-        end
-      end
     end
 
     describe 'measures and base_regulations' do
