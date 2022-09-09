@@ -1,5 +1,19 @@
 module Cache
   class CertificateIndex < ::Cache::CacheIndex
+    def eager_load_graph
+      [
+        :certificate_descriptions,
+        {
+          measures: [
+            goods_nomenclature: %i[
+              goods_nomenclature_descriptions
+              goods_nomenclature_indents
+            ],
+          ],
+        },
+      ]
+    end
+
     def definition
       {
         mappings: {
@@ -10,8 +24,8 @@ module Cache
             description: { type: 'text', analyzer: 'snowball' },
             validity_start_date: { type: 'date', format: 'date_optional_time' },
             validity_end_date: { type: 'date', format: 'date_optional_time' },
-          }
-        }
+          },
+        },
       }
     end
   end
