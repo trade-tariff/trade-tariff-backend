@@ -816,4 +816,30 @@ RSpec.describe Commodity do
       it { is_expected.to eq('Subheading') }
     end
   end
+
+  describe '#fast_declarable?' do
+    context 'when the goods nomenclature has children and a non grouping suffix' do
+      subject(:commodity) { create(:commodity, :with_children, :non_grouping) }
+
+      it { is_expected.not_to be_fast_declarable }
+    end
+
+    context 'when the goods nomenclature has children and a grouping suffix' do
+      subject(:commodity) { create(:commodity, :with_children, :grouping) }
+
+      it { is_expected.not_to be_fast_declarable }
+    end
+
+    context 'when the goods nomenclature has no children and a non grouping suffix' do
+      subject(:commodity) { create(:commodity, :without_children, :non_grouping) }
+
+      it { is_expected.to be_fast_declarable }
+    end
+
+    context 'when the goods nomenclature has no children and a grouping suffix' do
+      subject(:commodity) { create(:commodity, :without_children, :grouping) }
+
+      it { is_expected.not_to be_fast_declarable }
+    end
+  end
 end

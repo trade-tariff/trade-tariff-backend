@@ -63,6 +63,9 @@ FactoryBot.define do
     end
 
     trait :with_children do
+      goods_nomenclature_sid { 1 }
+      path { Sequel.pg_array([], :integer) }
+
       after(:create) do |commodity, _evaluator|
         # Prepare some intermediate item ids
         item_id = commodity.goods_nomenclature_item_id.to_i
@@ -71,7 +74,7 @@ FactoryBot.define do
         commodity.producline_suffix = '80'
         commodity.save
         create(:goods_nomenclature_indent,
-               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_sid: 1,
                goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
                validity_start_date: commodity.validity_start_date,
                validity_end_date: commodity.validity_end_date,
@@ -82,6 +85,8 @@ FactoryBot.define do
         create(:commodity,
                :with_indent,
                goods_nomenclature_item_id: (item_id + 1).to_s,
+               goods_nomenclature_sid: 2,
+               path: Sequel.pg_array([1], :integer),
                producline_suffix: '10',
                indents: 2)
 
@@ -89,10 +94,14 @@ FactoryBot.define do
         create(:commodity,
                :with_indent,
                goods_nomenclature_item_id: (item_id + 1).to_s,
+               goods_nomenclature_sid: 3,
+               path: Sequel.pg_array([1, 2], :integer),
                indents: 3)
         create(:commodity,
                :with_indent,
                goods_nomenclature_item_id: (item_id + 2).to_s,
+               goods_nomenclature_sid: 4,
+               path: Sequel.pg_array([1, 2], :integer),
                indents: 3)
         commodity.reload
       end
