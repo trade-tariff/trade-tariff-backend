@@ -5,6 +5,10 @@ FactoryBot.define do
   sequence(:measure_type_id, 10_000) { |n| n }
 
   factory :measure do
+    after(:create) do
+      Measure.refresh_materialized_view # refresh materialized view
+    end
+
     transient do
       type_explosion_level { 10 }
       gono_number_indents { 1 }

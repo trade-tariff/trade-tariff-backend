@@ -16,31 +16,12 @@ module Declarable
   ].freeze
 
   included do
-    one_to_many :measures, primary_key: {}, key: {}, dataset: -> {
-      Measure.join(
-        Measure.with_base_regulations
-               .with_actual(BaseRegulation)
-               .where(measures__goods_nomenclature_sid: uptree.map(&:goods_nomenclature_sid))
-               .exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
-               .order(*COMMON_UNION_MEASURE_ORDER)
-       .union(
-         Measure.with_modification_regulations
-                .with_actual(ModificationRegulation)
-                .where(measures__goods_nomenclature_sid: uptree.map(&:goods_nomenclature_sid))
-                .exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
-                .order(*COMMON_UNION_MEASURE_ORDER),
-         alias: :measures,
-       )
-       .with_actual(Measure)
-       .order(Sequel.asc(:measures__geographical_area_id),
-              Sequel.asc(:measures__measure_type_id),
-              Sequel.asc(:measures__additional_code_type_id),
-              Sequel.asc(:measures__additional_code_id),
-              Sequel.asc(:measures__ordernumber),
-              Sequel.desc(:effective_start_date)),
-        t1__measure_sid: :measures__measure_sid,
-      )
-    }
+    # TODO: Move uptree into materialized view
+    one_to_many :measures, primary_key: {}, key: {} do |_ds|
+      Measure.actual
+        .where(goods_nomenclature_sid: uptree.map(&:goods_nomenclature_sid))
+        .exclude(measure_type_id: MeasureType.excluded_measure_types)
+    end
 
     one_to_many :import_measures, key: {}, primary_key: {}, dataset: -> {
       measures_dataset.join(:measure_types, measure_types__measure_type_id: :measures__measure_type_id)

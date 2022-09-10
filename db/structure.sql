@@ -12,21 +12,22 @@ SET client_encoding = 'UTF8';
 SET standard_conforming_strings = on;
 SELECT pg_catalog.set_config('search_path', '', false);
 SET check_function_bodies = false;
+SET xmloption = content;
 SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: -
 --
 
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
 
 
 --
@@ -44,16 +45,12 @@ COMMENT ON EXTENSION "uuid-ossp" IS 'generate universally unique identifiers (UU
 
 
 --
+-- Name: forbid_ddl_reader(); Type: FUNCTION; Schema: public; Owner: -
 --
 
+CREATE FUNCTION public.forbid_ddl_reader() RETURNS event_trigger
     LANGUAGE plpgsql
-
---
--- Name: reassign_owned(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
-    LANGUAGE plpgsql
+    SET search_path TO 'public'
     AS $$
 	begin
 		-- do not execute if member of rds_superuser
@@ -62,8 +59,54 @@ CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
 			RETURN;
 		END IF;
 
-		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_266a9334_2e5d_4234_b2bf_5f5ebf7d973d_manager', 'member') THEN
+		-- do not execute if superuser
+		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
+			RETURN;
+		END IF;
+
+		-- do not execute if member of manager role
+		IF pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager', 'member') THEN
+			RETURN;
+		END IF;
+
+		IF pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader', 'member') THEN
+			RAISE EXCEPTION 'executing % is disabled for read only bindings', tg_tag;
+		END IF;
+	end
+$$;
+
+
+--
+-- Name: make_readable(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.make_readable() RETURNS event_trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public'
+    AS $$
+	begin
+		IF EXISTS (SELECT 1 FROM pg_event_trigger_ddl_commands() WHERE schema_name NOT LIKE 'pg_temp%') THEN
+			EXECUTE 'select make_readable_generic()';
+			RETURN;
+		END IF;
+	end
+	$$;
+
+
+--
+-- Name: make_readable_generic(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.make_readable_generic() RETURNS void
+    LANGUAGE plpgsql
+    SET search_path TO 'public'
+    AS $$
+	declare
+		r record;
+	begin
+		-- do not execute if member of rds_superuser
+		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
+		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
 			RETURN;
 		END IF;
 
@@ -72,15 +115,61 @@ CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
 			RETURN;
 		END IF;
 
-		EXECUTE 'reassign owned by "' || current_user || '" to "rdsbroker_266a9334_2e5d_4234_b2bf_5f5ebf7d973d_manager"';
-	end
-	$$;
+		-- do not execute if not member of manager role
+		IF NOT pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager', 'member') THEN
+			RETURN;
+		END IF;
 
+		FOR r in (select schema_name from information_schema.schemata) LOOP
+			BEGIN
+				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader');
+				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader');
+				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_reader');
+
+				RAISE NOTICE 'GRANTED READ ONLY IN SCHEMA %s', r.schema_name;
+			EXCEPTION WHEN OTHERS THEN
+			  -- brrr
+			END;
+		END LOOP;
+
+		RETURN;
+	end
+$$;
+
+
+--
+-- Name: reassign_owned(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
+    LANGUAGE plpgsql
+    SET search_path TO 'public'
+    AS $$
+	begin
+		-- do not execute if member of rds_superuser
+		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
+		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
+			RETURN;
+		END IF;
+
+		-- do not execute if superuser
+		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
+			RETURN;
+		END IF;
+
+		-- do not execute if not member of manager role
+		IF NOT pg_has_role(current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager', 'member') THEN
+			RETURN;
+		END IF;
+
+		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_af20b1df_0a99_4758_91e9_d31ff1bf4884_manager');
+
+		RETURN;
+	end
+$$;
 
 
 SET default_tablespace = '';
-
-SET default_with_oids = false;
 
 --
 -- Name: additional_code_description_periods_oplog; Type: TABLE; Schema: public; Owner: -
@@ -3982,6 +4071,358 @@ ALTER SEQUENCE public.measure_partial_temporary_stops_oid_seq OWNED BY public.me
 
 
 --
+-- Name: measures_oplog; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.measures_oplog (
+    measure_sid integer,
+    measure_type_id character varying(6),
+    geographical_area_id character varying(255),
+    goods_nomenclature_item_id character varying(10),
+    validity_start_date timestamp without time zone,
+    validity_end_date timestamp without time zone,
+    measure_generating_regulation_role integer,
+    measure_generating_regulation_id character varying(255),
+    justification_regulation_role integer,
+    justification_regulation_id character varying(255),
+    stopped_flag boolean,
+    geographical_area_sid integer,
+    goods_nomenclature_sid integer,
+    ordernumber character varying(255),
+    additional_code_type_id text,
+    additional_code_id character varying(3),
+    additional_code_sid integer,
+    reduction_indicator integer,
+    export_refund_nomenclature_sid integer,
+    created_at timestamp without time zone,
+    "national" boolean,
+    tariff_measure_number character varying(10),
+    invalidated_by integer,
+    invalidated_at timestamp without time zone,
+    oid integer NOT NULL,
+    operation character varying(1) DEFAULT 'C'::character varying,
+    operation_date date,
+    filename text
+);
+
+
+--
+-- Name: measures; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.measures AS
+ SELECT measures1.measure_sid,
+    measures1.measure_type_id,
+    measures1.geographical_area_id,
+    measures1.goods_nomenclature_item_id,
+    measures1.validity_start_date,
+    measures1.validity_end_date,
+    measures1.measure_generating_regulation_role,
+    measures1.measure_generating_regulation_id,
+    measures1.justification_regulation_role,
+    measures1.justification_regulation_id,
+    measures1.stopped_flag,
+    measures1.geographical_area_sid,
+    measures1.goods_nomenclature_sid,
+    measures1.ordernumber,
+    measures1.additional_code_type_id,
+    measures1.additional_code_id,
+    measures1.additional_code_sid,
+    measures1.reduction_indicator,
+    measures1.export_refund_nomenclature_sid,
+    measures1."national",
+    measures1.tariff_measure_number,
+    measures1.invalidated_by,
+    measures1.invalidated_at,
+    measures1.oid,
+    measures1.operation,
+    measures1.operation_date,
+    measures1.filename
+   FROM public.measures_oplog measures1
+  WHERE ((measures1.oid IN ( SELECT max(measures2.oid) AS max
+           FROM public.measures_oplog measures2
+          WHERE (measures1.measure_sid = measures2.measure_sid))) AND ((measures1.operation)::text <> 'D'::text));
+
+
+--
+-- Name: modification_regulations_oplog; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.modification_regulations_oplog (
+    modification_regulation_role integer,
+    modification_regulation_id character varying(255),
+    validity_start_date timestamp without time zone,
+    validity_end_date timestamp without time zone,
+    published_date date,
+    officialjournal_number character varying(255),
+    officialjournal_page integer,
+    base_regulation_role integer,
+    base_regulation_id character varying(255),
+    replacement_indicator integer,
+    stopped_flag boolean,
+    information_text text,
+    approved_flag boolean,
+    explicit_abrogation_regulation_role integer,
+    explicit_abrogation_regulation_id character varying(8),
+    effective_end_date timestamp without time zone,
+    complete_abrogation_regulation_role integer,
+    complete_abrogation_regulation_id character varying(8),
+    created_at timestamp without time zone,
+    oid integer NOT NULL,
+    operation character varying(1) DEFAULT 'C'::character varying,
+    operation_date date,
+    filename text
+);
+
+
+--
+-- Name: modification_regulations; Type: VIEW; Schema: public; Owner: -
+--
+
+CREATE VIEW public.modification_regulations AS
+ SELECT modification_regulations1.modification_regulation_role,
+    modification_regulations1.modification_regulation_id,
+    modification_regulations1.validity_start_date,
+    modification_regulations1.validity_end_date,
+    modification_regulations1.published_date,
+    modification_regulations1.officialjournal_number,
+    modification_regulations1.officialjournal_page,
+    modification_regulations1.base_regulation_role,
+    modification_regulations1.base_regulation_id,
+    modification_regulations1.replacement_indicator,
+    modification_regulations1.stopped_flag,
+    modification_regulations1.information_text,
+    modification_regulations1.approved_flag,
+    modification_regulations1.explicit_abrogation_regulation_role,
+    modification_regulations1.explicit_abrogation_regulation_id,
+    modification_regulations1.effective_end_date,
+    modification_regulations1.complete_abrogation_regulation_role,
+    modification_regulations1.complete_abrogation_regulation_id,
+    modification_regulations1.oid,
+    modification_regulations1.operation,
+    modification_regulations1.operation_date,
+    modification_regulations1.filename
+   FROM public.modification_regulations_oplog modification_regulations1
+  WHERE ((modification_regulations1.oid IN ( SELECT max(modification_regulations2.oid) AS max
+           FROM public.modification_regulations_oplog modification_regulations2
+          WHERE (((modification_regulations1.modification_regulation_id)::text = (modification_regulations2.modification_regulation_id)::text) AND (modification_regulations1.modification_regulation_role = modification_regulations2.modification_regulation_role)))) AND ((modification_regulations1.operation)::text <> 'D'::text));
+
+
+--
+-- Name: measure_real_end_dates; Type: MATERIALIZED VIEW; Schema: public; Owner: -
+--
+
+CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
+ SELECT t1.measure_sid,
+    t1.measure_type_id,
+    t1.effective_start_date,
+    t1.effective_end_date,
+    t1.geographical_area_id,
+    t1.goods_nomenclature_item_id,
+    t1.validity_start_date,
+    t1.validity_end_date,
+    t1.measure_generating_regulation_role,
+    t1.measure_generating_regulation_id,
+    t1.justification_regulation_role,
+    t1.justification_regulation_id,
+    t1.stopped_flag,
+    t1.geographical_area_sid,
+    t1.goods_nomenclature_sid,
+    t1.ordernumber,
+    t1.additional_code_type_id,
+    t1.additional_code_id,
+    t1.additional_code_sid,
+    t1.reduction_indicator,
+    t1.export_refund_nomenclature_sid,
+    t1."national",
+    t1.tariff_measure_number,
+    t1.invalidated_by,
+    t1.invalidated_at,
+    t1.oid,
+    t1.operation,
+    t1.operation_date,
+    t1.filename
+   FROM (public.measures
+     JOIN ( SELECT measures_1.measure_sid,
+            measures_1.measure_type_id,
+            measures_1.geographical_area_id,
+            measures_1.goods_nomenclature_item_id,
+            measures_1.validity_start_date,
+            measures_1.validity_end_date,
+            measures_1.measure_generating_regulation_role,
+            measures_1.measure_generating_regulation_id,
+            measures_1.justification_regulation_role,
+            measures_1.justification_regulation_id,
+            measures_1.stopped_flag,
+            measures_1.geographical_area_sid,
+            measures_1.goods_nomenclature_sid,
+            measures_1.ordernumber,
+            measures_1.additional_code_type_id,
+            measures_1.additional_code_id,
+            measures_1.additional_code_sid,
+            measures_1.reduction_indicator,
+            measures_1.export_refund_nomenclature_sid,
+            measures_1."national",
+            measures_1.tariff_measure_number,
+            measures_1.invalidated_by,
+            measures_1.invalidated_at,
+            measures_1.oid,
+            measures_1.operation,
+            measures_1.operation_date,
+            measures_1.filename,
+            measures_1.effective_start_date,
+            measures_1.effective_end_date
+           FROM ( SELECT t1_1.measure_sid,
+                    t1_1.measure_type_id,
+                    t1_1.geographical_area_id,
+                    t1_1.goods_nomenclature_item_id,
+                    t1_1.validity_start_date,
+                    t1_1.validity_end_date,
+                    t1_1.measure_generating_regulation_role,
+                    t1_1.measure_generating_regulation_id,
+                    t1_1.justification_regulation_role,
+                    t1_1.justification_regulation_id,
+                    t1_1.stopped_flag,
+                    t1_1.geographical_area_sid,
+                    t1_1.goods_nomenclature_sid,
+                    t1_1.ordernumber,
+                    t1_1.additional_code_type_id,
+                    t1_1.additional_code_id,
+                    t1_1.additional_code_sid,
+                    t1_1.reduction_indicator,
+                    t1_1.export_refund_nomenclature_sid,
+                    t1_1."national",
+                    t1_1.tariff_measure_number,
+                    t1_1.invalidated_by,
+                    t1_1.invalidated_at,
+                    t1_1.oid,
+                    t1_1.operation,
+                    t1_1.operation_date,
+                    t1_1.filename,
+                    t1_1.effective_start_date,
+                    t1_1.effective_end_date
+                   FROM ( SELECT measures_2.measure_sid,
+                            measures_2.measure_type_id,
+                            measures_2.geographical_area_id,
+                            measures_2.goods_nomenclature_item_id,
+                            measures_2.validity_start_date,
+                            measures_2.validity_end_date,
+                            measures_2.measure_generating_regulation_role,
+                            measures_2.measure_generating_regulation_id,
+                            measures_2.justification_regulation_role,
+                            measures_2.justification_regulation_id,
+                            measures_2.stopped_flag,
+                            measures_2.geographical_area_sid,
+                            measures_2.goods_nomenclature_sid,
+                            measures_2.ordernumber,
+                            measures_2.additional_code_type_id,
+                            measures_2.additional_code_id,
+                            measures_2.additional_code_sid,
+                            measures_2.reduction_indicator,
+                            measures_2.export_refund_nomenclature_sid,
+                            measures_2."national",
+                            measures_2.tariff_measure_number,
+                            measures_2.invalidated_by,
+                            measures_2.invalidated_at,
+                            measures_2.oid,
+                            measures_2.operation,
+                            measures_2.operation_date,
+                            measures_2.filename,
+                                CASE
+                                    WHEN (measures_2.validity_start_date IS NULL) THEN base_regulations.validity_start_date
+                                    ELSE measures_2.validity_start_date
+                                END AS effective_start_date,
+                                CASE
+                                    WHEN ((measures_2.validity_end_date IS NULL) AND (base_regulations.effective_end_date IS NOT NULL)) THEN base_regulations.effective_end_date
+                                    WHEN ((measures_2.validity_end_date IS NULL) AND (base_regulations.effective_end_date IS NULL)) THEN base_regulations.effective_end_date
+                                    ELSE measures_2.validity_end_date
+                                END AS effective_end_date
+                           FROM (public.measures measures_2
+                             JOIN public.base_regulations ON (((base_regulations.base_regulation_id)::text = (measures_2.measure_generating_regulation_id)::text)))
+                          WHERE (measures_2.measure_generating_regulation_role = ANY (ARRAY[1, 2, 3]))
+                          ORDER BY measures_2.measure_generating_regulation_id DESC, measures_2.measure_generating_regulation_role DESC, measures_2.measure_type_id DESC, measures_2.goods_nomenclature_sid DESC, measures_2.geographical_area_id DESC, measures_2.geographical_area_sid DESC, measures_2.additional_code_type_id DESC, measures_2.additional_code_id DESC, measures_2.ordernumber DESC,
+                                CASE
+                                    WHEN (measures_2.validity_start_date IS NULL) THEN base_regulations.validity_start_date
+                                    ELSE measures_2.validity_start_date
+                                END DESC) t1_1
+                UNION
+                 SELECT t1_1.measure_sid,
+                    t1_1.measure_type_id,
+                    t1_1.geographical_area_id,
+                    t1_1.goods_nomenclature_item_id,
+                    t1_1.validity_start_date,
+                    t1_1.validity_end_date,
+                    t1_1.measure_generating_regulation_role,
+                    t1_1.measure_generating_regulation_id,
+                    t1_1.justification_regulation_role,
+                    t1_1.justification_regulation_id,
+                    t1_1.stopped_flag,
+                    t1_1.geographical_area_sid,
+                    t1_1.goods_nomenclature_sid,
+                    t1_1.ordernumber,
+                    t1_1.additional_code_type_id,
+                    t1_1.additional_code_id,
+                    t1_1.additional_code_sid,
+                    t1_1.reduction_indicator,
+                    t1_1.export_refund_nomenclature_sid,
+                    t1_1."national",
+                    t1_1.tariff_measure_number,
+                    t1_1.invalidated_by,
+                    t1_1.invalidated_at,
+                    t1_1.oid,
+                    t1_1.operation,
+                    t1_1.operation_date,
+                    t1_1.filename,
+                    t1_1.effective_start_date,
+                    t1_1.effective_end_date
+                   FROM ( SELECT measures_2.measure_sid,
+                            measures_2.measure_type_id,
+                            measures_2.geographical_area_id,
+                            measures_2.goods_nomenclature_item_id,
+                            measures_2.validity_start_date,
+                            measures_2.validity_end_date,
+                            measures_2.measure_generating_regulation_role,
+                            measures_2.measure_generating_regulation_id,
+                            measures_2.justification_regulation_role,
+                            measures_2.justification_regulation_id,
+                            measures_2.stopped_flag,
+                            measures_2.geographical_area_sid,
+                            measures_2.goods_nomenclature_sid,
+                            measures_2.ordernumber,
+                            measures_2.additional_code_type_id,
+                            measures_2.additional_code_id,
+                            measures_2.additional_code_sid,
+                            measures_2.reduction_indicator,
+                            measures_2.export_refund_nomenclature_sid,
+                            measures_2."national",
+                            measures_2.tariff_measure_number,
+                            measures_2.invalidated_by,
+                            measures_2.invalidated_at,
+                            measures_2.oid,
+                            measures_2.operation,
+                            measures_2.operation_date,
+                            measures_2.filename,
+                                CASE
+                                    WHEN (measures_2.validity_start_date IS NULL) THEN modification_regulations.validity_start_date
+                                    ELSE measures_2.validity_start_date
+                                END AS effective_start_date,
+                                CASE
+                                    WHEN (measures_2.validity_end_date IS NULL) THEN modification_regulations.effective_end_date
+                                    ELSE measures_2.validity_end_date
+                                END AS effective_end_date
+                           FROM (public.measures measures_2
+                             JOIN public.modification_regulations ON (((modification_regulations.modification_regulation_id)::text = (measures_2.measure_generating_regulation_id)::text)))
+                          WHERE (measures_2.measure_generating_regulation_role = 4)
+                          ORDER BY measures_2.measure_generating_regulation_id DESC, measures_2.measure_generating_regulation_role DESC, measures_2.measure_type_id DESC, measures_2.goods_nomenclature_sid DESC, measures_2.geographical_area_id DESC, measures_2.geographical_area_sid DESC, measures_2.additional_code_type_id DESC, measures_2.additional_code_id DESC, measures_2.ordernumber DESC,
+                                CASE
+                                    WHEN (measures_2.validity_start_date IS NULL) THEN modification_regulations.validity_start_date
+                                    ELSE measures_2.validity_start_date
+                                END DESC) t1_1) measures_1
+          ORDER BY measures_1.geographical_area_id, measures_1.measure_type_id, measures_1.additional_code_type_id, measures_1.additional_code_id, measures_1.ordernumber, measures_1.effective_start_date DESC) t1 ON ((t1.measure_sid = measures.measure_sid)))
+  WITH NO DATA;
+
+
+--
 -- Name: measure_type_descriptions_oplog; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -4514,80 +4955,6 @@ ALTER SEQUENCE public.measurements_oid_seq OWNED BY public.measurements_oplog.oi
 
 
 --
--- Name: measures_oplog; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.measures_oplog (
-    measure_sid integer,
-    measure_type_id character varying(6),
-    geographical_area_id character varying(255),
-    goods_nomenclature_item_id character varying(10),
-    validity_start_date timestamp without time zone,
-    validity_end_date timestamp without time zone,
-    measure_generating_regulation_role integer,
-    measure_generating_regulation_id character varying(255),
-    justification_regulation_role integer,
-    justification_regulation_id character varying(255),
-    stopped_flag boolean,
-    geographical_area_sid integer,
-    goods_nomenclature_sid integer,
-    ordernumber character varying(255),
-    additional_code_type_id text,
-    additional_code_id character varying(3),
-    additional_code_sid integer,
-    reduction_indicator integer,
-    export_refund_nomenclature_sid integer,
-    created_at timestamp without time zone,
-    "national" boolean,
-    tariff_measure_number character varying(10),
-    invalidated_by integer,
-    invalidated_at timestamp without time zone,
-    oid integer NOT NULL,
-    operation character varying(1) DEFAULT 'C'::character varying,
-    operation_date date,
-    filename text
-);
-
-
---
--- Name: measures; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.measures AS
- SELECT measures1.measure_sid,
-    measures1.measure_type_id,
-    measures1.geographical_area_id,
-    measures1.goods_nomenclature_item_id,
-    measures1.validity_start_date,
-    measures1.validity_end_date,
-    measures1.measure_generating_regulation_role,
-    measures1.measure_generating_regulation_id,
-    measures1.justification_regulation_role,
-    measures1.justification_regulation_id,
-    measures1.stopped_flag,
-    measures1.geographical_area_sid,
-    measures1.goods_nomenclature_sid,
-    measures1.ordernumber,
-    measures1.additional_code_type_id,
-    measures1.additional_code_id,
-    measures1.additional_code_sid,
-    measures1.reduction_indicator,
-    measures1.export_refund_nomenclature_sid,
-    measures1."national",
-    measures1.tariff_measure_number,
-    measures1.invalidated_by,
-    measures1.invalidated_at,
-    measures1.oid,
-    measures1.operation,
-    measures1.operation_date,
-    measures1.filename
-   FROM public.measures_oplog measures1
-  WHERE ((measures1.oid IN ( SELECT max(measures2.oid) AS max
-           FROM public.measures_oplog measures2
-          WHERE (measures1.measure_sid = measures2.measure_sid))) AND ((measures1.operation)::text <> 'D'::text));
-
-
---
 -- Name: measures_oid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -4950,70 +5317,6 @@ CREATE SEQUENCE public.meursing_table_plans_oid_seq
 --
 
 ALTER SEQUENCE public.meursing_table_plans_oid_seq OWNED BY public.meursing_table_plans_oplog.oid;
-
-
---
--- Name: modification_regulations_oplog; Type: TABLE; Schema: public; Owner: -
---
-
-CREATE TABLE public.modification_regulations_oplog (
-    modification_regulation_role integer,
-    modification_regulation_id character varying(255),
-    validity_start_date timestamp without time zone,
-    validity_end_date timestamp without time zone,
-    published_date date,
-    officialjournal_number character varying(255),
-    officialjournal_page integer,
-    base_regulation_role integer,
-    base_regulation_id character varying(255),
-    replacement_indicator integer,
-    stopped_flag boolean,
-    information_text text,
-    approved_flag boolean,
-    explicit_abrogation_regulation_role integer,
-    explicit_abrogation_regulation_id character varying(8),
-    effective_end_date timestamp without time zone,
-    complete_abrogation_regulation_role integer,
-    complete_abrogation_regulation_id character varying(8),
-    created_at timestamp without time zone,
-    oid integer NOT NULL,
-    operation character varying(1) DEFAULT 'C'::character varying,
-    operation_date date,
-    filename text
-);
-
-
---
--- Name: modification_regulations; Type: VIEW; Schema: public; Owner: -
---
-
-CREATE VIEW public.modification_regulations AS
- SELECT modification_regulations1.modification_regulation_role,
-    modification_regulations1.modification_regulation_id,
-    modification_regulations1.validity_start_date,
-    modification_regulations1.validity_end_date,
-    modification_regulations1.published_date,
-    modification_regulations1.officialjournal_number,
-    modification_regulations1.officialjournal_page,
-    modification_regulations1.base_regulation_role,
-    modification_regulations1.base_regulation_id,
-    modification_regulations1.replacement_indicator,
-    modification_regulations1.stopped_flag,
-    modification_regulations1.information_text,
-    modification_regulations1.approved_flag,
-    modification_regulations1.explicit_abrogation_regulation_role,
-    modification_regulations1.explicit_abrogation_regulation_id,
-    modification_regulations1.effective_end_date,
-    modification_regulations1.complete_abrogation_regulation_role,
-    modification_regulations1.complete_abrogation_regulation_id,
-    modification_regulations1.oid,
-    modification_regulations1.operation,
-    modification_regulations1.operation_date,
-    modification_regulations1.filename
-   FROM public.modification_regulations_oplog modification_regulations1
-  WHERE ((modification_regulations1.oid IN ( SELECT max(modification_regulations2.oid) AS max
-           FROM public.modification_regulations_oplog modification_regulations2
-          WHERE (((modification_regulations1.modification_regulation_id)::text = (modification_regulations2.modification_regulation_id)::text) AND (modification_regulations1.modification_regulation_role = modification_regulations2.modification_regulation_role)))) AND ((modification_regulations1.operation)::text <> 'D'::text));
 
 
 --
@@ -7740,14 +8043,6 @@ ALTER TABLE ONLY public.audits
 
 
 --
--- Name: base_regulations_oplog base_regulations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.base_regulations_oplog
-    ADD CONSTRAINT base_regulations_pkey PRIMARY KEY (oid);
-
-
---
 -- Name: certificate_description_periods_oplog certificate_description_periods_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8332,14 +8627,6 @@ ALTER TABLE ONLY public.measurements_oplog
 
 
 --
--- Name: measures_oplog measures_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.measures_oplog
-    ADD CONSTRAINT measures_pkey PRIMARY KEY (oid);
-
-
---
 -- Name: meursing_additional_codes_oplog meursing_additional_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8385,14 +8672,6 @@ ALTER TABLE ONLY public.meursing_table_cell_components_oplog
 
 ALTER TABLE ONLY public.meursing_table_plans_oplog
     ADD CONSTRAINT meursing_table_plans_pkey PRIMARY KEY (oid);
-
-
---
--- Name: modification_regulations_oplog modification_regulations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.modification_regulations_oplog
-    ADD CONSTRAINT modification_regulations_pkey PRIMARY KEY (oid);
 
 
 --
@@ -10912,3 +11191,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20220614130523_drop_functi
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220713145800_add_strapline_to_guides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220714165446_create_guides_goods_nomenclatures.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220908105343_adds_heading_and_chapter_id_to_goods_nomenclatures_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20220909141340_adds_materialized_measures_real_end_dates.rb');

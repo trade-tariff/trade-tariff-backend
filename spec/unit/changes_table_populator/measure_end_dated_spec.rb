@@ -15,6 +15,7 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
     context 'when there are measures but haven\'t changed' do
       before do
         create :measure, :with_goods_nomenclature
+        require 'pry'; binding.pry
       end
 
       it 'doesn\'t extract changes' do

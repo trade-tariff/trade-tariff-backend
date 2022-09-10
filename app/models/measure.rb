@@ -1,4 +1,4 @@
-class Measure < Sequel::Model
+class Measure < Sequel::Model(:measure_real_end_dates)
   BASE_REGULATION_ROLE = 1
   PROVISIONAL_ANTIDUMPING_ROLE = 2
   DEFINITIVE_ANTIDUMPING_ROLE = 3
@@ -20,7 +20,7 @@ class Measure < Sequel::Model
   set_primary_key [:measure_sid]
 
   plugin :time_machine
-  plugin :oplog, primary_key: :measure_sid
+  plugin :oplog, primary_key: :measure_sid, oplog_table_name: :measures_oplog, view: :measures, materialized: true
   plugin :national
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
@@ -181,7 +181,7 @@ class Measure < Sequel::Model
       distinct_measure_regulation_query(role: BASE_REGULATION_ROLES)
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), :effective_end_date))
-        .join_table(:inner, :base_regulations, base_regulations__base_regulation_id: :measures__measure_generating_regulation_id)
+        .join_table(:inner, :base_regulations, base_regulations__base_regulation_id: :measure_generating_regulation_id)
         .actual_for_base_regulations
     end
 
@@ -189,7 +189,7 @@ class Measure < Sequel::Model
       distinct_measure_regulation_query(role: MODIFICATION_REGULATION_ROLE)
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), :effective_end_date))
-        .join_table(:inner, :modification_regulations, modification_regulations__modification_regulation_id: :measures__measure_generating_regulation_id)
+        .join_table(:inner, :modification_regulations, modification_regulations__modification_regulation_id: :measure_generating_regulation_id)
         .actual_for_modifications_regulations
     end
 
@@ -216,7 +216,7 @@ class Measure < Sequel::Model
     end
 
     def with_measure_type(condition_measure_type)
-      where(measures__measure_type_id: condition_measure_type.to_s)
+      where(measure_type_id: condition_measure_type.to_s)
     end
 
     def valid_since(first_effective_timestamp)
@@ -256,7 +256,7 @@ class Measure < Sequel::Model
     end
 
     def with_duty_amount(amount)
-      join_table(:left, MeasureComponent, measures__measure_sid: :measure_components__measure_sid)
+      join_table(:left, MeasureComponent, measure_sid: :measure_components__measure_sid)
       .where(measure_components__duty_amount: amount)
     end
 
@@ -282,7 +282,7 @@ class Measure < Sequel::Model
     end
 
     def non_invalidated
-      where(measures__invalidated_at: nil)
+      where(invalidated_at: nil)
     end
 
     def distinct_measure_regulation_query(role:)

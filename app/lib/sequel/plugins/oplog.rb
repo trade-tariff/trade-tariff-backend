@@ -6,13 +6,27 @@ module Sequel
       DESTROY_OPERATION = 'D'.freeze
 
       def self.configure(model, options = {})
+        model.define_singleton_method(:oplog_options) do
+          options
+        end
+
         model_primary_key = options.fetch(:primary_key, model.primary_key)
+        oplog_table_name = options.fetch(:oplog_table_name, :"#{model.table_name}_oplog")
         primary_key = [:oid, model_primary_key].flatten
         operation_class_name = :"#{model}::Operation"
 
         # Define ModelClass::Operation
         # e.g. Measure::Operation for measure oplog table
-        operation_class = Class.new(Sequel::Model(:"#{model.table_name}_oplog")) do
+        operation_class = Class.new(Sequel::Model(oplog_table_name)) do
+          def self.materialized?
+            oplog_options.fetch(:materialized, false)
+          end
+          def self.refresh_materialized_view
+            if materialized?
+              @db.run("REFRESH MATERIALIZED VIEW #{record_class.table_name}")
+            end
+          end
+
           def record_class
             self.class.to_s.chomp('::Operation').constantize
           end
@@ -78,6 +92,7 @@ module Sequel
           self.operation = :create
 
           values = self.values.slice(*operation_klass.columns).except(:oid)
+
           if operation_klass.columns.include?(:created_at)
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end
@@ -100,6 +115,7 @@ module Sequel
           self.operation = :update
 
           values = self.values.slice(*operation_klass.columns).except(:oid)
+
           if operation_klass.columns.include?(:created_at)
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end
@@ -111,6 +127,19 @@ module Sequel
       # Enforce operation logging by un-defining operations that do not use
       # model instances (as Insert/Update/Delete operations will not be created)
       module ClassMethods
+        delegate :refresh_materialized_view, to: :operation_klass
+
+        # Handle refreshes after inserts where the main model table is reading from a materialized view and therefore needs to be refreshed before it can consume the resource
+        def fast_pk_lookup_sql
+          if materialized?
+          "SELECT * FROM \"#{view}\" WHERE \"measure_sid\" = "
+          end
+        end
+
+        def view
+          oplog_options[:view].presence || table_name
+        end
+
         # Hide oplog columns if asked
         def columns
           super - %i[oid operation operation_date]
