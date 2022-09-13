@@ -4,9 +4,13 @@ module Api
       include JSONAPI::Serializer
 
       set_type :validity_period
-      set_id   :validity_period_id
 
-      attributes :goods_nomenclature_item_id, :validity_start_date, :validity_end_date
+      attributes :goods_nomenclature_item_id,
+                 :producline_suffix,
+                 :validity_start_date,
+                 :validity_end_date,
+                 :to_param,
+                 :goods_nomenclature_class
     end
   end
 end
