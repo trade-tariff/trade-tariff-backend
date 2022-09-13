@@ -96,7 +96,9 @@ Rails.application.routes.draw do
         resources :validity_periods, only: [:index]
       end
 
-      resources :subheadings, only: [:show], constraints: { id: /\d{10}-\d{2}/ }
+      resources :subheadings, only: [:show] do
+        resources :validity_periods, only: [:index]
+      end
 
       resources :commodities, only: [:show], constraints: { id: /\d{10}/ } do
         member do
