@@ -6,7 +6,7 @@ FactoryBot.define do
 
   factory :measure do
     after(:create) do
-      Measure.refresh_materialized_view # refresh materialized view
+      Measure.refresh_materialized_view
     end
 
     transient do
@@ -221,7 +221,8 @@ FactoryBot.define do
     end
 
     trait :with_measure_components do
-      after(:build) do |measure, evaluator|
+      after(:create) do |measure, evaluator|
+        Measure.refresh_materialized_view
         create_list(
           :measure_component,
           evaluator.measure_components_count,

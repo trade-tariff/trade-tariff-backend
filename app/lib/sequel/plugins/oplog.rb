@@ -6,27 +6,18 @@ module Sequel
       DESTROY_OPERATION = 'D'.freeze
 
       def self.configure(model, options = {})
-        model.define_singleton_method(:oplog_options) do
-          options
-        end
-
         model_primary_key = options.fetch(:primary_key, model.primary_key)
         oplog_table_name = options.fetch(:oplog_table_name, :"#{model.table_name}_oplog")
         primary_key = [:oid, model_primary_key].flatten
         operation_class_name = :"#{model}::Operation"
 
+        model.define_singleton_method(:oplog_options) do
+          options
+        end
+
         # Define ModelClass::Operation
         # e.g. Measure::Operation for measure oplog table
         operation_class = Class.new(Sequel::Model(oplog_table_name)) do
-          def self.materialized?
-            oplog_options.fetch(:materialized, false)
-          end
-          def self.refresh_materialized_view
-            if materialized?
-              @db.run("REFRESH MATERIALIZED VIEW #{record_class.table_name}")
-            end
-          end
-
           def record_class
             self.class.to_s.chomp('::Operation').constantize
           end
@@ -79,6 +70,21 @@ module Sequel
           end
         end
 
+        # We need to handle refresh gets (which happen when we insert/alter a row and Sequel returns
+        # the created/updated model instance). The refresh get needs to pull back the result from the
+        # standard view and not the materialized one as the materialized view will be out of date and
+        # needs a refresh, itself, which happens as part of the ETL process overnight.
+        def _refresh_get(dataset)
+          if model.materialized? && model.simple_table.present? && model.simple_pk.present?
+            model.instance_variable_set(
+              '@fast_pk_lookup_sql',
+              "SELECT * FROM #{model.view_table_name} WHERE #{model.simple_pk} = ",
+            )
+          end
+
+          super
+        end
+
         ##
         # Will be called by https://github.com/jeremyevans/sequel/blob/5afb0d0e28a89e68f1823d77d23cfa57d6b88dad/lib/sequel/model/base.rb#L1549
         # @note fixes `NotImplementedError: You should be inserting model instances`
@@ -108,6 +114,7 @@ module Sequel
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end
 
+          require 'pry'; binding.pry if self.class == Measure
           operation_klass.insert(values)
         end
 
@@ -120,6 +127,8 @@ module Sequel
             values.merge!(created_at: operation_klass.dataset.current_datetime)
           end
 
+
+          require 'pry'; binding.pry if self.class == Measure
           operation_klass.insert(values)
         end
       end
@@ -127,17 +136,18 @@ module Sequel
       # Enforce operation logging by un-defining operations that do not use
       # model instances (as Insert/Update/Delete operations will not be created)
       module ClassMethods
-        delegate :refresh_materialized_view, to: :operation_klass
-
-        # Handle refreshes after inserts where the main model table is reading from a materialized view and therefore needs to be refreshed before it can consume the resource
-        def fast_pk_lookup_sql
-          if materialized?
-          "SELECT * FROM \"#{view}\" WHERE \"measure_sid\" = "
-          end
+        def view_table_name
+          oplog_options.fetch(:view_table_name, table_name)
         end
 
-        def view
-          oplog_options[:view].presence || table_name
+        def materialized?
+          oplog_options.fetch(:materialized, false)
+        end
+
+        def refresh_materialized_view
+          if materialized?
+            @db.run("REFRESH MATERIALIZED VIEW #{table_name}")
+          end
         end
 
         # Hide oplog columns if asked
