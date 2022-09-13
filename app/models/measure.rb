@@ -19,8 +19,8 @@ class Measure < Sequel::Model(:measure_real_end_dates)
 
   set_primary_key [:measure_sid]
 
-  plugin :time_machine
-  plugin :oplog, primary_key: :measure_sid, oplog_table_name: :measures_oplog, view: :measures, materialized: true
+  plugin :time_machine, period_start_date_column: :effective_start_date, period_end_date_column: :effective_end_date
+  plugin :oplog, primary_key: :measure_sid, oplog_table_name: :measures_oplog, view_table_name: :measures, materialized: true
   plugin :national
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
