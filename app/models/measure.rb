@@ -178,107 +178,11 @@ class Measure < Sequel::Model(:measure_real_end_dates)
 
   dataset_module do
     def with_base_regulations
-      distinct_measure_regulation_query(role: BASE_REGULATION_ROLES)
-        .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
-        .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), :effective_end_date))
-        .join_table(:inner, :base_regulations, base_regulations__base_regulation_id: :measure_generating_regulation_id)
-        .actual_for_base_regulations
+      where(measure_generating_regulation_role: BASE_REGULATION_ROLES)
     end
 
     def with_modification_regulations
-      distinct_measure_regulation_query(role: MODIFICATION_REGULATION_ROLE)
-        .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
-        .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), :effective_end_date))
-        .join_table(:inner, :modification_regulations, modification_regulations__modification_regulation_id: :measure_generating_regulation_id)
-        .actual_for_modifications_regulations
-    end
-
-    def actual_for_base_regulations
-      if model.point_in_time.present?
-        filter do |o|
-          o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
-            (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        end
-      else
-        self
-      end
-    end
-
-    def actual_for_modifications_regulations
-      if model.point_in_time.present?
-        filter do |o|
-          o.<=(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), model.point_in_time) &
-            (o.>=(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), model.point_in_time) | ({ Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')) => nil }))
-        end
-      else
-        self
-      end
-    end
-
-    def with_measure_type(condition_measure_type)
-      where(measure_type_id: condition_measure_type.to_s)
-    end
-
-    def valid_since(first_effective_timestamp)
-      where('measures.validity_start_date >= ?', first_effective_timestamp)
-    end
-
-    def valid_to(last_effective_timestamp)
-      where('measures.validity_start_date <= ?', last_effective_timestamp)
-    end
-
-    def valid_before(last_effective_timestamp)
-      where('measures.validity_start_date < ?', last_effective_timestamp)
-    end
-
-    def valid_from(timestamp)
-      where('measures.validity_start_date >= ?', timestamp)
-    end
-
-    def not_terminated
-      where('measures.validity_end_date IS NULL')
-    end
-
-    def terminated
-      where('measures.validity_end_date IS NOT NULL')
-    end
-
-    def with_gono_id(goods_nomenclature_item_id)
-      where(goods_nomenclature_item_id:)
-    end
-
-    def with_tariff_measure_number(tariff_measure_number)
-      where(tariff_measure_number:)
-    end
-
-    def with_geographical_area(area)
-      where(geographical_area_id: area)
-    end
-
-    def with_duty_amount(amount)
-      join_table(:left, MeasureComponent, measure_sid: :measure_components__measure_sid)
-      .where(measure_components__duty_amount: amount)
-    end
-
-    def for_candidate_measure(candidate_measure)
-      where(measure_type_id: candidate_measure.measure_type_id,
-            validity_start_date: candidate_measure.validity_start_date,
-            additional_code_type_id: candidate_measure.additional_code_type_id,
-            additional_code_id: candidate_measure.additional_code_id,
-            goods_nomenclature_item_id: candidate_measure.goods_nomenclature_item_id,
-            geographical_area_id: candidate_measure.geographical_area_id,
-            national: true)
-    end
-
-    def expired_before(candidate_measure)
-      where(measure_type_id: candidate_measure.measure_type_id,
-            additional_code_type_id: candidate_measure.additional_code_type_id,
-            additional_code_id: candidate_measure.additional_code_id,
-            goods_nomenclature_item_id: candidate_measure.goods_nomenclature_item_id,
-            geographical_area_id: candidate_measure.geographical_area_id,
-            national: true)
-      .where('validity_start_date < ?', candidate_measure.validity_start_date)
-      .where(validity_end_date: nil)
+      where(measure_generating_regulation_role: MODIFICATION_REGULATION_ROLE)
     end
 
     def non_invalidated
@@ -306,18 +210,12 @@ class Measure < Sequel::Model(:measure_real_end_dates)
     end
   end
 
-  def_column_accessor :effective_end_date, :effective_start_date
-
   def national?
     national
   end
 
   def validity_date_justified?
     justification_regulation_role.present? && justification_regulation_id.present?
-  end
-
-  def generating_regulation_present?
-    measure_generating_regulation_id.present? && measure_generating_regulation_role.present?
   end
 
   def measure_generating_regulation_id
