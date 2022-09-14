@@ -1,13 +1,11 @@
 module Api
   module V2
     class ValidityPeriodPresenter < SimpleDelegator
-      def validity_period_id
-        [
-          goods_nomenclature_item_id,
-          validity_start_date&.to_i,
-          validity_end_date&.to_i,
-        ].map(&:to_s).join('-')
-      end
+      include ContentAddressableId
+
+      content_addressable_fields :to_param,
+                                 :validity_start_date,
+                                 :validity_end_date
     end
   end
 end
