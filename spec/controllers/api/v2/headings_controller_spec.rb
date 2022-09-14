@@ -1,8 +1,9 @@
 RSpec.describe Api::V2::HeadingsController, type: :controller do
   describe '#show' do
-    subject(:do_response) { get :show, params: { id: } }
+    subject(:do_response) { get :show, params: { id:, filter: } }
 
     let(:id) { heading.short_code }
+    let(:filter) { {} }
 
     let(:heading) do
       create(
@@ -11,6 +12,36 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         :non_declarable,
         :with_description,
       )
+    end
+
+    before do
+      allow(Rails.cache).to receive(:fetch).and_call_original
+    end
+
+    it 'calls the Rails cache with the correct key' do
+      do_response
+
+      expected_hash = Digest::MD5.hexdigest('{}')
+
+      expect(Rails.cache).to have_received(:fetch).with(
+        "_heading-uk-1-2022-09-14-false-#{expected_hash}",
+        { expires_in: 24.hours },
+      )
+    end
+
+    context 'when filtering by a specific geographical area' do
+      let(:filter) { { geographical_area_id: 'BR' } }
+
+      it 'calls the Rails cache with the correct key' do
+        do_response
+
+        expected_hash = Digest::MD5.hexdigest(filter.to_json)
+
+        expect(Rails.cache).to have_received(:fetch).with(
+          "_heading-uk-1-2022-09-14-false-#{expected_hash}",
+          { expires_in: 24.hours },
+        )
+      end
     end
 
     context 'when the heading does not exist' do
@@ -150,12 +181,12 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
   end
 
   describe 'GET #changes' do
-    subject(:do_response) { get :changes, params: params }
+    subject(:do_response) { get :changes, params: }
 
     let(:params) do
       {
         id: heading.short_code,
-        as_of: as_of,
+        as_of:,
       }
     end
 
