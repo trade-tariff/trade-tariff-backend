@@ -2,25 +2,22 @@ module HeadingService
   class HeadingSerializationService
     include DeclarableSerialization
 
-    def initialize(heading, actual_date, filters)
+    def initialize(heading, actual_date, filters = {})
       @heading = heading
       @actual_date = actual_date
       @filters = filters
     end
 
     def serializable_hash
-      heading_cache_key = "heading-#{TradeTariffBackend.service}-#{heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{heading.declarable?}"
-      if heading.declarable?
-        Rails.cache.fetch("_#{heading_cache_key}", expires_in: 24.hours) do
+      Rails.cache.fetch("_#{heading_cache_key}", expires_in: 24.hours) do
+        if heading.declarable?
           presenter = Api::V2::Headings::DeclarableHeadingPresenter.new(heading, filtered_measures)
           options = {
             is_collection: false,
             include: DECLARABLE_INCLUDES,
           }
           Api::V2::Headings::DeclarableHeadingSerializer.new(presenter, options).serializable_hash
-        end
-      else
-        Rails.cache.fetch("_#{heading_cache_key}", expires_in: 24.hours) do
+        else
           service = HeadingService::CachedHeadingService.new(heading, actual_date)
           hash = service.serializable_hash
           options = { is_collection: false }
@@ -40,6 +37,14 @@ module HeadingService
     private
 
     attr_reader :heading, :actual_date, :filters
+
+    def heading_cache_key
+      "heading-#{TradeTariffBackend.service}-#{heading.goods_nomenclature_sid}-#{actual_date}-#{heading.declarable?}-#{filters_hash}"
+    end
+
+    def filters_hash
+      Digest::MD5.hexdigest(filters.to_json)
+    end
 
     def filtered_measures
       MeasureCollection.new(measures, filters).filter
