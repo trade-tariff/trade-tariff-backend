@@ -144,7 +144,7 @@ RSpec.describe MeasureCondition do
   end
 
   describe '#entry_price_system?' do
-    subject(:measure_condition) { build :measure_condition, condition_code: condition_code }
+    subject(:measure_condition) { build :measure_condition, condition_code: }
 
     context 'when the condition code is for the entry price system' do
       let(:condition_code) { 'V' }

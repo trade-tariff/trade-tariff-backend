@@ -132,8 +132,6 @@ class MeasureCondition < Sequel::Model
       :weight
     elsif is_volume_condition?
       :volume
-    else
-      nil
     end
   end
 

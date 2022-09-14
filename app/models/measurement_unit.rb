@@ -1,5 +1,5 @@
 class MeasurementUnit < Sequel::Model
-  MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units_20220825.json'
+  MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units_20220825.json'.freeze
 
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
@@ -28,11 +28,11 @@ class MeasurementUnit < Sequel::Model
     end
 
     def weight_units
-      measurement_units.select { |k,v| v['measurement_unit_type'] == 'weight' }.keys
+      measurement_units.select { |_k, v| v['measurement_unit_type'] == 'weight' }.keys
     end
 
     def volume_units
-      measurement_units.select { |k,v| v['measurement_unit_type'] == 'volume' }.keys
+      measurement_units.select { |_k, v| v['measurement_unit_type'] == 'volume' }.keys
     end
 
     private
