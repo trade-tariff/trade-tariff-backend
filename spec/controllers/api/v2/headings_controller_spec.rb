@@ -24,7 +24,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       expected_hash = Digest::MD5.hexdigest('{}')
 
       expect(Rails.cache).to have_received(:fetch).with(
-        "_heading-uk-1-2022-09-14-false-#{expected_hash}",
+        "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}",
         { expires_in: 24.hours },
       )
     end
@@ -38,7 +38,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         expected_hash = Digest::MD5.hexdigest(filter.to_json)
 
         expect(Rails.cache).to have_received(:fetch).with(
-          "_heading-uk-1-2022-09-14-false-#{expected_hash}",
+          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}",
           { expires_in: 24.hours },
         )
       end
