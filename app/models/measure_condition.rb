@@ -123,6 +123,20 @@ class MeasureCondition < Sequel::Model
     condition_code == MeasureConditionCode::ENTRY_PRICE_SYSTEM_CODE
   end
 
+  def threshold_unit_type
+    if is_eps_condition?
+      :eps
+    elsif is_price_condition?
+      :price
+    elsif is_weight_condition?
+      :weight
+    elsif is_volume_condition?
+      :volume
+    else
+      nil
+    end
+  end
+
   def expresses_unit?
     measure_condition_components.any?(&:expresses_unit?)
   end
@@ -159,5 +173,21 @@ private
 
   def classification
     @classification ||= MeasureConditionClassification.new(self)
+  end
+
+  def is_price_condition?
+    condition_monetary_unit_code.present?
+  end
+
+  def is_weight_condition?
+    MeasurementUnit.weight_units.include? condition_measurement_unit_code
+  end
+
+  def is_volume_condition?
+    MeasurementUnit.volume_units.include? condition_measurement_unit_code
+  end
+
+  def is_eps_condition?
+    entry_price_system? && is_price_condition? && is_weight_condition?
   end
 end

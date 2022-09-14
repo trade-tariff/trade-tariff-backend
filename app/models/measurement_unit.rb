@@ -1,9 +1,5 @@
 class MeasurementUnit < Sequel::Model
-  MEASUREMENT_UNIT_OVERLAY_FILE = if TradeTariffBackend.updated_dtnz_unit?
-                                    'db/measurement_units_20220825.json'
-                                  else
-                                    'db/measurement_units_20220428.json'
-                                  end.freeze
+  MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units_20220825.json'
 
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
@@ -29,6 +25,14 @@ class MeasurementUnit < Sequel::Model
       else
         [unit]
       end
+    end
+
+    def weight_units
+      measurement_units.select { |k,v| v['measurement_unit_type'] == 'weight' }.keys
+    end
+
+    def volume_units
+      measurement_units.select { |k,v| v['measurement_unit_type'] == 'volume' }.keys
     end
 
     private

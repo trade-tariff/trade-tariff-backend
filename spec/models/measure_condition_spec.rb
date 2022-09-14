@@ -294,5 +294,37 @@ RSpec.describe MeasureCondition do
       it { is_expected.to be_nil }
     end
   end
+
+  describe '#threshold_unit_type' do
+    context 'when the condition code is for the entry price system' do
+      subject(:measure_condition) { build :measure_condition, :eps }
+
+      it { expect(measure_condition.threshold_unit_type).to eq :eps }
+    end
+
+    context 'when the condition is price condition' do
+      subject(:measure_condition) { build :measure_condition, :price }
+
+      it { expect(measure_condition.threshold_unit_type).to eq :price }
+    end
+
+    context 'when the condition is weight condition' do
+      subject(:measure_condition) { build :measure_condition, :weight }
+
+      it { expect(measure_condition.threshold_unit_type).to eq :weight }
+    end
+
+    context 'when the condition is volume condition' do
+      subject(:measure_condition) { build :measure_condition, :volume }
+
+      it { expect(measure_condition.threshold_unit_type).to eq :volume }
+    end
+
+    context 'when the condition is not threshold condition' do
+      subject(:measure_condition) { build :measure_condition, :without_threshold }
+
+      it { expect(measure_condition.threshold_unit_type).to eq nil }
+    end
+  end
 end
 # rubocop:enable RSpec/MultipleMemoizedHelpers

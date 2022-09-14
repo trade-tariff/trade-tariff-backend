@@ -72,7 +72,8 @@
     "unit": "x 10,000 kg",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "DHS": {
     "measurement_unit_code": "DHS",
@@ -83,7 +84,8 @@
     "unit": "kilograms",
     "multiplier": "0.01",
     "coerced_measurement_unit_code": "KGM",
-    "original_unit": "x 100 kg"
+    "original_unit": "x 100 kg",
+    "measurement_unit_type": "weight"
   },
   "DTN": {
     "measurement_unit_code": "DTN",
@@ -94,7 +96,8 @@
     "unit": "kilograms",
     "multiplier": "0.01",
     "coerced_measurement_unit_code": "KGM",
-    "original_unit": "x 100 kg"
+    "original_unit": "x 100 kg",
+    "measurement_unit_type": "weight"
   },
   "DTNE": {
     "measurement_unit_code": "DTN",
@@ -202,7 +205,8 @@
     "unit": "grams",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "GRM": {
     "measurement_unit_code": "GRM",
@@ -213,7 +217,8 @@
     "unit": "grams",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "GRT": {
     "measurement_unit_code": "GRT",
@@ -224,7 +229,8 @@
     "unit": "grams",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "HLT": {
     "measurement_unit_code": "HLT",
@@ -235,7 +241,8 @@
     "unit": "litres",
     "multiplier": "0.01",
     "coerced_measurement_unit_code": "LTR",
-    "original_unit": "x 100 litres"
+    "original_unit": "x 100 litres",
+    "measurement_unit_type": "volume"
   },
   "HMT": {
     "measurement_unit_code": "HMT",
@@ -279,7 +286,8 @@
     "unit": "kilograms",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "KGMA": {
     "measurement_unit_code": "KGM",
@@ -356,7 +364,8 @@
     "unit": "litres",
     "multiplier": "0.001",
     "coerced_measurement_unit_code": "LTR",
-    "original_unit": "x 1,000 litres"
+    "original_unit": "x 1,000 litres",
+    "measurement_unit_type": "volume"
   },
   "KMA": {
     "measurement_unit_code": "KMA",
@@ -367,7 +376,8 @@
     "unit": "kilograms",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "KMT": {
     "measurement_unit_code": "KMT",
@@ -477,7 +487,8 @@
     "unit": "litres",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "volume"
   },
   "LTR": {
     "measurement_unit_code": "LTR",
@@ -488,7 +499,8 @@
     "unit": "litres",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "volume"
   },
   "LTRA": {
     "measurement_unit_code": "LTR",
@@ -510,7 +522,8 @@
     "unit": "items",
     "multiplier": "0.001",
     "coerced_measurement_unit_code": null,
-    "original_unit": "x 1,000 items"
+    "original_unit": "x 1,000 items",
+    "measurement_unit_type": "volume"
   },
   "MPR": {
     "measurement_unit_code": "MPR",
@@ -543,7 +556,8 @@
     "unit": "metres<sup>3</sup>",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "volume"
   },
   "MTQC": {
     "measurement_unit_code": "MTQ",
@@ -631,7 +645,8 @@
     "unit": "£",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "TJO": {
     "measurement_unit_code": "TJO",
@@ -653,7 +668,8 @@
     "unit": "tonnes",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "weight"
   },
   "TNEE": {
     "measurement_unit_code": "TNE",

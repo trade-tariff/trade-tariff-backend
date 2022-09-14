@@ -101,4 +101,18 @@ RSpec.describe MeasurementUnit do
       it { expect(Sentry).to have_received(:capture_message) }
     end
   end
+
+  describe 'weight_units' do
+    subject { described_class.weight_units }
+
+    it { is_expected.to include 'DAP' }
+    it { is_expected.not_to include 'HLT' }
+  end
+
+  describe 'volume_units' do
+    subject { described_class.volume_units }
+
+    it { is_expected.to include 'HLT' }
+    it { is_expected.not_to include 'DAP' }
+  end
 end
