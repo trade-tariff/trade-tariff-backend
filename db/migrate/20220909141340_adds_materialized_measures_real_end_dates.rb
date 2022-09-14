@@ -3,14 +3,13 @@
 Sequel.migration do
   up do
     run %{
-      CREATE MATERIALIZED VIEW measures AS
+      CREATE MATERIALIZED VIEW measure_real_end_dates AS
       SELECT
           "t1"."measure_sid",
           "t1"."measure_type_id",
-          "t1"."effective_start_date",
-          "t1"."effective_end_date",
           "t1"."geographical_area_id",
           "t1"."goods_nomenclature_item_id",
+          "t1"."effective_end_date",
           "t1"."validity_start_date",
           "t1"."validity_end_date",
           "t1"."measure_generating_regulation_role",
@@ -46,20 +45,12 @@ Sequel.migration do
                       SELECT
                           "measures".*,
                           (
-                              CASE WHEN ("measures"."validity_start_date" IS NULL) THEN
-                                  base_regulations.validity_start_date
-                              ELSE
-                                  measures.validity_start_date
-                              END) AS "effective_start_date",
-                          (
-                              CASE WHEN ("measures"."validity_end_date" IS NULL
-                                      AND "base_regulations"."effective_end_date" IS NOT NULL) THEN
-                                  base_regulations.effective_end_date
-                              WHEN ("measures"."validity_end_date" IS NULL
-                                  AND "base_regulations"."effective_end_date" IS NULL) THEN
-                                  base_regulations.effective_end_date
-                              ELSE
+                              CASE WHEN ("measures"."validity_end_date" IS NOT NULL) THEN
                                   measures.validity_end_date
+                              WHEN ("base_regulations"."effective_end_date" IS NOT NULL) THEN
+                                  base_regulations.effective_end_date
+                              ELSE
+                                  base_regulations.validity_end_date
                               END) AS "effective_end_date"
                       FROM
                           "measures"
@@ -75,7 +66,7 @@ Sequel.migration do
                   "measures"."additional_code_type_id" DESC,
                   "measures"."additional_code_id" DESC,
                   "measures"."ordernumber" DESC,
-                  "effective_start_date" DESC) AS "t1"
+                  "measures"."validity_start_date" DESC) AS "t1"
           UNION (
               SELECT
                   *
@@ -83,16 +74,12 @@ Sequel.migration do
                   SELECT
                       "measures".*,
                       (
-                          CASE WHEN ("measures"."validity_start_date" IS NULL) THEN
-                              modification_regulations.validity_start_date
-                          ELSE
-                              measures.validity_start_date
-                          END) AS "effective_start_date",
-                      (
-                          CASE WHEN ("measures"."validity_end_date" IS NULL) THEN
+                          CASE WHEN ("measures"."validity_end_date" IS NOT NULL) THEN
+                              measures.validity_end_date
+                          WHEN ("modification_regulations"."effective_end_date" IS NOT NULL) THEN
                               modification_regulations.effective_end_date
                           ELSE
-                              measures.validity_end_date
+                              modification_regulations.validity_end_date
                           END) AS "effective_end_date"
                   FROM
                       "measures"
@@ -108,14 +95,14 @@ Sequel.migration do
                   "measures"."additional_code_type_id" DESC,
                   "measures"."additional_code_id" DESC,
                   "measures"."ordernumber" DESC,
-                  "effective_start_date" DESC) AS "t1")) AS "measures"
+                  "measures"."validity_start_date" DESC) AS "t1")) AS "measures"
       ORDER BY
           "measures"."geographical_area_id" ASC,
           "measures"."measure_type_id" ASC,
           "measures"."additional_code_type_id" ASC,
           "measures"."additional_code_id" ASC,
           "measures"."ordernumber" ASC,
-          "effective_start_date" DESC) AS "t1" ON ("t1"."measure_sid" = "measures"."measure_sid"
+          "measures"."validity_start_date" DESC) AS "t1" ON ("t1"."measure_sid" = "measures"."measure_sid"
       )
       WITH DATA;
     }
@@ -127,3 +114,4 @@ Sequel.migration do
     }
   end
 end
+

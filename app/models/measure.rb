@@ -19,7 +19,7 @@ class Measure < Sequel::Model(:measure_real_end_dates)
 
   set_primary_key [:measure_sid]
 
-  plugin :time_machine, period_start_date_column: :effective_start_date, period_end_date_column: :effective_end_date
+  plugin :time_machine, period_end_date_column: :effective_end_date
   plugin :oplog, primary_key: :measure_sid, oplog_table_name: :measures_oplog, view_table_name: :measures, materialized: true
   plugin :national
 
@@ -391,6 +391,8 @@ class Measure < Sequel::Model(:measure_real_end_dates)
   def meursing_measures
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
+
+  alias_method :effective_start_date, :validity_start_date
 
   private
 

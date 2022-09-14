@@ -4215,10 +4215,9 @@ CREATE VIEW public.modification_regulations AS
 CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
  SELECT t1.measure_sid,
     t1.measure_type_id,
-    t1.effective_start_date,
-    t1.effective_end_date,
     t1.geographical_area_id,
     t1.goods_nomenclature_item_id,
+    t1.effective_end_date,
     t1.validity_start_date,
     t1.validity_end_date,
     t1.measure_generating_regulation_role,
@@ -4270,7 +4269,6 @@ CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
             measures_1.operation,
             measures_1.operation_date,
             measures_1.filename,
-            measures_1.effective_start_date,
             measures_1.effective_end_date
            FROM ( SELECT t1_1.measure_sid,
                     t1_1.measure_type_id,
@@ -4299,7 +4297,6 @@ CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
                     t1_1.operation,
                     t1_1.operation_date,
                     t1_1.filename,
-                    t1_1.effective_start_date,
                     t1_1.effective_end_date
                    FROM ( SELECT measures_2.measure_sid,
                             measures_2.measure_type_id,
@@ -4329,22 +4326,14 @@ CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
                             measures_2.operation_date,
                             measures_2.filename,
                                 CASE
-                                    WHEN (measures_2.validity_start_date IS NULL) THEN base_regulations.validity_start_date
-                                    ELSE measures_2.validity_start_date
-                                END AS effective_start_date,
-                                CASE
-                                    WHEN ((measures_2.validity_end_date IS NULL) AND (base_regulations.effective_end_date IS NOT NULL)) THEN base_regulations.effective_end_date
-                                    WHEN ((measures_2.validity_end_date IS NULL) AND (base_regulations.effective_end_date IS NULL)) THEN base_regulations.effective_end_date
-                                    ELSE measures_2.validity_end_date
+                                    WHEN (measures_2.validity_end_date IS NOT NULL) THEN measures_2.validity_end_date
+                                    WHEN (base_regulations.effective_end_date IS NOT NULL) THEN base_regulations.effective_end_date
+                                    ELSE base_regulations.validity_end_date
                                 END AS effective_end_date
                            FROM (public.measures measures_2
                              JOIN public.base_regulations ON (((base_regulations.base_regulation_id)::text = (measures_2.measure_generating_regulation_id)::text)))
                           WHERE (measures_2.measure_generating_regulation_role = ANY (ARRAY[1, 2, 3]))
-                          ORDER BY measures_2.measure_generating_regulation_id DESC, measures_2.measure_generating_regulation_role DESC, measures_2.measure_type_id DESC, measures_2.goods_nomenclature_sid DESC, measures_2.geographical_area_id DESC, measures_2.geographical_area_sid DESC, measures_2.additional_code_type_id DESC, measures_2.additional_code_id DESC, measures_2.ordernumber DESC,
-                                CASE
-                                    WHEN (measures_2.validity_start_date IS NULL) THEN base_regulations.validity_start_date
-                                    ELSE measures_2.validity_start_date
-                                END DESC) t1_1
+                          ORDER BY measures_2.measure_generating_regulation_id DESC, measures_2.measure_generating_regulation_role DESC, measures_2.measure_type_id DESC, measures_2.goods_nomenclature_sid DESC, measures_2.geographical_area_id DESC, measures_2.geographical_area_sid DESC, measures_2.additional_code_type_id DESC, measures_2.additional_code_id DESC, measures_2.ordernumber DESC, measures_2.validity_start_date DESC) t1_1
                 UNION
                  SELECT t1_1.measure_sid,
                     t1_1.measure_type_id,
@@ -4373,7 +4362,6 @@ CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
                     t1_1.operation,
                     t1_1.operation_date,
                     t1_1.filename,
-                    t1_1.effective_start_date,
                     t1_1.effective_end_date
                    FROM ( SELECT measures_2.measure_sid,
                             measures_2.measure_type_id,
@@ -4403,22 +4391,15 @@ CREATE MATERIALIZED VIEW public.measure_real_end_dates AS
                             measures_2.operation_date,
                             measures_2.filename,
                                 CASE
-                                    WHEN (measures_2.validity_start_date IS NULL) THEN modification_regulations.validity_start_date
-                                    ELSE measures_2.validity_start_date
-                                END AS effective_start_date,
-                                CASE
-                                    WHEN (measures_2.validity_end_date IS NULL) THEN modification_regulations.effective_end_date
-                                    ELSE measures_2.validity_end_date
+                                    WHEN (measures_2.validity_end_date IS NOT NULL) THEN measures_2.validity_end_date
+                                    WHEN (modification_regulations.effective_end_date IS NOT NULL) THEN modification_regulations.effective_end_date
+                                    ELSE modification_regulations.validity_end_date
                                 END AS effective_end_date
                            FROM (public.measures measures_2
                              JOIN public.modification_regulations ON (((modification_regulations.modification_regulation_id)::text = (measures_2.measure_generating_regulation_id)::text)))
                           WHERE (measures_2.measure_generating_regulation_role = 4)
-                          ORDER BY measures_2.measure_generating_regulation_id DESC, measures_2.measure_generating_regulation_role DESC, measures_2.measure_type_id DESC, measures_2.goods_nomenclature_sid DESC, measures_2.geographical_area_id DESC, measures_2.geographical_area_sid DESC, measures_2.additional_code_type_id DESC, measures_2.additional_code_id DESC, measures_2.ordernumber DESC,
-                                CASE
-                                    WHEN (measures_2.validity_start_date IS NULL) THEN modification_regulations.validity_start_date
-                                    ELSE measures_2.validity_start_date
-                                END DESC) t1_1) measures_1
-          ORDER BY measures_1.geographical_area_id, measures_1.measure_type_id, measures_1.additional_code_type_id, measures_1.additional_code_id, measures_1.ordernumber, measures_1.effective_start_date DESC) t1 ON ((t1.measure_sid = measures.measure_sid)))
+                          ORDER BY measures_2.measure_generating_regulation_id DESC, measures_2.measure_generating_regulation_role DESC, measures_2.measure_type_id DESC, measures_2.goods_nomenclature_sid DESC, measures_2.geographical_area_id DESC, measures_2.geographical_area_sid DESC, measures_2.additional_code_type_id DESC, measures_2.additional_code_id DESC, measures_2.ordernumber DESC, measures_2.validity_start_date DESC) t1_1) measures_1
+          ORDER BY measures_1.geographical_area_id, measures_1.measure_type_id, measures_1.additional_code_type_id, measures_1.additional_code_id, measures_1.ordernumber, measures_1.validity_start_date DESC) t1 ON ((t1.measure_sid = measures.measure_sid)))
   WITH NO DATA;
 
 
@@ -8043,6 +8024,14 @@ ALTER TABLE ONLY public.audits
 
 
 --
+-- Name: base_regulations_oplog base_regulations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.base_regulations_oplog
+    ADD CONSTRAINT base_regulations_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: certificate_description_periods_oplog certificate_description_periods_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8627,6 +8616,14 @@ ALTER TABLE ONLY public.measurements_oplog
 
 
 --
+-- Name: measures_oplog measures_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.measures_oplog
+    ADD CONSTRAINT measures_pkey PRIMARY KEY (oid);
+
+
+--
 -- Name: meursing_additional_codes_oplog meursing_additional_codes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -8672,6 +8669,14 @@ ALTER TABLE ONLY public.meursing_table_cell_components_oplog
 
 ALTER TABLE ONLY public.meursing_table_plans_oplog
     ADD CONSTRAINT meursing_table_plans_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: modification_regulations_oplog modification_regulations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.modification_regulations_oplog
+    ADD CONSTRAINT modification_regulations_pkey PRIMARY KEY (oid);
 
 
 --
