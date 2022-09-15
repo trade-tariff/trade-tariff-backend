@@ -31,6 +31,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           scheme_code: scheme.scheme_code,
           title: scheme.title,
           countries: scheme.countries,
+          cumulation_methods: scheme.cumulation_methods,
           footnote: scheme.footnote,
           unilateral: true,
           fta_intro: scheme.fta_intro,

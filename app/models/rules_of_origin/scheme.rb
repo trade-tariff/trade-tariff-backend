@@ -6,6 +6,8 @@ module RulesOfOrigin
                   :fta_intro_file, :countries, :footnote, :adopted_by_uk, :country_code, :notes,
                   :unilateral
 
+    attr_reader :cumulation_methods
+
     attr_writer :rule_sets
 
     delegate :read_referenced_file, to: :scheme_set
@@ -20,6 +22,18 @@ module RulesOfOrigin
     def links
       @links || []
     end
+
+    def cumulation_methods=(cumulation_methods_data)
+      @cumulation_methods = cumulation_methods_data.transform_values do |value|
+        case value
+        when Hash then Array.wrap(value['countries'])
+        else Array.wrap(value)
+        end
+      end
+    end
+
+    def articles=(value); end
+    def features=(value); end
 
     def explainers=(explainers_data)
       @explainers = Array.wrap(explainers_data)
