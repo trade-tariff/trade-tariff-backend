@@ -1,13 +1,21 @@
 RSpec.describe Beta::Search::InterceptMessage do
   describe '.build' do
-    subject(:result) { described_class.build(search_query_parser_result.original_search_query) }
+    subject(:intercept_message) { described_class.build(search_query) }
 
-    let(:search_query_parser_result) { build(:search_query_parser_result, :multiple_hits) }
+    context 'when the query corresponds to an existing intercept message' do
+      let(:search_query) { 'plasti' }
 
-    it { is_expected.to be_a(described_class) }
-    it { expect(result.id).to eq('f12f2d963bd9edfcbc56138adff3698a') }
-    it { expect(result).to respond_to(:term) }
-    it { expect(result).to respond_to(:message) }
+      it { is_expected.to be_a(described_class) }
+      it { expect(intercept_message.id).to eq('79ad8b533ed4f173c6d08dd1ba89a204') }
+      it { expect(intercept_message).to respond_to(:term) }
+      it { expect(intercept_message).to respond_to(:message) }
+    end
+
+    context 'when the query does not correspond to an intercept message' do
+      let(:search_query) { 'foo' }
+
+      it { is_expected.to be_nil }
+    end
   end
 
   describe '#formatted_message' do

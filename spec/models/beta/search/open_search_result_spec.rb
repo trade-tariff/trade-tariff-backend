@@ -268,16 +268,16 @@ RSpec.describe Beta::Search::OpenSearchResult do
   end
 
   describe '#intercept_message' do
-    subject(:result) { build(:search_result) }
+    context 'when there is a matching intercept message for the search term' do
+      subject(:result) { build(:search_result, :intercept_message).intercept_message }
 
-    it 'will match the object in the yaml file' do
-      searched_term = result.search_query_parser_result.corrected_search_query
-      expect(searched_term).to eq(I18n.t("#{searched_term}.title"))
+      it { is_expected.to be_a(Beta::Search::InterceptMessage) }
     end
 
-    it 'will not match the object in the yaml file' do
-      searched_term = 'random_string'
-      expect(searched_term).not_to eq(I18n.t("#{searched_term}.title"))
+    context 'when there is no matching intercept message for the search term' do
+      subject(:result) { build(:search_result, :multiple_hits).intercept_message }
+
+      it { is_expected.to be_nil }
     end
   end
 

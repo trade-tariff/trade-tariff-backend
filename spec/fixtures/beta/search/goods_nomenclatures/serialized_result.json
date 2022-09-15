@@ -16,10 +16,7 @@
         }
       },
       "intercept_message": {
-        "data": {
-          "id": "bdf0d878278f881cb5f14d7fd0703d6d",
-          "type": "intercept_message"
-        }
+        "data": null
       },
       "hits": {
         "data": [
@@ -200,15 +197,6 @@
         "cnt": 1,
         "score": 74.98428,
         "avg": 74.98428
-      }
-    },
-    {
-      "id": "bdf0d878278f881cb5f14d7fd0703d6d",
-      "type": "intercept_message",
-      "attributes": {
-        "term": "ricotta",
-        "message": "Based on your search term we have provided the subheading for ricotta",
-        "formatted_message": "Based on your search term we have provided the subheading for ricotta"
       }
     },
     {

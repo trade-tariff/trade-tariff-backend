@@ -1,10 +1,10 @@
 module Beta
   module Search
     class InterceptMessage
-      CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s])/i
-      HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s])/i
-      SUBHEADING_REGEX = /(?<type>subheading)s? (?<optional>code )?(?<code>[0-9]{6,8})(?<terminator>[.,\s])/i
-      COMMODITY_REGEX = /(?<type>commodity|commodities) (?<optional>code )?(?<code>[0-9]{10})(?<terminator>[.,\s])/i
+      CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s)])/i
+      HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s)])/i
+      SUBHEADING_REGEX = /(?<type>subheading)s? (?<optional>code )?(?<code>[0-9]{6,8})(?<terminator>[.,\s)])/i
+      COMMODITY_REGEX = /(?<type>commodity|commodities) (?<optional>code )?(?<code>[0-9]{10})(?<terminator>[.,\s)])/i
 
       GOODS_NOMENCLATURE_LINK_TRANSFORMERS = {
         CHAPTER_REGEX => lambda do |matched_text|
@@ -41,16 +41,17 @@ module Beta
       def self.build(search_query)
         query = search_query.downcase
 
-        return unless query.eql?(I18n.t("#{query}.title"))
+        return if I18n.t("#{query}.message", default: nil).blank?
 
-        result = new
-        term = I18n.t("#{query}.title")
+        intercept_message = new
+
         message = I18n.t("#{query}.message")
+        message = message.ends_with?('.') ? message : message.concat('.')
 
-        result.term = term
-        result.message = message.ends_with?('.') ? message : message.concat('.')
+        intercept_message.term = query
+        intercept_message.message = message
 
-        result
+        intercept_message
       end
 
       def formatted_message

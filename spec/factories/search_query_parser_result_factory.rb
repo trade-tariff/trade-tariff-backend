@@ -48,6 +48,16 @@ FactoryBot.define do
       verbs { [] }
     end
 
+    trait :intercept_message do
+      original_search_query { 'plasti' }
+      corrected_search_query { 'plasti' }
+
+      adjectives { [] }
+      noun_chunks { %w[plasti] }
+      nouns { %w[plasti] }
+      verbs { [] }
+    end
+
     trait :clothing do
       original_search_query { 'clothing' }
       corrected_search_query { 'clothing' }
