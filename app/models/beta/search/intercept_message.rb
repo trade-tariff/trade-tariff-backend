@@ -1,10 +1,10 @@
 module Beta
   module Search
     class InterceptMessage
-      CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code)? (?<code>[0-9]{1,2})(?<terminator>[.,\s])/i
-      HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code)? (?<code>[0-9]{4})(?<terminator>[.,\s])/i
-      SUBHEADING_REGEX = /(?<type>subheading)s? (?<optional>code)? (?<code>[0-9]{6,8})(?<terminator>[.,\s])/i
-      COMMODITY_REGEX = /(?<type>commodity|commodities) (?<optional>code)? (?<code>[0-9]{10})(?<terminator>[.,\s])/i
+      CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s])/i
+      HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s])/i
+      SUBHEADING_REGEX = /(?<type>subheading)s? (?<optional>code )?(?<code>[0-9]{6,8})(?<terminator>[.,\s])/i
+      COMMODITY_REGEX = /(?<type>commodity|commodities) (?<optional>code )?(?<code>[0-9]{10})(?<terminator>[.,\s])/i
 
       GOODS_NOMENCLATURE_LINK_TRANSFORMERS = {
         CHAPTER_REGEX => lambda do |matched_text|
