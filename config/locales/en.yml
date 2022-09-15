@@ -30,34 +30,343 @@
 # available at https://guides.rubyonrails.org/i18n.html.
 
 en:
-  gifts:
-    title: "gifts"
-    message: >-
-      There isn't a single commodity code for gifts. Classification is specific to the type of good being imported so, to find the right code, you need to know the details about your product.
-      This may include the: type of product; purpose of the product; materials used to make it; production methods used to make it; way it's packaged.
-      You may also be interested in the following guidance on the duty implications of importing gifts at: [https://www.gov.uk/goods-sent-from-abroad/tax-and-duty](https://www.gov.uk/goods-sent-from-abroad/tax-and-duty)
-  lantern:
-    title: "lantern"
-    message: >-
-      Based on your search term we have provided the subheading for non-electrical lighting. If your product is electrical, you should consider lamps or lightsources of chapter 85
-  horses:
-    title: "horses"
-    message: "Based on your search term we have provided the subheading for horses."
-  clothing:
-    title: "clothing"
-    message: "Based on your search term we have provided the subheading for clothing"
-  ricotta:
-    title: "ricotta"
-    message: "Based on your search term we have provided the subheading for ricotta"
+  plasti:
+    title: "plasti"
+    message: "Based on your search term, we believe you are looking for plastics of chapter 39."
+
   plastic toy:
     title: "plastic toy"
-    message: "Based on your search, we believe you are looking for chapter 39 if this is a toy for animal. Please use heading 9503 for Human use."
-  chicken:
-    title: "chicken"
-    message: "Please use subheading 010511 for chicken."
-  soya beverages:
-    title: "soya beverages"
-    message: "Please use subheading 22029915 for soya beverages."
-  cherry tomatoes:
-    title: "cherry tomatoes"
-    message: "Please use commodity code 0702000007 for soya cherry tomatoes."
+    message: "Based on your search term, we believe you are looking for chapter 39 if a toy for an animal. Please use heading 9503 for toys for human use."
+
+  exhibition stand:
+    title: "exhibition stand"
+    message: "Exhibition stands may be classified under the constituent material, as long as there are no electrical components, e.g. TV or video reception apparatus, loudspeakers or monitors under chapter 85. Floor-standing exhibition stands would be classified under furniture to heading 9403 to the material of the frame."
+
+  glas:
+    title: "glas"
+    message: "Based on your search term, we believe you are looking for glass, which is in chapter 70."
+
+  ipad:
+    title: "ipad"
+    message: "Based on your search term, we believe you are looking for automatic data-processing machines, which are presented under heading 84713."
+
+  bathroom:
+    title: "bathroom"
+    message: "The term is too generic. Please specify whether the goods are sanitaryware, toiletries or linen."
+
+  dres:
+    title: "dres"
+    message: "Based on your search term, we believe you are either looking for a dress of heading 6104 or heading 6204, depending on whether it is knitted or woven, and if a dressing gown then heading 6107, heading 6108, heading 6207, heading 6208 would apply based on the same principal and the sex of the garment."
+
+  security tags:
+    title: "security tags"
+    message: "Classification would depend on whether they are magnetic or electronic. Security tags may appear under heading 8505 (if they are magnetic), heading 8523 (solid-state non-volatile storage devices) or heading 8531 (Electric sound or visual signalling apparatus)."
+
+  canvas bag:
+    title: "canvas bag"
+    message: "Based on your search term, we believe you are looking for heading 4202. This depends on type of bag e.g. handbag or tote bag and the constituent material."
+
+  vape:
+    title: "vape"
+    message: "Classification depends on whether the goods are disposable or not - use heading 2404 if you are searching for disposable vapes or subheading 854340 for non-disposable vapes. Vape cartridges and refills are classified under commodity 2404120010 if they are disposable or under commodity 8543400000 if they are non-disposable."
+
+  adaptor:
+    title: "adaptor"
+    message: "The term you have entered is too generic, an adaptor plug socket would be classified under subheading 853669, adaptor head units of plastic to commodity 3926909790, an adaptor with built in charger to subheading 850440."
+
+  gift:
+    title: "gift"
+    message: "Based on your search term, there are too many codes to list. Narrow your search to each article: please consider what it is, what it's made of and what it does."
+
+  mannequin:
+    title: "mannequin"
+    message: "Based on your search term, we believe you are looking for Tailors' dummies and other lay figures heading 9618."
+
+  paperwork:
+    title: "paperwork"
+    message: "Paperwork can be found in chapter 49. The precise commodity will depend on the type of paperwork."
+
+  power suppl:
+    title: "power suppl"
+    message: "Chargers and ballasts would be classified under heading 8504."
+
+  protective clothing:
+    title: "protective clothing"
+    message: "If the goods are knitted, then this is classified under heading 6114. If the goods are wovem then this is classified under heading 6211."
+
+  prototype:
+    title: "prototype"
+    message:
+      "Please specify whether this relates to a prototype motor car or a prototype model for demonstration purposes.
+
+      A prototype motor car may be classified under heading 9705 if it has historical merit. A prototype model for demonstration purposes would be classified under heading 9023."
+
+  repair kit:
+    title: "repair kit"
+    message: "Puncture repair kits for retail sale are classified under subheading 820600."
+
+  repair tool:
+    title: "repair tool"
+    message: "Repair tools are classified under chapter 82. To get more accurate results, please specify the type of tool."
+
+  replica:
+    title: "replica"
+    message: "Based on your search term, we believe you could be looking for replica handgun, at commodity 9303900000 or replicating machinery under heading 8443."
+
+  rescue:
+    title: "rescue"
+    message: "An emergency tool repair kit would be classified under commodity code 82060000 and a search and rescue camera to heading 8525."
+
+  reusable water bottles:
+    title: "reusable water bottles"
+    message: "Normal water bottles are classified under heading 3924 or heading 7010. Rubber hot water bottles are classified under heading 4014."
+
+  rifle sight:
+    title: "rifle sight"
+    message: "Rifle scopes are classified under subheading 900580."
+
+  seagrass:
+    title: "seagrass"
+    message: "Basketwork is classified under heading 4602."
+
+  shop fittings:
+    title: "shop fittings"
+    message: "Please specify whether this search relates to exhibition stands, electrical fittings, luminaries, advertising materials, furniture, etc."
+
+  skort:
+    title: "skort"
+    message: "This commodity can be found either in chapter 61 if kniited, or in chapter 62 if woven."
+
+  sneaker:
+    title: "sneaker"
+    message: "Sneakers are found in chapter 64. To find a more accurate response, specify the material of the uppers or soles."
+
+  spatula:
+    title: "spatula"
+    message: "Spatulas may be found in subheading 392410, heading 4419 or subheading 821599, depending on the material of the functional part."
+
+  spirit level:
+    title: "spirit level"
+    message: "Spirit levels may be classified under subheading 901530, depending on whether electronic or not."
+
+  steamer:
+    title: "steamer"
+    message: "Steamers may be found under subheading 851679, depending on what it was used for."
+
+  strainer:
+    title: "strainer"
+    message: "Strainers may be found under heading 7314 (metal mesh) or 7616 (sloth)."
+
+  straw hat:
+    title: "straw hat"
+    message: "Straw hats may be found under heading 6504 (headgeat, plaited)."
+
+  sweetner:
+    title: "sweetner"
+    message: "Sweeteners can be found under subheading 210690 (Food preparations not elsewhere specified)."
+
+  sweetener:
+    title: "sweetener"
+    message: "Sweeteners can be found under subheading 210690 (Food preparations not elsewhere specified)."
+
+  table mats:
+    title: "table mats"
+    message: "Table mats are classified under heading 3924 (knitted) or heading 6302 (woven), depending on the constituent material."
+
+  tennis racke:
+    title: "tennis racke"
+    message: "Tennis rackets are found under subheading 95065100 (Articles and equipment for sport)."
+
+  tennis racket:
+    title: "tennis racket"
+    message: "Tennis rackets are found under subheading 95065100 (Articles and equipment for sport)."
+
+  terminal block:
+    title: "terminal block"
+    message: "Terminal blocks are found under subheading 853690 (Apparatus for protecting electrical circuits)."
+
+  tinned food:
+    title: "tinned food"
+    message: "Based on your search term, there are too many codes to list. Narrow your search to the type of food stuff, fresh, frozen, etc."
+
+  toilet cleaner:
+    title: "toilet cleaner"
+    message: "Toilet cleaners are classified under heading 3808 or heading 3824, depending onthe ingredients."
+
+  tracker:
+    title: "tracker"
+    message: "Trackers can be found under radar apparatus in subheading 852691."
+
+  trash:
+    title: "trash"
+    message: "Please specify whether this relates to wastebins or rubbish bins. Commodities are classified according to the constituent material. If plastic, then this is classified under commodity 3924900090 and if metal to headng 7323 (if steel or iron)."
+
+  travel plug:
+    title: "travel plug"
+    message: "Universal wall plug adaptors can be found under commodity 8536699099."
+
+  upvc:
+    title: "upvc"
+    message: "Based on your search term, we believe you are looking for plastics of chapter 39."
+
+  urine bag:
+    title: "urine bag"
+    message: "Urine bags are classified under heading 3926. Catheters are classified under commodity 9018390000."
+
+  vent:
+    title: "vent"
+    message:
+      "Please specify whether this relates to ventilating hoods or non-mechanical ventilators for the building industry.
+
+      Ventilating hoods would be classified under heading 8414 and non-mechanical ventilators for the building industry to subheading 732690."
+
+  vintage:
+    title: "vintage"
+    message: "Please specify the type of item, vehicle, clothing, toy, furniture, jewellery, etc. The goods could be classified under chapter 97 if they have accrued historic, collector's merit and are over 30 years, or over 100 years as an antique."
+
+  vitamin a acetate beadlet 325cws/gfb:
+    title: "vitamin a acetate beadlet 325cws/gfb"
+    message: "Vitamin tablets are classified under heading 2106."
+
+  water based paint:
+    title: "water based paint"
+    message: "Water based paints can be found under heading 3209 (Paints dispersed or disolved in an aqueous medium)."
+
+  wet wipe:
+    title: "wet wipe"
+    message:
+      "Classification depends on the purpose of the good and the ingredients.
+
+      If the wipes are not for care of the skin under 3304 or organic surface-active or other surface-active preparations of 3402, then it may be worth considering commodity code 3808949090 for disinfectant wipes under chemical preparations."
+
+  witamin c:
+    title: "witamin c"
+    message: "Vitamin C can be found under heading 2016 (food preparations not elsewhere specified)."
+
+  vitamin c:
+    title: "vitamin c"
+    message: "Vitamin C can be found under heading 2016 (food preparations not elsewhere specified)."
+
+  woodwind:
+    title: "woodwind"
+    message: "For woodwind, please look under heading 9205, wind musical instruments."
+
+  workwear:
+    title: "workwear"
+    message: "Workwears can be found in either heading 6114 or heading 6211, depending on whether the items are knitted or woven."
+
+  template:
+    title: "template"
+    message: "The search term entered is too generic. Please specify the type of item and the constituent material."
+
+  acupressure rings:
+    title: "acupressure rings"
+    message: "Acupressure rings may be found under heading 9018. Please be more specific to find the precise commodity code."
+
+  aircraft engine oil cooler:
+    title: "aircraft engine oil cooler"
+    message: "Aircraft engine oil coolers can be found uder engine parts (heading 8409 or heading 8412)."
+
+  aircraft spares:
+    title: "aircraft spares"
+    message: "Aircraft spares can be found under heading 8807 (aircraft parts)."
+
+  astroturf:
+    title: "astroturf"
+    message: "Based on your search term, we believe you are looking for commodity 5703210000."
+
+  attenuator:
+    title: "attenuator"
+    message: "Based on your search term, we believe you are looking for heading 8533. The precise commodity will be  dependent on its use."
+
+  audio splitter:
+    title: "audio splitter"
+    message: "Based on your search term, we believe you are looking for commodity 8563699099."
+
+  audio visual:
+    title: "audio visual"
+    message: "Video apparatus would be classified under heading 8521, TV and camera apparatus to heading 8525, monitors to heading 8528 and audio visual receivers to heading 8527."
+
+  backgammon:
+    title: "backgammon"
+    message: "Backgammon can be found under parlour games, commodity code 9504908000."
+
+  bag strap:
+    title: "bag strap"
+    message: "Based on your search term, we believe you are looking for heading 4202. The actual commodity code will then be dependent on the constituent material."
+
+  bath robe:
+    title: "bath robe"
+    message: "Bathrobes can be found in heading 6107, heading 6108, heading 6207 or heading 6208. The precise commodity code depends on whether the item is knitted or woven and the se of the garment."
+
+  bath sponge:
+    title: "bath sponge"
+    message: "Bath sponges are found in commodity code 3924900090 or in heading 6302, depending on whether plastic or textile."
+
+  bearin:
+    title: "bearin"
+    message: "Based on your search term, we believe you are looking for bearings. Ball bearings are classified under heading 8482 and bearing housings to heading 8483."
+
+  bike frame:
+    title: "bike frame"
+    message: "Bike frames are classified under parts of bicycles, subheading 871491."
+
+  bin bag:
+    title: "bin bag"
+    message: "Bin bags are classified under commodity 3923210000 if dustbin liners of plastic for articles for the conveyance or packing of goods, of plastics; stoppers, lids, caps and other closures, of plastics."
+
+  bodysuit:
+    title: "bodysuit"
+    message: "Classification would depend on whether the garment is knitted (chapter 61) or woven (chapter 62)."
+
+  boys shoes:
+    title: "boys shoes"
+    message: "Shoes are found in chapter 64. The precise commodity depends on whether the items are waterproof and the material of the uppers and soles."
+
+  butto:
+    title: "butto"
+    message: "Based on your search term, we believe you are looking for buttons of heading 9606."
+
+  buttons:
+    title: "buttons"
+    message: "Based on your search term, we believe you are looking for buttons of heading 9606."
+
+  cake turntable:
+    title: "cake turntable"
+    message: "Based on your search term, we believe you are looking for heading 3926, heading 7313 or subheading 732393, dependent on the constituent material."
+
+  camera accessories:
+    title: "camera accessories"
+    message: "Camera accessories can be found under Digital, TV or video cameras (heading 8525), instant print (heading 9006) or cinematographic goods (heading 9007)."
+
+  car wing:
+    title: "car wing"
+    message: "Most car parts would be classified under heading 8708, however, some parts are classified under more specific headings. This includes car engines and their parts, please read the section notes for this chapter for any exclusions."
+
+  cash drawer:
+    title: "cash drawer"
+    message: "Based on your search term, we believe you are looking for commodity 8303009000."
+
+  cat litter:
+    title: "cat litter"
+    message: "Based on your search term, we believe you are looking for heading 1404, 2508, 3824, dependent on the constituent material."
+
+  catering equipment:
+    title: "catering equipment"
+    message: "Based on your search term, there are too many codes to list. Narrow your search to each of the articles."
+
+  cellophane:
+    title: "cellophane"
+    message: "Based on your search term, we believe you are looking for heading 3920 dependent on the constituent material."
+
+  cellphone tempered glass:
+    title: "cellphone tempered glass"
+    message: "Based on your search term, we believe you are looking for commodity 7007198095."
+
+  ceramic cups:
+    title: "ceramic cups"
+    message: "Based on your search term, we believe you are looking for heading 6911 or heading 6912, dependent on the type of ceramic."
+
+  chamomile:
+    title: "chamomile"
+    message: "Based on your search term, we believe you are looking for heading 062905090."
