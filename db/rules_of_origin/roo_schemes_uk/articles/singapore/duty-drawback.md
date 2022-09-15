@@ -1,5 +1,3 @@
-## Prohibition of Drawback of, or Exemption from, Customs Duties
-
 1.	Non-originating materials used in the manufacture of products originating in the UK or in Singapore, for which an origin declaration has been issued or made out in accordance with the provisions of Title 5, shall not be subject in the UK or in Singapore to drawback of, or exemption from, customs duties of whatever kind.
 
 2.	The prohibition in paragraph 1 shall apply to any arrangement for refund, remission or non- payment, whether partial or complete, of customs duties or charges having an equivalent effect, applicable in the UK or in Singapore to materials used in the manufacture, where such refund, remission or non-payment applies, whether expressly or in effect, where the products obtained from such materials are exported, but not where they are retained in a Party for home use.

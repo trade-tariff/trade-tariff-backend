@@ -1,5 +1,3 @@
-## Prohibition of drawback of, or exemption from, import duties
-
 1.	Non-originating materials, used in the manufacture of products originating in the United Kingdom or in Mexico or in the European Union within the meaning of this Origin Reference Document for which a proof of origin is issued or made out in accordance with the provisions of Title V shall not be subject in the United Kingdom or Mexico to drawback of, or exemption from, import duties.
 
 2.	For the purpose of this Article, the term 'import duties' shall include customs duties, as defined in Article 3(8) of the Decision , and anti-dumping and countervailing duties applied in conformity with Article 14 of the Decision.
