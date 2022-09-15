@@ -44,9 +44,11 @@ module Beta
         return unless query.eql?(I18n.t("#{query}.title"))
 
         result = new
+        term = I18n.t("#{query}.title")
+        message = I18n.t("#{query}.message")
 
-        result.term = I18n.t("#{query}.title")
-        result.message = I18n.t("#{query}.message")
+        result.term = term
+        result.message = message.ends_with?('.') ? message : message.concat('.')
 
         result
       end
