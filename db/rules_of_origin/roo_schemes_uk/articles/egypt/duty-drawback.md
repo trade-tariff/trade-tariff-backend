@@ -1,5 +1,3 @@
-## Prohibition of drawback of, or exemption from, customs duties
-
 1.	Non-originating materials used in the manufacture of products originating in the United Kingdom or in Egypt for which a proof of origin is issued or made out in accordance with the provisions of Title V shall not be subject in the United Kingdom or Egypt to drawback of, or exemption from, customs duties of whatever kind.
 
 2.	The prohibition in paragraph 1 shall apply to any arrangement for refund, remission or non-payment, partial or complete, of customs duties or charges having an equivalent effect, applicable in the United Kingdom or Egypt to materials used in the manufacture, where such refund, remission or non-payment applies, expressly or in effect, when products obtained from the said materials are exported and not when they are retained for home use there.
@@ -10,4 +8,4 @@
 
 5.	The provisions of paragraphs 1 to 4 shall apply only in respect of materials which are of the kind to which the United Kingdom-Egypt Agreement applies. 
 
-6. 	The prohibition in paragraph 1 of this Article shall not apply if the products are considered as originating in the United Kingdom or Egypt without application of cumulation with materials originating in Switzerland (including Liechtenstein), Turkey or one of the countries referred to in Articles 3(2) and 4(2).
+1. 	The prohibition in paragraph 1 of this Article shall not apply if the products are considered as originating in the United Kingdom or Egypt without application of cumulation with materials originating in Switzerland (including Liechtenstein), Turkey or one of the countries referred to in Articles 3(2) and 4(2).
