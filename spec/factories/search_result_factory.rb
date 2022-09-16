@@ -40,6 +40,13 @@ FactoryBot.define do
       end
     end
 
+    trait :intercept_message do
+      transient do
+        result_fixture { 'multiple_hits' }
+        search_query_parser_result { build(:search_query_parser_result, :intercept_message) }
+      end
+    end
+
     trait :no_guides do
       multiple_hits
     end

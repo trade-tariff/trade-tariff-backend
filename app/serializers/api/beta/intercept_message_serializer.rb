@@ -6,7 +6,8 @@ module Api
       set_type :intercept_message
 
       attributes :term,
-                 :message
+                 :message,
+                 :formatted_message
     end
   end
 end
