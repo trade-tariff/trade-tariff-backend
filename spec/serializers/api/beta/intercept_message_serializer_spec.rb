@@ -7,12 +7,12 @@ RSpec.describe Api::Beta::InterceptMessageSerializer do
     let(:expected) do
       {
         data: {
-          id: '79ad8b533ed4f173c6d08dd1ba89a204',
+          id: '9798b947790cd77dec021f882e7b3e29',
           type: :intercept_message,
           attributes: {
             term: 'plasti',
-            message: 'Based on your search term, we believe you are looking for plastics of chapter 39.',
-            formatted_message: 'Based on your search term, we believe you are looking for plastics of (chapter 39)[/chapters/39].',
+            message: 'Based on your search term, we believe you are looking for plastics which belong in chapter 39.',
+            formatted_message: 'Based on your search term, we believe you are looking for plastics which belong in (chapter 39)[/chapters/39].',
           },
         },
       }

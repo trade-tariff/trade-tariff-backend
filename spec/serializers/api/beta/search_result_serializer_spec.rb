@@ -27,7 +27,7 @@ RSpec.describe Api::Beta::SearchResultSerializer do
             search_query_parser_result: {
               data: { id: '50cf19912960f65490b334ea9c196eea', type: :search_query_parser_result },
             },
-            intercept_message: { data: nil },
+            intercept_message: { data: { id: "be815ed834d0c282cab563ea73556f97", type: :intercept_message } },
             hits: {
               data: [
                 { id: '43821', type: :subheading },

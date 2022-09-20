@@ -6,7 +6,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       let(:search_query) { 'plasti' }
 
       it { is_expected.to be_a(described_class) }
-      it { expect(intercept_message.id).to eq('79ad8b533ed4f173c6d08dd1ba89a204') }
+      it { expect(intercept_message.id).to eq('9798b947790cd77dec021f882e7b3e29') }
       it { expect(intercept_message).to respond_to(:term) }
       it { expect(intercept_message).to respond_to(:message) }
     end
