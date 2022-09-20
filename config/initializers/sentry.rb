@@ -1,5 +1,8 @@
 Sentry.init do |config|
-  config.rails.report_rescued_exceptions = false
-
   config.breadcrumbs_logger = [:active_support_logger]
+
+  config.excluded_exceptions += %w[
+    Sequel::Plugins::RailsExtensions::ModelNotFound
+    Sequel::NoMatchingRow
+  ]
 end
