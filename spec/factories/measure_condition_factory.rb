@@ -40,9 +40,18 @@ FactoryBot.define do
 
   trait :threshold do
     condition_duty_amount { 3.50 }
-    condition_monetary_unit_code { 'GBP' }
+    condition_monetary_unit_code {}
     condition_measurement_unit_code { 'DTN' }
     condition_measurement_unit_qualifier_code { 'R' }
+    certificate_code {}
+    certificate_type_code {}
+  end
+
+  trait :without_threshold do
+    condition_duty_amount {}
+    condition_monetary_unit_code {}
+    condition_measurement_unit_code {}
+    condition_measurement_unit_qualifier_code {}
     certificate_code {}
     certificate_type_code {}
   end
@@ -119,5 +128,26 @@ FactoryBot.define do
   trait :without_certificate do
     certificate_code {}
     certificate_type_code {}
+  end
+
+  trait :weight do
+    threshold
+    condition_measurement_unit_code { 'KGM' }
+  end
+
+  trait :volume do
+    threshold
+    condition_measurement_unit_code { 'LTR' }
+  end
+
+  trait :price do
+    threshold
+    condition_monetary_unit_code { 'EUR' }
+  end
+
+  trait :eps do
+    weight
+    price
+    condition_code { 'V' }
   end
 end

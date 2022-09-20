@@ -75,6 +75,7 @@ RSpec.describe MeasureUnitService do
             'multiplier' => '0.01',
             'coerced_measurement_unit_code' => 'LTR',
             'original_unit' => 'x 100 litres',
+            'measurement_unit_type' => 'volume',
           },
         }
       end

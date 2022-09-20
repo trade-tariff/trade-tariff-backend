@@ -260,9 +260,5 @@ module TradeTariffBackend
     def beta_search_debug?
       ENV['BETA_SEARCH_DEBUG'] == 'true'
     end
-
-    def updated_dtnz_unit?
-      ENV['UPDATED_MEASUREMENT_UNIT'] == 'true'
-    end
   end
 end

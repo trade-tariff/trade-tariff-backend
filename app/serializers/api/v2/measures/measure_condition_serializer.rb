@@ -23,7 +23,8 @@ module Api
                    :guidance_chief,
                    :measure_condition_class,
                    :monetary_unit_abbreviation,
-                   :requirement
+                   :requirement,
+                   :threshold_unit_type
 
         has_many :measure_condition_components, serializer: Api::V2::Measures::MeasureConditionComponentSerializer
       end
