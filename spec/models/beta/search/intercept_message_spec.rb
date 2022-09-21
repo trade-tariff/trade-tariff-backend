@@ -76,5 +76,15 @@ RSpec.describe Beta::Search::InterceptMessage do
 
       it { is_expected.to eq(expected_message) }
     end
+
+    context 'when there is a section followed by a roman number' do
+      subject(:formatted_message) { build(:intercept_message, :with_section_to_transform).formatted_message }
+
+      let(:expected_message) do
+        'Based on your search term, we believe you are looking for (section)[/sections/15], depending on the constituent material.'
+      end
+
+      it { is_expected.to eq(expected_message) }
+    end
   end
 end

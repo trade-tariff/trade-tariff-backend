@@ -33,6 +33,12 @@ FactoryBot.define do
       end
     end
 
+    trait :with_section_to_transform do
+      message do
+        'Based on your search term, we believe you are looking for section XV, depending on the constituent material.'
+      end
+    end
+
     trait :without_message do
       message {}
     end
