@@ -11,7 +11,9 @@ module Beta
         SECTION_REGEX => lambda do |matched_text|
           match = matched_text.match(SECTION_REGEX)
 
-          "(#{matched_text[0..-2]})[/sections/#{match[:roman_number]}]"
+          section_id = RomanNumerals::Converter.to_decimal(match[:roman_number])
+
+          "(#{matched_text[0..-2]})[/sections/#{section_id}]"
         end,
 
         CHAPTER_REGEX => lambda do |matched_text|
