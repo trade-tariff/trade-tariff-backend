@@ -5,8 +5,6 @@ module TradeTariffBackend
       'xi' => 'EUR',
     }.freeze
 
-    STOP_WORDS_FILE = Rails.root.join('db/beta/search/stop_words.yml')
-
     def configure
       yield self
     end
@@ -238,7 +236,11 @@ module TradeTariffBackend
     end
 
     def stop_words
-      @stop_words ||= YAML.load_file(STOP_WORDS_FILE)[:stop_words]
+      @stop_words ||= YAML.load_file(stop_words_file)[:stop_words]
+    end
+
+    def stop_words_file
+      Rails.root.join('db/beta/search/stop_words.yml')
     end
 
     def handle_cascade_soft_deletes?
