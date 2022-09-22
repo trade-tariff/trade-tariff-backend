@@ -16,17 +16,6 @@ module RomanNumerals
       1000 => 'M'
     }
 
-    def self.to_roman(value)
-      result = ''
-      @base_digits.keys.reverse.each do |decimal|
-        while value >= decimal
-          value -= decimal
-          result += @base_digits[decimal]
-        end
-      end
-      result
-    end
-
     def self.to_decimal(value)
       value = value.upcase
       result = 0
