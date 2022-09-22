@@ -54,11 +54,7 @@ RSpec.describe TradeTariffBackend::SearchClient do
       create(:commodity, :with_description, description: 'test description')
     end
 
-    let(:index) do
-      TradeTariffBackend.search_indexes.find do |index|
-        index.name == "#{described_class.server_namespace}-commodities"
-      end
-    end
+    let(:index) { Commodity.elasticsearch_index }
 
     let(:search_result) do
       TradeTariffBackend.search_client.search q: 'test', index: index.name

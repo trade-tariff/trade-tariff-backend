@@ -3,16 +3,16 @@ class SearchService
     class ReferenceQuery < FuzzyQuery
       def query(*)
         {
-          index: "#{TradeTariffBackend::SearchClient.server_namespace}-search_references",
+          index: SearchReference.elasticsearch_index.name,
           search: {
             query: {
               bool: {
                 must: {
                   multi_match: {
                     query: query_string,
-                    fields: ['title'],
-                    operator: 'and' # all terms must be present
-                  }
+                    fields: %w[title],
+                    operator: 'and', # all terms must be present
+                  },
                 },
                 filter: {
                   bool: {
@@ -32,9 +32,9 @@ class SearchService
                                       bool: {
                                         must: [
                                           { range: { 'reference.validity_start_date' => { lte: date } } },
-                                          { range: { 'reference.validity_end_date' => { gte: date } } }
-                                        ]
-                                      }
+                                          { range: { 'reference.validity_end_date' => { gte: date } } },
+                                        ],
+                                      },
                                     },
                                     # or is greater than item's validity_start_date
                                     # and item has blank validity_end_date (is unbounded)
@@ -42,33 +42,33 @@ class SearchService
                                       bool: {
                                         must: [
                                           { range: { 'reference.validity_start_date' => { lte: date } } },
-                                          { bool: { must_not: { exists: { field: 'reference.validity_end_date' } } } }
-                                        ]
-                                      }
+                                          { bool: { must_not: { exists: { field: 'reference.validity_end_date' } } } },
+                                        ],
+                                      },
                                     },
                                     # or item has blank validity_start_date and validity_end_date
                                     {
                                       bool: {
                                         must: [
                                           { bool: { must_not: { exists: { field: 'reference.validity_start_date' } } } },
-                                          { bool: { must_not: { exists: { field: 'reference.validity_end_date' } } } }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
+                                          { bool: { must_not: { exists: { field: 'reference.validity_end_date' } } } },
+                                        ],
+                                      },
+                                    },
+                                  ],
+                                },
+                              },
+                            },
+                          },
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
             },
-            size: INDEX_SIZE_MAX
-          }
+            size: INDEX_SIZE_MAX,
+          },
         }
       end
     end
