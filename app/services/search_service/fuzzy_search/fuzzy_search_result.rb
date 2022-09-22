@@ -16,7 +16,7 @@ class SearchService
       def query_options
         {
           goods_nomenclature_match: {
-            "#{TradeTariffBackend::SearchClient.server_namespace}-sections" => { fields: %w[title] },
+            Section.elasticsearch_index.name => { fields: %w[title] },
           },
         }
       end
