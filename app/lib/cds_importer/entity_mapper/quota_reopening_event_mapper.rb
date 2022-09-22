@@ -18,6 +18,10 @@ class CdsImporter
         "#{mapping_path}.occurrenceTimestamp" => :occurrence_timestamp,
         "#{mapping_path}.reopeningDate" => :reopening_date,
       ).freeze
+
+      self.primary_filters = {
+        quota_definition_sid: :quota_definition_sid,
+      }.freeze
     end
   end
 end
