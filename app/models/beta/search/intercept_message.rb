@@ -1,7 +1,7 @@
 module Beta
   module Search
     class InterceptMessage
-      SECTION_REGEX = /(?<type>section)s? (?<roman_number>[XVI]{0,10})[.,\s)]/i
+      SECTION_REGEX = /(?<type>section)s? (?<roman_number>[XVI\d]{0,10})(?<terminator>[.,\s)])/i
       CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s)])/i
       HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s)])/i
       SUBHEADING_REGEX = /(?<type>subheading)s? (?<optional>code )?(?<code>[0-9]{6,8})(?<terminator>[.,\s)])/i
@@ -13,7 +13,9 @@ module Beta
 
           section_id = RomanNumerals::Converter.to_decimal(match[:roman_number])
 
-          "(#{matched_text[0..-2]})[/sections/#{section_id}]"
+          roman_section_id = RomanNumerals::Converter.to_roman(section_id)
+
+          "(section #{roman_section_id})[/sections/#{section_id}]#{match[:terminator]}"
         end,
 
         CHAPTER_REGEX => lambda do |matched_text|

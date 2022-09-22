@@ -84,7 +84,20 @@ RSpec.describe Beta::Search::InterceptMessage do
       end
 
       let(:expected_message) do
-        'Based on your search term, we believe you are looking for (section XV)[/sections/15] depending on the constituent material.'
+        'Based on your search term, we believe you are looking for (section XV)[/sections/15], depending on the constituent material.'
+      end
+
+      it { is_expected.to eq(expected_message) }
+    end
+
+    context 'when the section ID is specified in decimal ' do
+      subject(:formatted_message) do
+        build(:intercept_message,
+              message: 'Based on your search term, we believe you are looking for section 15, depending on the constituent material.').formatted_message
+      end
+
+      let(:expected_message) do
+        'Based on your search term, we believe you are looking for (section XV)[/sections/15], depending on the constituent material.'
       end
 
       it { is_expected.to eq(expected_message) }
