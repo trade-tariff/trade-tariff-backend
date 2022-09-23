@@ -262,5 +262,9 @@ module TradeTariffBackend
     def beta_search_debug?
       ENV['BETA_SEARCH_DEBUG'] == 'true'
     end
+
+    def use_uk_xi_indexes?
+      ENV['USE_UK_XI_INDEXES'] == 'true'
+    end
   end
 end
