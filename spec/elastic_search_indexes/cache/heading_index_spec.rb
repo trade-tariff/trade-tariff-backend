@@ -4,7 +4,7 @@ RSpec.describe Cache::HeadingIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 
   it { is_expected.to have_attributes type: 'heading' }
-  it { is_expected.to have_attributes name: 'testnamespace-headings-cache' }
+  it { is_expected.to have_attributes name: 'testnamespace-headings-uk-cache' }
   it { is_expected.to have_attributes name_without_namespace: 'HeadingIndex' }
   it { is_expected.to have_attributes model_class: Heading }
   it { is_expected.to have_attributes serializer: Cache::HeadingSerializer }

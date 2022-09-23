@@ -6,10 +6,11 @@ module Sequel
       def self.configure(model, options = {})
         index = options[:index] || Search.const_get("#{model}Index")
         model.elasticsearch_indexes = Array.wrap(index)
+        model.elasticsearch_index = index.new
       end
 
       module ClassMethods
-        attr_accessor :elasticsearch_indexes
+        attr_accessor :elasticsearch_indexes, :elasticsearch_index
       end
 
       module InstanceMethods

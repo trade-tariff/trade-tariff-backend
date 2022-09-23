@@ -4,7 +4,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   subject(:index) { described_class.new('testnamespace') }
 
   it { is_expected.to have_attributes type: 'goods_nomenclature' }
-  it { is_expected.to have_attributes name: 'testnamespace-goods_nomenclatures' }
+  it { is_expected.to have_attributes name: 'testnamespace-goods_nomenclatures-uk' }
   it { is_expected.to have_attributes model_class: GoodsNomenclature }
   it { is_expected.to have_attributes serializer: Search::GoodsNomenclatureSerializer }
 

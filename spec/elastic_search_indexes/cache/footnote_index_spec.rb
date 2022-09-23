@@ -4,7 +4,7 @@ RSpec.describe Cache::FootnoteIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 
   it { is_expected.to have_attributes type: 'footnote' }
-  it { is_expected.to have_attributes name: 'testnamespace-footnotes-cache' }
+  it { is_expected.to have_attributes name: 'testnamespace-footnotes-uk-cache' }
   it { is_expected.to have_attributes name_without_namespace: 'FootnoteIndex' }
   it { is_expected.to have_attributes model_class: Footnote }
   it { is_expected.to have_attributes serializer: Cache::FootnoteSerializer }
