@@ -61,7 +61,7 @@ RSpec.describe Api::Beta::SearchService do
             },
           },
         },
-        index: 'tariff-goods_nomenclatures',
+        index: 'tariff-test-goods_nomenclatures-uk',
       }
     end
 

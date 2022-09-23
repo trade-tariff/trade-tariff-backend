@@ -1,7 +1,7 @@
 module Api
   module Beta
     class SearchService
-      DEFAULT_SEARCH_INDEX = 'tariff-goods_nomenclatures'.freeze
+      DEFAULT_SEARCH_INDEX = Search::GoodsNomenclatureIndex.new.name
 
       def initialize(search_query, search_filters = {})
         @search_query = search_query
