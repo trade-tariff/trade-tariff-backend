@@ -3,6 +3,12 @@ FactoryBot.define do
     term {}
     message {}
 
+    trait :with_section_to_transform do
+      message do
+        'Based on your search term, we believe you are looking for section XV, section position 14 and section code III depending on the constituent material.'
+      end
+    end
+
     trait :with_mixture_of_goods_nomenclature_to_transform do
       message do
         'chapter 1, heading 0101, subheading 012012 and commodity 0702000007.'
@@ -30,12 +36,6 @@ FactoryBot.define do
     trait :with_commodities_to_transform do
       message do
         'This should point to coMmodities 0105110000 and cOmmodity 01051191 and never change commodity 1 or commodity 13112313123123 but for commodity 0101210001.'
-      end
-    end
-
-    trait :with_section_to_transform do
-      message do
-        'Based on your search term, we believe you are looking for section XV, section position 14 and section code III depending on the constituent material.'
       end
     end
 
