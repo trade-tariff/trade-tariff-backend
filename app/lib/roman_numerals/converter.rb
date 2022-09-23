@@ -16,33 +16,35 @@ module RomanNumerals
       1000 => 'M',
     }
 
-    def self.to_roman(value)
-      result = ''
-      @base_digits.keys.reverse.each do |decimal|
-        while value >= decimal
-          value -= decimal
-          result += @base_digits[decimal]
+    class << self
+      def to_roman(value)
+        result = ''
+        @base_digits.keys.reverse.each do |decimal|
+          while value >= decimal
+            value -= decimal
+            result += @base_digits[decimal]
+          end
         end
+        result
       end
-      result
-    end
 
-    def self.to_decimal(value)
-      return value.to_i if already_decimal?(value)
+      def to_decimal(value)
+        return value.to_i if already_decimal?(value)
 
-      value = value.upcase
-      result = 0
-      @base_digits.values.reverse.each do |roman|
-        while value.start_with? roman
-          value = value.slice(roman.length, value.length)
-          result += @base_digits.key roman
+        value = value.upcase
+        result = 0
+        @base_digits.values.reverse.each do |roman|
+          while value.start_with? roman
+            value = value.slice(roman.length, value.length)
+            result += @base_digits.key roman
+          end
         end
+        result
       end
-      result
-    end
 
-    def self.already_decimal?(value)
-      (value =~ /^\d/) != nil
+      def already_decimal?(value)
+        (value =~ /^\d/) != nil
+      end
     end
   end
 end
