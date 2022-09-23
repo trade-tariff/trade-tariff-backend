@@ -77,27 +77,13 @@ RSpec.describe Beta::Search::InterceptMessage do
       it { is_expected.to eq(expected_message) }
     end
 
-    context 'when there is a section followed by a roman number' do
+    context 'when there are sections to generate links for' do
       subject(:formatted_message) do
-        build(:intercept_message,
-              message: 'Based on your search term, we believe you are looking for section XV, depending on the constituent material.').formatted_message
+        build(:intercept_message, :with_section_to_transform).formatted_message
       end
 
       let(:expected_message) do
-        'Based on your search term, we believe you are looking for (section XV)[/sections/15], depending on the constituent material.'
-      end
-
-      it { is_expected.to eq(expected_message) }
-    end
-
-    context 'when the section ID is specified in decimal ' do
-      subject(:formatted_message) do
-        build(:intercept_message,
-              message: 'Based on your search term, we believe you are looking for section 15, depending on the constituent material.').formatted_message
-      end
-
-      let(:expected_message) do
-        'Based on your search term, we believe you are looking for (section XV)[/sections/15], depending on the constituent material.'
+        'Based on your search term, we believe you are looking for (section XV)[/sections/15], (section XIV)[/sections/14] and (section III)[/sections/3] depending on the constituent material.'
       end
 
       it { is_expected.to eq(expected_message) }

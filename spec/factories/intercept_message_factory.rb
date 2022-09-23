@@ -35,7 +35,7 @@ FactoryBot.define do
 
     trait :with_section_to_transform do
       message do
-        'Based on your search term, we believe you are looking for section XV, depending on the constituent material.'
+        'Based on your search term, we believe you are looking for section XV, section position 14 and section code III depending on the constituent material.'
       end
     end
 
