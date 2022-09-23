@@ -76,5 +76,17 @@ RSpec.describe Beta::Search::InterceptMessage do
 
       it { is_expected.to eq(expected_message) }
     end
+
+    context 'when there are sections to generate links for' do
+      subject(:formatted_message) do
+        build(:intercept_message, :with_section_to_transform).formatted_message
+      end
+
+      let(:expected_message) do
+        'Based on your search term, we believe you are looking for (section XV)[/sections/15], (section XIV)[/sections/14] and (section III)[/sections/3] depending on the constituent material.'
+      end
+
+      it { is_expected.to eq(expected_message) }
+    end
   end
 end
