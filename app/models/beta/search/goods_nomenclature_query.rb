@@ -59,7 +59,8 @@ module Beta
       end
 
       def goods_nomenclature_item_id
-        padding = 10 - original_search_query.length
+        len = original_search_query.length
+        padding = len < 10 ? 10 - len : 0
 
         original_search_query + '0' * padding
       end
