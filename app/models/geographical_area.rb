@@ -3,6 +3,7 @@ class GeographicalArea < Sequel::Model
   AREAS_CODES = %w[0 1 2].freeze
   ERGA_OMNES_ID = '1011'.freeze
   REFERENCED_GEOGRAPHICAL_AREAS = { 'EU' => '1013' }.freeze
+  GSP = %w[2005 2020 2027].freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :geographical_area_sid
