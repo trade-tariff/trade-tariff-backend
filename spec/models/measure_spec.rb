@@ -825,6 +825,32 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#gsp?' do
+    context 'when measure belongs to GSP least developed countries' do
+      subject(:measure) { create(:measure, :with_gsp_least_developed_countries) }
+
+      it { expect(measure.gsp?).to eq(true) }
+    end
+
+    context 'when measure belongs to GSP general framework' do
+      subject(:measure) { create(:measure, :with_gsp_general_framework) }
+
+      it { expect(measure.gsp?).to eq(true) }
+    end
+
+    context 'when measure belongs to GSP enhanced framework' do
+      subject(:measure) { create(:measure, :with_gsp_enhanced_framework) }
+
+      it { expect(measure.gsp?).to eq(true) }
+    end
+
+    context 'when measure belongs to GSP enhanced framework' do
+      subject(:measure) { create(:measure) }
+
+      it { expect(measure.gsp?).to eq(false) }
+    end
+  end
+
   describe '#relevant_for_country?' do
     context 'when the measure excludes the country id' do
       subject(:measure) { create(:measure, :with_measure_excluded_geographical_area) }

@@ -62,6 +62,18 @@ FactoryBot.define do
       end
     end
 
+    trait :with_gsp_least_developed_countries do
+      geographical_area_id { '2005' }
+    end
+
+    trait :with_gsp_general_framework do
+      geographical_area_id { '2020' }
+    end
+
+    trait :with_gsp_enhanced_framework do
+      geographical_area_id { '2027' }
+    end
+
     trait :with_inactive_goods_nomenclature do
       after(:create) do |measure, evaluator|
         create(

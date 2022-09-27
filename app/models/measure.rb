@@ -494,6 +494,10 @@ class Measure < Sequel::Model
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
 
+  def gsp?
+    GeographicalArea::GSP.include?(geographical_area.geographical_area_id)
+  end
+
   private
 
   def excluded_country?(country_id)
