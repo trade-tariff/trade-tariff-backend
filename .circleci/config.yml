@@ -61,6 +61,45 @@ commands:
                   do
                     cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
                   done
+
+      - run:
+          name: "Syncronise synonym packages"
+          command: |
+            cat config/opensearch/synonyms_* | grep -v '#' | sort | uniq > config/aggregated_synonyms/synonyms_all.txt
+
+            aws s3 sync --dryrun --size-only config/aggregated_synonyms s3:/trade-tariff-opensearch-<< parameters.space >>/config/opensearch/ | grep upload
+            status=$?
+
+            if [[ $status -eq 0 ]]; then
+              echo "Synonym updates to apply"
+              aws s3 sync config/aggregated_synonyms s3:/trade-tariff-opensearch-<< parameters.space >>/config/opensearch/
+
+              DOMAIN_NAME=tariff-search-<< parameters.space >>
+              PACKAGE_ID=$(aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-<< parameters.space >>-synonyms\")")
+              # update the package
+              echo "Creating an update for changing package $PACKAGE_ID for domain $DOMAIN_NAME"
+              aws opensearch update-package --package-id $PACKAGE_ID \
+                --package-source 'S3BucketName=trade-tariff-opensearch-packages-<< parameters.space >>,S3Key=config/opensearch/synonyms_all.txt' \
+                --package-description 'Synonyms for the << parameters.space >> environment search' \
+                --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_JOB"
+
+              # associate the package
+              #
+              echo "Applying an update for changing package $PACKAGE_ID for domain $DOMAIN_NAME"
+              aws opensearch associate-package --package-id $PACKAGE_ID --domain-name $DOMAIN_NAME
+
+              echo "Verifying package is available before proceeding with deployment"
+              sleep 30
+              OPENSEARCH_PACKAGE_STATUS=$(aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-<< parameters.space >>-synonyms\") | .PackageStatus")
+
+              if [ "$OPENSEARCH_PACKAGE_STATUS" -ne "AVAILABLE" ]; then
+                echo "Package failed to apply"
+                cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+                exit 1
+              fi
+            else
+              echo "No synonym updates to apply"
+            fi
       - run:
           name: "Verify new version is working on dark URL."
           command: |
