@@ -844,7 +844,7 @@ RSpec.describe Measure do
       it { expect(measure.gsp?).to eq(true) }
     end
 
-    context 'when measure belongs to GSP enhanced framework' do
+    context 'when measure does not belong to GSP country' do
       subject(:measure) { create(:measure) }
 
       it { expect(measure.gsp?).to eq(false) }
