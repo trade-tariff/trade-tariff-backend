@@ -494,6 +494,10 @@ class Measure < Sequel::Model
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
 
+  def special_nature?
+    measure_conditions.map(&:certificate_type_code).include?(Certificate::SPECIAL_NATURE)
+  end
+
   private
 
   def excluded_country?(country_id)

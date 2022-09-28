@@ -1,4 +1,5 @@
 class Certificate < Sequel::Model
+  SPECIAL_NATURE = 'A'
   plugin :oplog, primary_key: %i[certificate_code certificate_type_code]
   plugin :time_machine
 

@@ -1309,6 +1309,26 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#special_nature?' do
+    context 'when at least one measure condition has the special nature code' do
+      subject(:measure) { create(:measure, :with_measure_conditions, certificate_type_code: 'A') }
+
+      it { is_expected.to be_special_nature }
+    end
+
+    context 'when no measure conditions have the special nature code' do
+      subject(:measure) { create(:measure, :with_measure_conditions, certificate_type_code: 'B') }
+
+      it { is_expected.not_to be_special_nature }
+    end
+
+    context 'when there are no measure conditions' do
+      subject(:measure) { create(:measure) }
+
+      it { is_expected.not_to be_special_nature }
+    end
+  end
+
   shared_context 'with regulation measures' do
     around do |example|
       TimeMachine.now { example.run }
