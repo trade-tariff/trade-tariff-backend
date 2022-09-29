@@ -569,7 +569,7 @@ jobs:
               aws opensearch update-package --package-id $PACKAGE_ID \
                 --package-source 'S3BucketName=trade-tariff-opensearch-packages-<< parameters.space >>,S3Key=config/opensearch/synonyms_all.txt' \
                 --package-description 'Synonyms for the << parameters.space >> environment search' \
-                --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_JOB"
+                --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_BUILD_URL"
 
               echo "Applying an update for changing package $PACKAGE_ID for domain $DOMAIN_NAME"
 
