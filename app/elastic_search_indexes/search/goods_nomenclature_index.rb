@@ -29,15 +29,8 @@ module Search
                 },
                 english: {
                   tokenizer: 'standard',
-                  # TODO: When the synonym files are ready to be deployed on AWS ES we will uncomment this
-                  # filter: %w[
-                  #   synonym
-                  #   english_possessive_stemmer
-                  #   lowercase
-                  #   english_stop
-                  #   english_stemmer
-                  # ],
                   filter: %w[
+                    synonym
                     english_possessive_stemmer
                     lowercase
                     english_stop
@@ -58,11 +51,10 @@ module Search
                   type: 'stemmer',
                   language: 'possessive_english',
                 },
-                # TODO: When the synonym files are ready to be deployed on AWS ES we will uncomment this
-                # synonym: {
-                #   type: 'synonym',
-                #   synonyms_path: '/usr/share/opensearch/config/synonyms_generic.txt',
-                # },
+                synonym: {
+                  type: 'synonym',
+                  synonyms_path: ENV['SYNONYM_REFERENCE_ANALYZER'],
+                },
               },
               char_filter: {
                 standardise_quotes: {
