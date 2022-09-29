@@ -243,6 +243,10 @@ module TradeTariffBackend
       Rails.root.join('db/beta/search/stop_words.yml')
     end
 
+    def synonym_reference_analyzer
+      ENV['SYNONYM_REFERENCE_ANALYZER']
+    end
+
     def handle_cascade_soft_deletes?
       ENV['SOFT_DELETES_CASCADE'].to_s == 'true'
     end

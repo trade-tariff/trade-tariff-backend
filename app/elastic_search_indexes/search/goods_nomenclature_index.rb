@@ -18,7 +18,28 @@ module Search
     end
 
     def definition
-      {
+      if TradeTariffBackend.synonym_reference_analyzer.present?
+        base_definition[:settings][:index][:analysis][:analyzer][:english] = {
+          tokenizer: 'standard',
+          filter: %w[
+            synonym
+            english_possessive_stemmer
+            lowercase
+            english_stop
+            english_stemmer
+          ],
+        }
+        base_definition[:settings][:index][:analysis][:filter][:synonym] = {
+          type: 'synonym',
+          synonyms_path: TradeTariffBackend.synonym_reference_analyzer,
+        }
+      end
+
+      base_definition
+    end
+
+    def base_definition
+      @base_definition ||= {
         settings: {
           index: {
             analysis: {
@@ -30,7 +51,6 @@ module Search
                 english: {
                   tokenizer: 'standard',
                   filter: %w[
-                    synonym
                     english_possessive_stemmer
                     lowercase
                     english_stop
@@ -50,10 +70,6 @@ module Search
                 english_possessive_stemmer: {
                   type: 'stemmer',
                   language: 'possessive_english',
-                },
-                synonym: {
-                  type: 'synonym',
-                  synonyms_path: ENV['SYNONYM_REFERENCE_ANALYZER'],
                 },
               },
               char_filter: {
