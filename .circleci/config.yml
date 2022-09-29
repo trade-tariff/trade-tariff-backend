@@ -61,6 +61,7 @@ commands:
                   do
                     cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
                   done
+
       - run:
           name: "Verify new version is working on dark URL."
           command: |
@@ -533,6 +534,47 @@ jobs:
           service: << parameters.service >>
       - sentry-release
 
+  sync_synonyms:
+    docker:
+      - image: cimg/base:current
+    parameters:
+      space:
+        type: string
+    steps:
+      - aws-cli/install
+      - checkout
+      - run:
+          name: "Syncronise synonym packages"
+          command: |
+            echo "Coercing multiple synonym files into a single aggregated file"
+            cat config/opensearch/synonyms_* | grep -v '#' | sort | uniq >config/aggregated_synonyms/synonyms_all.txt
+
+            echo "Checking status of current synonym files in << parameters.space >>"
+
+            HAS_UPLOADS=$(aws s3 sync --exclude ".*" --dryrun --size-only config/aggregated_synonyms s3://trade-tariff-opensearch-packages-<< parameters.space >>/config/opensearch/)
+
+            echo $HAS_UPLOADS
+
+            if [ -z "$HAS_UPLOADS" ]; then
+              echo "No synonym updates to apply"
+            else
+              echo "Synonym updates to apply"
+              aws s3 sync --exclude ".*" config/aggregated_synonyms s3://trade-tariff-opensearch-packages-<< parameters.space >>/config/opensearch/
+
+              DOMAIN_NAME=tariff-search-<< parameters.space >>
+              PACKAGE_ID=$(aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-<< parameters.space >>-synonyms\") | .PackageID")
+
+              echo "Creating an update for changing package $PACKAGE_ID for domain $DOMAIN_NAME"
+
+              aws opensearch update-package --package-id $PACKAGE_ID \
+                --package-source 'S3BucketName=trade-tariff-opensearch-packages-<< parameters.space >>,S3Key=config/opensearch/synonyms_all.txt' \
+                --package-description 'Synonyms for the << parameters.space >> environment search' \
+                --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_BUILD_URL"
+
+              echo "Applying an update for changing package $PACKAGE_ID for domain $DOMAIN_NAME"
+
+              aws opensearch associate-package --package-id $PACKAGE_ID --domain-name $DOMAIN_NAME
+            fi
   notify_production_deployment:
     docker:
       - image: cimg/ruby:3.1.2
@@ -612,6 +654,16 @@ workflows:
           requires:
             - test
             - build_dev
+      - sync_synonyms:
+          name: sync_synonyms_dev
+          space: development
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot\/.*/
+                - /^hotfix\/.+/
       - smoketest_dev:
           name: smoketest_dev
           context: trade-tariff
@@ -623,6 +675,16 @@ workflows:
                 - /^dependabot\/.*/
           requires:
             - deploy_dev
+            - sync_synonyms_dev
+      - sync_synonyms:
+          name: sync_synonyms_staging
+          space: staging
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+                - /^hotfix\/.+/
       - build:
           name: build_live
           context: trade-tariff
@@ -649,6 +711,7 @@ workflows:
                 - main
                 - /^hotfix\/.+/
           requires:
+            - sync_synonyms_staging
             - deploy_main_to_staging
       - hold_create_release:
           type: approval
@@ -688,6 +751,17 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
+      - sync_synonyms:
+          name: sync_synonyms_production
+          space: production
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - hold_deploy_production
       - deploy_production:
           matrix:
             parameters:

@@ -1,0 +1,43 @@
+child,children,kid,juvenile,youngster,youth
+display stand,exhibition stand
+abs,anti-lock braking system
+backpack,rucksack,ruck sack,bagpack
+clutchbag,handbag
+english tea,tea,breakfast tea
+eyeshadow, eye shadow
+flood light,floodlight
+gift set,giftset
+handtool, hand tool
+headphones,head phones
+headgear,headwear
+hi vis, hivis, hi-vis, hi viz, hiviz, hi-viz
+heatproof,heat-proof,heat proof
+high-heel,stiletto
+hiking,walking
+home-made,home made,homemade
+ice cube,icecube
+iron mongery,ironmongery
+jetski,jet ski
+jewellery,jewelry
+jigsaw,jig saw
+joystick,joy stick
+canoe,kayak
+kimshi,kimchi,kim chi,kim shi
+crill, krill
+couscous, cous cous,kuskus
+label,lable
+leggin,legging,jegging
+magasine,magazine,periodical,journal
+mail bag,mailing bag,mailing bags,mailbag
+make-up,makeup
+mealworm, meal worm
+non-alcoholic,alcohol free
+pvc,poly vinyl chloride
+refuse,rubbish,garbage
+sneaker,trainer
+soap dish, soapdish
+sweatpant,sweats
+racquet,racket
+tumeric,turmeric,curcuma
+workgear,workwear,work wear
+
