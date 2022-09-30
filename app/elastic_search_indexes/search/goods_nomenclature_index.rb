@@ -38,6 +38,8 @@ module Search
       base_definition
     end
 
+    private
+
     def base_definition
       @base_definition ||= {
         settings: {
