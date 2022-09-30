@@ -46,4 +46,58 @@ RSpec.describe Search::GoodsNomenclatureIndex do
       expect(dataset.all.pluck(:goods_nomenclature_item_id, :producline_suffix)).to eq(expected_goods_nomenclatures)
     end
   end
+
+  describe '#definition' do
+    before do
+      allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
+    end
+
+    context 'when synonym reference is specified in the environment' do
+      let(:synonym_reference_analyzer) { 'analyzers/F135140295' }
+
+      it 'generates a correct english analyzer setting' do
+        expected_analyzer_setting = {
+          tokenizer: 'standard',
+          filter: %w[
+            synonym
+            english_possessive_stemmer
+            lowercase
+            english_stop
+            english_stemmer
+          ],
+        }
+
+        expect(index.definition.dig(:settings, :index, :analysis, :analyzer, :english)).to eq(expected_analyzer_setting)
+      end
+
+      it 'generates the correct synonym filter setting' do
+        expected_filter_setting = {
+          type: 'synonym',
+          synonyms_path: 'analyzers/F135140295',
+        }
+
+        expect(index.definition.dig(:settings, :index, :analysis, :filter, :synonym)).to eq(expected_filter_setting)
+      end
+    end
+
+    context 'when synonym reference is `not` specified in the environment' do
+      let(:synonym_reference_analyzer) { nil }
+
+      it 'generates a correct english analyzer setting' do
+        expected_analyzer_setting = {
+          tokenizer: 'standard',
+          filter: %w[
+            english_possessive_stemmer
+            lowercase
+            english_stop
+            english_stemmer
+          ],
+        }
+
+        expect(index.definition.dig(:settings, :index, :analysis, :analyzer, :english)).to eq(expected_analyzer_setting)
+      end
+
+      it { expect(index.definition.dig(:settings, :index, :analysis, :filter, :synonym)).to be_nil }
+    end
+  end
 end
