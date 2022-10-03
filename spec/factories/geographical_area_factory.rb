@@ -18,6 +18,12 @@ FactoryBot.define do
 
     trait :group do
       geographical_code { '1' }
+      geographical_area_id { '1011' }
+    end
+
+    trait :globally_excluded do
+      country
+      geographical_area_id { 'EU' }
     end
 
     trait :with_members do
