@@ -62,16 +62,21 @@ FactoryBot.define do
       end
     end
 
-    trait :with_gsp_least_developed_countries do
-      geographical_area_id { '2005' }
-    end
-
-    trait :with_gsp_general_framework do
-      geographical_area_id { '2020' }
-    end
-
-    trait :with_gsp_enhanced_framework do
+    trait :with_gsp do
       geographical_area_id { '2027' }
+    end
+
+    trait :with_authorised_use_provisions_submission do
+      measure_type_id { '464' }
+    end
+
+    trait :with_special_nature do
+      certificate_type_code { 'A' }
+    end
+
+    trait :with_authorised_use do
+      certificate_type_code { 'N' }
+      certificate_code { '990' }
     end
 
     trait :with_inactive_goods_nomenclature do

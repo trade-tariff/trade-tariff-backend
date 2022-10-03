@@ -91,6 +91,10 @@ class GeographicalArea < Sequel::Model
     geographical_area_id
   end
 
+  def gsp?
+    GSP.include?(geographical_area_id)
+  end
+
   private
 
   def referenced_id

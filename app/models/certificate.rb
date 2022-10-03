@@ -1,4 +1,8 @@
 class Certificate < Sequel::Model
+  SPECIAL_NATURE = 'A'.freeze
+  AUTHORISED_USE = 'N'.freeze
+  AUTHORISED_USE_CODE = '990'.freeze
+
   plugin :oplog, primary_key: %i[certificate_code certificate_type_code]
   plugin :time_machine
 

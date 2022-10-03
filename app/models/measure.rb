@@ -3,6 +3,7 @@ class Measure < Sequel::Model
   PROVISIONAL_ANTIDUMPING_ROLE = 2
   DEFINITIVE_ANTIDUMPING_ROLE = 3
   MODIFICATION_REGULATION_ROLE = 4
+  AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'
 
   VALID_ROLE_TYPE_IDS = [
     BASE_REGULATION_ROLE,
@@ -108,6 +109,8 @@ class Measure < Sequel::Model
            :preferential_quota?,
            :tariff_preference?,
            :trade_remedy?, to: :measure_type, allow_nil: true
+
+  delegate :gsp?, to: :geographical_area, allow_nil: true
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)
@@ -494,11 +497,86 @@ class Measure < Sequel::Model
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
 
-  def gsp?
-    GeographicalArea::GSP.include?(geographical_area.geographical_area_id)
+  def preference_code(commodity_goods_nomenclature_sid)
+    commodity = Commodity.where(goods_nomenclature_sid: commodity_goods_nomenclature_sid).first
+
+    case measure_type_id
+    when '103'
+      if authorised_use_provisions_submission?(commodity)
+        '140'
+      elsif special_nature?(commodity)
+        '150'
+      else
+        '100'
+      end
+    when '105'
+      '140'
+    when '106'
+      '400'
+    when '112'
+      authorised_use? ? '115' : '110'
+    when '115'
+      '115'
+    when '117'
+      '140'
+    when '119'
+      '119'
+    when '122'
+      if special_nature?(commodity)
+        '125'
+      elsif authorised_use?
+        '123'
+      else
+        '120'
+      end
+    when '123'
+      '123'
+    when '141'
+      authorised_use? ? '315' : '310'
+    when '142'
+      if gsp?
+        authorised_use? ? '240' : '200'
+      else
+        authorised_use? ? '340' : '300'
+      end
+    when '143'
+      if gsp?
+        if special_nature?(commodity)
+          '255'
+        elsif authorised_use?
+          '223'
+        else
+          '220'
+        end
+      else
+        if special_nature?(commodity)
+          '325'
+        elsif authorised_use?
+          '323'
+        else
+          '320'
+        end
+      end
+    when '145'
+      gsp? ? '240' : '340'
+    when '146'
+      gsp? ? '223' : '323'
+    end
   end
 
   private
+
+  def special_nature?(commodity)
+    commodity.measures.any? { |m| m.measure_conditions.map(&:certificate_type_code).include?(Certificate::SPECIAL_NATURE) }
+  end
+
+  def authorised_use_provisions_submission?(commodity)
+    commodity.measures.map(&:measure_type_id).include?(AUTHORISED_USE_PROVISIONS_SUBMISSION)
+  end
+
+  def authorised_use?
+    measure_conditions.select { |mc| mc.certificate_type_code == Certificate::AUTHORISED_USE && mc.certificate_code == Certificate::AUTHORISED_USE_CODE }.any?
+  end
 
   def excluded_country?(country_id)
     country_id.in?(measure_excluded_geographical_area_ids)
