@@ -22,8 +22,9 @@ class CachedGeographicalAreaService
   ].freeze
   TTL = 24.hours
 
-  def initialize(actual_date, countries: false)
+  def initialize(actual_date, exclude_none: false, countries: false)
     @countries = countries
+    @exclude_none = exclude_none
     @actual_date = actual_date
   end
 
@@ -38,14 +39,20 @@ class CachedGeographicalAreaService
 
   private
 
-  attr_reader :countries, :actual_date
+  attr_reader :actual_date, :countries, :exclude_none
 
   def sorted_areas
-    areas.exclude(
-      geographical_area_id: excluded_geographical_area_ids + GLOBALLY_EXCLUDED_GEOGRAPHICAL_AREA_IDS,
-    ).order(
-      Sequel.asc(:geographical_area_id),
-    )
+    excluded_areas.order(Sequel.asc(:geographical_area_id))
+  end
+
+  def excluded_areas
+    if exclude_none
+      areas
+    else
+      areas.exclude(
+        geographical_area_id: excluded_geographical_area_ids + GLOBALLY_EXCLUDED_GEOGRAPHICAL_AREA_IDS,
+      )
+    end
   end
 
   def areas
@@ -55,9 +62,7 @@ class CachedGeographicalAreaService
   end
 
   def cache_key
-    return "_geographical-areas-countries-#{actual_date}" if countries
-
-    "_geographical-areas-index-#{actual_date}"
+    "_geographical-areas-#{actual_date}-#{countries}-#{exclude_none}"
   end
 
   def country_geographical_areas
