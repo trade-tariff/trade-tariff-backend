@@ -1,16 +1,13 @@
 class PreferenceCode
-  @@preference_codes = []
+  class << self
+    def all
+      @preference_codes ||= JSON.load_file('data/preference_codes.json')
 
-  def initialize
-    return if @@preference_codes.any?
-    puts 'Loading ...'
-    @@preference_codes = JSON.load_file('data/preference_codes.json')
-  end
+      @preference_codes
+    end
 
-  def all
-    @@preference_codes
-  end
-
-  def gen
+    def get(id)
+      all.find { |e| e['id'] == id.to_s }
+    end
   end
 end
