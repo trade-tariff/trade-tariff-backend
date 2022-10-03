@@ -38,6 +38,18 @@ FactoryBot.define do
       geographical_area_id { '2027' }
     end
 
+    trait :with_gsp_least_developed_countries do
+      geographical_area_id { '2005' }
+    end
+
+    trait :with_gsp_general_framework do
+      geographical_area_id { '2020' }
+    end
+
+    trait :with_gsp_enhanced_framework do
+      geographical_area_id { '2027' }
+    end
+
     trait :with_members do
       after(:create) do |geographical_area, _evaluator|
         member = create(:geographical_area, :country, geographical_area_id: 'RO')

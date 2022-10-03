@@ -91,6 +91,19 @@ FactoryBot.define do
       geographical_area_id { '2027' }
     end
 
+    trait :with_authorised_use_provisions_submission do
+      measure_type_id { '464' }
+    end
+
+    trait :with_special_nature do
+      certificate_type_code { 'A' }
+    end
+
+    trait :with_authorised_use do
+      certificate_type_code { 'N' }
+      certificate_code { '990' }
+    end
+
     trait :with_inactive_goods_nomenclature do
       after(:create) do |measure, evaluator|
         create(
