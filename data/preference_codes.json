@@ -1,0 +1,114 @@
+[
+    {
+        "id": "100",
+        "description": "Erga Omnes third country duty rates"
+    },
+    {
+        "id": "110",
+        "description": "Erga omnes autonomous tariff suspension"
+    },
+    {
+        "id": "115",
+        "description": "Erga Omnes autonomous tariff suspensions subject to an end-use"
+    },
+    {
+        "id": "119",
+        "description": "Erga Omnes autonomous tariff suspensions subject to an 'airworthiness certificate'"
+    },
+    {
+        "id": "120",
+        "description": "Non preferential tariff quotas"
+    },
+    {
+        "id": "123",
+        "description": "Non-preferential tariff quotas subject to an end-use authorisation"
+    },
+    {
+        "id": "125",
+        "description": "Non preferential tariff quotas subject to a special certificate"
+    },
+    {
+        "id": "128",
+        "description": "Erga Omnes tariff quotas following outward processing"
+    },
+    {
+        "id": "140",
+        "description": "Special end use resulting from the Common Customs Tariff"
+    },
+    {
+        "id": "150",
+        "description": "Admission to CN codes subject to special certificates"
+    },
+    {
+        "id": "200",
+        "description": "GSP duty rate without conditions or limits"
+    },
+    {
+        "id": "218",
+        "description": "GSP suspensions with certificate confirming the special nature of the product"
+    },
+    {
+        "id": "220",
+        "description": "GSP tariff quotas"
+    },
+    {
+        "id": "223",
+        "description": "GSP tariff quota subject to an end use"
+    },
+    {
+        "id": "225",
+        "description": "GSP tariff quotas subject to a special certificate"
+    },
+    {
+        "id": "240",
+        "description": "GSP preferential duty rates subject to an end use"
+    },
+    {
+        "id": "250",
+        "description": "Admission to CN codes with special GSP rates subject to a special certificate"
+    },
+    {
+        "id": "300",
+        "description": "Preferential duty rate without conditions or limits (including ceilings)"
+    },
+    {
+        "id": "310",
+        "description": "Preferential agreements: tariff suspensions"
+    },
+    {
+        "id": "315",
+        "description": "Preferential suspension subject to an end use"
+    },
+    {
+        "id": "318",
+        "description": "Preferential suspension with certificate confirming the special nature of the product"
+    },
+    {
+        "id": "320",
+        "description": "Preferential tariff quotas"
+    },
+    {
+        "id": "323",
+        "description": "Preferential tariff quotas subject to an end use"
+    },
+    {
+        "id": "325",
+        "description": "Preferential tariff quotas subject to a special certificate"
+    },
+    {
+        "id": "340",
+        "description": "Preferential duty rates subject to final destination"
+    },
+    {
+        "id": "350",
+        "description": "Admission to CN codes with special preferential rates subject to a special certificate"
+    },
+    {
+        "id": "400",
+        "description": "Non-imposition of customs duties under the provisions of customs union agreements concluded by the Community"
+    },
+    {
+        "id": "420",
+        "description": "Customs union quota"
+    }
+]
