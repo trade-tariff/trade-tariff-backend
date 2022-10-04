@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::QuotaOrderNumberSerializer do
+RSpec.describe Api::V2::QuotaOrderNumbers::QuotaOrderNumberSerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
