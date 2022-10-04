@@ -104,6 +104,14 @@ module Api
           measure_condition_permutation_groups.map(&:id)
         end
 
+        def preference_code_id
+          preference_code.id
+        end
+
+        def preference_code
+          PreferenceCode.get(@measure.preference_code(@declarable))
+        end
+
       private
 
         def measure_type_exclusions

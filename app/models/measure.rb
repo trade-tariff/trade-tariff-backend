@@ -497,9 +497,7 @@ class Measure < Sequel::Model
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
   end
 
-  def preference_code(commodity_goods_nomenclature_sid)
-    commodity = Commodity.where(goods_nomenclature_sid: commodity_goods_nomenclature_sid).first
-
+  def preference_code(commodity)
     case measure_type_id
     when '103'
       if authorised_use_provisions_submission?(commodity)
