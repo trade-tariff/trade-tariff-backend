@@ -45,7 +45,7 @@ RSpec.describe CachedGeographicalAreaService do
       end
 
       it 'uses the correct cache key' do
-        expected_key = "_geographical-areas-countries-#{actual_date}"
+        expected_key = "_geographical-areas-#{actual_date}-true-false"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
@@ -68,7 +68,7 @@ RSpec.describe CachedGeographicalAreaService do
       end
 
       it 'uses the correct cache key' do
-        expected_key = "_geographical-areas-index-#{actual_date}"
+        expected_key = "_geographical-areas-#{actual_date}-false-false"
         service.call
         expect(Rails.cache).to have_received(:fetch).with(expected_key, expires_in: 24.hours)
       end
