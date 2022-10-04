@@ -112,6 +112,8 @@ Rails.application.routes.draw do
         collection { get :countries }
       end
 
+      resources :preference_codes, only: [:index]
+
       resources :monetary_exchange_rates, only: [:index]
 
       resources :updates, only: [] do
