@@ -13,7 +13,7 @@ class QuotaOrderNumber < Sequel::Model
       inner_join(:quota_definitions, quota_order_numbers__quota_order_number_sid: :quota_definitions__quota_order_number_sid)
         .actual
         .with_actual(QuotaDefinition)
-        .eager(:quota_definition)
+        .eager(quota_definition: :measures)
     end
   end
 

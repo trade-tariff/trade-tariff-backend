@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::QuotaDefinitionSerializer do
+RSpec.describe Api::V2::QuotaOrderNumbers::QuotaDefinitionSerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
@@ -19,6 +19,7 @@ RSpec.describe Api::V2::QuotaDefinitionSerializer do
             validity_end_date: nil,
             validity_start_date: 4.years.ago.beginning_of_day,
           },
+          relationships: { measures: { data: [] } },
         },
       }
     end
