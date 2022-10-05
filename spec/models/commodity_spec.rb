@@ -827,7 +827,7 @@ RSpec.describe Commodity do
   end
 
   describe '#special_nature?' do
-    context 'when commodity has measures with atleast one measure condition containing special nature certificate' do
+    context 'when commodity has at least one measure condition containing special nature certificate' do
       let(:commodity) { create(:commodity) }
 
       before do
@@ -843,7 +843,7 @@ RSpec.describe Commodity do
       it { expect(commodity.special_nature?).to eq(true) }
     end
 
-    context 'when commodity does not have measures with atleast one measure condition containing special nature certificate' do
+    context 'when commodity does not have any measure conditions containing special nature certificate' do
       let(:commodity) { create(:commodity) }
 
       it { expect(commodity.special_nature?).to eq(false) }
@@ -851,7 +851,7 @@ RSpec.describe Commodity do
   end
 
   describe '#authorised_use_provisions_submission?' do
-    context 'when commodity has any measures with authorised use submissions measure type id' do
+    context 'when commodity has at least one measure with authorised use submissions measure type id' do
       let(:commodity) { create(:commodity) }
 
       before do
