@@ -10,7 +10,7 @@ RSpec.describe PreferenceCode do
     context 'when measure_type_id does not match any conditions' do
       let(:measure) { create(:measure) }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq(nil) }
+      it { expect(described_class.find(commodity, measure)).to eq(nil) }
     end
 
     context 'when third country duty measure' do
@@ -26,7 +26,7 @@ RSpec.describe PreferenceCode do
           )
         end
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('140') }
+        it { expect(described_class.find(commodity, measure)).to eq('140') }
       end
 
       context 'when special_nature' do
@@ -40,56 +40,56 @@ RSpec.describe PreferenceCode do
           )
         end
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('150') }
+        it { expect(described_class.find(commodity, measure)).to eq('150') }
       end
 
       context 'when none of above' do
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('100') }
+        it { expect(described_class.find(commodity, measure)).to eq('100') }
       end
     end
 
     context 'when non preferential duty under authorised use' do
       let(:measure) { create(:measure, measure_type_id: '105') }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq('140') }
+      it { expect(described_class.find(commodity, measure)).to eq('140') }
     end
 
     context 'when Customs Union Duty' do
       let(:measure) { create(:measure, measure_type_id: '106') }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq('400') }
+      it { expect(described_class.find(commodity, measure)).to eq('400') }
     end
 
     context 'when autonomous tariff suspension' do
       context 'when authorised_use' do
         let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '112') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('115') }
+        it { expect(described_class.find(commodity, measure)).to eq('115') }
       end
 
       context 'when not authorised_use' do
-        let(:measure) { create(:measure, :with_measure_conditions,  measure_type_id: '112') }
+        let(:measure) { create(:measure, :with_measure_conditions, measure_type_id: '112') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('110') }
+        it { expect(described_class.find(commodity, measure)).to eq('110') }
       end
     end
 
     context 'when autonomous suspension under authorised use' do
       let(:measure) { create(:measure, measure_type_id: '115') }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq('115') }
+      it { expect(described_class.find(commodity, measure)).to eq('115') }
     end
 
     context 'when suspension - goods for certain categories of ships, boats and other vessels and for drilling or production platforms' do
       let(:measure) { create(:measure, measure_type_id: '117') }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq('140') }
+      it { expect(described_class.find(commodity, measure)).to eq('140') }
     end
 
     context 'when airworthiness tariff suspension' do
       let(:measure) { create(:measure, measure_type_id: '119') }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq('119') }
+      it { expect(described_class.find(commodity, measure)).to eq('119') }
     end
 
     context 'when non preferential tariff quota' do
@@ -106,37 +106,37 @@ RSpec.describe PreferenceCode do
           )
         end
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('125') }
+        it { expect(described_class.find(commodity, measure)).to eq('125') }
       end
 
       context 'when authorised_use' do
         let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '122') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('123') }
+        it { expect(described_class.find(commodity, measure)).to eq('123') }
       end
 
       context 'when none of above' do
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('120') }
+        it { expect(described_class.find(commodity, measure)).to eq('120') }
       end
     end
 
     context 'when non preferential tariff quota under authorised use' do
       let(:measure) { create(:measure, measure_type_id: '123') }
 
-      it { expect(PreferenceCode.find(commodity, measure)).to eq('123') }
+      it { expect(described_class.find(commodity, measure)).to eq('123') }
     end
 
     context 'when preferential suspension' do
       context 'when authorised_use' do
         let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '141') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('315') }
+        it { expect(described_class.find(commodity, measure)).to eq('315') }
       end
 
       context 'when not authorised use' do
         let(:measure) { create(:measure, measure_type_id: '141') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('310') }
+        it { expect(described_class.find(commodity, measure)).to eq('310') }
       end
     end
 
@@ -144,25 +144,25 @@ RSpec.describe PreferenceCode do
       context 'when GSP and authorised_use' do
         let(:measure) { create(:measure, :with_gsp, :with_measure_conditions, :with_authorised_use, measure_type_id: '142') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('240') }
+        it { expect(described_class.find(commodity, measure)).to eq('240') }
       end
 
       context 'when GSP' do
         let(:measure) { create(:measure, :with_gsp, measure_type_id: '142') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('200') }
+        it { expect(described_class.find(commodity, measure)).to eq('200') }
       end
 
       context 'when authorised_use and not GSP' do
         let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '142') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('340') }
+        it { expect(described_class.find(commodity, measure)).to eq('340') }
       end
 
       context 'when not authorised_use or GSP' do
         let(:measure) { create(:measure, measure_type_id: '142') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('300') }
+        it { expect(described_class.find(commodity, measure)).to eq('300') }
       end
     end
 
@@ -170,37 +170,37 @@ RSpec.describe PreferenceCode do
       context 'when GSP and special_nature' do
         let(:measure) { create(:measure, :with_gsp, :with_base_regulation, :with_measure_conditions, :with_special_nature, goods_nomenclature_sid: commodity.goods_nomenclature_sid, measure_type_id: '143') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('255') }
+        it { expect(described_class.find(commodity, measure)).to eq('255') }
       end
-      
+
       context 'when GSP and authorised_use' do
         let(:measure) { create(:measure, :with_gsp, :with_measure_conditions, :with_authorised_use, measure_type_id: '143') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('223') }
+        it { expect(described_class.find(commodity, measure)).to eq('223') }
       end
 
       context 'when GSP' do
         let(:measure) { create(:measure, :with_gsp, measure_type_id: '143') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('220') }
+        it { expect(described_class.find(commodity, measure)).to eq('220') }
       end
 
       context 'when special_nature' do
         let(:measure) { create(:measure, :with_base_regulation, :with_measure_conditions, :with_special_nature, goods_nomenclature_sid: commodity.goods_nomenclature_sid, measure_type_id: '143') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('325') }
+        it { expect(described_class.find(commodity, measure)).to eq('325') }
       end
 
       context 'when authorised_use' do
         let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '143') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('323') }
+        it { expect(described_class.find(commodity, measure)).to eq('323') }
       end
 
       context 'when not any of above' do
         let(:measure) { create(:measure, measure_type_id: '143') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('320') }
+        it { expect(described_class.find(commodity, measure)).to eq('320') }
       end
     end
 
@@ -208,13 +208,13 @@ RSpec.describe PreferenceCode do
       context 'when GSP' do
         let(:measure) { create(:measure, :with_gsp, measure_type_id: '145') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('240') }
+        it { expect(described_class.find(commodity, measure)).to eq('240') }
       end
 
       context 'when not GSP' do
         let(:measure) { create(:measure, measure_type_id: '145') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('340') }
+        it { expect(described_class.find(commodity, measure)).to eq('340') }
       end
     end
 
@@ -222,13 +222,13 @@ RSpec.describe PreferenceCode do
       context 'when GSP' do
         let(:measure) { create(:measure, :with_gsp, measure_type_id: '146') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('223') }
+        it { expect(described_class.find(commodity, measure)).to eq('223') }
       end
 
       context 'when not GSP' do
         let(:measure) { create(:measure, measure_type_id: '146') }
 
-        it { expect(PreferenceCode.find(commodity, measure)).to eq('323') }
+        it { expect(described_class.find(commodity, measure)).to eq('323') }
       end
     end
   end

@@ -55,14 +55,12 @@ class PreferenceCode
         else
           '220'
         end
+      elsif commodity.special_nature?
+        '325'
+      elsif measure.authorised_use?
+        '323'
       else
-        if commodity.special_nature?
-          '325'
-        elsif measure.authorised_use?
-          '323'
-        else
-          '320'
-        end
+        '320'
       end
     when '145'
       measure.gsp? ? '240' : '340'

@@ -99,7 +99,7 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
   describe '#preference_code' do
     subject(:preference_code) { described_class.new(measure, measure.goods_nomenclature).preference_code }
-    
+
     let(:measure) { create(:measure, measure_type_id: '117') }
 
     it { is_expected.to be_a(PreferenceCode) }
@@ -107,7 +107,7 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
   describe '#preference_code_id' do
     subject(:preference_code) { described_class.new(measure, measure.goods_nomenclature).preference_code_id }
-    
+
     let(:measure) { create(:measure, measure_type_id: '117') }
 
     it { is_expected.to eq('140') }
