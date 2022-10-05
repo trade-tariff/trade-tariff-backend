@@ -825,4 +825,51 @@ RSpec.describe Commodity do
       it { is_expected.not_to be_fast_declarable }
     end
   end
+
+  describe '#special_nature?' do
+    context 'when commodity has measures with atleast one measure condition containing special nature certificate' do
+      let(:commodity) { create(:commodity) }
+
+      before do
+        create(
+          :measure,
+          :with_base_regulation,
+          :with_measure_conditions,
+          :with_special_nature,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        )
+      end
+
+      it { expect(commodity.special_nature?).to eq(true) }
+    end
+
+    context 'when commodity does not have measures with atleast one measure condition containing special nature certificate' do
+      let(:commodity) { create(:commodity) }
+
+      it { expect(commodity.special_nature?).to eq(false) }
+    end
+  end
+
+  describe '#authorised_use_provisions_submission?' do
+    context 'when commodity has any measures with authorised use submissions measure type id' do
+      let(:commodity) { create(:commodity) }
+
+      before do
+        create(
+          :measure,
+          :with_base_regulation,
+          :with_authorised_use_provisions_submission,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        )
+      end
+
+      it { expect(commodity.authorised_use_provisions_submission?).to eq(true) }
+    end
+
+    context 'when commodity does not have any measures with authorised use submissions measure type id' do
+      let(:commodity) { create(:commodity) }
+
+      it { expect(commodity.authorised_use_provisions_submission?).to eq(false) }
+    end
+  end
 end

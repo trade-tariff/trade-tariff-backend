@@ -21,7 +21,7 @@ module Api
                    :resolved_duty_expression,
                    :universal_waiver_applies
 
-        has_one :preference_code, serializer: Api::V2::Measures::PreferenceCodeSerializer
+        has_one :preference_code, serializer: Api::V2::PreferenceCodeSerializer
         has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer
         has_one :measure_type, serializer: Api::V2::Measures::MeasureTypeSerializer
         has_many :legal_acts, serializer: Api::V2::Measures::MeasureLegalActSerializer

@@ -105,11 +105,11 @@ module Api
         end
 
         def preference_code_id
-          preference_code.id
+          preference_code&.id
         end
 
         def preference_code
-          PreferenceCode.get(@measure.preference_code(@declarable))
+          PreferenceCodeList.get(PreferenceCode.find(@declarable, @measure))
         end
 
       private

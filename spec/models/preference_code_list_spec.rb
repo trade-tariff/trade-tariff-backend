@@ -12,4 +12,14 @@ RSpec.describe PreferenceCodeList do
       expect(preference_code_list.all.first).to be_a(PreferenceCode)
     end
   end
+
+  describe 'get' do
+    it 'returns a code if one exists' do
+      expect(preference_code_list.get(100).id).to eq('100')
+    end
+
+    it 'returns nil if code does not exist' do
+      expect(preference_code_list.get(1000)).to eq(nil)
+    end
+  end
 end

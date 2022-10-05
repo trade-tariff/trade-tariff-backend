@@ -80,6 +80,7 @@ RSpec.describe CachedCommodityService do
             type: 'measure',
             attributes: Hash,
             relationships: {
+              preference_code: Hash,
               duty_expression: Hash,
               measure_type: Hash,
               legal_acts: Hash,

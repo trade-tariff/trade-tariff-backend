@@ -187,6 +187,14 @@ class Commodity < GoodsNomenclature
     declarable? ? 'Commodity' : 'Subheading'
   end
 
+  def special_nature?
+    measures.any? { |m| m.measure_conditions.map(&:certificate_type_code).include?(Certificate::SPECIAL_NATURE) }
+  end
+
+  def authorised_use_provisions_submission?
+    measures.map(&:measure_type_id).include?(Measure::AUTHORISED_USE_PROVISIONS_SUBMISSION)
+  end
+
   private
 
   def load_children

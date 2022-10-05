@@ -9,7 +9,7 @@ class PreferenceCodeList
     end
 
     def get(id)
-      all.find { |pc| pc['id'] == id.to_s }
+      all.select { |pc| pc.id == id.to_s }.first
     end
   end
 end
