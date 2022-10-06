@@ -69,5 +69,39 @@ RSpec.describe Certificate do
         let(:certificate_type_code) { Forgery(:basic).text(exactly: 1) }
       end
     end
+
+    describe '#special_nature?' do
+      subject(:certificate) { build(:certificate, certificate_type_code:) }
+
+      context 'when the certificate has a special nature type code' do
+        let(:certificate_type_code) { 'A' }
+
+        it { is_expected.to be_special_nature }
+      end
+
+      context 'when the certificate does not have a special nature type code' do
+        let(:certificate_type_code) { 'X' }
+
+        it { is_expected.not_to be_special_nature }
+      end
+    end
+
+    describe '#authorised_use?' do
+      subject(:certificate) { build(:certificate, certificate_type_code:, certificate_code:) }
+
+      context 'when the certificate has a special nature type code' do
+        let(:certificate_type_code) { 'N' }
+        let(:certificate_code) { '990' }
+
+        it { is_expected.to be_authorised_use }
+      end
+
+      context 'when the certificate does not have a special nature type code' do
+        let(:certificate_type_code) { 'N' }
+        let(:certificate_code) { '991' }
+
+        it { is_expected.not_to be_authorised_use }
+      end
+    end
   end
 end

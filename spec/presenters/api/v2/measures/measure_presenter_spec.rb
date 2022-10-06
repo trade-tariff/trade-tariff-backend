@@ -145,4 +145,32 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     it { is_expected.not_to be_empty }
     it { is_expected.to all be_instance_of MeasureConditionPermutations::Group }
   end
+
+  describe '#special_nature?' do
+    context 'when measure has at least one measure condition with special nature use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions, :with_special_nature) }
+
+      it { is_expected.to be_special_nature }
+    end
+
+    context 'when measure has no measure conditions with special nature use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions) }
+
+      it { is_expected.not_to be_special_nature }
+    end
+  end
+
+  describe '#authorised_use?' do
+    context 'when measure has at least one measure condition with authorised use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use) }
+
+      it { is_expected.to be_authorised_use }
+    end
+
+    context 'when measure has no measure conditions with authorised use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions) }
+
+      it { is_expected.not_to be_authorised_use }
+    end
+  end
 end

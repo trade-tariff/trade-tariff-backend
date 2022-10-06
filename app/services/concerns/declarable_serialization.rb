@@ -23,6 +23,7 @@ module DeclarableSerialization
     import_measures.additional_code
     import_measures.order_number
     import_measures.order_number.definition
+    import_measures.preference_code
     export_measures
     export_measures.duty_expression
     export_measures.measure_type

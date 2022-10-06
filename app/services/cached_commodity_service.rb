@@ -12,8 +12,6 @@ class CachedCommodityService
     export_measures.resolved_measure_components
     export_measures.resolved_measure_components.measurement_unit
     export_measures.measure_components.measurement_unit
-    import_measures.preference_code
-    export_measures.preference_code
   ]).freeze
 
   MEASURES_EAGER_LOAD_GRAPH = [

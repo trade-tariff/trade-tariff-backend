@@ -10,7 +10,6 @@ class MeasureType < Sequel::Model
   #     tariff_preference: %w[142 145],
   #     preferential_quota: %w[143 146],
   #   }
-
   IMPORT_MOVEMENT_CODES = [0, 2].freeze
   EXPORT_MOVEMENT_CODES = [1, 2].freeze
   THIRD_COUNTRY = %w[103 105].freeze # 105 measure types are for end use Third Country duties. 103 are for everything else
@@ -22,6 +21,7 @@ class MeasureType < Sequel::Model
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
 
+  AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
   TARIFF_PREFERENCE = %w[142 145].freeze
   PREFERENTIAL_QUOTA = %w[143 146].freeze
 
@@ -122,6 +122,10 @@ class MeasureType < Sequel::Model
 
   def rules_of_origin_apply?
     measure_type_id.in?(RULES_OF_ORIGIN_MEASURES)
+  end
+
+  def authorised_use_provisions_submission?
+    measure_type_id.in?(AUTHORISED_USE_PROVISIONS_SUBMISSION)
   end
 
   # See Commodity#overview_measures

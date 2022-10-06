@@ -109,8 +109,18 @@ module Api
         end
 
         def preference_code
-          PreferenceCodeList.get(PreferenceCode.find(@declarable, @measure))
+          PreferenceCodeList.get(PreferenceCode.find(@declarable, self))
         end
+
+        def special_nature?
+          measure_conditions.any?(&:special_nature?)
+        end
+
+        def authorised_use?
+          measure_conditions.any?(&:authorised_use?)
+        end
+
+        delegate :authorised_use_provisions_submission?, to: :measure_type
 
       private
 

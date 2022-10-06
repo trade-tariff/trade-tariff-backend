@@ -97,6 +97,7 @@ FactoryBot.define do
 
     trait :with_special_nature do
       certificate_type_code { 'A' }
+      certificate_code { '990' }
     end
 
     trait :with_authorised_use do
@@ -314,6 +315,14 @@ FactoryBot.define do
           measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
+
+        if evaluator.certificate_type_code.present? || evaluator.certificate_code.present?
+          create(
+            :certificate,
+            certificate_type_code: evaluator.certificate_type_code,
+            certificate_code: evaluator.certificate_code,
+          )
+        end
       end
     end
 
