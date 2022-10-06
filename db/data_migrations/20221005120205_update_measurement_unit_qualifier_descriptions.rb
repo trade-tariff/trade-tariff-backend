@@ -12,8 +12,6 @@ Sequel.migration do
       count = Sequel::Model.db[:measurement_unit_qualifier_descriptions]
                            .where(measurement_unit_qualifier_code: d[0])
                            .update(description: d[1])
-
-      logger.info "Entries updated for code '#{d[0]}': #{count}"
     end
   end
 
