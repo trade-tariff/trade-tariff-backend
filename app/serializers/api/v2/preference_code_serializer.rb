@@ -5,9 +5,7 @@ module Api
 
       set_type :preference_code
 
-      set_id :id
-
-      attributes :description
+      attributes :code, :description
     end
   end
 end

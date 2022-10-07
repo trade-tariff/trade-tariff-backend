@@ -1,18 +1,26 @@
 RSpec.describe PreferenceCode do
-  subject(:preference_code) { described_class.new(id: '100', description: 'Erga Omnes third country duty rates') }
+  subject(:preference_code) { described_class.new(code: '100', description: 'Erga Omnes third country duty rates') }
 
-  it { expect(preference_code.id).to eq('100') }
+  it { expect(preference_code.code).to eq('100') }
   it { expect(preference_code.description).to eq('Erga Omnes third country duty rates') }
 
-  describe '#find' do
-    shared_examples 'a declarable preference code find operation' do
+  describe '#determine_code' do
+    shared_examples 'a declarable preference code determine_code operation' do
+      before do
+        create(
+          :measure_type,
+          measure_type_id: measure.measure_type_id,
+          trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
+        )
+      end
+
       let(:presented_measure) { Api::V2::Measures::MeasurePresenter.new(measure, presented_declarable) }
       let(:measures) { [measure] }
 
       context 'when measure_type_id does not match any conditions' do
         let(:measure) { create(:measure) }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq(nil) }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq(nil) }
       end
 
       context 'when third country duty measure' do
@@ -29,7 +37,7 @@ RSpec.describe PreferenceCode do
             [measure, authorised_use_provisions_submission_measure]
           end
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('140') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('140') }
         end
 
         context 'when special_nature' do
@@ -44,56 +52,56 @@ RSpec.describe PreferenceCode do
             [measure, special_nature_measure]
           end
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('150') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('150') }
         end
 
         context 'when none of above' do
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('100') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('100') }
         end
       end
 
       context 'when non preferential duty under authorised use' do
         let(:measure) { create(:measure, measure_type_id: '105') }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq('140') }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('140') }
       end
 
       context 'when Customs Union Duty' do
         let(:measure) { create(:measure, measure_type_id: '106') }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq('400') }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('400') }
       end
 
       context 'when autonomous tariff suspension' do
         context 'when authorised_use' do
           let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '112') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('115') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('115') }
         end
 
         context 'when not authorised_use' do
           let(:measure) { create(:measure, :with_measure_conditions, measure_type_id: '112') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('110') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('110') }
         end
       end
 
       context 'when autonomous suspension under authorised use' do
         let(:measure) { create(:measure, measure_type_id: '115') }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq('115') }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('115') }
       end
 
       context 'when suspension - goods for certain categories of ships, boats and other vessels and for drilling or production platforms' do
         let(:measure) { create(:measure, measure_type_id: '117') }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq('140') }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('140') }
       end
 
       context 'when airworthiness tariff suspension' do
         let(:measure) { create(:measure, measure_type_id: '119') }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq('119') }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('119') }
       end
 
       context 'when non preferential tariff quota' do
@@ -111,37 +119,37 @@ RSpec.describe PreferenceCode do
             [measure, special_nature_measure]
           end
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('125') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('125') }
         end
 
         context 'when authorised_use' do
           let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '122') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('123') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('123') }
         end
 
         context 'when none of above' do
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('120') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('120') }
         end
       end
 
       context 'when non preferential tariff quota under authorised use' do
         let(:measure) { create(:measure, measure_type_id: '123') }
 
-        it { expect(described_class.find(presented_declarable, presented_measure)).to eq('123') }
+        it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('123') }
       end
 
       context 'when preferential suspension' do
         context 'when authorised_use' do
           let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '141') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('315') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('315') }
         end
 
         context 'when not authorised use' do
           let(:measure) { create(:measure, measure_type_id: '141') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('310') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('310') }
         end
       end
 
@@ -149,25 +157,25 @@ RSpec.describe PreferenceCode do
         context 'when GSP and authorised_use' do
           let(:measure) { create(:measure, :with_gsp, :with_measure_conditions, :with_authorised_use, measure_type_id: '142') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('240') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('240') }
         end
 
         context 'when GSP' do
           let(:measure) { create(:measure, :with_gsp, measure_type_id: '142') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('200') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('200') }
         end
 
         context 'when authorised_use and not GSP' do
           let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '142') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('340') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('340') }
         end
 
         context 'when not authorised_use or GSP' do
           let(:measure) { create(:measure, measure_type_id: '142') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('300') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('300') }
         end
       end
 
@@ -184,7 +192,7 @@ RSpec.describe PreferenceCode do
             )
           end
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('255') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('255') }
         end
 
         context 'when GSP and authorised_use' do
@@ -198,13 +206,13 @@ RSpec.describe PreferenceCode do
             )
           end
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('223') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('223') }
         end
 
         context 'when GSP' do
           let(:measure) { create(:measure, :with_gsp, measure_type_id: '143') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('220') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('220') }
         end
 
         context 'when special_nature' do
@@ -218,19 +226,19 @@ RSpec.describe PreferenceCode do
             )
           end
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('325') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('325') }
         end
 
         context 'when authorised_use' do
           let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use, measure_type_id: '143') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('323') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('323') }
         end
 
         context 'when not any of above' do
           let(:measure) { create(:measure, measure_type_id: '143') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('320') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('320') }
         end
       end
 
@@ -238,13 +246,13 @@ RSpec.describe PreferenceCode do
         context 'when GSP' do
           let(:measure) { create(:measure, :with_gsp, measure_type_id: '145') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('240') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('240') }
         end
 
         context 'when not GSP' do
           let(:measure) { create(:measure, measure_type_id: '145') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('340') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('340') }
         end
       end
 
@@ -252,25 +260,49 @@ RSpec.describe PreferenceCode do
         context 'when GSP' do
           let(:measure) { create(:measure, :with_gsp, measure_type_id: '146') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('223') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('223') }
         end
 
         context 'when not GSP' do
           let(:measure) { create(:measure, measure_type_id: '146') }
 
-          it { expect(described_class.find(presented_declarable, presented_measure)).to eq('323') }
+          it { expect(described_class.determine_code(presented_declarable, presented_measure)).to eq('323') }
         end
       end
     end
 
-    it_behaves_like 'a declarable preference code find operation' do
+    it_behaves_like 'a declarable preference code determine_code operation' do
       let(:presented_declarable) { Api::V2::Commodities::CommodityPresenter.new(declarable, measures) }
       let(:declarable) { create(:commodity, :with_heading) }
     end
 
-    it_behaves_like 'a declarable preference code find operation' do
+    it_behaves_like 'a declarable preference code determine_code operation' do
       let(:presented_declarable) { Api::V2::Headings::DeclarableHeadingPresenter.new(declarable, measures) }
       let(:declarable) { create(:heading, :declarable) }
+    end
+  end
+
+  describe 'all' do
+    subject(:all) { described_class.all }
+
+    it { expected(all.count).to eq(28) }
+    it { expect(all.first).to be_a(described_class) }
+  end
+
+  describe '[]' do
+    subject(:preference_code) { described_class[code] }
+
+    context 'when the code exists' do
+      let(:code) { '100' }
+
+      it { expect(preference_code.code).to eq('100') }
+      it { expect(preference_code.description).to eq('Erga Omnes third country duty rates') }
+    end
+
+    context 'when the code does not exist' do
+      let(:code) { 'foo' }
+
+      it { is_expected.to be_nil }
     end
   end
 end

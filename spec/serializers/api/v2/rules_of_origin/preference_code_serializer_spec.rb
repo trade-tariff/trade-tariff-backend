@@ -2,7 +2,7 @@ RSpec.describe Api::V2::PreferenceCodeSerializer do
   subject(:serializable) { described_class.new(preference_code).serializable_hash }
 
   let(:preference_code) do
-    PreferenceCode.new(id: '100', description: 'Erga Omnes third country duty rates')
+    PreferenceCode.new(code: '100', description: 'Erga Omnes third country duty rates')
   end
 
   let :expected do
@@ -11,6 +11,7 @@ RSpec.describe Api::V2::PreferenceCodeSerializer do
         id: '100',
         type: :preference_code,
         attributes: {
+          code: '100',
           description: 'Erga Omnes third country duty rates',
         },
       },

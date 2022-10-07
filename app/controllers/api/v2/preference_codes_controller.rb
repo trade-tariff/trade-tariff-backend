@@ -5,7 +5,7 @@ module Api
         respond_to do |format|
           format.json do
             render json: PreferenceCodeSerializer.new(
-              PreferenceCodeList.all,
+              PreferenceCode.all,
             ).serializable_hash
           end
         end

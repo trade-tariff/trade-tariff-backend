@@ -109,7 +109,7 @@ module Api
         end
 
         def preference_code
-          PreferenceCodeList.get(PreferenceCode.find(@declarable, self))
+          PreferenceCode.build(@declarable, self)
         end
 
         def special_nature?

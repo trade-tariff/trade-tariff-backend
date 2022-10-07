@@ -1,13 +1,13 @@
 class PreferenceCode
-  def initialize(id:, description:)
-    @id = id
+  def initialize(code:, description:)
+    @code = code
     @description = description
   end
 
-  attr_accessor :id, :description
+  attr_accessor :code, :description
 
-  # use methods to encapsulate each measure type id
-  # use hash to lookup the measure type id and apply a lambda
+  alias_method :id, :code
+
   class << self
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING = Hash.new(->(_presented_declarable, _measure) {})
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['105'] = ->(_, _) { '140' }
@@ -72,12 +72,36 @@ class PreferenceCode
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING.freeze
 
-    def find(presented_declarable, presented_measure)
-      MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING[presented_measure.measure_type_id].try(
-        :call,
+    def determine_code(presented_declarable, presented_measure)
+      MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING[presented_measure.measure_type_id].call(
         presented_declarable,
         presented_measure,
       )
+    end
+
+    delegate :[], to: :preference_codes
+
+    def build(declarable, measure)
+      determined_code = determine_code(declarable, measure)
+
+      self[determined_code]
+    end
+
+    def all
+      preference_codes.values
+    end
+
+    def preference_codes
+      @preference_codes ||= codes_from_file.each_with_object({}) do |preference_code, acc|
+        code = preference_code['id']
+        description = preference_code['description']
+
+        acc[code] = PreferenceCode.new(code:, description:)
+      end
+    end
+
+    def codes_from_file
+      JSON.load_file('data/preference_codes.json')
     end
   end
 end
