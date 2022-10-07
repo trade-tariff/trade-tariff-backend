@@ -565,4 +565,30 @@ RSpec.describe GoodsNomenclature do
       it { expect(classifiable_goods_nomenclatures).to eq([1]) }
     end
   end
+
+  describe '#goods_nomenclature_descriptions' do
+    context 'when the description column is null' do
+      subject(:goods_nomenclature_descriptions) do
+        create(
+          :goods_nomenclature,
+          :with_description,
+          description: nil,
+        ).goods_nomenclature_descriptions
+      end
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when the description column is not null' do
+      subject(:goods_nomenclature_descriptions) do
+        create(
+          :goods_nomenclature,
+          :with_description,
+          description: 'foo',
+        ).goods_nomenclature_descriptions
+      end
+
+      it { is_expected.not_to be_empty }
+    end
+  end
 end
