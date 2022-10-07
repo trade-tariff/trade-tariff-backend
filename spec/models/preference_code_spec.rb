@@ -176,11 +176,11 @@ RSpec.describe PreferenceCode do
           let(:measure) do
             create(
               :measure,
-              :preferential_quota,
               :with_gsp,
               :with_measure_conditions,
               :with_special_nature,
               goods_nomenclature_sid: declarable.goods_nomenclature_sid,
+              measure_type_id: '143',
             )
           end
 
@@ -191,10 +191,10 @@ RSpec.describe PreferenceCode do
           let(:measure) do
             create(
               :measure,
-              :preferential_quota,
               :with_gsp,
               :with_measure_conditions,
               :with_authorised_use,
+              measure_type_id: '143',
             )
           end
 
@@ -211,10 +211,10 @@ RSpec.describe PreferenceCode do
           let(:measure) do
             create(
               :measure,
-              :preferential_quota,
               :with_measure_conditions,
               :with_special_nature,
               goods_nomenclature_sid: declarable.goods_nomenclature_sid,
+              measure_type_id: '143',
             )
           end
 
