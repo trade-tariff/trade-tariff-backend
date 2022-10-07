@@ -11,8 +11,6 @@ module Api
         delegate :id, to: :import_trade_summary, prefix: true
 
         def initialize(heading, measures)
-          require 'pry'; binding.pry if measures.first.measure_sid == 1312312 || measures.blank?
-
           super(heading)
           @heading = heading
           @import_measures = measures.select(&:import).map do |measure|

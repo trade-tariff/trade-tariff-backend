@@ -72,6 +72,7 @@ FactoryBot.define do
 
     trait :with_special_nature do
       certificate_type_code { 'A' }
+      certificate_code { '990' }
     end
 
     trait :with_authorised_use do
