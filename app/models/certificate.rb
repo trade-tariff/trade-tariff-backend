@@ -1,4 +1,7 @@
 class Certificate < Sequel::Model
+  AUTHORISED_USE_ID = 'N990'.freeze
+  SPECIAL_NATURE_TYPE_CODE = 'A'.freeze
+
   plugin :oplog, primary_key: %i[certificate_code certificate_type_code]
   plugin :time_machine
 
@@ -28,6 +31,14 @@ class Certificate < Sequel::Model
   one_to_many :certificate_types, key: :certificate_type_code,
                                   primary_key: :certificate_type_code do |ds|
     ds.with_actual(CertificateType)
+  end
+
+  def special_nature?
+    certificate_type_code.in?(SPECIAL_NATURE_TYPE_CODE)
+  end
+
+  def authorised_use?
+    id.in?(AUTHORISED_USE_ID)
   end
 
   def certificate_description

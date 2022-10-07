@@ -15,10 +15,10 @@ module Api
           @commodity = commodity
           @footnotes = commodity.footnotes + commodity.heading.footnotes
           @import_measures = measures.select(&:import).map do |measure|
-            Api::V2::Measures::MeasurePresenter.new(measure, commodity)
+            Api::V2::Measures::MeasurePresenter.new(measure, self)
           end
           @export_measures = measures.select(&:export).map do |measure|
-            Api::V2::Measures::MeasurePresenter.new(measure, commodity)
+            Api::V2::Measures::MeasurePresenter.new(measure, self)
           end
           @unit_measures = @import_measures.select(&:expresses_unit?)
         end
@@ -88,6 +88,14 @@ module Api
 
         def import_trade_summary
           ImportTradeSummary.build(import_measures)
+        end
+
+        def special_nature?
+          @special_nature ||= import_measures.any?(&:special_nature?)
+        end
+
+        def authorised_use_provisions_submission?
+          @authorised_use_provisions_submission ||= import_measures.any?(&:authorised_use_provisions_submission?)
         end
       end
     end

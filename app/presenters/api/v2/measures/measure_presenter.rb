@@ -104,6 +104,24 @@ module Api
           measure_condition_permutation_groups.map(&:id)
         end
 
+        def preference_code_id
+          preference_code&.id
+        end
+
+        def preference_code
+          PreferenceCode.build(@declarable, self)
+        end
+
+        def special_nature?
+          measure_conditions.any?(&:special_nature?)
+        end
+
+        def authorised_use?
+          measure_conditions.any?(&:authorised_use?)
+        end
+
+        delegate :authorised_use_provisions_submission?, to: :measure_type
+
       private
 
         def measure_type_exclusions

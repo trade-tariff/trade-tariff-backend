@@ -3,6 +3,7 @@ class Measure < Sequel::Model
   PROVISIONAL_ANTIDUMPING_ROLE = 2
   DEFINITIVE_ANTIDUMPING_ROLE = 3
   MODIFICATION_REGULATION_ROLE = 4
+  AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
 
   VALID_ROLE_TYPE_IDS = [
     BASE_REGULATION_ROLE,
@@ -108,6 +109,8 @@ class Measure < Sequel::Model
            :preferential_quota?,
            :tariff_preference?,
            :trade_remedy?, to: :measure_type, allow_nil: true
+
+  delegate :gsp?, to: :geographical_area, allow_nil: true
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)

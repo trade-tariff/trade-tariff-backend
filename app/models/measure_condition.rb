@@ -53,6 +53,7 @@ class MeasureCondition < Sequel::Model
   delegate :description, to: :measurement_unit_qualifier, prefix: true, allow_nil: true
   delegate :formatted_measurement_unit_qualifier, to: :measurement_unit_qualifier, prefix: false, allow_nil: true
   delegate :description, to: :certificate, prefix: true, allow_nil: true
+  delegate :special_nature?, :authorised_use?, to: :certificate, allow_nil: true
   delegate :description, to: :certificate_type, prefix: true, allow_nil: true
   delegate :description, to: :measure_action, prefix: true, allow_nil: true
   delegate :description, to: :measure_condition_code, prefix: true, allow_nil: true

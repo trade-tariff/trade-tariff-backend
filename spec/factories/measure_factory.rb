@@ -62,6 +62,50 @@ FactoryBot.define do
       end
     end
 
+    trait :with_gsp do
+      with_gsp_enhanced_framework
+    end
+
+    trait :with_authorised_use_provisions_submission do
+      measure_type_id { '464' }
+    end
+
+    trait :with_special_nature do
+      certificate_type_code { 'A' }
+      certificate_code { '990' }
+    end
+
+    trait :with_authorised_use do
+      certificate_type_code { 'N' }
+      certificate_code { '990' }
+    end
+
+    trait :with_gsp_least_developed_countries do
+      geographical_area_id { '2005' }
+    end
+
+    trait :with_gsp_general_framework do
+      geographical_area_id { '2020' }
+    end
+
+    trait :with_gsp_enhanced_framework do
+      geographical_area_id { '2027' }
+    end
+
+    trait :with_authorised_use_provisions_submission do
+      measure_type_id { '464' }
+    end
+
+    trait :with_special_nature do
+      certificate_type_code { 'A' }
+      certificate_code { '990' }
+    end
+
+    trait :with_authorised_use do
+      certificate_type_code { 'N' }
+      certificate_code { '990' }
+    end
+
     trait :with_inactive_goods_nomenclature do
       after(:create) do |measure, evaluator|
         create(
@@ -272,6 +316,14 @@ FactoryBot.define do
           measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
           monetary_unit_code: evaluator.monetary_unit_code,
         )
+
+        if evaluator.certificate_type_code.present? || evaluator.certificate_code.present?
+          create(
+            :certificate,
+            certificate_type_code: evaluator.certificate_type_code,
+            certificate_code: evaluator.certificate_code,
+          )
+        end
       end
     end
 

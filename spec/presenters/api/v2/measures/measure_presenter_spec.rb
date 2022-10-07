@@ -97,6 +97,22 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     it { is_expected.to be(true) }
   end
 
+  describe '#preference_code' do
+    subject(:preference_code) { described_class.new(measure, measure.goods_nomenclature).preference_code }
+
+    let(:measure) { create(:measure, measure_type_id: '117') }
+
+    it { is_expected.to be_a(PreferenceCode) }
+  end
+
+  describe '#preference_code_id' do
+    subject(:preference_code) { described_class.new(measure, measure.goods_nomenclature).preference_code_id }
+
+    let(:measure) { create(:measure, measure_type_id: '117') }
+
+    it { is_expected.to eq('140') }
+  end
+
   describe '#scheme_code' do
     subject(:scheme_code) { described_class.new(measure, measure.goods_nomenclature).scheme_code }
 
@@ -128,5 +144,33 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
     it { is_expected.not_to be_empty }
     it { is_expected.to all be_instance_of MeasureConditionPermutations::Group }
+  end
+
+  describe '#special_nature?' do
+    context 'when measure has at least one measure condition with special nature use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions, :with_special_nature) }
+
+      it { is_expected.to be_special_nature }
+    end
+
+    context 'when measure has no measure conditions with special nature use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions) }
+
+      it { is_expected.not_to be_special_nature }
+    end
+  end
+
+  describe '#authorised_use?' do
+    context 'when measure has at least one measure condition with authorised use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions, :with_authorised_use) }
+
+      it { is_expected.to be_authorised_use }
+    end
+
+    context 'when measure has no measure conditions with authorised use certificate' do
+      let(:measure) { create(:measure, :with_measure_conditions) }
+
+      it { is_expected.not_to be_authorised_use }
+    end
   end
 end

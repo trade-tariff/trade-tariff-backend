@@ -23,6 +23,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
           universal_waiver_applies: false,
         },
         relationships: {
+          preference_code: { data: nil },
           duty_expression: {
             data: {
               id: "#{measure.id}-duty_expression",
@@ -85,6 +86,7 @@ RSpec.describe Api::V2::Measures::MeasureSerializer do
               reduction_indicator: 1,
             },
             relationships: {
+              preference_code: { data: nil },
               duty_expression: {
                 data: {
                   id: "#{measure.id}-duty_expression",
