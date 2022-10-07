@@ -58,20 +58,16 @@ RSpec.describe MeasureType do
   end
 
   describe '#excise?' do
-    context 'measure type is Excise related' do
-      let(:measure_type) { build :measure_type, measure_type_series_id: 'Q' }
+    context 'when measure type is Excise related' do
+      subject(:measure_type) { build :measure_type, measure_type_series_id: 'Q' }
 
-      it 'returns true' do
-        expect(measure_type).to be_excise
-      end
+      it { is_expected.to be_excise }
     end
 
-    context 'measure type is not Excise related' do
-      let(:measure_type) { build :measure_type, measure_type_series_id: 'E' }
+    context 'when measure type is not Excise related' do
+      subject(:measure_type) { build :measure_type, measure_type_series_id: 'E' }
 
-      it 'returns false' do
-        expect(measure_type).not_to be_excise
-      end
+      it { is_expected.not_to be_excise }
     end
   end
 
@@ -95,56 +91,44 @@ RSpec.describe MeasureType do
 
   describe '#third_country?' do
     context 'when measure_type has measure_type_id of 103' do
-      let(:measure_type) { build :measure_type, measure_type_id: '103' }
+      subject(:measure_type) { build :measure_type, measure_type_id: '103' }
 
-      it 'returns true' do
-        expect(measure_type).to be_third_country
-      end
+      it { is_expected.to be_third_country } 
     end
 
     context 'when measure_type has measure_type_id of 105' do
-      let(:measure_type) { build :measure_type, measure_type_id: '105' }
+      subject(:measure_type) { build :measure_type, measure_type_id: '105' }
 
-      it 'returns true' do
-        expect(measure_type).to be_third_country
-      end
+      it { is_expected.to be_third_country }
     end
 
     context 'when measure_type is non-third-country measure_type_id' do
-      let(:measure_type) { build :measure_type, measure_type_id: 'foo' }
+      subject(:measure_type) { build :measure_type, measure_type_id: 'foo' }
 
-      it 'returns false' do
-        expect(measure_type).not_to be_third_country
-      end
+      it { expect(measure_type).not_to be_third_country }
     end
   end
 
   describe '#trade_remedy?' do
     context 'when measure_type has measure_type_id that is a defense measure type' do
-      let(:measure_type) { build :measure_type, measure_type_id: MeasureType::DEFENSE_MEASURES.sample }
+      subject(:measure_type) { build :measure_type, measure_type_id: MeasureType::DEFENSE_MEASURES.sample }
 
-      it 'returns true' do
-        expect(measure_type).to be_trade_remedy
-      end
+      it { is_expected.to be_trade_remedy }
     end
 
     context 'when measure_type does not have a measure_type_id that is a defense measure type' do
-      let(:measure_type) { build :measure_type, measure_type_id: 'foo' }
+      subject(:measure_type) { build :measure_type, measure_type_id: 'foo' }
 
-      it 'returns false' do
-        expect(measure_type).not_to be_trade_remedy
-      end
+      it { expect(measure_type).not_to be_trade_remedy }
     end
   end
 
   describe '#expresses_unit?' do
     shared_examples 'an expressable measure' do |type_series_id|
       context "when measure_type has measure_type_series_id of #{type_series_id}" do
-        let(:measure_type) { build :measure_type, measure_type_series_id: type_series_id }
+        subject(:measure_type) { build :measure_type, measure_type_series_id: type_series_id }
 
-        it 'returns true' do
-          expect(measure_type).to be_expresses_unit
-        end
+        it { is_expected.to be_expresses_unit }
       end
     end
 
@@ -154,23 +138,21 @@ RSpec.describe MeasureType do
     it_behaves_like 'an expressable measure', 'Q'
 
     context 'when measure_type has measure_type_series_id that does not express units' do
-      let(:measure_type) { build :measure_type, measure_type_series_id: 'X' }
+      subject(:measure_type) { build :measure_type, measure_type_series_id: 'X' }
 
-      it 'returns false' do
-        expect(measure_type).not_to be_expresses_unit
-      end
+      it { expect(measure_type).not_to be_expresses_unit }
     end
   end
 
   describe '#vat?' do
     context 'when measure_type_id is a vat measure type id' do
-      let(:measure_type) { build :measure_type, measure_type_id: MeasureType::VAT_TYPES.sample }
+      subject(:measure_type) { build :measure_type, measure_type_id: MeasureType::VAT_TYPES.sample }
 
-      it { expect(measure_type).to be_vat }
+      it { is_expected.to be_vat }
     end
 
     context 'when measure_type_id is not a vat measure type id' do
-      let(:measure_type) { build :measure_type, measure_type_id: '103' }
+      subject(:measure_type) { build :measure_type, measure_type_id: '103' }
 
       it { expect(measure_type).not_to be_vat }
     end
@@ -189,7 +171,7 @@ RSpec.describe MeasureType do
     it_behaves_like 'a rules of origin measure', '146'
 
     context 'when not a rules of origin measure' do
-      let(:measure_type) { build :measure_type, measure_type_id: 'X' }
+      subject(:measure_type) { build :measure_type, measure_type_id: 'X' }
 
       it { is_expected.not_to be_rules_of_origin_apply }
     end
@@ -212,6 +194,20 @@ RSpec.describe MeasureType do
       let(:service) { 'uk' }
 
       it { is_expected.to eq(%w[VTA VTE VTS VTZ 305 109 110 111]) }
+    end
+  end
+
+  describe '#authorised_use_provisions_submission?' do
+    context 'when measure_type_id is an authorised_use_provisions_submission measure type id' do
+      subject(:measure_type) { build :measure_type, measure_type_id: '464' }
+
+      it { is_expected.to be_authorised_use_provisions_submission }
+    end
+
+    context 'when measure_type_id is not a authorised_use_provisions_submission  measure type id' do
+      subject(:measure_type) { build :measure_type, measure_type_id: '103' }
+
+      it { is_expected.not_to be_authorised_use_provisions_submission }
     end
   end
 end
