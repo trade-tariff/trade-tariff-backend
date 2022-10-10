@@ -91,7 +91,7 @@ class GoodsNomenclature < Sequel::Model
                                                  right_primary_key: %i[goods_nomenclature_description_period_sid goods_nomenclature_sid] do |ds|
     ds.with_actual(GoodsNomenclatureDescriptionPeriod, self)
       .order(Sequel.desc(:goods_nomenclature_description_periods__validity_start_date))
-      .where('description IS NOT NULL')
+      .exclude(description: nil)
   end
 
   many_to_many :footnotes, join_table: :footnote_association_goods_nomenclatures,
