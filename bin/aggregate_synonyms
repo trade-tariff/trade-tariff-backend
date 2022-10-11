@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+[[ "$TRACE" ]] && set -o xtrace
+set -o errexit
+set -o nounset
+set -o pipefail
+
+echo "Coercing multiple synonym files into a single aggregated file"
+
+
+cat config/opensearch/synonyms_* | grep -v '#' | sed '/^[[:space:]]*$/d' | sort | uniq >config/aggregated_synonyms/synonyms_all.txt
