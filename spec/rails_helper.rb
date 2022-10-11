@@ -54,6 +54,10 @@ RSpec.configure do |config|
 
   config.before do
     stub_codes_mapping_data
+
+    synonym_path = file_fixture('beta/search/goods_nomenclatures/test_synonyms.txt').to_path
+    stub_const('Api::Beta::SearchSynonymMatcherService::AGGREGATED_SYNONYMS_FILE', synonym_path)
+
     Rails.cache.clear
     Sidekiq::Worker.clear_all
 
