@@ -447,8 +447,8 @@
             "chapter": 15,
             "subdivision": "Wool grease and fatty substances derived therefrom\n(including lanolin). Other animal fats and oils and their fractions, whether or\nnot refined, but not chemically modified.. Glycerol, crude; glycerol waters and glycerol lyes.",
             "prefix": "",
-            "min": "1506and1520",
-            "max": "1506and1520",
+            "min": "1506000000",
+            "max": "1520999999",
             "rules": [
                 {
                     "rule": "Manufacture from materials of any heading",
@@ -2921,7 +2921,7 @@
             "subdivision": "Beadings and mouldings, including moulded skirting and other moulded boards",
             "prefix": "",
             "min": "4410000000",
-            "max": " 441399999",
+            "max": "4413999999",
             "rules": [
                 {
                     "rule": "Beading or moulding",
@@ -3172,7 +3172,7 @@
             "subdivision": "Silk yarn and yarn spun from silk waste",
             "prefix": "",
             "min": "5004000000",
-            "max": " 500699999",
+            "max": "5006999999",
             "rules": [
                 {
                     "rule": "Spinning of natural fibres or extrusion of man-made fibres accompanied by spinning or twisting",
@@ -4646,8 +4646,8 @@
             "chapter": 62,
             "subdivision": "Women\u2019s, girls\u2019 and babies\u2019 clothing and clothing accessories for babies, embroidered",
             "prefix": "",
-            "min": "6209and6211",
-            "max": "6209and6211",
+            "min": "6209000000",
+            "max": "6211999999",
             "rules": [
                 {
                     "rule": "(a) LDCs\n\nChapter rule applies",
@@ -5561,8 +5561,8 @@
             "chapter": 71,
             "subdivision": "Precious metals:- Unwrought",
             "prefix": "",
-            "min": "7108and7110",
-            "max": "7108and7110",
+            "min": "7108000000",
+            "max": "7110999999",
             "rules": [
                 {
                     "rule": "Manufacture from materials of any heading, except those of headings 7106, 7108 and 7110",
@@ -5611,8 +5611,8 @@
             "chapter": 71,
             "subdivision": "- Semi-manufactured or in powder form",
             "prefix": "",
-            "min": "7108and7110",
-            "max": "7108and7110",
+            "min": "7108000000",
+            "max": "7110999999",
             "rules": [
                 {
                     "rule": "Manufacture from unwrought precious metals",
@@ -5647,8 +5647,8 @@
             "chapter": 71,
             "subdivision": "Metals clad with precious metals,\nsemi-manufactured",
             "prefix": "",
-            "min": "7109and7111",
-            "max": "7109and7111",
+            "min": "7109000000",
+            "max": "7111999999",
             "rules": [
                 {
                     "rule": "Manufacture from metals clad with precious metals, unwrought",
@@ -5978,8 +5978,8 @@
             "chapter": 73,
             "subdivision": "Tubes, pipes and hollow profiles, of iron (other than\ncast iron) or steel",
             "prefix": "",
-            "min": "7305and7306",
-            "max": "7305and7306",
+            "min": "7305000000",
+            "max": "7306999999",
             "rules": [
                 {
                     "rule": "Manufacture from materials of heading 7206, 7207, 7208, 7209, 7210, 7211, 7212, 7218, 7219, 7220 or 7224",
@@ -7050,8 +7050,8 @@
             "chapter": 85,
             "subdivision": "Monolithic integrated circuits",
             "prefix": "",
-            "min": "8542 31000",
-            "max": "8542 33999",
+            "min": "8542310000",
+            "max": "8542339999",
             "rules": [
                 {
                     "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",

@@ -447,8 +447,8 @@
             "chapter": 15,
             "subdivision": "Wool grease and fatty substances derived\ntherefrom (including lanolin). Other animal fats and oils and their fractions,\nwhether or not refined, but not chemically modified. Glycerol, crude; glycerol\nwaters and glycerol lyes.",
             "prefix": "",
-            "min": "1506and1520",
-            "max": "1506and1520",
+            "min": "1506000000",
+            "max": "1520999999",
             "rules": [
                 {
                     "rule": "Manufacture from materials of any heading",
@@ -2922,8 +2922,8 @@
             "chapter": 71,
             "subdivision": "Metals clad with precious metals,\nsemi-manufactured",
             "prefix": "",
-            "min": "7109and7111",
-            "max": "7109and7111",
+            "min": "7109000000",
+            "max": "7111999999",
             "rules": [
                 {
                     "rule": "Manufacture from metals clad with precious metals, unwrought",
@@ -3253,8 +3253,8 @@
             "chapter": 73,
             "subdivision": "Tubes, pipes and hollow profiles, of iron (other\nthan cast iron) or steel",
             "prefix": "",
-            "min": "7305and7306",
-            "max": "7305and7306",
+            "min": "7305000000",
+            "max": "7306999999",
             "rules": [
                 {
                     "rule": "Manufacture from materials of heading 7206, 7207, 7208, 7209, 7210, 7211, 7212, 7218, 7219, 7220 or 7224",
