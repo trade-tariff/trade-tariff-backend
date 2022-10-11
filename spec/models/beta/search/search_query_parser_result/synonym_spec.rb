@@ -14,7 +14,7 @@ RSpec.describe Beta::Search::SearchQueryParserResult::Synonym do
     it { expect(result.noun_chunks).to eq(['ash trees']) }
     it { expect(result.verbs).to eq([]) }
     it { expect(result.original_search_query).to eq('ash trees') }
-    it { expect(result.corrected_search_query).to eq('') }
+    it { expect(result.corrected_search_query).to eq('ash trees') }
     it { expect(result.id).to eq('7f3be5b089254dac52a8c4e41b0ffa9e') }
   end
 end

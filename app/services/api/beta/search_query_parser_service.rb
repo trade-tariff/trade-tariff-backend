@@ -8,10 +8,10 @@ module Api
       end
 
       def call
-        if matches_synonym?
-          ::Beta::Search::SearchQueryParserResult::Synonym.build(original_search_query:)
+        if AggregatedSynonym.exists?(@original_search_query)
+          ::Beta::Search::SearchQueryParserResult::Synonym.build('original_search_query' => @original_search_query)
         else
-          result_attributes = client.get('tokens', q: original_search_query).body
+          result_attributes = client.get('tokens', q: @original_search_query).body
 
           ::Beta::Search::SearchQueryParserResult::Standard.build(result_attributes)
         end
@@ -22,14 +22,6 @@ module Api
           conn.response :raise_error
           conn.response :json
         end
-      end
-
-      private
-
-      attr_reader :original_search_query
-
-      def matches_synonym?
-        Api::Beta::SearchSynonymMatcherService.new(@original_search_query).call
       end
     end
   end

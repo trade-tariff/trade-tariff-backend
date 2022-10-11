@@ -39,7 +39,7 @@ module Beta
           search_query_parser_result = SearchQueryParserResult.new
 
           search_query_parser_result.original_search_query = attributes['original_search_query']
-          search_query_parser_result.corrected_search_query = ''
+          search_query_parser_result.corrected_search_query = attributes['original_search_query']
           search_query_parser_result.adjectives = []
           search_query_parser_result.nouns = []
           search_query_parser_result.verbs = []
