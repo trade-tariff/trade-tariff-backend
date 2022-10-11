@@ -69,7 +69,7 @@ FactoryBot.define do
     end
 
     trait :synonym do
-      original_search_query { 'yakutian laika'}
+      original_search_query { 'yakutian laika' }
       corrected_search_query { '' }
 
       adjectives { [] }
