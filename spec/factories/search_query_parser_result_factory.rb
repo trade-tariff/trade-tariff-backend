@@ -67,5 +67,15 @@ FactoryBot.define do
       nouns { %w[clothing] }
       verbs { [] }
     end
+
+    trait :synonym do
+      original_search_query { 'yakutian laika'}
+      corrected_search_query { '' }
+
+      adjectives { [] }
+      noun_chunks { ['yakutian laika'] }
+      nouns { %w[] }
+      verbs { [] }
+    end
   end
 end
