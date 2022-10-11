@@ -11,7 +11,10 @@ module Beta
                     :verbs,
                     :noun_chunks,
                     :original_search_query,
-                    :corrected_search_query
+                    :corrected_search_query,
+                    :synonym_result
+
+      alias_method :syonym_result?, :synonym_result
 
       class Standard
         def self.build(attributes)
@@ -25,6 +28,7 @@ module Beta
           search_query_parser_result.nouns = attributes.dig('tokens', 'nouns')
           search_query_parser_result.verbs = attributes.dig('tokens', 'verbs')
           search_query_parser_result.noun_chunks = attributes.dig('tokens', 'noun_chunks')
+          search_query_parser_result.synonym_result = false
 
           search_query_parser_result
         end
@@ -40,6 +44,7 @@ module Beta
           search_query_parser_result.nouns = []
           search_query_parser_result.verbs = []
           search_query_parser_result.noun_chunks = [attributes['original_search_query']]
+          search_query_parser_result.synonym_result = true
 
           search_query_parser_result
         end
