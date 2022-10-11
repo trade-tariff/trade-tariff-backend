@@ -342,6 +342,10 @@ jobs:
           name: "Set docker tag"
           command: |
             echo "export DOCKER_TAG=<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}" >> $BASH_ENV
+
+      - run:
+          name: "Aggregate synonyms"
+          command: bin/aggregate_synonyms
       - run:
           name: "Build Docker image"
           command: |
@@ -546,8 +550,7 @@ jobs:
       - run:
           name: "Syncronise synonym packages"
           command: |
-            echo "Coercing multiple synonym files into a single aggregated file"
-            cat config/opensearch/synonyms_* | grep -v '#' | sort | uniq >config/aggregated_synonyms/synonyms_all.txt
+            bin/aggregate_synonyms
 
             echo "Checking status of current synonym files in << parameters.space >>"
 
