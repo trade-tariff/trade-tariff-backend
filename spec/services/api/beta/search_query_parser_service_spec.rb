@@ -4,9 +4,15 @@ RSpec.describe Api::Beta::SearchQueryParserService do
   describe '#call' do
     subject(:result) { described_class.new('aaa bbb').call }
 
-    before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb").to_return(response) }
+    context 'when the search query matches a known synonym' do
+      subject(:result) { described_class.new('yakutian laika').call }
+
+      it { is_expected.to be_syonym_result }
+    end
 
     context 'when the search query parser response is success' do
+      before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb").to_return(response) }
+
       let(:response) do
         {
           status: 200,
@@ -33,9 +39,12 @@ RSpec.describe Api::Beta::SearchQueryParserService do
       it { expect(result.noun_chunks).to eq(%w[aaa bib]) }
       it { expect(result.nouns).to eq(%w[aaa bib]) }
       it { expect(result.verbs).to eq([]) }
+      it { is_expected.not_to be_syonym_result }
     end
 
     context 'when the search query parser response is bad request' do
+      before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb").to_return(response) }
+
       let(:response) { { status: 400 } }
 
       it { expect { result }.to raise_error(Faraday::BadRequestError) }
