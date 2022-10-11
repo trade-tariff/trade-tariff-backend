@@ -1,0 +1,4655 @@
+{
+    "rule_sets": [
+        {
+            "heading": "Chapter 1",
+            "chapter": 1,
+            "subdivision": "Live animals",
+            "prefix": "",
+            "min": "0100000000",
+            "max": "0199999999",
+            "rules": [
+                {
+                    "rule": "All the animals of Chapter 1 are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 2",
+            "chapter": 2,
+            "subdivision": "Meat and edible meat offal",
+            "prefix": "",
+            "min": "0200000000",
+            "max": "0299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the meat and edible meat offal in the products of this chapter is wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 3",
+            "chapter": 3,
+            "subdivision": "Fish and crustaceans, molluscs and other aquatic\ninvertebrates,",
+            "prefix": "",
+            "min": "0300000000",
+            "max": "0399999999",
+            "rules": [
+                {
+                    "rule": "All fish and crustaceans, molluscs and other aquatic invertebrates are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "0304",
+            "chapter": 3,
+            "subdivision": "Fish fillets and other fish meat (whether or not\nminced), fresh, chilled of frozen",
+            "prefix": "",
+            "min": "0304000000",
+            "max": "0304999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 3 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "0305",
+            "chapter": 3,
+            "subdivision": "Fish, dried, salted or in brine; smoked fish,\nwhether or not cooked before or during the smoking process; flours, meals and pellets of fish, fit for human consumption",
+            "prefix": "",
+            "min": "0305000000",
+            "max": "0305999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 3 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 0306",
+            "chapter": 3,
+            "subdivision": "Crustaceans, whether in shell or not, dried,\nsalted or in brine; crustaceans, in shell, cooked by steaming or by boiling in\nwater, whether or not chilled, frozen, dried, salted or in brine; flours, meals and pellets of crustaceans, fit for human consumption",
+            "prefix": "",
+            "min": "0306000000",
+            "max": "0306999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 3 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 0307",
+            "chapter": 3,
+            "subdivision": "Molluscs, whether in shell or not, dried, salted\nor in brine; aquatic invertebrates other than crustaceans and molluscs, dried,\nsalted or in brine; flours, meals and pellets of crustaceans, fit for human\nconsumption",
+            "prefix": "",
+            "min": "0307000000",
+            "max": "0307999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 3 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 4",
+            "chapter": 4,
+            "subdivision": "Dairy produce; birds\u2019 eggs; natural honey;\nedible products of animal origin, not elsewhere specified or\nincluded",
+            "prefix": "",
+            "min": "0400000000",
+            "max": "0499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which:\n\n- all the materials of Chapter 4 used are wholly obtained; *and* - the weight of sugar used does not exceed 40% of the weight of the final product",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 5",
+            "chapter": 5,
+            "subdivision": "Products of animal origin, not elsewhere\nspecified or included,",
+            "prefix": "",
+            "min": "0500000000",
+            "max": "0599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 051191",
+            "chapter": 5,
+            "subdivision": "Inedible fish eggs and roes",
+            "prefix": "",
+            "min": "0511910000",
+            "max": "0511919999",
+            "rules": [
+                {
+                    "rule": "All the eggs and roes are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 6",
+            "chapter": 6,
+            "subdivision": "Live trees and other plants; bulbs, roots and the\nlike; cut flowers and ornamental foliage",
+            "prefix": "",
+            "min": "0600000000",
+            "max": "0699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 6 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 7",
+            "chapter": 7,
+            "subdivision": "Edible vegetables and certain roots and tubers",
+            "prefix": "",
+            "min": "0700000000",
+            "max": "0799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 7 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 8",
+            "chapter": 8,
+            "subdivision": "Edible fruit and nuts; peel of citrus fruits or\nmelons",
+            "prefix": "",
+            "min": "0800000000",
+            "max": "0899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which:\n\n- all the fruit, nuts and peels of citrus fruits or melons of Chapter 8 used are wholly obtained, *and* - the weight of sugar used does not exceed 40% of the weight of the final product",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 9",
+            "chapter": 9,
+            "subdivision": "Coffee, tea, mat\u00e9 and spices",
+            "prefix": "",
+            "min": "0900000000",
+            "max": "0999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 10",
+            "chapter": 10,
+            "subdivision": "Cereals",
+            "prefix": "",
+            "min": "1000000000",
+            "max": "1099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapter 10 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 11",
+            "chapter": 11,
+            "subdivision": "Products of the milling industry; malt; starches;\ninulin; wheat gluten",
+            "prefix": "",
+            "min": "1100000000",
+            "max": "1199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapters 10 and 11, headings 0701 and 2303, and sub-heading 071010 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 1106",
+            "chapter": 11,
+            "subdivision": "Flour, meal and powder of the dried, shelled\nleguminous vegetables of heading 0713",
+            "prefix": "",
+            "min": "1106000000",
+            "max": "1106999999",
+            "rules": [
+                {
+                    "rule": "Drying and milling of leguminous vegetables of heading 0708",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 12",
+            "chapter": 12,
+            "subdivision": "Oil seeds and oleaginous fruits; miscellaneous\ngrains, seeds and fruit; industrial or medicinal plants; straw and fodder",
+            "prefix": "",
+            "min": "1200000000",
+            "max": "1299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 13",
+            "chapter": 13,
+            "subdivision": "Lac; gums, resins and other vegetable saps and extracts",
+            "prefix": "",
+            "min": "1300000000",
+            "max": "1399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, in which the weight of sugar used does not exceed 40% of the weight of the final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 14",
+            "chapter": 14,
+            "subdivision": "Vegetable plaiting materials; vegetable products\nnot elsewhere specified or included",
+            "prefix": "",
+            "min": "1400000000",
+            "max": "1499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 15",
+            "chapter": 15,
+            "subdivision": "Animal or vegetable fats and oils and their\ncleavage products; prepared edible fats; animal or vegetable waxes",
+            "prefix": "",
+            "min": "1500000000",
+            "max": "1599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any sub-heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1501 - 1504",
+            "chapter": 15,
+            "subdivision": "Fats from pig, poultry, bovine, sheep or goat,\nfish, etc.",
+            "prefix": "",
+            "min": "1501000000",
+            "max": "1504999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1505",
+            "chapter": 15,
+            "subdivision": "Wool grease and fatty substances derived\ntherefrom (including lanolin). Other animal fats and oils and their fractions,\nwhether or not refined, but not chemically modified. Glycerol, crude; glycerol\nwaters and glycerol lyes.",
+            "prefix": "",
+            "min": "1505000000",
+            "max": "1505999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1506 and 1520",
+            "chapter": 15,
+            "subdivision": "Wool grease and fatty substances derived\ntherefrom (including lanolin). Other animal fats and oils and their fractions,\nwhether or not refined, but not chemically modified. Glycerol, crude; glycerol\nwaters and glycerol lyes.",
+            "prefix": "",
+            "min": "1506and1520",
+            "max": "1506and1520",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1509",
+            "chapter": 15,
+            "subdivision": "Olive oil and its fractions",
+            "prefix": "",
+            "min": "1509000000",
+            "max": "1509999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the vegetable materials used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1510",
+            "chapter": 15,
+            "subdivision": "Olive oil and its fractions",
+            "prefix": "",
+            "min": "1510000000",
+            "max": "1510999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the vegetable materials used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1516",
+            "chapter": 15,
+            "subdivision": "Animal or vegetable fats and oils and their\nfractions, partly or wholly hydrogenated, inter-esterified, re-esterified or\nelaidinised, whether or not refined, but not further\nprepared\nMargarine; edible mixtures or preparations of animal or vegetable fats or\noils or of fractions of different fats or oils of this Chapter , other than\nedible fats or oils or their fractions of heading 1516",
+            "prefix": "",
+            "min": "1516000000",
+            "max": "1516999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1517",
+            "chapter": 15,
+            "subdivision": "Animal or vegetable fats and oils and their\nfractions, partly or wholly hydrogenated, inter-esterified, re-esterified or\nelaidinised, whether or not refined, but not further\nprepared\nMargarine; edible mixtures or preparations of animal or vegetable fats or\noils or of fractions of different fats or oils of this Chapter , other than\nedible fats or oils or their fractions of heading 1516",
+            "prefix": "",
+            "min": "1517000000",
+            "max": "1517999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 16",
+            "chapter": 16,
+            "subdivision": "Preparations of meat, of fish or of crustaceans,\nmolluscs or other aquatic invertebrates",
+            "prefix": "",
+            "min": "1600000000",
+            "max": "1699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture:\n\n- from materials of any heading, except meat and edible meat offal of Chapter 2 and materials of Chapter 16 obtained from meat and edible meat offal of Chapter 2, *and* - in which all the materials of Chapter 3 and materials of Chapter 16 obtained from fish and crustaceans, molluscs and other aquatic invertebrates of Chapter 3 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 17",
+            "chapter": 17,
+            "subdivision": "Sugars and sugar confectionery",
+            "prefix": "",
+            "min": "1700000000",
+            "max": "1799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1702",
+            "chapter": 17,
+            "subdivision": "Other sugars, including chemically pure lactose and glucose, in solid form; sugar syrups; artificial honey, whether or not mixed\nwith natural honey; caramel",
+            "prefix": "",
+            "min": "1702000000",
+            "max": "1702999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which the weight of the materials of headings 1101 to 1108, 1701 and 1703 used does not exceed 30% of the weight of the final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "1704",
+            "chapter": 17,
+            "subdivision": "Sugar confectionery (including white chocolate),\nnot containing cocoa",
+            "prefix": "",
+            "min": "1704000000",
+            "max": "1704999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\n- the individual weight of sugar and of the materials of Chapter 4 used does not exceed 40% of the weight of the final product, *and* - the total combined weight of sugar and the materials of Chapter 4 used does not exceed 60% of the weight of final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 18",
+            "chapter": 18,
+            "subdivision": "Cocoa and cocoa preparations",
+            "prefix": "",
+            "min": "1800000000",
+            "max": "1899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which\n\n- the individual weight of sugar and of the materials of Chapter 4 used does not exceed 40% of the weight of the final product, *and* - the total combined weight of sugar and the materials of Chapter 4 used does not exceed 60% of the weight of final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 19",
+            "chapter": 19,
+            "subdivision": "Preparations of cereals, flour, starch or milk;\npastry cooks\u2019 products",
+            "prefix": "",
+            "min": "1900000000",
+            "max": "1999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\n- the weight of the materials of Chapters 2, 3 and 16 used does not exceed 20% of the weight of the final product, *and* - the weight of the materials of headings 1006 and 1101 to 1108 used does not exceed 20% of the weight of the final product, *and* - the individual weight of sugar and of the materials of Chapter 4 used does not exceed 40% of the weight of the final product, *and* - the total combined weight of sugar and the materials of Chapter 4 used does not exceed 60% of the weight of final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 20",
+            "chapter": 20,
+            "subdivision": "Preparations of vegetables, fruit, nuts or other\nparts of plants",
+            "prefix": "",
+            "min": "2000000000",
+            "max": "2099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which the weight of sugar used does not exceed 40% of the weight of the final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2002",
+            "chapter": 20,
+            "subdivision": "Tomatoes, mushrooms and truffles prepared or\npreserved otherwise than by vinegar of acetic acid",
+            "prefix": "",
+            "min": "2002000000",
+            "max": "2002999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapters 7 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2003",
+            "chapter": 20,
+            "subdivision": "Tomatoes, mushrooms and truffles prepared or\npreserved otherwise than by vinegar of acetic acid",
+            "prefix": "",
+            "min": "2003000000",
+            "max": "2003999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which all the materials of Chapters 7 used are wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 21",
+            "chapter": 21,
+            "subdivision": "Miscellaneous edible preparations",
+            "prefix": "",
+            "min": "2100000000",
+            "max": "2199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\n- the individual weight of sugar and of the materials of Chapter 4 used does not exceed 40% of the weight of the final product, *and* - the total combined weight of sugar and the materials of Chapter 4 used does not exceed 60% of the weight of final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 22",
+            "chapter": 22,
+            "subdivision": "Beverages, spirits and vinegar",
+            "prefix": "",
+            "min": "2200000000",
+            "max": "2299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and headings 2207 and 2208, in which:\n\n- all the materials of sub-headings 080610, 200961, 200969 used are wholly obtained, *and* - the individual weight of sugar and of the materials of Chapter 4 used does not exceed 40% of the weight of the final product, *and* - the total combined weight of sugar and the materials of Chapter 4 used does not exceed 60% of the weight of final product",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 23",
+            "chapter": 23,
+            "subdivision": "Residues and waste from the food industries;\nprepared animal fodder",
+            "prefix": "",
+            "min": "2300000000",
+            "max": "2399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 2303",
+            "chapter": 23,
+            "subdivision": "Residues of starch\nmanufacture",
+            "prefix": "",
+            "min": "2303000000",
+            "max": "2303999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which the weight of the materials of Chapter 10 used does not exceed 20% of the weight of the final product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2309",
+            "chapter": 23,
+            "subdivision": "Preparations of a kind used in animal\nfeeding",
+            "prefix": "",
+            "min": "2309000000",
+            "max": "2309999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\n- all the materials of Chapters 2 and 3 used are wholly obtained, *and* - the weight of materials of Chapter 10 and 11 and headings 2302 and 2303 used does not exceed 20% of the weight of the final product, *and* - the individual weight of sugar and of the materials of Chapter 4 used does not exceed 40% of the weight of the final product, *and* - the total combined weight of sugar and the materials of Chapter 4 used does not exceed 60% of the weight of final product",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 24",
+            "chapter": 24,
+            "subdivision": "Tobacco and manufactured tobacco substitutes",
+            "prefix": "",
+            "min": "2400000000",
+            "max": "2499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading in which the weight of materials of Chapter 24 used does not exceed 30% of the total weight of materials of Chapter 24 used",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2401",
+            "chapter": 24,
+            "subdivision": "Unmanufactured tobacco; tobacco\nrefuse",
+            "prefix": "",
+            "min": "2401000000",
+            "max": "2401999999",
+            "rules": [
+                {
+                    "rule": "All unmanufactured tobacco and tobacco refuse of Chapter 24 is wholly obtained",
+                    "class": [
+                        "WO"
+                    ],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2402",
+            "chapter": 24,
+            "subdivision": "Cigars, cheroots, cigarillos and cigarettes, of\ntobacco or of tobacco substitutes",
+            "prefix": "",
+            "min": "2402000000",
+            "max": "2402999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 2403, and in which the weight of materials of heading 2401 used does not exceed 50% of the total weight of materials of heading 2401 used",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 25",
+            "chapter": 25,
+            "subdivision": "Salt; sulphur; earths and stone; plastering\nmaterials, lime and cement",
+            "prefix": "",
+            "min": "2500000000",
+            "max": "2599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 2519",
+            "chapter": 25,
+            "subdivision": "Crushed natural magnesium carbonate (magnesite),\nin hermetically-sealed containers, and magnesium oxide, whether or not pure,\nother than fused magnesia or dead-burned (sintered) magnesia",
+            "prefix": "",
+            "min": "2519000000",
+            "max": "2519999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, natural magnesium carbonate (magnesite) may be used",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 26",
+            "chapter": 26,
+            "subdivision": "Ores, slag and ash",
+            "prefix": "",
+            "min": "2600000000",
+            "max": "2699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 27",
+            "chapter": 27,
+            "subdivision": "Mineral fuels, mineral oils and products of their\ndistillation; bituminous substances; mineral waxes,",
+            "prefix": "",
+            "min": "2700000000",
+            "max": "2799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 2707",
+            "chapter": 27,
+            "subdivision": "Oils in which the weight of the aromatic\nconstituents exceeds that of the non-aromatic constituents, being oils similar\nto mineral oils obtained by distillation of high temperature coal tar, of which\nmore than 65% by volume distils at a temperature of up to 250 \u00b0C\n(including mixtures of petroleum spirit and benzole), for use as power or\nheating fuels",
+            "prefix": "",
+            "min": "2707000000",
+            "max": "2707999999",
+            "rules": [
+                {
+                    "rule": "Operations of refining and / or one or more specific process(es)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Other operations in which all the materials used are classified within a heading other than that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2710",
+            "chapter": 27,
+            "subdivision": "Petroleum oils and oils obtained from bituminous\nmaterials, other than crude; preparations not elsewhere specified or included,\ncontaining by weight 70% or more of petroleum oils or of oils obtained\nfrom bituminous materials, these oils being the basic constituents of the\npreparations; waste oils",
+            "prefix": "",
+            "min": "2710000000",
+            "max": "2710999999",
+            "rules": [
+                {
+                    "rule": "Operations of refining and / or one or more specific process(es)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Other operations in which all the materials used are classified within a heading other than that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2711",
+            "chapter": 27,
+            "subdivision": "Petroleum gases and other gaseous\nhydrocarbons",
+            "prefix": "",
+            "min": "2711000000",
+            "max": "2711999999",
+            "rules": [
+                {
+                    "rule": "Operations of refining and / or one or more specific process(es)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Other operations in which all the materials used are classified within a heading other than that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2712",
+            "chapter": 27,
+            "subdivision": "Petroleum jelly; paraffin wax, microcrystalline\npetroleum wax, slack wax, ozokerite, lignite wax, peat wax, other mineral waxes, and similar products obtained by synthesis or by other processes, whether or not\ncoloured",
+            "prefix": "",
+            "min": "2712000000",
+            "max": "2712999999",
+            "rules": [
+                {
+                    "rule": "Operations of refining and / or one or more specific process(es)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Other operations in which all the materials used are classified within a heading other than that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "2713",
+            "chapter": 27,
+            "subdivision": "Petroleum coke, petroleum bitumen and other\nresidues of petroleum oils or of oils obtained from bituminous\nmaterials",
+            "prefix": "",
+            "min": "2713000000",
+            "max": "2713999999",
+            "rules": [
+                {
+                    "rule": "Operations of refining and / or one or more specific process(es)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Other operations in which all the materials used are classified within a heading other than that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 28",
+            "chapter": 28,
+            "subdivision": "Inorganic chemicals; organic or inorganic\ncompounds of precious metals, of rare-earth metals, of radioactive elements or\nof isotopes",
+            "prefix": "",
+            "min": "2800000000",
+            "max": "2899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 29",
+            "chapter": 29,
+            "subdivision": "Organic chemicals",
+            "prefix": "",
+            "min": "2900000000",
+            "max": "2999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 2905",
+            "chapter": 29,
+            "subdivision": "Metal alcoholates of alcohols of this heading and of ethanol",
+            "prefix": "",
+            "min": "2905000000",
+            "max": "2905999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, including other materials of heading 2905. However, metal alcoholates of this heading may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "290543",
+            "chapter": 29,
+            "subdivision": "Mannitol; D-glucitol (sorbitol);\nGlycerol",
+            "prefix": "",
+            "min": "2905430000",
+            "max": "2905439999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any sub-heading, except that of the product. However, materials of the same sub-heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "290544",
+            "chapter": 29,
+            "subdivision": "Mannitol; D-glucitol (sorbitol);\nGlycerol",
+            "prefix": "",
+            "min": "2905440000",
+            "max": "2905449999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any sub-heading, except that of the product. However, materials of the same sub-heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "290545",
+            "chapter": 29,
+            "subdivision": "Mannitol; D-glucitol (sorbitol);\nGlycerol",
+            "prefix": "",
+            "min": "2905450000",
+            "max": "2905459999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any sub-heading, except that of the product. However, materials of the same sub-heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 30",
+            "chapter": 30,
+            "subdivision": "Pharmaceutical products",
+            "prefix": "",
+            "min": "3000000000",
+            "max": "3099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 31",
+            "chapter": 31,
+            "subdivision": "Fertilisers",
+            "prefix": "",
+            "min": "3100000000",
+            "max": "3199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 32",
+            "chapter": 32,
+            "subdivision": "Tanning or dyeing extracts; tannins and their\nderivatives; dyes, pigments and other colouring matter; paints and varnishes;\nputty and other mastics; inks",
+            "prefix": "",
+            "min": "3200000000",
+            "max": "3299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 33",
+            "chapter": 33,
+            "subdivision": "Essential oils and resinoids; perfumery, cosmetic\nor toilet preparations",
+            "prefix": "",
+            "min": "3300000000",
+            "max": "3399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 34",
+            "chapter": 34,
+            "subdivision": "Soap, organic surface-active agents, washing\npreparations, lubricating preparations, artificial waxes, prepared waxes,\npolishing or scouring preparations, candles and similar articles, modelling\npastes, \u2018dental waxes\u2019 and dental preparations with a basis of\nplaster,",
+            "prefix": "",
+            "min": "3400000000",
+            "max": "3499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 3404",
+            "chapter": 34,
+            "subdivision": "Artificial waxes and prepared\nwaxes:\nWith a basis of paraffin, petroleum waxes, waxes obtained from bituminous\nminerals, slack wax or scale wax",
+            "prefix": "",
+            "min": "3404000000",
+            "max": "3404999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 35",
+            "chapter": 35,
+            "subdivision": "Albuminoidal substances; modified starches;\nglues; enzymes",
+            "prefix": "",
+            "min": "3500000000",
+            "max": "3599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product, in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 36",
+            "chapter": 36,
+            "subdivision": "Explosives; pyrotechnic products; matches;\npyrophoric alloys; certain combustible preparations",
+            "prefix": "",
+            "min": "3600000000",
+            "max": "3699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 37",
+            "chapter": 37,
+            "subdivision": "Photographic or cinematographic\ngoods",
+            "prefix": "",
+            "min": "3700000000",
+            "max": "3799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 38",
+            "chapter": 38,
+            "subdivision": "Miscellaneous chemical products",
+            "prefix": "",
+            "min": "3800000000",
+            "max": "3899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "382460",
+            "chapter": 38,
+            "subdivision": "Sorbitol other than that of sub-heading\n290544",
+            "prefix": "",
+            "min": "3824600000",
+            "max": "3824609999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any sub-heading, except that of the product and except materials of sub-heading 290544. However, materials of the same sub-heading as the product may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 39",
+            "chapter": 39,
+            "subdivision": "Plastics and articles thereof",
+            "prefix": "",
+            "min": "3900000000",
+            "max": "3999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product.",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 40",
+            "chapter": 40,
+            "subdivision": "Rubber and articles thereof",
+            "prefix": "",
+            "min": "4000000000",
+            "max": "4099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4012",
+            "chapter": 40,
+            "subdivision": "Retreaded or used pneumatic tyres of rubber;\nsolid or cushion tyres, tyre treads and tyre flaps, of\nrubber:- Retreaded pneumatic, solid or\ncushion tyres, of rubber",
+            "prefix": "",
+            "min": "4012000000",
+            "max": "4012999999",
+            "rules": [
+                {
+                    "rule": "Retreading of used tyres",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 41",
+            "chapter": 41,
+            "subdivision": "Raw hides and skins (other than furskins) and leather",
+            "prefix": "",
+            "min": "4100000000",
+            "max": "4199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4101 - 4103",
+            "chapter": 41,
+            "subdivision": "Raw hides and skins of bovine (including buffalo)\nor equine animals (fresh, or salted, dried, limed, pickled or otherwise\npreserved, but not tanned, parchment dressed or further prepared), whether or\nnot dehaired or split; raw skins of sheep or lambs (fresh, or salted, dried,\nlimed, pickled or otherwise preserved, but not tanned, parchment dressed or\nfurther prepared), whether or not with wool on or split, other than those\nexcluded by note 1(c) to Chapter 41; other raw hides and skins (fresh, or\nsalted, dried, limed, pickled or otherwise preserved, but not tanned, parchment\ndressed or further prepared), whether or not dehaired or split, other than those\nexcluded by note 1(b) or 1(c) to Chapter 41",
+            "prefix": "",
+            "min": "4101000000",
+            "max": "4103999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4104 - 4106",
+            "chapter": 41,
+            "subdivision": "Tanned or crust hides and skins, without wool or\nhair on, whether or not split, but not further prepared",
+            "prefix": "",
+            "min": "4104000000",
+            "max": "4106999999",
+            "rules": [
+                {
+                    "rule": "Re-tanning of tanned or pre-tanned hides and skins of sub-headings 410411, 410419, 410510, 410621, 410631 or 410691",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4107",
+            "chapter": 41,
+            "subdivision": "Leather further prepared after tanning or\ncrusting",
+            "prefix": "",
+            "min": "4107000000",
+            "max": "4107999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of sub-headings 410441, 410449, 410530, 410622, 410632 and 410692 may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4112",
+            "chapter": 41,
+            "subdivision": "Leather further prepared after tanning or\ncrusting",
+            "prefix": "",
+            "min": "4112000000",
+            "max": "4112999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of sub-headings 410441, 410449, 410530, 410622, 410632 and 410692 may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4113",
+            "chapter": 41,
+            "subdivision": "Leather further prepared after tanning or\ncrusting",
+            "prefix": "",
+            "min": "4113000000",
+            "max": "4113999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, materials of sub-headings 410441, 410449, 410530, 410622, 410632 and 410692 may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 42",
+            "chapter": 42,
+            "subdivision": "Articles of leather; saddlery and harness; travel\ngoods, handbags and similar containers; articles of animal gut (other than silk\nworm gut)",
+            "prefix": "",
+            "min": "4200000000",
+            "max": "4299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "4303",
+            "chapter": 43,
+            "subdivision": "Articles of apparel, clothing accessories and other articles of furskin",
+            "prefix": "",
+            "min": "4303000000",
+            "max": "4303999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from non-assembled tanned or dressed furskins of heading 4302",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 4421",
+            "chapter": 44,
+            "subdivision": "Match splints; wooden pegs or pins for\nfootwear",
+            "prefix": "",
+            "min": "4421000000",
+            "max": "4421999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from wood of any heading, except drawn wood of heading 4409",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 45",
+            "chapter": 45,
+            "subdivision": "Cork and articles of cork",
+            "prefix": "",
+            "min": "4500000000",
+            "max": "4599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 46",
+            "chapter": 46,
+            "subdivision": "Manufactures of straw, of esparto or of other\nplaiting materials; basketware and wickerwork",
+            "prefix": "",
+            "min": "4600000000",
+            "max": "4699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 47",
+            "chapter": 47,
+            "subdivision": "Pulp of wood or of other fibrous cellulosic\nmaterial; recovered (waste and scrap) paper or paperboard",
+            "prefix": "",
+            "min": "4700000000",
+            "max": "4799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 48",
+            "chapter": 48,
+            "subdivision": "Paper and paperboard; articles of paper pulp, of\npaper or of paperboard",
+            "prefix": "",
+            "min": "4800000000",
+            "max": "4899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 49",
+            "chapter": 49,
+            "subdivision": "Printed books, newspapers, pictures and other\nproducts of the printing industry; manuscripts, typescripts and plans",
+            "prefix": "",
+            "min": "4900000000",
+            "max": "4999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 50",
+            "chapter": 50,
+            "subdivision": "Silk",
+            "prefix": "",
+            "min": "5000000000",
+            "max": "5099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 5003",
+            "chapter": 50,
+            "subdivision": "Silk waste (including cocoons unsuitable for\nreeling, yarn waste and garnetted stock), carded or combed",
+            "prefix": "",
+            "min": "5003000000",
+            "max": "5003999999",
+            "rules": [
+                {
+                    "rule": "Carding or combing of silk waste",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 5004 - 5006",
+            "chapter": 50,
+            "subdivision": "Silk yarn and yarn spun from silk\nwaste",
+            "prefix": "",
+            "min": "5004000000",
+            "max": "5006999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural fibres or extrusion of man-made fibres accompanied by spinning or twisting",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5007",
+            "chapter": 50,
+            "subdivision": "Woven fabrics of silk or of silk\nwaste:",
+            "prefix": "",
+            "min": "5007000000",
+            "max": "5007999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn or twisting, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Yarn dyeing accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 51",
+            "chapter": 51,
+            "subdivision": "Wool, fine or coarse animal hair; horsehair yarn and woven fabric",
+            "prefix": "",
+            "min": "5100000000",
+            "max": "5199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5106 - 5110",
+            "chapter": 51,
+            "subdivision": "Yarn of wool, of fine or coarse animal hair or of\nhorsehair",
+            "prefix": "",
+            "min": "5106000000",
+            "max": "5110999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural fibres or extrusion of man-made fibres accompanied by spinning",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5111 - 5113",
+            "chapter": 51,
+            "subdivision": "Woven fabrics of wool, of fine or coarse animal\nhair or of horsehair:",
+            "prefix": "",
+            "min": "5111000000",
+            "max": "5113999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Yarn dyeing accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 52",
+            "chapter": 52,
+            "subdivision": "Cotton",
+            "prefix": "",
+            "min": "5200000000",
+            "max": "5299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5204 - 5207",
+            "chapter": 52,
+            "subdivision": "Yarn and thread of cotton",
+            "prefix": "",
+            "min": "5204000000",
+            "max": "5207999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural fibres or extrusion of man-made fibres accompanied by spinning",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5208 - 5212",
+            "chapter": 52,
+            "subdivision": "Woven fabrics of cotton:",
+            "prefix": "",
+            "min": "5208000000",
+            "max": "5212999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or by coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Yarn dyeing accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 53",
+            "chapter": 53,
+            "subdivision": "Other vegetable textile fibres; paper yarn and woven fabrics of paper yarn",
+            "prefix": "",
+            "min": "5300000000",
+            "max": "5399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5306 - 5308",
+            "chapter": 53,
+            "subdivision": "Yarn of other vegetable textile fibres; paper\nyarn",
+            "prefix": "",
+            "min": "5306000000",
+            "max": "5308999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural fibres or extrusion of man-made fibres accompanied by spinning",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5309 - 5311",
+            "chapter": 53,
+            "subdivision": "Woven fabrics of other vegetable textile fibres;\nwoven fabrics of paper yarn:",
+            "prefix": "",
+            "min": "5309000000",
+            "max": "5311999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or by coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Yarn dyeing accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5401 - 5406",
+            "chapter": 54,
+            "subdivision": "Yarn, monofilament and thread of man-made\nfilaments",
+            "prefix": "",
+            "min": "5401000000",
+            "max": "5406999999",
+            "rules": [
+                {
+                    "rule": "Extrusion of man-made fibres accompanied by spinning OR spinning of natural fibres",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5407",
+            "chapter": 54,
+            "subdivision": "Woven fabrics of man-made filament\nyarn:",
+            "prefix": "",
+            "min": "5407000000",
+            "max": "5407999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or by coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Twisting or texturing accompanied by weaving provided that the value of the non-twisted/non-textured yarns used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5408",
+            "chapter": 54,
+            "subdivision": "Woven fabrics of man-made filament\nyarn:",
+            "prefix": "",
+            "min": "5408000000",
+            "max": "5408999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or by coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Twisting or texturing accompanied by weaving provided that the value of the non-twisted/non-textured yarns used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5501 - 5507",
+            "chapter": 55,
+            "subdivision": "Man-made staple fibres",
+            "prefix": "",
+            "min": "5501000000",
+            "max": "5507999999",
+            "rules": [
+                {
+                    "rule": "Extrusion of man-made fibres",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5508 - 5511",
+            "chapter": 55,
+            "subdivision": "Yarn and sewing thread of man-made staple\nfibres",
+            "prefix": "",
+            "min": "5508000000",
+            "max": "5511999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural fibres or extrusion of man-made fibres accompanied by spinning",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5512 - 5516",
+            "chapter": 55,
+            "subdivision": "Woven fabrics of man-made staple\nfibres:",
+            "prefix": "",
+            "min": "5512000000",
+            "max": "5516999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or by coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Yarn dyeing accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5605",
+            "chapter": 56,
+            "subdivision": "Metallised yarn, whether or not gimped, being\ntextile yarn, or strip or the like of heading 5404 or 5405, combined with metal\nin the form of thread, strip or powder or covered with metal",
+            "prefix": "",
+            "min": "5605000000",
+            "max": "5605999999",
+            "rules": [
+                {
+                    "rule": "Extrusion of man-made fibres accompanied by spinning or spinning of natural and / or man-made staple fibres",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5606",
+            "chapter": 56,
+            "subdivision": "Gimped yarn, and strip and the like of heading\n5404 or 5405, gimped (other than those of heading 5605 and gimped horsehair\nyarn); chenille yarn (including flock chenille yarn); loop\nwale-yarn",
+            "prefix": "",
+            "min": "5606000000",
+            "max": "5606999999",
+            "rules": [
+                {
+                    "rule": "Extrusion of man-made fibres accompanied by spinning or spinning of natural and / or man-made staple fibres",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Spinning accompanied with flocking",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Flocking accompanied by dyeing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 57",
+            "chapter": 57,
+            "subdivision": "Carpets and other textile floor\ncoverings:",
+            "prefix": "",
+            "min": "5700000000",
+            "max": "5799999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture from coir yarn or sisal yarn or jute yarn",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Flocking accompanied by dyeing or by printing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Tufting accompanied by dyeing or by printing\n\nExtrusion of man-made fibres accompanied by non-woven techniques including needle punching\n\nHowever:\n\n- polypropylene filament of heading 5402\n\n- polypropylene fibres of heading 5503 or 5506, *or*\n\n- polypropylene filament tow of heading 5501\n\nof which the denomination in all cases of a single filament or fibre is less than 9 decitex, may be used, provided that their total value does not exceed 40% of the ex-works price of the product\n\nJute fabric may be used as a backing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 58",
+            "chapter": 58,
+            "subdivision": "Special woven fabrics; tufted textile fabrics;\nlace; tapestries; trimmings; embroidery",
+            "prefix": "",
+            "min": "5800000000",
+            "max": "5899999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or flocking or coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Flocking accompanied by dyeing or by printing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Yarn dyeing accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5805",
+            "chapter": 58,
+            "subdivision": "Hand-woven tapestries of the types Gobelins,\nFlanders, Aubusson, Beauvais and the like, and needle-worked tapestries (for\nexample, petit point, cross stitch), whether or not made up",
+            "prefix": "",
+            "min": "5805000000",
+            "max": "5805999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5810",
+            "chapter": 58,
+            "subdivision": "Embroidery in the piece, in strips or in\nmotifs",
+            "prefix": "",
+            "min": "5810000000",
+            "max": "5810999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5909 - 5911",
+            "chapter": 59,
+            "subdivision": "Textile articles of a kind suitable for\nindustrial use:- Polishing discs or rings other than\nof felt of heading 5911",
+            "prefix": "",
+            "min": "5909000000",
+            "max": "5911999999",
+            "rules": [
+                {
+                    "rule": "Weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "5909 - 5911",
+            "chapter": 59,
+            "subdivision": "- Woven fabrics, of a kind commonly\nused in papermaking or other technical uses, felted or not, whether or not\nimpregnated or coated, tubular or endless with single or multiple warp and/or\nweft, or flat woven with multiple warp and/or weft of heading\n5911",
+            "prefix": "",
+            "min": "5909000000",
+            "max": "5911999999",
+            "rules": [
+                {
+                    "rule": "Extrusion of man-made fibres or Spinning of natural and / or of man-made staple fibres, in each case accompanied by weaving",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Weaving accompanied by dyeing or coating. Only the following fibres may be used:\n\n- coir yarn\n\n- yarn of polytetrafluoroethylene\n\n- yarn, multiple, of polyamide, coated impregnated or covered with a phenolic resin\n\n- yarn of synthetic textile fibres of aromatic polyamides, obtained by polycondensation of m-phenylenediamine and isophthalic acid\n\n- monofil of polytetrafluoroethylene\n\n- yarn of synthetic textile fibres of poly(p-phenylene terephthalamide)\n\n- glass fibre yarn, coated with phenol resin and gimped with acrylic yarn\n\n- copolyester monofilaments of a polyester and a resin of terephthalic acid and 1,4-cyclohexanediethanol and isophthalic acid",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 60",
+            "chapter": 60,
+            "subdivision": "Knitted or crocheted fabrics",
+            "prefix": "",
+            "min": "6000000000",
+            "max": "6099999999",
+            "rules": [
+                {
+                    "rule": "Spinning of natural and / or man-made staple fibres or extrusion of man-made filament yarn, in each case accompanied by knitting",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Knitting accompanied by dyeing or by flocking or by coating",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Flocking accompanied by dyeing or by printing",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Dyeing of yarn of natural fibres accompanied by knitting",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Twisting or texturing accompanied by knitting provided that the value of the non-twisted/non-textured yarns used does not exceed 47.5% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 61",
+            "chapter": 61,
+            "subdivision": "Articles of apparel and clothing accessories,\nknitted or crocheted:- Obtained by sewing together or\notherwise assembling, two or more pieces of knitted or crocheted fabric which\nhave been either cut to form or obtained directly to form",
+            "prefix": "",
+            "min": "6100000000",
+            "max": "6199999999",
+            "rules": [
+                {
+                    "rule": "Knitting and making-up (including cutting)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "6307",
+            "chapter": 63,
+            "subdivision": "Other made-up articles, including dress\npatterns",
+            "prefix": "",
+            "min": "6307000000",
+            "max": "6307999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 40% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "6308",
+            "chapter": 63,
+            "subdivision": "Sets consisting of woven fabric and yarn, whether\nor not with accessories, for making up into rugs, tapestries, embroidered table\ncloths or serviettes, or similar textile articles, put up in packings for retail\nsale",
+            "prefix": "",
+            "min": "6308000000",
+            "max": "6308999999",
+            "rules": [
+                {
+                    "rule": "Each item in the set must satisfy the rule which would apply to it if it were not included in the set. However, non-originating articles may be incorporated, provided that their total value does not exceed 15% of the ex-works price of the set",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 64",
+            "chapter": 64,
+            "subdivision": "Footwear, gaiters and the like; parts of such\narticles",
+            "prefix": "",
+            "min": "6400000000",
+            "max": "6499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except from assemblies of uppers affixed to inner soles or to other sole components of heading 6406",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "6406",
+            "chapter": 64,
+            "subdivision": "Parts of footwear (including uppers whether or\nnot attached to soles other than outer soles); removable in-soles, heel cushions and similar articles; gaiters, leggings and similar articles, and parts\nthereof",
+            "prefix": "",
+            "min": "6406000000",
+            "max": "6406999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 65",
+            "chapter": 65,
+            "subdivision": "Headgear and parts thereof",
+            "prefix": "",
+            "min": "6500000000",
+            "max": "6599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 66",
+            "chapter": 66,
+            "subdivision": "Umbrellas, sun umbrellas, walking-sticks,\nseat-sticks, whips, riding-crops, and parts thereof:",
+            "prefix": "",
+            "min": "6600000000",
+            "max": "6699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 67",
+            "chapter": 67,
+            "subdivision": "Prepared feathers and down and articles made of\nfeathers or of down; artificial flowers; articles of human\nhair",
+            "prefix": "",
+            "min": "6700000000",
+            "max": "6799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 68",
+            "chapter": 68,
+            "subdivision": "Articles of stone, plaster, cement, asbestos,\nmica or similar materials,",
+            "prefix": "",
+            "min": "6800000000",
+            "max": "6899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 6803",
+            "chapter": 68,
+            "subdivision": "Articles of slate or of agglomerated\nslate",
+            "prefix": "",
+            "min": "6803000000",
+            "max": "6803999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from worked slate",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 6812",
+            "chapter": 68,
+            "subdivision": "Articles of asbestos; articles of mixtures with a\nbasis of asbestos or of mixtures with a basis of asbestos and magnesium\ncarbonate",
+            "prefix": "",
+            "min": "6812000000",
+            "max": "6812999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 6814",
+            "chapter": 68,
+            "subdivision": "Articles of mica, including agglomerated or\nreconstituted mica, on a support of paper, paperboard or other\nmaterials",
+            "prefix": "",
+            "min": "6814000000",
+            "max": "6814999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from worked mica (including agglomerated or reconstituted mica)",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 69",
+            "chapter": 69,
+            "subdivision": "Ceramic products",
+            "prefix": "",
+            "min": "6900000000",
+            "max": "6999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7010",
+            "chapter": 70,
+            "subdivision": "Carboys, bottles, flasks, jars, pots, phials,\nampoules and other containers, of glass, of a kind used for the conveyance or\npacking of goods; preserving jars of glass; stoppers, lids and other closures,\nof glass",
+            "prefix": "",
+            "min": "7010000000",
+            "max": "7010999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Cutting of glassware, provided that the total value of the uncut glassware used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7013",
+            "chapter": 70,
+            "subdivision": "Glassware of a kind used for table, kitchen,\ntoilet, office, indoor decoration or similar purposes (other than that of\nheading 7010 or 7018)",
+            "prefix": "",
+            "min": "7013000000",
+            "max": "7013999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Cutting of glassware, provided that the total value of the uncut glassware used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Hand-decoration (except silk-screen printing) of hand-blown glassware, provided that the total value of the hand-blown glassware used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 7107",
+            "chapter": 71,
+            "subdivision": "Metals clad with precious metals,\nsemi-manufactured",
+            "prefix": "",
+            "min": "7107000000",
+            "max": "7107999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from metals clad with precious metals, unwrought",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 7109 and 7111",
+            "chapter": 71,
+            "subdivision": "Metals clad with precious metals,\nsemi-manufactured",
+            "prefix": "",
+            "min": "7109and7111",
+            "max": "7109and7111",
+            "rules": [
+                {
+                    "rule": "Manufacture from metals clad with precious metals, unwrought",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7115",
+            "chapter": 71,
+            "subdivision": "Other articles of precious metal or of metal clad\nwith precious metal",
+            "prefix": "",
+            "min": "7115000000",
+            "max": "7115999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7117",
+            "chapter": 71,
+            "subdivision": "Imitation jewellery",
+            "prefix": "",
+            "min": "7117000000",
+            "max": "7117999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture from base metal parts, not plated or covered with precious metals, provided that the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 72",
+            "chapter": 72,
+            "subdivision": "Iron and steel",
+            "prefix": "",
+            "min": "7200000000",
+            "max": "7299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7207",
+            "chapter": 72,
+            "subdivision": "Semi-finished products of iron or non-alloy\nsteel",
+            "prefix": "",
+            "min": "7207000000",
+            "max": "7207999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7201, 7202, 7203, 7204, 7205 or 7206",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7208 - 7216",
+            "chapter": 72,
+            "subdivision": "Flat-rolled products, bars and rods, angles,\nshapes and sections of iron or non-alloy steel",
+            "prefix": "",
+            "min": "7208000000",
+            "max": "7216999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from ingots or other primary forms or semi-finished materials of heading 7206 or 7207",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7217",
+            "chapter": 72,
+            "subdivision": "Wire of iron or non-alloy\nsteel",
+            "prefix": "",
+            "min": "7217000000",
+            "max": "7217999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from semi-finished materials of heading 7207",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "721891",
+            "chapter": 72,
+            "subdivision": "Semi-finished products",
+            "prefix": "",
+            "min": "7218910000",
+            "max": "7218919999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7201, 7202, 7203, 7204, 7205 or sub-heading 721810",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "721899",
+            "chapter": 72,
+            "subdivision": "Semi-finished products",
+            "prefix": "",
+            "min": "7218990000",
+            "max": "7218999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7201, 7202, 7203, 7204, 7205 or sub-heading 721810",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7219 - 7222",
+            "chapter": 72,
+            "subdivision": "Flat-rolled products, bars and rods, angles,\nshapes and sections of stainless steel",
+            "prefix": "",
+            "min": "7219000000",
+            "max": "7222999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from ingots or other primary forms or semi-finished materials of heading 7218",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7223",
+            "chapter": 72,
+            "subdivision": "Wire of stainless steel",
+            "prefix": "",
+            "min": "7223000000",
+            "max": "7223999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from semi-finished materials of heading 7218",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "722490",
+            "chapter": 72,
+            "subdivision": "Semi-finished products",
+            "prefix": "",
+            "min": "7224900000",
+            "max": "7224909999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7201, 7202, 7203, 7204, 7205 or sub-heading 722410",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7225 - 7228",
+            "chapter": 72,
+            "subdivision": "Flat-rolled products, hot-rolled bars and rods,\nin irregularly wound coils; angles, shapes and sections, of other alloy steel;\nhollow drill bars and rods, of alloy or non-alloy steel",
+            "prefix": "",
+            "min": "7225000000",
+            "max": "7228999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from ingots or other primary forms or semi-finished materials of heading 7206, 7207, 7218 or 7224",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7229",
+            "chapter": 72,
+            "subdivision": "Wire of other alloy steel",
+            "prefix": "",
+            "min": "7229000000",
+            "max": "7229999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from semi-finished materials of heading 7224",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 73",
+            "chapter": 73,
+            "subdivision": "Articles of iron or steel",
+            "prefix": "",
+            "min": "7300000000",
+            "max": "7399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 7301",
+            "chapter": 73,
+            "subdivision": "Sheet piling",
+            "prefix": "",
+            "min": "7301000000",
+            "max": "7301999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7207",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7302",
+            "chapter": 73,
+            "subdivision": "Railway or tramway track construction material of\niron or steel, the following: rails, check-rails and rack rails, switch blades,\ncrossing frogs, point rods and other crossing pieces, sleepers (cross-ties),\nfish-plates, chairs, chair wedges, sole pates (base plates), rail clips,\nbedplates, ties and other material specialised for jointing or fixing\nrails",
+            "prefix": "",
+            "min": "7302000000",
+            "max": "7302999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7206",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7304",
+            "chapter": 73,
+            "subdivision": "Tubes, pipes and hollow profiles, of iron (other\nthan cast iron) or steel",
+            "prefix": "",
+            "min": "7304000000",
+            "max": "7304999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7206, 7207, 7208, 7209, 7210, 7211, 7212, 7218, 7219, 7220 or 7224",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7305 and 7306",
+            "chapter": 73,
+            "subdivision": "Tubes, pipes and hollow profiles, of iron (other\nthan cast iron) or steel",
+            "prefix": "",
+            "min": "7305and7306",
+            "max": "7305and7306",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of heading 7206, 7207, 7208, 7209, 7210, 7211, 7212, 7218, 7219, 7220 or 7224",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 7307",
+            "chapter": 73,
+            "subdivision": "Tube or pipe fittings of stainless\nsteel",
+            "prefix": "",
+            "min": "7307000000",
+            "max": "7307999999",
+            "rules": [
+                {
+                    "rule": "Turning, drilling, reaming, threading, deburring and sandblasting of forged blanks, provided that the total value of the forged blanks used does not exceed 35% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7308",
+            "chapter": 73,
+            "subdivision": "Structures (excluding prefabricated buildings of\nheading 9406) and parts of structures (for example, bridges and bridge-sections,\nlock-gates, towers, lattice masts, roofs, roofing frameworks, doors and windows and their frames and thresholds for doors, shutters, balustrades, pillars and columns), of iron or steel; plates, rods, angles, shapes, sections, tubes and the like, prepared for use in structures, of iron or steel",
+            "prefix": "",
+            "min": "7308000000",
+            "max": "7308999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, welded angles, shapes and sections of heading 7301 may not be used",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 7315",
+            "chapter": 73,
+            "subdivision": "Skid chain",
+            "prefix": "",
+            "min": "7315000000",
+            "max": "7315999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials of heading 7315 used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 74",
+            "chapter": 74,
+            "subdivision": "Copper and articles thereof",
+            "prefix": "",
+            "min": "7400000000",
+            "max": "7499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7403",
+            "chapter": 74,
+            "subdivision": "Refined copper and copper alloys,\nunwrought",
+            "prefix": "",
+            "min": "7403000000",
+            "max": "7403999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 75",
+            "chapter": 75,
+            "subdivision": "Nickel and articles thereof",
+            "prefix": "",
+            "min": "7500000000",
+            "max": "7599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 76",
+            "chapter": 76,
+            "subdivision": "Aluminium and articles thereof",
+            "prefix": "",
+            "min": "7600000000",
+            "max": "7699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7601",
+            "chapter": 76,
+            "subdivision": "Unwrought aluminium",
+            "prefix": "",
+            "min": "7601000000",
+            "max": "7601999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "7607",
+            "chapter": 76,
+            "subdivision": "Aluminium foil (whether or not printed or backed\nwith paper, paperboard, plastics or similar backing materials) of a thickness\n(excluding any backing) not exceeding 0,2 mm",
+            "prefix": "",
+            "min": "7607000000",
+            "max": "7607999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and heading 7606",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 78",
+            "chapter": 78,
+            "subdivision": "Lead and articles thereof,",
+            "prefix": "",
+            "min": "7800000000",
+            "max": "7899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 79",
+            "chapter": 79,
+            "subdivision": "Zinc and articles thereof:",
+            "prefix": "",
+            "min": "7900000000",
+            "max": "7999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 80",
+            "chapter": 80,
+            "subdivision": "Tin and articles thereof",
+            "prefix": "",
+            "min": "8000000000",
+            "max": "8099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 81",
+            "chapter": 81,
+            "subdivision": "Other base metals; cermets; articles\nthereof",
+            "prefix": "",
+            "min": "8100000000",
+            "max": "8199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 83",
+            "chapter": 83,
+            "subdivision": "Miscellaneous articles of base metal",
+            "prefix": "",
+            "min": "8300000000",
+            "max": "8399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 8302",
+            "chapter": 83,
+            "subdivision": "Other mountings, fittings and similar articles\nsuitable for buildings, and automatic door closers",
+            "prefix": "",
+            "min": "8302000000",
+            "max": "8302999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, other materials of heading 8302 may be used, provided that their total value does not exceed 20% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 8306",
+            "chapter": 83,
+            "subdivision": "Statuettes and other ornaments, of base\nmetal",
+            "prefix": "",
+            "min": "8306000000",
+            "max": "8306999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, other materials of heading 8306 may be used, provided that their total value does not exceed 30% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 84",
+            "chapter": 84,
+            "subdivision": "Nuclear reactors, boilers, machinery and mechanical appliances; parts thereof",
+            "prefix": "",
+            "min": "8400000000",
+            "max": "8499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8401",
+            "chapter": 84,
+            "subdivision": "Nuclear reactors; fuel elements (cartridges),\nnon-irradiated, for nuclear reactors; machinery and apparatus for isotopic\nseparation",
+            "prefix": "",
+            "min": "8401000000",
+            "max": "8401999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8407",
+            "chapter": 84,
+            "subdivision": "Spark-ignition reciprocating or rotary internal\ncombustion piston engines",
+            "prefix": "",
+            "min": "8407000000",
+            "max": "8407999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8408",
+            "chapter": 84,
+            "subdivision": "Compression-ignition internal combustion piston\nengines (diesel or semi-diesel engines",
+            "prefix": "",
+            "min": "8408000000",
+            "max": "8408999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8427",
+            "chapter": 84,
+            "subdivision": "Fork-lift trucks; other works trucks fitted with\nlifting or handling equipment",
+            "prefix": "",
+            "min": "8427000000",
+            "max": "8427999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8482",
+            "chapter": 84,
+            "subdivision": "Ball or roller bearings",
+            "prefix": "",
+            "min": "8482000000",
+            "max": "8482999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 85",
+            "chapter": 85,
+            "subdivision": "Electrical machinery and equipment and parts\nthereof; sound recorders and reproducers, television image and sound recorders and reproducers, and parts and accessories of such articles",
+            "prefix": "",
+            "min": "8500000000",
+            "max": "8599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8501",
+            "chapter": 85,
+            "subdivision": "Electric motors and generators; Electric\ngenerating sets and rotary converters",
+            "prefix": "",
+            "min": "8501000000",
+            "max": "8501999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8503",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8502",
+            "chapter": 85,
+            "subdivision": "Electric motors and generators; Electric\ngenerating sets and rotary converters",
+            "prefix": "",
+            "min": "8502000000",
+            "max": "8502999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8503",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8513",
+            "chapter": 85,
+            "subdivision": "Portable electric lamps designed to function by\ntheir own source of energy (for example, dry batteries, accumulators, magnetos),\nother than lighting equipment of heading 8512",
+            "prefix": "",
+            "min": "8513000000",
+            "max": "8513999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product.",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8519",
+            "chapter": 85,
+            "subdivision": "Sound recording and sound reproducing\napparatus",
+            "prefix": "",
+            "min": "8519000000",
+            "max": "8519999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8522",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8521",
+            "chapter": 85,
+            "subdivision": "Video recording or reproducing apparatus, whether\nor not incorporating a video tuner",
+            "prefix": "",
+            "min": "8521000000",
+            "max": "8521999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8522",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8523",
+            "chapter": 85,
+            "subdivision": "Prepared unrecorded media for sound recording or\nsimilar recording of other phenomena, other than products of Chapter 37",
+            "prefix": "",
+            "min": "8523000000",
+            "max": "8523999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8525",
+            "chapter": 85,
+            "subdivision": "Transmission apparatus for radio-broadcasting or\ntelevision, whether or not incorporating reception apparatus or sound recording\nor reproducing apparatus; television cameras, digital cameras and other video\ncamera recorders",
+            "prefix": "",
+            "min": "8525000000",
+            "max": "8525999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8529",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8526",
+            "chapter": 85,
+            "subdivision": "Radar apparatus, radio navigational aid apparatus and radio remote control apparatus",
+            "prefix": "",
+            "min": "8526000000",
+            "max": "8526999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8529",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8527",
+            "chapter": 85,
+            "subdivision": "Reception apparatus for radio-broadcasting,\nwhether or not combined, in the same housing, with sound recording or\nreproducing apparatus or a clock",
+            "prefix": "",
+            "min": "8527000000",
+            "max": "8527999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8529",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8528",
+            "chapter": 85,
+            "subdivision": "Monitors and projectors, not incorporating\ntelevision reception apparatus; reception apparatus for television, whether or\nnot incorporating radio-broadcast receivers or sound or video recording or\nreproducing apparatus",
+            "prefix": "",
+            "min": "8528000000",
+            "max": "8528999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8529",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8535 - 8537",
+            "chapter": 85,
+            "subdivision": "Electrical apparatus for switching or protecting\nelectrical circuits, or for making connections to or in electrical circuits;\nconnectors for optical fibres, optical fibre bundles or cables; boards, panels,\nconsoles, desks, cabinets and other bases, for electric control or the\ndistribution of electricity",
+            "prefix": "",
+            "min": "8535000000",
+            "max": "8537999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product and of heading 8538",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "854011",
+            "chapter": 85,
+            "subdivision": "Cathode ray television picture tubes, including\nvideo monitor cathode ray tubes",
+            "prefix": "",
+            "min": "8540110000",
+            "max": "8540119999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "854012",
+            "chapter": 85,
+            "subdivision": "Cathode ray television picture tubes, including\nvideo monitor cathode ray tubes",
+            "prefix": "",
+            "min": "8540120000",
+            "max": "8540129999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "854231 - 854233",
+            "chapter": 85,
+            "subdivision": "Monolithic integrated\ncircuits",
+            "prefix": "",
+            "min": "8542310000",
+            "max": "8542339999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "The operation of diffusion, in which integrated circuits are formed on a semi-conductor substrate by the selective introduction of an appropriate dopant, whether or not assembled and / or tested in a non-party",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "854239",
+            "chapter": 85,
+            "subdivision": "Monolithic integrated\ncircuits",
+            "prefix": "",
+            "min": "8542390000",
+            "max": "8542399999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "The operation of diffusion, in which integrated circuits are formed on a semi-conductor substrate by the selective introduction of an appropriate dopant, whether or not assembled and / or tested in a non-party",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8544",
+            "chapter": 85,
+            "subdivision": "Insulated (including enamelled or anodised) wire,\ncable (including coaxial cable) and other insulated electric conductors, whether\nor not fitted with connectors; optical fibre cables, made up of individually\nsheathed fibres, whether or not assembled with electric conductors or fitted\nwith connectors",
+            "prefix": "",
+            "min": "8544000000",
+            "max": "8544999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8545",
+            "chapter": 85,
+            "subdivision": "Carbon electrodes, carbon brushes, lamp carbons,\nbattery carbons and other articles of graphite or other carbon, with or without\nmetal, of a kind used for electrical purposes",
+            "prefix": "",
+            "min": "8545000000",
+            "max": "8545999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8546",
+            "chapter": 85,
+            "subdivision": "Electrical insulators of any\nmaterial",
+            "prefix": "",
+            "min": "8546000000",
+            "max": "8546999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8547",
+            "chapter": 85,
+            "subdivision": "Insulating fittings for electrical machines,\nappliances or equipment, being fittings wholly of insulating materials apart\nfrom any minor components of metal (for example, threaded sockets) incorporated\nduring moulding solely for purposes of assembly, other than insulators of\nheading 8546; electrical conduit tubing and joints therefore, of base metal\nlined with insulating material",
+            "prefix": "",
+            "min": "8547000000",
+            "max": "8547999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8548",
+            "chapter": 85,
+            "subdivision": "Waste and scrap of primary cells, primary\nbatteries and electric accumulators; spent primary cells, spent primary\nbatteries and spent electric accumulators; electrical parts of machinery or\napparatus, not specified or included elsewhere in this\nChapter",
+            "prefix": "",
+            "min": "8548000000",
+            "max": "8548999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 86",
+            "chapter": 86,
+            "subdivision": "Railway or tramway locomotives, rolling-stock and parts thereof; railway or tramway track fixtures and fittings and parts thereof;\nmechanical (including electro-mechanical) traffic signalling equipment of all\nkinds:",
+            "prefix": "",
+            "min": "8600000000",
+            "max": "8699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 87",
+            "chapter": 87,
+            "subdivision": "Vehicles other than railway or tramway\nrolling-stock, and parts and accessories thereof",
+            "prefix": "",
+            "min": "8700000000",
+            "max": "8799999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "8711",
+            "chapter": 87,
+            "subdivision": "Motorcycles (including mopeds) and cycles fitted\nwith an auxiliary motor, with or without side-cars;\nside-cars",
+            "prefix": "",
+            "min": "8711000000",
+            "max": "8711999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 88",
+            "chapter": 88,
+            "subdivision": "Aircraft, spacecraft, and parts thereof,",
+            "prefix": "",
+            "min": "8800000000",
+            "max": "8899999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 8804",
+            "chapter": 88,
+            "subdivision": "Rotochutes",
+            "prefix": "",
+            "min": "8804000000",
+            "max": "8804999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, including other materials of heading 8804",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 89",
+            "chapter": 89,
+            "subdivision": "Ships, boats and floating\nstructures",
+            "prefix": "",
+            "min": "8900000000",
+            "max": "8999999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 90",
+            "chapter": 90,
+            "subdivision": "Optical, photographic, cinematographic,\nmeasuring, checking, precision, medical or surgical instruments and apparatus;\nparts and accessories thereof,",
+            "prefix": "",
+            "min": "9000000000",
+            "max": "9099999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9002",
+            "chapter": 90,
+            "subdivision": "Lenses, prisms, mirrors and other optical\nelements, of any material, mounted, being parts of or fittings for instruments\nor apparatus, other than such elements of glass not optically\nworked",
+            "prefix": "",
+            "min": "9002000000",
+            "max": "9002999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9033",
+            "chapter": 90,
+            "subdivision": "Parts and accessories (not specified or included\nelsewhere in this Chapter ) for machines, appliances, instruments or apparatus of\nChapter 90",
+            "prefix": "",
+            "min": "9033000000",
+            "max": "9033999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 91",
+            "chapter": 91,
+            "subdivision": "Clocks and watches and parts\nthereof",
+            "prefix": "",
+            "min": "9100000000",
+            "max": "9199999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 92",
+            "chapter": 92,
+            "subdivision": "Musical instruments; parts and accessories of\nsuch articles",
+            "prefix": "",
+            "min": "9200000000",
+            "max": "9299999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 93",
+            "chapter": 93,
+            "subdivision": "Arms and ammunition; parts and accessories\nthereof",
+            "prefix": "",
+            "min": "9300000000",
+            "max": "9399999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 50% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "Chapter 94",
+            "chapter": 94,
+            "subdivision": "Furniture; bedding, mattresses, mattress\nsupports, cushions and similar stuffed furnishings; lamps and lighting fittings,\nnot elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings",
+            "prefix": "",
+            "min": "9400000000",
+            "max": "9499999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 95",
+            "chapter": 95,
+            "subdivision": "Toys, games and sports requisites; parts and accessories thereof,",
+            "prefix": "",
+            "min": "9500000000",
+            "max": "9599999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex 9506",
+            "chapter": 95,
+            "subdivision": "Golf clubs and parts thereof",
+            "prefix": "",
+            "min": "9506000000",
+            "max": "9506999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, roughly-shaped blocks for making golf-club heads may be used",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "ex Chapter 96",
+            "chapter": 96,
+            "subdivision": "Miscellaneous manufactured articles,",
+            "prefix": "",
+            "min": "9600000000",
+            "max": "9699999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                },
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9601",
+            "chapter": 96,
+            "subdivision": "Worked ivory, bone, tortoiseshell, horn, antlers,\ncoral, mother-of-pearl and other animal carving material, and articles of these\nmaterials (including articles obtained by moulding.\nWorked vegetable or mineral carving material and articles of these materials;\nmoulded or carved articles of wax, of stearin, of natural gums or natural resins\nor of modelling pastes, and other moulded or carved articles, not elsewhere\nspecified or included; worked, unhardened gelatine (except gelatine of heading\n3503) and articles of unhardened gelatine",
+            "prefix": "",
+            "min": "9601000000",
+            "max": "9601999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9602",
+            "chapter": 96,
+            "subdivision": "Worked ivory, bone, tortoiseshell, horn, antlers,\ncoral, mother-of-pearl and other animal carving material, and articles of these\nmaterials (including articles obtained by moulding.\nWorked vegetable or mineral carving material and articles of these materials;\nmoulded or carved articles of wax, of stearin, of natural gums or natural resins\nor of modelling pastes, and other moulded or carved articles, not elsewhere\nspecified or included; worked, unhardened gelatine (except gelatine of heading\n3503) and articles of unhardened gelatine",
+            "prefix": "",
+            "min": "9602000000",
+            "max": "9602999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9603",
+            "chapter": 96,
+            "subdivision": "Brooms, brushes (including brushes constituting\nparts of machines, appliances or vehicles), hand-operated mechanical floor\nsweepers, not motorized, mops and feather dusters; prepared knots and tufts for\nbroom or brush making; paint pads and rollers, squeegees (other than roller\nsqueegees)",
+            "prefix": "",
+            "min": "9603000000",
+            "max": "9603999999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9605",
+            "chapter": 96,
+            "subdivision": "Travel sets for personal toilet, sewing or shoe\nor clothes cleaning",
+            "prefix": "",
+            "min": "9605000000",
+            "max": "9605999999",
+            "rules": [
+                {
+                    "rule": "Each item in the set must satisfy the rule which would apply to it if it were not included in the set. However, non-originating articles may be incorporated, provided that their total value does not exceed 15% of the ex-works price of the set",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9606",
+            "chapter": 96,
+            "subdivision": "Buttons, press-fasteners, snap-fasteners and press-studs, button moulds and other parts of these articles; button\nblanks",
+            "prefix": "",
+            "min": "9606000000",
+            "max": "9606999999",
+            "rules": [
+                {
+                    "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and* - in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9608",
+            "chapter": 96,
+            "subdivision": "Ball-point pens; felt-tipped and other\nporous-tipped pens and markers; fountain pens, stylograph pens and other pens;\nduplicating stylos; propelling or sliding pencils; pen-holders, pencilholders and similar holders; parts (including caps and clips) of the foregoing articles,\nother than those of heading 9609",
+            "prefix": "",
+            "min": "9608000000",
+            "max": "9608999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading, except that of the product. However, nibs or nib-points of the same heading as the product may be used",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9612",
+            "chapter": 96,
+            "subdivision": "Typewriter or similar ribbons, inked or otherwise\nprepared for giving impressions, whether or not on spools or in cartridges;\nink-pads, whether or not inked, with or without boxes",
+            "prefix": "",
+            "min": "9612000000",
+            "max": "9612999999",
+            "rules": [
+                {
+                    "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and* - in which the value of all the materials used does not exceed 70% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "961320",
+            "chapter": 96,
+            "subdivision": "Pocket lighters, gas fuelled,\nrefillable",
+            "prefix": "",
+            "min": "9613200000",
+            "max": "9613209999",
+            "rules": [
+                {
+                    "rule": "Manufacture in which the total value of the materials of heading 9613 used does not exceed 30% of the ex-works price of the product",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        },
+        {
+            "heading": "9614",
+            "chapter": 96,
+            "subdivision": "Smoking pipes (including pipe bowls) and cigar or\ncigarette holders, and parts thereof",
+            "prefix": "",
+            "min": "9614000000",
+            "max": "9614999999",
+            "rules": [
+                {
+                    "rule": "Manufacture from materials of any heading",
+                    "class": [],
+                    "operator": null,
+                    "specific_processes": false,
+                    "double_dash": false
+                }
+            ],
+            "valid": true
+        }
+    ]
+}
