@@ -344,9 +344,6 @@ jobs:
             echo "export DOCKER_TAG=<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}" >> $BASH_ENV
 
       - run:
-          name: "Aggregate synonyms"
-          command: bin/aggregate_synonyms
-      - run:
           name: "Build Docker image"
           command: |
             export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
