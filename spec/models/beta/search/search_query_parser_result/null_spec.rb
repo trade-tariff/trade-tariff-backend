@@ -1,4 +1,4 @@
-RSpec.describe Beta::Search::SearchQueryParserResult::Synonym do
+RSpec.describe Beta::Search::SearchQueryParserResult::Null do
   describe '.build' do
     subject(:result) { described_class.build(attributes) }
 
