@@ -11,7 +11,7 @@ RSpec.describe 'Rules of Origin Data', :roo_data do
             context "with #{data_set_json.basename}" do
               subject(:rule_set) { RulesOfOrigin::V2::RuleSet.new(rule_set_data) }
 
-              it "has a valid ruleset range for #{rule_set_data['heading']}" do
+              it %(is valid: '#{rule_set_data['heading']}'#{" - '#{rule_set_data['subdivision']}'" if rule_set_data['subdivision'].present?}) do
                 expect(rule_set).to be_valid
               end
             end
