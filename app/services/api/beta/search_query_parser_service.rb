@@ -8,8 +8,8 @@ module Api
       end
 
       def call
-        if AggregatedSynonym.exists?(@original_search_query)
-          ::Beta::Search::SearchQueryParserResult::Synonym.build('original_search_query' => @original_search_query)
+        if null_result?
+          ::Beta::Search::SearchQueryParserResult::Null.build('original_search_query' => @original_search_query)
         else
           result_attributes = client.get('tokens', q: @original_search_query).body
 
@@ -22,6 +22,12 @@ module Api
           conn.response :raise_error
           conn.response :json
         end
+      end
+
+      private
+
+      def null_result?
+        @original_search_query.blank? || AggregatedSynonym.exists?(@original_search_query)
       end
     end
   end

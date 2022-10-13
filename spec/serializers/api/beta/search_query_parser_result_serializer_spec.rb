@@ -16,7 +16,7 @@ RSpec.describe Api::Beta::SearchQueryParserResultSerializer do
             adjectives: [],
             nouns: %w[halibut sausage stenolepis cheese binocular parsnip pharmacy paper],
             noun_chunks: ['halibut sausage stenolepis cheese binocular parsnip pharmacy paper'],
-            synonym_result: false,
+            null_result: false,
           },
         },
       }

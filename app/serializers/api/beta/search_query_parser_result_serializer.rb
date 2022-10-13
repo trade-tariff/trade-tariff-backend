@@ -11,7 +11,7 @@ module Api
                  :adjectives,
                  :nouns,
                  :noun_chunks,
-                 :synonym_result
+                 :null_result
     end
   end
 end
