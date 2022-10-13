@@ -13,6 +13,6 @@ RSpec.describe Beta::Search::OpenSearchResult::NoHits do
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }
     it { expect(result.goods_nomenclature_query).to eq(goods_nomenclature_query) }
     it { expect(result.id).to eq('7c8d5ef8ab9c93729b100e871ed69f33') }
-    it { expect(result.empty_query).to be(false) }
+    it { expect(result.empty_query).to be(true) }
   end
 end

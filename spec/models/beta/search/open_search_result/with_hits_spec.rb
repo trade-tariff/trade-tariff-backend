@@ -19,5 +19,6 @@ RSpec.describe Beta::Search::OpenSearchResult::WithHits do
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }
     it { expect(result.goods_nomenclature_query).to eq(goods_nomenclature_query) }
     it { expect(result.id).to eq('773f19eb133e44c7b88f87902b3e557a') }
+    it { expect(result.empty_query).to be(false) }
   end
 end
