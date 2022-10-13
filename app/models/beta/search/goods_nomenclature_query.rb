@@ -59,10 +59,13 @@ module Beta
       end
 
       def goods_nomenclature_item_id
-        len = original_search_query.length
-        padding = len < 10 ? 10 - len : 0
+        if original_search_query.length > 10
+          original_search_query.first(10)
+        else
+          padding = 10 - original_search_query.length
 
-        original_search_query + '0' * padding
+          original_search_query + '0' * padding
+        end
       end
 
       def numeric?

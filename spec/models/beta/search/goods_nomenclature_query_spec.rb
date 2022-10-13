@@ -270,22 +270,18 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
   end
 
   describe '#goods_nomenclature_item_id' do
-    subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :numeric, original_search_query: search_query) }
+    subject(:goods_nomenclature_item_id) { build(:goods_nomenclature_query, :numeric, original_search_query:).goods_nomenclature_item_id }
 
     context 'when search query is shorter than 10 digits' do
-      let(:search_query) { '0101' }
+      let(:original_search_query) { '0101' }
 
-      it 'returns the padded original_search_query' do
-        expect(goods_nomenclature_query.goods_nomenclature_item_id).to eq('0101000000')
-      end
+      it { is_expected.to eq('0101000000') }
     end
 
     context 'when search query is longer than 10 digits' do
-      let(:search_query) { '010100000012' }
+      let(:original_search_query) { '010100000012' }
 
-      it 'returns the original original_search_query' do
-        expect(goods_nomenclature_query.goods_nomenclature_item_id).to eq(search_query)
-      end
+      it { is_expected.to eq('0101000000') }
     end
   end
 

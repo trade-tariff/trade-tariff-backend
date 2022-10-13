@@ -270,5 +270,9 @@ module TradeTariffBackend
     def use_uk_xi_indexes?
       ENV['USE_UK_XI_INDEXES'] == 'true'
     end
+
+    def aggregated_synonyms_file
+      ENV.fetch('AGGREGATED_SYNONYMS_FILE', 'config/aggregated_synonyms/synonyms_all.txt')
+    end
   end
 end

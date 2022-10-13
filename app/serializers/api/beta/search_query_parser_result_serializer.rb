@@ -10,7 +10,8 @@ module Api
                  :verbs,
                  :adjectives,
                  :nouns,
-                 :noun_chunks
+                 :noun_chunks,
+                 :synonym_result
     end
   end
 end

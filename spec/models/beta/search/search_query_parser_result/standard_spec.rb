@@ -1,4 +1,4 @@
-RSpec.describe Beta::Search::SearchQueryParserResult do
+RSpec.describe Beta::Search::SearchQueryParserResult::Standard do
   describe '.build' do
     subject(:result) { described_class.build(attributes) }
 
@@ -15,18 +15,13 @@ RSpec.describe Beta::Search::SearchQueryParserResult do
       }
     end
 
-    it { is_expected.to be_a(described_class) }
+    it { is_expected.to be_a(Beta::Search::SearchQueryParserResult) }
     it { expect(result.adjectives).to eq(%w[tall]) }
     it { expect(result.nouns).to eq(%w[man]) }
     it { expect(result.noun_chunks).to eq(['tall man']) }
     it { expect(result.verbs).to eq([]) }
     it { expect(result.original_search_query).to eq('tall man') }
     it { expect(result.corrected_search_query).to eq('tall man') }
-  end
-
-  describe '#id' do
-    subject(:id) { build(:search_query_parser_result).id }
-
-    it { is_expected.to eq('240ad90c8bd0e29cc402ff257d033747') }
+    it { expect(result.id).to eq('cfbcdf9373a4864313877a2cedb58a3a') }
   end
 end

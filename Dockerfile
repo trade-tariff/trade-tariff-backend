@@ -20,6 +20,7 @@ RUN bundle install --jobs=4 --no-binstubs
 # Copy all files to /app (except what is defined in .dockerignore)
 COPY . /app/
 
+RUN bin/aggregate_synonyms
 
 # Cleanup to save space in the production image
 RUN rm -rf node_modules log tmp && \

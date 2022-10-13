@@ -54,6 +54,7 @@ RSpec.configure do |config|
 
   config.before do
     stub_codes_mapping_data
+
     Rails.cache.clear
     Sidekiq::Worker.clear_all
 
