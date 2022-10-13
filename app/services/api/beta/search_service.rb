@@ -9,15 +9,6 @@ module Api
       end
 
       def call
-        result = v2_search_client
-          .search(index: DEFAULT_SEARCH_INDEX, body: generated_search_query.query)
-
-        search_result = ::Beta::Search::OpenSearchResult.build(
-          result,
-          search_query_parser_result,
-          generated_search_query,
-        )
-
         if search_result.numeric? && search_result.hits.count.zero?
           search_result.redirect!
         end
@@ -32,6 +23,26 @@ module Api
       private
 
       delegate :v2_search_client, to: TradeTariffBackend
+
+      def search_result
+        @search_result ||= if @search_query.blank?
+                             ::Beta::Search::OpenSearchResult::NoHits.build(
+                               nil,
+                               search_query_parser_result,
+                               generated_search_query,
+                             )
+                           else
+                             ::Beta::Search::OpenSearchResult::WithHits.build(
+                               fetch_result,
+                               search_query_parser_result,
+                               generated_search_query,
+                             )
+                           end
+      end
+
+      def fetch_result
+        v2_search_client.search(index: DEFAULT_SEARCH_INDEX, body: generated_search_query.query)
+      end
 
       def generated_search_query
         @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(search_query_parser_result, @search_filters)
