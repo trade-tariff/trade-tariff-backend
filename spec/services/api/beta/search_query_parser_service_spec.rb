@@ -7,7 +7,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
     context 'when the search query matches a known synonym' do
       subject(:result) { described_class.new('yakutian laika').call }
 
-      it { is_expected.to be_syonym_result }
+      it { expect(result.synonym_result).to eq(true) }
     end
 
     context 'when the search query parser response is success' do
@@ -39,7 +39,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
       it { expect(result.noun_chunks).to eq(%w[aaa bib]) }
       it { expect(result.nouns).to eq(%w[aaa bib]) }
       it { expect(result.verbs).to eq([]) }
-      it { is_expected.not_to be_syonym_result }
+      it { expect(result.synonym_result).to eq(false) }
     end
 
     context 'when the search query parser response is bad request' do

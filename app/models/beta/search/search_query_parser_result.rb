@@ -14,8 +14,6 @@ module Beta
                     :corrected_search_query,
                     :synonym_result
 
-      alias_method :syonym_result?, :synonym_result
-
       class Standard
         def self.build(attributes)
           search_query_parser_result = SearchQueryParserResult.new
