@@ -7,7 +7,19 @@ RSpec.describe Api::Beta::SearchQueryParserService do
     context 'when the search query matches a known synonym' do
       subject(:result) { described_class.new('yakutian laika').call }
 
-      it { expect(result.synonym_result).to eq(true) }
+      it { expect(result.null_result).to eq(true) }
+    end
+
+    context 'when the search query is empty' do
+      subject(:result) { described_class.new('').call }
+
+      it { expect(result.null_result).to eq(true) }
+    end
+
+    context 'when the search query is nil' do
+      subject(:result) { described_class.new(nil).call }
+
+      it { expect(result.null_result).to eq(true) }
     end
 
     context 'when the search query parser response is success' do
@@ -39,7 +51,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
       it { expect(result.noun_chunks).to eq(%w[aaa bib]) }
       it { expect(result.nouns).to eq(%w[aaa bib]) }
       it { expect(result.verbs).to eq([]) }
-      it { expect(result.synonym_result).to eq(false) }
+      it { expect(result.null_result).to eq(false) }
     end
 
     context 'when the search query parser response is bad request' do

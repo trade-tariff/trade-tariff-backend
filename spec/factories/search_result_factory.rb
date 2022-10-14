@@ -125,7 +125,7 @@ FactoryBot.define do
       search_result = JSON.parse(File.read(fixture_filename))
       presented_search_result = Hashie::TariffMash.new(search_result)
 
-      search_result = Beta::Search::OpenSearchResult.build(
+      search_result = Beta::Search::OpenSearchResult::WithHits.build(
         presented_search_result,
         search_query_parser_result,
         goods_nomenclature_query || build(:goods_nomenclature_query),

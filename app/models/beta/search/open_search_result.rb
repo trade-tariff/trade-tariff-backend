@@ -1,6 +1,10 @@
 module Beta
   module Search
     class OpenSearchResult
+      include ContentAddressableId
+
+      content_addressable_fields { |search_result| "#{search_result.search_query_parser_result.id}-#{search_result.hit_ids}" }
+
       delegate :id, to: :search_query_parser_result, prefix: true, allow_nil: true
       delegate :id, to: :goods_nomenclature_query, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
@@ -15,11 +19,12 @@ module Beta
                     :hits,
                     :max_score,
                     :search_query_parser_result,
-                    :goods_nomenclature_query
+                    :goods_nomenclature_query,
+                    :empty_query
 
-      class << self
-        def build(result, search_query_parser_result, goods_nomenclature_query)
-          search_result = new
+      class WithHits
+        def self.build(result, search_query_parser_result, goods_nomenclature_query)
+          search_result = ::Beta::Search::OpenSearchResult.new
 
           search_result.took = result.took
           search_result.timed_out = result.timed_out
@@ -27,11 +32,12 @@ module Beta
           search_result.hits = result.hits.hits.map(&method(:build_hit))
           search_result.search_query_parser_result = search_query_parser_result
           search_result.goods_nomenclature_query = goods_nomenclature_query
+          search_result.empty_query = false
 
           search_result
         end
 
-        def build_hit(hit_result)
+        def self.build_hit(hit_result)
           hit = Hashie::TariffMash.new
 
           hit.score = hit_result._score
@@ -75,10 +81,20 @@ module Beta
         end
       end
 
-      def id
-        digestable = "#{search_query_parser_result.id}-#{hit_ids}"
+      class NoHits
+        def self.build(_result, search_query_parser_result, goods_nomenclature_query)
+          search_result = ::Beta::Search::OpenSearchResult.new
 
-        Digest::MD5.hexdigest(digestable)
+          search_result.took = 0
+          search_result.timed_out = false
+          search_result.max_score = 0
+          search_result.hits = []
+          search_result.search_query_parser_result = search_query_parser_result
+          search_result.goods_nomenclature_query = goods_nomenclature_query
+          search_result.empty_query = true
+
+          search_result
+        end
       end
 
       def hit_ids

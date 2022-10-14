@@ -17,7 +17,7 @@ FactoryBot.define do
     noun_chunks { ['halibut sausage stenolepis cheese binocular parsnip pharmacy paper'] }
     original_search_query { 'halbiut sausadge stenolepsis chese bnoculars parnsip farmacy pape' }
     corrected_search_query { 'halibut sausage stenolepis cheese binocular parsnip pharmacy paper' }
-    synonym_result { false }
+    null_result { false }
 
     trait :no_hits do
       original_search_query { 'flibble' }
@@ -77,7 +77,7 @@ FactoryBot.define do
       noun_chunks { ['yakutian laika'] }
       nouns { %w[] }
       verbs { [] }
-      synonym_result { true }
+      null_result { true }
     end
   end
 end
