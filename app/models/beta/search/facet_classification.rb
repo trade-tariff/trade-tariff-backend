@@ -23,12 +23,11 @@ module Beta
                   # This means we skip assigning classifications for facets that have
                   # previously been assigned lower down the tree or description.
                   encountered_facet = classifications[facet].except(gn.goods_nomenclature_sid).any?
-                  encountered_classification = classifications[facet][gn.goods_nomenclature_sid].present?
 
                   next if encountered_facet
-                  next if encountered_classification
 
-                  classifications[facet][gn.goods_nomenclature_sid] = classification
+                  classifications[facet][gn.goods_nomenclature_sid] ||= Set.new
+                  classifications[facet][gn.goods_nomenclature_sid] << classification
                 end
               end
             end

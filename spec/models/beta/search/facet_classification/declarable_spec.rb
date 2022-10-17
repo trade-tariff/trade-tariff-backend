@@ -10,8 +10,8 @@ RSpec.describe Beta::Search::FacetClassification::Declarable do
 
     let(:expected_classifications) do
       {
-        'animal_product_state' => 'live',
-        'animal_type' => 'equine animals',
+        'animal_product_state' => Set.new(%w[live]),
+        'animal_type' => Set.new(['equine animals']),
       }
     end
 
