@@ -31,6 +31,7 @@ module Search
         ancestor_13_description_indexed:,
         guides:,
         guide_ids:,
+        declarable: declarable?,
       }
 
       serializable.merge(serializable_classifications)
