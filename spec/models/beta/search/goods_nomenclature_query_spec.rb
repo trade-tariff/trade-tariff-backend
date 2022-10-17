@@ -232,13 +232,8 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
                 bool: {
                   must: [
                     {
-                      terms: {
-                        filter_cheese_type: [
-                          'containing veins produced by Penicillium roqueforti|fresh|grated or powdered|processed',
-                          'fresh|grated or powdered|processed',
-                          'fresh|processed',
-                          'fresh',
-                        ],
+                      term: {
+                        filter_cheese_type: 'fresh',
                         boost: 1,
                       },
                     },
