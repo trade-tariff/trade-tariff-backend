@@ -1,8 +1,8 @@
 FactoryBot.define do
-  factory :news_item do
+  factory :news_item, class: 'News::Item' do
     start_date { 1.day.ago }
     sequence(:title) { |n| "News item #{n}" }
-    display_style { NewsItem::DISPLAY_REGULAR }
+    display_style { News::Item::DISPLAY_REGULAR }
     show_on_xi { true }
     show_on_uk { true }
     show_on_updates_page { false }

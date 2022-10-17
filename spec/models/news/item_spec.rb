@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe NewsItem do
+RSpec.describe News::Item do
   describe 'attributes' do
     it { is_expected.to respond_to :start_date }
     it { is_expected.to respond_to :end_date }

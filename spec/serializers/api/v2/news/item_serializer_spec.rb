@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::NewsItemSerializer do
+RSpec.describe Api::V2::News::ItemSerializer do
   subject(:serializable) { described_class.new(news_item).serializable_hash }
 
   let(:news_item) { create :news_item }

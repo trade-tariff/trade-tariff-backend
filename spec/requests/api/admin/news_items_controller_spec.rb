@@ -58,8 +58,8 @@ RSpec.describe Api::Admin::NewsItemsController do
       let(:news_item_attrs) { attributes_for :news_item }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_admin_news_item_url(NewsItem.last.id) }
-      it { expect { page_response }.to change(NewsItem, :count).by(1) }
+      it { is_expected.to have_attributes location: api_admin_news_item_url(News::Item.last.id) }
+      it { expect { page_response }.to change(News::Item, :count).by(1) }
     end
 
     context 'with invalid params' do
@@ -71,7 +71,7 @@ RSpec.describe Api::Admin::NewsItemsController do
         expect(json_response).to include('errors')
       end
 
-      it { expect { page_response }.not_to change(NewsItem, :count) }
+      it { expect { page_response }.not_to change(News::Item, :count) }
     end
   end
 
@@ -130,7 +130,7 @@ RSpec.describe Api::Admin::NewsItemsController do
       let(:news_item_id) { 9999 }
 
       it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(NewsItem, :count) }
+      it { expect { page_response }.not_to change(News::Item, :count) }
     end
   end
 end

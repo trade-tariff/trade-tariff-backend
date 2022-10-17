@@ -8,13 +8,13 @@ module Api
       end
 
       def show
-        news_item = NewsItem.with_pk!(params[:id])
+        news_item = ::News::Item.with_pk!(params[:id])
 
         render json: serialize(news_item)
       end
 
       def create
-        news_item = NewsItem.new(news_item_params[:attributes])
+        news_item = ::News::Item.new(news_item_params[:attributes])
 
         if news_item.valid? && news_item.save
           render json: serialize(news_item),
@@ -27,7 +27,7 @@ module Api
       end
 
       def update
-        news_item = NewsItem.with_pk!(params[:id])
+        news_item = ::News::Item.with_pk!(params[:id])
         news_item.set news_item_params[:attributes]
 
         if news_item.valid? && news_item.save
@@ -41,7 +41,7 @@ module Api
       end
 
       def destroy
-        news_item = NewsItem.with_pk!(params[:id])
+        news_item = ::News::Item.with_pk!(params[:id])
         news_item.destroy
 
         head :no_content
@@ -65,7 +65,7 @@ module Api
       end
 
       def collection
-        @collection ||= NewsItem.descending.paginate(current_page, per_page)
+        @collection ||= ::News::Item.descending.paginate(current_page, per_page)
       end
 
       def pagination_meta
@@ -81,7 +81,7 @@ module Api
       end
 
       def serialize(*args)
-        Api::Admin::NewsItemSerializer.new(*args).serializable_hash
+        Api::Admin::News::ItemSerializer.new(*args).serializable_hash
       end
 
       def serialize_errors(errors)
