@@ -398,6 +398,19 @@ jobs:
           command: |
             curl "http://localhost:9200/_cat/health"
       - ruby/rspec-test
+      - run:
+          name: Test Rules of Origin data files
+          command: |
+            if [ -z `git diff --name-only $(git merge-base main HEAD)..HEAD -- db/rules_of_origin` ]; then
+              echo "Skipping data checks - Rules of origin data unchanged"
+            else
+              bundle exec rspec --tag=roo_data \
+                                --format RspecJunitFormatter \
+                                --out /tmp/test-results/roo_data/results.xml \
+                                --format progress
+            fi
+      - store_test_results:
+          path: /tmp/test-results/roo_data
       - store_artifacts:
           path: coverage
       - slack/notify:
