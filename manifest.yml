@@ -1,5 +1,0 @@
----
-applications:
-- buildpack: ruby_buildpack
-  health-check-type: http
-  health-check-http-endpoint: /healthcheck
