@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::NewsItemSerializer do
+RSpec.describe Api::Admin::News::ItemSerializer do
   subject(:serialized) do
     described_class.new(news_item).serializable_hash
   end
