@@ -7,13 +7,14 @@ RSpec.describe Api::Beta::GoodsNomenclatureQuerySerializer do
     let(:expected) do
       {
         data: {
-          id: 'cbbc8118105b8e1c3cb4bb74a978fa83',
+          id: 'b8dc5a3889acb4eb83be5d588ba3f616',
           type: :goods_nomenclature_query,
           attributes: {
             query: {
               size: '10',
               query: {
                 bool: {
+                  filter: { bool: { must: [{ term: { declarable: true } }] } },
                   must: [
                     {
                       multi_match: {

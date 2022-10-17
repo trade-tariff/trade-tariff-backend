@@ -6,58 +6,64 @@ module Beta
     class FacetClassification
       attr_accessor :classifications
 
-      class << self
-        def build(goods_nomenclature, classifications = {})
-          applicable_facet_classifiers = heading_facet_mappings[goods_nomenclature.heading.short_code]
+      class Declarable
+        class << self
+          def build(goods_nomenclature, classifications = {})
+            applicable_facet_classifiers = heading_facet_mappings[goods_nomenclature.heading.short_code]
 
-          goods_nomenclature.classifiable_goods_nomenclatures.each do |gn|
-            tokens_for(gn).each do |token|
-              matching_facet_classifications = word_classifications[token] || {}
+            goods_nomenclature.classifiable_goods_nomenclatures.each do |gn|
+              tokens_for(gn).each do |token|
+                matching_facet_classifications = word_classifications[token] || {}
 
-              matching_facet_classifications.slice(*applicable_facet_classifiers).each do |facet, classification|
-                classifications[facet] ||= {}
+                matching_facet_classifications.slice(*applicable_facet_classifiers).each do |facet, classification|
+                  classifications[facet] ||= {}
 
-                # We always want the most precise classifications
-                #
-                # This means we skip assigning classifications for facets that have
-                # previously been assigned lower down the tree.
-                encountered_facet = classifications[facet].except(gn.goods_nomenclature_sid).any?
+                  # We always want the most precise classifications
+                  #
+                  # This means we skip assigning classifications for facets that have
+                  # previously been assigned lower down the tree or description.
+                  encountered_facet = classifications[facet].except(gn.goods_nomenclature_sid).any?
 
-                next if encountered_facet
+                  next if encountered_facet
 
-                classifications[facet][gn.goods_nomenclature_sid] ||= Set.new
-                classifications[facet][gn.goods_nomenclature_sid] << classification
+                  classifications[facet][gn.goods_nomenclature_sid] ||= Set.new
+                  classifications[facet][gn.goods_nomenclature_sid] << classification
+                end
               end
             end
+
+            facet_classification = Beta::Search::FacetClassification.new
+
+            facet_classification.classifications = classifications.transform_values do |goods_nomenclature_values|
+              goods_nomenclature_values.values.first
+            end
+
+            facet_classification
           end
 
-          facet_classification = new
-
-          facet_classification.classifications = classifications.transform_values do |goods_nomenclature_values|
-            goods_nomenclature_values.values.first
+          def tokens_for(goods_nomenclature)
+            Api::Beta::GoodsNomenclatureTokenGeneratorService.new(goods_nomenclature).call
           end
 
-          facet_classification
+          def word_classifications
+            TradeTariffBackend.search_facet_classifier_configuration.word_classifications
+          end
+
+          def heading_facet_mappings
+            TradeTariffBackend.search_facet_classifier_configuration.heading_facet_mappings
+          end
         end
+      end
 
-        def empty
-          facet_classification = new
+      class NonDeclarable
+        class << self
+          def build(_goods_nomenclature, _classifications = {})
+            facet_classification = Beta::Search::FacetClassification.new
 
-          facet_classification.classifications = {}
+            facet_classification.classifications = {}
 
-          facet_classification
-        end
-
-        def tokens_for(goods_nomenclature)
-          Api::Beta::GoodsNomenclatureTokenGeneratorService.new(goods_nomenclature).call
-        end
-
-        def word_classifications
-          TradeTariffBackend.search_facet_classifier_configuration.word_classifications
-        end
-
-        def heading_facet_mappings
-          TradeTariffBackend.search_facet_classifier_configuration.heading_facet_mappings
+            facet_classification
+          end
         end
       end
     end

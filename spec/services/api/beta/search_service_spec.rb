@@ -25,6 +25,13 @@ RSpec.describe Api::Beta::SearchService do
             size: '10',
             query: {
               bool: {
+                filter: {
+                  bool: {
+                    must: [
+                      { term: { declarable: true } },
+                    ],
+                  },
+                },
                 must: [
                   {
                     multi_match: {

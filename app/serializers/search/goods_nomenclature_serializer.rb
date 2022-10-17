@@ -31,6 +31,7 @@ module Search
         ancestor_13_description_indexed:,
         guides:,
         guide_ids:,
+        declarable: declarable?,
       }
 
       serializable.merge(serializable_classifications)
@@ -131,11 +132,11 @@ module Search
     end
 
     def facet_classification
-      @facet_classification ||= begin
-        return Beta::Search::FacetClassification.empty if chapter?
-
-        Beta::Search::FacetClassification.build(self)
-      end
+      @facet_classification ||= if declarable?
+                                  Beta::Search::FacetClassification::Declarable.build(self)
+                                else
+                                  Beta::Search::FacetClassification::NonDeclarable.build(self)
+                                end
     end
   end
 end

@@ -10,7 +10,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
   describe '#id' do
     subject(:id) { build(:goods_nomenclature_query, :full_query).id }
 
-    it { is_expected.to eq('cbbc8118105b8e1c3cb4bb74a978fa83') }
+    it { is_expected.to eq('b8dc5a3889acb4eb83be5d588ba3f616') }
   end
 
   describe '#query' do
@@ -61,6 +61,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
+              filter: { bool: { must: [{ term: { declarable: true } }] } },
               must: [
                 {
                   multi_match: {
@@ -111,6 +112,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
+              filter: { bool: { must: [{ term: { declarable: true } }] } },
               must: [
                 {
                   multi_match: {
@@ -139,6 +141,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
+              filter: { bool: { must: [{ term: { declarable: true } }] } },
               must: [
                 {
                   multi_match: {
@@ -167,6 +170,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
+              filter: { bool: { must: [{ term: { declarable: true } }] } },
               must: [
                 {
                   multi_match: {
@@ -195,6 +199,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
           size: '10',
           query: {
             bool: {
+              filter: { bool: { must: [{ term: { declarable: true } }] } },
               must: [
                 {
                   multi_match: {
@@ -235,6 +240,11 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
                           'fresh',
                         ],
                         boost: 1,
+                      },
+                    },
+                    {
+                      term: {
+                        declarable: true,
                       },
                     },
                   ],

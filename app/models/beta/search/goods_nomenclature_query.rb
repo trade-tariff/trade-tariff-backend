@@ -89,7 +89,7 @@ module Beta
       def multi_match_query
         candidate_query = { size:, query: { bool: {} } }
 
-        candidate_query[:query][:bool][:filter] = filter_part if filters.any?
+        candidate_query[:query][:bool][:filter] = filter_part
         candidate_query[:query][:bool][:must] = must_part if must_part.any?
         candidate_query[:query][:bool][:should] = should_part if should_part.any?
 
@@ -97,11 +97,12 @@ module Beta
       end
 
       def filter_part
-        {
-          bool: {
-            must: Api::Beta::GoodsNomenclatureFilterGeneratorService.new(@filters).call,
-          },
-        }
+        part = { bool: {} }
+
+        part[:bool][:must] = static_and_dynamic_filters
+        part[:bool][:must] << declarable_filter
+
+        part
       end
 
       def must_part
@@ -197,6 +198,14 @@ module Beta
 
       def size
         TradeTariffBackend.beta_search_max_hits
+      end
+
+      def static_and_dynamic_filters
+        Api::Beta::GoodsNomenclatureFilterGeneratorService.new(@filters).call
+      end
+
+      def declarable_filter
+        { "term": { "declarable": true } }
       end
     end
   end

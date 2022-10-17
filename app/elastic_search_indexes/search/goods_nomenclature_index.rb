@@ -181,6 +181,7 @@ module Search
             filter_wine_origin: { type: 'keyword' },
             filter_wine_type: { type: 'keyword' },
             filter_yeast_state: { type: 'keyword' },
+            declarable: { type: 'keyword' },
             description: { enabled: false },
             ancestors: { enabled: false },
             ancestor_ids: { enabled: false },

@@ -1,4 +1,4 @@
-RSpec.describe Beta::Search::FacetClassification do
+RSpec.describe Beta::Search::FacetClassification::Declarable do
   describe '.build' do
     subject(:result) { described_class.build(goods_nomenclature) }
 
@@ -15,14 +15,7 @@ RSpec.describe Beta::Search::FacetClassification do
       }
     end
 
-    it { is_expected.to be_a(described_class) }
+    it { is_expected.to be_a(Beta::Search::FacetClassification) }
     it { expect(result.classifications).to eq(expected_classifications) }
-  end
-
-  describe '.empty' do
-    subject(:empty) { described_class.empty }
-
-    it { is_expected.to be_a(described_class) }
-    it { expect(empty.classifications).to eq({}) }
   end
 end

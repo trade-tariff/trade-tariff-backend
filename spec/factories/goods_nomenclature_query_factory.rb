@@ -5,6 +5,7 @@ FactoryBot.define do
     noun_chunks {}
     nouns {}
     verbs {}
+    filters { {} }
 
     trait :full_query do
       adjectives { %w[tall] }
