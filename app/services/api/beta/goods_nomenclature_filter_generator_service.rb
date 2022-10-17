@@ -32,8 +32,10 @@ module Api
       def dynamic_filter_for(filter, term)
         {
           term: {
-            "filter_#{filter}".to_sym => term,
-            boost: boost_for(filter),
+            "filter_#{filter}".to_sym => {
+              value: term,
+              boost: boost_for(filter),
+            },
           },
         }
       end

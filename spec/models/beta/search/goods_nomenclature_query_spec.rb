@@ -233,8 +233,10 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
                   must: [
                     {
                       term: {
-                        filter_cheese_type: 'fresh',
-                        boost: 1,
+                        filter_cheese_type: {
+                          value: 'fresh',
+                          boost: 1,
+                        },
                       },
                     },
                     {

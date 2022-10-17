@@ -31,8 +31,10 @@ RSpec.describe Api::Beta::GoodsNomenclatureFilterGeneratorService do
         [
           {
             term: {
-              boost: 1,
-              filter_animal_product_state: 'live',
+              filter_animal_product_state: {
+                value: 'live',
+                boost: 1,
+              },
             },
           },
         ]
@@ -52,8 +54,10 @@ RSpec.describe Api::Beta::GoodsNomenclatureFilterGeneratorService do
         [
           {
             term: {
-              boost: 10,
-              filter_entity: 'live animal',
+              filter_entity: {
+                value: 'live animal',
+                boost: 10,
+              },
             },
           },
         ]
