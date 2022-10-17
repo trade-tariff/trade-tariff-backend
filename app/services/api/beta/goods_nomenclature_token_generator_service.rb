@@ -3,7 +3,7 @@ module Api
     # Generates tokens which are classified later to indicate facet categories the current
     # goods nomenclature belongs too.
     #
-    # This includes phrase tokens and word tokens that have been lemmatized and the stop words removed
+    # This includes phrase tokens and word tokens that have been lemmatized and the stop words removed.
     class GoodsNomenclatureTokenGeneratorService
       delegate :lemmatizer, :stop_words, to: TradeTariffBackend
 
@@ -21,7 +21,7 @@ module Api
           all_tokens << phrase if candidate_description.include?(phrase)
         end
 
-        candidate_tokens = candidate_description.split(WHITESPACE)
+        candidate_tokens = candidate_description.split(WHITESPACE).reverse
 
         candidate_tokens.each do |candidate_token|
           candidate_token = candidate_token.gsub(/\W+/, '')

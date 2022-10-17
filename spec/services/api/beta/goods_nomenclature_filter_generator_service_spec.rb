@@ -30,16 +30,11 @@ RSpec.describe Api::Beta::GoodsNomenclatureFilterGeneratorService do
       let(:expected_filters) do
         [
           {
-            terms: {
-              boost: 1,
-              filter_animal_product_state: [
-                'chilled|dried, salted, smoked or in brine|fresh|frozen|live|prepared or preserved',
-                'chilled|dried, salted, smoked or in brine|fresh|frozen|live',
-                'chilled|fresh|frozen|live',
-                'chilled|fresh|live',
-                'fresh|live',
-                'live',
-              ],
+            term: {
+              filter_animal_product_state: {
+                value: 'live',
+                boost: 1,
+              },
             },
           },
         ]
@@ -58,9 +53,11 @@ RSpec.describe Api::Beta::GoodsNomenclatureFilterGeneratorService do
       let(:expected_filters) do
         [
           {
-            terms: {
-              boost: 10,
-              filter_entity: Array,
+            term: {
+              filter_entity: {
+                value: 'live animal',
+                boost: 10,
+              },
             },
           },
         ]

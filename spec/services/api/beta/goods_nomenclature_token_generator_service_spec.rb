@@ -6,7 +6,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureTokenGeneratorService do
       let(:goods_nomenclature) { create(:commodity, :with_description, :stop_words_description) } # Live animals with some stop words
 
       it 'removes the stop words' do
-        expected_tokens = %w[live animal]
+        expected_tokens = %w[animal live]
 
         expect(call).to eq(expected_tokens)
       end
@@ -16,7 +16,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureTokenGeneratorService do
       let(:goods_nomenclature) { create(:commodity, :with_description, :special_chars_description) } # Live#~#? (animals,) $* £' '
 
       it 'removes special characters' do
-        expected_tokens = %w[live animal]
+        expected_tokens = %w[animal live]
 
         expect(call).to eq(expected_tokens)
       end
@@ -26,7 +26,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureTokenGeneratorService do
       let(:goods_nomenclature) { create(:commodity, :with_description, :negated_description) } # Live animals, other than cheese
 
       it 'removes the negated words' do
-        expected_tokens = %w[live animal]
+        expected_tokens = %w[animal live]
 
         expect(call).to eq(expected_tokens)
       end
@@ -36,7 +36,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureTokenGeneratorService do
       let(:goods_nomenclature) { create(:commodity, :with_description, :word_phrase) } # 2 LiTres Or Less
 
       it 'returns the word phrase as a token' do
-        expected_tokens = ['2 litres or less', '2', 'litre']
+        expected_tokens = ['2 litres or less', 'litre', '2']
 
         expect(call).to eq(expected_tokens)
       end

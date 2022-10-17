@@ -30,32 +30,14 @@ module Api
       end
 
       def dynamic_filter_for(filter, term)
-        terms = all_classification_permutations_for(filter, term)
-
         {
-          terms: {
-            "filter_#{filter}".to_sym => terms,
-            boost: boost_for(filter),
+          term: {
+            "filter_#{filter}".to_sym => {
+              value: term,
+              boost: boost_for(filter),
+            },
           },
         }
-      end
-
-      def all_classification_permutations_for(filter, target_classification)
-        classifications = TradeTariffBackend
-          .search_facet_classifier_configuration
-          .facet_classifiers[filter].to_a
-
-        classifications -= [target_classification]
-
-        terms = []
-
-        classifications.length.downto(0) do
-          term = classifications.dup.concat([target_classification]).sort.join('|')
-          terms << term
-          classifications.pop
-        end
-
-        terms
       end
 
       def static_filter?(filter)

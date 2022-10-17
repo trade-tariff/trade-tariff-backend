@@ -124,10 +124,8 @@ module Search
     end
 
     def serializable_classifications
-      facet_classification.classifications.each_with_object({}) do |(facet, classification_values), acc|
-        classification_values = classification_values.sort.join('|')
-
-        acc["filter_#{facet}".to_sym] = classification_values
+      facet_classification.classifications.transform_keys do |facet|
+        "filter_#{facet}".to_sym
       end
     end
 
