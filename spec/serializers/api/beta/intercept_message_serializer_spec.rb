@@ -12,7 +12,7 @@ RSpec.describe Api::Beta::InterceptMessageSerializer do
           attributes: {
             term: 'plasti',
             message: 'Based on your search term, we believe you are looking for plastics which belong in chapter 39.',
-            formatted_message: 'Based on your search term, we believe you are looking for plastics which belong in (chapter 39)[/chapters/39].',
+            formatted_message: 'Based on your search term, we believe you are looking for plastics which belong in [chapter 39](/chapters/39).',
           },
         },
       }
