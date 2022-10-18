@@ -8,6 +8,32 @@ module News
     many_to_many :collections, join_table: :news_collections_news_items,
                                order: :name
 
+    def collection_ids=(ids)
+      @collection_ids = normalise_ids(ids)
+    end
+
+    def collection_ids
+      @collection_ids ||= collections.pluck(:id)
+    end
+
+    def reload
+      @collection_ids = nil
+
+      super
+    end
+
+    def before_validation
+      super
+
+      @collection_ids = normalise_ids(collection_ids)
+    end
+
+    def after_save
+      (collection_ids - collections.pluck(:id)).each(&method(:add_collection))
+      (collections.pluck(:id) - (collection_ids & collections.pluck(:id)))
+        .each(&method(:remove_collection))
+    end
+
     dataset_module do
       def descending
         order(Sequel.desc(:start_date), Sequel.desc(:id))
@@ -34,6 +60,12 @@ module News
         else self
         end
       end
+    end
+
+    private
+
+    def normalise_ids(ids)
+      Array.wrap(ids).map(&:to_i).compact.uniq
     end
   end
 end

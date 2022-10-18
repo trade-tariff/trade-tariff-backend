@@ -53,6 +53,49 @@ RSpec.describe News::Item do
 
       it { is_expected.to eq collections.map(&:id).reverse }
     end
+
+    describe '#collection_ids' do
+      subject { item.collection_ids }
+
+      before do
+        collections.each(&item.method(:add_collection))
+        item.reload
+      end
+
+      let(:item) { create :news_item }
+      let(:collections) { create_pair :news_collection }
+
+      it { is_expected.to match_array collections.map(&:id) }
+
+      context 'with newly assigned ids' do
+        before { item.collection_ids = [999_999] }
+
+        it { is_expected.to match_array [999_999] }
+      end
+
+      context 'with extended ids list' do
+        before { item.collection_ids += [999_999] }
+
+        it { is_expected.to match_array collections.map(&:id) + [999_999] }
+      end
+
+      context 'with appended ids list' do
+        before { item.collection_ids << 999_999 }
+
+        it { is_expected.to match_array collections.map(&:id) + [999_999] }
+      end
+
+      context 'when saving' do
+        let(:another) { create :news_collection }
+
+        before do
+          item.collection_ids = [collections.first.id, another.id]
+          item.save.reload
+        end
+
+        it { is_expected.to match_array [collections.first.id, another.id] }
+      end
+    end
   end
 
   describe 'scopes' do
