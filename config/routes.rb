@@ -112,7 +112,7 @@ Rails.application.routes.draw do
         collection { get :countries }
       end
 
-      resources :preference_codes, only: [:index]
+      resources :preference_codes, only: %i[index show]
 
       resources :monetary_exchange_rates, only: [:index]
 
@@ -135,7 +135,7 @@ Rails.application.routes.draw do
       resources :measure_actions, only: %i[index]
       resources :measure_condition_codes, only: %i[index]
       resources :quota_order_numbers, only: %i[index]
-      resources :measure_types, only: %i[index]
+      resources :measure_types, only: %i[index show]
 
       resources :additional_codes, only: [] do
         collection { get :search }

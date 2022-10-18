@@ -26,4 +26,41 @@ RSpec.describe Api::V2::MeasureTypesController, type: :controller do
       expect(TimeMachine).to have_received(:at).with(Time.zone.today)
     end
   end
+
+  describe 'GET #show' do
+    context 'when records are present' do
+      subject(:do_request) { get :show, params: { id: measure_type.id, format: :json } }
+
+      let(:pattern) do
+        {
+          data: {
+            id: String,
+            type: 'measure_type',
+            attributes: {
+              description: String,
+              measure_type_series_id: String,
+              id: String,
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!,
+        }
+      end
+
+      let(:measure_type) { create(:measure_type, :with_measure_type_series_description) }
+
+      it { expect(do_request.body).to match_json_expression pattern }
+    end
+
+    context 'when records are not present' do
+      subject(:do_request) { get :show, params: { id: 'foo', format: :json } }
+
+      let(:pattern) do
+        {
+          error: 'not found',
+          url: 'http://test.host/measure_types/foo',
+        }
+      end
+
+      it { expect(do_request.body).to match_json_expression pattern }
+    end
+  end
 end
