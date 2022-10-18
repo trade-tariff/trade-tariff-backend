@@ -48,6 +48,8 @@ RSpec.describe Api::V2::MeasureTypesController, type: :controller do
       let(:measure_type) { create(:measure_type, :with_measure_type_series_description) }
 
       it { expect(do_request.body).to match_json_expression pattern }
+
+      it { is_expected.to have_http_status :success }
     end
 
     context 'when records are not present' do
@@ -61,6 +63,8 @@ RSpec.describe Api::V2::MeasureTypesController, type: :controller do
       end
 
       it { expect(do_request.body).to match_json_expression pattern }
+
+      it { is_expected.to have_http_status :not_found }
     end
   end
 end
