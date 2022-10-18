@@ -28,4 +28,23 @@ RSpec.describe News::Collection do
       it { is_expected.to include(name: ['is already taken']) }
     end
   end
+
+  describe 'associations' do
+    describe '#items' do
+      subject { described_class.where(id: collection.id).take.items.pluck(:id) }
+
+      before { items.reverse.each(&collection.method(:add_item)) }
+
+      let(:collection) { create :news_collection }
+
+      let :items do
+        [
+          create(:news_item, start_date: 5.days.ago),
+          create(:news_item, start_date: 3.days.ago),
+        ]
+      end
+
+      it { is_expected.to eq items.map(&:id).reverse }
+    end
+  end
 end

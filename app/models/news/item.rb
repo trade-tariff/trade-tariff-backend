@@ -1,9 +1,12 @@
 module News
   class Item < Sequel::Model(:news_items)
     plugin :timestamps
-    plugin :auto_validations
+    plugin :auto_validations, not_null: :presence
 
     DISPLAY_REGULAR = 0
+
+    many_to_many :collections, join_table: :news_collections_news_items,
+                               order: :name
 
     dataset_module do
       def descending
@@ -31,13 +34,6 @@ module News
         else self
         end
       end
-    end
-
-    def validate
-      super
-
-      validates_presence :title if title
-      validates_presence :content if content
     end
   end
 end

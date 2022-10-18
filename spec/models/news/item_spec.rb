@@ -36,6 +36,25 @@ RSpec.describe News::Item do
     end
   end
 
+  describe 'associations' do
+    describe '#collections' do
+      subject { described_class.where(id: item.id).take.collections.pluck(:id) }
+
+      before { collections.each(&item.method(:add_collection)) }
+
+      let(:item) { create :news_item }
+
+      let :collections do
+        [
+          create(:news_collection, name: 'BBB'),
+          create(:news_collection, name: 'AAA'),
+        ]
+      end
+
+      it { is_expected.to eq collections.map(&:id).reverse }
+    end
+  end
+
   describe 'scopes' do
     describe '.for_service' do
       subject(:results) { described_class.for_service(service_name) }
