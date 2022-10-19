@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::NewsItemsController do
+RSpec.describe Api::Admin::News::ItemsController do
   subject(:page_response) { make_request && response }
 
   let(:json_response) { JSON.parse(page_response.body) }

@@ -47,7 +47,12 @@ Rails.application.routes.draw do
     # avoid admin named routes clashing with public api named routes
     namespace :admin, path: '' do
       if TradeTariffBackend.uk?
-        resources :news_items, only: %i[index show create update destroy]
+        namespace :news do
+          resources :items, only: %i[index show create update destroy]
+        end
+
+        resources :news_items, only: %i[index show create update destroy],
+                               controller: 'news/items'
       end
     end
   end
