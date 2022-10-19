@@ -5,7 +5,7 @@ module Api
         before_action :authenticate_user!
 
         def index
-          render json: serialize(collection.to_a, pagination_meta)
+          render json: serialize(news_items.to_a, pagination_meta)
         end
 
         def show
@@ -65,8 +65,8 @@ module Api
           ])
         end
 
-        def collection
-          @collection ||= ::News::Item.descending.paginate(current_page, per_page)
+        def news_items
+          @news_items ||= ::News::Item.descending.paginate(current_page, per_page)
         end
 
         def pagination_meta
@@ -75,7 +75,7 @@ module Api
               pagination: {
                 page: current_page,
                 per_page:,
-                total_count: @collection.pagination_record_count,
+                total_count: @news_items.pagination_record_count,
               },
             },
           }
