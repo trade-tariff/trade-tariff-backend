@@ -16,31 +16,31 @@ module Beta
 
           roman_section_id = RomanNumerals::Converter.to_roman(section_id)
 
-          "(section #{roman_section_id})[/sections/#{section_id}]#{match[:terminator]}"
+          "[section#{roman_section_id}](/sections/#{section_id})#{match[:terminator]}"
         end,
 
         CHAPTER_REGEX => lambda do |matched_text|
           match = matched_text.match(CHAPTER_REGEX)
 
-          "(#{matched_text[0..-2]})[/chapters/#{match[:code].rjust(2, '0')}]#{match[:terminator]}"
+          "[#{matched_text[0..-2]}](/chapters/#{match[:code].rjust(2, '0')})#{match[:terminator]}"
         end,
 
         HEADING_REGEX => lambda do |matched_text|
           match = matched_text.match(HEADING_REGEX)
 
-          "(#{matched_text[0..-2]})[/headings/#{match[:code]}]#{match[:terminator]}"
+          "[#{matched_text[0..-2]}](/headings/#{match[:code]})#{match[:terminator]}"
         end,
 
         SUBHEADING_REGEX => lambda do |matched_text|
           match = matched_text.match(SUBHEADING_REGEX)
 
-          "(#{matched_text[0..-2]})[/subheadings/#{match[:code].ljust(10, '0')}-80]#{match[:terminator]}"
+          "[#{matched_text[0..-2]}](/subheadings/#{match[:code].ljust(10, '0')}-80)#{match[:terminator]}"
         end,
 
         COMMODITY_REGEX => lambda do |matched_text|
           match = matched_text.match(COMMODITY_REGEX)
 
-          "(#{matched_text[0..-2]})[/commodities/#{match[:code]}]#{match[:terminator]}"
+          "[#{matched_text[0..-2]}](/commodities/#{match[:code]})#{match[:terminator]}"
         end,
       }.freeze
 

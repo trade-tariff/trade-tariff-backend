@@ -23,7 +23,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       subject(:formatted_message) { build(:intercept_message, :with_mixture_of_goods_nomenclature_to_transform).formatted_message }
 
       let(:expected_message) do
-        '(chapter 1)[/chapters/01], (heading 0101)[/headings/0101], (subheading 012012)[/subheadings/0120120000-80] and (commodity 0702000007)[/commodities/0702000007].'
+        '[chapter 1](/chapters/01), [heading 0101](/headings/0101), [subheading 012012](/subheadings/0120120000-80) and [commodity 0702000007](/commodities/0702000007).'
       end
 
       it { is_expected.to eq(expected_message) }
@@ -33,7 +33,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       subject(:formatted_message) { build(:intercept_message, :with_chapters_to_transform).formatted_message }
 
       let(:expected_message) do
-        'This should point to (ChaPter 99)[/chapters/99] and (chapters 32)[/chapters/32] and (chapters 1)[/chapters/01] but not chapter 19812321 but for (chapter 9)[/chapters/09].'
+        'This should point to [ChaPter 99](/chapters/99) and [chapters 32](/chapters/32) and [chapters 1](/chapters/01) but not chapter 19812321 but for [chapter 9](/chapters/09).'
       end
 
       it { is_expected.to eq(expected_message) }
@@ -43,7 +43,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       subject(:formatted_message) { build(:intercept_message, :with_headings_to_transform).formatted_message }
 
       let(:expected_message) do
-        'This should point to (hEadIngs 0101)[/headings/0101] and (heading 0102)[/headings/0102] but not heading 2 or heading 012012 but for (heading 0105)[/headings/0105].'
+        'This should point to [hEadIngs 0101](/headings/0101) and [heading 0102](/headings/0102) but not heading 2 or heading 012012 but for [heading 0105](/headings/0105).'
       end
 
       it { is_expected.to eq(expected_message) }
@@ -53,7 +53,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       subject(:formatted_message) { build(:intercept_message, :with_subheadings_to_transform).formatted_message }
 
       let(:expected_message) do
-        'This should point to (subheadiNg 010511)[/subheadings/0105110000-80] and (subheadings 01051191)[/subheadings/0105119100-80] and never change subheading 1231 or subheading 1231312312 but for (subheading 010512)[/subheadings/0105120000-80].'
+        'This should point to [subheadiNg 010511](/subheadings/0105110000-80) and [subheadings 01051191](/subheadings/0105119100-80) and never change subheading 1231 or subheading 1231312312 but for [subheading 010512](/subheadings/0105120000-80).'
       end
 
       it { is_expected.to eq(expected_message) }
@@ -63,7 +63,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       subject(:formatted_message) { build(:intercept_message, :with_commodities_to_transform).formatted_message }
 
       let(:expected_message) do
-        'This should point to (coMmodities 0105110000)[/commodities/0105110000] and cOmmodity 01051191 and never change commodity 1 or commodity 13112313123123 but for (commodity 0101210001)[/commodities/0101210001].'
+        'This should point to [coMmodities 0105110000](/commodities/0105110000) and cOmmodity 01051191 and never change commodity 1 or commodity 13112313123123 but for [commodity 0101210001](/commodities/0101210001).'
       end
 
       it { is_expected.to eq(expected_message) }
@@ -78,12 +78,10 @@ RSpec.describe Beta::Search::InterceptMessage do
     end
 
     context 'when there are sections to generate links for' do
-      subject(:formatted_message) do
-        build(:intercept_message, :with_section_to_transform).formatted_message
-      end
+      subject(:formatted_message) { build(:intercept_message, :with_section_to_transform).formatted_message }
 
       let(:expected_message) do
-        'Based on your search term, we believe you are looking for (section XV)[/sections/15], (section XIV)[/sections/14] and (section III)[/sections/3] depending on the constituent material.'
+        'Based on your search term, we believe you are looking for [sectionXV](/sections/15), [sectionXIV](/sections/14) and [sectionIII](/sections/3) depending on the constituent material.'
       end
 
       it { is_expected.to eq(expected_message) }
