@@ -15,7 +15,7 @@ module Api
         end
 
         def create
-          news_item = ::News::Item.new(news_item_params[:attributes])
+          news_item = ::News::Item.new(news_item_params)
 
           if news_item.valid? && news_item.save
             render json: serialize(news_item),
@@ -29,7 +29,7 @@ module Api
 
         def update
           news_item = ::News::Item.with_pk!(params[:id])
-          news_item.set news_item_params[:attributes]
+          news_item.set news_item_params
 
           if news_item.valid? && news_item.save
             render json: serialize(news_item),
@@ -51,18 +51,18 @@ module Api
         private
 
         def news_item_params
-          params.require(:data).permit(:type, attributes: %i[
-            start_date
-            end_date
-            title
-            content
-            show_on_xi
-            show_on_uk
-            show_on_updates_page
-            show_on_home_page
-            show_on_banner
-            display_style
-          ])
+          params.require(:data).require(:attributes).permit(
+            :start_date,
+            :end_date,
+            :title,
+            :content,
+            :show_on_xi,
+            :show_on_uk,
+            :show_on_updates_page,
+            :show_on_home_page,
+            :show_on_banner,
+            :display_style,
+          )
         end
 
         def news_items
