@@ -23,6 +23,7 @@ RSpec.describe Api::Beta::AncestorSerializer do
             producline_suffix: '80',
             description: 'LIVE ANIMALS',
             description_indexed: 'LIVE ANIMALS',
+            goods_nomenclature_class: 'Chapter',
           },
         },
       }
