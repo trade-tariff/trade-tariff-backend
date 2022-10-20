@@ -1,7 +1,11 @@
-RSpec.shared_examples 'a successful jsonapi response' do
+RSpec.shared_examples 'a successful jsonapi response' do |data_length|
   it { is_expected.to have_http_status :success }
   it { is_expected.to have_attributes media_type: /json/ }
   it { expect(JSON.parse(subject.body)).to include 'data' }
+
+  unless data_length.nil?
+    it { expect(JSON.parse(subject.body)['data']).to have_attributes length: data_length }
+  end
 end
 
 RSpec.shared_examples 'a successful csv response' do

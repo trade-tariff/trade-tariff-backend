@@ -1,4 +1,8 @@
 FactoryBot.define do
+  factory :news_collection, class: 'News::Collection' do
+    sequence(:name) { |n| "News Collection #{n}" }
+  end
+
   factory :news_item, class: 'News::Item' do
     start_date { 1.day.ago }
     sequence(:title) { |n| "News item #{n}" }

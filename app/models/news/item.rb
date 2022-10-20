@@ -1,9 +1,38 @@
 module News
   class Item < Sequel::Model(:news_items)
     plugin :timestamps
-    plugin :auto_validations
+    plugin :auto_validations, not_null: :presence
 
     DISPLAY_REGULAR = 0
+
+    many_to_many :collections, join_table: :news_collections_news_items,
+                               order: :name
+
+    def collection_ids=(ids)
+      @collection_ids = normalise_ids(ids)
+    end
+
+    def collection_ids
+      @collection_ids ||= collections.pluck(:id)
+    end
+
+    def reload
+      @collection_ids = nil
+
+      super
+    end
+
+    def before_validation
+      super
+
+      @collection_ids = normalise_ids(collection_ids)
+    end
+
+    def after_save
+      (collection_ids - collections.pluck(:id)).each(&method(:add_collection))
+      (collections.pluck(:id) - (collection_ids & collections.pluck(:id)))
+        .each(&method(:remove_collection))
+    end
 
     dataset_module do
       def descending
@@ -33,11 +62,10 @@ module News
       end
     end
 
-    def validate
-      super
+    private
 
-      validates_presence :title if title
-      validates_presence :content if content
+    def normalise_ids(ids)
+      Array.wrap(ids).map(&:to_i).compact.uniq
     end
   end
 end
