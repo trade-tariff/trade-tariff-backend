@@ -15,18 +15,6 @@ module TradeTariffBackend
                 :search_operation_options,
                 :namespace
 
-    class << self
-      def update_server_config
-        Elasticsearch::Client.new
-                             .cluster
-                             .put_settings(body: config_for_server.to_json)
-      end
-
-      def config_for_server
-        YAML.load_file SEARCH_SERVER_CONFIG_FILE
-      end
-    end
-
     def initialize(search_client, options = {})
       @indexes = options.fetch(:indexes, [])
       @index_page_size = options.fetch(:index_page_size, 1000)
