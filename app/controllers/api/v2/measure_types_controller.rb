@@ -6,6 +6,14 @@ module Api
 
         render json: Api::V2::Measures::MeasureTypeSerializer.new(@measure_types).serializable_hash
       end
+
+      def show
+        measure_type = MeasureType.where(measure_type_id: params[:id]).take
+
+        serializer = Api::V2::Measures::MeasureTypeSerializer.new(measure_type)
+
+        render json: serializer.serializable_hash
+      end
     end
   end
 end
