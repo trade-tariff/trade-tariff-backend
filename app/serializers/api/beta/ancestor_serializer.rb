@@ -9,6 +9,7 @@ module Api
                  :producline_suffix,
                  :description,
                  :description_indexed,
+                 :formatted_description,
                  :goods_nomenclature_class
     end
   end

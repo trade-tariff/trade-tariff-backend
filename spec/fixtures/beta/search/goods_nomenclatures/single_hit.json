@@ -29,6 +29,7 @@
           "description": "Other",
           "description_indexed": "Other",
           "search_references": "ricotta, mascarpone",
+          "declarable": true,
           "ancestors": [
             {
               "id": 29417,
@@ -36,7 +37,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
-              "description_indexed": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED"
+              "description_indexed": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
+              "formatted_description": "Dairy produce; birds' eggs; natural honey; edible products of animal origin, not elsewhere specified or included"
             },
             {
               "id": 29719,
@@ -44,7 +46,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Cheese and curd",
-              "description_indexed": "Cheese and curd"
+              "description_indexed": "Cheese and curd",
+              "formatted_description": "Cheese and curd"
             },
             {
               "id": 29720,
@@ -52,7 +55,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
-              "description_indexed": "Fresh (unripened or uncured) cheese, including whey cheese, and curd"
+              "description_indexed": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
+              "formatted_description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd"
             },
             {
               "id": 98904,
@@ -60,7 +64,8 @@
               "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Of a fat content, by weight, not exceeding 40 %",
-              "description_indexed": "Of a fat content, by weight"
+              "description_indexed": "Of a fat content, by weight",
+              "formatted_description": "Of a fat content, by weight, not exceeding 40 %"
             },
             {
               "id": 98906,
@@ -68,7 +73,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
-              "description_indexed": "Other"
+              "description_indexed": "Other",
+              "formatted_description": "Other"
             }
           ],
           "validity_start_date": "2015-01-01T00:00:00Z",

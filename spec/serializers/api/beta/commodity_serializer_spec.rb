@@ -1,6 +1,6 @@
 RSpec.describe Api::Beta::CommoditySerializer do
   describe '#serializable_hash' do
-    subject(:serializable_hash) { described_class.new(serializable, include: %w[ancestors]).serializable_hash }
+    subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) do
       Hashie::TariffMash.new(
@@ -17,6 +17,7 @@ RSpec.describe Api::Beta::CommoditySerializer do
           chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
           heading_description: 'Wool, not carded or combed',
           search_references: '',
+          declarable: true,
           ancestors: [
             {
               id: 40_952,
@@ -67,8 +68,7 @@ RSpec.describe Api::Beta::CommoditySerializer do
             search_references: '',
             validity_start_date: '1972-01-01T00:00:00Z',
             validity_end_date: nil,
-            end_line: nil,
-            declarable?: false,
+            declarable: true,
             chapter_id: '51',
             score: 10.231,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
@@ -85,23 +85,6 @@ RSpec.describe Api::Beta::CommoditySerializer do
             },
           },
         },
-        included: [
-          {
-            id: '40952',
-            type: :ancestor,
-            attributes: { goods_nomenclature_item_id: '5100000000', producline_suffix: nil, description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC', description_indexed: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC' },
-          },
-          {
-            id: '40953',
-            type: :ancestor,
-            attributes: { goods_nomenclature_item_id: '5101000000', producline_suffix: nil, description: 'Wool, not carded or combed', description_indexed: 'Wool' },
-          },
-          {
-            id: '40954',
-            type: :ancestor,
-            attributes: { goods_nomenclature_item_id: '5101110000', producline_suffix: nil, description: 'Greasy, including fleece-washed wool', description_indexed: 'Greasy, including fleece-washed wool' },
-          },
-        ],
       }
     end
 

@@ -1,6 +1,6 @@
 RSpec.describe Api::Beta::HeadingSerializer do
   describe '#serializable_hash' do
-    subject(:serializable_hash) { described_class.new(serializable, include: %w[ancestors guides]).serializable_hash }
+    subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) do
       Hashie::TariffMash.new(
@@ -39,6 +39,7 @@ RSpec.describe Api::Beta::HeadingSerializer do
         guide_ids: [1],
         validity_start_date: '1972-01-01T00:00:00Z',
         validity_end_date: nil,
+        declarable: false,
       )
     end
 
@@ -55,8 +56,7 @@ RSpec.describe Api::Beta::HeadingSerializer do
             search_references: '',
             validity_start_date: '1972-01-01T00:00:00Z',
             validity_end_date: nil,
-            end_line: nil,
-            declarable?: false,
+            declarable: false,
             chapter_id: '51',
             score: 10.24,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
@@ -66,28 +66,6 @@ RSpec.describe Api::Beta::HeadingSerializer do
             guides: { data: [{ id: '1', type: :guide }] },
           },
         },
-        included: [
-          {
-            id: '40952',
-            type: :ancestor,
-            attributes: {
-              goods_nomenclature_item_id: '5100000000',
-              producline_suffix: nil,
-              description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
-              description_indexed: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
-            },
-          },
-          {
-            attributes: {
-              image: 'aircraft.png',
-              strapline: 'Get help to classify drones and aircraft parts for import and export.',
-              title: 'Aircraft parts',
-              url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories',
-            },
-            id: '1',
-            type: :guide,
-          },
-        ],
       }
     end
 

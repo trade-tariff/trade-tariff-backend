@@ -1,6 +1,6 @@
 RSpec.describe Api::Beta::ChapterSerializer do
   describe '#serializable_hash' do
-    subject(:serializable_hash) { described_class.new(serializable, include: %w[guides]).serializable_hash }
+    subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) do
       Hashie::TariffMash.new(
@@ -31,6 +31,7 @@ RSpec.describe Api::Beta::ChapterSerializer do
             },
           ],
           guide_ids: [1],
+          declarable: false,
         },
       )
     end
@@ -48,8 +49,7 @@ RSpec.describe Api::Beta::ChapterSerializer do
             search_references: '',
             validity_start_date: '1971-12-31T00:00:00Z',
             validity_end_date: nil,
-            end_line: nil,
-            declarable?: false,
+            declarable: false,
             chapter_id: '52',
             score: 10.231,
           },
@@ -62,18 +62,6 @@ RSpec.describe Api::Beta::ChapterSerializer do
             },
           },
         },
-        included: [
-          {
-            attributes: {
-              image: 'aircraft.png',
-              strapline: 'Get help to classify drones and aircraft parts for import and export.',
-              title: 'Aircraft parts',
-              url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories',
-            },
-            id: '1',
-            type: :guide,
-          },
-        ],
       }
     end
 
