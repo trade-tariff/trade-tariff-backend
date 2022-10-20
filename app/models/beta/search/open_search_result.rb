@@ -47,6 +47,7 @@ module Beta
           hit.producline_suffix = hit_result._source.producline_suffix
           hit.description = hit_result._source.description
           hit.description_indexed = hit_result._source.description_indexed
+          hit.declarable = hit_result._source.declarable
 
           case hit.goods_nomenclature_class
           when 'Chapter'

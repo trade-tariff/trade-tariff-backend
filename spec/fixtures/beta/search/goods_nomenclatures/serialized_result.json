@@ -133,7 +133,7 @@
         "validity_end_date": null,
         "chapter_id": "04",
         "score": 74.98428,
-        "declarable": null,
+        "declarable": true,
         "chapter_description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
         "heading_description": "Cheese and curd",
         "heading_id": "0406"
