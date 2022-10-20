@@ -4,6 +4,7 @@ module News
     plugin :auto_validations, not_null: :presence
 
     DISPLAY_REGULAR = 0
+    MAX_SLUG_LENGTH = 254
 
     many_to_many :collections, join_table: :news_collections_news_items,
                                order: :name
@@ -26,12 +27,19 @@ module News
       super
 
       @collection_ids = normalise_ids(collection_ids)
+      generate_or_normalise_slug!
     end
 
     def after_save
       (collection_ids - collections.pluck(:id)).each(&method(:add_collection))
       (collections.pluck(:id) - (collection_ids & collections.pluck(:id)))
         .each(&method(:remove_collection))
+    end
+
+    def validate
+      super
+
+      validates_presence :slug
     end
 
     dataset_module do
@@ -66,6 +74,18 @@ module News
 
     def normalise_ids(ids)
       Array.wrap(ids).map(&:to_i).compact.uniq
+    end
+
+    def generate_or_normalise_slug!
+      current_slug = slug.presence || title.presence
+      return unless current_slug
+
+      normalised_slug = normalise_slug(slug.presence || title)
+      self.slug = normalised_slug if slug != normalised_slug
+    end
+
+    def normalise_slug(slug)
+      slug.downcase.gsub(/\s+/, '-').gsub(/[^a-z0-9-]/, '').first(MAX_SLUG_LENGTH)
     end
   end
 end
