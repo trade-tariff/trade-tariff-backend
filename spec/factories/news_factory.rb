@@ -42,5 +42,19 @@ FactoryBot.define do
     trait :banner do
       show_on_banner { true }
     end
+
+    trait :with_collections do
+      transient do
+        collection_count { 1 }
+      end
+
+      after :create do |item, evaluator|
+        evaluator.collection_count.times do
+          item.add_collection create(:news_collection)
+        end
+
+        item.reload
+      end
+    end
   end
 end

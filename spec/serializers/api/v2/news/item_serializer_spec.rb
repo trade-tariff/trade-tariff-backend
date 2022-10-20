@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::News::ItemSerializer do
   subject(:serializable) { described_class.new(news_item).serializable_hash }
 
-  let(:news_item) { create :news_item }
+  let(:news_item) { create :news_item, :with_collections, collection_count: 2 }
 
   let :expected do
     {
@@ -10,7 +10,9 @@ RSpec.describe Api::V2::News::ItemSerializer do
         type: :news_item,
         attributes: {
           id: news_item.id,
+          slug: news_item.slug,
           title: news_item.title,
+          precis: news_item.precis,
           content: news_item.content,
           display_style: news_item.display_style,
           show_on_xi: news_item.show_on_xi,
@@ -22,6 +24,20 @@ RSpec.describe Api::V2::News::ItemSerializer do
           end_date: news_item.end_date,
           created_at: news_item.created_at,
           updated_at: news_item.updated_at,
+        },
+        relationships: {
+          collections: {
+            data: [
+              {
+                id: news_item.collection_ids.first.to_s,
+                type: :news_collection,
+              },
+              {
+                id: news_item.collection_ids.second.to_s,
+                type: :news_collection,
+              },
+            ],
+          },
         },
       },
     }
