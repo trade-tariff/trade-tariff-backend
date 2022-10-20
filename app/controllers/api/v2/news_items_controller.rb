@@ -2,13 +2,14 @@ module Api
   module V2
     class NewsItemsController < ApiController
       def index
-        news_items = ::News::Item.for_service(params[:service])
-                             .for_target(params[:target])
-                             .for_today
-                             .paginate(current_page, per_page)
-                             .descending
+        news_items = ::News::Item.eager(:collections)
+                                 .for_service(params[:service])
+                                 .for_target(params[:target])
+                                 .for_today
+                                 .descending
+                                 .paginate(current_page, per_page)
 
-        serializer = Api::V2::News::ItemSerializer.new(news_items)
+        serializer = Api::V2::News::ItemSerializer.new(news_items, include: %w[collections])
 
         render json: serializer.serializable_hash
       end
