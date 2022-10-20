@@ -10,8 +10,6 @@
 class TaricImporter
   class RecordProcessor
     class Record
-      include TaricImporter::Helpers::StringHelper
-
       # Entity class, e.g. Measure
       attr_accessor :klass
 
@@ -26,7 +24,7 @@ class TaricImporter
 
       def initialize(record_hash)
         self.transaction_id = record_hash['transaction_id']
-        self.klass = fast_classify(record_hash.keys.last).constantize
+        self.klass = record_hash.keys.last.classify.constantize
         self.primary_key = [klass.primary_key].flatten.map(&:to_s)
         self.attributes = record_hash.values.last
       end

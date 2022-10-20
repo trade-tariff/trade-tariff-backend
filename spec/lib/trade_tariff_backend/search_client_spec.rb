@@ -24,31 +24,6 @@ RSpec.describe TradeTariffBackend::SearchClient do
     it { is_expected.to be_instance_of Hash }
   end
 
-  describe '.configuration_for_server' do
-    subject { described_class.config_for_server['persistent'] }
-
-    it { is_expected.to include 'action.auto_create_index' => false }
-  end
-
-  describe '.update_server_config' do
-    before do
-      stub_request(:put, "#{elasticsearch_url}/_cluster/settings")
-        .to_return(status: 200)
-
-      described_class.update_server_config
-    end
-
-    let(:elasticsearch_url) do
-      ENV.fetch('ELASTICSEARCH_URL', 'http://localhost:9200')
-    end
-
-    it 'PUTs the config onto the server' do
-      expect(WebMock).to \
-        have_requested(:put, "#{elasticsearch_url}/_cluster/settings")
-          .with(body: described_class.config_for_server.to_json)
-    end
-  end
-
   describe '#search' do
     let(:commodity) do
       create(:commodity, :with_description, description: 'test description')
@@ -77,23 +52,6 @@ RSpec.describe TradeTariffBackend::SearchClient do
 
       it 'returns results wrapped in Hashie::Mash structure' do
         expect(search_result).to be_kind_of Hashie::Mash
-      end
-    end
-
-    context 'for newly defined index' do
-      subject(:index_exists) do
-        TradeTariffBackend.search_client.indices.exists index: index.name
-      end
-
-      before do
-        TradeTariffBackend.search_client.drop_index index
-        create :commodity, :with_description
-      end
-
-      after { TradeTariffBackend.search_client.create_index index }
-
-      it 'does not create the index' do
-        expect(index_exists).to be false
       end
     end
   end
