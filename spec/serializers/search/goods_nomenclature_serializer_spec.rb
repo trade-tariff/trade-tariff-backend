@@ -20,6 +20,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
             {
               description: 'Live horses, asses, mules and hinnies',
               description_indexed: 'Live horses, asses, mules and hinnies',
+              formatted_description: 'Live horses, asses, mules and hinnies',
               goods_nomenclature_class: 'Chapter',
               goods_nomenclature_item_id: '0100000000',
               id: 1,
@@ -28,6 +29,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
             {
               description: 'Live animals',
               description_indexed: 'Live animals',
+              formatted_description: 'Live animals',
               goods_nomenclature_class: 'Heading',
               goods_nomenclature_item_id: '0101000000',
               id: 2,

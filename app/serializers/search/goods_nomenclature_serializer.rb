@@ -86,6 +86,7 @@ module Search
           goods_nomenclature_class: goods_nomenclature_class(ancestor),
           description: ancestor.description,
           description_indexed: ancestor.description_indexed,
+          formatted_description: ancestor.formatted_description,
         }
       end
     end

@@ -10,6 +10,7 @@ RSpec.describe Api::Beta::AncestorSerializer do
         goods_nomenclature_class: 'Chapter',
         description: 'LIVE ANIMALS',
         description_indexed: 'LIVE ANIMALS',
+        formatted_description: 'Live Animals',
       )
     end
 
@@ -23,6 +24,8 @@ RSpec.describe Api::Beta::AncestorSerializer do
             producline_suffix: '80',
             description: 'LIVE ANIMALS',
             description_indexed: 'LIVE ANIMALS',
+            formatted_description: 'Live Animals',
+            goods_nomenclature_class: 'Chapter',
           },
         },
       }

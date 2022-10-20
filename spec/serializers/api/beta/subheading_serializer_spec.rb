@@ -1,6 +1,6 @@
 RSpec.describe Api::Beta::SubheadingSerializer do
   describe '#serializable_hash' do
-    subject(:serializable_hash) { described_class.new(serializable, include: %w[ancestors]).serializable_hash }
+    subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) do
       Hashie::TariffMash.new(
@@ -15,6 +15,7 @@ RSpec.describe Api::Beta::SubheadingSerializer do
         chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
         heading_description: 'Fine or coarse animal hair, not carded or combed',
         search_references: '',
+        declarable: false,
         ancestors: [
           {
             id: 40_952,
@@ -57,8 +58,7 @@ RSpec.describe Api::Beta::SubheadingSerializer do
             validity_end_date: nil,
             chapter_id: '51',
             score: nil,
-            end_line: nil,
-            declarable?: false,
+            declarable: false,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
             heading_id: '5102',
             heading_description: 'Fine or coarse animal hair, not carded or combed',
@@ -72,18 +72,6 @@ RSpec.describe Api::Beta::SubheadingSerializer do
             },
           },
         },
-        included: [
-          {
-            id: '40952',
-            type: :ancestor,
-            attributes: { goods_nomenclature_item_id: '5100000000', producline_suffix: nil, description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC', description_indexed: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC' },
-          },
-          {
-            id: '40961',
-            type: :ancestor,
-            attributes: { goods_nomenclature_item_id: '5102000000', producline_suffix: nil, description: 'Fine or coarse animal hair, not carded or combed', description_indexed: 'Fine or coarse animal hair' },
-          },
-        ],
       }
     end
 
