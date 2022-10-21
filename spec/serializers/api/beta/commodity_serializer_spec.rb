@@ -63,26 +63,21 @@ RSpec.describe Api::Beta::CommoditySerializer do
           attributes: {
             goods_nomenclature_item_id: '5101190000',
             producline_suffix: '80',
+            formatted_description: nil,
             description: 'Other',
             description_indexed: 'Other',
             search_references: '',
             validity_start_date: '1972-01-01T00:00:00Z',
             validity_end_date: nil,
-            declarable: true,
             chapter_id: '51',
             score: 10.231,
+            declarable: true,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
             heading_description: 'Wool, not carded or combed',
             heading_id: '5101',
           },
           relationships: {
-            ancestors: {
-              data: [
-                { id: '40952', type: :ancestor },
-                { id: '40953', type: :ancestor },
-                { id: '40954', type: :ancestor },
-              ],
-            },
+            ancestors: { data: [{ id: '40952', type: :chapter }, { id: '40953', type: :heading }, { id: '40954', type: :subheading }] },
           },
         },
       }

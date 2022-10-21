@@ -51,6 +51,7 @@ RSpec.describe Api::Beta::SubheadingSerializer do
           attributes: {
             goods_nomenclature_item_id: '5102110000',
             producline_suffix: '10',
+            formatted_description: nil,
             description: 'Fine animal hair',
             description_indexed: 'Fine animal hair',
             search_references: '',
@@ -60,16 +61,11 @@ RSpec.describe Api::Beta::SubheadingSerializer do
             score: nil,
             declarable: false,
             chapter_description: 'WOOL, FINE OR COARSE ANIMAL HAIR; HORSEHAIR YARN AND WOVEN FABRIC',
-            heading_id: '5102',
             heading_description: 'Fine or coarse animal hair, not carded or combed',
+            heading_id: '5102',
           },
           relationships: {
-            ancestors: {
-              data: [
-                { id: '40952', type: :ancestor },
-                { id: '40961', type: :ancestor },
-              ],
-            },
+            ancestors: { data: [{ id: '40952', type: :chapter }, { id: '40961', type: :heading }] },
           },
         },
       }

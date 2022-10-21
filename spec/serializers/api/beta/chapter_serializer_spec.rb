@@ -44,22 +44,18 @@ RSpec.describe Api::Beta::ChapterSerializer do
           attributes: {
             goods_nomenclature_item_id: '5200000000',
             producline_suffix: '80',
+            formatted_description: nil,
             description: 'COTTON',
             description_indexed: 'COTTON',
             search_references: '',
             validity_start_date: '1971-12-31T00:00:00Z',
             validity_end_date: nil,
-            declarable: false,
             chapter_id: '52',
             score: 10.231,
+            declarable: false,
           },
           relationships: {
-            ancestors: { data: [] },
-            guides: {
-              data: [
-                { id: '1', type: :guide },
-              ],
-            },
+            ancestors: { data: [] }, guides: { data: [{ id: '1', type: :guide }] }
           },
         },
       }
