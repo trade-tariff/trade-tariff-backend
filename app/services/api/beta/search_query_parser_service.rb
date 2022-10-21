@@ -3,15 +3,16 @@ module Api
     class SearchQueryParserService
       delegate :client, to: :class
 
-      def initialize(original_search_query)
+      def initialize(original_search_query, spell)
         @original_search_query = original_search_query
+        @spell = spell
       end
 
       def call
         if null_result?
-          ::Beta::Search::SearchQueryParserResult::Null.build('original_search_query' => @original_search_query)
+          ::Beta::Search::SearchQueryParserResult::Null.build('original_search_query' => original_search_query)
         else
-          result_attributes = client.get('tokens', q: @original_search_query).body
+          result_attributes = client.get('tokens', q: original_search_query, spell:).body
 
           ::Beta::Search::SearchQueryParserResult::Standard.build(result_attributes)
         end
@@ -26,8 +27,10 @@ module Api
 
       private
 
+      attr_reader :original_search_query, :spell
+
       def null_result?
-        @original_search_query.blank? || AggregatedSynonym.exists?(@original_search_query)
+        original_search_query.blank? || AggregatedSynonym.exists?(@original_search_query)
       end
     end
   end

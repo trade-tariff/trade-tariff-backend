@@ -2,28 +2,28 @@ RSpec.describe Api::Beta::SearchQueryParserService do
   let(:search_query_parser_service_url) { 'http://localhost:5000/api/search' }
 
   describe '#call' do
-    subject(:result) { described_class.new('aaa bbb').call }
-
     context 'when the search query matches a known synonym' do
-      subject(:result) { described_class.new('yakutian laika').call }
+      subject(:result) { described_class.new('yakutian laika', '1').call }
 
       it { expect(result.null_result).to eq(true) }
     end
 
     context 'when the search query is empty' do
-      subject(:result) { described_class.new('').call }
+      subject(:result) { described_class.new('', '1').call }
 
       it { expect(result.null_result).to eq(true) }
     end
 
     context 'when the search query is nil' do
-      subject(:result) { described_class.new(nil).call }
+      subject(:result) { described_class.new(nil, '1').call }
 
       it { expect(result.null_result).to eq(true) }
     end
 
     context 'when the search query parser response is success' do
-      before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb").to_return(response) }
+      subject(:result) { described_class.new('aaa bbb', '1').call }
+
+      before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb&spell=1").to_return(response) }
 
       let(:response) do
         {
@@ -55,7 +55,9 @@ RSpec.describe Api::Beta::SearchQueryParserService do
     end
 
     context 'when the search query parser response is bad request' do
-      before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb").to_return(response) }
+      subject(:result) { described_class.new('aaa bbb', '1').call }
+
+      before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb&spell=1").to_return(response) }
 
       let(:response) { { status: 400 } }
 

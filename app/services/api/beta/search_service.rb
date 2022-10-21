@@ -3,9 +3,9 @@ module Api
     class SearchService
       DEFAULT_SEARCH_INDEX = Search::GoodsNomenclatureIndex.new.name
 
-      def initialize(search_query, search_filters = {})
+      def initialize(search_query, search_params = {})
         @search_query = search_query
-        @search_filters = search_filters
+        @search_params = search_params
       end
 
       def call
@@ -45,11 +45,11 @@ module Api
       end
 
       def generated_search_query
-        @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(search_query_parser_result, @search_filters)
+        @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(search_query_parser_result, @search_params[:filters])
       end
 
       def search_query_parser_result
-        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query).call
+        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, @search_params[:spell]).call
       end
     end
   end
