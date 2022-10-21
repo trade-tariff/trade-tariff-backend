@@ -12,6 +12,7 @@ module Search
         goods_nomenclature_class:,
         description:,
         description_indexed:,
+        formatted_description:,
         search_references:,
         ancestors:,
         validity_start_date:,
@@ -86,7 +87,15 @@ module Search
           goods_nomenclature_class: goods_nomenclature_class(ancestor),
           description: ancestor.description,
           description_indexed: ancestor.description_indexed,
+          validity_start_date: ancestor.validity_start_date,
+          validity_end_date: ancestor.validity_end_date,
+          declarable: false,
+          score: nil,
+          chapter_id: ancestor.chapter_short_code,
+          heading_id: ancestor.heading_short_code,
           formatted_description: ancestor.formatted_description,
+          ancestor_ids: [], # We are not interested in ancestor ancestors
+          ancestors: [], # We are not interested in ancestor ancestors
         }
       end
     end

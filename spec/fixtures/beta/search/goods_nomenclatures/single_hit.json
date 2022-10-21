@@ -1,5 +1,5 @@
 {
-  "took": 1,
+  "took": 0,
   "timed_out": false,
   "_shards": {
     "total": 1,
@@ -12,13 +12,13 @@
       "value": 1,
       "relation": "eq"
     },
-    "max_score": 74.98428,
+    "max_score": 79.16452,
     "hits": [
       {
-        "_index": "tariff-goods_nomenclatures",
+        "_index": "tariff-goods_nomenclatures-uk",
         "_type": "_doc",
         "_id": "98910",
-        "_score": 74.98428,
+        "_score": 79.16452,
         "_source": {
           "id": 98910,
           "goods_nomenclature_item_id": "0406105090",
@@ -28,8 +28,8 @@
           "goods_nomenclature_class": "Commodity",
           "description": "Other",
           "description_indexed": "Other",
+          "formatted_description": "Other",
           "search_references": "ricotta, mascarpone",
-          "declarable": true,
           "ancestors": [
             {
               "id": 29417,
@@ -38,7 +38,19 @@
               "goods_nomenclature_class": "Chapter",
               "description": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
               "description_indexed": "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
-              "formatted_description": "Dairy produce; birds' eggs; natural honey; edible products of animal origin, not elsewhere specified or included"
+              "validity_start_date": "1971-12-31T00:00:00.000Z",
+              "validity_end_date": null,
+              "declarable": false,
+              "score": null,
+              "chapter_id": "04",
+              "heading_id": null,
+              "formatted_description": "Dairy produce; birds' eggs; natural honey; edible products of animal origin, not elsewhere specified or included",
+              "ancestor_ids": [
+
+              ],
+              "ancestors": [
+
+              ]
             },
             {
               "id": 29719,
@@ -47,7 +59,19 @@
               "goods_nomenclature_class": "Heading",
               "description": "Cheese and curd",
               "description_indexed": "Cheese and curd",
-              "formatted_description": "Cheese and curd"
+              "validity_start_date": "1972-01-01T00:00:00.000Z",
+              "validity_end_date": null,
+              "declarable": false,
+              "score": null,
+              "chapter_id": "04",
+              "heading_id": "0406",
+              "formatted_description": "Cheese and curd",
+              "ancestor_ids": [
+
+              ],
+              "ancestors": [
+
+              ]
             },
             {
               "id": 29720,
@@ -56,7 +80,19 @@
               "goods_nomenclature_class": "Subheading",
               "description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
               "description_indexed": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
-              "formatted_description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd"
+              "validity_start_date": "1972-01-01T00:00:00.000Z",
+              "validity_end_date": null,
+              "declarable": false,
+              "score": null,
+              "chapter_id": "04",
+              "heading_id": "0406",
+              "formatted_description": "Fresh (unripened or uncured) cheese, including whey cheese, and curd",
+              "ancestor_ids": [
+
+              ],
+              "ancestors": [
+
+              ]
             },
             {
               "id": 98904,
@@ -65,7 +101,19 @@
               "goods_nomenclature_class": "Subheading",
               "description": "Of a fat content, by weight, not exceeding 40 %",
               "description_indexed": "Of a fat content, by weight",
-              "formatted_description": "Of a fat content, by weight, not exceeding 40 %"
+              "validity_start_date": "2015-01-01T00:00:00.000Z",
+              "validity_end_date": null,
+              "declarable": false,
+              "score": null,
+              "chapter_id": "04",
+              "heading_id": "0406",
+              "formatted_description": "Of a fat content, by weight, not exceeding 40 %",
+              "ancestor_ids": [
+
+              ],
+              "ancestors": [
+
+              ]
             },
             {
               "id": 98906,
@@ -74,7 +122,19 @@
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
               "description_indexed": "Other",
-              "formatted_description": "Other"
+              "validity_start_date": "2015-01-01T00:00:00.000Z",
+              "validity_end_date": null,
+              "declarable": false,
+              "score": null,
+              "chapter_id": "04",
+              "heading_id": "0406",
+              "formatted_description": "Other",
+              "ancestor_ids": [
+
+              ],
+              "ancestors": [
+
+              ]
             }
           ],
           "validity_start_date": "2015-01-01T00:00:00Z",
@@ -98,6 +158,7 @@
           "guide_ids": [
 
           ],
+          "declarable": true,
           "filter_cheese_type": "fresh"
         }
       }

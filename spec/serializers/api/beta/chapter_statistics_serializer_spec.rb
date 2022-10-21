@@ -13,8 +13,8 @@ RSpec.describe Api::Beta::ChapterStatisticsSerializer do
             attributes: {
               description: "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
               cnt: 1,
-              score: 74.98428,
-              avg: 74.98428,
+              score: 79.16452,
+              avg: 79.16452,
             },
           },
         ],
