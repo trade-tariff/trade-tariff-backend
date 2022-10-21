@@ -22,14 +22,18 @@ module Api
       end
 
       def search_result
-        @search_result ||= Beta::SearchService.new(search_query, search_filters).call
+        @search_result ||= Beta::SearchService.new(search_query, search_params).call
       end
 
       def search_query
         params[:q]
       end
 
-      def search_filters
+      def search_params
+        { spell:, filters: }
+      end
+
+      def filters
         (params[:filter].try(:permit, *all_filters) || {}).to_h
       end
 
@@ -43,6 +47,10 @@ module Api
         else
           DEFAULT_INCLUDES
         end
+      end
+
+      def spell
+        params[:spell].presence || '1'
       end
     end
   end

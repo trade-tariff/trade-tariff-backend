@@ -1,7 +1,7 @@
 RSpec.describe Api::Beta::SearchService do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   describe '#call' do
-    subject(:call) { described_class.new(search_query).call }
+    subject(:call) { described_class.new(search_query, filters: {}, spell: '1').call }
 
     context 'when the search query is an empty string' do
       let(:search_query) { '' }
@@ -83,7 +83,7 @@ RSpec.describe Api::Beta::SearchService do
         call
       end
 
-      it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta') }
+      it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta', '1') }
       it { expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args) }
       it { expect(Beta::Search::OpenSearchResult::WithHits).to have_received(:build).with(search_result, search_query_parser_result, goods_nomenclature_query) }
       it { expect(Beta::Search::GoodsNomenclatureQuery).to have_received(:build).with(search_query_parser_result, {}) }
