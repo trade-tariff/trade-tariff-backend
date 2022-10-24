@@ -34,6 +34,7 @@ FactoryBot.define do
           description: 'Live horses, asses, mules and hinnies',
           goods_nomenclature_sid: 1,
           goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(2)}00000000",
+          validity_start_date: '2020-10-21',
         )
 
         heading = create(
@@ -42,6 +43,7 @@ FactoryBot.define do
           description: 'Live animals',
           goods_nomenclature_sid: 2,
           goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
+          validity_start_date: '2020-10-21',
         )
 
         guide = create(:guide, :aircraft_parts)
