@@ -9,6 +9,11 @@ class QuotaOrderNumber < Sequel::Model
   end
 
   dataset_module do
+    def by_order_number(order_number)
+      where(quota_order_number_id: order_number)
+        .actual
+    end
+
     def with_quota_definitions
       inner_join(:quota_definitions, quota_order_numbers__quota_order_number_sid: :quota_definitions__quota_order_number_sid)
         .actual

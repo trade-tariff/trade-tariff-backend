@@ -2,6 +2,8 @@ module Api
   module Admin
     module QuotaOrderNumbers
       class QuotaDefinitionsController < ApiController
+        before_action :authenticate_user!
+
         DEFAULT_INCLUDES = %w[quota_definition.quota_balance_events].freeze
 
         def current

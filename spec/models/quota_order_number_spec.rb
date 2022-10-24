@@ -76,4 +76,12 @@ RSpec.describe QuotaOrderNumber do
 
     it { expect(quota_order_number.method(:quota_definition_id)).to eq(quota_order_number.method(:definition_id)) }
   end
+
+  describe '.by_order_number' do
+    subject(:by_order_number) { described_class.by_order_number(quota_order_number.quota_order_number_id) }
+
+    let(:quota_order_number) { create(:quota_order_number) }
+
+    it { is_expected.to include(quota_order_number) }
+  end
 end
