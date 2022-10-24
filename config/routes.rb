@@ -42,6 +42,12 @@ Rails.application.routes.draw do
           resources :search_references, only: %i[show index destroy create update]
         end
       end
+
+      resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
+        member do
+          get 'quota_definitions/current'
+        end
+      end
     end
 
     # avoid admin named routes clashing with public api named routes

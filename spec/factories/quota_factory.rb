@@ -43,15 +43,22 @@ FactoryBot.define do
     end
 
     trait :with_quota_definition do
+      transient do
+        quota_balance_events { false }
+      end
+
       after(:create) do |quota_order_number, evaluator|
-        result = create(
-          :quota_definition,
+        attributes = {
           quota_order_number_id: quota_order_number.quota_order_number_id,
           quota_order_number_sid: quota_order_number.quota_order_number_sid,
           quota_definition_sid: evaluator.quota_definition_sid,
           validity_end_date: evaluator.quota_definition_validity_end_date,
-        )
-        result
+        }
+        if evaluator.quota_balance_events
+          create(:quota_definition, :with_quota_balance_events)
+        else
+          create(:quota_definition, attributes)
+        end
       end
     end
   end
