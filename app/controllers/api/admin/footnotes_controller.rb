@@ -17,12 +17,15 @@ module Api
 
       def update
         @footnote = Footnote.national.with_pk!(footnote_pk)
-        @footnote.footnote_description.tap do |footnote_description|
-          footnote_description.set(footnote_params[:attributes])
-          footnote_description.save
-        end
 
-        render json: Api::Admin::FootnoteSerializer.new(@footnote, { is_collection: false }).serializable_hash
+        @description = @footnote.footnote_description
+        @description.set(footnote_params[:attributes])
+
+        if @description.save
+          render json: Api::Admin::FootnoteSerializer.new(@footnote, { is_collection: false }).serializable_hash
+        else
+          render json: Api::Admin::ErrorSerializationService.new(@description).call, status: :unprocessable_entity
+        end
       end
 
       private
