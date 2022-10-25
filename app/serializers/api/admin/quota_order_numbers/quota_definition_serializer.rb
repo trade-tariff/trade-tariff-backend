@@ -13,6 +13,8 @@ module Api
                    :initial_volume,
                    :quota_order_number_id
 
+        attribute :measurement_unit, &:formatted_measurement_unit
+
         has_many :quota_balance_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaBalanceEventSerializer
       end
     end
