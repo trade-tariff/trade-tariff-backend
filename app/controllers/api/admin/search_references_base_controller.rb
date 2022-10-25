@@ -36,11 +36,8 @@ module Api
           options[:include] = [:referenced, 'referenced.chapter', 'referenced.chapter.guides', 'referenced.section']
           render json: Api::Admin::SearchReferences::SearchReferenceSerializer.new(@search_reference, options).serializable_hash, status: :created
         else
-          data = { errors: [] }
-          data[:errors] = @search_reference.errors.full_messages.map do |error|
-            { title: error }
-          end
-          render json: data, status: :unprocessable_entity
+          render json: Api::Admin::ErrorSerializationService.new(@search_reference).call,
+                 status: :unprocessable_entity
         end
       end
 
@@ -49,9 +46,13 @@ module Api
         @search_reference.set(
           search_reference_params[:attributes],
         )
-        @search_reference.save
 
-        respond_with @search_reference
+        if @search_reference.save
+          respond_with @search_reference
+        else
+          render json: Api::Admin::ErrorSerializationService.new(@search_reference).call,
+                 status: :unprocessable_entity
+        end
       end
 
       def destroy
@@ -84,7 +85,7 @@ module Api
       end
 
       def search_reference_collection
-        raise ArgumentError.new('#search_reference_collection should be overriden by inheriting classes')
+        raise ArgumentError, '#search_reference_collection should be overriden by inheriting classes'
       end
 
       def search_reference_resource
@@ -92,7 +93,7 @@ module Api
       end
 
       def search_reference_resource_association_hash
-        raise ArgumentError.new('#search_reference_resource_association_hash should be overriden by inheriting classes')
+        raise ArgumentError, '#search_reference_resource_association_hash should be overriden by inheriting classes'
       end
 
       def set_pagination_headers
@@ -101,8 +102,8 @@ module Api
             total: search_reference_collection.count,
             offset: page * per_page,
             page:,
-            per_page:
-          }
+            per_page:,
+          },
         }.to_json
       end
     end
