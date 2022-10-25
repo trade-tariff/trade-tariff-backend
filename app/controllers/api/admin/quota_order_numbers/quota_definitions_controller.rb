@@ -4,23 +4,24 @@ module Api
       class QuotaDefinitionsController < ApiController
         before_action :authenticate_user!
 
-        DEFAULT_INCLUDES = %w[quota_definition.quota_balance_events].freeze
+        DEFAULT_INCLUDES = %w[quota_balance_events].freeze
 
         def current
-          render json: serialized_quota_order_number
+          render json: serialized_quota_definition
         end
 
         private
 
-        def serialized_quota_order_number
-          Api::Admin::QuotaOrderNumbers::QuotaOrderNumberSerializer.new(quota_order_number, serializer_options)
+        def serialized_quota_definition
+          Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer.new(quota_definition, serializer_options)
         end
 
-        def quota_order_number
-          @quota_order_number ||= QuotaOrderNumber
+        def quota_definition
+          @quota_definition ||= QuotaOrderNumber
             .by_order_number(params[:id])
             .eager(quota_definition: :quota_balance_events)
             .take
+            .quota_definition
         end
 
         def serializer_options

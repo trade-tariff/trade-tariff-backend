@@ -10,6 +10,7 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
           id: serializable.quota_definition_sid.to_s,
           type: :quota_definition,
           attributes: {
+            quota_order_number_id: serializable.quota_order_number_id,
             validity_start_date: serializable.validity_start_date.iso8601,
             validity_end_date: nil,
             initial_volume: nil,
