@@ -10,7 +10,8 @@ module Api
 
         attributes :validity_start_date,
                    :validity_end_date,
-                   :initial_volume
+                   :initial_volume,
+                   :quota_order_number_id
 
         has_many :quota_balance_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaBalanceEventSerializer
       end
