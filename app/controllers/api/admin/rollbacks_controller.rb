@@ -15,14 +15,14 @@ module Api
           rollback.save
           render json: Api::Admin::RollbackSerializer.new(rollback, { is_collection: false }).serializable_hash, status: :created, location: api_rollbacks_url
         else
-          render json: Api::V2::ErrorSerializationService.new.serialized_errors(rollback.errors), status: :unprocessable_entity
+          render json: Api::Admin::ErrorSerializationService.new(rollback).call, status: :unprocessable_entity
         end
       end
 
       private
 
       def rollback_params
-        params.require(:data).permit(:type, attributes: [:date, :keep, :reason, :user_id])
+        params.require(:data).permit(:type, attributes: %i[date keep reason user_id])
       end
 
       def collection
@@ -35,9 +35,9 @@ module Api
             pagination: {
               page: current_page,
               per_page:,
-              total_count: @collection.pagination_record_count
-            }
-          }
+              total_count: @collection.pagination_record_count,
+            },
+          },
         }
       end
     end
