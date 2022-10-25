@@ -66,7 +66,9 @@ module Api
         end
 
         def news_items
-          @news_items ||= ::News::Item.descending.paginate(current_page, per_page)
+          @news_items ||= ::News::Item.eager(:collections)
+                                      .descending
+                                      .paginate(current_page, per_page)
         end
 
         def pagination_meta

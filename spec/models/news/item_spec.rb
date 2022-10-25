@@ -34,6 +34,14 @@ RSpec.describe News::Item do
       it { is_expected.to include(title: ['is not present']) }
       it { is_expected.to include(content: ['is not present']) }
     end
+
+    context 'with duplicate slug' do
+      before { create :news_item, slug: 'testing' }
+
+      let(:instance) { described_class.new slug: 'testing' }
+
+      it { is_expected.to include(slug: ['is already taken']) }
+    end
   end
 
   describe 'associations' do
@@ -216,6 +224,35 @@ RSpec.describe News::Item do
       let!(:published_yesterday) { create :news_item, start_date: Time.zone.yesterday }
 
       it { is_expected.to eql [published_today, published_yesterday] }
+    end
+  end
+
+  describe '#slug' do
+    subject { instance.save.reload.slug }
+
+    context 'when assigned' do
+      let(:instance) { build :news_item, slug: 'testing' }
+
+      it { is_expected.to eq 'testing' }
+    end
+
+    context 'when left blank' do
+      let(:instance) { build :news_item, slug: '', title: 'Hello world' }
+
+      it { is_expected.to eq 'hello-world' }
+    end
+
+    context 'with invalid slug' do
+      let(:instance) { create :news_item, slug: 'Something/problematic' }
+
+      it { is_expected.to eq 'somethingproblematic' }
+    end
+
+    context 'with overlong slug' do
+      let(:title) { 'a' * (described_class::MAX_SLUG_LENGTH + 1) }
+      let(:instance) { build :news_item, title: }
+
+      it { is_expected.to eq 'a' * described_class::MAX_SLUG_LENGTH }
     end
   end
 end
