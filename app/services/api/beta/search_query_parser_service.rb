@@ -3,9 +3,10 @@ module Api
     class SearchQueryParserService
       delegate :client, to: :class
 
-      def initialize(original_search_query, spell)
+      def initialize(original_search_query, spell: '1', goods_nomenclature_item_id_match: false)
         @original_search_query = original_search_query
         @spell = spell
+        @goods_nomenclature_item_id_match = goods_nomenclature_item_id_match
       end
 
       def call
@@ -30,7 +31,7 @@ module Api
       attr_reader :original_search_query, :spell
 
       def null_result?
-        original_search_query.blank? || AggregatedSynonym.exists?(@original_search_query)
+        original_search_query.blank? || @goods_nomenclature_item_id_match || AggregatedSynonym.exists?(@original_search_query)
       end
     end
   end

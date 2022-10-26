@@ -2,6 +2,7 @@ module Api
   module Beta
     class SearchService
       DEFAULT_SEARCH_INDEX = Search::GoodsNomenclatureIndex.new.name
+      GOOD_NOMENCLATURE_ITEM_ID_SEARCH = /^(\d+)(-\d{2})?$/
 
       def initialize(search_query, search_params = {})
         @search_query = search_query
@@ -9,7 +10,7 @@ module Api
       end
 
       def call
-        if search_result.numeric? && search_result.hits.count.zero?
+        if goods_nomenclature_item_id_match?
           search_result.redirect!
         end
 
@@ -25,15 +26,15 @@ module Api
       delegate :v2_search_client, to: TradeTariffBackend
 
       def search_result
-        @search_result ||= if @search_query.blank?
-                             ::Beta::Search::OpenSearchResult::NoHits.build(
-                               nil,
+        @search_result ||= if should_search?
+                             ::Beta::Search::OpenSearchResult::WithHits.build(
+                               fetch_result,
                                search_query_parser_result,
                                generated_search_query,
                              )
                            else
-                             ::Beta::Search::OpenSearchResult::WithHits.build(
-                               fetch_result,
+                             ::Beta::Search::OpenSearchResult::NoHits.build(
+                               nil,
                                search_query_parser_result,
                                generated_search_query,
                              )
@@ -49,7 +50,15 @@ module Api
       end
 
       def search_query_parser_result
-        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, @search_params[:spell]).call
+        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, spell: @search_params[:spell], goods_nomenclature_item_id_match: goods_nomenclature_item_id_match?).call
+      end
+
+      def should_search?
+        !(@search_query.blank? || goods_nomenclature_item_id_match?)
+      end
+
+      def goods_nomenclature_item_id_match?
+        @search_query.match?(GOOD_NOMENCLATURE_ITEM_ID_SEARCH)
       end
     end
   end
