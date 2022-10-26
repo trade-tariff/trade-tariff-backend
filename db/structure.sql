@@ -5302,7 +5302,9 @@ CREATE TABLE public.news_items (
     end_date date,
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone,
-    show_on_banner boolean DEFAULT false NOT NULL
+    show_on_banner boolean DEFAULT false NOT NULL,
+    precis text,
+    slug character varying(255)
 );
 
 
@@ -8496,6 +8498,14 @@ ALTER TABLE ONLY public.news_items
 
 
 --
+-- Name: news_items news_items_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.news_items
+    ADD CONSTRAINT news_items_slug_key UNIQUE (slug);
+
+
+--
 -- Name: nomenclature_group_memberships_oplog nomenclature_group_memberships_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -10454,6 +10464,13 @@ CREATE INDEX news_items_show_on_uk_show_on_xi_show_on_updates_page_show_on_h ON 
 
 
 --
+-- Name: news_items_slug_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX news_items_slug_index ON public.news_items USING btree (slug);
+
+
+--
 -- Name: ngmo_nomgromemopl_ureoupipslog_operation_date; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -10996,3 +11013,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20220714165446_create_guid
 INSERT INTO "schema_migrations" ("filename") VALUES ('20220908105343_adds_heading_and_chapter_id_to_goods_nomenclatures_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221017110015_add_news_collections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221017160811_associate_news_items_and_news_collections.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20221020121609_add_precis_and_slug_to_news_items.rb');
