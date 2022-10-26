@@ -83,26 +83,27 @@ RSpec.describe Api::Beta::SearchService do
         call
       end
 
-      it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta', '1') }
+      it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta', spell: '1', goods_nomenclature_item_id_match: false) }
       it { expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args) }
       it { expect(Beta::Search::OpenSearchResult::WithHits).to have_received(:build).with(search_result, search_query_parser_result, goods_nomenclature_query) }
       it { expect(Beta::Search::GoodsNomenclatureQuery).to have_received(:build).with(search_query_parser_result, {}) }
       it { expect(call).to be_a(Beta::Search::OpenSearchResult) }
-
-      context 'when the search result has no hits and the query is numeric' do
-        subject(:call) { described_class.new('0101').call }
-
-        let(:goods_nomenclature_query) { build(:goods_nomenclature_query, :numeric) }
-
-        let(:search_result) do
-          fixture_file = file_fixture('beta/search/goods_nomenclatures/no_hits.json')
-
-          Hashie::TariffMash.new(JSON.parse(fixture_file.read))
-        end
-
-        it { is_expected.to be_redirect }
-      end
     end
+
+    shared_examples_for 'a redirecting search result' do |search_query|
+      subject(:call) { described_class.new(search_query).call }
+
+      it { is_expected.to be_redirect }
+    end
+
+    it_behaves_like 'a redirecting search result', '01' # Chapter
+    it_behaves_like 'a redirecting search result', '0101' # Heading
+    it_behaves_like 'a redirecting search result', '010129' # Subheading
+    it_behaves_like 'a redirecting search result', '01012960' # Subheading
+    it_behaves_like 'a redirecting search result', '0101210000' # Commodity
+    it_behaves_like 'a redirecting search result', '0101210000-80' # Subheading
+    it_behaves_like 'a redirecting search result', '0101210000380' # Heading
+    it_behaves_like 'a redirecting search result', '010121000038123' # Heading
   end
   # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

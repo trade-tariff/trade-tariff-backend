@@ -178,8 +178,19 @@ module Beta
                           '/chapters/:id'
                         when 4
                           '/headings/:id'
+                        when 6
+                          '/subheadings/:id0000-80'
+                        when 8
+                          '/subheadings/:id00-80'
                         when 10
                           '/commodities/:id'
+                        when 13
+                          if short_code.match?(/\d{10}-\d{2}/)
+                            '/subheadings/:id'
+                          else
+                            id = short_code.first(4)
+                            '/headings/:id'
+                          end
                         else
                           id = short_code.first(4)
                           '/headings/:id'

@@ -2,26 +2,19 @@ RSpec.describe Api::Beta::SearchQueryParserService do
   let(:search_query_parser_service_url) { 'http://localhost:5000/api/search' }
 
   describe '#call' do
-    context 'when the search query matches a known synonym' do
-      subject(:result) { described_class.new('yakutian laika', '1').call }
+    shared_examples_for 'a null result search query parser call' do |search_query, goods_nomenclature_item_id_match|
+      subject(:result) { described_class.new(search_query, goods_nomenclature_item_id_match:).call }
 
       it { expect(result.null_result).to eq(true) }
     end
 
-    context 'when the search query is empty' do
-      subject(:result) { described_class.new('', '1').call }
-
-      it { expect(result.null_result).to eq(true) }
-    end
-
-    context 'when the search query is nil' do
-      subject(:result) { described_class.new(nil, '1').call }
-
-      it { expect(result.null_result).to eq(true) }
-    end
+    it_behaves_like 'a null result search query parser call', '', false # Empty search query
+    it_behaves_like 'a null result search query parser call', nil, false # Empty search query
+    it_behaves_like 'a null result search query parser call', 'yakutian laika', false # Synonym search query
+    it_behaves_like 'a null result search query parser call', 'ricotta', true # Specific goods nomenclature item id search query
 
     context 'when the search query parser response is success' do
-      subject(:result) { described_class.new('aaa bbb', '1').call }
+      subject(:result) { described_class.new('aaa bbb', spell: '1').call }
 
       before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb&spell=1").to_return(response) }
 
@@ -55,7 +48,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
     end
 
     context 'when the search query parser response is bad request' do
-      subject(:result) { described_class.new('aaa bbb', '1').call }
+      subject(:result) { described_class.new('aaa bbb').call }
 
       before { stub_request(:get, "#{search_query_parser_service_url}/tokens?q=aaa+bbb&spell=1").to_return(response) }
 
