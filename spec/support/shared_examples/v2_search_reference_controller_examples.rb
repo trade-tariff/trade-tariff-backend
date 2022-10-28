@@ -1,8 +1,8 @@
 RSpec.shared_examples_for 'v2 search references controller' do
-  before { login_as_api_user }
-
-
-  before { search_reference }
+  before do
+    login_as_api_user
+    search_reference
+  end
 
   describe 'GET #index' do
     let(:pattern) do
@@ -54,7 +54,6 @@ RSpec.shared_examples_for 'v2 search references controller' do
     it 'includes pagination meta data in HTTP meta header' do
       get(:index, params: { format: :json }.merge(collection_query))
 
-      expect(response.headers).to have_key 'X-Meta'
       expect(JSON.parse(response.headers['X-Meta'])).to have_key 'pagination'
     end
   end
@@ -99,7 +98,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
   describe 'POST to #create' do
     let(:search_reference) { build :search_reference }
 
-    context 'valid params provided' do
+    context 'with valid params provided' do
       let(:pattern) do
         {
           data:
@@ -139,7 +138,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
     end
 
-    context 'invalid params provided' do
+    context 'with invalid params provided' do
       let(:pattern) do
         { errors: Array }
       end
@@ -162,7 +161,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
   end
 
   describe 'DELETE #destroy' do
-    context 'search reference exists' do
+    context 'with valid search reference' do
       before { search_reference }
 
       it 'destroys SearchReference entry' do
@@ -174,7 +173,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
     end
 
-    context 'search reference does not exist' do
+    context 'with non-existant search reference' do
       let(:bogus_search_ref_id) { 666 }
 
       it 'does not destroy SearchReference entry' do
@@ -200,7 +199,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
   describe 'PUT #update' do
     let(:new_title) { 'new title' }
 
-    context 'valid params provided' do
+    context 'with valid params provided' do
       before do
         put :update, params: {
           data: { type: search_reference, attributes: { title: new_title } },
@@ -221,9 +220,9 @@ RSpec.shared_examples_for 'v2 search references controller' do
       end
     end
 
-    context 'invalid params provided' do
+    context 'with invalid params provided' do
       let(:pattern) do
-        { errors: Hash }
+        { errors: Array }
       end
 
       before do
