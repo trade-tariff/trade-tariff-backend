@@ -1,141 +1,86 @@
-liver, kidney, tripe => offal
-universe, cosmos
-apparel, clothes, clothing
-# beef => meat of bovine animals, beef
-# veal => meat of bovine animals, veal
-apron, pinafore, pinnafore, pinny
-carcass, carcas, carcases, carcasses
-horseradish, horse radish
+liver,kidney,tripe => offal
+universe,cosmos
+apparel,clothes,clothing
+apron,pinafore,pinnafore,pinny
+carcass,carcas,carcases,carcasses
 bra,bras,brassiere,brassière,brassieres,brassières,bustiers,bralette
-beverage, drink
-computer, processing unit, data-processing machines, laptop
-pickup,pick-up,pick up
+beverage,drink
+computer,laptop
+pickup,pick-up
 dumper,dumptruck
-tshirt=>t-shirt
+tshirt => t-shirt
 decal,decalcomania
 bicycle,bike
 phone,telephone,cellphone,smartphone
-key ring,keyring
-paperwork, documents
-iphone, mobile phone
-make-up, makeup
-notepad, notebook
-sheath contraceptives, condoms
-adapter, adaptor
-bbq, barbecue, barbeque
-figurine, statue, statuette
-lampshade, lamp shade
-hoody, hoodie
-confectionary, confectionery
-stationary, stationery
-joggers, jogging bottoms, trousers
-matress, mattress
-SARS-CoV, covid, coronavirus, corona virus
-tea bags, teabags
-hair clips, hairclips
-fire pit, firepit
-vaccum, vacuum
-freshner, freshener
-note book, notebook
-drinkwear, drinkware, drinksware
-license, licence
-air bed, airbed
-air-conditioning, air conditioning, aircon
-airplane, aeroplane, aircraft
-ash tray, ashtray
-car parts, auto parts, automobile parts, automotive parts, autoparts
-car, automobile, automotive
-baby nappies, nappies, diapers, huggies, pampers, peaudouce
-rucksack, backpack, ruck sack, pack pack
-bangle, bracelet
-band saw, bandsaw
-bank notes, banknotes
-bath bomb, bathbomb
-dressing gown, bath robe
-bath, bathtub, bath tub
-christmas, xmas
-bed frames, bedframes
-bicycle component, bike parts
-bird feed, bird food
-boardgame, board game
-cell phone, cellphone
-biscuits, cookies
-cufflinks, cuff links
-glucose, dextrose
-doll, dolly
-bar bells, barbells
-dumb bells, dumbbells
-ale, beer, lager
-necklace, pendant
-estrogen, oestrogen
-ear phones, earphones, head phones, headphones
-ear plugs, earplugs
-ear rings, earrings
-e cigarettes, ecigarettes, e-cigarettes
-extension ladder, ladder
-eye mask, eyemask
-firepit, fire pit
-hand bag, handbag
-holdalls, hold-alls
-children, kids
-kiwi, kiwifruit, kiwi fruit
-lamp, lantern
-ink jet, inkjet
-lightbulbs, light bulbs
-polychloroprene, neoprene
-notepads, note pads
-notebooks, note books
-pajamas, pyjamas
-paddle board, paddleboard
-video game console, playstation, xbox
-
-rare gases, noble gases
-beryllium carbide, carbide bromide, carbide chloride, carbide iodide, carbohydride, cementite, iron carbide, hafnium carbide, heterodiamond, kappa-carbide, lanthanum carbide, lead carbide, lithium carbide, niobium carbide, phosphide carbide, plutonium carbide, polymorphs of silicon carbide, tantalcarbide, thorium carbide, uranium carbide, zirconium carbide=>2849909000
-hexoloy=>2849200000
-chairs, seats
-light fixture, light fitting, luminaire
-prefab, conservatory=>prefabricated building
-concertina, bandoneon, squeezebox=>accordion
-harmonica => mouth organ
+paperwork,documents
+make-up,makeup
+notepad,notebook
+adapter,adaptor
+bbq,barbecue,barbeque
+figurine,statue,statuette
+hoody,hoodie
+confectionary,confectionery
+stationary,stationery
+joggers,trousers
+matress,mattress
+SARS-CoV,covid,coronavirus
+vaccum,vacuum
+freshner,freshener
+drinkwear,drinkware,drinksware
+license,licence
+air-conditioning,aircon
+airplane,aeroplane,aircraft
+car,automobile,automotive
+nappies,diapers,huggies,pampers,peaudouce
+rucksack,backpack
+bangle,bracelet
+bath,bathtub
+christmas,xmas
+biscuits,cookies
+glucose,dextrose
+doll,dolly
+ale,beer,lager
+necklace,pendant
+estrogen,oestrogen
+earphones,headphones
+ecigarettes,e-cigarettes
+holdalls,hold-alls
+children,kids
+kiwi,kiwifruit
+lamp,lantern
+polychloroprene,neoprene
+pajamas,pyjamas
+playstation,xbox
+carbohydride,cementite,heterodiamond,kappa-carbide,tantalcarbide => 2849909000
+hexoloy => 2849200000
+chairs,seats
+concertina,bandoneon,squeezebox => accordion
 watch,wristwatch
-dump truck,dumptruck=>dumper
+dumptruck => dumper
 led,leds
-crawler=>track-laying tractor
 autobus,bus
-blouson=>jacket
-car=>motor vehicle
+blouson => jacket
 truck,lorry,HGV,LKW,camion
-road roller, roadroller
-ppe,PPE,personal protective equipment
+ppe,PPE
 bodysuit,body
 cardigan,cardy,cardie
-chapeau=>hat
-chaps, chaparajos, chaparejos=>leather trousers
-chuddah, chuddar, chudder, chador=>shawl
+chapeau => hat
+chuddah,chuddar,chudder,chador => shawl
 cummerbund,kummerbund
-dolman, robe
-overalls, dungarees
-frock, dress
-gilet, jerkin => waistcoat
-track suit, tracksuit, shell suit
-jersey, pullover, jumper
-manteau, cloak, mantle
-negligee, neglige
-nightdress, nightgown, nightie, peignoir
-pashmina, shawl
-romper, rompersuit
-
-# Computing
-hard disk, hard drive
-8471607000, computer mouse, lightpen, trackpad, trackball
-pc, personal computer => computer, personal computer
-home computer => computer, home computer
-microprocessor => processor, microprocessor
-floppy disk => storage
-imac, minicomputer, microcomputer, electronic computer => computer
-tablet => tablet computer, tablet
-ipad => tablet computer, ipad
-hoover, vacuum cleaner
-coffee percolator, coffee maker
-crock pot, crockpot
-stove, oven
+dolman,robe
+overalls,dungarees
+frock,dress
+gilet,jerkin => waistcoat
+jersey,pullover,jumper
+manteau,cloak,mantle
+negligee,neglige
+nightdress,nightgown,nightie,peignoir
+pashmina,shawl
+romper,rompersuit
+8471607000,lightpen,trackpad,trackball
+pc => computer
+microprocessor => processor,microprocessor
+imac,minicomputer,microcomputer => computer
+tablet => tablet
+ipad => ipad
+stove,oven
