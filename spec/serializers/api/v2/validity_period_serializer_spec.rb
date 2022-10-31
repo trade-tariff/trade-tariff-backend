@@ -1,35 +1,55 @@
 RSpec.describe Api::V2::ValidityPeriodSerializer do
-  subject(:serializable_hash) { described_class.new(presented).serializable_hash }
-
-  let(:presented) do
-    heading = create(
-      :heading,
-      goods_nomenclature_item_id: '0101000000',
-      validity_start_date: '2021-01-01',
-      validity_end_date: nil,
-    )
-
-    Api::V2::ValidityPeriodPresenter.new(heading)
+  subject(:serializable) do
+    described_class.new(presented).serializable_hash
   end
 
-  let(:expected) do
-    {
-      data: {
-        id: 'd259221ad1eee90454351c0fa0404179',
-        type: :validity_period,
-        attributes: {
-          goods_nomenclature_item_id: '0101000000',
-          producline_suffix: '80',
-          validity_start_date: Date.parse('2021-01-01'),
-          validity_end_date: nil,
-          to_param: '0101',
-          goods_nomenclature_class: 'Heading',
+  let(:presented) { Api::V2::ValidityPeriodPresenter.new item }
+
+  context 'with commodity' do
+    let(:item) { create :commodity }
+
+    let :expected do
+      {
+        data: {
+          id: presented.validity_period_id,
+          type: :validity_period,
+          attributes: {
+            goods_nomenclature_item_id: presented.goods_nomenclature_item_id,
+            validity_start_date: presented.validity_start_date,
+            validity_end_date: presented.validity_end_date,
+          },
         },
-      },
-    }
+      }
+    end
+
+    describe '#serializable_hash' do
+      it 'matches the expected hash' do
+        expect(serializable).to eql expected
+      end
+    end
   end
 
-  describe '#serializable_hash' do
-    it { is_expected.to eq(expected) }
+  context 'with heading' do
+    let(:item) { create :heading }
+
+    let :expected do
+      {
+        data: {
+          id: presented.validity_period_id,
+          type: :validity_period,
+          attributes: {
+            goods_nomenclature_item_id: presented.goods_nomenclature_item_id,
+            validity_start_date: presented.validity_start_date,
+            validity_end_date: presented.validity_end_date,
+          },
+        },
+      }
+    end
+
+    describe '#serializable_hash' do
+      it 'matches the expected hash' do
+        expect(serializable).to eql expected
+      end
+    end
   end
 end

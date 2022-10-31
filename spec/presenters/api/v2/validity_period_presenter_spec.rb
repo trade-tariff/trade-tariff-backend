@@ -1,23 +1,34 @@
 RSpec.describe Api::V2::ValidityPeriodPresenter do
-  describe '#id' do
-    subject(:id) { described_class.new(goods_nomenclature).id }
+  subject(:presenter) { described_class.new(item) }
+
+  describe '#validity_period_id' do
+    let(:subject) { presenter.validity_period_id }
+
+    let(:expected_id) do
+      "#{item.goods_nomenclature_item_id}-#{item.validity_start_date.to_i}-"
+    end
 
     context 'with commodity' do
-      let(:goods_nomenclature) { build(:commodity) }
+      let(:item) { create :commodity, validity_end_date: nil }
 
-      it { is_expected.to be_present }
+      it { is_expected.to eql expected_id }
     end
 
     context 'with heading' do
-      let(:goods_nomenclature) { build(:heading) }
+      let(:item) { create :heading, validity_end_date: nil }
 
-      it { is_expected.to be_present }
+      it { is_expected.to eql expected_id }
     end
 
-    context 'with subheading' do
-      let(:goods_nomenclature) { build(:subheading) }
+    context 'with start and end dates' do
+      let(:item) { create :commodity, validity_end_date: Date.tomorrow }
 
-      it { is_expected.to be_present }
+      let(:expected_id) do
+        "#{item.goods_nomenclature_item_id}-#{item.validity_start_date.to_i}-" \
+          "#{item.validity_end_date.to_i}"
+      end
+
+      it { is_expected.to eql expected_id }
     end
   end
 end
