@@ -9,8 +9,7 @@ module Api
                  :producline_suffix,
                  :validity_start_date,
                  :validity_end_date,
-                 :to_param,
-                 :goods_nomenclature_class
+                 :to_param
     end
   end
 end
