@@ -12,29 +12,11 @@ FactoryBot.define do
       excluded_geographical_area { 'EU' }
 
       after(:create) do |measure_excluded_geographical_area, _evaluator|
-        # referencing area
         create(
           :geographical_area,
-          :country,
+          :with_reference_group_and_members,
           geographical_area_id: measure_excluded_geographical_area.excluded_geographical_area,
           geographical_area_sid: measure_excluded_geographical_area.geographical_area_sid,
-        )
-        # referenced area
-        group = create(
-          :geographical_area,
-          :group,
-          geographical_area_id: '1013',
-        )
-
-        country = create(
-          :geographical_area,
-          :country,
-        )
-
-        create(
-          :geographical_area_membership,
-          geographical_area_sid: country.geographical_area_sid,
-          geographical_area_group_sid: group.geographical_area_sid,
         )
       end
     end

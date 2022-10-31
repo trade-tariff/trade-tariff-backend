@@ -910,6 +910,14 @@ RSpec.describe Measure do
 
       it { expect(measure.relevant_for_country?(contained_geographical_area.geographical_area_id)).to eq(true) }
     end
+
+    context 'when the measure has a referenced contained geographical area that is the country' do
+      subject(:measure) { create(:measure, geographical_area_sid: geographical_area.geographical_area_sid, geographical_area_id: 'EU') }
+
+      let(:geographical_area) { create(:geographical_area, :with_reference_group_and_members, geographical_area_id: 'EU') }
+
+      it { expect(measure.relevant_for_country?('FR')).to eq(true) }
+    end
   end
 
   describe '#expresses_unit?' do

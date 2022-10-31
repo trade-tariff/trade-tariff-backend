@@ -424,7 +424,7 @@ class Measure < Sequel::Model
     return true if erga_omnes? && measure_type.meursing?
     return true if geographical_area_id.blank? || geographical_area_id == country_id
 
-    geographical_area.contained_geographical_areas.map(&:geographical_area_id).include?(country_id)
+    (geographical_area.referenced.presence || geographical_area).contained_geographical_areas.pluck(:geographical_area_id).include?(country_id)
   end
 
   def erga_omnes?
