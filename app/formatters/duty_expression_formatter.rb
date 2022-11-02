@@ -24,9 +24,11 @@ class DutyExpressionFormatter
       resolved_meursing_component = opts[:resolved_meursing]
       formatted = opts[:formatted]
       verbose = opts[:verbose]
-      monetary_unit_to_symbol = Currency.try :to_symbol,
-                                             monetary_unit,
-                                             prettify(duty_amount).to_s if monetary_unit && verbose
+      if monetary_unit && verbose
+        monetary_unit_to_symbol = Currency.try :to_symbol,
+                                               monetary_unit,
+                                               prettify(duty_amount).to_s
+      end
 
       output = []
       case duty_expression_id
@@ -83,9 +85,9 @@ class DutyExpressionFormatter
                       prettify(duty_amount).to_s
                     end
         end
-        if duty_expression_abbreviation.present? && !monetary_unit.present?
+        if duty_expression_abbreviation.present? && monetary_unit.blank?
           output << duty_expression_abbreviation
-        elsif duty_expression_description.present? && !monetary_unit.present?
+        elsif duty_expression_description.present? && monetary_unit.blank?
           output << duty_expression_description
         elsif duty_expression_description.blank?
           output << '%'

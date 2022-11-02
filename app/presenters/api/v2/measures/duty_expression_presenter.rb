@@ -17,7 +17,7 @@ module Api
 
         def verbose_duty
           @measure.verbose_duty_expression_with_national_measurement_units_for(@declarable)
-         end
+        end
 
         def id
           "#{@measure.measure_sid}-duty_expression"
