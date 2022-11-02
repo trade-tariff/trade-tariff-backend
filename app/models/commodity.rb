@@ -171,7 +171,7 @@ class Commodity < GoodsNomenclature
      .tap! { |criteria|
       # if Commodity did not come from initial seed, filter by its
       # create/update date
-      criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
+      criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
@@ -190,6 +190,8 @@ class Commodity < GoodsNomenclature
   private
 
   def load_children
+    return [] unless heading
+
     heading.commodities_dataset
       .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions)
       .all
