@@ -388,6 +388,10 @@ class Measure < Sequel::Model
     measure_components.map(&:formatted_duty_expression).join(' ')
   end
 
+  def verbose_duty_expression
+    measure_components.map(&:verbose_duty_expression).join(' ').sub(/\s%/, '%').sub(/\s\s/, ' ')
+  end
+
   def national_measurement_units_for(declarable)
     if excise? && declarable && declarable.national_measurement_unit_set.present?
       declarable.national_measurement_unit_set
@@ -404,6 +408,16 @@ class Measure < Sequel::Model
       "#{formatted_duty_expression} (#{national_measurement_units.join(' - ')})"
     else
       formatted_duty_expression
+    end
+  end
+
+  def verbose_duty_expression_with_national_measurement_units_for(declarable)
+    national_measurement_units = national_measurement_units_for(declarable)
+
+    if national_measurement_units.present?
+      "#{verbose_duty_expression} (#{national_measurement_units.join(' - ')})"
+    else
+      verbose_duty_expression
     end
   end
 

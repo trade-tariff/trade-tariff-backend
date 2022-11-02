@@ -35,16 +35,16 @@ class MeasurementUnit < Sequel::Model
       measurement_units.select { |_k, v| v['measurement_unit_type'] == 'volume' }.keys
     end
 
+    def measurement_units
+      @measurement_units ||= JSON.parse(File.read(Rails.root.join(MEASUREMENT_UNIT_OVERLAY_FILE)))
+    end
+
     private
 
     def compound_units_for(unit)
       unit['compound_units'].flat_map do |unit_key|
         units(unit['measurement_unit_code'], unit_key)
       end
-    end
-
-    def measurement_units
-      @measurement_units ||= JSON.parse(File.read(Rails.root.join(MEASUREMENT_UNIT_OVERLAY_FILE)))
     end
 
     def build_missing_measurement_unit(unit_code, unit_key)
@@ -75,6 +75,13 @@ class MeasurementUnit < Sequel::Model
 
   def abbreviation(options = {})
     measurement_unit_abbreviation(options)&.abbreviation || description
+  end
+
+  def expansion(options = {})
+    code = measurement_unit_code
+    code = measurement_unit_code + options[:measurement_unit_qualifier].measurement_unit_qualifier_code if options[:measurement_unit_qualifier]
+    measurement_unit = MeasurementUnit.measurement_units[code]
+    measurement_unit['expansion'] if measurement_unit
   end
 
   def measurement_unit_abbreviation(options = {})
