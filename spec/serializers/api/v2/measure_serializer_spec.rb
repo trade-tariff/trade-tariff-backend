@@ -3,17 +3,24 @@ RSpec.describe Api::V2::MeasureSerializer do
 
   let(:serializable) { Api::V2::Measures::MeasurePresenter.new(measure.reload, measure.goods_nomenclature.reload) }
 
-  let(:measure) { create(:measure, :with_measure_type, :with_meursing, :with_measure_components, :with_goods_nomenclature, reduction_indicator: 1) }
+  let(:measure) do create(:measure,
+                         :with_measure_type,
+                         :with_measure_components,
+                         :with_goods_nomenclature,
+                         :with_measure_conditions
+                         )
+  end
+
   let(:options) { {} }
 
   let(:expected_pattern) do
     {
       data: {
-        id: '1',
-
+        id: measure.measure_sid.to_s,
+        type: 'measure',
         attributes: {
           effective_end_date: nil,
-          effective_start_date: '2019-11-02T00:00:00.000Z',
+          effective_start_date: "2019-11-02T00:00:00.000Z",
           excise: false,
           export: true,
           import: true,
@@ -24,7 +31,7 @@ RSpec.describe Api::V2::MeasureSerializer do
           additional_code: { data: nil },
           duty_expression: {
             data: {
-              id: '1-duty_expression', type: 'duty_expression'
+              id: "#{measure.id}-duty_expression",
             },
           },
           excluded_geographical_areas: { data: [] },
@@ -34,18 +41,21 @@ RSpec.describe Api::V2::MeasureSerializer do
           },
           goods_nomenclature: { data: { id: '1', type: 'commodity' } },
           legal_acts: { data: [] },
-          measure_components: { data: [{ id: '1-12', type: 'measure_component' }] },
-          measure_conditions: { data: [] },
-          measure_type: { data: { id: '10000', type: 'measure_type' } },
+          measure_components: { data: [{ id: measure.measure_components.first.pk.join('-'), type: 'measure_component' }] },
+          measure_conditions: {data: [{id: '1', type: "measure_condition"}]},
+          measure_type: {
+            data: {
+              id: measure.measure_type_id,
+              type: 'measure_type',
+            },
+          },
           order_number: { data: nil },
         },
-        type: 'measure',
       },
     }.as_json
   end
 
   describe '#serializable_hash' do
     it { is_expected.to include_json(expected_pattern) }
-    # it { is_expected.to equal(expected_pattern) }
   end
 end
