@@ -1,5 +1,6 @@
 module Api
   module V2
+    # Serializer used in MeasuresController#show
     class MeasureSerializer
       include JSONAPI::Serializer
 
