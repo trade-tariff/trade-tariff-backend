@@ -319,6 +319,14 @@ class Measure < Sequel::Model
     justification_regulation_role.present? && justification_regulation_id.present?
   end
 
+  def purpose
+    if validity_date_justified?
+      'justification_regulation'
+    elsif generating_regulation_present?
+      'measure_generating_regulation'
+    end
+  end
+
   def generating_regulation_present?
     measure_generating_regulation_id.present? && measure_generating_regulation_role.present?
   end

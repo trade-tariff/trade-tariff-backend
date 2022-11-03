@@ -11,6 +11,12 @@ module Api
         attributes :validity_start_date, :validity_end_date, :officialjournal_number,
                    :officialjournal_page, :published_date, :regulation_code,
                    :regulation_url, :description
+
+        attribute :role, &:base_regulation_role
+
+        attribute :purpose do |obj|
+          obj.measure.purpose
+        end
       end
     end
   end
