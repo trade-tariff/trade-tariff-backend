@@ -57,8 +57,8 @@ class Commodity < GoodsNomenclature
   end
 
   # See oplog sequel plugin
-  def operation=(op)
-    self[:operation] = op.to_s.first.upcase
+  def operation=(operation)
+    self[:operation] = operation.to_s.first.upcase
   end
 
   def ancestors
@@ -116,7 +116,7 @@ class Commodity < GoodsNomenclature
   end
 
   def uptree
-    @_uptree ||= [ancestors, heading, chapter, self].flatten.compact
+    @uptree ||= [ancestors, heading, chapter, self].flatten.compact
   end
 
   def children
