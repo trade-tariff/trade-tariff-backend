@@ -170,14 +170,15 @@ RSpec.describe DutyExpressionFormatter do
             duty_expression_id: '66',
             duty_expression_description: 'abc',
             monetary_unit: 'EUR',
-            formatted: formatted,
-            verbose: verbose,
+            formatted:,
+            verbose:,
           }
         end
+        let(:verbose) { false }
+        let(:formatted) { false }
 
         context 'when formatted is `true`' do
           let(:formatted) { true }
-          let(:verbose) { false }
 
           it 'result includes monetary unit' do
             expect(described_class.format(options)).to eq('<span>0.52</span> EUR')
@@ -185,10 +186,6 @@ RSpec.describe DutyExpressionFormatter do
         end
 
         context 'when not formatted is `false`' do
-          let(:formatted) { false }
-          let(:verbose) { false }
-
-
           it 'result includes monetary unit' do
             expect(described_class.format(options)).to eq('0.52 EUR')
           end
@@ -196,7 +193,6 @@ RSpec.describe DutyExpressionFormatter do
 
         context 'when verbose is true' do
           let(:verbose) { true }
-          let(:formatted) { false }
 
           it 'returns the amount with currency sign' do
             expect(described_class.format(options)).to eq('€0.52')

@@ -850,7 +850,7 @@ RSpec.describe Measure do
     end
 
     describe '#verbose_duty_expression' do
-      context 'measure components order' do
+      context 'when measure components order' do
         let(:duty_expression2) do
           create(:duty_expression, :with_description, duty_expression_id: '00')
         end

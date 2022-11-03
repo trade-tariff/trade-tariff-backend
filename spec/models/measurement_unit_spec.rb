@@ -31,7 +31,7 @@ RSpec.describe MeasurementUnit do
     context 'with measurement_unit_code and measurement_unit_qualifier_code' do
       subject(:measurement_unit) { create :measurement_unit, :with_description, measurement_unit_code: 'ASV' }
 
-      let(:measurement_unit_qualifier){ create(:measurement_unit_qualifier, measurement_unit_qualifier_code: 'X') }
+      let(:measurement_unit_qualifier) { create(:measurement_unit_qualifier, measurement_unit_qualifier_code: 'X') }
 
       it { expect(measurement_unit.expansion(measurement_unit_qualifier:)).to eq('Percentage ABV (% vol) per 100 litre (hl)') }
     end
