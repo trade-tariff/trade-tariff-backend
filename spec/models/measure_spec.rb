@@ -1409,4 +1409,14 @@ RSpec.describe Measure do
 
     it { is_expected.to eq([4]) } # Modification regulation measure
   end
+
+  describe '.prettify_generated_duty_expression' do
+    subject(:measure) { create(:measure) }
+
+    let(:generated_string) { '100 % /  Percentage ABV (% vol) per 100 litre (hl)' }
+
+    it 'removes extra spaces and space before percent symbol' do
+      expect(measure.prettify_generated_duty_expression(generated_string)).to eq '100% / Percentage ABV (% vol) per 100 litre (hl)'
+    end
+  end
 end

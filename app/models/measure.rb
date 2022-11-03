@@ -389,7 +389,11 @@ class Measure < Sequel::Model
   end
 
   def verbose_duty_expression
-    measure_components.map(&:verbose_duty_expression).join(' ').sub(/\s%/, '%').sub(/\s\s/, ' ')
+    prettify_generated_duty_expression(measure_components.map(&:verbose_duty_expression).join(' '))
+  end
+
+  def prettify_generated_duty_expression(duty_expression)
+    duty_expression.sub(/\s%/, '%').sub(/\s\s/, ' ')
   end
 
   def national_measurement_units_for(declarable)

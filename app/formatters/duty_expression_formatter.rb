@@ -25,9 +25,8 @@ class DutyExpressionFormatter
       formatted = opts[:formatted]
       verbose = opts[:verbose]
       if monetary_unit && verbose
-        monetary_unit_to_symbol = Currency.try :to_symbol,
-                                               monetary_unit,
-                                               prettify(duty_amount).to_s
+        monetary_unit_to_symbol = Currency.new(monetary_unit).try :format,
+                                                                  prettify(duty_amount).to_s
       end
 
       output = []
