@@ -28,7 +28,7 @@ FactoryBot.define do
     measure_generating_regulation_role { 1 }
     additional_code_type_id { generate(:additional_code_type_id) }
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
+    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join } # TODO: remove "rand" from this test.
     geographical_area_sid { generate(:geographical_area_sid) }
     geographical_area_id { generate(:geographical_area_id) }
     validity_start_date { 3.years.ago.beginning_of_day }
@@ -49,18 +49,18 @@ FactoryBot.define do
                                  validity_start_date: validity_start_date - 1.day)
     end
 
-    trait :with_goods_nomenclature do
-      after(:create) do |measure, evaluator|
-        create(
-          :goods_nomenclature,
-          validity_start_date: measure.validity_start_date - 1.day,
-          goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
-          goods_nomenclature_sid: measure.goods_nomenclature_sid,
-          producline_suffix: evaluator.gono_producline_suffix,
-          indents: evaluator.gono_number_indents,
-        )
-      end
-    end
+    # trait :with_goods_nomenclature do
+    #   after(:create) do |measure, evaluator|
+    #     create(
+    #       :goods_nomenclature,
+    #       validity_start_date: measure.validity_start_date - 1.day,
+    #       goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+    #       goods_nomenclature_sid: measure.goods_nomenclature_sid,
+    #       producline_suffix: evaluator.gono_producline_suffix,
+    #       indents: evaluator.gono_number_indents,
+    #     )
+    #   end
+    # end
 
     trait :with_gsp do
       with_gsp_enhanced_framework
@@ -142,16 +142,23 @@ FactoryBot.define do
 
     trait :with_goods_nomenclature do
       goods_nomenclature do
-        create(
-          :goods_nomenclature,
-          validity_start_date: validity_start_date - 1.day,
-          goods_nomenclature_item_id:,
-          goods_nomenclature_sid:,
-          producline_suffix: gono_producline_suffix,
-          indents: gono_number_indents,
-        )
+        create(:goods_nomenclature,
+               validity_start_date: validity_start_date - 1.day,
+               goods_nomenclature_item_id:,
+               goods_nomenclature_sid:,
+               producline_suffix: gono_producline_suffix,
+               indents: gono_number_indents)
       end
       # noop
+    end
+
+    trait :with_goods_nomenclature_with_heading do
+      with_goods_nomenclature
+
+      after(:create) do |measure, _evaluator|
+        create(:heading, goods_nomenclature_item_id: "#{measure.goods_nomenclature_item_id.first(4)}000000")
+        measure.reload
+      end
     end
 
     trait :with_measure_type do

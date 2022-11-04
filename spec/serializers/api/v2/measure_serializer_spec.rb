@@ -7,7 +7,7 @@ RSpec.describe Api::V2::MeasureSerializer do
     create(:measure,
            :with_measure_type,
            :with_measure_components,
-           :with_goods_nomenclature,
+           :with_goods_nomenclature_with_heading,
            :with_measure_conditions)
   end
 

@@ -190,8 +190,6 @@ class Commodity < GoodsNomenclature
   private
 
   def load_children
-    return [] unless heading
-
     heading.commodities_dataset
       .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions)
       .all

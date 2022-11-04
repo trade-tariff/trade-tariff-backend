@@ -23,13 +23,8 @@ module Api
         measure&.validity_end_date.presence || measure.generating_regulation&.validity_end_date
       end
 
-      has_one :goods_nomenclature, serializer: proc { |record, _params|
-                                                 if record && record.respond_to?(:goods_nomenclature_class)
-                                                   "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize
-                                                 else
-                                                   Api::V2::Shared::GoodsNomenclatureSerializer
-                                                 end
-                                               }
+      has_one :goods_nomenclature,
+              serializer: proc { |record, _params| "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize }
 
       has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer
       has_one :measure_type, serializer: Api::V2::Measures::MeasureTypeSerializer
