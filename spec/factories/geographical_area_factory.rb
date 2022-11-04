@@ -62,6 +62,32 @@ FactoryBot.define do
       end
     end
 
+    trait :with_reference_group_and_members do
+      country
+
+      geographical_area_id { 'EU' }
+
+      after(:create) do |_geographical_area, _evaluator|
+        group = create(
+          :geographical_area,
+          :group,
+          geographical_area_id: '1013',
+        )
+
+        country = create(
+          :geographical_area,
+          :country,
+          geographical_area_id: 'FR',
+        )
+
+        create(
+          :geographical_area_membership,
+          geographical_area_sid: country.geographical_area_sid,
+          geographical_area_group_sid: group.geographical_area_sid,
+        )
+      end
+    end
+
     trait :region do
       geographical_code { '2' }
     end

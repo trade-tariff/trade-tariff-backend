@@ -23,7 +23,6 @@ RSpec.describe Api::V2::ValidityPeriodSerializer do
           validity_start_date: Date.parse('2021-01-01'),
           validity_end_date: nil,
           to_param: '0101',
-          goods_nomenclature_class: 'Heading',
         },
       },
     }

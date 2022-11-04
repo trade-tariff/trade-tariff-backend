@@ -22,7 +22,7 @@ module Api
                    location: api_admin_news_item_url(news_item.id),
                    status: :created
           else
-            render json: serialize_errors(news_item.errors),
+            render json: serialize_errors(news_item),
                    status: :unprocessable_entity
           end
         end
@@ -36,7 +36,7 @@ module Api
                    location: api_admin_news_item_url(news_item.id),
                    status: :ok
           else
-            render json: serialize_errors(news_item.errors),
+            render json: serialize_errors(news_item),
                    status: :unprocessable_entity
           end
         end
@@ -87,8 +87,8 @@ module Api
           Api::Admin::News::ItemSerializer.new(*args).serializable_hash
         end
 
-        def serialize_errors(errors)
-          Api::V2::ErrorSerializationService.new.serialized_errors(errors)
+        def serialize_errors(news_item)
+          Api::Admin::ErrorSerializationService.new(news_item).call
         end
       end
     end

@@ -9,14 +9,6 @@ module Api
         set_id :id
 
         attributes :section_id, :chapter_id, :content
-
-        def serialized_errors
-          errors = @resource.errors.flat_map do |attribute, error|
-            { title: attribute, detail: error }
-          end
-
-          { errors: }
-        end
       end
     end
   end
