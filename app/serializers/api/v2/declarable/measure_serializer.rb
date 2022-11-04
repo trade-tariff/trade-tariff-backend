@@ -1,6 +1,6 @@
 module Api
   module V2
-    module Measures
+    module Declarable
       class MeasureSerializer
         include JSONAPI::Serializer
 
