@@ -148,7 +148,8 @@ class Measure < Sequel::Model
       self[:validity_end_date]
     elsif self[:validity_end_date].present? && generating_regulation.present? && generating_regulation.effective_end_date.present?
       self[:validity_end_date] > generating_regulation.effective_end_date ? generating_regulation.effective_end_date : self[:validity_end_date]
-    elsif self[:validity_end_date].present? && validity_date_justified?
+    elsif self[:validity_end_date].present? && justification_regulation_present?
+
       self[:validity_end_date]
     elsif generating_regulation.present?
       generating_regulation.effective_end_date
@@ -315,20 +316,20 @@ class Measure < Sequel::Model
     national
   end
 
-  def validity_date_justified?
+  def justification_regulation_present?
     justification_regulation_role.present? && justification_regulation_id.present?
-  end
-
-  def purpose
-    if validity_date_justified?
-      'justification_regulation'
-    elsif generating_regulation_present?
-      'measure_generating_regulation'
-    end
   end
 
   def generating_regulation_present?
     measure_generating_regulation_id.present? && measure_generating_regulation_role.present?
+  end
+
+  def purpose
+    if justification_regulation_present?
+      'justification_regulation'
+    elsif generating_regulation_present?
+      'measure_generating_regulation'
+    end
   end
 
   def measure_generating_regulation_id

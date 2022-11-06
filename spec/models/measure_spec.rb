@@ -83,6 +83,25 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#purpose' do
+    context 'when the justification regulation is present' do
+      let(:measure) do
+        build :measure, justification_regulation_role: 1, justification_regulation_id: 'A1812480'
+      end
+
+      it { expect(measure.purpose).to eq('justification_regulation') }
+    end
+
+    context 'when the generating regulation is present' do
+      let(:measure) do
+        build :measure,
+              measure_generating_regulation_id: 1, justification_regulation_id: 'A1812480'
+      end
+
+      it { expect(measure.purpose).to eq('measure_generating_regulation') }
+    end
+  end
+
   # According to Taric guide
   describe '#validity_end_date' do
     let(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.yesterday }
