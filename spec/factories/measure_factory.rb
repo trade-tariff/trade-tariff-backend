@@ -49,19 +49,6 @@ FactoryBot.define do
                                  validity_start_date: validity_start_date - 1.day)
     end
 
-    # trait :with_goods_nomenclature do
-    #   after(:create) do |measure, evaluator|
-    #     create(
-    #       :goods_nomenclature,
-    #       validity_start_date: measure.validity_start_date - 1.day,
-    #       goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
-    #       goods_nomenclature_sid: measure.goods_nomenclature_sid,
-    #       producline_suffix: evaluator.gono_producline_suffix,
-    #       indents: evaluator.gono_number_indents,
-    #     )
-    #   end
-    # end
-
     trait :with_gsp do
       with_gsp_enhanced_framework
     end
