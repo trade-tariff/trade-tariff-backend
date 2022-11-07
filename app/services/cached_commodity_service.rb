@@ -1,7 +1,7 @@
 class CachedCommodityService
   include DeclarableSerialization
 
-  CACHE_VERSION = 2
+  CACHE_VERSION = 3
 
   DEFAULT_INCLUDES = (DECLARABLE_INCLUDES + %w[
     heading
