@@ -14,9 +14,7 @@ module Api
 
         attribute :role, &:base_regulation_role
 
-        attribute :purpose do |obj|
-          obj.measure.purpose
-        end
+        attribute :purpose, &:purpose
       end
     end
   end

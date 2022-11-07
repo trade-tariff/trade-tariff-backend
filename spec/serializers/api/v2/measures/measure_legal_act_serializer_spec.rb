@@ -22,6 +22,8 @@ RSpec.describe Api::V2::Measures::MeasureLegalActSerializer do
           regulation_code: '14567/23',
           regulation_url: generated_url,
           description: regulation.information_text,
+          role: '1',
+          purpose: 'measure_generating_regulation',
         },
       },
     }.as_json

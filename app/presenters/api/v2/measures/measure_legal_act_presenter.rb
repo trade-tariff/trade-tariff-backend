@@ -7,6 +7,8 @@ module Api
         delegate :regulation_url, :regulation_code, :description,
                  to: :uk_regulation_data, prefix: :uk
 
+        delegate :purpose, to: :measure
+
         EXCLUDED_REGULATION_IDS = %w[IYY99990].freeze
         EXCLUDED_MEASURE_TYPE_IDS = %w[305 306].freeze
 

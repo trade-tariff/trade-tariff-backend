@@ -28,7 +28,7 @@ FactoryBot.define do
     measure_generating_regulation_role { 1 }
     additional_code_type_id { generate(:additional_code_type_id) }
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join } # TODO: remove "rand" from this test.
+    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
     geographical_area_sid { generate(:geographical_area_sid) }
     geographical_area_id { generate(:geographical_area_id) }
     validity_start_date { 3.years.ago.beginning_of_day }
