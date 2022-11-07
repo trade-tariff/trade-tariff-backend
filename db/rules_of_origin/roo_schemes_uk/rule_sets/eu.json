@@ -7,7 +7,7 @@
                   "max": "0106999999",
                   "rules": [
                         {
-                              "rule": "All animals of [chapter&nbsp;1](/chapters/1) are wholly obtained.",
+                              "rule": "All animals of [chapter&nbsp;1](/chapters/01) are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -23,7 +23,7 @@
                   "max": "0210999999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;1](/chapters/1) and [chapter&nbsp;2](/chapters/2) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;1](/chapters/01) and [chapter&nbsp;2](/chapters/02) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -39,7 +39,7 @@
                   "max": "0309999999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;3](/chapters/3) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -55,7 +55,7 @@
                   "max": "0410999999",
                   "rules": [
                         {
-                              "rule": "Production in which:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) does not exceed **20%** of the weight of the product.",
+                              "rule": "Production in which:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) does not exceed **20%** of the weight of the product.",
                               "class": [
                                     "WO",
                                     "MAXWEIGHT"
@@ -88,7 +88,7 @@
                   "max": "0604999999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;6](/chapters/6) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;6](/chapters/06) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -104,7 +104,7 @@
                   "max": "0714999999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;7](/chapters/7) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;7](/chapters/07) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -120,7 +120,7 @@
                   "max": "0814999999",
                   "rules": [
                         {
-                              "rule": "Production in which:\n\n- all the materials of [chapter&nbsp;8](/chapters/8) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) does not exceed **20%** of the weight of the product.",
+                              "rule": "Production in which:\n\n- all the materials of [chapter&nbsp;8](/chapters/08) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) does not exceed **20%** of the weight of the product.",
                               "class": [
                                     "WO",
                                     "MAXWEIGHT"
@@ -378,7 +378,7 @@
                   "max": "1604189999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapters 1](/chapters/1), 2, 3 and 16 used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapters 1](/chapters/01), 2, 3 and 16 used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -426,7 +426,7 @@
                   "max": "1604299999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;3](/chapters/3) and [chapter&nbsp;16](/chapters/16) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;3](/chapters/03) and [chapter&nbsp;16](/chapters/16) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -442,7 +442,7 @@
                   "max": "1605699999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;3](/chapters/3) and [chapter&nbsp;16](/chapters/16) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;3](/chapters/03) and [chapter&nbsp;16](/chapters/16) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -507,7 +507,7 @@
                   "max": "1704999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n\n- a) all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n\n- b) \n\n- i) the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n\n- a) all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n\n- b) \n\n- i) the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -531,7 +531,7 @@
                   "max": "1704999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -564,7 +564,7 @@
                   "max": "1806199999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -581,7 +581,7 @@
                   "max": "1806999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n\n- a) all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n\n- b) the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product, or the value of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **30%** of the ex-works price of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n\n- a) all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n\n- b) the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product, or the value of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -598,7 +598,7 @@
                   "max": "1905999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the product, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1108](/headings/1108) used does not exceed **20%** of the weight of the product, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the product, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1108](/headings/1108) used does not exceed **20%** of the weight of the product, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **40%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -631,7 +631,7 @@
                   "max": "2003999999",
                   "rules": [
                         {
-                              "rule": "Production in which all the materials of [chapter&nbsp;7](/chapters/7) used are wholly obtained.",
+                              "rule": "Production in which all the materials of [chapter&nbsp;7](/chapters/07) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -664,7 +664,7 @@
                   "max": "2102999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -766,7 +766,7 @@
                   "max": "2106999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -783,7 +783,7 @@
                   "max": "2206999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading) except from non-originating materials of [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), provided that:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained, *and*\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading) except from non-originating materials of [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), provided that:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained, *and*\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -883,7 +883,7 @@
                   "max": "2309999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;4](/chapters/4) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1001](/headings/1001) to [heading&nbsp;1004](/headings/1004), [heading&nbsp;1007](/headings/1007) to [heading&nbsp;1008](/headings/1008), [chapter&nbsp;11](/chapters/11), and [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303) used does not exceed **20%** of the weight of the product, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading), provided that:\n\n- all the materials of [chapter&nbsp;2](/chapters/02) and [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1001](/headings/1001) to [heading&nbsp;1004](/headings/1004), [heading&nbsp;1007](/headings/1007) to [heading&nbsp;1008](/headings/1008), [chapter&nbsp;11](/chapters/11), and [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303) used does not exceed **20%** of the weight of the product, *and*\n\n- the total weight of non-originating materials of [heading&nbsp;1701](/headings/1701) and [heading&nbsp;1702](/headings/1702) used does not exceed **20%** of the weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM"
@@ -1516,7 +1516,7 @@
                   "max": "3504999999",
                   "rules": [
                         {
-                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading) except from non-originating materials of [chapter&nbsp;4](/chapters/4).",
+                              "rule": "All non-originating materials used in the production of the good have undergone a change in tariff classification at the 4-digit level (tariff heading) except from non-originating materials of [chapter&nbsp;4](/chapters/04).",
                               "class": [
                                     "CTH"
                               ],
