@@ -13,13 +13,15 @@ class UpdatesSynchronizerWorker
     if TradeTariffBackend.uk?
       TariffSynchronizer.download_cds
 
-      if check_for_todays_file &&
-          still_time_to_reschedule? &&
-          todays_file_has_not_yet_arrived?
-
-        self.class.perform_in(TRY_AGAIN_IN, true)
-        logger.info "Daily file missing, retrying at #{TRY_AGAIN_IN.from_now}"
-        return
+      if check_for_todays_file && todays_file_has_not_yet_arrived?
+        if still_time_to_reschedule?
+          self.class.perform_in(TRY_AGAIN_IN, true)
+          logger.info "Daily file missing, retrying at #{TRY_AGAIN_IN.from_now}"
+          return
+        else
+          SlackNotifierService.call \
+            'Daily CDS file missing, max retry time passed - continuing without todays file'
+        end
       end
 
       logger.info 'Applying...'
