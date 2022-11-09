@@ -338,14 +338,6 @@ class Measure < Sequel::Model
     measure_generating_regulation_id.present? && measure_generating_regulation_role.present?
   end
 
-  def purpose
-    if justification_regulation_present?
-      'justification_regulation'
-    elsif generating_regulation_present?
-      'measure_generating_regulation'
-    end
-  end
-
   def measure_generating_regulation_id
     result = self[:measure_generating_regulation_id]
 

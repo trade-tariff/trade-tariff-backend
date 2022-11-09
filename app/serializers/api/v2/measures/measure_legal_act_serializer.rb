@@ -13,8 +13,6 @@ module Api
                    :regulation_url, :description
 
         attribute :role, &:base_regulation_role
-
-        attribute :purpose, &:purpose
       end
     end
   end
