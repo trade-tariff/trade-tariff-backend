@@ -1422,9 +1422,18 @@ RSpec.describe Measure do
     subject(:measure) { create(:measure) }
 
     let(:generated_string) { '100 % /  Percentage ABV (% vol) per 100 litre (hl)' }
+    let(:generated_string_without_percent_amount) { '£0.30 / 100 kg per % of sucrose by weight, including other sugars expressed as sucrose (%sacchar.)' }
 
-    it 'removes extra spaces and space before percent symbol' do
-      expect(measure.prettify_generated_duty_expression(generated_string)).to eq '100% / Percentage ABV (% vol) per 100 litre (hl)'
+    it 'removes extra spaces and space before percent symbol and lowercase first character of expansion text' do
+      expect(measure.prettify_generated_duty_expression(generated_string)).to eq '100% / percentage ABV (% vol) per 100 litre (hl)'
+    end
+
+    it 'does not remove space if unit is not present' do
+      expect(measure.prettify_generated_duty_expression(generated_string_without_percent_amount)).to eq generated_string_without_percent_amount
+    end
+
+    it 'removes space from unit and not from expansion' do
+      expect(measure.prettify_generated_duty_expression('100 % /  100 kg per % of sucrose')).to eq '100% / 100 kg per % of sucrose'
     end
   end
 end
