@@ -43,6 +43,8 @@ RSpec.describe Api::V2::SectionsController do
               headings_to: chapter.headings_to,
               description: chapter.description,
               formatted_description: chapter.formatted_description,
+              validity_start_date: chapter.validity_start_date,
+              validity_end_date: chapter.validity_end_date,
             },
             relationships: {
               guides: {
