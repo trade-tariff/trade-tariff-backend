@@ -18,6 +18,9 @@ module Api
 
       has_many :excluded_geographical_areas, serializer: Api::V2::GeographicalAreaSerializer
       has_one :additional_code, serializer: Api::V2::AdditionalCodeSerializer
+
+      has_one :measure_generating_legal_act, serializer: Api::V2::Measures::MeasureLegalActSerializer
+      has_one :justification_legal_act, serializer: Api::V2::Measures::MeasureLegalActSerializer
     end
   end
 end

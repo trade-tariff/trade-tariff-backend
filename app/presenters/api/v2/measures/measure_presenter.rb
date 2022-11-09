@@ -120,6 +120,28 @@ module Api
           measure_conditions.any?(&:authorised_use?)
         end
 
+        def measure_generating_legal_act
+          legal_acts.find { |act| act.base_regulation_id == measure_generating_regulation_id }
+        end
+
+        def measure_generating_legal_act_id
+          measure_generating_legal_act&.regulation_id
+        end
+
+        def justification_legal_act
+          legal_acts.find do |act|
+            if act.role == Measure::MODIFICATION_REGULATION_ROLE
+              act.modification_regulation_id == justification_regulation_id
+            else
+              act.base_regulation_id == justification_regulation_id
+            end
+          end
+        end
+
+        def justification_legal_act_id
+          justification_legal_act&.regulation_id
+        end
+
         delegate :authorised_use_provisions_submission?, to: :measure_type
 
       private

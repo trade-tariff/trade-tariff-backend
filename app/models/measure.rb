@@ -165,12 +165,26 @@ class Measure < Sequel::Model
                                end
   end
 
+  def justification_regulation
+    @justification_regulation ||= case justification_regulation_role
+                                  when BASE_REGULATION_ROLE
+                                    BaseRegulation.find(base_regulation_id: justification_regulation_id,
+                                                        base_regulation_role: justification_regulation_role)
+                                  when MODIFICATION_REGULATION_ROLE
+                                    ModificationRegulation.find(modification_regulation_id: justification_regulation_id,
+                                                                modification_regulation_role: justification_regulation_role)
+                                  else
+                                    base_regulation
+                                  end
+  end
+
   def legal_acts
     return [] if national?
 
     result = []
     result << suspending_regulation
     result << generating_regulation
+    result << justification_regulation
     result << generating_regulation.base_regulation if measure_generating_regulation_role == MODIFICATION_REGULATION_ROLE
     result.compact
   end
