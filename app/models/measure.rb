@@ -157,24 +157,20 @@ class Measure < Sequel::Model
   end
 
   def generating_regulation
-    @generating_regulation ||= case measure_generating_regulation_role
-                               when BASE_REGULATION_ROLE then base_regulation
-                               when MODIFICATION_REGULATION_ROLE then modification_regulation
+    @generating_regulation ||= if measure_generating_regulation_role == MODIFICATION_REGULATION_ROLE
+                                 modification_regulation
                                else
                                  base_regulation
                                end
   end
 
   def justification_regulation
-    @justification_regulation ||= case justification_regulation_role
-                                  when BASE_REGULATION_ROLE
-                                    BaseRegulation.find(base_regulation_id: justification_regulation_id,
-                                                        base_regulation_role: justification_regulation_role)
-                                  when MODIFICATION_REGULATION_ROLE
+    @justification_regulation ||= if justification_regulation_role == MODIFICATION_REGULATION_ROLE
                                     ModificationRegulation.find(modification_regulation_id: justification_regulation_id,
                                                                 modification_regulation_role: justification_regulation_role)
                                   else
-                                    base_regulation
+                                    BaseRegulation.find(base_regulation_id: justification_regulation_id,
+                                                        base_regulation_role: justification_regulation_role)
                                   end
   end
 

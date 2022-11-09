@@ -3,6 +3,7 @@ module Api
     module Measures
       class MeasurePresenter < SimpleDelegator
         delegate :id, to: :duty_expression, prefix: true
+        delegate :authorised_use_provisions_submission?, to: :measure_type
 
         def initialize(measure, declarable)
           super(measure)
@@ -120,29 +121,17 @@ module Api
           measure_conditions.any?(&:authorised_use?)
         end
 
-        def measure_generating_legal_act
-          legal_acts.find { |act| act.base_regulation_id == measure_generating_regulation_id }
+        def find_legal_act(regulation_id)
+          legal_acts.find { |legal_act| get_regulation_id(legal_act) == regulation_id }
         end
 
         def measure_generating_legal_act_id
-          measure_generating_legal_act&.regulation_id
-        end
-
-        def justification_legal_act
-          legal_acts.find do |act|
-            if act.role == Measure::MODIFICATION_REGULATION_ROLE
-              act.modification_regulation_id == justification_regulation_id
-            else
-              act.base_regulation_id == justification_regulation_id
-            end
-          end
+          find_legal_act(measure_generating_regulation_id)&.regulation_id
         end
 
         def justification_legal_act_id
-          justification_legal_act&.regulation_id
+          find_legal_act(justification_regulation_id)&.regulation_id
         end
-
-        delegate :authorised_use_provisions_submission?, to: :measure_type
 
       private
 
@@ -151,6 +140,14 @@ module Api
             measure_type_id,
             geographical_area_id,
           )
+        end
+
+        def get_regulation_id(legal_act)
+          if legal_act.role == Measure::MODIFICATION_REGULATION_ROLE
+            legal_act.modification_regulation_id
+          else
+            legal_act.base_regulation_id
+          end
         end
       end
     end
