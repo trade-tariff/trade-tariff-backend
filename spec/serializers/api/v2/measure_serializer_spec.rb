@@ -8,7 +8,9 @@ RSpec.describe Api::V2::MeasureSerializer do
            :with_measure_type,
            :with_measure_components,
            :with_goods_nomenclature_with_heading,
-           :with_measure_conditions)
+           :with_measure_conditions,
+           :with_base_regulation,
+           :with_justification_regulation)
   end
 
   let(:options) { {} }
@@ -20,7 +22,7 @@ RSpec.describe Api::V2::MeasureSerializer do
         type: 'measure',
         attributes: {
           effective_start_date: 3.years.ago.beginning_of_day.strftime('%FT%T.%LZ'),
-          effective_end_date: nil,
+          effective_end_date: 10.years.since.beginning_of_day.strftime('%FT%T.%LZ'),
           excise: false,
           export: true,
           import: true,
@@ -42,7 +44,15 @@ RSpec.describe Api::V2::MeasureSerializer do
           goods_nomenclature: {
             data: { id: measure.goods_nomenclature_sid.to_s, type: 'commodity' },
           },
-          legal_acts: { data: [] },
+          legal_acts: {
+            data: [{ id: '1', type: 'legal_act' }],
+          },
+          justification_legal_act: {
+            data: { id: '12345', type: 'legal_act' },
+          },
+          measure_generating_legal_act: {
+            data: { id: '1', type: 'legal_act' },
+          },
           measure_components: {
             data: [{ id: measure.measure_components.first.pk.join('-'), type: 'measure_component' }],
           },

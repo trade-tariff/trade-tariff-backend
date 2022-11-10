@@ -25,7 +25,7 @@ FactoryBot.define do
     measure_sid { generate(:measure_sid) }
     measure_type_id { generate(:measure_type_id) }
     measure_generating_regulation_id { generate(:base_regulation_sid) }
-    measure_generating_regulation_role { 1 }
+    measure_generating_regulation_role { Measure::BASE_REGULATION_ROLE }
     additional_code_type_id { generate(:additional_code_type_id) }
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
@@ -115,6 +115,17 @@ FactoryBot.define do
           base_regulation_role: measure.measure_generating_regulation_role,
           effective_end_date: evaluator.base_regulation_effective_end_date || Time.zone.today.in(10.years),
         )
+      end
+    end
+
+    trait :with_justification_regulation do
+      after(:create) do |measure, _evaluator|
+        measure.update(justification_regulation_id: 12_345, justification_regulation_role: Measure::BASE_REGULATION_ROLE)
+
+        create(:base_regulation,
+               base_regulation_id: measure.justification_regulation_id,
+               base_regulation_role: measure.justification_regulation_role,
+               effective_end_date: Time.zone.today.in(10.years))
       end
     end
 
@@ -358,7 +369,7 @@ FactoryBot.define do
     end
 
     trait :with_modification_regulation do
-      measure_generating_regulation_role { 4 }
+      measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
       after(:build) do |measure, _evaluator|
         create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
@@ -366,7 +377,7 @@ FactoryBot.define do
     end
 
     trait :with_abrogated_modification_regulation do
-      measure_generating_regulation_role { 4 }
+      measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
       after(:build) do |measure, _evaluator|
         base_regulation = create(:base_regulation, :abrogated)

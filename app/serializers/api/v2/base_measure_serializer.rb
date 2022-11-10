@@ -20,6 +20,5 @@ module Api
       has_many :footnotes, serializer: Api::V2::Measures::FootnoteSerializer
       has_one :order_number, serializer: Api::V2::Quotas::OrderNumber::QuotaOrderNumberSerializer
     end
-
   end
 end
