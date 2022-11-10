@@ -8,7 +8,14 @@ module Api
 
         set_id :goods_nomenclature_sid
 
-        attributes :goods_nomenclature_sid, :goods_nomenclature_item_id, :headings_from, :headings_to, :description, :formatted_description, :validity_start_date, :validity_end_date
+        attributes :goods_nomenclature_sid,
+                   :goods_nomenclature_item_id,
+                   :headings_from,
+                   :headings_to,
+                   :description,
+                   :formatted_description,
+                   :validity_start_date,
+                   :validity_end_date
 
         has_many :guides, serializer: Api::V2::GuideSerializer
       end
