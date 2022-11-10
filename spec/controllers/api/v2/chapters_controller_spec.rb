@@ -19,6 +19,8 @@ RSpec.describe Api::V2::ChaptersController, 'GET #show' do
           chapter_note: chapter_note.content,
           forum_url: chapter.forum_link&.url,
           section_id: section.id,
+          validity_start_date: chapter.validity_start_date,
+          validity_end_date: chapter.validity_end_date,
         },
         relationships: {
           section: {
@@ -77,6 +79,8 @@ RSpec.describe Api::V2::ChaptersController, 'GET #show' do
             leaf: true,
             description_plain: heading.description_plain,
             formatted_description: heading.formatted_description,
+            validity_start_date: chapter.validity_start_date,
+            validity_end_date: chapter.validity_end_date,
           },
           relationships: {
             children: {

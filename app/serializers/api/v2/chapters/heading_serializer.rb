@@ -10,7 +10,8 @@ module Api
 
         attributes :goods_nomenclature_sid, :goods_nomenclature_item_id,
                    :declarable, :description, :producline_suffix, :leaf,
-                   :description_plain, :formatted_description
+                   :description_plain, :formatted_description, :validity_start_date,
+                   :validity_end_date
 
         has_many :children, record_type: 'heading', serializer: Api::V2::Chapters::HeadingLeafSerializer
       end
