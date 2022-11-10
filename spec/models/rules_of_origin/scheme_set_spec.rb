@@ -122,4 +122,10 @@ RSpec.describe RulesOfOrigin::SchemeSet do
       it { expect { read_file }.to raise_exception Errno::ENOENT }
     end
   end
+
+  describe '#all_schemes' do
+    subject { scheme_set.all_schemes }
+
+    it { is_expected.to eql scheme_set.schemes.map(&scheme_set.method(:scheme)) }
+  end
 end

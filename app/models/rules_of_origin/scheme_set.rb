@@ -47,6 +47,10 @@ module RulesOfOrigin
       @_schemes.values_at(*(@_countries[country_code] || []))
     end
 
+    def all_schemes
+      @_schemes.values
+    end
+
     def read_referenced_file(*path_components)
       unless path_components.many? &&
           path_components.all?(&method(:valid_referenced_file?))

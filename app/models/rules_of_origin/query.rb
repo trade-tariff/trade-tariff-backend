@@ -15,6 +15,8 @@ module RulesOfOrigin
     end
 
     def rules
+      return {} unless querying_for_rules?
+
       schemes_and_their_id_rules.transform_values do |id_rules|
         # convert the id_rules from the mapping to Rule instances loaded from
         # the RuleSet
@@ -23,7 +25,11 @@ module RulesOfOrigin
     end
 
     def schemes
-      @schemes ||= scheme_set.schemes_for_country(country_code)
+      @schemes ||= if querying_for_rules?
+                     scheme_set.schemes_for_country(country_code)
+                   else
+                     scheme_set.all_schemes
+                   end
     end
 
     def scheme_codes
@@ -35,6 +41,8 @@ module RulesOfOrigin
     end
 
     def scheme_rule_sets
+      return {} unless querying_for_rules?
+
       schemes.index_by(&:scheme_code)
              .transform_values { |sc| sc.rule_sets_for_subheading(@heading_code) }
     end
@@ -49,8 +57,14 @@ module RulesOfOrigin
     end
 
     def validate!
-      raise InvalidParams unless HEADING_CHECKER.match?(heading_code)
-      raise InvalidParams unless COUNTRY_CHECKER.match?(country_code)
+      if heading_code.present? || country_code.present?
+        raise InvalidParams unless HEADING_CHECKER.match?(heading_code)
+        raise InvalidParams unless COUNTRY_CHECKER.match?(country_code)
+      end
+    end
+
+    def querying_for_rules?
+      heading_code.present? && country_code.present?
     end
   end
 end
