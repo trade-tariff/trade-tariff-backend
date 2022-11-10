@@ -389,13 +389,13 @@ class Measure < Sequel::Model
   end
 
   def verbose_duty_expression
-    prettify_generated_duty_expression(measure_components.map(&:verbose_duty_expression).join(' '))
+    prettify_generated_duty_expression!(measure_components.map(&:verbose_duty_expression).join(' '))
   end
 
-  def prettify_generated_duty_expression(duty_expression)
+  def prettify_generated_duty_expression!(duty_expression)
     duty_expression.sub!(/\s\s/, ' ')
     duty_expression.sub!(/\s%/, '%') if duty_expression.scan(/\d\s%/).present?
-    duty_expression.sub!(/\/\s[a-zA-Z]/, &:downcase) if duty_expression.scan(/\/\s[a-zA-Z]/).present?
+    duty_expression.sub!(/\/\s[a-zA-Z]/, &:downcase)
     duty_expression
   end
 
