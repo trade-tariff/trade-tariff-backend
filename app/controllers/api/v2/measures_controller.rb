@@ -22,6 +22,8 @@ module Api
             duty_expression
             measure_type
             legal_acts
+            measure_generating_legal_act
+            justification_legal_act
             measure_conditions
             measure_conditions.measure_condition_components
             measure_components

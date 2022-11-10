@@ -126,11 +126,23 @@ module Api
         end
 
         def measure_generating_legal_act_id
-          find_legal_act(measure_generating_regulation_id)&.regulation_id
+          measure_generating_legal_act&.regulation_id
+        end
+
+        def measure_generating_legal_act
+          mgla = find_legal_act(measure_generating_regulation_id)
+
+          Api::V2::Measures::MeasureLegalActPresenter.new(mgla, self) if mgla
         end
 
         def justification_legal_act_id
-          find_legal_act(justification_regulation_id)&.regulation_id
+          justification_regulation_id
+        end
+
+        def justification_legal_act
+          if justification_regulation
+            Api::V2::Measures::MeasureLegalActPresenter.new(justification_regulation, self)
+          end
         end
 
       private

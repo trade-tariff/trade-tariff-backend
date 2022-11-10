@@ -180,7 +180,6 @@ class Measure < Sequel::Model
     result = []
     result << suspending_regulation
     result << generating_regulation
-    result << justification_regulation
     result << generating_regulation.base_regulation if measure_generating_regulation_role == MODIFICATION_REGULATION_ROLE
     result.compact
   end
