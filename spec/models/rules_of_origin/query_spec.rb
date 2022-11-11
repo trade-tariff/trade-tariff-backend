@@ -34,6 +34,8 @@ RSpec.describe RulesOfOrigin::Query do
   end
 
   context 'with heading and country codes' do
+    it { is_expected.to have_attributes querying_for_rules?: true }
+
     describe '#rules' do
       subject { query.rules[roo_scheme_code] }
 
@@ -138,5 +140,6 @@ RSpec.describe RulesOfOrigin::Query do
     it { is_expected.to have_attributes schemes: roo_data_set.scheme_set.all_schemes }
     it { is_expected.to have_attributes rules: {} }
     it { is_expected.to have_attributes scheme_rule_sets: {} }
+    it { is_expected.to have_attributes querying_for_rules?: false }
   end
 end

@@ -47,6 +47,10 @@ module RulesOfOrigin
              .transform_values { |sc| sc.rule_sets_for_subheading(@heading_code) }
     end
 
+    def querying_for_rules?
+      heading_code.present? && country_code.present?
+    end
+
     class InvalidParams < ArgumentError; end
 
     private
@@ -61,10 +65,6 @@ module RulesOfOrigin
         raise InvalidParams unless HEADING_CHECKER.match?(heading_code)
         raise InvalidParams unless COUNTRY_CHECKER.match?(country_code)
       end
-    end
-
-    def querying_for_rules?
-      heading_code.present? && country_code.present?
     end
   end
 end

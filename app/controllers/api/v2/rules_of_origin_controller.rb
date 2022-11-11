@@ -14,12 +14,32 @@ module Api
           query.scheme_rule_sets,
         )
 
-        @serializer = Api::V2::RulesOfOrigin::SchemeSerializer.new(
-          presented_schemes,
-          include: %i[links proofs rules articles rule_sets rule_sets.rules origin_reference_document],
-        )
+        if query.querying_for_rules?
+          render json: full_serializer(presented_schemes).serializable_hash
+        else
+          render json: minimal_serializer(presented_schemes).serializable_hash
+        end
+      end
 
-        render json: @serializer.serializable_hash
+    private
+
+      def full_serializer(schemes)
+        Api::V2::RulesOfOrigin::FullSchemeSerializer.new schemes, include: %i[
+          links
+          proofs
+          rules
+          articles
+          rule_sets
+          rule_sets.rules
+          origin_reference_document
+        ]
+      end
+
+      def minimal_serializer(schemes)
+        Api::V2::RulesOfOrigin::SchemeSerializer.new schemes, include: %i[
+          links
+          origin_reference_document
+        ]
       end
     end
   end
