@@ -12,7 +12,7 @@ module Api
                    :officialjournal_page, :published_date, :regulation_code,
                    :regulation_url, :description
 
-        attribute :role, &:base_regulation_role
+        attribute :role
       end
     end
   end
