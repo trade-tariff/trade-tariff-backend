@@ -17,11 +17,10 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
       it 'returns the MeasureLegalActPresenter' do
         expect(presenter.measure_generating_legal_act).to be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
       end
-    end
 
-    describe '#measure_generating_legal_act_id' do
-      it 'has correct ID' do
-        expect(presenter.measure_generating_legal_act_id).to eq(measure.measure_generating_regulation_id)
+      it 'wraps the correct legal act' do
+        expect(presenter.measure_generating_legal_act).to \
+          have_attributes(regulation_id: measure.measure_generating_regulation_id)
       end
     end
   end
@@ -29,13 +28,18 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
   context 'when measure has a justification_legal_act' do
     let(:measure) { create(:measure, :with_justification_regulation) }
 
-    describe '#measure_generating_legal_act' do
+    describe '#justification_legal_act' do
       it 'returns the MeasureLegalActPresenter' do
         expect(presenter.justification_legal_act).to be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
       end
+
+      it 'wraps the correct legal act' do
+        expect(presenter.justification_legal_act).to \
+          have_attributes(regulation_id: measure.justification_regulation_id)
+      end
     end
 
-    describe '#measure_generating_legal_act_id' do
+    describe '#justification_legal_act_id' do
       it 'has correct ID' do
         expect(presenter.justification_legal_act_id).to eq(measure.justification_regulation_id)
       end

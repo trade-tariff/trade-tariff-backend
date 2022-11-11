@@ -136,7 +136,7 @@ module Api
         end
 
         def justification_legal_act_id
-          justification_regulation_id
+          justification_regulation_id # From measure
         end
 
         def justification_legal_act

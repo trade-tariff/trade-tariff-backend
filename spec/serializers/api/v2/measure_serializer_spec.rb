@@ -45,13 +45,13 @@ RSpec.describe Api::V2::MeasureSerializer do
             data: { id: measure.goods_nomenclature_sid.to_s, type: 'commodity' },
           },
           legal_acts: {
-            data: [{ id: '1', type: 'legal_act' }],
+            data: [{ id: measure.measure_generating_regulation_id, type: 'legal_act' }],
           },
           justification_legal_act: {
             data: { id: '12345', type: 'legal_act' },
           },
           measure_generating_legal_act: {
-            data: { id: '1', type: 'legal_act' },
+            data: { id: measure.measure_generating_regulation_id, type: 'legal_act' },
           },
           measure_components: {
             data: [{ id: measure.measure_components.first.pk.join('-'), type: 'measure_component' }],
