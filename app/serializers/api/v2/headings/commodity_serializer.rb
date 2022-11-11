@@ -16,7 +16,9 @@ module Api
                    :goods_nomenclature_sid,
                    :formatted_description,
                    :description_plain,
-                   :parent_sid
+                   :parent_sid,
+                   :validity_start_date,
+                   :validity_end_date
 
         attribute :declarable do |commodity|
           # TODO: Once we've got the ES cache populated with declarable we can use a simple attribute to pull this out
