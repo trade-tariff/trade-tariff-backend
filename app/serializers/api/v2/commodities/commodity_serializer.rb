@@ -27,8 +27,8 @@ module Api
         has_one :chapter, serializer: Api::V2::Commodities::ChapterSerializer
         has_one :heading, serializer: Api::V2::Commodities::HeadingSerializer
         has_many :ancestors, serializer: Api::V2::Commodities::AncestorsSerializer
-        has_many :import_measures, record_type: :measure, serializer: Api::V2::Measures::MeasureSerializer
-        has_many :export_measures, record_type: :measure, serializer: Api::V2::Measures::MeasureSerializer
+        has_many :import_measures, record_type: :measure, serializer: Api::V2::Declarable::MeasureSerializer
+        has_many :export_measures, record_type: :measure, serializer: Api::V2::Declarable::MeasureSerializer
 
         has_one :import_trade_summary, serializer: Api::V2::Shared::ImportTradeSummarySerializer
 

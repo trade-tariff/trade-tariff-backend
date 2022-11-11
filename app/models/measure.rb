@@ -148,7 +148,8 @@ class Measure < Sequel::Model
       self[:validity_end_date]
     elsif self[:validity_end_date].present? && generating_regulation.present? && generating_regulation.effective_end_date.present?
       self[:validity_end_date] > generating_regulation.effective_end_date ? generating_regulation.effective_end_date : self[:validity_end_date]
-    elsif self[:validity_end_date].present? && validity_date_justified?
+    elsif self[:validity_end_date].present? && justification_regulation_present?
+
       self[:validity_end_date]
     elsif generating_regulation.present?
       generating_regulation.effective_end_date
@@ -156,12 +157,21 @@ class Measure < Sequel::Model
   end
 
   def generating_regulation
-    @generating_regulation ||= case measure_generating_regulation_role
-                               when BASE_REGULATION_ROLE then base_regulation
-                               when MODIFICATION_REGULATION_ROLE then modification_regulation
+    @generating_regulation ||= if measure_generating_regulation_role == MODIFICATION_REGULATION_ROLE
+                                 modification_regulation
                                else
                                  base_regulation
                                end
+  end
+
+  def justification_regulation
+    @justification_regulation ||= if justification_regulation_role == MODIFICATION_REGULATION_ROLE
+                                    ModificationRegulation.find(modification_regulation_id: justification_regulation_id,
+                                                                modification_regulation_role: justification_regulation_role)
+                                  else
+                                    BaseRegulation.find(base_regulation_id: justification_regulation_id,
+                                                        base_regulation_role: justification_regulation_role)
+                                  end
   end
 
   def legal_acts
@@ -315,7 +325,7 @@ class Measure < Sequel::Model
     national
   end
 
-  def validity_date_justified?
+  def justification_regulation_present?
     justification_regulation_role.present? && justification_regulation_id.present?
   end
 
