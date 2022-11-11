@@ -6,6 +6,8 @@ module Api
           TradeTariffBackend.rules_of_origin,
           params[:heading_code],
           params[:country_code],
+          params[:filter]&.permit(*::RulesOfOrigin::Query::SUPPORTED_FILTERS)
+                         &.to_hash,
         )
 
         presented_schemes = Api::V2::RulesOfOrigin::SchemePresenter.for_many(

@@ -24,7 +24,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
     end
 
     let(:query) do
-      RulesOfOrigin::Query.new(roo_data_set, roo_heading_code, roo_country_code)
+      RulesOfOrigin::Query.new(roo_data_set, roo_heading_code, roo_country_code, nil)
     end
 
     it { is_expected.to have_attributes length: 1 }
@@ -33,7 +33,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
     it { expect(presenters[0].rule_sets).to be_instance_of Array }
 
     context 'when presenting all schemes' do
-      let(:query) { RulesOfOrigin::Query.new(roo_data_set, nil, nil) }
+      let(:query) { RulesOfOrigin::Query.new(roo_data_set, nil, nil, nil) }
 
       it { is_expected.to have_attributes length: 1 }
       it { is_expected.to all be_instance_of described_class }

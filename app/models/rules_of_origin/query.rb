@@ -2,16 +2,19 @@ module RulesOfOrigin
   class Query
     HEADING_CHECKER = /\A\d{6}\z/
     COUNTRY_CHECKER = /\A[A-Z]{2}\z/
+    SUPPORTED_FILTERS = %w[has_article].freeze
 
-    attr_reader :heading_code, :country_code
+    attr_reader :heading_code, :country_code, :filter
 
     delegate :scheme_set, :rule_set, :heading_mappings, to: :@data_set
 
-    def initialize(data_set, heading_code, country_code)
+    def initialize(data_set, heading_code, country_code, filter)
       @data_set = data_set
       @heading_code = heading_code.to_s.slice(0, 6)
       @country_code = country_code.to_s.upcase
       validate!
+
+      self.filter = filter if filter
     end
 
     def rules
@@ -27,6 +30,8 @@ module RulesOfOrigin
     def schemes
       @schemes ||= if querying_for_rules?
                      scheme_set.schemes_for_country(country_code)
+                   elsif filtering_schemes?
+                     scheme_set.schemes_for_filter(**filter.symbolize_keys)
                    else
                      scheme_set.all_schemes
                    end
@@ -51,9 +56,21 @@ module RulesOfOrigin
       heading_code.present? && country_code.present?
     end
 
+    def filtering_schemes?
+      !filter.nil?
+    end
+
     class InvalidParams < ArgumentError; end
+    class InvalidFilter < ArgumentError; end
 
     private
+
+    def filter=(filter)
+      raise InvalidFilter unless filter.is_a?(Hash)
+      raise InvalidFilter unless filter.keys.all?(&SUPPORTED_FILTERS.method(:include?))
+
+      @filter = filter
+    end
 
     def schemes_and_their_id_rules
       @schemes_and_their_id_rules ||=

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe RulesOfOrigin::Query do
   subject(:query) do
-    described_class.new roo_data_set, heading_code, country_code
+    described_class.new roo_data_set, heading_code, country_code, nil
   end
 
   include_context 'with fake rules of origin data'
@@ -35,6 +35,7 @@ RSpec.describe RulesOfOrigin::Query do
 
   context 'with heading and country codes' do
     it { is_expected.to have_attributes querying_for_rules?: true }
+    it { is_expected.to have_attributes filtering_schemes?: false }
 
     describe '#rules' do
       subject { query.rules[roo_scheme_code] }
@@ -123,7 +124,7 @@ RSpec.describe RulesOfOrigin::Query do
       it { is_expected.to include schemes.keys.second }
       it { is_expected.not_to include schemes.keys.third }
 
-      describe 'matched rule sets' do
+      context 'with matched rule sets' do
         subject { scheme_rule_sets.values.first.map(&:id) }
 
         it { is_expected.not_to include rule_sets.first.id }
@@ -134,12 +135,37 @@ RSpec.describe RulesOfOrigin::Query do
   end
 
   context 'without heading or country code' do
-    let(:heading_code) { nil }
-    let(:country_code) { nil }
+    subject(:query) do
+      described_class.new roo_data_set, nil, nil, filter
+    end
+
+    let(:filter) { nil }
 
     it { is_expected.to have_attributes schemes: roo_data_set.scheme_set.all_schemes }
     it { is_expected.to have_attributes rules: {} }
     it { is_expected.to have_attributes scheme_rule_sets: {} }
     it { is_expected.to have_attributes querying_for_rules?: false }
+    it { is_expected.to have_attributes filtering_schemes?: false }
+
+    context 'with filter' do
+      let(:filter) { { 'has_article' => 'duty-drawback' } }
+
+      it { is_expected.to have_attributes rules: {} }
+      it { is_expected.to have_attributes scheme_rule_sets: {} }
+      it { is_expected.to have_attributes querying_for_rules?: false }
+      it { is_expected.to have_attributes filtering_schemes?: true }
+    end
+
+    context 'with invalid filter' do
+      let(:filter) { 'random' }
+
+      it { expect { query }.to raise_exception described_class::InvalidFilter }
+    end
+
+    context 'with unknown filter' do
+      let(:filter) { { 'has_heading' => 'something' } }
+
+      it { expect { query }.to raise_exception described_class::InvalidFilter }
+    end
   end
 end

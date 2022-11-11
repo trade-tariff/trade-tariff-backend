@@ -51,5 +51,15 @@ RSpec.describe Api::V2::RulesOfOriginController do
       it { expect(first_scheme).to include 'scheme_code' }
       it { expect(first_scheme).not_to include 'introductory_notes' }
     end
+
+    context 'with filtered list of schemes' do
+      let :make_request do
+        get api_rules_of_origin_schemes_path(filter: { has_article: 'duty-drawback' },
+                                             format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
   end
 end

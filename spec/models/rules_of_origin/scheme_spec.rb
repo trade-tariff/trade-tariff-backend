@@ -280,4 +280,27 @@ RSpec.describe RulesOfOrigin::Scheme do
       it { is_expected.to be_empty }
     end
   end
+
+  describe '#has_article?' do
+    subject { scheme.has_article? article.article }
+
+    let(:scheme) { build :rules_of_origin_scheme, :with_articles }
+    let(:article) { scheme.articles.first }
+
+    context 'with matching article' do
+      it { is_expected.to be true }
+    end
+
+    context 'with matching but blank article' do
+      before { allow(article).to receive(:content).and_return '' }
+
+      it { is_expected.to be false }
+    end
+
+    context 'without matching article' do
+      subject { scheme.has_article? 'something-unknown' }
+
+      it { is_expected.to be false }
+    end
+  end
 end

@@ -51,6 +51,16 @@ module RulesOfOrigin
       @_schemes.values
     end
 
+    def schemes_for_filter(has_article: nil)
+      filtered_schemes = all_schemes.dup
+
+      if has_article
+        filtered_schemes.select! { |scheme| scheme.has_article?(has_article) }
+      end
+
+      filtered_schemes
+    end
+
     def read_referenced_file(*path_components)
       unless path_components.many? &&
           path_components.all?(&method(:valid_referenced_file?))

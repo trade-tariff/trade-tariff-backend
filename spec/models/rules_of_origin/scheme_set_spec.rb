@@ -128,4 +128,20 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
     it { is_expected.to eql scheme_set.schemes.map(&scheme_set.method(:scheme)) }
   end
+
+  describe '#schemes_for_filter' do
+    subject { scheme_set.schemes_for_filter(has_article: article) }
+
+    let :scheme_set do
+      build :rules_of_origin_scheme_set, schemes: [
+        attributes_for(:rules_of_origin_scheme, :with_articles),
+        attributes_for(:rules_of_origin_scheme),
+      ]
+    end
+
+    let(:article) { scheme_set.all_schemes.first.articles.first.article }
+
+    it { is_expected.to include scheme_set.all_schemes.first }
+    it { is_expected.not_to include scheme_set.all_schemes.second }
+  end
 end
