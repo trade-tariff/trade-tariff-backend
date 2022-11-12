@@ -124,6 +124,7 @@ RSpec.describe Cache::HeadingSerializer do
                   id: String,
                   base: String,
                   formatted_base: String,
+                  verbose_duty: String,
                 },
                 measure_type_id: String,
                 measure_type: {
