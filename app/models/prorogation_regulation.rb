@@ -3,4 +3,8 @@ class ProrogationRegulation < Sequel::Model
                                  prorogation_regulation_role]
 
   set_primary_key %i[prorogation_regulation_id prorogation_regulation_role]
+
+  def role
+    prorogation_regulation_role
+  end
 end

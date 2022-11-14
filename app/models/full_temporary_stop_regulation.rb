@@ -19,4 +19,8 @@ class FullTemporaryStopRegulation < Sequel::Model
   def effective_start_date
     validity_start_date.to_date
   end
+
+  def role
+    full_temporary_stop_regulation_role
+  end
 end
