@@ -29,6 +29,8 @@ module Cache
           description: heading.heading.description,
           formatted_description: heading.heading.formatted_description,
           description_plain: heading.heading.description_plain,
+          validity_start_date: heading.validity_start_date&.strftime('%FT%T.%LZ'),
+          validity_end_date: heading.validity_end_date,
         }
       end
 

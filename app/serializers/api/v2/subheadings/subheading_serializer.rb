@@ -13,7 +13,9 @@ module Api
                    :number_indents,
                    :producline_suffix,
                    :description,
-                   :formatted_description
+                   :formatted_description,
+                   :validity_start_date,
+                   :validity_end_date
 
         attribute :declarable do
           false

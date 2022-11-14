@@ -197,6 +197,8 @@ RSpec.describe Cache::HeadingSerializer do
           description: '',
           formatted_description: '',
           description_plain: '',
+          validity_start_date: String,
+          validity_end_date: nil,
         },
         footnotes: Array,
         commodities: Array,
