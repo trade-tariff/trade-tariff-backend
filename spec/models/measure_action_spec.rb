@@ -12,6 +12,7 @@ RSpec.describe MeasureAction do
   end
 
   it_behaves_like 'a positive measure action', '01'
+  it_behaves_like 'a positive measure action', '07'
   it_behaves_like 'a positive measure action', '24'
   it_behaves_like 'a positive measure action', '25'
   it_behaves_like 'a positive measure action', '26'
@@ -24,7 +25,6 @@ RSpec.describe MeasureAction do
   it_behaves_like 'a negative measure action', '04'
   it_behaves_like 'a negative measure action', '05'
   it_behaves_like 'a negative measure action', '06'
-  it_behaves_like 'a negative measure action', '07'
   it_behaves_like 'a negative measure action', '08'
   it_behaves_like 'a negative measure action', '09'
   it_behaves_like 'a negative measure action', '16'
