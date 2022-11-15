@@ -8,9 +8,9 @@ module Api
       private
 
       def presented_measure
-        measure = Measure
-          .where(measure_sid: params[:id])
-          .take
+        measure = Measure.actual
+                         .where(measure_sid: params[:id])
+                         .take
 
         @presented_measure = Api::V2::Measures::MeasurePresenter.new(measure, measure.goods_nomenclature)
       end

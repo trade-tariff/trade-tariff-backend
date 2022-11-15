@@ -12,5 +12,11 @@ RSpec.describe Api::V2::MeasuresController do
     end
 
     it_behaves_like 'a successful jsonapi response'
+
+    context 'for historical measure' do
+      let(:measure) { create(:measure, validity_end_date: 2.days.ago) }
+
+      it { is_expected.to have_http_status :not_found }
+    end
   end
 end
