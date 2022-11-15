@@ -122,7 +122,7 @@ module Api
         end
 
         def find_legal_act(regulation_id)
-          legal_acts.find { |legal_act| get_regulation_id(legal_act) == regulation_id }
+          legal_acts.find { |legal_act| legal_act.regulation_id == regulation_id }
         end
 
         def measure_generating_legal_act_id
@@ -152,14 +152,6 @@ module Api
             measure_type_id,
             geographical_area_id,
           )
-        end
-
-        def get_regulation_id(legal_act)
-          if legal_act.role == Measure::MODIFICATION_REGULATION_ROLE
-            legal_act.modification_regulation_id
-          else
-            legal_act.base_regulation_id
-          end
         end
       end
     end
