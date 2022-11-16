@@ -47,6 +47,7 @@ module News
       super
 
       validates_presence :slug
+      validates_presence :precis if show_on_updates_page
       validates_presence :collection_ids, message: 'must include at least one collection'
     end
 

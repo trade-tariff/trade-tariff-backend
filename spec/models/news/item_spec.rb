@@ -5,6 +5,8 @@ RSpec.describe News::Item do
     it { is_expected.to respond_to :start_date }
     it { is_expected.to respond_to :end_date }
     it { is_expected.to respond_to :title }
+    it { is_expected.to respond_to :slug }
+    it { is_expected.to respond_to :precis }
     it { is_expected.to respond_to :content }
     it { is_expected.to respond_to :display_style }
     it { is_expected.to respond_to :show_on_xi }
@@ -20,6 +22,7 @@ RSpec.describe News::Item do
 
     it { is_expected.to include(title: ['is not present']) }
     it { is_expected.to include(content: ['is not present']) }
+    it { is_expected.not_to include(precis: ['is not present']) }
     it { is_expected.to include(display_style: ['is not present']) }
     it { is_expected.to include(show_on_uk: ['is not present']) }
     it { is_expected.to include(show_on_xi: ['is not present']) }
@@ -41,6 +44,12 @@ RSpec.describe News::Item do
       let(:instance) { described_class.new slug: 'testing' }
 
       it { is_expected.to include(slug: ['is already taken']) }
+    end
+
+    context 'when showing on updates page' do
+      let(:instance) { described_class.new(show_on_updates_page: true) }
+
+      it { is_expected.to include(precis: ['is not present']) }
     end
   end
 

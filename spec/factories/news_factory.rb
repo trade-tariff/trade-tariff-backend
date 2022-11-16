@@ -21,6 +21,7 @@ FactoryBot.define do
 
     start_date { 1.day.ago }
     sequence(:title) { |n| "News item #{n}" }
+    precis { 'This is the precis' }
     display_style { News::Item::DISPLAY_REGULAR }
     show_on_xi { true }
     show_on_uk { true }
