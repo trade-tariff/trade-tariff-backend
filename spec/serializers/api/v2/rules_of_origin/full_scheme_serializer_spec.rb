@@ -99,6 +99,7 @@ RSpec.describe Api::V2::RulesOfOrigin::FullSchemeSerializer do
           attributes: {
             text: scheme.links[0].text,
             url: scheme.links[0].url,
+            source: scheme.links[0].source,
           },
         },
         {
@@ -107,6 +108,7 @@ RSpec.describe Api::V2::RulesOfOrigin::FullSchemeSerializer do
           attributes: {
             text: scheme.links[1].text,
             url: scheme.links[1].url,
+            source: scheme.links[1].source,
           },
         },
         {

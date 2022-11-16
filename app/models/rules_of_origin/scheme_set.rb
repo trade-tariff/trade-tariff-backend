@@ -90,7 +90,11 @@ module RulesOfOrigin
     end
 
     def build_links(links)
-      links.map(&Link.method(:new_with_check)).compact
+      links.map(&method(:build_link)).compact
+    end
+
+    def build_link(link_data)
+      Link.new_with_check link_data.merge(source: 'scheme_set')
     end
 
     def build_schemes(schemes_data)

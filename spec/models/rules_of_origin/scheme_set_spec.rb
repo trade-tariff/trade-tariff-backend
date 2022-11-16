@@ -87,6 +87,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
     it { is_expected.to have_attributes length: 1 }
     it { is_expected.to all be_instance_of RulesOfOrigin::Link }
+    it { is_expected.to all have_attributes source: 'scheme_set' }
   end
 
   describe '#read_referenced_file' do
