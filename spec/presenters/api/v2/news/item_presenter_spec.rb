@@ -28,7 +28,7 @@ RSpec.describe Api::V2::News::ItemPresenter do
   describe '.wrap' do
     subject { described_class.wrap items }
 
-    let(:items) { create_list :news_item, 3, :with_collections }
+    let(:items) { create_list :news_item, 3 }
 
     it { is_expected.to all be_instance_of described_class }
   end

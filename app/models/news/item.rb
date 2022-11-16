@@ -47,6 +47,7 @@ module News
       super
 
       validates_presence :slug
+      validates_presence :collection_ids, message: 'must include at least one collection'
     end
 
     dataset_module do

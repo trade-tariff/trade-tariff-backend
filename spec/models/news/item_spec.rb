@@ -48,18 +48,14 @@ RSpec.describe News::Item do
     describe '#collections' do
       subject { described_class.where(id: item.id).take.collections.pluck(:id) }
 
-      before { collections.each(&item.method(:add_collection)) }
+      before { item.add_collection additional_collection }
 
       let(:item) { create :news_item }
 
-      let :collections do
-        [
-          create(:news_collection, name: 'BBB'),
-          create(:news_collection, name: 'AAA'),
-        ]
-      end
+      let(:additional_collection) { create(:news_collection, name: 'AAA') }
 
-      it { is_expected.to eq collections.map(&:id).reverse }
+      it { is_expected.to include item.collections.first.id }
+      it { is_expected.to include additional_collection.id }
 
       context 'with priorities' do
         before { item.add_collection priority }
@@ -67,7 +63,7 @@ RSpec.describe News::Item do
         let(:priority) { create(:news_collection, name: 'CCC', priority: 1) }
 
         let :high_then_low_priority_collection_ids do
-          [priority.id] + collections.map(&:id).reverse
+          [priority.id] + item.collections.map(&:id).without(priority.id).reverse
         end
 
         it { is_expected.to eq high_then_low_priority_collection_ids }
@@ -78,7 +74,7 @@ RSpec.describe News::Item do
 
         before { news_item.destroy }
 
-        let(:news_item) { create :news_item, :with_collections }
+        let(:news_item) { create :news_item }
 
         it { is_expected.not_to include news_item.id }
       end
@@ -87,15 +83,12 @@ RSpec.describe News::Item do
     describe '#collection_ids' do
       subject { item.collection_ids }
 
-      before do
-        collections.each(&item.method(:add_collection))
-        item.reload
-      end
+      before { original_collection_ids }
 
-      let(:item) { create :news_item }
-      let(:collections) { create_pair :news_collection }
+      let(:item) { create :news_item, collection_count: 2 }
+      let(:original_collection_ids) { item.collections.pluck(:id) }
 
-      it { is_expected.to match_array collections.map(&:id) }
+      it { is_expected.to match_array original_collection_ids }
 
       context 'with newly assigned ids' do
         before { item.collection_ids = [999_999] }
@@ -106,24 +99,24 @@ RSpec.describe News::Item do
       context 'with extended ids list' do
         before { item.collection_ids += [999_999] }
 
-        it { is_expected.to match_array collections.map(&:id) + [999_999] }
+        it { is_expected.to match_array original_collection_ids + [999_999] }
       end
 
       context 'with appended ids list' do
         before { item.collection_ids << 999_999 }
 
-        it { is_expected.to match_array collections.map(&:id) + [999_999] }
+        it { is_expected.to match_array original_collection_ids + [999_999] }
       end
 
       context 'when saving' do
-        let(:another) { create :news_collection }
+        let(:new_collection) { create :news_collection }
 
         before do
-          item.collection_ids = [collections.first.id, another.id]
+          item.collection_ids = [original_collection_ids.first, new_collection.id]
           item.save.reload
         end
 
-        it { is_expected.to match_array [collections.first.id, another.id] }
+        it { is_expected.to match_array [original_collection_ids.first, new_collection.id] }
       end
     end
 
@@ -141,7 +134,8 @@ RSpec.describe News::Item do
         ]
       end
 
-      it { is_expected.to eq %w[AAA] }
+      it { is_expected.to include 'AAA' }
+      it { is_expected.not_to include 'BBB' }
     end
   end
 
@@ -281,91 +275,74 @@ RSpec.describe News::Item do
 
     describe '.for_collection' do
       before do
-        inside_collection
-        outside_collection
+        with_mixed_collections
+        in_other_collection
       end
 
-      let(:inside_collection) { create :news_item, :with_collections, title: 'in' }
-      let(:outside_collection) { create :news_item, title: 'out' }
+      let(:in_published_collection) { create :news_item, title: 'in' }
+      let(:in_other_collection) { create :news_item, title: 'out' }
+
+      let :in_unpublished_collection do
+        create :news_item, title: 'unpublished', collection_traits: :unpublished
+      end
+
+      let :with_mixed_collections do
+        create :news_item, title: 'mixed', collection_ids: [
+          in_published_collection.published_collections.map(&:id).first,
+          in_unpublished_collection.collections.map(&:id).first,
+        ]
+      end
 
       context 'without collection' do
         subject { described_class.for_collection(nil).all }
 
-        before do
-          with_mixed_collection
-          with_unpublished_collection
-        end
-
-        let :with_mixed_collection do
-          item = create :news_item, :with_collections
-          item.add_collection create(:news_collection, :unpublished)
-          item.reload
-        end
-
-        let :with_unpublished_collection do
-          item = create :news_item, collection_ids: [create(:news_collection, :unpublished).id]
-          item.reload
-        end
-
-        it { is_expected.to include inside_collection }
-        it { is_expected.not_to include outside_collection }
-        it { is_expected.to include with_mixed_collection }
-        it { is_expected.not_to include with_unpublished_collection }
+        it { is_expected.to include in_published_collection }
+        it { is_expected.to include in_other_collection }
+        it { is_expected.to include with_mixed_collections }
+        it { is_expected.not_to include in_unpublished_collection }
       end
 
       context 'with known collection' do
         subject do
-          described_class.for_collection(inside_collection.collections.first.id.to_s).all
+          collection_id = in_published_collection.published_collections.first.id.to_s
+          described_class.for_collection(collection_id).all
         end
 
-        it { is_expected.to include inside_collection }
-        it { is_expected.not_to include outside_collection }
+        it { is_expected.to include in_published_collection }
+        it { is_expected.not_to include in_other_collection }
+        it { is_expected.to include with_mixed_collections }
+      end
 
-        context 'when collection is unpublished' do
-          before do
-            inside_collection.collections.first.update published: false
-            inside_collection.reload
-          end
-
-          it { is_expected.not_to include inside_collection }
+      context 'with unpublished collection' do
+        subject do
+          collection_id = in_unpublished_collection.collections.first.id.to_s
+          described_class.for_collection(collection_id).all
         end
 
-        context 'with additional unpublished collection' do
-          before do
-            inside_collection.add_collection create(:news_collection, :unpublished)
-            inside_collection.reload
-          end
-
-          it { is_expected.to include inside_collection }
-        end
+        it { is_expected.to be_empty }
       end
 
       context 'with unknown collection' do
-        subject do
-          described_class.for_collection('0').all
-        end
+        subject { described_class.for_collection('0').all }
 
-        it { is_expected.not_to include inside_collection }
-        it { is_expected.not_to include outside_collection }
+        it { is_expected.to be_empty }
       end
 
       context 'with slugs' do
         context 'with known collection' do
           subject do
-            described_class.for_collection(inside_collection.collections.first.slug).all
+            collection_slug = in_published_collection.collections.first.slug
+            described_class.for_collection(collection_slug).all
           end
 
-          it { is_expected.to include inside_collection }
-          it { is_expected.not_to include outside_collection }
+          it { is_expected.to include in_published_collection }
+          it { is_expected.not_to include in_other_collection }
         end
 
         context 'with unknown slug' do
-          subject do
-            described_class.for_collection('random').all
-          end
+          subject { described_class.for_collection('random').all }
 
-          it { is_expected.not_to include inside_collection }
-          it { is_expected.not_to include outside_collection }
+          it { is_expected.to be_empty }
         end
       end
     end

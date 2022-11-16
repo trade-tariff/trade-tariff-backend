@@ -14,6 +14,11 @@ FactoryBot.define do
   end
 
   factory :news_item, class: 'News::Item' do
+    transient do
+      collection_count { 1 }
+      collection_traits { nil }
+    end
+
     start_date { 1.day.ago }
     sequence(:title) { |n| "News item #{n}" }
     display_style { News::Item::DISPLAY_REGULAR }
@@ -22,6 +27,10 @@ FactoryBot.define do
     show_on_updates_page { false }
     show_on_home_page { false }
     show_on_banner { false }
+
+    collection_ids do
+      create_list(:news_collection, collection_count, *Array.wrap(collection_traits)).map(&:id)
+    end
 
     content do
       <<~CONTENT
@@ -51,20 +60,6 @@ FactoryBot.define do
 
     trait :banner do
       show_on_banner { true }
-    end
-
-    trait :with_collections do
-      transient do
-        collection_count { 1 }
-      end
-
-      after :create do |item, evaluator|
-        evaluator.collection_count.times do
-          item.add_collection create(:news_collection)
-        end
-
-        item.reload
-      end
     end
   end
 end
