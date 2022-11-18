@@ -10,7 +10,9 @@ module Api
                                    .descending
                                    .paginate(current_page, per_page)
 
-          serializer = Api::V2::News::ItemSerializer.new(news_items, include: %w[collections])
+          serializer = Api::V2::News::ItemSerializer.new(news_items,
+                                                         include: %w[collections],
+                                                         meta: pagination_meta(news_items))
 
           render json: serializer.serializable_hash
         end
@@ -21,6 +23,22 @@ module Api
           serializer = Api::V2::News::ItemSerializer.new(news_item)
 
           render json: serializer.serializable_hash
+        end
+
+      private
+
+        def per_page
+          10
+        end
+
+        def pagination_meta(data_set)
+          {
+            pagination: {
+              page: current_page,
+              per_page:,
+              total_count: data_set.pagination_record_count,
+            },
+          }
         end
       end
     end
