@@ -89,6 +89,11 @@ module RulesOfOrigin
       rule_sets.select { |rs| rs.for_subheading? subheading_code }
     end
 
+    def has_article?(article_name)
+      articles.find { |article| article.article == article_name }
+              &.content.present?
+    end
+
     private
 
     def new_proof(proof_attrs)

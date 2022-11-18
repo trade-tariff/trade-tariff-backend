@@ -47,6 +47,20 @@ module RulesOfOrigin
       @_schemes.values_at(*(@_countries[country_code] || []))
     end
 
+    def all_schemes
+      @_schemes.values
+    end
+
+    def schemes_for_filter(has_article: nil)
+      filtered_schemes = all_schemes.dup
+
+      if has_article
+        filtered_schemes.select! { |scheme| scheme.has_article?(has_article) }
+      end
+
+      filtered_schemes
+    end
+
     def read_referenced_file(*path_components)
       unless path_components.many? &&
           path_components.all?(&method(:valid_referenced_file?))
@@ -76,7 +90,11 @@ module RulesOfOrigin
     end
 
     def build_links(links)
-      links.map(&Link.method(:new_with_check)).compact
+      links.map(&method(:build_link)).compact
+    end
+
+    def build_link(link_data)
+      Link.new_with_check link_data.merge(source: 'scheme_set')
     end
 
     def build_schemes(schemes_data)

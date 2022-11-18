@@ -6,6 +6,7 @@ RSpec.describe Api::V2::RulesOfOriginController do
 
     let(:heading_code) { roo_heading_code }
     let(:country_code) { roo_country_code }
+    let(:first_scheme) { JSON.parse(rendered.body)['data'].first['attributes'] }
 
     let :make_request do
       get api_rules_of_origin_schemes_path(format: :json),
@@ -14,6 +15,8 @@ RSpec.describe Api::V2::RulesOfOriginController do
     end
 
     it_behaves_like 'a successful jsonapi response'
+    it { expect(first_scheme).to include 'scheme_code' }
+    it { expect(first_scheme).to include 'introductory_notes' }
 
     context 'without match heading' do
       let(:heading_code) { '010101' }
@@ -32,6 +35,27 @@ RSpec.describe Api::V2::RulesOfOriginController do
         get api_rules_of_origin_path(heading_code:,
                                      country_code:,
                                      format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
+    context 'when listing all schemes' do
+      let :make_request do
+        get api_rules_of_origin_schemes_path(format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+      it { expect(first_scheme).to include 'scheme_code' }
+      it { expect(first_scheme).not_to include 'introductory_notes' }
+    end
+
+    context 'with filtered list of schemes' do
+      let :make_request do
+        get api_rules_of_origin_schemes_path(filter: { has_article: 'duty-drawback' },
+                                             format: :json),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end
 

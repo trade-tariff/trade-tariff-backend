@@ -8,14 +8,9 @@ module Api
 
         set_id :scheme_code
 
-        attributes :scheme_code, :title, :countries, :footnote, :unilateral,
-                   :fta_intro, :introductory_notes, :cumulation_methods
+        attributes :scheme_code, :title, :countries, :unilateral
 
-        has_many :rules, serializer: Api::V2::RulesOfOrigin::RuleSerializer
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
-        has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
-        has_many :articles, serializer: Api::V2::RulesOfOrigin::ArticleSerializer
-        has_many :rule_sets, serializer: Api::V2::RulesOfOrigin::V2::RuleSetSerializer
         has_one :origin_reference_document, serializer: Api::V2::RulesOfOrigin::OriginReferenceDocumentSerializer
       end
     end
