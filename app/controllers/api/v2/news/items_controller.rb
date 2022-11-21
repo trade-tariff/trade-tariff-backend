@@ -22,7 +22,11 @@ module Api
         end
 
         def show
-          news_item = ::News::Item.for_today.with_pk!(params[:id])
+          news_item = if params[:id].present? && !/\A\d+\z/.match?(params[:id])
+                        ::News::Item.for_today.where(slug: params[:id]).take
+                      else
+                        ::News::Item.for_today.with_pk!(params[:id])
+                      end
 
           serializer = Api::V2::News::ItemSerializer.new(news_item)
 

@@ -80,5 +80,32 @@ RSpec.describe Api::V2::News::ItemsController do
     end
 
     it_behaves_like 'a successful jsonapi response'
+
+    context 'with unknown news item' do
+      let :make_request do
+        get api_news_item_path(9999, format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it { is_expected.to have_http_status :not_found }
+    end
+
+    context 'with slug' do
+      let :make_request do
+        get api_news_item_path(news_item.slug, format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
+    context 'with an unknown slug' do
+      let :make_request do
+        get api_news_item_path('something-unknown', format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it { is_expected.to have_http_status :not_found }
+    end
   end
 end
