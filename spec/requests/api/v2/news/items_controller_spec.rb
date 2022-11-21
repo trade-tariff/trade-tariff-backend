@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Api::V2::NewsItemsController do
+RSpec.describe Api::V2::News::ItemsController do
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 
