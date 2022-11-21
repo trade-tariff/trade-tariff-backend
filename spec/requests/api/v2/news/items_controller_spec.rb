@@ -5,82 +5,60 @@ RSpec.describe Api::V2::News::ItemsController do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      get api_news_items_path(format: :json),
+      get api_news_items_path(request_params.merge(format: :json)),
           headers: { 'Accept' => 'application/vnd.uktt.v2' }
     end
+
+    let(:request_params) { {} }
 
     it_behaves_like 'a successful jsonapi response'
 
     context 'with subsequent page' do
-      let :make_request do
-        get api_news_items_path(service: 'uk', format: :json, page: '3'),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
-      end
+      let(:request_params) { { service: 'uk', page: '3' } }
 
       it_behaves_like 'a successful jsonapi response'
     end
 
     context 'with different page size' do
-      let :make_request do
-        get api_news_items_path(service: 'uk', format: :json, per_page: '1'),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
-      end
+      let(:request_params) { { service: 'uk', per_page: '1' } }
 
       it_behaves_like 'a successful jsonapi response'
     end
 
     context 'for uk pages' do
-      let :make_request do
-        get api_news_items_path(service: 'uk', format: :json),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
-      end
+      let(:request_params) { { service: 'uk' } }
 
       it_behaves_like 'a successful jsonapi response'
 
       context 'with only items for home page' do
-        let :make_request do
-          get api_news_items_path(service: 'uk', target: 'home', format: :json),
-              headers: { 'Accept' => 'application/vnd.uktt.v2' }
-        end
+        let(:request_params) { { service: 'uk', target: 'home' } }
 
         it_behaves_like 'a successful jsonapi response'
       end
 
       context 'with only items for updates page' do
-        let :make_request do
-          get api_news_items_path(service: 'uk', target: 'updates', format: :json),
-              headers: { 'Accept' => 'application/vnd.uktt.v2' }
-        end
+        let(:request_params) { { service: 'uk', target: 'updates' } }
 
         it_behaves_like 'a successful jsonapi response'
       end
 
       context 'with items for both updates and home page' do
-        let :make_request do
-          get api_news_items_path(service: 'uk', target: '', format: :json),
-              headers: { 'Accept' => 'application/vnd.uktt.v2' }
-        end
+        let(:request_params) { { service: 'uk', target: '' } }
 
         it_behaves_like 'a successful jsonapi response'
       end
     end
 
     context 'for xi pages' do
-      let :make_request do
-        get api_news_items_path(service: 'xi', format: :json),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
-      end
+      let(:request_params) { { service: 'xi' } }
 
       it_behaves_like 'a successful jsonapi response'
     end
 
     context 'for unknown service pages' do
-      let :make_request do
-        get api_news_items_path(service: 'uk', format: :json),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      let(:request_params) { { service: 'fr' } }
 
-        it { is_expected.to have_http_status :not_found }
-      end
+      it_behaves_like 'a successful jsonapi response'
     end
   end
 
