@@ -227,6 +227,26 @@ RSpec.describe News::Item do
     end
   end
 
+  describe '.years' do
+    subject { described_class.years }
+
+    before do
+      create :news_item, start_date: '2000-01-01'
+      create :news_item, start_date: '2000-01-01'
+      create :news_item, start_date: '2004-01-01'
+      create :news_item, start_date: '2004-01-01', show_on_xi: false
+      create :news_item, start_date: '2008-01-01', show_on_xi: false
+    end
+
+    it { is_expected.to eql [2008, 2004, 2000] }
+
+    context 'with additional scope' do
+      subject { described_class.for_service('xi').years }
+
+      it { is_expected.to eql [2004, 2000] }
+    end
+  end
+
   describe '#slug' do
     subject { instance.save.reload.slug }
 
