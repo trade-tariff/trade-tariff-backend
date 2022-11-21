@@ -11,6 +11,24 @@ RSpec.describe Api::V2::News::ItemsController do
 
     it_behaves_like 'a successful jsonapi response'
 
+    context 'with subsequent page' do
+      let :make_request do
+        get api_news_items_path(service: 'uk', format: :json, page: '3'),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
+    context 'with different page size' do
+      let :make_request do
+        get api_news_items_path(service: 'uk', format: :json, per_page: '1'),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
     context 'for uk pages' do
       let :make_request do
         get api_news_items_path(service: 'uk', format: :json),

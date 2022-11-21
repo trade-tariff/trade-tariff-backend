@@ -2,6 +2,9 @@ module Api
   module V2
     module News
       class ItemsController < ApiController
+        PAGE_SIZES = [1, 10, 20].freeze
+        DEFAULT_PAGE_SIZE = 20
+
         def index
           news_items = ::News::Item.eager(:collections)
                                    .for_service(params[:service])
@@ -28,7 +31,13 @@ module Api
       private
 
         def per_page
-          10
+          requested_page_size = params[:per_page].presence&.to_i
+
+          if PAGE_SIZES.include? requested_page_size
+            requested_page_size
+          else
+            DEFAULT_PAGE_SIZE
+          end
         end
 
         def pagination_meta(data_set)
