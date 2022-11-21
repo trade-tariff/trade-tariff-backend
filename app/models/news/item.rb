@@ -70,6 +70,12 @@ module News
         else self
         end
       end
+
+      def years
+        distinct.select { date_part('year', :start_date).cast(:integer).as(:year) }
+                .order(Sequel.desc(:year))
+                .pluck(:year)
+      end
     end
 
     private
