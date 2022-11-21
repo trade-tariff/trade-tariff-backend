@@ -43,6 +43,12 @@ class MeasureComponent < Sequel::Model
     DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
   end
 
+  def verbose_duty_expression
+    return '' if measure.measure_type_id.in?(%w[DDA DDJ])
+
+    DutyExpressionFormatter.format(duty_expression_formatter_options.merge(verbose: true))
+  end
+
   def duty_expression_str
     return '' if measure.measure_type_id.in?(%w[DDA DDJ])
 

@@ -825,6 +825,57 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#duty_expression_with_national_measurement_units_for ^ #verbose_duty_expression_with_national_measurement_units_for' do
+    let(:commodity) do
+      create :commodity
+    end
+    let(:base) do
+      measure.duty_expression_with_national_measurement_units_for(commodity)
+    end
+    let(:formatted_base) do
+      measure.verbose_duty_expression_with_national_measurement_units_for(commodity)
+    end
+    let(:measure_type) do
+      create :measure_type, :excise
+    end
+    let(:measure) do
+      create :measure, measure_type_id: measure_type.measure_type_id
+    end
+    let(:duty_expression) do
+      create(:duty_expression, :with_description)
+    end
+    let!(:measure_component) do
+      create :measure_component, measure_sid: measure.measure_sid,
+                                 duty_expression_id: duty_expression.duty_expression_id
+    end
+
+    describe '#verbose_duty_expression' do
+      context 'when measure components order' do
+        let(:duty_expression2) do
+          create(:duty_expression, :with_description, duty_expression_id: '00')
+        end
+        let!(:measure_component2) do
+          create :measure_component, measure_sid: measure.measure_sid,
+                                     duty_expression_id: duty_expression2.duty_expression_id
+        end
+
+        it 'orders components by duty_expression_id' do
+          expect(measure.verbose_duty_expression).to eq([measure_component2, measure_component].map(&:verbose_duty_expression).join(' '))
+        end
+      end
+    end
+
+    context 'without national_measurement_unit' do
+      it {
+        expect(base).to match Regexp.new(measure_component.duty_expression_str)
+      }
+
+      it {
+        expect(formatted_base).to match Regexp.new(measure_component.verbose_duty_expression)
+      }
+    end
+  end
+
   describe '#relevant_for_country?' do
     context 'when the measure excludes the country id' do
       subject(:measure) { create(:measure, :with_measure_excluded_geographical_area) }
@@ -1365,5 +1416,24 @@ RSpec.describe Measure do
     include_context 'with regulation measures'
 
     it { is_expected.to eq([4]) } # Modification regulation measure
+  end
+
+  describe '.prettify_generated_duty_expression!' do
+    subject(:measure) { create(:measure) }
+
+    let(:generated_string) { '100 % /  Percentage ABV (% vol) per 100 litre (hl)' }
+    let(:generated_string_without_percent_amount) { '£0.30 / 100 kg per % of sucrose by weight, including other sugars expressed as sucrose (%sacchar.)' }
+
+    it 'removes extra spaces and space before percent symbol and lowercase first character of expansion text' do
+      expect(measure.prettify_generated_duty_expression!(generated_string)).to eq '100% / percentage ABV (% vol) per 100 litre (hl)'
+    end
+
+    it 'does not remove space if unit is not present' do
+      expect(measure.prettify_generated_duty_expression!(generated_string_without_percent_amount)).to eq generated_string_without_percent_amount
+    end
+
+    it 'removes space from unit and not from expansion' do
+      expect(measure.prettify_generated_duty_expression!('100 % /  100 kg per % of sucrose')).to eq '100% / 100 kg per % of sucrose'
+    end
   end
 end
