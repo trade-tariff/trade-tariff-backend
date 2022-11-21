@@ -19,4 +19,8 @@ class MeasurePartialTemporaryStop < Sequel::Model
   def effective_start_date
     validity_start_date.to_date
   end
+
+  def role
+    nil
+  end
 end

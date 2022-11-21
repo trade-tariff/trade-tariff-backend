@@ -25,7 +25,7 @@ FactoryBot.define do
     measure_sid { generate(:measure_sid) }
     measure_type_id { generate(:measure_type_id) }
     measure_generating_regulation_id { generate(:base_regulation_sid) }
-    measure_generating_regulation_role { 1 }
+    measure_generating_regulation_role { Measure::BASE_REGULATION_ROLE }
     additional_code_type_id { generate(:additional_code_type_id) }
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
@@ -47,19 +47,6 @@ FactoryBot.define do
       create(:geographical_area, geographical_area_sid:,
                                  geographical_area_id:,
                                  validity_start_date: validity_start_date - 1.day)
-    end
-
-    trait :with_goods_nomenclature do
-      after(:create) do |measure, evaluator|
-        create(
-          :goods_nomenclature,
-          validity_start_date: measure.validity_start_date - 1.day,
-          goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
-          goods_nomenclature_sid: measure.goods_nomenclature_sid,
-          producline_suffix: evaluator.gono_producline_suffix,
-          indents: evaluator.gono_number_indents,
-        )
-      end
     end
 
     trait :with_gsp do
@@ -131,6 +118,17 @@ FactoryBot.define do
       end
     end
 
+    trait :with_justification_regulation do
+      after(:create) do |measure, _evaluator|
+        measure.update(justification_regulation_id: 12_345, justification_regulation_role: Measure::BASE_REGULATION_ROLE)
+
+        create(:base_regulation,
+               base_regulation_id: measure.justification_regulation_id,
+               base_regulation_role: measure.justification_regulation_role,
+               effective_end_date: Time.zone.today.in(10.years))
+      end
+    end
+
     trait :national do
       sequence(:measure_sid) { |n| -1 * n }
       national { true }
@@ -142,16 +140,23 @@ FactoryBot.define do
 
     trait :with_goods_nomenclature do
       goods_nomenclature do
-        create(
-          :goods_nomenclature,
-          validity_start_date: validity_start_date - 1.day,
-          goods_nomenclature_item_id:,
-          goods_nomenclature_sid:,
-          producline_suffix: gono_producline_suffix,
-          indents: gono_number_indents,
-        )
+        create(:goods_nomenclature,
+               validity_start_date: validity_start_date - 1.day,
+               goods_nomenclature_item_id:,
+               goods_nomenclature_sid:,
+               producline_suffix: gono_producline_suffix,
+               indents: gono_number_indents)
       end
       # noop
+    end
+
+    trait :with_goods_nomenclature_with_heading do
+      with_goods_nomenclature
+
+      after(:create) do |measure, _evaluator|
+        create(:heading, goods_nomenclature_item_id: "#{measure.goods_nomenclature_item_id.first(4)}000000")
+        measure.reload
+      end
     end
 
     trait :with_measure_type do
@@ -364,7 +369,7 @@ FactoryBot.define do
     end
 
     trait :with_modification_regulation do
-      measure_generating_regulation_role { 4 }
+      measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
       after(:build) do |measure, _evaluator|
         create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
@@ -372,7 +377,7 @@ FactoryBot.define do
     end
 
     trait :with_abrogated_modification_regulation do
-      measure_generating_regulation_role { 4 }
+      measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
       after(:build) do |measure, _evaluator|
         base_regulation = create(:base_regulation, :abrogated)

@@ -11,4 +11,8 @@ class ModificationRegulation < Sequel::Model
   def regulation_id
     modification_regulation_id
   end
+
+  def role
+    modification_regulation_role
+  end
 end

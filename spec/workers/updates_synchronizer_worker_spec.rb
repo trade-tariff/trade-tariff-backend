@@ -72,6 +72,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       before do
         stub_const 'UpdatesSynchronizerWorker::CUT_OFF_TIME',
                    cut_off_time.strftime('%H:%M')
+
+        allow(SlackNotifierService).to receive(:call)
       end
 
       let(:service) { 'uk' }
@@ -108,6 +110,10 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
             it { expect(DataMigrator).not_to have_received(:migrate_up!) }
           end
+
+          it 'does not notify Slack ETL channel' do
+            expect(SlackNotifierService).not_to have_received(:call)
+          end
         end
 
         context 'when after cut off time' do
@@ -128,6 +134,10 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
             it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
           end
+
+          it 'notifies Slack ETL channel' do
+            expect(SlackNotifierService).to have_received(:call).with(/CDS file missing/)
+          end
         end
 
         context 'when before cut off but check disabled' do
@@ -147,6 +157,10 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
             subject(:perform) { described_class.new.perform(false, true) }
 
             it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
+          end
+
+          it 'does not notify Slack ETL channel' do
+            expect(SlackNotifierService).not_to have_received(:call)
           end
         end
       end
@@ -170,6 +184,10 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
         it_behaves_like 'a synchronizer worker that queues other workers'
 
         it { expect(described_class.jobs).to be_empty }
+
+        it 'does not notify Slack ETL channel' do
+          expect(SlackNotifierService).not_to have_received(:call)
+        end
 
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true, true) }

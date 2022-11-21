@@ -6,7 +6,7 @@ module RulesOfOrigin
     content_addressable_fields 'url', 'text'
 
     attr_accessor :text, :url
-    attr_writer :id
+    attr_writer :id, :source
 
     class << self
       def new_with_check(attrs = {})
@@ -15,6 +15,10 @@ module RulesOfOrigin
 
         new(attrs)
       end
+    end
+
+    def source
+      @source || 'scheme'
     end
   end
 end

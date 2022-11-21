@@ -21,7 +21,7 @@ module Api
           @scheme = scheme
           @rules = rules || []
           @links = Array.wrap(scheme_set&.links) + @scheme.links
-          @rule_sets = rule_sets
+          @rule_sets = rule_sets || []
         end
 
         def rule_ids

@@ -31,9 +31,11 @@ module News
     end
 
     def after_save
-      (collection_ids - collections.pluck(:id)).each(&method(:add_collection))
-      (collections.pluck(:id) - (collection_ids & collections.pluck(:id)))
-        .each(&method(:remove_collection))
+      to_add = collection_ids - collections.pluck(:id)
+      to_add.each(&method(:add_collection))
+
+      to_remove = collections.pluck(:id) - collection_ids
+      to_remove.each(&method(:remove_collection))
     end
 
     def validate
@@ -73,7 +75,7 @@ module News
     private
 
     def normalise_ids(ids)
-      Array.wrap(ids).map(&:to_i).compact.uniq
+      Array.wrap(ids).map(&:presence).compact.map(&:to_i).uniq
     end
 
     def generate_or_normalise_slug!

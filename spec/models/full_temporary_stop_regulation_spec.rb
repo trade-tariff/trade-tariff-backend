@@ -18,4 +18,8 @@ RSpec.describe FullTemporaryStopRegulation do
       expect(fts_regulation.effective_start_date).to eq fts_regulation.validity_start_date.to_date
     end
   end
+
+  describe '#role' do
+    it { expect(fts_regulation.role).to eq 8 }
+  end
 end

@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe RulesOfOrigin::Query do
   subject(:query) do
-    described_class.new roo_data_set, heading_code, country_code
+    described_class.new roo_data_set, heading_code, country_code, nil
   end
 
   include_context 'with fake rules of origin data'
@@ -33,99 +33,139 @@ RSpec.describe RulesOfOrigin::Query do
     end
   end
 
-  describe '#rules' do
-    subject { query.rules[roo_scheme_code] }
+  context 'with heading and country codes' do
+    it { is_expected.to have_attributes querying_for_rules?: true }
+    it { is_expected.to have_attributes filtering_schemes?: false }
 
-    let(:rule_set) { roo_data_set.rule_set }
+    describe '#rules' do
+      subject { query.rules[roo_scheme_code] }
 
-    context 'with matching heading and country code' do
-      it { is_expected.to include rule_set.rule(rule_set.id_rules.first) }
-      it { is_expected.to have_attributes length: 1 }
+      let(:rule_set) { roo_data_set.rule_set }
+
+      context 'with matching heading and country code' do
+        it { is_expected.to include rule_set.rule(rule_set.id_rules.first) }
+        it { is_expected.to have_attributes length: 1 }
+      end
+
+      context 'with matching commodity code and country code' do
+        let(:heading_code) { commodity_code }
+
+        it { is_expected.to include rule_set.rule(rule_set.id_rules.first) }
+        it { is_expected.to have_attributes length: 1 }
+      end
+
+      context 'with unmatched country code' do
+        let(:country_code) { 'RA' }
+
+        it { expect(query.rules).to be_empty }
+      end
+
+      context 'with unmatched heading' do
+        let(:heading_code) { '011111' }
+
+        it { expect(query.rules).to be_empty }
+      end
     end
 
-    context 'with matching commodity code and country code' do
-      let(:heading_code) { commodity_code }
+    describe '#schemes' do
+      subject { query.schemes }
 
-      it { is_expected.to include rule_set.rule(rule_set.id_rules.first) }
-      it { is_expected.to have_attributes length: 1 }
+      context 'with matching commodity code and country code' do
+        let(:heading_code) { commodity_code }
+
+        it { is_expected.to include roo_scheme }
+      end
+
+      context 'with schemes matching supplied country code' do
+        it { is_expected.to include roo_scheme }
+      end
+
+      context 'without schemes matching supplied country code' do
+        let(:roo_country_code) { 'RA' }
+
+        it { is_expected.to be_empty }
+      end
     end
 
-    context 'with unmatched country code' do
-      let(:country_code) { 'RA' }
+    describe '#links' do
+      subject { query.links }
 
-      it { expect(query.rules).to be_empty }
+      it { is_expected.to have_attributes length: 3 }
+      it { is_expected.to include roo_data_set.scheme_set.links.first }
+      it { is_expected.to include roo_scheme.links.first }
     end
 
-    context 'with unmatched heading' do
-      let(:heading_code) { '011111' }
+    describe '#rule_sets' do
+      subject(:scheme_rule_sets) { query.scheme_rule_sets }
 
-      it { expect(query.rules).to be_empty }
+      before do
+        scheme_set = roo_data_set.scheme_set
+
+        scheme_set.instance_variable_set('@_schemes', schemes)
+        scheme_set.instance_variable_set(
+          '@_countries',
+          scheme_set.send(:build_countries_to_schemes_index),
+        )
+      end
+
+      let(:schemes) do
+        [
+          build(:rules_of_origin_scheme, rule_sets:, countries: %w[FR]),
+          build(:rules_of_origin_scheme, rule_sets:, countries: %w[FR ES]),
+          build(:rules_of_origin_scheme, rule_sets:, countries: %w[ES]),
+        ].index_by(&:scheme_code)
+      end
+
+      let(:rule_sets) { build_list :rules_of_origin_v2_rule_set, 3, min: '0000000001' }
+      let(:heading_code) { rule_sets.second.max.first(6) }
+
+      it { is_expected.to be_instance_of Hash }
+      it { is_expected.to include schemes.keys.first }
+      it { is_expected.to include schemes.keys.second }
+      it { is_expected.not_to include schemes.keys.third }
+
+      context 'with matched rule sets' do
+        subject { scheme_rule_sets.values.first.map(&:id) }
+
+        it { is_expected.not_to include rule_sets.first.id }
+        it { is_expected.to include rule_sets.second.id }
+        it { is_expected.to include rule_sets.third.id }
+      end
     end
   end
 
-  describe '#schemes' do
-    subject { query.schemes }
-
-    context 'with matching commodity code and country code' do
-      let(:heading_code) { commodity_code }
-
-      it { is_expected.to include roo_scheme }
+  context 'without heading or country code' do
+    subject(:query) do
+      described_class.new roo_data_set, nil, nil, filter
     end
 
-    context 'with schemes matching supplied country code' do
-      it { is_expected.to include roo_scheme }
+    let(:filter) { nil }
+
+    it { is_expected.to have_attributes schemes: roo_data_set.scheme_set.all_schemes }
+    it { is_expected.to have_attributes rules: {} }
+    it { is_expected.to have_attributes scheme_rule_sets: {} }
+    it { is_expected.to have_attributes querying_for_rules?: false }
+    it { is_expected.to have_attributes filtering_schemes?: false }
+
+    context 'with filter' do
+      let(:filter) { { 'has_article' => 'duty-drawback' } }
+
+      it { is_expected.to have_attributes rules: {} }
+      it { is_expected.to have_attributes scheme_rule_sets: {} }
+      it { is_expected.to have_attributes querying_for_rules?: false }
+      it { is_expected.to have_attributes filtering_schemes?: true }
     end
 
-    context 'without schemes matching supplied country code' do
-      let(:roo_country_code) { 'RA' }
+    context 'with invalid filter' do
+      let(:filter) { 'random' }
 
-      it { is_expected.to be_empty }
-    end
-  end
-
-  describe '#links' do
-    subject { query.links }
-
-    it { is_expected.to have_attributes length: 3 }
-    it { is_expected.to include roo_data_set.scheme_set.links.first }
-    it { is_expected.to include roo_scheme.links.first }
-  end
-
-  describe '#rule_sets' do
-    subject(:scheme_rule_sets) { query.scheme_rule_sets }
-
-    before do
-      scheme_set = roo_data_set.scheme_set
-
-      scheme_set.instance_variable_set('@_schemes', schemes)
-      scheme_set.instance_variable_set(
-        '@_countries',
-        scheme_set.send(:build_countries_to_schemes_index),
-      )
+      it { expect { query }.to raise_exception described_class::InvalidFilter }
     end
 
-    let(:schemes) do
-      [
-        build(:rules_of_origin_scheme, rule_sets:, countries: %w[FR]),
-        build(:rules_of_origin_scheme, rule_sets:, countries: %w[FR ES]),
-        build(:rules_of_origin_scheme, rule_sets:, countries: %w[ES]),
-      ].index_by(&:scheme_code)
-    end
+    context 'with unknown filter' do
+      let(:filter) { { 'has_heading' => 'something' } }
 
-    let(:rule_sets) { build_list :rules_of_origin_v2_rule_set, 3, min: '0000000001' }
-    let(:heading_code) { rule_sets.second.max.first(6) }
-
-    it { is_expected.to be_instance_of Hash }
-    it { is_expected.to include schemes.keys.first }
-    it { is_expected.to include schemes.keys.second }
-    it { is_expected.not_to include schemes.keys.third }
-
-    describe 'matched rule sets' do
-      subject { scheme_rule_sets.values.first.map(&:id) }
-
-      it { is_expected.not_to include rule_sets.first.id }
-      it { is_expected.to include rule_sets.second.id }
-      it { is_expected.to include rule_sets.third.id }
+      it { expect { query }.to raise_exception described_class::InvalidFilter }
     end
   end
 end

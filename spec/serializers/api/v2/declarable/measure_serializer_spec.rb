@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Measures::MeasureSerializer do
+RSpec.describe Api::V2::Declarable::MeasureSerializer do
   subject(:serializer) { described_class.new(serializable, options).serializable_hash.as_json }
 
   let(:serializable) { Api::V2::Measures::MeasurePresenter.new(measure.reload, measure.goods_nomenclature.reload) }
