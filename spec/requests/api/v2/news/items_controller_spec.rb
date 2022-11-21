@@ -32,6 +32,28 @@ RSpec.describe Api::V2::News::ItemsController do
       it_behaves_like 'a successful jsonapi response'
     end
 
+    context 'when filtering by collection' do
+      let(:item) { create :news_item, :with_collections }
+      let(:collection) { item.collections.first }
+
+      let :make_request do
+        get api_news_collection_items_path(collection_id:, format: :json),
+            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      end
+
+      context 'with known collection' do
+        let(:collection_id) { collection.id }
+
+        it_behaves_like 'a successful jsonapi response'
+      end
+
+      context 'with unknown collection' do
+        let(:collection_id) { collection.id + 100 }
+
+        it { is_expected.to have_http_status :not_found }
+      end
+    end
+
     context 'for uk pages' do
       let(:request_params) { { service: 'uk' } }
 

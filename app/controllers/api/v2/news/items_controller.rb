@@ -6,13 +6,13 @@ module Api
         DEFAULT_PAGE_SIZE = 20
 
         def index
-          news_items = ::News::Item.eager(:collections)
-                                   .for_service(params[:service])
-                                   .for_target(params[:target])
-                                   .for_year(params[:year])
-                                   .for_today
-                                   .descending
-                                   .paginate(current_page, per_page)
+          news_items = base_scope.eager(:collections)
+                                 .for_service(params[:service])
+                                 .for_target(params[:target])
+                                 .for_year(params[:year])
+                                 .for_today
+                                 .descending
+                                 .paginate(current_page, per_page)
 
           serializer = Api::V2::News::ItemSerializer.new(news_items,
                                                          include: %w[collections],
@@ -53,6 +53,13 @@ module Api
               total_count: data_set.pagination_record_count,
             },
           }
+        end
+
+        def base_scope
+          collection_id = params[:collection_id].presence&.to_i
+          return ::News::Item unless collection_id
+
+          ::News::Collection.where(id: collection_id).take.items_dataset
         end
       end
     end

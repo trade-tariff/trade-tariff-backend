@@ -176,8 +176,10 @@ Rails.application.routes.draw do
       if TradeTariffBackend.uk?
         namespace :news do
           resources :items, only: %i[index show]
-          resources :collections, only: %i[index]
           resources :years, only: %i[index]
+          resources :collections, only: %i[index] do
+            resources :items, only: %i[index], shallow: true
+          end
         end
 
         get '/news_items/:id', to: 'news/items#show', as: nil
