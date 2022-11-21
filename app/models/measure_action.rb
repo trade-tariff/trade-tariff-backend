@@ -11,6 +11,7 @@ class MeasureAction < Sequel::Model
 
   APPLY_MEASURE_ACTION_CODES = [
     '01', # Apply the amount of the action (see components)
+    '07', # Measure not applicable
     '24', # Entry into free circulation allowed
     '25', # Export allowed
     '26', # Import allowed
@@ -25,7 +26,6 @@ class MeasureAction < Sequel::Model
     '04', # The entry into free circulation is not allowed
     '05', # Export is not allowed
     '06', # Import is not allowed
-    '07', # Measure not applicable
     '08', # Declared subheading not allowed
     '09', # Import/export not allowed after control
     '16', # Export refund not applicable

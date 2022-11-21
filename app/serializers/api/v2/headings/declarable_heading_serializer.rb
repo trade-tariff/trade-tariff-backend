@@ -26,8 +26,8 @@ module Api
         has_many :footnotes, serializer: Api::V2::Headings::FootnoteSerializer
         has_one :section, serializer: Api::V2::Headings::SectionSerializer
         has_one :chapter, serializer: Api::V2::Headings::ChapterSerializer
-        has_many :import_measures, record_type: :measure, serializer: Api::V2::Measures::MeasureSerializer
-        has_many :export_measures, record_type: :measure, serializer: Api::V2::Measures::MeasureSerializer
+        has_many :import_measures, record_type: :measure, serializer: Api::V2::Declarable::MeasureSerializer
+        has_many :export_measures, record_type: :measure, serializer: Api::V2::Declarable::MeasureSerializer
         has_one :import_trade_summary, serializer: Api::V2::Shared::ImportTradeSummarySerializer
 
         meta do |commodity|

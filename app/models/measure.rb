@@ -148,7 +148,8 @@ class Measure < Sequel::Model
       self[:validity_end_date]
     elsif self[:validity_end_date].present? && generating_regulation.present? && generating_regulation.effective_end_date.present?
       self[:validity_end_date] > generating_regulation.effective_end_date ? generating_regulation.effective_end_date : self[:validity_end_date]
-    elsif self[:validity_end_date].present? && validity_date_justified?
+    elsif self[:validity_end_date].present? && justification_regulation_present?
+
       self[:validity_end_date]
     elsif generating_regulation.present?
       generating_regulation.effective_end_date
@@ -156,12 +157,21 @@ class Measure < Sequel::Model
   end
 
   def generating_regulation
-    @generating_regulation ||= case measure_generating_regulation_role
-                               when BASE_REGULATION_ROLE then base_regulation
-                               when MODIFICATION_REGULATION_ROLE then modification_regulation
+    @generating_regulation ||= if measure_generating_regulation_role == MODIFICATION_REGULATION_ROLE
+                                 modification_regulation
                                else
                                  base_regulation
                                end
+  end
+
+  def justification_regulation
+    @justification_regulation ||= if justification_regulation_role == MODIFICATION_REGULATION_ROLE
+                                    ModificationRegulation.find(modification_regulation_id: justification_regulation_id,
+                                                                modification_regulation_role: justification_regulation_role)
+                                  else
+                                    BaseRegulation.find(base_regulation_id: justification_regulation_id,
+                                                        base_regulation_role: justification_regulation_role)
+                                  end
   end
 
   def legal_acts
@@ -315,7 +325,7 @@ class Measure < Sequel::Model
     national
   end
 
-  def validity_date_justified?
+  def justification_regulation_present?
     justification_regulation_role.present? && justification_regulation_id.present?
   end
 
@@ -388,6 +398,17 @@ class Measure < Sequel::Model
     measure_components.map(&:formatted_duty_expression).join(' ')
   end
 
+  def verbose_duty_expression
+    prettify_generated_duty_expression!(measure_components.map(&:verbose_duty_expression).join(' '))
+  end
+
+  def prettify_generated_duty_expression!(duty_expression)
+    duty_expression.sub!(/\s\s/, ' ')
+    duty_expression.sub!(/\s%/, '%') if duty_expression.scan(/\d\s%/).present?
+    duty_expression.sub!(/\/\s[a-zA-Z]/, &:downcase)
+    duty_expression
+  end
+
   def national_measurement_units_for(declarable)
     if excise? && declarable && declarable.national_measurement_unit_set.present?
       declarable.national_measurement_unit_set
@@ -404,6 +425,16 @@ class Measure < Sequel::Model
       "#{formatted_duty_expression} (#{national_measurement_units.join(' - ')})"
     else
       formatted_duty_expression
+    end
+  end
+
+  def verbose_duty_expression_with_national_measurement_units_for(declarable)
+    national_measurement_units = national_measurement_units_for(declarable)
+
+    if national_measurement_units.present?
+      "#{verbose_duty_expression} (#{national_measurement_units.join(' - ')})"
+    else
+      verbose_duty_expression
     end
   end
 

@@ -87,6 +87,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
     it { is_expected.to have_attributes length: 1 }
     it { is_expected.to all be_instance_of RulesOfOrigin::Link }
+    it { is_expected.to all have_attributes source: 'scheme_set' }
   end
 
   describe '#read_referenced_file' do
@@ -121,5 +122,27 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
       it { expect { read_file }.to raise_exception Errno::ENOENT }
     end
+  end
+
+  describe '#all_schemes' do
+    subject { scheme_set.all_schemes }
+
+    it { is_expected.to eql scheme_set.schemes.map(&scheme_set.method(:scheme)) }
+  end
+
+  describe '#schemes_for_filter' do
+    subject { scheme_set.schemes_for_filter(has_article: article) }
+
+    let :scheme_set do
+      build :rules_of_origin_scheme_set, schemes: [
+        attributes_for(:rules_of_origin_scheme, :with_articles),
+        attributes_for(:rules_of_origin_scheme),
+      ]
+    end
+
+    let(:article) { scheme_set.all_schemes.first.articles.first.article }
+
+    it { is_expected.to include scheme_set.all_schemes.first }
+    it { is_expected.not_to include scheme_set.all_schemes.second }
   end
 end

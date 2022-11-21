@@ -8,7 +8,7 @@ module Api
 
         set_id :id
 
-        attributes :base, :formatted_base
+        attributes :base, :formatted_base, :verbose_duty
       end
     end
   end

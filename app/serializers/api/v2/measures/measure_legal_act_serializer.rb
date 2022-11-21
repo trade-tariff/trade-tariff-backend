@@ -11,6 +11,8 @@ module Api
         attributes :validity_start_date, :validity_end_date, :officialjournal_number,
                    :officialjournal_page, :published_date, :regulation_code,
                    :regulation_url, :description
+
+        attribute :role
       end
     end
   end

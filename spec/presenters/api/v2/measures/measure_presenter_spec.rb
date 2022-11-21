@@ -10,6 +10,42 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
     end
   end
 
+  context 'when measure has a generating regulation' do
+    let(:measure) { create(:measure, :with_base_regulation) }
+
+    describe '#measure_generating_legal_act' do
+      it 'returns the MeasureLegalActPresenter' do
+        expect(presenter.measure_generating_legal_act).to be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
+      end
+
+      it 'wraps the correct legal act' do
+        expect(presenter.measure_generating_legal_act).to \
+          have_attributes(regulation_id: measure.measure_generating_regulation_id)
+      end
+    end
+  end
+
+  context 'when measure has a justification_legal_act' do
+    let(:measure) { create(:measure, :with_justification_regulation) }
+
+    describe '#justification_legal_act' do
+      it 'returns the MeasureLegalActPresenter' do
+        expect(presenter.justification_legal_act).to be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
+      end
+
+      it 'wraps the correct legal act' do
+        expect(presenter.justification_legal_act).to \
+          have_attributes(regulation_id: measure.justification_regulation_id)
+      end
+    end
+
+    describe '#justification_legal_act_id' do
+      it 'has correct ID' do
+        expect(presenter.justification_legal_act_id).to eq(measure.justification_regulation_id)
+      end
+    end
+  end
+
   describe 'exclusions' do
     let(:gb) { create(:geographical_area, geographical_area_id: 'GB') }
     let(:xi) { create(:geographical_area, geographical_area_id: 'XI') }

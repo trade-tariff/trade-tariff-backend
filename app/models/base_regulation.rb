@@ -14,4 +14,8 @@ class BaseRegulation < Sequel::Model
   def not_completely_abrogated?
     complete_abrogation_regulation.blank?
   end
+
+  def role
+    base_regulation_role
+  end
 end

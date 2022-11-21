@@ -148,6 +148,7 @@ Rails.application.routes.draw do
       resources :measure_condition_codes, only: %i[index]
       resources :quota_order_numbers, only: %i[index]
       resources :measure_types, only: %i[index show]
+      resources :measures, only: %i[show]
 
       resources :additional_codes, only: [] do
         collection { get :search }
@@ -173,8 +174,13 @@ Rails.application.routes.draw do
           as: :rules_of_origin
 
       if TradeTariffBackend.uk?
-        get '/news_items/:id', constraints: { id: /\d+/ }, to: 'news_items#show', as: :news_item
-        get '/news_items', to: 'news_items#index', as: :news_items
+        namespace :news do
+          resources :items, only: %i[index show]
+          resources :collections, only: %i[index]
+        end
+
+        get '/news_items/:id', to: 'news/items#show', as: nil
+        get '/news_items', to: 'news/items#index', as: nil
       end
 
       get '/changes(/:as_of)', to: 'changes#index', as: :changes, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }

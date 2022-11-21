@@ -4,6 +4,7 @@ RSpec.describe RulesOfOrigin::Link do
   describe 'attributes' do
     it { is_expected.to respond_to :text }
     it { is_expected.to respond_to :url }
+    it { is_expected.to respond_to :source }
   end
 
   describe '.new' do
@@ -11,6 +12,7 @@ RSpec.describe RulesOfOrigin::Link do
 
     it { is_expected.to have_attributes text: 'GovUK' }
     it { is_expected.to have_attributes url: 'https://www.gov.uk' }
+    it { is_expected.to have_attributes source: 'scheme' }
   end
 
   describe '.new_with_check' do
@@ -38,7 +40,7 @@ RSpec.describe RulesOfOrigin::Link do
   describe '#id' do
     subject(:link) { first_link.id }
 
-    let(:first_link) { build :rules_of_origin_link, id: id }
+    let(:first_link) { build :rules_of_origin_link, id: }
     let(:second_link) { build :rules_of_origin_link }
 
     let :third_link do

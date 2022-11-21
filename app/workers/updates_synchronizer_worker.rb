@@ -14,11 +14,8 @@ class UpdatesSynchronizerWorker
       TariffSynchronizer.download_cds
 
       if check_for_todays_file &&
-          still_time_to_reschedule? &&
-          todays_file_has_not_yet_arrived?
-
-        self.class.perform_in(TRY_AGAIN_IN, true)
-        logger.info "Daily file missing, retrying at #{TRY_AGAIN_IN.from_now}"
+          todays_file_has_not_yet_arrived? &&
+          attempt_reschedule!
         return
       end
 
@@ -62,5 +59,17 @@ private
 
     require 'data_migrator' unless defined?(DataMigrator)
     DataMigrator.migrate_up!(nil)
+  end
+
+  def attempt_reschedule!
+    if still_time_to_reschedule?
+      self.class.perform_in(TRY_AGAIN_IN, true)
+      logger.info "Daily file missing, retrying at #{TRY_AGAIN_IN.from_now}"
+      true
+    else
+      SlackNotifierService.call \
+        'Daily CDS file missing, max retry time passed - continuing without todays file'
+      false
+    end
   end
 end

@@ -27,6 +27,7 @@ RSpec.describe MeasureUnitService do
             'measurement_unit_code' => 'DTN',
             'measurement_unit_qualifier_code' => 'R',
             'abbreviation' => '100 kg std qual',
+            'expansion' => '100 kg of the standard quality (std qual)',
             'unit_question' => 'What is the weight net of the standard quality of the goods you will be importing?',
             'unit_hint' => 'Enter the value in kilograms',
             'unit' => 'kilograms',
@@ -56,6 +57,7 @@ RSpec.describe MeasureUnitService do
         {
           'ASV' => {
             'abbreviation' => '% vol',
+            'expansion' => 'Percentage ABV (% vol)',
             'measurement_unit_code' => 'ASV',
             'measurement_unit_qualifier_code' => nil,
             'unit' => 'percent',
@@ -67,6 +69,7 @@ RSpec.describe MeasureUnitService do
           },
           'HLT' => {
             'abbreviation' => 'hl',
+            'expansion' => '100 litre (hl)',
             'measurement_unit_code' => 'HLT',
             'measurement_unit_qualifier_code' => nil,
             'unit' => 'litres',

@@ -43,6 +43,12 @@ class MeasureComponent < Sequel::Model
     DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
   end
 
+  def verbose_duty_expression
+    return '' if measure.measure_type_id.in?(%w[DDA DDJ])
+
+    DutyExpressionFormatter.format(duty_expression_formatter_options.merge(verbose: true))
+  end
+
   def duty_expression_str
     return '' if measure.measure_type_id.in?(%w[DDA DDJ])
 
@@ -67,21 +73,21 @@ class MeasureComponent < Sequel::Model
 
   def unit
     {
-      measurement_unit_code: measurement_unit_code,
-      measurement_unit_qualifier_code: measurement_unit_qualifier_code,
+      measurement_unit_code:,
+      measurement_unit_qualifier_code:,
     }
   end
 
   def duty_expression_formatter_options
     {
-      duty_expression_id: duty_expression_id,
-      duty_expression_description: duty_expression_description,
-      duty_expression_abbreviation: duty_expression_abbreviation,
-      duty_amount: duty_amount,
+      duty_expression_id:,
+      duty_expression_description:,
+      duty_expression_abbreviation:,
+      duty_amount:,
       monetary_unit: monetary_unit_code,
-      monetary_unit_abbreviation: monetary_unit_abbreviation,
-      measurement_unit: measurement_unit,
-      measurement_unit_qualifier: measurement_unit_qualifier,
+      monetary_unit_abbreviation:,
+      measurement_unit:,
+      measurement_unit_qualifier:,
       currency: TradeTariffBackend.currency,
     }
   end

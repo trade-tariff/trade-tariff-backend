@@ -57,8 +57,8 @@ class Commodity < GoodsNomenclature
   end
 
   # See oplog sequel plugin
-  def operation=(op)
-    self[:operation] = op.to_s.first.upcase
+  def operation=(operation)
+    self[:operation] = operation.to_s.first.upcase
   end
 
   def ancestors
@@ -116,7 +116,7 @@ class Commodity < GoodsNomenclature
   end
 
   def uptree
-    @_uptree ||= [ancestors, heading, chapter, self].flatten.compact
+    @uptree ||= [ancestors, heading, chapter, self].flatten.compact
   end
 
   def children
@@ -171,7 +171,7 @@ class Commodity < GoodsNomenclature
      .tap! { |criteria|
       # if Commodity did not come from initial seed, filter by its
       # create/update date
-      criteria.where { |o| o.>=(:operation_date, operation_date) } unless operation_date.blank?
+      criteria.where { |o| o.>=(:operation_date, operation_date) } if operation_date.present?
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))

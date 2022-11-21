@@ -170,9 +170,12 @@ RSpec.describe DutyExpressionFormatter do
             duty_expression_id: '66',
             duty_expression_description: 'abc',
             monetary_unit: 'EUR',
-            formatted: formatted,
+            formatted:,
+            verbose:,
           }
         end
+        let(:verbose) { false }
+        let(:formatted) { false }
 
         context 'when formatted is `true`' do
           let(:formatted) { true }
@@ -183,10 +186,16 @@ RSpec.describe DutyExpressionFormatter do
         end
 
         context 'when not formatted is `false`' do
-          let(:formatted) { false }
-
           it 'result includes monetary unit' do
             expect(described_class.format(options)).to eq('0.52 EUR')
+          end
+        end
+
+        context 'when verbose is true' do
+          let(:verbose) { true }
+
+          it 'returns the amount with currency sign' do
+            expect(described_class.format(options)).to eq('€0.52')
           end
         end
       end
@@ -199,6 +208,26 @@ RSpec.describe DutyExpressionFormatter do
                                    measurement_unit_qualifier:,
                                    duty_expression_description: 'abc'),
           ).to match Regexp.new(unit)
+        end
+      end
+
+      context 'when measurement unit and measurement unit qualifier present and verbose is true' do
+        let(:measurement_unit_qualifier) do
+          create(:measurement_unit_qualifier, measurement_unit_qualifier_code: 'X')
+        end
+
+        let(:measurement_unit_abbreviation) do
+          create(:measurement_unit_abbreviation, :with_measurement_unit, :include_qualifier, measurement_unit_code: 'ASV')
+        end
+
+        it 'result includes measurement unit and measurement unit qualifier' do
+          expect(
+            described_class.format(duty_expression_id: '66',
+                                   measurement_unit:,
+                                   measurement_unit_qualifier:,
+                                   duty_expression_description: 'abc',
+                                   verbose: true),
+          ).to eq('abc / Percentage ABV (% vol) per 100 litre (hl)')
         end
       end
 

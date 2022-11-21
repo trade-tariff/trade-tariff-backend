@@ -11,6 +11,7 @@ RSpec.describe Api::V2::RulesOfOrigin::LinkSerializer do
         attributes: {
           text: link.text,
           url: link.url,
+          source: link.source,
         },
       },
     }
