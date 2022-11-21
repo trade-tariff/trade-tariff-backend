@@ -6,7 +6,7 @@ module Api
         DEFAULT_PAGE_SIZE = 20
 
         def index
-          news_items = base_scope.eager(:collections)
+          news_items = base_scope.select(:id)
                                  .for_service(params[:service])
                                  .for_target(params[:target])
                                  .for_year(params[:year])
@@ -14,7 +14,13 @@ module Api
                                  .descending
                                  .paginate(current_page, per_page)
 
-          serializer = Api::V2::News::ItemSerializer.new(news_items,
+          # Why? you may ask - because #paginate ignores #eager
+          news_items_with_collections = ::News::Item.eager(:collections)
+                                                    .where(id: news_items.pluck(:id))
+                                                    .descending
+                                                    .all
+
+          serializer = Api::V2::News::ItemSerializer.new(news_items_with_collections,
                                                          include: %w[collections],
                                                          meta: pagination_meta(news_items))
 
