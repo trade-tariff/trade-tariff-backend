@@ -8,7 +8,12 @@ module Api
 
         set_id :goods_nomenclature_sid
 
-        attributes :goods_nomenclature_sid, :goods_nomenclature_item_id, :description, :formatted_description
+        attributes :goods_nomenclature_sid,
+                   :goods_nomenclature_item_id,
+                   :description,
+                   :formatted_description,
+                   :validity_start_date,
+                   :validity_end_date
 
         attribute :chapter_note, if: Proc.new { |chapter| chapter.chapter_note.present? } do |chapter|
           chapter.chapter_note.content

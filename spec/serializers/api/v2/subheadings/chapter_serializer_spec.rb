@@ -13,6 +13,8 @@ RSpec.describe Api::V2::Subheadings::ChapterSerializer do
           description: serializable.description,
           formatted_description: serializable.formatted_description,
           chapter_note: serializable.chapter_note,
+          validity_start_date: serializable.validity_start_date.strftime('%FT%T.%LZ'),
+          validity_end_date: serializable.validity_end_date,
         },
         relationships: {
           guides: { data: [{ id: serializable.guides.first.id.to_s, type: 'guide' }] },

@@ -11,7 +11,9 @@ module Api
         attributes :goods_nomenclature_item_id,
                    :description,
                    :bti_url,
-                   :formatted_description
+                   :formatted_description,
+                   :validity_start_date,
+                   :validity_end_date
 
         attribute :declarable do
           false

@@ -12,6 +12,8 @@ RSpec.describe Api::V2::Subheadings::HeadingSerializer do
           goods_nomenclature_item_id: serializable.goods_nomenclature_item_id,
           description: serializable.description,
           formatted_description: serializable.formatted_description,
+          validity_start_date: serializable.validity_start_date.strftime('%FT%T.%LZ'),
+          validity_end_date: serializable.validity_end_date
         },
       },
     }

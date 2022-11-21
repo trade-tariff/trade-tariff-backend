@@ -22,6 +22,8 @@ RSpec.describe Api::V2::Subheadings::SubheadingSerializer do
           'description' => 'Other',
           'formatted_description' => 'Other',
           'declarable' => false,
+          'validity_start_date' => serializable.validity_start_date,
+          'validity_end_date' => nil,
         },
         'relationships' => {
           'section' => { 'data' => { 'id' => '1', 'type' => 'section' } },

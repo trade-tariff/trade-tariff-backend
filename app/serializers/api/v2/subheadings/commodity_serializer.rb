@@ -16,7 +16,9 @@ module Api
                    :goods_nomenclature_sid,
                    :parent_sid,
                    :leaf,
-                   :declarable
+                   :declarable,
+                   :validity_start_date,
+                   :validity_end_date
 
         attribute :productline_suffix, &:producline_suffix
 

@@ -9,7 +9,7 @@ module Api
         set_id :goods_nomenclature_sid
 
         attributes :goods_nomenclature_item_id, :description, :formatted_description,
-                   :chapter_note
+                   :chapter_note, :validity_start_date, :validity_end_date
 
         attribute :forum_url do |chapter|
           chapter.forum_link&.url

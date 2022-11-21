@@ -73,6 +73,8 @@ RSpec.describe Api::V2::Subheadings::CommoditySerializer do
           'leaf' => true,
           'declarable' => true,
           'productline_suffix' => '80',
+          'goods_nomenclature_item_id' => '0101290000',
+          'validity_start_date' => '2019-01-25T00:00:00.000Z',
         },
         'relationships' => {
           'overview_measures' => {
