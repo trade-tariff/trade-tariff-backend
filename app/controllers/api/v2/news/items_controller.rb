@@ -9,6 +9,7 @@ module Api
           news_items = ::News::Item.eager(:collections)
                                    .for_service(params[:service])
                                    .for_target(params[:target])
+                                   .for_year(params[:year])
                                    .for_today
                                    .descending
                                    .paginate(current_page, per_page)

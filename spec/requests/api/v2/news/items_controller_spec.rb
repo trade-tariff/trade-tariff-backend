@@ -25,6 +25,13 @@ RSpec.describe Api::V2::News::ItemsController do
       it_behaves_like 'a successful jsonapi response'
     end
 
+    context 'with a year' do
+      let(:request_params) { { year: item.start_date.year } }
+      let(:item) { create :news_item }
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
     context 'for uk pages' do
       let(:request_params) { { service: 'uk' } }
 

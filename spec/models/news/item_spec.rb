@@ -217,6 +217,29 @@ RSpec.describe News::Item do
       it { is_expected.to include ongoing }
     end
 
+    describe '.for_year' do
+      subject { described_class.for_year(year).all }
+
+      before { twentytwo && twentythree }
+
+      let(:twentytwo) { create :news_item, start_date: '2022-01-01' }
+      let(:twentythree) { create :news_item, start_date: '2023-01-01' }
+
+      context 'with year' do
+        let(:year) { '2022' }
+
+        it { is_expected.to include twentytwo }
+        it { is_expected.not_to include twentythree }
+      end
+
+      context 'without year' do
+        let(:year) { '' }
+
+        it { is_expected.to include twentytwo }
+        it { is_expected.to include twentythree }
+      end
+    end
+
     describe '.descending' do
       subject { described_class.descending.to_a }
 
