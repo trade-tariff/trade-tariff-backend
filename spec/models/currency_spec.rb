@@ -5,8 +5,18 @@ RSpec.describe Currency do
   let(:duty_amount) { '123' }
 
   describe '#format' do
-    it 'returns the the duty amount with currency symbol ' do
-      expect(instance.format(duty_amount)).to eq('€123')
+    context 'when monetary unit code is present in the hash' do
+      it 'returns the the duty amount with currency symbol ' do
+        expect(instance.format(duty_amount)).to eq('€123')
+      end
+    end
+
+    context 'when monetary unit code is not present in the hash' do
+      subject(:instance) { described_class.new 'XEM' }
+
+      it 'returns empty string' do
+        expect(instance.format(duty_amount)).to eq('123 XEM')
+      end
     end
   end
 end
