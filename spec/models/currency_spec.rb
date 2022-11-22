@@ -14,7 +14,7 @@ RSpec.describe Currency do
     context 'when monetary unit code is not present in the hash' do
       subject(:instance) { described_class.new 'XEM' }
 
-      it 'returns empty string' do        
+      it 'returns empty string' do
         expect(instance.format(duty_amount)).to eq('123 XEM')
       end
     end

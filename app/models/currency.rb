@@ -15,7 +15,7 @@ class Currency
     if TO_SYMBOL.key?(monetary_unit)
       TO_SYMBOL[monetary_unit] + duty_amount
     else
-      duty_amount + ' ' + monetary_unit
+      "#{duty_amount} #{monetary_unit}"
     end
   end
 end
