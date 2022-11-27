@@ -5257,7 +5257,9 @@ CREATE TABLE public.news_collections (
     id integer NOT NULL,
     name character varying(255) NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    priority integer DEFAULT 0 NOT NULL,
+    description text
 );
 
 
@@ -11014,3 +11016,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20220908105343_adds_headin
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221017110015_add_news_collections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221017160811_associate_news_items_and_news_collections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221020121609_add_precis_and_slug_to_news_items.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20221127173137_add_description_and_priority_to_news_collections.rb');
