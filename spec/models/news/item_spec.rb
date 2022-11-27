@@ -60,6 +60,14 @@ RSpec.describe News::Item do
       end
 
       it { is_expected.to eq collections.map(&:id).reverse }
+
+      context 'with priorities' do
+        before { item.add_collection priority }
+
+        let(:priority) { create(:news_collection, name: 'CCC', priority: 1) }
+
+        it { is_expected.to eq [priority.id] + collections.map(&:id).reverse }
+      end
     end
 
     describe '#collection_ids' do

@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::News::CollectionSerializer do
   subject { described_class.new(collection).serializable_hash }
 
-  let(:collection) { create :news_collection, name: 'Serialized' }
+  let(:collection) { create :news_collection, :with_description, name: 'Serialized' }
 
   describe '#serializable_hash' do
     let :expected do
@@ -11,6 +11,8 @@ RSpec.describe Api::V2::News::CollectionSerializer do
           type: :news_collection,
           attributes: {
             name: 'Serialized',
+            description: collection.description,
+            priority: 0,
           },
         },
       }

@@ -5,7 +5,7 @@ module Api
         before_action :authenticate_user!
 
         def index
-          collections = ::News::Collection.order(:name).to_a
+          collections = ::News::Collection.all
 
           render json: Api::Admin::News::CollectionSerializer.new(collections)
                                                              .serializable_hash

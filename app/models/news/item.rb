@@ -6,8 +6,7 @@ module News
     DISPLAY_REGULAR = 0
     MAX_SLUG_LENGTH = 254
 
-    many_to_many :collections, join_table: :news_collections_news_items,
-                               order: :name
+    many_to_many :collections, join_table: :news_collections_news_items
 
     def collection_ids=(ids)
       @collection_ids = normalise_ids(ids)
