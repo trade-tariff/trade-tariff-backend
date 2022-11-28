@@ -403,10 +403,7 @@ class Measure < Sequel::Model
   end
 
   def prettify_generated_duty_expression!(duty_expression)
-    duty_expression.sub!(/\s\s/, ' ')
-    duty_expression.sub!(/\s%/, '%') if duty_expression.scan(/\d\s%/).present?
-    duty_expression.sub!(/\/\s[a-zA-Z]/, &:downcase)
-    duty_expression
+    duty_expression.gsub(/\s\s/, ' ').gsub(/(\d)\s+%/, '\1%').sub(/\/\s[a-zA-Z]/, &:downcase)
   end
 
   def national_measurement_units_for(declarable)

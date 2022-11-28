@@ -63,7 +63,7 @@ class DutyExpressionFormatter
         output << if monetary_unit.present? && !verbose
                     monetary_unit
                   else
-                    '%' unless verbose
+                    '%' unless monetary_unit
                   end
         if measurement_unit_abbreviation.present?
           output << if formatted

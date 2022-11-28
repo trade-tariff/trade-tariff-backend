@@ -1428,6 +1428,10 @@ RSpec.describe Measure do
       expect(measure.prettify_generated_duty_expression!(generated_string)).to eq '100% / percentage ABV (% vol) per 100 litre (hl)'
     end
 
+    it 'removes spaces if there are multiple % symbols' do
+      expect(measure.prettify_generated_duty_expression!('2.70 % + EAR MAX 6.20 % +ADSZR 11 %')).to eq '2.70% + EAR MAX 6.20% +ADSZR 11%'
+    end
+
     it 'does not remove space if unit is not present' do
       expect(measure.prettify_generated_duty_expression!(generated_string_without_percent_amount)).to eq generated_string_without_percent_amount
     end
