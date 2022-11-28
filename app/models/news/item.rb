@@ -71,6 +71,14 @@ module News
         end
       end
 
+      def for_year(year)
+        year = year.presence&.to_i
+        return self unless year
+
+        first_of_jan = Time.zone.parse("#{year}-01-01 00:00:00")
+        where(start_date: first_of_jan..first_of_jan.end_of_year)
+      end
+
       def years
         distinct.select { date_part('year', :start_date).cast(:integer).as(:year) }
                 .order(Sequel.desc(:year))
