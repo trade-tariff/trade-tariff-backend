@@ -34,12 +34,10 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
 
     it { is_expected.to match_json_expression(pattern) }
 
-    it 'the TimeMachine receives the correct Date' do
-      allow(TimeMachine).to receive(:at).and_call_original
+    context 'when the validity_end_date is set to a past date' do
+      let(:certificate) { create(:certificate, validity_end_date: 1.day.ago) }
 
-      do_response
-
-      expect(TimeMachine).to have_received(:at).with(Time.zone.today)
+      it { is_expected.to match_json_expression({ data: [] }) }
     end
   end
 end

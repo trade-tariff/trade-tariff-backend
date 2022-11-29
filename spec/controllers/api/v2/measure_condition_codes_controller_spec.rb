@@ -3,9 +3,10 @@ RSpec.describe Api::V2::MeasureConditionCodesController, type: :controller do
     subject(:do_request) { get :index }
 
     let(:json_body) { JSON.parse(do_request.body)['data'] }
+    let(:validity_end_date) { nil }
 
     before do
-      create(:measure_condition_code, :with_description, condition_code: 'C')
+      create(:measure_condition_code, :with_description, condition_code: 'C', validity_end_date:)
 
       allow(TimeMachine).to receive(:at).and_call_original
     end
@@ -28,9 +29,10 @@ RSpec.describe Api::V2::MeasureConditionCodesController, type: :controller do
       )
     end
 
-    it 'the TimeMachine receives the correct Date' do
-      do_request
-      expect(TimeMachine).to have_received(:at).with(Time.zone.today)
+    context 'when the validity_end_date is set to a past date' do
+      let(:validity_end_date) { 1.day.ago }
+
+      it { expect(json_body).to eq [] }
     end
   end
 end

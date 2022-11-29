@@ -1,29 +1,27 @@
 RSpec.describe Api::V2::MeasureTypesController, type: :controller do
   describe '#index' do
+    subject(:do_request) { get :index }
+
     before do
-      create(:measure_type, :with_measure_type_series_description)
+      create(:measure_type, :with_measure_type_series_description, validity_end_date:)
 
       allow(TimeMachine).to receive(:at).and_call_original
     end
 
-    it 'returns success' do
-      get :index, format: :json
+    let(:json_body) { JSON.parse(do_request.body)['data'] }
 
-      expect(response).to be_successful
-    end
+    let(:validity_end_date) { nil }
+
+    it { is_expected.to have_http_status(:success) }
 
     it 'returns all measure types' do
-      get :index, format: :json
-
-      data = JSON.parse(response.body)['data']
-
-      expect(data.length).to eq 1
+      expect(json_body.length).to eq 1
     end
 
-    it 'the TimeMachine receives the correct Date' do
-      get :index, format: :json
+    context 'when the validity_end_date is set to a past date' do
+      let(:validity_end_date) { 1.day.ago }
 
-      expect(TimeMachine).to have_received(:at).with(Time.zone.today)
+      it { expect(json_body).to eq [] }
     end
   end
 
