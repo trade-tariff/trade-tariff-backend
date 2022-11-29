@@ -28,8 +28,10 @@ module News
     def import!
       raise NotAvailableOnXi if TradeTariffBackend.xi?
 
+      import_time = Time.zone.now
+
       ::News::Item.db.transaction do
-        stories.each(&method(:import_story)).length
+        stories.each { |story| import_story(story, import_time) }.length
       end
     end
 
@@ -38,7 +40,7 @@ module News
 
   private
 
-    def import_story(item_data)
+    def import_story(item_data, import_time)
       raise InvalidData unless data_has_all_keys?(item_data)
 
       item = News::Item.create(
@@ -54,6 +56,7 @@ module News
         show_on_updates_page: true,
         show_on_banner: false,
         show_on_home_page: false,
+        imported_at: import_time,
       )
 
       get_collections(item_data['themes']).each do |collection|

@@ -22,7 +22,10 @@ RSpec.describe News::Importer do
     context 'with first story' do
       subject(:first_item) { News::Item.order(:id).first }
 
-      before { instance.import! }
+      before do
+        freeze_time
+        instance.import!
+      end
 
       it { is_expected.to have_attributes title: /four-wheeled/ }
       it { is_expected.to have_attributes slug: /a-four-wheeled/ }
@@ -35,6 +38,7 @@ RSpec.describe News::Importer do
       it { is_expected.to have_attributes show_on_updates_page: true }
       it { is_expected.to have_attributes show_on_banner: false }
       it { is_expected.to have_attributes show_on_home_page: false }
+      it { is_expected.to have_attributes imported_at: Time.zone.now }
 
       context 'with collections' do
         subject { first_item.collections }
