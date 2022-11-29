@@ -20,7 +20,7 @@ RSpec.describe News::Importer do
     it { expect(instance.import!).to be 3 }
 
     context 'with first story' do
-      subject { News::Item.order(:id).first }
+      subject(:first_item) { News::Item.order(:id).first }
 
       before { instance.import! }
 
@@ -35,6 +35,25 @@ RSpec.describe News::Importer do
       it { is_expected.to have_attributes show_on_updates_page: true }
       it { is_expected.to have_attributes show_on_banner: false }
       it { is_expected.to have_attributes show_on_home_page: false }
+
+      context 'with collections' do
+        subject { first_item.collections }
+
+        it { is_expected.to have_attributes length: 1 }
+        it { is_expected.to all have_attributes name: 'Tariff notices' }
+      end
+    end
+
+    context 'with collection which already exists' do
+      subject { News::Item.order(:id).first.collections }
+
+      before do
+        News::Collection.create name: 'Tariff notices'
+        instance.import!
+      end
+
+      it { is_expected.to have_attributes length: 1 }
+      it { is_expected.to all have_attributes name: 'Tariff notices' }
     end
 
     context 'with end_dated story' do

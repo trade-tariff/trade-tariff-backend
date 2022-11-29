@@ -8,6 +8,7 @@ module News
       story
       validity_start_date
       validity_end_date
+      themes
     ].freeze
 
     class << self
@@ -40,7 +41,7 @@ module News
     def import_story(item_data)
       raise InvalidData unless data_has_all_keys?(item_data)
 
-      News::Item.create(
+      item = News::Item.create(
         title: item_data['headline'],
         slug: item_data['slug'],
         precis: item_data['precis'],
@@ -55,11 +56,24 @@ module News
         show_on_home_page: false,
       )
 
-      # FIXME: do something about collection
+      get_collections(item_data['themes']).each do |collection|
+        item.add_collection collection
+      end
     end
 
     def data_has_all_keys?(story)
       NEWS_ITEM_KEYS.all? { |k| story.key?(k) }
+    end
+
+    def get_collections(names)
+      names.split(',').map(&method(:get_collection))
+    end
+
+    def get_collection(name)
+      normalised_name = name.gsub(/[^a-z0-9 ]/i, '')
+
+      @collections ||= {}
+      @collections[normalised_name] ||= Collection.find_or_create(name: normalised_name)
     end
   end
 end
