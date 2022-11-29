@@ -5308,7 +5308,8 @@ CREATE TABLE public.news_items (
     updated_at timestamp without time zone,
     show_on_banner boolean DEFAULT false NOT NULL,
     precis text,
-    slug character varying(255)
+    slug character varying(255),
+    imported_at timestamp without time zone
 );
 
 
@@ -11027,4 +11028,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20221017110015_add_news_co
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221017160811_associate_news_items_and_news_collections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221020121609_add_precis_and_slug_to_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221127173137_add_description_and_priority_to_news_collections.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20221129151917_add_imported_at_to_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221202094157_add_slug_to_collections.rb');
