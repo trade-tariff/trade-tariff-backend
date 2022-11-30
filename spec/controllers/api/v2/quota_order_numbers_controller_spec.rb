@@ -3,6 +3,7 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
     subject(:do_request) { get :index }
 
     let(:json_body) { JSON.parse(do_request.body) }
+    let(:validity_end_date) { nil }
 
     before do
       create(
@@ -13,6 +14,7 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
         quota_definition_sid: 1,
         quota_order_number_sid: 5,
         quota_order_number_id: '000001',
+        validity_end_date:,
       )
 
       allow(TimeMachine).to receive(:at).and_call_original
@@ -40,17 +42,18 @@ RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
       )
     end
 
+    context 'when the validity_end_date is set to a past date' do
+      let(:validity_end_date) { 1.day.ago }
+
+      it { expect(json_body['data']).to eq [] }
+    end
+
     it 'returns all the includes' do
       expect(json_body['included']).to include_json(
         [
           { 'id' => '1', 'type' => 'quota_definition' },
         ],
       )
-    end
-
-    it 'the TimeMachine receives the correct Date' do
-      do_request
-      expect(TimeMachine).to have_received(:at).with(Time.zone.today)
     end
 
     it 'rails cache receives fetch with the correct key' do
