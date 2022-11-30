@@ -1,6 +1,6 @@
 module News
   class Importer
-    DEFAULT_ITEMS_FILE = Rails.root.join('db/news/govuk_stories.json').freeze
+    DEFAULT_ITEMS_FILENAME = Rails.root.join('db/news/govuk_stories.json').freeze
     NEWS_ITEM_KEYS = %w[
       headline
       slug
@@ -12,7 +12,7 @@ module News
     ].freeze
 
     class << self
-      def import!(src_file = DEFAULT_ITEMS_FILE)
+      def import!(src_file = DEFAULT_ITEMS_FILENAME)
         new(src_file).import!
       end
     end
@@ -31,9 +31,10 @@ module News
       import_time = Time.zone.now
 
       ::News::Item.db.transaction do
-        create_collections
+        create_news_collections
 
-        stories.each { |story| import_story(story, import_time) }.length
+        stories.each { |story| import_story(story, import_time) }
+        stories.length
       end
     end
 
@@ -61,7 +62,7 @@ module News
         imported_at: import_time,
       )
 
-      get_collections(item_data['themes']).each do |collection|
+      get_news_collections(item_data['themes']).each do |collection|
         item.add_collection collection
       end
     end
@@ -70,17 +71,17 @@ module News
       NEWS_ITEM_KEYS.all? { |k| story.key?(k) }
     end
 
-    def get_collections(names)
-      names.split(',').map(&method(:get_collection))
+    def get_news_collections(names)
+      names.split(',').map(&method(:get_news_collection))
     end
 
-    def get_collection(name)
+    def get_news_collection(name)
       normalised_name = name.gsub(/[^a-z0-9 ]/i, '')
 
-      @collections[normalised_name] ||= create_collection(normalised_name)
+      @collections[normalised_name] ||= create_news_collection(normalised_name)
     end
 
-    def create_collections
+    def create_news_collections
       @collections = [
         create_tariff_notices,
         create_stop_press,
@@ -90,7 +91,7 @@ module News
     end
 
     def create_tariff_notices
-      create_collection 'Tariff notices', 3, <<~DESCRIPTION
+      create_news_collection 'Tariff notices', 3, <<~DESCRIPTION
         ## Contact details
 
         <div class="address govuk-inset-text">
@@ -110,7 +111,7 @@ module News
     end
 
     def create_stop_press
-      create_collection 'Tariff stop press', 2, <<~DESCRIPTION
+      create_news_collection 'Tariff stop press', 2, <<~DESCRIPTION
         ## More information
 
         To stop getting the Tariff stop press notices, or to add recipients to
@@ -119,14 +120,14 @@ module News
     end
 
     def create_trade_news
-      create_collection 'Trade news', 1
+      create_news_collection 'Trade news', 1
     end
 
     def create_service_updates
-      create_collection 'Service updates', 0
+      create_news_collection 'Service updates', 0
     end
 
-    def create_collection(name, priority = nil, description = nil)
+    def create_news_collection(name, priority = nil, description = nil)
       collection = Collection.find_or_create(name:)
       collection.priority = priority if priority
       collection.description = description if description

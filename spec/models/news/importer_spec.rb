@@ -10,9 +10,9 @@ RSpec.describe News::Importer do
   end
 
   describe '#stories' do
-    subject { instance.stories }
+    subject { instance.stories.length }
 
-    it { is_expected.to have_attributes length: 3 }
+    it { is_expected.to be 3 }
   end
 
   describe '#import!' do
@@ -59,14 +59,14 @@ RSpec.describe News::Importer do
       end
     end
 
-    context 'with collection which does not exists' do
+    context 'when collection does not exist' do
       subject { News::Collection.all.pluck(:name) }
 
       before { instance.import! }
 
-      let(:json_data) { StringIO.new incomplete_data.to_json }
+      let(:json_data) { StringIO.new story_with_unknown_collection.to_json }
 
-      let :incomplete_data do
+      let :story_with_unknown_collection do
         {
           news: [
             {
