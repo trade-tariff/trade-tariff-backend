@@ -78,6 +78,13 @@ module News
         where(start_date: first_of_jan..first_of_jan.end_of_year)
       end
 
+      def for_collection(collection_id)
+        collection_id = collection_id.presence&.to_i
+        return self unless collection_id
+
+        association_join(:collections).where(collection_id:).select_all(:news_items)
+      end
+
       def years
         distinct.select { date_part('year', :start_date).cast(:integer).as(:year) }
                 .order(Sequel.desc(:year))
