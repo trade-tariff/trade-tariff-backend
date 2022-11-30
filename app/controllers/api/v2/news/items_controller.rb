@@ -21,7 +21,7 @@ module Api
                                                     .all
 
           serializer = Api::V2::News::ItemSerializer.new(news_items_with_collections,
-                                                         include: %w[collections],
+                                                         include: %i[collections],
                                                          meta: pagination_meta(news_items))
 
           render json: serializer.serializable_hash
@@ -34,7 +34,7 @@ module Api
                         ::News::Item.for_today.with_pk!(params[:id])
                       end
 
-          serializer = Api::V2::News::ItemSerializer.new(news_item)
+          serializer = Api::V2::News::ItemSerializer.new(news_item, include: %i[collections])
 
           render json: serializer.serializable_hash
         end
