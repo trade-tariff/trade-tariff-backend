@@ -31,6 +31,8 @@ module News
       import_time = Time.zone.now
 
       ::News::Item.db.transaction do
+        create_collections
+
         stories.each { |story| import_story(story, import_time) }.length
       end
     end
@@ -75,8 +77,62 @@ module News
     def get_collection(name)
       normalised_name = name.gsub(/[^a-z0-9 ]/i, '')
 
-      @collections ||= {}
-      @collections[normalised_name] ||= Collection.find_or_create(name: normalised_name)
+      @collections[normalised_name] ||= create_collection(normalised_name)
+    end
+
+    def create_collections
+      @collections = [
+        create_tariff_notices,
+        create_stop_press,
+        create_trade_news,
+        create_service_updates,
+      ].index_by(&:name)
+    end
+
+    def create_tariff_notices
+      create_collection 'Tariff notices', 3, <<~DESCRIPTION
+        ## Contact details
+
+        <div class="address govuk-inset-text">
+          Tariff Classification
+          <br>Customs Directorate
+          <br>10th Floor South East
+          <br>Alexander House
+          <br>21 Victoria Avenue
+          <br>Southend-on-Sea
+          <br>Essex SS99 1AA
+        </div>
+
+        Email: [tariff.classification@hmrc.gov.uk](mailto:tariff.classification@hmrc.gov.uk)
+
+        This Tariff notice is published for information purposes only.
+      DESCRIPTION
+    end
+
+    def create_stop_press
+      create_collection 'Tariff stop press', 2, <<~DESCRIPTION
+        ## More information
+
+        To stop getting the Tariff stop press notices, or to add recipients to
+        the distribution list, email: [tariff.management@hmrc.gov.uk](mailto:tariff.management@hmrc.gov.uk).
+      DESCRIPTION
+    end
+
+    def create_trade_news
+      create_collection 'Trade news', 1
+    end
+
+    def create_service_updates
+      create_collection 'Service updates', 0
+    end
+
+    def create_collection(name, priority = nil, description = nil)
+      collection = Collection.find_or_create(name:)
+      collection.priority = priority if priority
+      collection.description = description if description
+      collection.save
+
+      collection
     end
   end
 end

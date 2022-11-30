@@ -19,6 +19,17 @@ RSpec.describe News::Importer do
     it { expect { instance.import! }.to change(News::Item, :count).by(3) }
     it { expect(instance.import!).to be 3 }
 
+    context 'with collection names' do
+      subject { News::Collection.all.pluck(:name) }
+
+      before { instance.import! }
+
+      it { is_expected.to include 'Tariff notices' }
+      it { is_expected.to include 'Tariff stop press' }
+      it { is_expected.to include 'Trade news' }
+      it { is_expected.to include 'Service updates' }
+    end
+
     context 'with first story' do
       subject(:first_item) { News::Item.order(:id).first }
 
@@ -48,16 +59,30 @@ RSpec.describe News::Importer do
       end
     end
 
-    context 'with collection which already exists' do
-      subject { News::Item.order(:id).first.collections }
+    context 'with collection which does not exists' do
+      subject { News::Collection.all.pluck(:name) }
 
-      before do
-        News::Collection.create name: 'Tariff notices'
-        instance.import!
+      before { instance.import! }
+
+      let(:json_data) { StringIO.new incomplete_data.to_json }
+
+      let :incomplete_data do
+        {
+          news: [
+            {
+              headline: 'story',
+              slug: 'slug',
+              precis: 'precis',
+              story: 'content',
+              validity_start_date: 5.minutes.ago.iso8601,
+              validity_end_date: nil,
+              themes: '{"Unknown collection"}',
+            },
+          ],
+        }
       end
 
-      it { is_expected.to have_attributes length: 1 }
-      it { is_expected.to all have_attributes name: 'Tariff notices' }
+      it { is_expected.to include 'Unknown collection' }
     end
 
     context 'with end_dated story' do
