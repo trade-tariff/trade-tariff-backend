@@ -5,7 +5,7 @@ module Api
       before_action :authenticate_user!
 
       def show
-        render json: Api::Admin::GoodsNomenclatureSerializer.new(@commodity, { is_collection: false }).serializable_hash
+        render json: Api::Admin::Commodities::CommoditySerializer.new(@commodity).serializable_hash
       end
 
       def index

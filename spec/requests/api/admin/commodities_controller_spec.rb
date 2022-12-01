@@ -1,4 +1,15 @@
 RSpec.describe Api::Admin::CommoditiesController, type: :request do
+  describe 'GET #show' do
+    subject(:do_request) do
+      authenticated_get api_commodity_path(id: commodity.goods_nomenclature_item_id)
+      response
+    end
+
+    let(:commodity) { create(:commodity) }
+
+    it_behaves_like 'a successful jsonapi response'
+  end
+
   describe 'GET #index' do
     subject(:do_request) do
       authenticated_get api_commodities_path(format: :csv)
