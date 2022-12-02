@@ -116,6 +116,23 @@ RSpec.describe News::Item do
         it { is_expected.to match_array [collections.first.id, another.id] }
       end
     end
+
+    describe '#published_collections' do
+      subject { described_class.first(id: item.id).published_collections.pluck(:name) }
+
+      before { collections.each(&item.method(:add_collection)) }
+
+      let(:item) { create :news_item }
+
+      let :collections do
+        [
+          create(:news_collection, name: 'AAA'),
+          create(:news_collection, :unpublished, name: 'BBB'),
+        ]
+      end
+
+      it { is_expected.to eq %w[AAA] }
+    end
   end
 
   describe 'scopes' do

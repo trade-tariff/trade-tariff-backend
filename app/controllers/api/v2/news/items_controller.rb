@@ -13,11 +13,11 @@ module Api
                                    .for_today
                                    .descending
                                    .distinct
-                                   .select { news_items[:id] }
+                                   .select { [news_items[:id], news_items[:start_date]] }
                                    .paginate(current_page, per_page)
 
           # Why? you may ask - because #paginate ignores #eager
-          news_items_with_collections = ::News::Item.eager(:collections)
+          news_items_with_collections = ::News::Item.eager(:published_collections)
                                                     .where(id: news_items_page.pluck(:id))
                                                     .descending
                                                     .all

@@ -8,6 +8,11 @@ module News
 
     many_to_many :collections, join_table: :news_collections_news_items
 
+    many_to_many :published_collections, join_table: :news_collections_news_items,
+                                         conditions: { published: true },
+                                         right_key: :collection_id,
+                                         class_name: '::News::Collection'
+
     def collection_ids=(ids)
       @collection_ids = normalise_ids(ids)
     end
@@ -45,7 +50,7 @@ module News
 
     dataset_module do
       def descending
-        order(Sequel.desc(:start_date), Sequel.desc(:id))
+        order { [Sequel.desc(news_items[:start_date]), Sequel.desc(news_items[:id])] }
       end
 
       def for_today
@@ -81,14 +86,12 @@ module News
       def for_collection(collection_id)
         collection_id = collection_id.presence
 
-        scope = association_join(:collections)
-                  .select_all(:news_items)
-                  .where { collections[:published] =~ true }
+        scope = association_join(:published_collections).select_all(:news_items)
 
         if collection_id.to_s.match? %r{\A\d+\z}
           scope.where(collection_id: collection_id.to_i)
         elsif collection_id
-          scope.where { collections[:slug] =~ collection_id }
+          scope.where { published_collections[:slug] =~ collection_id }
         else
           scope
         end
