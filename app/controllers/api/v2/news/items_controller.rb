@@ -6,23 +6,24 @@ module Api
         DEFAULT_PAGE_SIZE = 20
 
         def index
-          news_items = base_scope.select(:id)
-                                 .for_service(params[:service])
-                                 .for_target(params[:target])
-                                 .for_year(params[:year])
-                                 .for_today
-                                 .descending
-                                 .paginate(current_page, per_page)
+          news_items_page = ::News::Item.for_service(params[:service])
+                                   .for_target(params[:target])
+                                   .for_year(params[:year])
+                                   .for_collection(params[:collection_id])
+                                   .for_today
+                                   .descending
+                                   .select { news_items[:id] }
+                                   .paginate(current_page, per_page)
 
           # Why? you may ask - because #paginate ignores #eager
           news_items_with_collections = ::News::Item.eager(:collections)
-                                                    .where(id: news_items.pluck(:id))
+                                                    .where(id: news_items_page.pluck(:id))
                                                     .descending
                                                     .all
 
           serializer = Api::V2::News::ItemSerializer.new(news_items_with_collections,
                                                          include: %i[collections],
-                                                         meta: pagination_meta(news_items))
+                                                         meta: pagination_meta(news_items_page))
 
           render json: serializer.serializable_hash
         end
@@ -59,13 +60,6 @@ module Api
               total_count: data_set.pagination_record_count,
             },
           }
-        end
-
-        def base_scope
-          collection_id = params[:collection_id].presence&.to_i
-          return ::News::Item unless collection_id
-
-          ::News::Collection.where(id: collection_id).take.items_dataset
         end
       end
     end

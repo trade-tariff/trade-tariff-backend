@@ -252,6 +252,41 @@ RSpec.describe News::Item do
       end
     end
 
+    describe '.for_collection' do
+      before do
+        inside_collection
+        outside_collection
+      end
+
+      let(:inside_collection) { create :news_item, :with_collections, title: 'in' }
+      let(:outside_collection) { create :news_item, title: 'out' }
+
+      context 'without collection' do
+        subject { described_class.for_collection(nil).all }
+
+        it { is_expected.to include inside_collection }
+        it { is_expected.to include outside_collection }
+      end
+
+      context 'with known collection' do
+        subject do
+          described_class.for_collection(inside_collection.collections.first.id.to_s).all
+        end
+
+        it { is_expected.to include inside_collection }
+        it { is_expected.not_to include outside_collection }
+      end
+
+      context 'with unknown collection' do
+        subject do
+          described_class.for_collection('0').all
+        end
+
+        it { is_expected.not_to include inside_collection }
+        it { is_expected.not_to include outside_collection }
+      end
+    end
+
     describe '.descending' do
       subject { described_class.descending.to_a }
 

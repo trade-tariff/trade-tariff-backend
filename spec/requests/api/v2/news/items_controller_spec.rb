@@ -50,7 +50,7 @@ RSpec.describe Api::V2::News::ItemsController do
       context 'with unknown collection' do
         let(:collection_id) { collection.id + 100 }
 
-        it { is_expected.to have_http_status :not_found }
+        it_behaves_like 'a successful jsonapi response'
       end
     end
 
