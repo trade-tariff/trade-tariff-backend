@@ -94,7 +94,7 @@ RSpec.describe Api::V2::News::ItemsController do
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 
-    let(:news_item) { create :news_item }
+    let(:news_item) { create :news_item, :with_collections }
 
     let :make_request do
       get api_news_item_path(news_item.id, format: :json),
@@ -126,6 +126,18 @@ RSpec.describe Api::V2::News::ItemsController do
         get api_news_item_path('something-unknown', format: :json),
             headers: { 'Accept' => 'application/vnd.uktt.v2' }
       end
+
+      it { is_expected.to have_http_status :not_found }
+    end
+
+    context 'with unpublished collection' do
+      before { news_item.collections.first.update(published: false) }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+
+    context 'without collection' do
+      let(:news_item) { create :news_item }
 
       it { is_expected.to have_http_status :not_found }
     end

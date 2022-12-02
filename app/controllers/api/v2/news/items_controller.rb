@@ -30,10 +30,14 @@ module Api
         end
 
         def show
-          news_item = if params[:id].present? && !/\A\d+\z/.match?(params[:id])
-                        ::News::Item.for_today.where(slug: params[:id]).take
+          scope = ::News::Item.for_today.for_collection(nil)
+
+          slug_or_id = params[:id]
+
+          news_item = if slug_or_id.present? && !/\A\d+\z/.match?(slug_or_id)
+                        scope.where { news_items[:slug] =~ slug_or_id }.take
                       else
-                        ::News::Item.for_today.with_pk!(params[:id])
+                        scope.with_pk!(slug_or_id)
                       end
 
           serializer = Api::V2::News::ItemSerializer.new(news_item, include: %i[collections])
