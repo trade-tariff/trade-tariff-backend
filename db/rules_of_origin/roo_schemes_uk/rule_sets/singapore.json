@@ -8,7 +8,7 @@
                   "max": "0199999999",
                   "rules": [
                         {
-                              "rule": "All the animals of [chapter&nbsp;1](/chapters/01) are wholly obtained.",
+                              "rule": "All the animals of [chapter&nbsp;1](/chapters/1) are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -229,7 +229,7 @@
                   "max": "0304999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/3) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -263,7 +263,7 @@
                   "max": "0305999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/3) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -297,7 +297,7 @@
                   "max": "0306999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/3) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -331,7 +331,7 @@
                   "max": "0307999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/3) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -382,7 +382,7 @@
                   "max": "0499999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
+                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;4](/chapters/4) used are wholly obtained *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
                               "class": [
                                     "WO",
                                     "(PRODUCTION FROM",
@@ -435,7 +435,7 @@
                   "max": "0699999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;6](/chapters/06) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;6](/chapters/6) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -452,7 +452,7 @@
                   "max": "0799999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/07) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/7) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -469,7 +469,7 @@
                   "max": "0899999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the fruit, nuts and peels of citrus fruits or melons of [chapter&nbsp;8](/chapters/08) used are wholly obtained, *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
+                              "rule": "Manufacture in which:\n\n- all the fruit, nuts and peels of citrus fruits or melons of [chapter&nbsp;8](/chapters/8) used are wholly obtained, *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
                               "class": [
                                     "WO",
                                     "(WO",
@@ -756,7 +756,7 @@
             {
                   "heading": "1516-1517",
                   "chapter": 15,
-                  "subdivision": "Animal or vegetable fats and oils and their fractions, partly or wholly hydrogenated, inter-esterified, re-esterified or elaidinised, whether or not refined, but not further prepared\nMargarine; edible mixtures or preparations of animal or vegetable fats or oils or of fractions of different fats or oils of this Chapter, other than edible fats or oils or their fractions of heading 1516",
+                  "subdivision": "Animal or vegetable fats and oils and their fractions, partly or wholly hydrogenated, inter- esterified, re- esterified or elaidinised, whether or not refined, but not further prepared\nMargarine; edible mixtures or preparations of animal or vegetable fats or oils or of fractions of different fats or oils of this Chapter, other than edible fats or oils or their fractions of heading 1516",
                   "min": "1516000000",
                   "max": "1517999999",
                   "rules": [
@@ -846,7 +846,7 @@
                   "max": "1699999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapters 2](/chapters/02), 3 and 16 used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapters 2](/chapters/2), 3 and 16 used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -914,7 +914,7 @@
                   "max": "1704999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT))"
@@ -932,7 +932,7 @@
                   "max": "1899999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT))"
@@ -950,7 +950,7 @@
                   "max": "1999999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -964,12 +964,12 @@
             {
                   "heading": "ex 190120",
                   "chapter": 19,
-                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non-fried noodles, stir-fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
+                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non- fried noodles, stir- fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
                   "min": "1901200000",
                   "max": "1901209999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -983,12 +983,12 @@
             {
                   "heading": "ex 190190",
                   "chapter": 19,
-                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non-fried noodles, stir-fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
+                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non- fried noodles, stir- fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
                   "min": "1901900000",
                   "max": "1901909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1002,12 +1002,12 @@
             {
                   "heading": "ex 190219",
                   "chapter": 19,
-                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non-fried noodles, stir-fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
+                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non- fried noodles, stir- fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
                   "min": "1902190000",
                   "max": "1902199999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1021,12 +1021,12 @@
             {
                   "heading": "ex 190220",
                   "chapter": 19,
-                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non-fried noodles, stir-fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
+                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non- fried noodles, stir- fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
                   "min": "1902200000",
                   "max": "1902209999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1040,12 +1040,12 @@
             {
                   "heading": "ex 190230",
                   "chapter": 19,
-                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non-fried noodles, stir-fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
+                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non- fried noodles, stir- fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
                   "min": "1902300000",
                   "max": "1902309999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1059,12 +1059,12 @@
             {
                   "heading": "ex 190590",
                   "chapter": 19,
-                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non-fried noodles, stir-fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
+                  "subdivision": "Mixes and doughs of flour, groats, meal, starch or malt extract (Roti Paratha (\u5370\u5ea6\u62c9\u9905\u6216\u7529\u7529\u9905), Glutinous Rice Ball (\u6c64\u5706))\nMalt extract; food preparations of flour, groats, meal, starch or malt extract (Protomalt / Milo)\nPastry (Spring Roll vegetal and chicken (\u6625\u5377) and spring roll Pastry (\u6625\u5377\u76ae), cooked or uncooked\nVegetable Samosa (\u8428\u83ab\u8428\u4e09\u89d2\u997a) - precooked or uncooked\nSamosa Pastry (\u8428\u83ab\u8428\u4e09\u89d2\u997a\u76ae) - precooked or uncooked\noriental wrappers (\u6c34\u997a\u76ae) for Gyoza Skin (\u4e91\u541e\u76ae) and for Wonton Skin (\u4e91\u541e\u76ae) , cooked and uncooked; Wrapper for Peking Duck, precooked or cooked (\u70e4\u9e2d\u76ae)\nPasta, cooked or otherwise prepared (Instant Noodle/Ramen, non- fried noodles, stir- fried packet noodles (\u5feb\u719f\u9762 / \u62c9\u9762)\nUncooked pasta, not stuffed or otherwise prepared, not containing eggs (Rice Noodle (\u80a0\u7c89)) (Instant Rice Noodle ( \u5feb\u719f\u6cb3\u7c89))\nPasta, stuffed with meat or other substances, whether or not cooked or otherwise prepared\nCustard bun (\u5976\u7687\u5305); mini lotus bun, mini yam bun, red beans buns\nOriental bread: Pandan, plain, chocolate (\u9992\u5934))",
                   "min": "1905900000",
                   "max": "1905909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/2), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1101,7 +1101,7 @@
                   "max": "2003999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/07) and [chapter&nbsp;8](/chapters/08) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/7) and [chapter&nbsp;8](/chapters/8) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1226,7 +1226,7 @@
                   "max": "2199999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT))"
@@ -1244,7 +1244,7 @@
                   "max": "2101119999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1261,7 +1261,7 @@
                   "max": "2101129999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1278,7 +1278,7 @@
                   "max": "2101209999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1295,7 +1295,7 @@
                   "max": "2103109999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1312,7 +1312,7 @@
                   "max": "2103909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1329,7 +1329,7 @@
                   "max": "2104109999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1346,7 +1346,7 @@
                   "max": "2106909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1363,7 +1363,7 @@
                   "max": "2299999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "WO"
                               ],
@@ -1533,7 +1533,7 @@
                   "max": "2309999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nall the materials of [chapter&nbsp;2](/chapters/02) and [chapter&nbsp;3](/chapters/03) used are wholly obtained, *and*\n\nthe materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11) and [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nall the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;3](/chapters/3) used are wholly obtained, *and*\n\nthe materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11) and [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/4) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "WO"
                               ],
@@ -1654,7 +1654,7 @@
             {
                   "heading": "ex 2519",
                   "chapter": 25,
-                  "subdivision": "Crushed natural magnesium carbonate (magnesite), in hermetically-sealed containers, and magnesium oxide, whether or not pure, other than fused magnesia or dead-burned (sintered) magnesia",
+                  "subdivision": "Crushed natural magnesium carbonate (magnesite), in hermetically- sealed containers, and magnesium oxide, whether or not pure, other than fused magnesia or dead- burned (sintered) magnesia",
                   "min": "2519000000",
                   "max": "2519999999",
                   "rules": [
@@ -1832,7 +1832,7 @@
             {
                   "heading": "ex 2707",
                   "chapter": 27,
-                  "subdivision": "Oils in which the weight of the aromatic constituents exceeds that of the non-aromatic constituents, being oils similar to mineral oils obtained by distillation of high temperature coal tar, of which more than 65% by volume distils at a temperature of up to 250\u00b0C (including mixtures of petroleum spirit and benzole), for use as power or heating fuels",
+                  "subdivision": "Oils in which the weight of the aromatic constituents exceeds that of the non- aromatic constituents, being oils similar to mineral oils obtained by distillation of high temperature coal tar, of which more than 65% by volume distils at a temperature of up to 250\u00b0C (including mixtures of petroleum spirit and benzole), for use as power or heating fuels",
                   "min": "2707000000",
                   "max": "2707999999",
                   "rules": [
@@ -2089,7 +2089,7 @@
             {
                   "heading": "Chapter 28",
                   "chapter": 28,
-                  "subdivision": "Inorganic chemicals; organic or inorganic compounds of precious metals, of rare-earth metals, of radioactive elements or of isotopes",
+                  "subdivision": "Inorganic chemicals; organic or inorganic compounds of precious metals, of rare- earth metals, of radioactive elements or of isotopes",
                   "min": "2800000000",
                   "max": "2899999999",
                   "rules": [
@@ -2289,7 +2289,7 @@
             {
                   "heading": "2906",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2906000000",
                   "max": "2906999999",
                   "rules": [
@@ -2395,7 +2395,7 @@
             {
                   "heading": "2909-2910",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2909000000",
                   "max": "2909999999",
                   "rules": [
@@ -2451,7 +2451,7 @@
             {
                   "heading": "2909-2910",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2910000000",
                   "max": "2910999999",
                   "rules": [
@@ -2532,7 +2532,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2912000000",
                   "max": "2912999999",
                   "rules": [
@@ -2588,7 +2588,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2913000000",
                   "max": "2913999999",
                   "rules": [
@@ -2644,7 +2644,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2914000000",
                   "max": "2914999999",
                   "rules": [
@@ -2700,7 +2700,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2915000000",
                   "max": "2915999999",
                   "rules": [
@@ -2756,7 +2756,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2916000000",
                   "max": "2916999999",
                   "rules": [
@@ -2812,7 +2812,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2917000000",
                   "max": "2917999999",
                   "rules": [
@@ -2868,7 +2868,7 @@
             {
                   "heading": "2912-2918",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2918000000",
                   "max": "2918999999",
                   "rules": [
@@ -2949,7 +2949,7 @@
             {
                   "heading": "2920",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2920000000",
                   "max": "2920999999",
                   "rules": [
@@ -3080,7 +3080,7 @@
             {
                   "heading": "2924",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2924000000",
                   "max": "2924999999",
                   "rules": [
@@ -3286,7 +3286,7 @@
             {
                   "heading": "2931",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2931000000",
                   "max": "2931999999",
                   "rules": [
@@ -3367,7 +3367,7 @@
             {
                   "heading": "2933-2934",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2933000000",
                   "max": "2933999999",
                   "rules": [
@@ -3423,7 +3423,7 @@
             {
                   "heading": "2933-2934",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2934000000",
                   "max": "2934999999",
                   "rules": [
@@ -3654,7 +3654,7 @@
             {
                   "heading": "2942",
                   "chapter": 29,
-                  "subdivision": "Mannitol; D-glucitol (sorbitol); Glycerol",
+                  "subdivision": "Mannitol; D- glucitol (sorbitol); Glycerol",
                   "min": "2942000000",
                   "max": "2942999999",
                   "rules": [
@@ -3777,7 +3777,7 @@
             {
                   "heading": "ex Chapter 34",
                   "chapter": 34,
-                  "subdivision": "Soap, organic surface-active agents, washing preparations, lubricating preparations, artificial waxes, prepared waxes, polishing or scouring preparations, candles and similar articles, modelling pastes, \"dental waxes\" and dental preparations with a basis of plaster, except for:",
+                  "subdivision": "Soap, organic surface- active agents, washing preparations, lubricating preparations, artificial waxes, prepared waxes, polishing or scouring preparations, candles and similar articles, modelling pastes, \"dental waxes\" and dental preparations with a basis of plaster, except for:",
                   "min": "3400000000",
                   "max": "3499999999",
                   "rules": [
@@ -4704,7 +4704,7 @@
             {
                   "heading": "ex 3907",
                   "chapter": 39,
-                  "subdivision": "Watch straps, watch bands and watch bracelets, and parts thereof: \u2794 Copolymer, made from polycarbonate and acrylonitrile- butadiene-styrene copolymer (ABS)",
+                  "subdivision": " \u2794 Copolymer, made from polycarbonate and acrylonitrile- butadiene- styrene copolymer (ABS)",
                   "min": "3907000000",
                   "max": "3907999999",
                   "rules": [
@@ -4729,7 +4729,7 @@
             {
                   "heading": "ex 3907",
                   "chapter": 39,
-                  "subdivision": "Watch straps, watch bands and watch bracelets, and parts thereof: \u2794 Polyester",
+                  "subdivision": " \u2794 Polyester",
                   "min": "3907000000",
                   "max": "3907999999",
                   "rules": [
@@ -5787,7 +5787,7 @@
             {
                   "heading": "ex 4407",
                   "chapter": 44,
-                  "subdivision": "Wood sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm, planed, sanded or end-jointed",
+                  "subdivision": "Wood sawn or chipped lengthwise, sliced or peeled, of a thickness exceeding 6 mm, planed, sanded or end- jointed",
                   "min": "4407000000",
                   "max": "4407999999",
                   "rules": [
@@ -5804,7 +5804,7 @@
             {
                   "heading": "ex 4408",
                   "chapter": 44,
-                  "subdivision": "Sheets for veneering (including those obtained by slicing laminated wood) and for plywood, of a thickness not exceeding 6 mm, spliced, and other wood sawn lengthwise, sliced or peeled of a thickness not exceeding 6 mm, planed, sanded or end-jointed",
+                  "subdivision": "Sheets for veneering (including those obtained by slicing laminated wood) and for plywood, of a thickness not exceeding 6 mm, spliced, and other wood sawn lengthwise, sliced or peeled of a thickness not exceeding 6 mm, planed, sanded or end- jointed",
                   "min": "4408000000",
                   "max": "4408999999",
                   "rules": [
@@ -6638,7 +6638,7 @@
             {
                   "heading": "5401-5406",
                   "chapter": 54,
-                  "subdivision": "Yarn, monofilament and thread of man-made filaments",
+                  "subdivision": "Yarn, monofilament and thread of man- made filaments",
                   "min": "5401000000",
                   "max": "5406999999",
                   "rules": [
@@ -6656,7 +6656,7 @@
             {
                   "heading": "5407-5408",
                   "chapter": 54,
-                  "subdivision": "Woven fabrics of man-made filament yarn:\nIncorporating rubber thread\nOther",
+                  "subdivision": "Woven fabrics of man- made filament yarn:\nIncorporating rubber thread\nOther",
                   "min": "5407000000",
                   "max": "5408999999",
                   "rules": [
@@ -6688,7 +6688,7 @@
             {
                   "heading": "5501-5507",
                   "chapter": 55,
-                  "subdivision": "Man-made staple fibres",
+                  "subdivision": "Man- made staple fibres",
                   "min": "5501000000",
                   "max": "5507999999",
                   "rules": [
@@ -6705,7 +6705,7 @@
             {
                   "heading": "5508-5511",
                   "chapter": 55,
-                  "subdivision": "Yarn and sewing thread of man-made staple fibres",
+                  "subdivision": "Yarn and sewing thread of man- made staple fibres",
                   "min": "5508000000",
                   "max": "5511999999",
                   "rules": [
@@ -6723,7 +6723,7 @@
             {
                   "heading": "5512-5516",
                   "chapter": 55,
-                  "subdivision": "Woven fabrics of man-made staple fibres:\nIncorporating rubber thread\nOther",
+                  "subdivision": "Woven fabrics of man- made staple fibres:\nIncorporating rubber thread\nOther",
                   "min": "5512000000",
                   "max": "5516999999",
                   "rules": [
@@ -6747,7 +6747,7 @@
             },
             {
                   "heading": "5601",
-                  "subdivision": "Wadding, felt and non-wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
+                  "subdivision": "Wadding, felt and non- wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
                   "min": "5601000000",
                   "max": "5601999999",
                   "rules": [
@@ -6813,7 +6813,7 @@
             },
             {
                   "heading": "5603",
-                  "subdivision": "Wadding, felt and non-wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
+                  "subdivision": "Wadding, felt and non- wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
                   "min": "5603000000",
                   "max": "5603999999",
                   "rules": [
@@ -6906,7 +6906,7 @@
             },
             {
                   "heading": "5607",
-                  "subdivision": "Wadding, felt and non-wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
+                  "subdivision": "Wadding, felt and non- wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
                   "min": "5607000000",
                   "max": "5607999999",
                   "rules": [
@@ -6931,7 +6931,7 @@
             },
             {
                   "heading": "5608",
-                  "subdivision": "Wadding, felt and non-wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
+                  "subdivision": "Wadding, felt and non- wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
                   "min": "5608000000",
                   "max": "5608999999",
                   "rules": [
@@ -6956,7 +6956,7 @@
             },
             {
                   "heading": "5609",
-                  "subdivision": "Wadding, felt and non-wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
+                  "subdivision": "Wadding, felt and non- wovens; special yarns; twine, cordage, ropes and cables and articles thereof",
                   "min": "5609000000",
                   "max": "5609999999",
                   "rules": [
@@ -7107,7 +7107,7 @@
             {
                   "heading": "5805",
                   "chapter": 58,
-                  "subdivision": "Hand-woven tapestries of the types Gobelins, Flanders, Aubusson, Beauvais and the like, and needle-worked tapestries (for example, petit point, cross stitch), whether or not made up",
+                  "subdivision": "Hand- woven tapestries of the types Gobelins, Flanders, Aubusson, Beauvais and the like, and needle- worked tapestries (for example, petit point, cross stitch), whether or not made up",
                   "min": "5805000000",
                   "max": "5805999999",
                   "rules": [
@@ -7452,7 +7452,7 @@
             {
                   "heading": "5907",
                   "chapter": 59,
-                  "subdivision": "Textile fabrics otherwise impregnated, coated or covered; painted canvas being theatrical scenery, studio back-cloths or the like",
+                  "subdivision": "Textile fabrics otherwise impregnated, coated or covered; painted canvas being theatrical scenery, studio back- cloths or the like",
                   "min": "5907000000",
                   "max": "5907999999",
                   "rules": [
@@ -8529,7 +8529,7 @@
             {
                   "heading": "ex 6210",
                   "chapter": 62,
-                  "subdivision": "Fire-resistant equipment of fabric covered with foil of aluminised polyester",
+                  "subdivision": "Fire- resistant equipment of fabric covered with foil of aluminised polyester",
                   "min": "6210000000",
                   "max": "6210999999",
                   "rules": [
@@ -8690,7 +8690,7 @@
             {
                   "heading": "ex 6216",
                   "chapter": 62,
-                  "subdivision": "Fire-resistant equipment of fabric covered with foil of aluminised polyester",
+                  "subdivision": "Fire- resistant equipment of fabric covered with foil of aluminised polyester",
                   "min": "6216000000",
                   "max": "6216999999",
                   "rules": [
@@ -8741,7 +8741,7 @@
             {
                   "heading": "6217",
                   "chapter": 62,
-                  "subdivision": "Other made up clothing accessories; parts of garments or of clothing accessories, other than those of heading 6212: \u2794 Fire-resistant equipment of fabric covered with foil of aluminised polyester",
+                  "subdivision": "Other made up clothing accessories; parts of garments or of clothing accessories, other than those of heading 6212: \u2794 Fire- resistant equipment of fabric covered with foil of aluminised polyester",
                   "min": "6217000000",
                   "max": "6217999999",
                   "rules": [
@@ -8908,7 +8908,7 @@
             {
                   "heading": "6307",
                   "chapter": 63,
-                  "subdivision": "Other made-up articles, including dress patterns",
+                  "subdivision": "Other made- up articles, including dress patterns",
                   "min": "6307000000",
                   "max": "6307999999",
                   "rules": [
@@ -8942,7 +8942,7 @@
             },
             {
                   "heading": "6309",
-                  "subdivision": "Other made-up textile articles; sets; worn clothing and worn textile articles; rags",
+                  "subdivision": "Other made- up textile articles; sets; worn clothing and worn textile articles; rags",
                   "min": "6309000000",
                   "max": "6309999999",
                   "rules": [
@@ -8959,7 +8959,7 @@
             },
             {
                   "heading": "6310",
-                  "subdivision": "Other made-up textile articles; sets; worn clothing and worn textile articles; rags",
+                  "subdivision": "Other made- up textile articles; sets; worn clothing and worn textile articles; rags",
                   "min": "6310000000",
                   "max": "6310999999",
                   "rules": [
@@ -9062,7 +9062,7 @@
             {
                   "heading": "6406",
                   "chapter": 64,
-                  "subdivision": "Parts of footwear (including uppers whether or not attached to soles other than outer soles); removable in-soles, heel cushions and similar articles; gaiters, leggings and similar articles, and parts thereof",
+                  "subdivision": "Parts of footwear (including uppers whether or not attached to soles other than outer soles); removable in- soles, heel cushions and similar articles; gaiters, leggings and similar articles, and parts thereof",
                   "min": "6406000000",
                   "max": "6406999999",
                   "rules": [
@@ -9096,7 +9096,7 @@
             {
                   "heading": "Chapter 66",
                   "chapter": 66,
-                  "subdivision": "Umbrellas, sun umbrellas, walking-sticks, seat-sticks, whips, riding-crops, and parts thereof",
+                  "subdivision": "Umbrellas, sun umbrellas, walking- sticks, seat- sticks, whips, riding- crops, and parts thereof",
                   "min": "6600000000",
                   "max": "6699999999",
                   "rules": [
@@ -9356,7 +9356,7 @@
             {
                   "heading": "7006",
                   "chapter": 70,
-                  "subdivision": "Glass of heading 7003, 7004 or 7005, bent, edge-worked, engraved, drilled, \u2794 Glass-plate substrates, coated with a dielectric thin film, and of a semiconductor grade in accordance with\nSEMII-standards",
+                  "subdivision": "Glass of heading 7003, 7004 or 7005, bent, edge- worked, engraved, drilled, \u2794 Glass- plate substrates, coated with a dielectric thin film, and of a semiconductor grade in accordance with\nSEMII- standards",
                   "min": "7006000000",
                   "max": "7006999999",
                   "rules": [
@@ -9373,7 +9373,7 @@
             {
                   "heading": "7006",
                   "chapter": 70,
-                  "subdivision": "Glass of heading 7003, 7004 or 7005, bent, edge-worked, engraved, drilled, \u2794 Other",
+                  "subdivision": "Glass of heading 7003, 7004 or 7005, bent, edge- worked, engraved, drilled, \u2794 Other",
                   "min": "7006000000",
                   "max": "7006999999",
                   "rules": [
@@ -9709,7 +9709,7 @@
             {
                   "heading": "7101",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7101000000",
                   "max": "7101999999",
                   "rules": [
@@ -9733,7 +9733,7 @@
             {
                   "heading": "7102",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7102000000",
                   "max": "7102999999",
                   "rules": [
@@ -9757,7 +9757,7 @@
             {
                   "heading": "7103",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7103000000",
                   "max": "7103999999",
                   "rules": [
@@ -9781,7 +9781,7 @@
             {
                   "heading": "7104",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7104000000",
                   "max": "7104999999",
                   "rules": [
@@ -9805,7 +9805,7 @@
             {
                   "heading": "7105",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7105000000",
                   "max": "7105999999",
                   "rules": [
@@ -9860,7 +9860,7 @@
             {
                   "heading": "7106",
                   "chapter": 71,
-                  "subdivision": "Precious metals: \u2794 Semi-manufactured or in powder form",
+                  "subdivision": "Precious metals: \u2794 Semi- manufactured or in powder form",
                   "min": "7106000000",
                   "max": "7106999999",
                   "rules": [
@@ -9877,7 +9877,7 @@
             {
                   "heading": "ex 7107",
                   "chapter": 71,
-                  "subdivision": "Metals clad with precious metals, semi-manufactured",
+                  "subdivision": "Metals clad with precious metals, semi- manufactured",
                   "min": "7107000000",
                   "max": "7107999999",
                   "rules": [
@@ -9949,7 +9949,7 @@
             {
                   "heading": "7108",
                   "chapter": 71,
-                  "subdivision": "Precious metals: \u2794 Semi-manufactured or in powder form",
+                  "subdivision": "Precious metals: \u2794 Semi- manufactured or in powder form",
                   "min": "7108000000",
                   "max": "7108999999",
                   "rules": [
@@ -9966,7 +9966,7 @@
             {
                   "heading": "ex 7109",
                   "chapter": 71,
-                  "subdivision": "Metals clad with precious metals, semi-manufactured",
+                  "subdivision": "Metals clad with precious metals, semi- manufactured",
                   "min": "7109000000",
                   "max": "7109999999",
                   "rules": [
@@ -10038,7 +10038,7 @@
             {
                   "heading": "7110",
                   "chapter": 71,
-                  "subdivision": "Precious metals: \u2794 Semi-manufactured or in powder form",
+                  "subdivision": "Precious metals: \u2794 Semi- manufactured or in powder form",
                   "min": "7110000000",
                   "max": "7110999999",
                   "rules": [
@@ -10055,7 +10055,7 @@
             {
                   "heading": "ex 7111",
                   "chapter": 71,
-                  "subdivision": "Metals clad with precious metals, semi-manufactured",
+                  "subdivision": "Metals clad with precious metals, semi- manufactured",
                   "min": "7111000000",
                   "max": "7111999999",
                   "rules": [
@@ -10096,7 +10096,7 @@
             {
                   "heading": "7112",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7112000000",
                   "max": "7112999999",
                   "rules": [
@@ -10120,7 +10120,7 @@
             {
                   "heading": "7113",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7113000000",
                   "max": "7113999999",
                   "rules": [
@@ -10144,7 +10144,7 @@
             {
                   "heading": "7114",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7114000000",
                   "max": "7114999999",
                   "rules": [
@@ -10185,7 +10185,7 @@
             {
                   "heading": "7116",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7116000000",
                   "max": "7116999999",
                   "rules": [
@@ -10233,7 +10233,7 @@
             {
                   "heading": "7118",
                   "chapter": 71,
-                  "subdivision": "Natural or cultured pearls, precious or semi-precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
+                  "subdivision": "Natural or cultured pearls, precious or semi- precious stones, precious metals, metals clad with precious metal, and articles thereof; imitation jewellery; coin, except for:",
                   "min": "7118000000",
                   "max": "7118999999",
                   "rules": [
@@ -10359,7 +10359,7 @@
             {
                   "heading": "7207",
                   "chapter": 72,
-                  "subdivision": "Semi-finished products of iron or non-alloy steel",
+                  "subdivision": "Semi- finished products of iron or non- alloy steel",
                   "min": "7207000000",
                   "max": "7207999999",
                   "rules": [
@@ -10376,7 +10376,7 @@
             {
                   "heading": "7208-7216",
                   "chapter": 72,
-                  "subdivision": "Flat-rolled products, bars and rods, angles, shapes and sections of iron or non-alloy steel",
+                  "subdivision": "Flat- rolled products, bars and rods, angles, shapes and sections of iron or non- alloy steel",
                   "min": "7208000000",
                   "max": "7216999999",
                   "rules": [
@@ -10393,7 +10393,7 @@
             {
                   "heading": "7217",
                   "chapter": 72,
-                  "subdivision": "Wire of iron or non-alloy steel",
+                  "subdivision": "Wire of iron or non- alloy steel",
                   "min": "7217000000",
                   "max": "7217999999",
                   "rules": [
@@ -10427,7 +10427,7 @@
             {
                   "heading": "721891",
                   "chapter": 72,
-                  "subdivision": "Semi-finished products",
+                  "subdivision": "Semi- finished products",
                   "min": "7218910000",
                   "max": "7218919999",
                   "rules": [
@@ -10444,7 +10444,7 @@
             {
                   "heading": "721899",
                   "chapter": 72,
-                  "subdivision": "Semi-finished products",
+                  "subdivision": "Semi- finished products",
                   "min": "7218990000",
                   "max": "7218999999",
                   "rules": [
@@ -10461,7 +10461,7 @@
             {
                   "heading": "7219-7222",
                   "chapter": 72,
-                  "subdivision": "Flat-rolled products, bars and rods, angles, shapes and sections of stainless steel",
+                  "subdivision": "Flat- rolled products, bars and rods, angles, shapes and sections of stainless steel",
                   "min": "7219000000",
                   "max": "7222999999",
                   "rules": [
@@ -10512,7 +10512,7 @@
             {
                   "heading": "722490",
                   "chapter": 72,
-                  "subdivision": "Semi-finished products",
+                  "subdivision": "Semi- finished products",
                   "min": "7224900000",
                   "max": "7224909999",
                   "rules": [
@@ -10529,7 +10529,7 @@
             {
                   "heading": "7225-7228",
                   "chapter": 72,
-                  "subdivision": "Flat-rolled products, hot-rolled bars and rods, in irregularly wound coils; angles, shapes and sections, of other alloy steel; hollow drill bars and rods, of alloy or non-alloy steel",
+                  "subdivision": "Flat- rolled products, hot- rolled bars and rods, in irregularly wound coils; angles, shapes and sections, of other alloy steel; hollow drill bars and rods, of alloy or non- alloy steel",
                   "min": "7225000000",
                   "max": "7228999999",
                   "rules": [
@@ -10597,7 +10597,7 @@
             {
                   "heading": "7302",
                   "chapter": 73,
-                  "subdivision": "Railway or tramway track construction material of iron or steel, the following: rails, check-rails and rack rails, switch blades, crossing frogs, point rods and other crossing pieces, sleepers (cross-ties), fish-plates, chairs, chair wedges, sole pates (base plates), rail clips, bedplates, ties and other material specialised for jointing or fixing rails",
+                  "subdivision": "Railway or tramway track construction material of iron or steel, the following: rails, check- rails and rack rails, switch blades, crossing frogs, point rods and other crossing pieces, sleepers (cross- ties), fish- plates, chairs, chair wedges, sole pates (base plates), rail clips, bedplates, ties and other material specialised for jointing or fixing rails",
                   "min": "7302000000",
                   "max": "7302999999",
                   "rules": [
@@ -10683,7 +10683,7 @@
             {
                   "heading": "7308",
                   "chapter": 73,
-                  "subdivision": "Structures (excluding prefabricated buildings of heading 9406) and parts of structures (for example, bridges and bridge-sections, lock-gates, towers, lattice masts, roofs, roofing frameworks, doors and windows and their frames and thresholds for doors, shutters, balustrades, pillars and columns), of iron or steel; plates, rods, angles, shapes, sections, tubes and the like, prepared for use in structures, of iron or steel",
+                  "subdivision": "Structures (excluding prefabricated buildings of heading 9406) and parts of structures (for example, bridges and bridge- sections, lock- gates, towers, lattice masts, roofs, roofing frameworks, doors and windows and their frames and thresholds for doors, shutters, balustrades, pillars and columns), of iron or steel; plates, rods, angles, shapes, sections, tubes and the like, prepared for use in structures, of iron or steel",
                   "min": "7308000000",
                   "max": "7308999999",
                   "rules": [
@@ -11858,7 +11858,7 @@
             {
                   "heading": "8207",
                   "chapter": 82,
-                  "subdivision": "Interchangeable tools for hand tools, whether or not\npower-operated, or for machine-tools (for example, for pressing, stamping, punching, tapping, threading, drilling, boring, broaching, milling, turning, or screwdriving), including dies for drawing or extruding metal, and rock drilling or earth boring tools",
+                  "subdivision": "Interchangeable tools for hand tools, whether or not\npower- operated, or for machine- tools (for example, for pressing, stamping, punching, tapping, threading, drilling, boring, broaching, milling, turning, or screwdriving), including dies for drawing or extruding metal, and rock drilling or earth boring tools",
                   "min": "8207000000",
                   "max": "8207999999",
                   "rules": [
@@ -12030,7 +12030,7 @@
             {
                   "heading": "8215",
                   "chapter": 82,
-                  "subdivision": "Spoons, forks, ladles, skimmers, cake-servers, fish-knives, butter-knives, sugar tongs and similar kitchen or tableware",
+                  "subdivision": "Spoons, forks, ladles, skimmers, cake- servers, fish- knives, butter- knives, sugar tongs and similar kitchen or tableware",
                   "min": "8215000000",
                   "max": "8215999999",
                   "rules": [
@@ -12107,7 +12107,7 @@
             {
                   "heading": "8401",
                   "chapter": 84,
-                  "subdivision": "Nuclear reactors; fuel elements (cartridges), non-irradiated, for nuclear reactors; machinery and apparatus for isotopic separation",
+                  "subdivision": "Nuclear reactors; fuel elements (cartridges), non- irradiated, for nuclear reactors; machinery and apparatus for isotopic separation",
                   "min": "8401000000",
                   "max": "8401999999",
                   "rules": [
@@ -12244,7 +12244,7 @@
             {
                   "heading": "8407",
                   "chapter": 84,
-                  "subdivision": "Spark-ignition reciprocating or rotary internal combustion piston engines",
+                  "subdivision": "Spark- ignition reciprocating or rotary internal combustion piston engines",
                   "min": "8407000000",
                   "max": "8407999999",
                   "rules": [
@@ -12261,7 +12261,7 @@
             {
                   "heading": "8408",
                   "chapter": 84,
-                  "subdivision": "Compression-ignition internal combustion piston engines (diesel or semi-diesel engines",
+                  "subdivision": "Compression- ignition internal combustion piston engines (diesel or semi- diesel engines",
                   "min": "8408000000",
                   "max": "8408999999",
                   "rules": [
@@ -12302,7 +12302,7 @@
             {
                   "heading": "8410-8412",
                   "chapter": 84,
-                  "subdivision": "Hydraulic turbines, water wheels, and regulators therefor Turbojets, turbo-propellers and other gas turbines;\nother engines and motors;\nPumps for liquids, whether or not fitted with a measuring device; liquid elevators",
+                  "subdivision": "Hydraulic turbines, water wheels, and regulators therefor Turbojets, turbo- propellers and other gas turbines;\nother engines and motors;\nPumps for liquids, whether or not fitted with a measuring device; liquid elevators",
                   "min": "8410000000",
                   "max": "8412999999",
                   "rules": [
@@ -12662,7 +12662,7 @@
             {
                   "heading": "8427",
                   "chapter": 84,
-                  "subdivision": "Fork-lift trucks; other works trucks fitted with lifting or handling equipment",
+                  "subdivision": "Fork- lift trucks; other works trucks fitted with lifting or handling equipment",
                   "min": "8427000000",
                   "max": "8427999999",
                   "rules": [
@@ -13255,7 +13255,7 @@
             {
                   "heading": "8452",
                   "chapter": 84,
-                  "subdivision": "Sewing machines, other than book-sewing machines of heading 8440; furniture, bases and covers specially designed for sewing machines; sewing machine needles",
+                  "subdivision": "Sewing machines, other than book- sewing machines of heading 8440; furniture, bases and covers specially designed for sewing machines; sewing machine needles",
                   "min": "8452000000",
                   "max": "8452999999",
                   "rules": [
@@ -14160,7 +14160,7 @@
             {
                   "heading": "8504",
                   "chapter": 85,
-                  "subdivision": "Power supply units for automatic data-processing machines",
+                  "subdivision": "Power supply units for automatic data- processing machines",
                   "min": "8504000000",
                   "max": "8504999999",
                   "rules": [
@@ -14520,7 +14520,7 @@
             {
                   "heading": "8518",
                   "chapter": 85,
-                  "subdivision": "Microphones and stands therefore; loudspeakers, whether or not mounted in their enclosures; audio-frequency electric amplifiers; electric sound amplifier sets",
+                  "subdivision": "Microphones and stands therefore; loudspeakers, whether or not mounted in their enclosures; audio- frequency electric amplifiers; electric sound amplifier sets",
                   "min": "8518000000",
                   "max": "8518999999",
                   "rules": [
@@ -14616,7 +14616,7 @@
             {
                   "heading": "8523",
                   "chapter": 85,
-                  "subdivision": "Discs, tapes, solid-state non-volatile storage devices, \"smart cards\" and other media for the recording of sound or of other phenomena, whether or not recorded, including matrices and masters for the production of discs, but excluding products of Chapter 37",
+                  "subdivision": "Discs, tapes, solid- state non- volatile storage devices, \"smart cards\" and other media for the recording of sound or of other phenomena, whether or not recorded, including matrices and masters for the production of discs, but excluding products of Chapter 37",
                   "min": "8523000000",
                   "max": "8523999999",
                   "rules": [
@@ -14657,7 +14657,7 @@
             {
                   "heading": "8525",
                   "chapter": 85,
-                  "subdivision": "Transmission apparatus for radio-broadcasting or television, whether or not incorporating reception apparatus or sound recording or reproducing apparatus; television cameras, digital cameras and video camera recorders",
+                  "subdivision": "Transmission apparatus for radio- broadcasting or television, whether or not incorporating reception apparatus or sound recording or reproducing apparatus; television cameras, digital cameras and video camera recorders",
                   "min": "8525000000",
                   "max": "8525999999",
                   "rules": [
@@ -14705,7 +14705,7 @@
             {
                   "heading": "8527",
                   "chapter": 85,
-                  "subdivision": "Reception apparatus for radio-broadcasting, whether or not combined, in the same housing, with sound recording or reproducing apparatus or a clock",
+                  "subdivision": "Reception apparatus for radio- broadcasting, whether or not combined, in the same housing, with sound recording or reproducing apparatus or a clock",
                   "min": "8527000000",
                   "max": "8527999999",
                   "rules": [
@@ -14729,7 +14729,7 @@
             {
                   "heading": "8528",
                   "chapter": 85,
-                  "subdivision": "Monitors and projectors, not incorporating television reception apparatus; reception apparatus for television, whether or not incorporating radio-broadcast receivers or sound or video recording or reproducing apparatus",
+                  "subdivision": "Monitors and projectors, not incorporating television reception apparatus; reception apparatus for television, whether or not incorporating radio- broadcast receivers or sound or video recording or reproducing apparatus",
                   "min": "8528000000",
                   "max": "8528999999",
                   "rules": [
@@ -15239,7 +15239,7 @@
             {
                   "heading": "ex Chapter 86",
                   "chapter": 86,
-                  "subdivision": "Railway or tramway locomotives, rolling-stock and parts thereof; railway or tramway track fixtures and fittings and parts thereof; mechanical (including electro-mechanical) traffic signalling equipment of all kinds",
+                  "subdivision": "Railway or tramway locomotives, rolling- stock and parts thereof; railway or tramway track fixtures and fittings and parts thereof; mechanical (including electro- mechanical) traffic signalling equipment of all kinds",
                   "min": "8600000000",
                   "max": "8699999999",
                   "rules": [
@@ -15255,7 +15255,7 @@
             },
             {
                   "heading": "8701",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8701000000",
                   "max": "8701999999",
                   "rules": [
@@ -15272,7 +15272,7 @@
             },
             {
                   "heading": "8702",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8702000000",
                   "max": "8702999999",
                   "rules": [
@@ -15289,7 +15289,7 @@
             },
             {
                   "heading": "8703",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8703000000",
                   "max": "8703999999",
                   "rules": [
@@ -15306,7 +15306,7 @@
             },
             {
                   "heading": "8704",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8704000000",
                   "max": "8704999999",
                   "rules": [
@@ -15323,7 +15323,7 @@
             },
             {
                   "heading": "8705",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8705000000",
                   "max": "8705999999",
                   "rules": [
@@ -15340,7 +15340,7 @@
             },
             {
                   "heading": "8706",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8706000000",
                   "max": "8706999999",
                   "rules": [
@@ -15357,7 +15357,7 @@
             },
             {
                   "heading": "8707",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8707000000",
                   "max": "8707999999",
                   "rules": [
@@ -15374,7 +15374,7 @@
             },
             {
                   "heading": "8708",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8708000000",
                   "max": "8708999999",
                   "rules": [
@@ -15391,7 +15391,7 @@
             },
             {
                   "heading": "8709",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8709000000",
                   "max": "8709999999",
                   "rules": [
@@ -15408,7 +15408,7 @@
             },
             {
                   "heading": "8710",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8710000000",
                   "max": "8710999999",
                   "rules": [
@@ -15426,7 +15426,7 @@
             {
                   "heading": "8711",
                   "chapter": 87,
-                  "subdivision": "Motorcycles (including mopeds) and cycles fitted with an auxiliary motor, with or without side-cars; side-cars:\n- With reciprocating internal combustion piston engine of a cylinder capacity:\n- Not exceeding 50 cm3\n- Exceeding 50 cm3\n- Other",
+                  "subdivision": "Motorcycles (including mopeds) and cycles fitted with an auxiliary motor, with or without side- cars; side- cars:\n- With reciprocating internal combustion piston engine of a cylinder capacity:\n- Not exceeding 50 cm3\n- Exceeding 50 cm3\n- Other",
                   "min": "8711000000",
                   "max": "8711999999",
                   "rules": [
@@ -15449,7 +15449,7 @@
             },
             {
                   "heading": "8712",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8712000000",
                   "max": "8712999999",
                   "rules": [
@@ -15466,7 +15466,7 @@
             },
             {
                   "heading": "8713",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8713000000",
                   "max": "8713999999",
                   "rules": [
@@ -15500,7 +15500,7 @@
             },
             {
                   "heading": "8715",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8715000000",
                   "max": "8715999999",
                   "rules": [
@@ -15517,7 +15517,7 @@
             },
             {
                   "heading": "8716",
-                  "subdivision": "Vehicles other than railway or tramway rolling-stock, and parts and accessories thereof",
+                  "subdivision": "Vehicles other than railway or tramway rolling- stock, and parts and accessories thereof",
                   "min": "8716000000",
                   "max": "8716999999",
                   "rules": [
@@ -16340,7 +16340,7 @@
             {
                   "heading": "Chapter 94",
                   "chapter": 94,
-                  "subdivision": "Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name-plates and the like; prefabricated buildings",
+                  "subdivision": "Furniture; bedding, mattresses, mattress supports, cushions and similar stuffed furnishings; lamps and lighting fittings, not elsewhere specified or included; illuminated signs, illuminated name- plates and the like; prefabricated buildings",
                   "min": "9400000000",
                   "max": "9499999999",
                   "rules": [
@@ -16405,7 +16405,7 @@
             {
                   "heading": "9601-9602",
                   "chapter": 96,
-                  "subdivision": "Worked ivory, bone, tortoiseshell, horn, antlers, coral, mother-of- pearl and other animal carving material, and articles of these materials (including articles obtained by moulding.\nWorked vegetable or mineral carving material and articles of these materials; moulded or carved articles of wax, of stearin, of natural gums or natural resins or of modelling pastes, and other moulded or carved articles, not elsewhere specified or included; worked, unhardened gelatine (except gelatine of heading 3503) and articles of unhardened gelatin",
+                  "subdivision": "Worked ivory, bone, tortoiseshell, horn, antlers, coral, mother- of- pearl and other animal carving material, and articles of these materials (including articles obtained by moulding.\nWorked vegetable or mineral carving material and articles of these materials; moulded or carved articles of wax, of stearin, of natural gums or natural resins or of modelling pastes, and other moulded or carved articles, not elsewhere specified or included; worked, unhardened gelatine (except gelatine of heading 3503) and articles of unhardened gelatin",
                   "min": "9601000000",
                   "max": "9602999999",
                   "rules": [
@@ -16422,7 +16422,7 @@
             {
                   "heading": "9603",
                   "chapter": 96,
-                  "subdivision": "Brooms, brushes (including brushes constituting parts of machines, appliances or vehicles), hand-operated mechanical floor sweepers, not motorized, mops and feather dusters; prepared knots and tufts for broom or brush making; paint pads and rollers, squeegees (other than roller squeegees)",
+                  "subdivision": "Brooms, brushes (including brushes constituting parts of machines, appliances or vehicles), hand- operated mechanical floor sweepers, not motorized, mops and feather dusters; prepared knots and tufts for broom or brush making; paint pads and rollers, squeegees (other than roller squeegees)",
                   "min": "9603000000",
                   "max": "9603999999",
                   "rules": [
@@ -16481,7 +16481,7 @@
             {
                   "heading": "9606",
                   "chapter": 96,
-                  "subdivision": "Buttons, press-fasteners, snap-fasteners and press-studs, button moulds and other parts of these articles; button blanks",
+                  "subdivision": "Buttons, press- fasteners, snap- fasteners and press- studs, button moulds and other parts of these articles; button blanks",
                   "min": "9606000000",
                   "max": "9606999999",
                   "rules": [
@@ -16523,7 +16523,7 @@
             {
                   "heading": "9608",
                   "chapter": 96,
-                  "subdivision": "Ball-point pens; felt-tipped and other porous-tipped pens and markers; fountain pens, stylograph pens and other pens; duplicating stylos; propelling or sliding pencils; pen-holders, pencil-holders and similar holders; parts (including caps and clips) of the foregoing articles, other than those of heading 9609",
+                  "subdivision": "Ball- point pens; felt- tipped and other porous- tipped pens and markers; fountain pens, stylograph pens and other pens; duplicating stylos; propelling or sliding pencils; pen- holders, pencil- holders and similar holders; parts (including caps and clips) of the foregoing articles, other than those of heading 9609",
                   "min": "9608000000",
                   "max": "9608999999",
                   "rules": [
