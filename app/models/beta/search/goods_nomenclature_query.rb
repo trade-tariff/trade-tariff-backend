@@ -17,7 +17,6 @@ module Beta
 
       MULTI_MATCH_FIELDS = [
         'search_references^12',
-        'ancestor_1_description_indexed^10', # chapter
         'ancestor_2_description_indexed^8', # heading
         'description_indexed^6',
         'ancestor_3_description_indexed^4',
