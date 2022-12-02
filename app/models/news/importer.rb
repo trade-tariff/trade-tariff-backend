@@ -91,7 +91,7 @@ module News
     end
 
     def create_tariff_notices
-      create_news_collection 'Tariff notices', 3, <<~DESCRIPTION
+      create_news_collection 'Tariff notices', 3, published: false, description: <<~DESCRIPTION
         ## Contact details
 
         <div class="address govuk-inset-text">
@@ -111,7 +111,7 @@ module News
     end
 
     def create_stop_press
-      create_news_collection 'Tariff stop press', 2, <<~DESCRIPTION
+      create_news_collection 'Tariff stop press', 2, description: <<~DESCRIPTION
         ## More information
 
         To stop getting the Tariff stop press notices, or to add recipients to
@@ -127,12 +127,13 @@ module News
       create_news_collection 'Service updates', 0
     end
 
-    def create_news_collection(name, priority = nil, description = nil)
+    def create_news_collection(name, priority = nil, description: nil, published: true)
       slug = name.downcase.gsub(/[^a-z0-9\-]/, '_')
 
       collection = Collection.find_or_create(name:, slug:)
       collection.priority = priority if priority
       collection.description = description if description
+      collection.published = published
       collection.save
 
       collection

@@ -58,6 +58,12 @@ RSpec.describe News::Importer do
         it { is_expected.to all have_attributes name: 'Tariff notices' }
         it { is_expected.to all have_attributes slug: 'tariff_notices' }
       end
+
+      context 'with tariff notices collection' do
+        subject { News::Collection.where(slug: 'tariff_notices').first }
+
+        it { is_expected.to have_attributes published: false }
+      end
     end
 
     context 'when collection does not exist' do
