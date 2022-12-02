@@ -5260,7 +5260,8 @@ CREATE TABLE public.news_collections (
     updated_at timestamp without time zone,
     priority integer DEFAULT 0 NOT NULL,
     description text,
-    slug character varying(255)
+    slug character varying(255),
+    published boolean DEFAULT true
 );
 
 
