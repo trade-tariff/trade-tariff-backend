@@ -7,6 +7,10 @@ FactoryBot.define do
     trait :with_description do
       sequence(:description) { |n| "Description of News collection #{n}" }
     end
+
+    trait :unpublished do
+      published { false }
+    end
   end
 
   factory :news_item, class: 'News::Item' do

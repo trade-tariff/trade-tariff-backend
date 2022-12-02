@@ -70,8 +70,8 @@ RSpec.describe News::Collection do
         unpublished
       end
 
-      let(:published) { create :news_collection, published: true }
-      let(:unpublished) { create :news_collection, published: false }
+      let(:published) { create :news_collection }
+      let(:unpublished) { create :news_collection, :unpublished }
 
       it { is_expected.to include published }
       it { is_expected.not_to include unpublished }

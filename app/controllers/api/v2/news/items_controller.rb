@@ -12,6 +12,7 @@ module Api
                                    .for_collection(params[:collection_id])
                                    .for_today
                                    .descending
+                                   .distinct
                                    .select { news_items[:id] }
                                    .paginate(current_page, per_page)
 

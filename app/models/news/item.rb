@@ -80,16 +80,17 @@ module News
 
       def for_collection(collection_id)
         collection_id = collection_id.presence
-        return self unless collection_id
+
+        scope = association_join(:collections)
+                  .select_all(:news_items)
+                  .where { collections[:published] =~ true }
 
         if collection_id.to_s.match? %r{\A\d+\z}
-          association_join(:collections)
-            .where(collection_id: collection_id.to_i)
-            .select_all(:news_items)
+          scope.where(collection_id: collection_id.to_i)
+        elsif collection_id
+          scope.where { collections[:slug] =~ collection_id }
         else
-          association_join(:collections)
-            .where { collections[:slug] =~ collection_id }
-            .select_all(:news_items)
+          scope
         end
       end
 

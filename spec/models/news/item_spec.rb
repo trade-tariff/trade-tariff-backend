@@ -264,8 +264,26 @@ RSpec.describe News::Item do
       context 'without collection' do
         subject { described_class.for_collection(nil).all }
 
+        before do
+          with_mixed_collection
+          with_unpublished_collection
+        end
+
+        let :with_mixed_collection do
+          item = create :news_item, :with_collections
+          item.add_collection create(:news_collection, :unpublished)
+          item.reload
+        end
+
+        let :with_unpublished_collection do
+          item = create :news_item, collection_ids: [create(:news_collection, :unpublished).id]
+          item.reload
+        end
+
         it { is_expected.to include inside_collection }
-        it { is_expected.to include outside_collection }
+        it { is_expected.not_to include outside_collection }
+        it { is_expected.to include with_mixed_collection }
+        it { is_expected.not_to include with_unpublished_collection }
       end
 
       context 'with known collection' do
@@ -275,6 +293,24 @@ RSpec.describe News::Item do
 
         it { is_expected.to include inside_collection }
         it { is_expected.not_to include outside_collection }
+
+        context 'when collection is unpublished' do
+          before do
+            inside_collection.collections.first.update published: false
+            inside_collection.reload
+          end
+
+          it { is_expected.not_to include inside_collection }
+        end
+
+        context 'with additional unpublished collection' do
+          before do
+            inside_collection.add_collection create(:news_collection, :unpublished)
+            inside_collection.reload
+          end
+
+          it { is_expected.to include inside_collection }
+        end
       end
 
       context 'with unknown collection' do
