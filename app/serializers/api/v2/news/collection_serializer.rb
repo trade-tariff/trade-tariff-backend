@@ -8,7 +8,7 @@ module Api
 
         set_id :id
 
-        attributes :name, :description, :priority
+        attributes :name, :slug, :description, :priority
       end
     end
   end

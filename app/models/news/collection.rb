@@ -7,5 +7,12 @@ module News
                          order: Sequel.desc(:start_date)
 
     set_dataset order(Sequel.desc(:priority), :name)
+
+    def validate
+      super
+
+      validates_presence :slug
+      validates_format %r{\A[a-z0-9\-_]+\z}, :slug if slug.present?
+    end
   end
 end

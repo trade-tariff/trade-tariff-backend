@@ -15,19 +15,28 @@ RSpec.describe News::Collection do
     let(:instance) { described_class.new }
 
     it { is_expected.to include(name: ['is not present']) }
+    it { is_expected.to include(slug: ['is not present']) }
 
-    context 'with blank name' do
-      let(:instance) { described_class.new name: '' }
+    context 'with blank attributes' do
+      let(:instance) { described_class.new name: '', slug: '' }
 
       it { is_expected.to include(name: ['is not present']) }
+      it { is_expected.to include(slug: ['is not present']) }
     end
 
-    context 'with duplicate collection name' do
-      before { create :news_collection, name: 'testing' }
+    context 'with duplicated attributes' do
+      before { create :news_collection, name: 'testing', slug: 'testing' }
 
-      let(:instance) { described_class.new name: 'testing' }
+      let(:instance) { described_class.new name: 'testing', slug: 'testing' }
 
       it { is_expected.to include(name: ['is already taken']) }
+      it { is_expected.to include(slug: ['is already taken']) }
+    end
+
+    context 'with invalid format slug' do
+      let(:instance) { described_class.new name: 'testing', slug: 'with space' }
+
+      it { is_expected.to include(slug: ['is invalid']) }
     end
   end
 

@@ -5259,7 +5259,8 @@ CREATE TABLE public.news_collections (
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone,
     priority integer DEFAULT 0 NOT NULL,
-    description text
+    description text,
+    slug character varying(255)
 );
 
 
@@ -8492,6 +8493,14 @@ ALTER TABLE ONLY public.news_collections
 
 
 --
+-- Name: news_collections news_collections_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.news_collections
+    ADD CONSTRAINT news_collections_slug_key UNIQUE (slug);
+
+
+--
 -- Name: news_items news_items_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -11017,3 +11026,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20221017110015_add_news_co
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221017160811_associate_news_items_and_news_collections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221020121609_add_precis_and_slug_to_news_items.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221127173137_add_description_and_priority_to_news_collections.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20221202094157_add_slug_to_collections.rb');
