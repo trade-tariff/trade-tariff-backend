@@ -8,6 +8,12 @@ module News
 
     set_dataset order(Sequel.desc(:priority), :name)
 
+    dataset_module do
+      def published
+        where(published: true)
+      end
+    end
+
     def validate
       super
 

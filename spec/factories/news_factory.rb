@@ -2,6 +2,7 @@ FactoryBot.define do
   factory :news_collection, class: 'News::Collection' do
     sequence(:name) { |n| "News Collection #{n}" }
     sequence(:slug) { |n| "news_collection_#{n}" }
+    published { true }
 
     trait :with_description do
       sequence(:description) { |n| "Description of News collection #{n}" }
