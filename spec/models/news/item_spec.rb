@@ -285,6 +285,26 @@ RSpec.describe News::Item do
         it { is_expected.not_to include inside_collection }
         it { is_expected.not_to include outside_collection }
       end
+
+      context 'with slugs' do
+        context 'with known collection' do
+          subject do
+            described_class.for_collection(inside_collection.collections.first.slug).all
+          end
+
+          it { is_expected.to include inside_collection }
+          it { is_expected.not_to include outside_collection }
+        end
+
+        context 'with unknown slug' do
+          subject do
+            described_class.for_collection('random').all
+          end
+
+          it { is_expected.not_to include inside_collection }
+          it { is_expected.not_to include outside_collection }
+        end
+      end
     end
 
     describe '.descending' do

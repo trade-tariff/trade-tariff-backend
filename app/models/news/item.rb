@@ -79,10 +79,18 @@ module News
       end
 
       def for_collection(collection_id)
-        collection_id = collection_id.presence&.to_i
+        collection_id = collection_id.presence
         return self unless collection_id
 
-        association_join(:collections).where(collection_id:).select_all(:news_items)
+        if collection_id.to_s.match? %r{\A\d+\z}
+          association_join(:collections)
+            .where(collection_id: collection_id.to_i)
+            .select_all(:news_items)
+        else
+          association_join(:collections)
+            .where { collections[:slug] =~ collection_id }
+            .select_all(:news_items)
+        end
       end
 
       def years
