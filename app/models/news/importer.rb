@@ -128,7 +128,9 @@ module News
     end
 
     def create_news_collection(name, priority = nil, description = nil)
-      collection = Collection.find_or_create(name:)
+      slug = name.downcase.gsub(/[^a-z0-9\-]/, '_')
+
+      collection = Collection.find_or_create(name:, slug:)
       collection.priority = priority if priority
       collection.description = description if description
       collection.save

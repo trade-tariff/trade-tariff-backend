@@ -56,6 +56,7 @@ RSpec.describe News::Importer do
 
         it { is_expected.to have_attributes length: 1 }
         it { is_expected.to all have_attributes name: 'Tariff notices' }
+        it { is_expected.to all have_attributes slug: 'tariff_notices' }
       end
     end
 
