@@ -22,7 +22,9 @@ module Api
                                                     .descending
                                                     .all
 
-          serializer = Api::V2::News::ItemSerializer.new(news_items_with_collections,
+          presented_news_items = Api::V2::News::ItemPresenter.wrap(news_items_with_collections)
+
+          serializer = Api::V2::News::ItemSerializer.new(presented_news_items,
                                                          include: %i[collections],
                                                          meta: pagination_meta(news_items_page))
 
@@ -40,7 +42,9 @@ module Api
                         scope.with_pk!(slug_or_id)
                       end
 
-          serializer = Api::V2::News::ItemSerializer.new(news_item, include: %i[collections])
+          presented_news_item = Api::V2::News::ItemPresenter.new(news_item)
+
+          serializer = Api::V2::News::ItemSerializer.new(presented_news_item, include: %i[collections])
 
           render json: serializer.serializable_hash
         end
