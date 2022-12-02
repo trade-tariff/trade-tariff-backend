@@ -8,7 +8,7 @@
                   "max": "0199999999",
                   "rules": [
                         {
-                              "rule": "All the animals of [chapter&nbsp;1](/chapters/01) shall be wholly obtained.",
+                              "rule": "All the animals of [chapter&nbsp;01](/chapters/01) shall be wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -25,7 +25,7 @@
                   "max": "0299999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;1](/chapters/1) and [chapter&nbsp;2](/chapters/02) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;01](/chapters/01) and [chapter&nbsp;2](/chapters/02) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -42,7 +42,7 @@
                   "max": "0399999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -58,7 +58,7 @@
                   "max": "0401999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -75,7 +75,7 @@
                   "max": "0402999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -93,7 +93,7 @@
                   "max": "0403999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained,\n\n- all the fruit juice (except that of pineapple, lime or grapefruit) of [heading&nbsp;2009](/headings/2009) used is originating, *and*\n\n- the value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
+                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained,\n\n- all the fruit juice (except that of pineapple, lime or grapefruit) of [heading&nbsp;2009](/headings/2009) used is originating, *and*\n\n- the value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "WO",
                                     "ORIGINATING",
@@ -111,7 +111,7 @@
                   "max": "0404999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -128,7 +128,7 @@
                   "max": "0405999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -145,7 +145,7 @@
                   "max": "0406999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -162,7 +162,7 @@
                   "max": "0407999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -179,7 +179,7 @@
                   "max": "0408999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -196,7 +196,7 @@
                   "max": "0409999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -213,7 +213,7 @@
                   "max": "0410999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -231,7 +231,7 @@
                   "max": "0599999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;5](/chapters/05) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;05](/chapters/05) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -265,7 +265,7 @@
                   "max": "0699999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;6](/chapters/06) used are wholly obtained, *and*\n\n- the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
+                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;06](/chapters/06) used are wholly obtained, *and*\n\n- the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
                               "class": [
                                     "WO",
                                     "MAXNOM"
@@ -283,7 +283,7 @@
                   "max": "0799999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/07) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;07](/chapters/07) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -352,7 +352,7 @@
                   "max": "0903999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -369,7 +369,7 @@
                   "max": "0904999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -386,7 +386,7 @@
                   "max": "0905999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -403,7 +403,7 @@
                   "max": "0906999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -420,7 +420,7 @@
                   "max": "0907999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -437,7 +437,7 @@
                   "max": "0908999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -454,7 +454,7 @@
                   "max": "0909999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -488,7 +488,7 @@
                   "max": "0910999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;9](/chapters/09) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;09](/chapters/09) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -692,7 +692,7 @@
                   "max": "1502999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;2](/chapters/02) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;02](/chapters/02) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -743,7 +743,7 @@
                   "max": "1504999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;02](/chapters/02) and [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -811,7 +811,7 @@
                   "max": "1506999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;2](/chapters/02) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;02](/chapters/02) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -879,7 +879,7 @@
                   "max": "1516999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;2](/chapters/02) used are wholly obtained, *and*\n\n- all the vegetable materials used are wholly obtained. However, materials of [heading&nbsp;1507](/headings/1507), [heading&nbsp;1508](/headings/1508), [heading&nbsp;1511](/headings/1511) and [heading&nbsp;1513](/headings/1513) may be used.",
+                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;02](/chapters/02) used are wholly obtained, *and*\n\n- all the vegetable materials used are wholly obtained. However, materials of [heading&nbsp;1507](/headings/1507), [heading&nbsp;1508](/headings/1508), [heading&nbsp;1511](/headings/1511) and [heading&nbsp;1513](/headings/1513) may be used.",
                               "class": [
                                     "WO",
                                     "(WO TOLERANCE MAY BE USED)"
@@ -897,7 +897,7 @@
                   "max": "1517999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- all the vegetable materials used are wholly obtained. However, materials of [heading&nbsp;1507](/headings/1507), [heading&nbsp;1508](/headings/1508), [heading&nbsp;1511](/headings/1511) and [heading&nbsp;1513](/headings/1513) may be used.",
+                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;02](/chapters/02) and [chapter&nbsp;4](/chapters/04) used are wholly obtained, *and*\n\n- all the vegetable materials used are wholly obtained. However, materials of [heading&nbsp;1507](/headings/1507), [heading&nbsp;1508](/headings/1508), [heading&nbsp;1511](/headings/1511) and [heading&nbsp;1513](/headings/1513) may be used.",
                               "class": [
                                     "WO",
                                     "(WO TOLERANCE MAY BE USED)"
@@ -983,7 +983,7 @@
                   "max": "1699999999",
                   "rules": [
                         {
-                              "rule": "Manufacture:\n\n- from animals of [chapter&nbsp;1](/chapters/01), and&nbsp;/&nbsp;or\n\n- in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture:\n\n- from animals of [chapter&nbsp;01](/chapters/01), and&nbsp;/&nbsp;or\n\n- in which all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO",
                                     "PRODUCTION FROM"
@@ -1208,7 +1208,7 @@
                   "max": "1902999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the cereals and their derivatives (except durum wheat and its derivatives) used are wholly obtained, *and*\n\n- all the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which:\n\n- all the cereals and their derivatives (except durum wheat and its derivatives) used are wholly obtained, *and*\n\n- all the materials of [chapter&nbsp;02](/chapters/02) and [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1855,7 +1855,7 @@
                   "max": "2301999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;02](/chapters/02) and [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -2042,7 +2042,7 @@
                   "max": "2309999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the cereals, sugar or molasses, meat or milk used are originating, *and*\n\n- all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which:\n\n- all the cereals, sugar or molasses, meat or milk used are originating, *and*\n\n- all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO",
                                     "ORIGINATING"

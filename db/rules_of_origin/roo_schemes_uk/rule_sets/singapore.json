@@ -8,7 +8,7 @@
                   "max": "0199999999",
                   "rules": [
                         {
-                              "rule": "All the animals of [chapter&nbsp;1](/chapters/01) are wholly obtained.",
+                              "rule": "All the animals of [chapter&nbsp;01](/chapters/01) are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -229,7 +229,7 @@
                   "max": "0304999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -263,7 +263,7 @@
                   "max": "0305999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -297,7 +297,7 @@
                   "max": "0306999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -331,7 +331,7 @@
                   "max": "0307999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;3](/chapters/03) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;03](/chapters/03) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -382,7 +382,7 @@
                   "max": "0499999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;4](/chapters/04) used are wholly obtained *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
+                              "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;04](/chapters/04) used are wholly obtained *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
                               "class": [
                                     "WO",
                                     "(PRODUCTION FROM",
@@ -435,7 +435,7 @@
                   "max": "0699999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;6](/chapters/06) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;06](/chapters/06) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -452,7 +452,7 @@
                   "max": "0799999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/07) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;07](/chapters/07) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -469,7 +469,7 @@
                   "max": "0899999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which:\n\n- all the fruit, nuts and peels of citrus fruits or melons of [chapter&nbsp;8](/chapters/08) used are wholly obtained, *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
+                              "rule": "Manufacture in which:\n\n- all the fruit, nuts and peels of citrus fruits or melons of [chapter&nbsp;08](/chapters/08) used are wholly obtained, *and*\n\n- the weight of sugar used does not exceed **20%** of the weight of the final product.",
                               "class": [
                                     "WO",
                                     "(WO",
@@ -846,7 +846,7 @@
                   "max": "1699999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapters 2](/chapters/02), 3 and 16 used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapters 02](/chapters/02), 3 and 16 used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -914,7 +914,7 @@
                   "max": "1704999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT))"
@@ -932,7 +932,7 @@
                   "max": "1899999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT))"
@@ -950,7 +950,7 @@
                   "max": "1999999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -969,7 +969,7 @@
                   "max": "1901209999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -988,7 +988,7 @@
                   "max": "1901909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1007,7 +1007,7 @@
                   "max": "1902199999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1026,7 +1026,7 @@
                   "max": "1902209999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1045,7 +1045,7 @@
                   "max": "1902309999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1064,7 +1064,7 @@
                   "max": "1905909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 2](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **70%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe weight of the materials of [chapters 02](/chapters/02), 3 and 16 used does not exceed **20%** of the weight of the final product, *and*\n\nthe weight of the materials of [heading&nbsp;1006](/headings/1006) and [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108) used does not exceed **40%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **70%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT",
@@ -1101,7 +1101,7 @@
                   "max": "2003999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;7](/chapters/7) and [chapter&nbsp;8](/chapters/08) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;07](/chapters/07) and [chapter&nbsp;8](/chapters/08) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1226,7 +1226,7 @@
                   "max": "2199999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "(CTH RESTRICTION (MAXWEIGHT",
                                     "MAXWEIGHT))"
@@ -1244,7 +1244,7 @@
                   "max": "2101119999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1261,7 +1261,7 @@
                   "max": "2101129999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1278,7 +1278,7 @@
                   "max": "2101209999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1295,7 +1295,7 @@
                   "max": "2103109999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1312,7 +1312,7 @@
                   "max": "2103909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1329,7 +1329,7 @@
                   "max": "2104109999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1346,7 +1346,7 @@
                   "max": "2106909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **60%** of the weight of final product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -1363,7 +1363,7 @@
                   "max": "2299999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "WO"
                               ],
@@ -1533,7 +1533,7 @@
                   "max": "2309999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nall the materials of [chapter&nbsp;2](/chapters/2) and [chapter&nbsp;3](/chapters/03) used are wholly obtained, *and*\n\nthe materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11) and [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of final product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which:\n\nall the materials of [chapter&nbsp;02](/chapters/02) and [chapter&nbsp;3](/chapters/03) used are wholly obtained, *and*\n\nthe materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11) and [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303) used does not exceed **20%** of the weight of the final product, *and*\n\nthe individual weight of sugar and of the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **20%** of the weight of the final product, *and*\n\nthe total combined weight of sugar and the materials of [chapter&nbsp;04](/chapters/04) used does not exceed **40%** of the weight of final product.",
                               "class": [
                                     "WO"
                               ],
