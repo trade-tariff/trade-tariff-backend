@@ -6,8 +6,8 @@ Sequel.migration do
     if TradeTariffBackend.uk?
       origin = QuotaOrderNumberOrigin::Operation.new
 
-      origin.quota_order_number_origin_sid = 21096
-      origin.quota_order_number_sid = 20142
+      origin.quota_order_number_origin_sid = 21_096
+      origin.quota_order_number_sid = 20_142
       origin.geographical_area_id = 'IN'
       origin.validity_start_date = '2021-01-01T00:00:00'
       origin.validity_end_date = nil
@@ -23,7 +23,7 @@ Sequel.migration do
   down do
     if TradeTariffBackend.uk?
       QuotaOrderNumberOrigin::Operation.find(
-        quota_order_number_origin_sid: 21096,
+        quota_order_number_origin_sid: 21_096,
         operation: Sequel::Plugins::Oplog::DESTROY_OPERATION,
       ).delete
     end
