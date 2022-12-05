@@ -2,7 +2,7 @@ RSpec.describe Api::Admin::ErrorSerializationService do
   describe '#call' do
     subject { described_class.new(instance).call }
 
-    let(:instance) { News::Collection.new }
+    let(:instance) { News::Collection.new slug: 'test' }
 
     context 'with errors' do
       before { instance.valid? }
@@ -88,7 +88,7 @@ RSpec.describe Api::Admin::ErrorSerializationService do
 
     context 'with conflict error' do
       before do
-        News::Collection.create name: instance.name
+        News::Collection.create name: instance.name, slug: 'test2'
         instance.valid?
       end
 

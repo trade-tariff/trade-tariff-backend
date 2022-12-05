@@ -8,6 +8,11 @@ module News
 
     many_to_many :collections, join_table: :news_collections_news_items
 
+    many_to_many :published_collections, join_table: :news_collections_news_items,
+                                         conditions: { published: true },
+                                         right_key: :collection_id,
+                                         class_name: '::News::Collection'
+
     def collection_ids=(ids)
       @collection_ids = normalise_ids(ids)
     end
@@ -79,10 +84,17 @@ module News
       end
 
       def for_collection(collection_id)
-        collection_id = collection_id.presence&.to_i
-        return self unless collection_id
+        collection_id = collection_id.presence
 
-        association_join(:collections).where(collection_id:).select_all(:news_items)
+        scope = association_join(:published_collections).select_all(:news_items)
+
+        if collection_id.to_s.match? %r{\A\d+\z}
+          scope.where(collection_id: collection_id.to_i)
+        elsif collection_id
+          scope.where { published_collections[:slug] =~ collection_id }
+        else
+          scope
+        end
       end
 
       def years

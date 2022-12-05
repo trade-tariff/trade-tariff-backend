@@ -116,6 +116,23 @@ RSpec.describe News::Item do
         it { is_expected.to match_array [collections.first.id, another.id] }
       end
     end
+
+    describe '#published_collections' do
+      subject { described_class.first(id: item.id).published_collections.pluck(:name) }
+
+      before { collections.each(&item.method(:add_collection)) }
+
+      let(:item) { create :news_item }
+
+      let :collections do
+        [
+          create(:news_collection, name: 'AAA'),
+          create(:news_collection, :unpublished, name: 'BBB'),
+        ]
+      end
+
+      it { is_expected.to eq %w[AAA] }
+    end
   end
 
   describe 'scopes' do
@@ -264,8 +281,26 @@ RSpec.describe News::Item do
       context 'without collection' do
         subject { described_class.for_collection(nil).all }
 
+        before do
+          with_mixed_collection
+          with_unpublished_collection
+        end
+
+        let :with_mixed_collection do
+          item = create :news_item, :with_collections
+          item.add_collection create(:news_collection, :unpublished)
+          item.reload
+        end
+
+        let :with_unpublished_collection do
+          item = create :news_item, collection_ids: [create(:news_collection, :unpublished).id]
+          item.reload
+        end
+
         it { is_expected.to include inside_collection }
-        it { is_expected.to include outside_collection }
+        it { is_expected.not_to include outside_collection }
+        it { is_expected.to include with_mixed_collection }
+        it { is_expected.not_to include with_unpublished_collection }
       end
 
       context 'with known collection' do
@@ -275,6 +310,24 @@ RSpec.describe News::Item do
 
         it { is_expected.to include inside_collection }
         it { is_expected.not_to include outside_collection }
+
+        context 'when collection is unpublished' do
+          before do
+            inside_collection.collections.first.update published: false
+            inside_collection.reload
+          end
+
+          it { is_expected.not_to include inside_collection }
+        end
+
+        context 'with additional unpublished collection' do
+          before do
+            inside_collection.add_collection create(:news_collection, :unpublished)
+            inside_collection.reload
+          end
+
+          it { is_expected.to include inside_collection }
+        end
       end
 
       context 'with unknown collection' do
@@ -284,6 +337,26 @@ RSpec.describe News::Item do
 
         it { is_expected.not_to include inside_collection }
         it { is_expected.not_to include outside_collection }
+      end
+
+      context 'with slugs' do
+        context 'with known collection' do
+          subject do
+            described_class.for_collection(inside_collection.collections.first.slug).all
+          end
+
+          it { is_expected.to include inside_collection }
+          it { is_expected.not_to include outside_collection }
+        end
+
+        context 'with unknown slug' do
+          subject do
+            described_class.for_collection('random').all
+          end
+
+          it { is_expected.not_to include inside_collection }
+          it { is_expected.not_to include outside_collection }
+        end
       end
     end
 

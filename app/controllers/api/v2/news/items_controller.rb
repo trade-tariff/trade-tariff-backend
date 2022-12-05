@@ -12,16 +12,19 @@ module Api
                                    .for_collection(params[:collection_id])
                                    .for_today
                                    .descending
-                                   .select { news_items[:id] }
+                                   .distinct
+                                   .select { [news_items[:id], news_items[:start_date]] }
                                    .paginate(current_page, per_page)
 
           # Why? you may ask - because #paginate ignores #eager
-          news_items_with_collections = ::News::Item.eager(:collections)
+          news_items_with_collections = ::News::Item.eager(:published_collections)
                                                     .where(id: news_items_page.pluck(:id))
                                                     .descending
                                                     .all
 
-          serializer = Api::V2::News::ItemSerializer.new(news_items_with_collections,
+          presented_news_items = Api::V2::News::ItemPresenter.wrap(news_items_with_collections)
+
+          serializer = Api::V2::News::ItemSerializer.new(presented_news_items,
                                                          include: %i[collections],
                                                          meta: pagination_meta(news_items_page))
 
@@ -29,13 +32,19 @@ module Api
         end
 
         def show
-          news_item = if params[:id].present? && !/\A\d+\z/.match?(params[:id])
-                        ::News::Item.for_today.where(slug: params[:id]).take
+          scope = ::News::Item.for_today.for_collection(nil)
+
+          slug_or_id = params[:id]
+
+          news_item = if slug_or_id.present? && !/\A\d+\z/.match?(slug_or_id)
+                        scope.where { news_items[:slug] =~ slug_or_id }.take
                       else
-                        ::News::Item.for_today.with_pk!(params[:id])
+                        scope.with_pk!(slug_or_id)
                       end
 
-          serializer = Api::V2::News::ItemSerializer.new(news_item, include: %i[collections])
+          presented_news_item = Api::V2::News::ItemPresenter.new(news_item)
+
+          serializer = Api::V2::News::ItemSerializer.new(presented_news_item, include: %i[collections])
 
           render json: serializer.serializable_hash
         end

@@ -5,6 +5,7 @@ module Api
         def index
           years = ::News::Item.for_target('updates')
                               .for_service(params[:service])
+                              .for_collection(nil) # restrict to stories in published collections
                               .years
 
           serializer = Api::V2::News::YearSerializer.new(years)

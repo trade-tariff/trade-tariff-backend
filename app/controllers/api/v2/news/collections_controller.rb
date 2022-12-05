@@ -3,7 +3,7 @@ module Api
     module News
       class CollectionsController < ApiController
         def index
-          collections = ::News::Collection.all
+          collections = ::News::Collection.published.all
           serializer = Api::V2::News::CollectionSerializer.new(collections)
 
           render json: serializer.serializable_hash
