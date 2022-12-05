@@ -3,29 +3,29 @@ Sequel.migration do
   # of data rollbacks
 
   up do
-    return unless TradeTariffBackend.uk?
+    if TradeTariffBackend.uk?
+      origin = QuotaOrderNumberOrigin::Operation.new
 
-    origin = QuotaOrderNumberOrigin::Operation.new
+      origin.quota_order_number_origin_sid = 21096
+      origin.quota_order_number_sid = 20142
+      origin.geographical_area_id = 'IN'
+      origin.validity_start_date = '2021-01-01T00:00:00'
+      origin.validity_end_date = nil
+      origin.geographical_area_sid = '154'
+      origin.operation = Sequel::Plugins::Oplog::DESTROY_OPERATION
+      origin.operation_date = '2022-12-03'
+      origin.filename = 'tariff_dailyExtract_v1_20221202T235959.gzip'
 
-    origin.quota_order_number_origin_sid = 21096
-    origin.quota_order_number_sid = 20142
-    origin.geographical_area_id = 'IN'
-    origin.validity_start_date = '2021-01-01T00:00:00'
-    origin.validity_end_date = nil
-    origin.geographical_area_sid = '154'
-    origin.operation = Sequel::Plugins::Oplog::DESTROY_OPERATION
-    origin.operation_date = '2022-12-03'
-    origin.filename = 'tariff_dailyExtract_v1_20221202T235959.gzip'
-
-    origin.save
+      origin.save
+    end
   end
 
   down do
-    return unless TradeTariffBackend.uk?
-
-    QuotaOrderNumberOrigin::Operation.find(
-      quota_order_number_origin_sid: 21096,
-      operation: Sequel::Plugins::Oplog::DESTROY_OPERATION,
-    ).delete
+    if TradeTariffBackend.uk?
+      QuotaOrderNumberOrigin::Operation.find(
+        quota_order_number_origin_sid: 21096,
+        operation: Sequel::Plugins::Oplog::DESTROY_OPERATION,
+      ).delete
+    end
   end
 end
