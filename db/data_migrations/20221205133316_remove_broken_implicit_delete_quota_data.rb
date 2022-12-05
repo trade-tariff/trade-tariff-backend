@@ -25,6 +25,7 @@ Sequel.migration do
       QuotaOrderNumberOrigin::Operation.find(
         quota_order_number_origin_sid: 21_096,
         operation: Sequel::Plugins::Oplog::DESTROY_OPERATION,
+        filename: 'tariff_dailyExtract_v1_20221202T235959.gzip',
       ).delete
     end
   end
