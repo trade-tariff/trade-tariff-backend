@@ -50,7 +50,7 @@ module News
 
     dataset_module do
       def descending
-        order { [Sequel.desc(news_items[:start_date]), Sequel.desc(news_items[:id])] }
+        order(Sequel.desc(:start_date), Sequel.desc(:id))
       end
 
       def for_today

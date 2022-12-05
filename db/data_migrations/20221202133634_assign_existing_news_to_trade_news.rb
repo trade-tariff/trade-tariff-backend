@@ -14,6 +14,10 @@ Sequel.migration do
   end
 
   down do
-    # not reversable
+    collection = News::Collection.find(name: 'Trade news')
+
+    collection.items.each do |item|
+      item.remove_collection collection
+    end
   end
 end
