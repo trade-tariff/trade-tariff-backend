@@ -5,6 +5,60 @@ RSpec.describe News::Importer do
 
   let(:json_data) { file_fixture 'news/govuk_stories.json' }
 
+  describe '.assign_missing_slugs!' do
+    subject { News::Item.all.pluck(:slug) }
+
+    let(:items) { create_list :news_item, 3, :updates_page }
+
+    context 'with slugs' do
+      before do
+        items
+        described_class.assign_missing_slugs!
+      end
+
+      it { is_expected.to match_array items.pluck(:slug) }
+    end
+
+    context 'without slugs' do
+      before do
+        items
+        News::Item.dataset.update(slug: nil)
+        described_class.assign_missing_slugs!
+      end
+
+      it { is_expected.to all be_present }
+
+      context 'with historical items' do
+        let(:items) { create_list :news_item, 1, :updates_page, end_date: 1.day.ago }
+
+        it { is_expected.to all be_nil }
+      end
+
+      context 'with future items' do
+        let(:items) { create_list :news_item, 1, :updates_page, start_date: 1.week.from_now }
+
+        it { is_expected.to all be_present }
+      end
+
+      context 'with non updates page items' do
+        let(:items) { create_list :news_item, 1, :banner, show_on_updates_page: false }
+
+        it { is_expected.to all be_nil }
+      end
+
+      context 'with duplicate titles' do
+        let :items do
+          [
+            create(:news_item, :updates_page, title: 'test'),
+            create(:news_item, :updates_page, title: 'test', slug: 'test-2'),
+          ]
+        end
+
+        it { is_expected.to all be_present }
+      end
+    end
+  end
+
   describe '.new' do
     it { is_expected.to be_instance_of described_class }
   end
