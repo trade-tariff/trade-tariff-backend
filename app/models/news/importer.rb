@@ -15,6 +15,20 @@ module News
       def import!(src_file = DEFAULT_ITEMS_FILENAME)
         new(src_file).import!
       end
+
+      def assign_missing_slugs!
+        ::News::Item.db.transaction do
+          ::News::Item.for_target('updates')
+                      .where(slug: nil)
+                      .where { (end_date >= Time.zone.today) | { end_date: nil } }
+                      .each do |item|
+            item.save
+          rescue Sequel::ValidationFailed
+            item.slug = "#{item.slug}-2"
+            item.save
+          end
+        end
+      end
     end
 
     def initialize(src_file)
