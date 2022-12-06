@@ -174,6 +174,9 @@ module Beta
         id = short_code
 
         resource_path = case short_code.length
+                        when 1
+                          id = short_code.rjust(2, '0')
+                          '/chapters/:id'
                         when 2
                           '/chapters/:id'
                         when 4
