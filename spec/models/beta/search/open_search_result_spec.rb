@@ -261,6 +261,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
       it { is_expected.to include(expected_path) }
     end
 
+    it_behaves_like 'a redirecting search query', '1', '/chapters/01'
     it_behaves_like 'a redirecting search query', '01', '/chapters/01'
     it_behaves_like 'a redirecting search query', '0101', '/headings/0101'
     it_behaves_like 'a redirecting search query', '010129', '/subheadings/0101290000-80'
