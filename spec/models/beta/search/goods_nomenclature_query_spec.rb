@@ -10,14 +10,13 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
   describe '#id' do
     subject(:id) { build(:goods_nomenclature_query, :full_query).id }
 
-    it { is_expected.to eq('b8dc5a3889acb4eb83be5d588ba3f616') }
+    it { is_expected.to eq('ce2599e07a29f13d42922303630abce0') }
   end
 
   describe '#query' do
     let(:expected_multi_match_fields) do
       [
         'search_references^12',
-        'ancestor_1_description_indexed^10',
         'ancestor_2_description_indexed^8',
         'description_indexed^6',
         'ancestor_3_description_indexed^4',
