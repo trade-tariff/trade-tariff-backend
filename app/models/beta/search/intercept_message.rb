@@ -13,7 +13,6 @@ module Beta
         SECTION_REGEX => lambda do |matched_text|
           match = matched_text.match(SECTION_REGEX)
 
-          # code could be Roman (XV) or Decimal (15) format
           section_id = RomanNumerals::Converter.to_decimal(match[:code])
 
           roman_section_id = RomanNumerals::Converter.to_roman(section_id)
@@ -56,7 +55,7 @@ module Beta
         def build(search_query)
           normalised_query = normalise_query(search_query)
 
-          message = intercept_messages.dig(normalised_query, :message)
+          message = intercept_messages[normalised_query]
 
           return nil if message.blank?
 
