@@ -6,6 +6,8 @@ class DescriptionFormatter
     return '' if str.blank?
 
     str.gsub!('|%', '%')
+    str.gsub!(160.chr("UTF-8")," ")
+    str.gsub!(/(\d)\s+%/, '\1%')
     str.gsub!('-|', "\n-")
     str.gsub!('|', '&nbsp;')
     str.gsub!('!1!', '<br />')
