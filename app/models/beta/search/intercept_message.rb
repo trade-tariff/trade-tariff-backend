@@ -1,6 +1,8 @@
 module Beta
   module Search
     class InterceptMessage
+      INTERCEPT_MESSAGES_SOURCE_PATH = Rails.root.join('data/intercept-messages.yml').freeze
+
       SECTION_REGEX = /(?<type>section)s? (?<optional>code|position|id)?\s*(?<code>[XVI\d]{0,10})(?<terminator>[.,\s)])?/i
       CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s)])/i
       HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s)])/i
@@ -50,20 +52,33 @@ module Beta
 
       attr_accessor :term, :message
 
-      def self.build(search_query)
-        query = search_query.downcase
+      class << self
+        def build(search_query)
+          normalised_query = normalise_query(search_query)
 
-        return if I18n.t("#{query}.message", default: nil).blank?
+          message = intercept_messages.dig(normalised_query, :message)
 
-        intercept_message = new
+          return nil if message.blank?
 
-        message = I18n.t("#{query}.message")
-        message = message.ends_with?('.') ? message : message.concat('.')
+          intercept_message = new
+          intercept_message.term = normalised_query
+          intercept_message.message = normalise_message(message)
+          intercept_message
+        end
 
-        intercept_message.term = query
-        intercept_message.message = message
+        def intercept_messages
+          @intercept_messages ||= YAML.load_file(INTERCEPT_MESSAGES_SOURCE_PATH)
+        end
 
-        intercept_message
+        private
+
+        def normalise_query(search_query)
+          search_query.downcase.scan(/\w+/).join(' ')
+        end
+
+        def normalise_message(message)
+          message.ends_with?('.') ? message : message.concat('.')
+        end
       end
 
       def formatted_message

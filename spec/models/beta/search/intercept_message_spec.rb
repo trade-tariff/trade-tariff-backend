@@ -1,18 +1,19 @@
 RSpec.describe Beta::Search::InterceptMessage do
   describe '.build' do
-    subject(:intercept_message) { described_class.build(search_query) }
-
-    context 'when the query corresponds to an existing intercept message' do
-      let(:search_query) { 'plasti' }
+    shared_examples 'an intercept message query with a corresponding message' do |search_query|
+      subject(:intercept_message) { described_class.build(search_query) }
 
       it { is_expected.to be_a(described_class) }
-      it { expect(intercept_message.id).to eq('9798b947790cd77dec021f882e7b3e29') }
+      it { expect(intercept_message.id).to be_present }
       it { expect(intercept_message).to respond_to(:term) }
       it { expect(intercept_message).to respond_to(:message) }
     end
 
+    it_behaves_like 'an intercept message query with a corresponding message', 'plasti'
+    it_behaves_like 'an intercept message query with a corresponding message', 'new     Zealand'
+
     context 'when the query does not correspond to an intercept message' do
-      let(:search_query) { 'foo' }
+      subject(:intercept_message) { described_class.build('foo') }
 
       it { is_expected.to be_nil }
     end
