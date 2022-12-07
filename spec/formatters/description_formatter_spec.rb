@@ -50,6 +50,12 @@ RSpec.describe DescriptionFormatter do
       ).to eq ' <br /> '
     end
 
+    it 'removes special space character from 1nbsp%' do
+      expect(
+        described_class.format(description: ' 85 % '),
+      ).to eq ' 85% '
+    end
+
     it 'replaces !X! with times html entity' do
       expect(
         described_class.format(description: ' !X! '),
