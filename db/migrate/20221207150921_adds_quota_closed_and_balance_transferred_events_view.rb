@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 Sequel.migration do
   up do
     run %{
@@ -28,8 +26,7 @@ Sequel.migration do
     }
   end
 
-
   down do
-    run "DROP VIEW public.quota_closed_and_transferred_events;"
+    run 'DROP VIEW public.quota_closed_and_transferred_events;'
   end
 end
