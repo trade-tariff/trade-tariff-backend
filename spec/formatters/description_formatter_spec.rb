@@ -128,7 +128,7 @@ RSpec.describe DescriptionFormatter do
       before do
         allow(TradeTariffBackend).to receive(:uk?).and_return(false)
       end
-      
+
       it 'does not replace , with .' do
         expect(
           described_class.format(description: ' 11,11% '),
