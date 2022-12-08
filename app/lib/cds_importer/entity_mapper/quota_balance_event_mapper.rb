@@ -1,7 +1,3 @@
-#
-# QuotaBalanceEvent is nested in to QuotaDefinition.
-#
-
 class CdsImporter
   class EntityMapper
     class QuotaBalanceEventMapper < BaseMapper
