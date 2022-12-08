@@ -426,6 +426,7 @@ RSpec.describe CdsImporter::EntityMapper do
         CdsImporter::EntityMapper::QuotaAssociationMapper,
         CdsImporter::EntityMapper::QuotaBalanceEventMapper,
         CdsImporter::EntityMapper::QuotaBlockingPeriodMapper,
+        CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper,
         CdsImporter::EntityMapper::QuotaCriticalEventMapper,
         CdsImporter::EntityMapper::QuotaDefinitionMapper,
         CdsImporter::EntityMapper::QuotaExhaustionEventMapper,
