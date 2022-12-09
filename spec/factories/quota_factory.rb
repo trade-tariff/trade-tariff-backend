@@ -215,6 +215,14 @@ FactoryBot.define do
     description                { Forgery(:lorem_ipsum).sentence }
   end
 
+  factory :quota_closed_and_transferred_event do
+    quota_definition_sid { Forgery(:basic).number }
+    target_quota_definition_sid { Forgery(:basic).number }
+    occurrence_timestamp { 24.hours.ago }
+    transferred_amount { '86055072.137' }
+    closing_date { '2022-10-28' }
+  end
+
   factory :quota_exhaustion_event do
     quota_definition
     exhaustion_date { Time.zone.today }
