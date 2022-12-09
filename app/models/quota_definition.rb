@@ -17,6 +17,21 @@ class QuotaDefinition < Sequel::Model
 
   one_to_many :quota_exhaustion_events, key: :quota_definition_sid,
                                         primary_key: :quota_definition_sid
+
+  one_to_one :incoming_quota_closed_and_transferred_event, class_name: 'QuotaClosedAndTransferredEvent',
+                                                           key: :target_quota_definition_sid,
+                                                           primary_key: :quota_definition_sid do |ds|
+    if point_in_time
+      # Quota transfers become visible when the closing date of the previous definition has come to pass
+      ds.where('closing_date < ?', point_in_time.to_date)
+    else
+      ds
+    end
+  end
+
+  one_to_one :outgoing_quota_closed_and_transferred_events, class_name: 'QuotaClosedAndTransferredEvent',
+                                                            key: :quota_definition_sid,
+                                                            primary_key: :quota_definition_sid
   one_to_many :quota_balance_events,
               key: :quota_definition_sid,
               primary_key: :quota_definition_sid

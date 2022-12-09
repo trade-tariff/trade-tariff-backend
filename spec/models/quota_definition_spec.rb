@@ -118,4 +118,40 @@ RSpec.describe QuotaDefinition do
       end
     end
   end
+
+  describe '#incoming_quota_closed_and_transferred_event' do
+    subject(:incoming_quota_closed_and_transferred_event) do
+      quota_definition.incoming_quota_closed_and_transferred_event
+    end
+
+    let(:quota_definition) do
+      create(
+        :quota_definition,
+        :with_incoming_quota_closed_and_transferred_event,
+        closing_date: Time.zone.today,
+      )
+    end
+
+    context 'when the time machine is not set' do
+      it { is_expected.to be_present }
+    end
+
+    context 'when the time machine is set to be after the closing date' do
+      around { |example| TimeMachine.at(Time.zone.today + 1.day, &example) }
+
+      it { is_expected.to be_present }
+    end
+
+    context 'when the time machine is set to before the closing date' do
+      around { |example| TimeMachine.at(Time.zone.today - 1.day, &example) }
+
+      it { is_expected.not_to be_present }
+    end
+
+    context 'when the time machine is set to be on the closing date' do
+      around { |example| TimeMachine.at(Time.zone.today, &example) }
+
+      it { is_expected.not_to be_present }
+    end
+  end
 end

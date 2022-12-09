@@ -144,6 +144,18 @@ FactoryBot.define do
       end
     end
 
+    trait :with_incoming_quota_closed_and_transferred_event do
+      transient { closing_date { Time.zone.today } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(
+          :quota_closed_and_transferred_event,
+          target_quota_definition_sid: quota_definition.quota_definition_sid,
+          closing_date: evaluator.closing_date,
+        )
+      end
+    end
+
     trait :with_quota_balance_events do
       transient { event_new_balance { 100 } }
 
