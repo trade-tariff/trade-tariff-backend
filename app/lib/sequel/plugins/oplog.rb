@@ -55,6 +55,18 @@ module Sequel
           self[:operation] = operation.present? ? operation[0].upcase : operation
         end
 
+        # Force the CdsImporter not to import the current oplog instance
+        def skip_import!
+          @skip_import = true
+        end
+
+        # Determines whether the CdsImporter will imports the current oplog instance
+        #
+        # Ignored by Taric
+        def skip_import?
+          @skip_import == true
+        end
+
         def operation
           case self[:operation]
           when CREATE_OPERATION then :create

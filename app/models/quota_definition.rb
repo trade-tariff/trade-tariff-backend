@@ -64,6 +64,9 @@ class QuotaDefinition < Sequel::Model
   #       - exhausted
   #       - critical
   #       - open events
+  #
+  #       We've explicitly excluded the QuotaClosedAndTransferredEvent since this event isn't relevant
+  #       to the quota definition that we're transferring a balance from.
   def status
     if last_event.present?
       return QuotaCriticalEvent.status if has_active_critical_event?

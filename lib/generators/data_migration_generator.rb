@@ -10,9 +10,8 @@ class DataMigrationGenerator < Rails::Generators::NamedBase
 
     create_file data_migration_file_name, <<~EODATAMIGRATION
       Sequel.migration do
-        # IMPORTANT! Data migrations should be Idempotent, they may get re-run as part
-        # of data rollbacks
-
+        # IMPORTANT! Data migrations up block should be idempotent (reruns of up should produce the same effect)
+        # they may get re-run as part of data rollbacks but the rollback (down) function of the data migration will not get invoked
         up do
 
         end
