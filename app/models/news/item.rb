@@ -42,6 +42,10 @@ module News
       to_remove.each(&method(:remove_collection))
     end
 
+    def before_destroy
+      collections.pluck(:id).each(&method(:remove_collection))
+    end
+
     def validate
       super
 

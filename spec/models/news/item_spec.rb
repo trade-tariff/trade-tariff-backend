@@ -72,6 +72,16 @@ RSpec.describe News::Item do
 
         it { is_expected.to eq high_then_low_priority_collection_ids }
       end
+
+      describe 'removing item which belongs to collection' do
+        subject { described_class.all.pluck(:id) }
+
+        before { news_item.destroy }
+
+        let(:news_item) { create :news_item, :with_collections }
+
+        it { is_expected.not_to include news_item.id }
+      end
     end
 
     describe '#collection_ids' do
