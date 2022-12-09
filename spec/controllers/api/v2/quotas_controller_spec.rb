@@ -196,6 +196,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 },
                 order_number: {},
                 measures: {},
+                incoming_quota_closed_and_transferred_event: {},
               },
             },
           ],
