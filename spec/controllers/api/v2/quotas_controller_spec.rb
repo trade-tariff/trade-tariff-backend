@@ -68,6 +68,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                   ],
                 },
                 quota_balance_events: {},
+                incoming_quota_closed_and_transferred_event: {},
               },
             },
           ],

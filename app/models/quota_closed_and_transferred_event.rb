@@ -13,5 +13,7 @@ class QuotaClosedAndTransferredEvent < Sequel::Model
     "#{quota_definition_sid}-#{occurrence_timestamp.iso8601}"
   end
 
+  alias_method :quota_definition_id, :quota_definition_sid
+
   def self.status; end
 end
