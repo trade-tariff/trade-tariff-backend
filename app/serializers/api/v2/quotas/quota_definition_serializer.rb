@@ -45,7 +45,6 @@ module Api
         has_one :quota_order_number, key: :order_number, record_type: :order_number, serializer: Api::V2::Quotas::QuotaOrderNumberSerializer, lazy_load_data: true
         has_many :measures, serializer: Api::V2::Shared::MeasureSerializer, lazy_load_data: true
         has_many :quota_balance_events, serializer: Api::V2::Quotas::QuotaBalanceEventSerializer, lazy_load_data: true
-
       end
     end
   end
