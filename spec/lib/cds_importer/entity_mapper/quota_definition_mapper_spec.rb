@@ -70,7 +70,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
 
     context 'when there is already a quotaClosedAndTransferredEvent and one in the xml node' do
       subject(:entity_mapper) do
-        xml_node = xml_node.merge(
+        node = xml_node.dup.merge(
           'quotaClosedAndTransferredEvent' => {
             'hjid' => 12_172_305,
             'metainfo' => {
@@ -96,7 +96,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
           },
         )
 
-        CdsImporter::EntityMapper.new('QuotaDefinition', xml_node)
+        CdsImporter::EntityMapper.new('QuotaDefinition', node)
       end
 
       before { create(:quota_closed_and_transferred_event, quota_definition_sid: xml_node['sid']) }
