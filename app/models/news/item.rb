@@ -7,6 +7,7 @@ module News
     MAX_SLUG_LENGTH = 254
 
     many_to_many :collections, join_table: :news_collections_news_items
+    plugin :association_dependencies, collections: :nullify
 
     many_to_many :published_collections, join_table: :news_collections_news_items,
                                          conditions: { published: true },
@@ -40,10 +41,6 @@ module News
 
       to_remove = collections.pluck(:id) - collection_ids
       to_remove.each(&method(:remove_collection))
-    end
-
-    def before_destroy
-      collections.pluck(:id).each(&method(:remove_collection))
     end
 
     def validate
