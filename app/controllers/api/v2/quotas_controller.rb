@@ -1,7 +1,14 @@
 module Api
   module V2
     class QuotasController < ApiController
-      DEFAULT_INCLUDES = %w[quota_order_number quota_order_number.geographical_areas measures measures.goods_nomenclature measures.geographical_area].freeze
+      DEFAULT_INCLUDES = %w[
+        quota_order_number
+        quota_order_number.geographical_areas
+        measures
+        measures.goods_nomenclature
+        measures.geographical_area
+        incoming_quota_closed_and_transferred_event.quota_definition
+      ].freeze
 
       ALLOWED_INCLUDES = %w[quota_balance_events].freeze
 
