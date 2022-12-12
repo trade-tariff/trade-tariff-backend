@@ -6,8 +6,7 @@ module Api
 
         set_type :quota_closed_and_transferred_event
 
-        attributes :quota_definition_sid,
-                   :closing_date
+        attribute :closing_date
 
         attribute :transferred_amount do |event|
           event.transferred_amount.try(:to_f)

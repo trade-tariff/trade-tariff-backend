@@ -29,6 +29,8 @@ class QuotaDefinition < Sequel::Model
     end
   end
 
+  delegate :id, to: :incoming_quota_closed_and_transferred_event, prefix: true, allow_nil: true
+
   one_to_one :outgoing_quota_closed_and_transferred_events, class_name: 'QuotaClosedAndTransferredEvent',
                                                             key: :quota_definition_sid,
                                                             primary_key: :quota_definition_sid

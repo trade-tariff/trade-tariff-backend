@@ -9,7 +9,6 @@ RSpec.describe Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer do
         id: be_a(String),
         type: 'quota_closed_and_transferred_event',
         attributes: {
-          quota_definition_sid: be_a(Numeric),
           transferred_amount: be_a(Float),
         },
       },

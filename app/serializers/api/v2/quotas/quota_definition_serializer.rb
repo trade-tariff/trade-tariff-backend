@@ -41,7 +41,7 @@ module Api
           definition.last_blocking_period.try(:blocking_end_date)
         end
 
-        has_one :incoming_quota_closed_and_transferred_event, serializer: Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer, lazy_load_data: true
+        has_one :incoming_quota_closed_and_transferred_event, serializer: Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer
         has_one :quota_order_number, key: :order_number, record_type: :order_number, serializer: Api::V2::Quotas::QuotaOrderNumberSerializer, lazy_load_data: true
         has_many :measures, serializer: Api::V2::Shared::MeasureSerializer, lazy_load_data: true
         has_many :quota_balance_events, serializer: Api::V2::Quotas::QuotaBalanceEventSerializer, lazy_load_data: true
