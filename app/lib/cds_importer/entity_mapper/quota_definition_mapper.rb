@@ -21,6 +21,10 @@ class CdsImporter
         'measurementUnitQualifier.measurementUnitQualifierCode' => :measurement_unit_qualifier_code,
         'description' => :description,
       ).freeze
+
+      before_oplog_inserts do |xml_node|
+        QuotaClosedAndTransferredEvent.operation_klass.where(quota_definition_sid: xml_node['sid']).delete
+      end
     end
   end
 end

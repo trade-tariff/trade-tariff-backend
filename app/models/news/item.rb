@@ -7,6 +7,7 @@ module News
     MAX_SLUG_LENGTH = 254
 
     many_to_many :collections, join_table: :news_collections_news_items
+    plugin :association_dependencies, collections: :nullify
 
     many_to_many :published_collections, join_table: :news_collections_news_items,
                                          conditions: { published: true },
