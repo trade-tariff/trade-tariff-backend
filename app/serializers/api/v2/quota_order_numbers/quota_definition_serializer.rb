@@ -17,6 +17,8 @@ module Api
                    :maximum_precision,
                    :critical_threshold
 
+        attribute :measurement_unit, &:formatted_measurement_unit
+
         has_many :measures, serializer: Api::V2::QuotaOrderNumbers::MeasureSerializer, lazy_load: true
       end
     end

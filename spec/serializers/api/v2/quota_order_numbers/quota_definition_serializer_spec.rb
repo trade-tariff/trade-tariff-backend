@@ -15,6 +15,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::QuotaDefinitionSerializer do
             maximum_precision: nil,
             measurement_unit_code: serializable.measurement_unit_code,
             measurement_unit_qualifier_code: serializable.measurement_unit_qualifier_code,
+            measurement_unit: serializable.formatted_measurement_unit,
             quota_order_number_id: serializable.quota_order_number_id,
             validity_end_date: nil,
             validity_start_date: 4.years.ago.beginning_of_day,
