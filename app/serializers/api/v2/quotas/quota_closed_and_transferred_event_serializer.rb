@@ -29,11 +29,11 @@ module Api
         end
 
         attribute :quota_definition_validity_end_date do |event|
-          event.transferred_amount.try(:validity_start_date)
+          event.quota_definition.try(:validity_end_date)
         end
 
         attribute :quota_definition_measurement_unit do |event|
-          event.target_quota_definition.try(:formatted_measurement_unit)
+          event.quota_definition.try(:formatted_measurement_unit)
         end
       end
     end
