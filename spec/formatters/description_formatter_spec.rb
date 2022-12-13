@@ -117,5 +117,23 @@ RSpec.describe DescriptionFormatter do
         described_class.format(description: '    '),
       ).to eq ''
     end
+
+    it 'replaces , with .' do
+      expect(
+        described_class.format(description: ' 11,11% '),
+      ).to eq ' 11.11% '
+    end
+
+    context 'when xi' do
+      before do
+        allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+      end
+
+      it 'does not replace , with .' do
+        expect(
+          described_class.format(description: ' 11,11% '),
+        ).to eq ' 11,11% '
+      end
+    end
   end
 end
