@@ -118,8 +118,8 @@ FactoryBot.define do
     monetary_unit_code              { Forgery(:basic).text(exactly: 3) }
     measurement_unit_code           { Forgery(:basic).text(exactly: 3) }
     measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
-    validity_start_date             { 4.years.ago.beginning_of_day }
-    validity_end_date               { nil }
+    validity_start_date             { 20.days.ago }
+    validity_end_date               { Date.current + 20.days }
 
     trait :actual do
       validity_start_date { 3.years.ago.beginning_of_day }
