@@ -118,8 +118,8 @@ FactoryBot.define do
     monetary_unit_code              { Forgery(:basic).text(exactly: 3) }
     measurement_unit_code           { Forgery(:basic).text(exactly: 3) }
     measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
-    validity_start_date             { 20.days.ago }
-    validity_end_date               { Date.current + 20.days }
+    validity_start_date             { 4.years.ago.beginning_of_day }
+    validity_end_date               { nil }
 
     trait :actual do
       validity_start_date { 3.years.ago.beginning_of_day }
@@ -236,7 +236,7 @@ FactoryBot.define do
 
     trait :with_quota_definition do
       after(:create) do |event, _evaluator|
-        quota_definition = create(:quota_definition)
+        quota_definition = create(:quota_definition, validity_end_date: Date.tomorrow)
         event.quota_definition_sid = quota_definition.quota_definition_sid
         event.save
         event.reload
@@ -245,7 +245,7 @@ FactoryBot.define do
 
     trait :with_target_quota_definition do
       after(:create) do |event, _evaluator|
-        quota_definition = create(:quota_definition)
+        quota_definition = create(:quota_definition, validity_end_date: Date.tomorrow)
         event.target_quota_definition_sid = quota_definition.quota_definition_sid
         event.save
         event.reload
