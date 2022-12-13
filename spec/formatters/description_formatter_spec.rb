@@ -124,6 +124,24 @@ RSpec.describe DescriptionFormatter do
       ).to eq ' 11.11% '
     end
 
+    it 'replaces izing with ising' do
+      expect(
+        described_class.format(description: ' vaporizing '),
+      ).to eq ' vaporising '
+    end
+
+    it 'replaces ization with isation' do
+      expect(
+        described_class.format(description: ' utilization '),
+      ).to eq ' utilisation '
+    end
+
+    it 'replaces ized  with ised' do
+      expect(
+        described_class.format(description: ' unpasteurized '),
+      ).to eq ' unpasteurised '
+    end
+
     context 'when xi' do
       before do
         allow(TradeTariffBackend).to receive(:uk?).and_return(false)
@@ -133,6 +151,24 @@ RSpec.describe DescriptionFormatter do
         expect(
           described_class.format(description: ' 11,11% '),
         ).to eq ' 11,11% '
+      end
+
+      it 'does not replace izing with ising' do
+        expect(
+          described_class.format(description: ' vaporizing '),
+        ).to eq ' vaporizing '
+      end
+
+      it 'does not replace ization with isation' do
+        expect(
+          described_class.format(description: ' utilization '),
+        ).to eq ' utilization '
+      end
+
+      it 'does not replace ized  with ised' do
+        expect(
+          described_class.format(description: ' unpasteurized '),
+        ).to eq ' unpasteurized '
       end
     end
   end
