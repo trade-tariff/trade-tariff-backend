@@ -23,6 +23,7 @@ module DeclarableSerialization
     import_measures.additional_code
     import_measures.order_number
     import_measures.order_number.definition
+    import_measures.order_number.definition.incoming_quota_closed_and_transferred_event
     import_measures.preference_code
     export_measures
     export_measures.duty_expression

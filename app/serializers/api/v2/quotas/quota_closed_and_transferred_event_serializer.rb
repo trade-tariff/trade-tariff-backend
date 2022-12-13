@@ -12,7 +12,20 @@ module Api
           event.transferred_amount.try(:to_f)
         end
 
-        has_one :quota_definition, serializer: Api::V2::QuotaOrderNumbers::QuotaDefinitionSerializer
+        attribute :target_quota_definition_validity_start_date do |event|
+          event.target_quota_definition.try(:validity_start_date)
+        end
+
+        attribute :target_quota_definition_validity_start_date do |event|
+          event.target_quota_definition.try(:validity_start_date)
+        end
+
+        attribute :quota_definition_validity_start_date do |event|
+          event.quota_definition.try(:validity_start_date)
+        end
+        attribute :quota_definition_validity_end_date do |event|
+          event.transferred_amount.try(:validity_start_date)
+        end
       end
     end
   end
