@@ -236,7 +236,7 @@ FactoryBot.define do
 
     trait :with_quota_definition do
       after(:create) do |event, _evaluator|
-        quota_definition = create(:quota_definition)
+        quota_definition = create(:quota_definition, validity_end_date: Date.tomorrow)
         event.quota_definition_sid = quota_definition.quota_definition_sid
         event.save
         event.reload
@@ -245,7 +245,7 @@ FactoryBot.define do
 
     trait :with_target_quota_definition do
       after(:create) do |event, _evaluator|
-        quota_definition = create(:quota_definition)
+        quota_definition = create(:quota_definition, validity_end_date: Date.tomorrow)
         event.target_quota_definition_sid = quota_definition.quota_definition_sid
         event.save
         event.reload
