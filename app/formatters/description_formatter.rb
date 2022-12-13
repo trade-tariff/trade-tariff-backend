@@ -20,6 +20,7 @@ class DescriptionFormatter
     str.gsub!('!<=!', '&le;')
     str.gsub!(/\n\s*\n/, '<br/>')
     str.gsub!("\n", '<br/>')
+    str.gsub!(/(\d),(\d)/, '\1.\2') if TradeTariffBackend.uk?
     str.gsub! /@(.)/ do
       "<sub>#{$1}</sub>"
     end
