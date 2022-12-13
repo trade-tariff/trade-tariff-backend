@@ -9,7 +9,7 @@ module Api
         set_id :goods_nomenclature_sid
 
         attributes :goods_nomenclature_item_id, :description, :formatted_description,
-                   :description_plain
+                   :description_plain, :validity_start_date, :validity_end_date
       end
     end
   end

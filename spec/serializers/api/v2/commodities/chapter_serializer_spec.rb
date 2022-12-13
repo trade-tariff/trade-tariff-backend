@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Chapters::ChapterSerializer do
+RSpec.describe Api::V2::Commodities::ChapterSerializer do
   subject(:serializable) { described_class.new(chapter).serializable_hash.as_json }
 
   let(:section) { create(:section, :with_chapter) }

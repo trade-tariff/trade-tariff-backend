@@ -18,7 +18,9 @@ module Api
                    :consigned,
                    :consigned_from,
                    :basic_duty_rate,
-                   :meursing_code
+                   :meursing_code,
+                   :validity_start_date,
+                   :validity_end_date
 
         attribute :declarable, &:declarable?
 
