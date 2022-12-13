@@ -1,8 +1,8 @@
 RSpec.describe Api::V2::Commodities::HeadingSerializer do
   subject(:serializable) { described_class.new(heading).serializable_hash.as_json }
-  
+
   let(:heading) { create(:heading) }
-  
+
   let(:expected) do
     {
       data: {
@@ -19,7 +19,7 @@ RSpec.describe Api::V2::Commodities::HeadingSerializer do
       },
     }.as_json
   end
-  
+
   describe '#serializable_hash' do
     it 'matches the expected hash' do
       expect(serializable).to include_json(expected)
