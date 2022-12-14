@@ -33,7 +33,7 @@ RSpec.describe Api::V2::News::ItemsController do
     end
 
     context 'when filtering by collection' do
-      let(:item) { create :news_item, :with_collections }
+      let(:item) { create :news_item }
       let(:collection) { item.collections.first }
 
       let :make_request do
@@ -94,7 +94,7 @@ RSpec.describe Api::V2::News::ItemsController do
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 
-    let(:news_item) { create :news_item, :with_collections }
+    let(:news_item) { create :news_item }
 
     let :make_request do
       get api_news_item_path(news_item.id, format: :json),
@@ -137,6 +137,8 @@ RSpec.describe Api::V2::News::ItemsController do
     end
 
     context 'without collection' do
+      before { news_item.remove_collection news_item.collections.first.id }
+
       let(:news_item) { create :news_item }
 
       it { is_expected.to have_http_status :not_found }

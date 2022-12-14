@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::News::ItemSerializer do
   subject(:serializable) { described_class.new(news_item).serializable_hash }
 
-  let(:news_item) { create :news_item, :with_collections, collection_count: 2 }
+  let(:news_item) { create :news_item, collection_count: 2 }
 
   let :expected do
     {
