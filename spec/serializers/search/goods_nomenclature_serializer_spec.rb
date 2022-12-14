@@ -16,7 +16,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           description: 'Horses, other than lemmings',
           description_indexed: 'Horses',
           formatted_description: 'Horses, other than lemmings',
-          search_references: 'secret sauce',
+          search_references: 'chapter search reference heading search reference commodity search reference',
           ancestors: [
             {
               id: 1,
@@ -34,6 +34,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
               formatted_description: 'Live horses, asses, mules and hinnies',
               ancestor_ids: [],
               ancestors: [],
+              search_references: 'chapter search reference',
             },
             {
               id: 2,
@@ -51,6 +52,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
               formatted_description: 'Live animals',
               ancestor_ids: [],
               ancestors: [],
+              search_references: 'heading search reference',
             },
           ],
           validity_start_date: '2020-06-29T00:00:00Z',
@@ -84,12 +86,13 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         commodity = create(
           :commodity,
           :with_ancestors,
+          include_search_references: true,
           goods_nomenclature_item_id: '0101210000',
           producline_suffix: '80',
           validity_start_date: Date.parse('2020-06-29'),
         )
 
-        create(:search_reference, referenced: commodity, title: 'secret sauce')
+        create(:search_reference, referenced: commodity, title: 'commodity search reference')
       end
 
       it { is_expected.to eq(pattern) }
