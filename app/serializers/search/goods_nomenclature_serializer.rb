@@ -62,20 +62,9 @@ module Search
     end
 
     def search_references
-      SearchReference.where(referenced_id:, referenced_class:, productline_suffix: producline_suffix).pluck(:title).join(', ')
-    end
-
-    def referenced_id
-      case referenced_class
-      when 'Chapter' then chapter_id
-      when 'Heading' then heading_id
-      else
-        goods_nomenclature_item_id
-      end
-    end
-
-    def referenced_class
-      @referenced_class ||= goods_nomenclature_class
+      ancestors.reverse.each_with_object([declarable_search_references]) { |serialized_ancestor, acc|
+        acc.prepend(serialized_ancestor[:search_references])
+      }.join(' ')
     end
 
     def ancestors
@@ -96,6 +85,7 @@ module Search
           formatted_description: ancestor.formatted_description,
           ancestor_ids: [], # We are not interested in ancestor ancestors
           ancestors: [], # We are not interested in ancestor ancestors
+          search_references: search_references_for(ancestor),
         }
       end
     end
@@ -145,6 +135,28 @@ module Search
                                 else
                                   Beta::Search::FacetClassification::NonDeclarable.build(self)
                                 end
+    end
+
+    def search_references_for(ancestor)
+      filter = {}
+      filter[:referenced_id] = if ancestor.chapter?
+                                 ancestor.chapter_short_code
+                               elsif ancestor.heading?
+                                 ancestor.heading_short_code
+                               else
+                                 ancestor.goods_nomenclature_item_id
+                               end
+      filter[:productline_suffix] = ancestor.producline_suffix
+
+      SearchReference.where(filter).pluck(:title).join(' ')
+    end
+
+    def declarable_search_references
+      filter = {}
+      filter[:referenced_id] = heading? ? heading_short_code : goods_nomenclature_item_id
+      filter[:productline_suffix] = producline_suffix
+
+      SearchReference.where(filter).pluck(:title).join(' ')
     end
   end
 end

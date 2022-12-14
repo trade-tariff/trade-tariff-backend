@@ -11,6 +11,7 @@ FactoryBot.define do
     no_redirect
 
     goods_nomenclature_query {}
+    search_reference {}
 
     trait :no_hits do
       transient do
@@ -100,8 +101,23 @@ FactoryBot.define do
     end
 
     trait :redirect do
-      goods_nomenclature_query { build(:goods_nomenclature_query, :numeric, original_search_query: goods_nomenclature_item_id || '0101') }
       transient { redirect { true } }
+    end
+
+    trait :with_search_reference do
+      goods_nomenclature_query {}
+      search_reference { create(:search_reference, :with_subheading) }
+    end
+
+    trait :without_search_reference do
+      goods_nomenclature_query do
+        build(
+          :goods_nomenclature_query,
+          :numeric,
+          original_search_query: goods_nomenclature_item_id || '0101',
+        )
+      end
+      search_reference {}
     end
 
     trait :no_redirect do
@@ -129,6 +145,7 @@ FactoryBot.define do
         presented_search_result,
         search_query_parser_result,
         goods_nomenclature_query || build(:goods_nomenclature_query),
+        search_reference,
       )
 
       search_result.generate_heading_and_chapter_statistics if generate_heading_and_chapter_statistics
