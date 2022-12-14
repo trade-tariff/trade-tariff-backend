@@ -22,13 +22,16 @@ FactoryBot.define do
 
     trait :with_ancestors do
       with_description
+      transient {
+        include_search_references { false }
+      }
       path { Sequel.pg_array([1, 2], :integer) }
       description { 'Horses, other than lemmings' }
       goods_nomenclature_item_id { '0101210000' }
       goods_nomenclature_sid { 3 }
 
-      after(:create) do |commodity, _evaluator|
-        create(
+      after(:create) do |commodity, evaluator|
+        chapter = create(
           :chapter,
           :with_description,
           description: 'Live horses, asses, mules and hinnies',
@@ -36,6 +39,14 @@ FactoryBot.define do
           goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(2)}00000000",
           validity_start_date: '2020-10-21',
         )
+
+        if evaluator.include_search_references
+          create(
+            :search_reference,
+            referenced: chapter,
+            title: 'chapter search reference',
+          )
+        end
 
         heading = create(
           :heading,
@@ -45,6 +56,14 @@ FactoryBot.define do
           goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
           validity_start_date: '2020-10-21',
         )
+
+        if evaluator.include_search_references
+          create(
+            :search_reference,
+            referenced: heading,
+            title: 'heading search reference',
+          )
+        end
 
         guide = create(:guide, :aircraft_parts)
         create(:guides_goods_nomenclature, guide:, goods_nomenclature: heading)
