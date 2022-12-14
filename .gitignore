@@ -35,5 +35,3 @@ searches_without_match_or_synonym.csv
 /.vscode
 
 .nvimlog
-
-/config/aggregated_synonyms/*
