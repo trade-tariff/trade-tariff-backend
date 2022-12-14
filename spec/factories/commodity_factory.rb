@@ -22,9 +22,9 @@ FactoryBot.define do
 
     trait :with_ancestors do
       with_description
-      transient {
+      transient do
         include_search_references { false }
-      }
+      end
       path { Sequel.pg_array([1, 2], :integer) }
       description { 'Horses, other than lemmings' }
       goods_nomenclature_item_id { '0101210000' }
