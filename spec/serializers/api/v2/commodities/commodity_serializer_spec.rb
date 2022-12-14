@@ -23,6 +23,8 @@ RSpec.describe Api::V2::Commodities::CommoditySerializer do
           basic_duty_rate: nil,
           meursing_code: false,
           declarable: true,
+          validity_start_date: commodity.validity_start_date,
+          validity_end_date: commodity.validity_end_date,
         },
         relationships: {
           footnotes: { data: [] },
