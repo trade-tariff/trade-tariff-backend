@@ -562,7 +562,7 @@ jobs:
           command: |
             echo "Checking status of current synonym files in << parameters.space >>"
 
-            HAS_UPLOADS=$(aws s3 sync --exclude ".*" --dryrun --size-only config/opensearch/synonyms_all.txt s3://trade-tariff-opensearch-packages-<< parameters.space >>/config/opensearch/synonyms_all.txt)
+            HAS_UPLOADS=$(aws s3 sync --exclude ".*" --dryrun --size-only config/opensearch s3://trade-tariff-opensearch-packages-<< parameters.space >>/config/opensearch/)
 
             echo $HAS_UPLOADS
 
@@ -570,7 +570,7 @@ jobs:
               echo "No synonym updates to apply"
             else
               echo "Synonym updates to apply"
-              aws s3 sync --exclude ".*" config/opensearch/synonyms_all.txt s3://trade-tariff-opensearch-packages-<< parameters.space >>/config/opensearch/
+              aws s3 sync --exclude ".*" config/opensearch s3://trade-tariff-opensearch-packages-<< parameters.space >>/config/opensearch/
 
               DOMAIN_NAME=tariff-search-<< parameters.space >>
               PACKAGE_ID=$(aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-<< parameters.space >>-synonyms\") | .PackageID")
