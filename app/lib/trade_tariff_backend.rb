@@ -267,10 +267,6 @@ module TradeTariffBackend
       ENV['BETA_SEARCH_DEBUG'] == 'true'
     end
 
-    def use_uk_xi_indexes?
-      ENV['USE_UK_XI_INDEXES'] == 'true'
-    end
-
     def aggregated_synonyms_file
       ENV.fetch('AGGREGATED_SYNONYMS_FILE', 'config/opensearch/synonyms_all.txt')
     end

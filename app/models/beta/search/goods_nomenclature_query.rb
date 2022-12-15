@@ -204,7 +204,7 @@ module Beta
       end
 
       def declarable_filter
-        { "term": { "declarable": true } }
+        { term: { declarable: true } }
       end
     end
   end

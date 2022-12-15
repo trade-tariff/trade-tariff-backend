@@ -6,11 +6,7 @@ class SearchIndex
   end
 
   def name
-    if TradeTariffBackend.use_uk_xi_indexes?
-      [@server_namespace, type.pluralize, TradeTariffBackend.service].join('-')
-    else
-      [@server_namespace, type.pluralize].join('-')
-    end
+    [@server_namespace, type.pluralize, TradeTariffBackend.service].join('-')
   end
 
   def name_without_namespace
