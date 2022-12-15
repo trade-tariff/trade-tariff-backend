@@ -72,6 +72,21 @@ class SearchReference < Sequel::Model
     self.referenced = Commodity.by_code(commodity_id).declarable.take if commodity_id.present?
   end
 
+  def resource_path
+    path = case referenced_class
+           when 'Chapter'
+             '/chapters/:id'
+           when 'Heading'
+             '/headings/:id'
+           when 'Subheading'
+             '/subheadings/:id'
+           else
+             '/commodities/:id'
+           end
+
+    path.sub(':id', referenced.to_param)
+  end
+
   def validate
     super
 

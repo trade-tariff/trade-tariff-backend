@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer do
   subject(:serializer) { described_class.new(serializable) }
 
-  let(:serializable) { create(:quota_closed_and_transferred_event) }
+  let(:serializable) { create(:quota_closed_and_transferred_event, :with_quota_definition, :with_target_quota_definition) }
 
   let(:expected_pattern) do
     {
@@ -10,6 +10,13 @@ RSpec.describe Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer do
         type: 'quota_closed_and_transferred_event',
         attributes: {
           transferred_amount: be_a(Float),
+          closing_date: be_a(String),
+          quota_definition_validity_start_date: be_a(String),
+          quota_definition_validity_end_date: be_a(String),
+          quota_definition_measurement_unit: nil,
+          target_quota_definition_validity_start_date: be_a(String),
+          target_quota_definition_validity_end_date: be_a(String),
+          target_quota_definition_measurement_unit: nil,
         },
       },
     }

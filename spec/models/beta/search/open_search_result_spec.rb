@@ -255,21 +255,36 @@ RSpec.describe Beta::Search::OpenSearchResult do
   end
 
   describe '#redirect_to' do
-    shared_examples 'a redirecting search query' do |goods_nomenclature_item_id, expected_path|
-      subject(:redirect_to) { build(:search_result, :redirect, goods_nomenclature_item_id:).redirect_to }
+    context 'when the redirect happens because the query is for a goods nomenclature item id' do
+      shared_examples 'a redirecting search query' do |goods_nomenclature_item_id, expected_path|
+        subject(:redirect_to) do
+          build(
+            :search_result,
+            :redirect,
+            :without_search_reference,
+            goods_nomenclature_item_id:,
+          ).redirect_to
+        end
 
-      it { is_expected.to include(expected_path) }
+        it { is_expected.to include(expected_path) }
+      end
+
+      it_behaves_like 'a redirecting search query', '1', '/chapters/01'
+      it_behaves_like 'a redirecting search query', '01', '/chapters/01'
+      it_behaves_like 'a redirecting search query', '0101', '/headings/0101'
+      it_behaves_like 'a redirecting search query', '010129', '/subheadings/0101290000-80'
+      it_behaves_like 'a redirecting search query', '01012960', '/subheadings/0101296000-80'
+      it_behaves_like 'a redirecting search query', '0101210000-10', '/subheadings/0101210000-10'
+      it_behaves_like 'a redirecting search query', '0101210000', '/commodities/0101210000'
+      it_behaves_like 'a redirecting search query', '0101210000380', '/headings/0101'
+      it_behaves_like 'a redirecting search query', '010121000038123', '/headings/0101'
     end
 
-    it_behaves_like 'a redirecting search query', '1', '/chapters/01'
-    it_behaves_like 'a redirecting search query', '01', '/chapters/01'
-    it_behaves_like 'a redirecting search query', '0101', '/headings/0101'
-    it_behaves_like 'a redirecting search query', '010129', '/subheadings/0101290000-80'
-    it_behaves_like 'a redirecting search query', '01012960', '/subheadings/0101296000-80'
-    it_behaves_like 'a redirecting search query', '0101210000-10', '/subheadings/0101210000-10'
-    it_behaves_like 'a redirecting search query', '0101210000', '/commodities/0101210000'
-    it_behaves_like 'a redirecting search query', '0101210000380', '/headings/0101'
-    it_behaves_like 'a redirecting search query', '010121000038123', '/headings/0101'
+    context 'when the redirect happens because of a search reference' do
+      subject(:redirect_to) { build(:search_result, :redirect, :with_search_reference).redirect_to }
+
+      it { is_expected.to eq('http://localhost:3001/subheadings/0101210000-10') }
+    end
   end
 
   describe '#facet_filter_statistics' do

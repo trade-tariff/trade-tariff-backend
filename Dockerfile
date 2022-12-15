@@ -1,5 +1,5 @@
 # Build compilation image
-FROM ruby:3.1.2-alpine3.15 as builder
+FROM ruby:3.1.3-alpine3.15 as builder
 
 # The application runs from /app
 WORKDIR /app
@@ -20,8 +20,6 @@ RUN bundle install --jobs=4 --no-binstubs
 # Copy all files to /app (except what is defined in .dockerignore)
 COPY . /app/
 
-RUN bin/aggregate_synonyms
-
 # Cleanup to save space in the production image
 RUN rm -rf node_modules log tmp && \
       rm -rf /usr/local/bundle/cache && \
@@ -32,7 +30,7 @@ RUN rm -rf node_modules log tmp && \
       find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:3.1.2-alpine3.15 as production
+FROM ruby:3.1.3-alpine3.15 as production
 
 RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \

@@ -45,7 +45,7 @@ services:
       test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
     volumes:
     - hmrc-os:/usr/share/opensearch/data
-    - ./config/opensearch/synonyms_generic.txt:/usr/share/opensearch/config/synonyms_generic.txt
+    - ./config/opensearch/synonyms_all.txt:/usr/share/opensearch/config/synonyms_all.txt
 
 volumes:
   dev-env-redis-volume:

@@ -15,5 +15,9 @@ class QuotaClosedAndTransferredEvent < Sequel::Model
 
   alias_method :quota_definition_id, :quota_definition_sid
 
+  # The status is not used since if the current point in time
+  # is after the closing date of the current event then we will
+  # be looking at the next definition which will be Open/being
+  # used to draw down from.
   def self.status; end
 end

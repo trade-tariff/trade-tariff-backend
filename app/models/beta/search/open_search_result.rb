@@ -20,10 +20,11 @@ module Beta
                     :max_score,
                     :search_query_parser_result,
                     :goods_nomenclature_query,
-                    :empty_query
+                    :empty_query,
+                    :search_reference
 
       class WithHits
-        def self.build(result, search_query_parser_result, goods_nomenclature_query)
+        def self.build(result, search_query_parser_result, goods_nomenclature_query, search_reference)
           search_result = ::Beta::Search::OpenSearchResult.new
 
           search_result.took = result.took
@@ -33,6 +34,7 @@ module Beta
           search_result.search_query_parser_result = search_query_parser_result
           search_result.goods_nomenclature_query = goods_nomenclature_query
           search_result.empty_query = false
+          search_result.search_reference = search_reference
 
           search_result
         end
@@ -83,7 +85,7 @@ module Beta
       end
 
       class NoHits
-        def self.build(_result, search_query_parser_result, goods_nomenclature_query)
+        def self.build(_result, search_query_parser_result, goods_nomenclature_query, search_reference)
           search_result = ::Beta::Search::OpenSearchResult.new
 
           search_result.took = 0
@@ -93,6 +95,7 @@ module Beta
           search_result.search_query_parser_result = search_query_parser_result
           search_result.goods_nomenclature_query = goods_nomenclature_query
           search_result.empty_query = true
+          search_result.search_reference = search_reference
 
           search_result
         end
@@ -171,37 +174,41 @@ module Beta
       def redirect_to
         return nil unless redirect?
 
-        id = short_code
-
-        resource_path = case short_code.length
-                        when 1
-                          id = short_code.rjust(2, '0')
-                          '/chapters/:id'
-                        when 2
-                          '/chapters/:id'
-                        when 4
-                          '/headings/:id'
-                        when 6
-                          '/subheadings/:id0000-80'
-                        when 8
-                          '/subheadings/:id00-80'
-                        when 10
-                          '/commodities/:id'
-                        when 13
-                          if short_code.match?(/\d{10}-\d{2}/)
-                            '/subheadings/:id'
-                          else
-                            id = short_code.first(4)
-                            '/headings/:id'
-                          end
+        resource_path = if search_reference.present?
+                          search_reference.resource_path
                         else
-                          id = short_code.first(4)
-                          '/headings/:id'
+                          id = short_code
+
+                          path = case short_code.length
+                                 when 1
+                                   id = short_code.rjust(2, '0')
+                                   '/chapters/:id'
+                                 when 2
+                                   '/chapters/:id'
+                                 when 4
+                                   '/headings/:id'
+                                 when 6
+                                   '/subheadings/:id0000-80'
+                                 when 8
+                                   '/subheadings/:id00-80'
+                                 when 10
+                                   '/commodities/:id'
+                                 when 13
+                                   if short_code.match?(/\d{10}-\d{2}/)
+                                     '/subheadings/:id'
+                                   else
+                                     id = short_code.first(4)
+                                     '/headings/:id'
+                                   end
+                                 else
+                                   id = short_code.first(4)
+                                   '/headings/:id'
+                                 end
+
+                          path.sub(':id', id)
                         end
 
         resource_path.prepend('/xi/') if TradeTariffBackend.xi?
-
-        resource_path = resource_path.sub(':id', id)
 
         URI.join(TradeTariffBackend.frontend_host, resource_path).to_s
       end

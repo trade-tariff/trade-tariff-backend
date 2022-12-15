@@ -233,6 +233,24 @@ FactoryBot.define do
     occurrence_timestamp { 24.hours.ago }
     transferred_amount { '86055072.137' }
     closing_date { '2022-10-28' }
+
+    trait :with_quota_definition do
+      after(:create) do |event, _evaluator|
+        quota_definition = create(:quota_definition, validity_end_date: Date.tomorrow)
+        event.quota_definition_sid = quota_definition.quota_definition_sid
+        event.save
+        event.reload
+      end
+    end
+
+    trait :with_target_quota_definition do
+      after(:create) do |event, _evaluator|
+        quota_definition = create(:quota_definition, validity_end_date: Date.tomorrow)
+        event.target_quota_definition_sid = quota_definition.quota_definition_sid
+        event.save
+        event.reload
+      end
+    end
   end
 
   factory :quota_exhaustion_event do

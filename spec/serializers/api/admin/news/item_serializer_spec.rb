@@ -3,7 +3,7 @@ RSpec.describe Api::Admin::News::ItemSerializer do
     described_class.new(news_item).serializable_hash
   end
 
-  let(:news_item) { create :news_item, :with_collections, title: 'Serialized' }
+  let(:news_item) { create :news_item, title: 'Serialized' }
 
   let :expected do
     {

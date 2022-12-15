@@ -7,7 +7,7 @@ module Api
         measures
         measures.goods_nomenclature
         measures.geographical_area
-        incoming_quota_closed_and_transferred_event.quota_definition
+        incoming_quota_closed_and_transferred_event
       ].freeze
 
       ALLOWED_INCLUDES = %w[quota_balance_events].freeze

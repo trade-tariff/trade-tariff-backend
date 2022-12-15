@@ -1,8 +1,0 @@
-cat => cat,pet
-kitten => kitten,cat,pet
-spork => spork,cutlery
-cutlery => cutlery,dinnerware
-body => body,corselette
-gown => gown,dress
-hose => hose,pantyhose
-accumulator => battery,accumulator

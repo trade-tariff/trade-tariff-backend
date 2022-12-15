@@ -92,4 +92,32 @@ RSpec.describe SearchReference do
       end
     end
   end
+
+  describe '#resource_path' do
+    subject(:resource_path) { create(:search_reference, trait).resource_path }
+
+    context 'when referenced is a chapter' do
+      let(:trait) { :with_chapter }
+
+      it { is_expected.to eq('/chapters/01') }
+    end
+
+    context 'when referenced is a heading' do
+      let(:trait) { :with_heading }
+
+      it { is_expected.to eq('/headings/0101') }
+    end
+
+    context 'when referenced is a subheading' do
+      let(:trait) { :with_subheading }
+
+      it { is_expected.to eq('/subheadings/0101210000-10') }
+    end
+
+    context 'when referenced is a commodity' do
+      let(:trait) { :with_commodity }
+
+      it { is_expected.to eq('/commodities/0101291000') }
+    end
+  end
 end

@@ -272,7 +272,7 @@ module TradeTariffBackend
     end
 
     def aggregated_synonyms_file
-      ENV.fetch('AGGREGATED_SYNONYMS_FILE', 'config/aggregated_synonyms/synonyms_all.txt')
+      ENV.fetch('AGGREGATED_SYNONYMS_FILE', 'config/opensearch/synonyms_all.txt')
     end
   end
 end

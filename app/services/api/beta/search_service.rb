@@ -10,7 +10,7 @@ module Api
       end
 
       def call
-        if goods_nomenclature_item_id_match?
+        if redirect?
           search_result.redirect!
         end
 
@@ -31,12 +31,14 @@ module Api
                                fetch_result,
                                search_query_parser_result,
                                generated_search_query,
+                               nil,
                              )
                            else
                              ::Beta::Search::OpenSearchResult::NoHits.build(
                                nil,
                                search_query_parser_result,
                                generated_search_query,
+                               exact_search_reference_match,
                              )
                            end
       end
@@ -54,11 +56,28 @@ module Api
       end
 
       def should_search?
-        !(@search_query.blank? || goods_nomenclature_item_id_match?)
+        !(@search_query.blank? || redirect?)
+      end
+
+      def redirect?
+        goods_nomenclature_item_id_match? || exact_search_reference_match?
       end
 
       def goods_nomenclature_item_id_match?
         @search_query.match?(GOOD_NOMENCLATURE_ITEM_ID_SEARCH)
+      end
+
+      def exact_search_reference_match?
+        exact_search_reference_match.present?
+      end
+
+      def exact_search_reference_match
+        # TODO: Add normalised title to the search reference model and populate
+        @exact_search_reference_match ||= SearchReference.where(title: normalised_search_query).first
+      end
+
+      def normalised_search_query
+        @normalised_search_query ||= @search_query.downcase.scan(/\w+/).join(' ')
       end
     end
   end
