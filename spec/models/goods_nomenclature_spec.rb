@@ -591,4 +591,15 @@ RSpec.describe GoodsNomenclature do
       it { is_expected.not_to be_empty }
     end
   end
+
+  describe '#twelvedigit' do
+    subject { commodity.twelvedigit }
+
+    let :commodity do
+      create :commodity, goods_nomenclature_item_id: '0123456789',
+                        producline_suffix: '01'
+    end
+
+    it { is_expected.to eql '0123456789-01' }
+  end
 end

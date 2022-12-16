@@ -120,4 +120,21 @@ RSpec.describe SearchReference do
       it { is_expected.to eq('/commodities/0101291000') }
     end
   end
+
+  describe '.count_for' do
+    subject { described_class.count_for commodities.slice(0, 2) }
+
+    before { search_references }
+
+    let(:commodities) { create_list :commodity, 3 }
+
+    let :search_references do
+      commodities.map { |c| create :search_reference, referenced: c } +
+        create_list(:search_reference, 1, referenced: commodities.first)
+    end
+
+    it { is_expected.to include commodities.first.twelvedigit => 2 }
+    it { is_expected.to include commodities.second.twelvedigit => 1 }
+    it { is_expected.not_to include commodities.third.twelvedigit => 0 }
+  end
 end
