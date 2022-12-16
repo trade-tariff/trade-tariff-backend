@@ -825,4 +825,35 @@ RSpec.describe Commodity do
       it { is_expected.not_to be_fast_declarable }
     end
   end
+
+  describe '#cast_to_subheading' do
+    subject { commodity.cast_to_subheading }
+
+    let(:commodity) { create(:commodity) }
+
+    it { is_expected.to be_instance_of Subheading }
+    it { is_expected.to have_attributes values: commodity.values }
+  end
+
+  describe '#cast_according_to_declarable' do
+    subject { commodity.cast_according_to_declarable }
+
+    before { allow(commodity).to receive(:declarable?).and_return declarable? }
+
+    let(:commodity) { create(:commodity) }
+
+    context 'with declarable' do
+      let(:declarable?) { true }
+
+      it { is_expected.to be_instance_of described_class }
+      it { is_expected.to have_attributes values: commodity.values }
+    end
+
+    context 'with non declarable' do
+      let(:declarable?) { false }
+
+      it { is_expected.to be_instance_of Subheading }
+      it { is_expected.to have_attributes values: commodity.values }
+    end
+  end
 end
