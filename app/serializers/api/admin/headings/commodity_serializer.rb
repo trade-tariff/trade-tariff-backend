@@ -13,11 +13,7 @@ module Api
         attribute :declarable, &:declarable?
 
         attribute :search_references_count do |commodity|
-          if commodity.declarable?
-            commodity.search_references.count
-          else
-            Subheading.find(goods_nomenclature_sid: commodity.goods_nomenclature_sid).search_references.count
-          end
+          commodity.cast_according_to_declarable.search_references.count
         end
       end
     end
