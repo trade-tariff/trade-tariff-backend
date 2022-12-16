@@ -187,6 +187,14 @@ class Commodity < GoodsNomenclature
     declarable? ? 'Commodity' : 'Subheading'
   end
 
+  def cast_to_subheading
+    Subheading.call(values)
+  end
+
+  def cast_according_to_declarable
+    declarable? ? self : cast_to_subheading
+  end
+
   private
 
   def load_children
