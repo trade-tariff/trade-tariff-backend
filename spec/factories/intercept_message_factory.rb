@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :intercept_message, class: 'Beta::Search::InterceptMessage' do
-    term {}
+    term { 'foo' }
     message {}
 
     trait :with_section_to_transform do

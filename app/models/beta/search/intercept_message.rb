@@ -14,34 +14,46 @@ module Beta
           match = matched_text.match(SECTION_REGEX)
 
           section_id = RomanNumerals::Converter.to_decimal(match[:code])
+          reference_id = RomanNumerals::Converter.to_roman(section_id)
+          section_text = 'section '
+          section_text += "#{match[:optional]} " if match[:optional]
+          section_text += match[:code]
 
-          roman_section_id = RomanNumerals::Converter.to_roman(section_id)
-
-          "[section#{roman_section_id}](/sections/#{section_id})#{match[:terminator]}"
+          ["[#{section_text}](/sections/#{section_id})#{match[:terminator]}", reference_id]
         end,
 
         CHAPTER_REGEX => lambda do |matched_text|
           match = matched_text.match(CHAPTER_REGEX)
 
-          "[#{matched_text[0..-2]}](/chapters/#{match[:code].rjust(2, '0')})#{match[:terminator]}"
+          short_code = match[:code].rjust(2, '0')
+          reference_id = "#{short_code}00000000"
+
+          ["[#{matched_text[0..-2]}](/chapters/#{short_code})#{match[:terminator]}", reference_id]
         end,
 
         HEADING_REGEX => lambda do |matched_text|
           match = matched_text.match(HEADING_REGEX)
 
-          "[#{matched_text[0..-2]}](/headings/#{match[:code]})#{match[:terminator]}"
+          short_code = match[:code]
+          reference_id = "#{short_code}000000"
+
+          ["[#{matched_text[0..-2]}](/headings/#{short_code})#{match[:terminator]}", reference_id]
         end,
 
         SUBHEADING_REGEX => lambda do |matched_text|
           match = matched_text.match(SUBHEADING_REGEX)
 
-          "[#{matched_text[0..-2]}](/subheadings/#{match[:code].ljust(10, '0')}-80)#{match[:terminator]}"
+          reference_id = match[:code].ljust(10, '0')
+
+          ["[#{matched_text[0..-2]}](/subheadings/#{reference_id}-80)#{match[:terminator]}", reference_id]
         end,
 
         COMMODITY_REGEX => lambda do |matched_text|
           match = matched_text.match(COMMODITY_REGEX)
 
-          "[#{matched_text[0..-2]}](/commodities/#{match[:code]})#{match[:terminator]}"
+          reference_id = match[:code]
+
+          ["[#{matched_text[0..-2]}](/commodities/#{reference_id})#{match[:terminator]}", reference_id]
         end,
       }.freeze
 
@@ -49,7 +61,7 @@ module Beta
 
       content_addressable_fields :term, :message
 
-      attr_accessor :term, :message
+      attr_accessor :term, :message, :formatted_message
 
       class << self
         def build(search_query)
@@ -62,6 +74,7 @@ module Beta
           intercept_message = new
           intercept_message.term = normalised_query
           intercept_message.message = normalise_message(message)
+          intercept_message.generate_references_and_formatted_message!
           intercept_message
         end
 
@@ -80,12 +93,27 @@ module Beta
         end
       end
 
-      def formatted_message
-        return '' if message.blank?
+      def references
+        @references ||= {}
+      end
 
-        GOODS_NOMENCLATURE_LINK_TRANSFORMERS.each_with_object(message.dup) do |(regex, transformer), transformed_message|
-          transformed_message.gsub!(regex) do |matched_text|
-            transformer.call(matched_text)
+      # Iterate through potentially extractable goods nomenclature references and store the resulting goods nomenclature reference
+      # and also the coerced markdown link which we render in the frontend search UI for users to click on and be directed to the relevant parts of the Tariff.
+      #
+      # The references are used in the goods nomenclature search index to enable searching through intercept message terms that apply
+      def generate_references_and_formatted_message!
+        self.formatted_message = begin
+          if message.blank?
+            ''
+          else
+            GOODS_NOMENCLATURE_LINK_TRANSFORMERS.each_with_object(message.dup) do |(regex, transformer), transformed_message|
+              transformed_message.gsub!(regex) do |matched_text|
+                transformed, reference_id = transformer.call(matched_text)
+
+                references[reference_id] = term
+                transformed
+              end
+            end
           end
         end
       end

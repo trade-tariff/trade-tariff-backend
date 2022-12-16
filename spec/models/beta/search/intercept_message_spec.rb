@@ -19,73 +19,136 @@ RSpec.describe Beta::Search::InterceptMessage do
     end
   end
 
-  describe '#formatted_message' do
+  describe '#generate_references_and_formatted_message!' do
+    subject(:intercept_message) { build(:intercept_message, trait) }
+
+    before do
+      intercept_message.generate_references_and_formatted_message!
+    end
+
     context 'when there are a mixture of different goods nomenclature to generate links for' do
-      subject(:formatted_message) { build(:intercept_message, :with_mixture_of_goods_nomenclature_to_transform).formatted_message }
+      let(:trait) { :with_mixture_of_goods_nomenclature_to_transform }
 
       let(:expected_message) do
         '[chapter 1](/chapters/01), [heading 0101](/headings/0101), [subheading 012012](/subheadings/0120120000-80) and [commodity 0702000007](/commodities/0702000007).'
       end
 
-      it { is_expected.to eq(expected_message) }
+      let(:expected_references) do
+        {
+          '0100000000' => 'foo',
+          '0101000000' => 'foo',
+          '0120120000' => 'foo',
+          '0702000007' => 'foo',
+        }
+      end
+
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
 
     context 'when there are chapters to generate links for' do
-      subject(:formatted_message) { build(:intercept_message, :with_chapters_to_transform).formatted_message }
+      let(:trait) { :with_chapters_to_transform }
 
       let(:expected_message) do
         'This should point to [ChaPter 99](/chapters/99) and [chapters 32](/chapters/32) and [chapters 1](/chapters/01) but not chapter 19812321 but for [chapter 9](/chapters/09).'
       end
 
-      it { is_expected.to eq(expected_message) }
+      let(:expected_references) do
+        {
+          '0100000000' => 'foo',
+          '0900000000' => 'foo',
+          '3200000000' => 'foo',
+          '9900000000' => 'foo',
+        }
+      end
+
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
 
     context 'when there are headings to generate links for' do
-      subject(:formatted_message) { build(:intercept_message, :with_headings_to_transform).formatted_message }
+      let(:trait) { :with_headings_to_transform }
 
       let(:expected_message) do
         'This should point to [hEadIngs 0101](/headings/0101) and [heading 0102](/headings/0102) but not heading 2 or heading 012012 but for [heading 0105](/headings/0105).'
       end
 
-      it { is_expected.to eq(expected_message) }
+      let(:expected_references) do
+        {
+          '0101000000' => 'foo',
+          '0102000000' => 'foo',
+          '0105000000' => 'foo',
+        }
+      end
+
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
 
     context 'when there are subheadings to generate links for' do
-      subject(:formatted_message) { build(:intercept_message, :with_subheadings_to_transform).formatted_message }
+      let(:trait) { :with_subheadings_to_transform }
 
       let(:expected_message) do
         'This should point to [subheadiNg 010511](/subheadings/0105110000-80) and [subheadings 01051191](/subheadings/0105119100-80) and never change subheading 1231 or subheading 1231312312 but for [subheading 010512](/subheadings/0105120000-80).'
       end
 
-      it { is_expected.to eq(expected_message) }
+      let(:expected_references) do
+        {
+          '0105110000' => 'foo',
+          '0105119100' => 'foo',
+          '0105120000' => 'foo',
+        }
+      end
+
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
 
     context 'when there are commodities to generate links for' do
-      subject(:formatted_message) { build(:intercept_message, :with_commodities_to_transform).formatted_message }
+      let(:trait) { :with_commodities_to_transform }
 
       let(:expected_message) do
         'This should point to [coMmodities 0105110000](/commodities/0105110000) and cOmmodity 01051191 and never change commodity 1 or commodity 13112313123123 but for [commodity 0101210001](/commodities/0101210001).'
       end
 
-      it { is_expected.to eq(expected_message) }
+      let(:expected_references) do
+        {
+          '0101210001' => 'foo',
+          '0105110000' => 'foo',
+        }
+      end
+
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
 
     context 'when there is no corresponding message' do
-      subject(:formatted_message) { build(:intercept_message, :without_message).formatted_message }
+      let(:trait) { :without_message }
 
       let(:expected_message) { '' }
+      let(:expected_references) { {} }
 
-      it { is_expected.to eq(expected_message) }
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
 
     context 'when there are sections to generate links for' do
-      subject(:formatted_message) { build(:intercept_message, :with_section_to_transform).formatted_message }
+      let(:trait) { :with_section_to_transform }
 
       let(:expected_message) do
-        'Based on your search term, we believe you are looking for [sectionXV](/sections/15), [sectionXIV](/sections/14) and [sectionIII](/sections/3) depending on the constituent material.'
+        'Based on your search term, we believe you are looking for [section XV](/sections/15), [section position 14](/sections/14) and [section code III](/sections/3) depending on the constituent material.'
       end
 
-      it { is_expected.to eq(expected_message) }
+      let(:expected_references) do
+        {
+          'III' => 'foo',
+          'XIV' => 'foo',
+          'XV' => 'foo',
+        }
+      end
+
+      it { expect(intercept_message.formatted_message).to eq(expected_message) }
+      it { expect(intercept_message.references).to eq(expected_references) }
     end
   end
 end
