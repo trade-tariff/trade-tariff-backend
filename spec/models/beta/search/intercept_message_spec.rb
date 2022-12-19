@@ -10,7 +10,7 @@ RSpec.describe Beta::Search::InterceptMessage do
     end
 
     it_behaves_like 'an intercept message query with a corresponding message', 'plasti'
-    it_behaves_like 'an intercept message query with a corresponding message', 'new     Zealand'
+    it_behaves_like 'an intercept message query with a corresponding message', "new  #{160.chr('UTF-8')} , & * - +  Zealand"
 
     context 'when the query does not correspond to an intercept message' do
       subject(:intercept_message) { described_class.build('foo') }
