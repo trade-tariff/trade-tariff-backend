@@ -63,7 +63,7 @@ RSpec.describe Api::Beta::SearchResultSerializer do
             },
           },
           meta: { redirect: false, redirect_to: nil },
-        }
+        },
       }
     end
 
