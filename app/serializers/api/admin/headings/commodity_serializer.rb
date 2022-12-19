@@ -8,13 +8,10 @@ module Api
 
         set_id :admin_id
 
-        attributes :description
+        attributes :description,
+                   :search_references_count
 
         attribute :declarable, &:declarable?
-
-        attribute :search_references_count do |commodity|
-          commodity.cast_according_to_declarable.search_references.count
-        end
       end
     end
   end

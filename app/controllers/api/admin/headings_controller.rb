@@ -9,7 +9,7 @@ module Api
         options = { is_collection: false }
         options[:include] = %i[commodities chapter]
 
-        render json: Api::Admin::Headings::HeadingSerializer.new(@heading, options).serializable_hash
+        render json: Api::Admin::Headings::HeadingSerializer.new(presented_heading, options).serializable_hash
       end
 
       private
@@ -30,6 +30,14 @@ module Api
 
       def heading_id
         "#{params[:id]}000000"
+      end
+
+      def presented_heading
+        Api::Admin::Headings::HeadingPresenter.new(@heading, search_reference_counts)
+      end
+
+      def search_reference_counts
+        SearchReference.count_for(@heading.commodities + [@heading])
       end
     end
   end

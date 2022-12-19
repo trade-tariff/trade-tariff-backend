@@ -1,7 +1,8 @@
 RSpec.describe Api::Admin::Headings::CommoditySerializer do
   subject(:serialized) { described_class.new(serializable).serializable_hash }
 
-  let(:serializable) { create(:commodity, :with_heading) }
+  let(:commodity) { create(:commodity, :with_heading) }
+  let(:serializable) { Api::Admin::Headings::CommodityPresenter.new(commodity, 3) }
 
   let(:expected) do
     {
@@ -10,7 +11,7 @@ RSpec.describe Api::Admin::Headings::CommoditySerializer do
         type: :commodity,
         attributes: {
           description: serializable.description,
-          search_references_count: 0,
+          search_references_count: 3,
           declarable: true,
         },
       },
