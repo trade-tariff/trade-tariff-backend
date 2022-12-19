@@ -19,7 +19,7 @@ module Beta
           section_text += "#{match[:optional]} " if match[:optional]
           section_text += match[:code]
 
-          ["[#{section_text}](/sections/#{section_id})#{match[:terminator]}", reference_id]
+          ["[#{section_text}](/sections/#{section_id})#{match[:terminator]}", reference_id, :section]
         end,
 
         CHAPTER_REGEX => lambda do |matched_text|
@@ -28,7 +28,7 @@ module Beta
           short_code = match[:code].rjust(2, '0')
           reference_id = "#{short_code}00000000"
 
-          ["[#{matched_text[0..-2]}](/chapters/#{short_code})#{match[:terminator]}", reference_id]
+          ["[#{matched_text[0..-2]}](/chapters/#{short_code})#{match[:terminator]}", reference_id, :chapter]
         end,
 
         HEADING_REGEX => lambda do |matched_text|
@@ -37,7 +37,7 @@ module Beta
           short_code = match[:code]
           reference_id = "#{short_code}000000"
 
-          ["[#{matched_text[0..-2]}](/headings/#{short_code})#{match[:terminator]}", reference_id]
+          ["[#{matched_text[0..-2]}](/headings/#{short_code})#{match[:terminator]}", reference_id, :heading]
         end,
 
         SUBHEADING_REGEX => lambda do |matched_text|
@@ -45,7 +45,7 @@ module Beta
 
           reference_id = match[:code].ljust(10, '0')
 
-          ["[#{matched_text[0..-2]}](/subheadings/#{reference_id}-80)#{match[:terminator]}", reference_id]
+          ["[#{matched_text[0..-2]}](/subheadings/#{reference_id}-80)#{match[:terminator]}", reference_id, :subheading]
         end,
 
         COMMODITY_REGEX => lambda do |matched_text|
@@ -53,7 +53,7 @@ module Beta
 
           reference_id = match[:code]
 
-          ["[#{matched_text[0..-2]}](/commodities/#{reference_id})#{match[:terminator]}", reference_id]
+          ["[#{matched_text[0..-2]}](/commodities/#{reference_id})#{match[:terminator]}", reference_id, :commodity]
         end,
       }.freeze
 
@@ -79,13 +79,22 @@ module Beta
         end
 
         def intercept_messages
-          @intercept_messages ||= YAML.load_file(INTERCEPT_MESSAGES_SOURCE_PATH)
+          @intercept_messages ||= YAML.load_file(INTERCEPT_MESSAGES_SOURCE_PATH).transform_keys(&method(:normalise_query))
+        end
+
+        def all_references
+          @all_references ||= intercept_messages.keys.map(&method(:build)).each_with_object(Hash.new('')) do |intercept_message, acc|
+            acc.merge!(intercept_message.references) do |_reference_id, previous_terms, new_term|
+              merged = "#{previous_terms} #{new_term}"
+              merged.scan(/\w+/).join(' ').downcase
+            end
+          end
         end
 
         private
 
         def normalise_query(search_query)
-          search_query.downcase.scan(/\w+/).join(' ')
+          search_query.downcase.scan(/\w+/).reject { |term| TradeTariffBackend.stop_words.include?(term) }.join(' ')
         end
 
         def normalise_message(message)
@@ -94,13 +103,9 @@ module Beta
       end
 
       def references
-        @references ||= {}
+        @references ||= Hash.new('')
       end
 
-      # Iterate through potentially extractable goods nomenclature references and store the resulting goods nomenclature reference
-      # and also the coerced markdown link which we render in the frontend search UI for users to click on and be directed to the relevant parts of the Tariff.
-      #
-      # The references are used in the goods nomenclature search index to enable searching through intercept message terms that apply
       def generate_references_and_formatted_message!
         self.formatted_message = begin
           if message.blank?
@@ -108,9 +113,10 @@ module Beta
           else
             GOODS_NOMENCLATURE_LINK_TRANSFORMERS.each_with_object(message.dup) do |(regex, transformer), transformed_message|
               transformed_message.gsub!(regex) do |matched_text|
-                transformed, reference_id = transformer.call(matched_text)
+                transformed, reference_id, type = transformer.call(matched_text)
 
-                references[reference_id] = term
+                references[reference_id] = term if type.in?(%i[commodity subheading])
+
                 transformed
               end
             end

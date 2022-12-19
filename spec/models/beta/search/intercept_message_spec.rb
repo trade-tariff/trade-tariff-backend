@@ -19,6 +19,15 @@ RSpec.describe Beta::Search::InterceptMessage do
     end
   end
 
+  describe '.all_references' do
+    subject(:all_references) { described_class.all_references }
+
+    it 'merges reference intercept terms to the same goods nomenclature' do
+      expect(all_references['9031800000'])
+        .to eq('accelerometer bruel kjaer eddy current eddyfi ectane fitbit rotary encoder')
+    end
+  end
+
   describe '#generate_references_and_formatted_message!' do
     subject(:intercept_message) { build(:intercept_message, trait) }
 
@@ -35,8 +44,6 @@ RSpec.describe Beta::Search::InterceptMessage do
 
       let(:expected_references) do
         {
-          '0100000000' => 'foo',
-          '0101000000' => 'foo',
           '0120120000' => 'foo',
           '0702000007' => 'foo',
         }
@@ -53,14 +60,7 @@ RSpec.describe Beta::Search::InterceptMessage do
         'This should point to [ChaPter 99](/chapters/99) and [chapters 32](/chapters/32) and [chapters 1](/chapters/01) but not chapter 19812321 but for [chapter 9](/chapters/09).'
       end
 
-      let(:expected_references) do
-        {
-          '0100000000' => 'foo',
-          '0900000000' => 'foo',
-          '3200000000' => 'foo',
-          '9900000000' => 'foo',
-        }
-      end
+      let(:expected_references) { {} }
 
       it { expect(intercept_message.formatted_message).to eq(expected_message) }
       it { expect(intercept_message.references).to eq(expected_references) }
@@ -73,13 +73,7 @@ RSpec.describe Beta::Search::InterceptMessage do
         'This should point to [hEadIngs 0101](/headings/0101) and [heading 0102](/headings/0102) but not heading 2 or heading 012012 but for [heading 0105](/headings/0105).'
       end
 
-      let(:expected_references) do
-        {
-          '0101000000' => 'foo',
-          '0102000000' => 'foo',
-          '0105000000' => 'foo',
-        }
-      end
+      let(:expected_references) { {} }
 
       it { expect(intercept_message.formatted_message).to eq(expected_message) }
       it { expect(intercept_message.references).to eq(expected_references) }
@@ -139,13 +133,7 @@ RSpec.describe Beta::Search::InterceptMessage do
         'Based on your search term, we believe you are looking for [section XV](/sections/15), [section position 14](/sections/14) and [section code III](/sections/3) depending on the constituent material.'
       end
 
-      let(:expected_references) do
-        {
-          'III' => 'foo',
-          'XIV' => 'foo',
-          'XV' => 'foo',
-        }
-      end
+      let(:expected_references) { {} }
 
       it { expect(intercept_message.formatted_message).to eq(expected_message) }
       it { expect(intercept_message.references).to eq(expected_references) }
