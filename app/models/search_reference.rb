@@ -60,6 +60,35 @@ class SearchReference < Sequel::Model
   alias_method :subheading, :referenced
   alias_method :commodity, :referenced
 
+  class << self
+    def count_for(goods_nomenclatures)
+      id_pairs = goods_nomenclatures.map(&:twelve_digit)
+
+      select_group(twelve_digit_column)
+        .select_more(twelve_digit_count_column)
+        .where(twelve_digit_function => id_pairs)
+        .as_hash(:twelve_digit, :twelve_digit_count)
+    end
+
+  private
+
+    def twelve_digit_column
+      Sequel.as twelve_digit_function, :twelve_digit
+    end
+
+    def twelve_digit_count_column
+      Sequel.as Sequel.function(:count, :referenced_id), :twelve_digit_count
+    end
+
+    def twelve_digit_function
+      Sequel.function :concat, padded_reference_id_function, '-', :productline_suffix
+    end
+
+    def padded_reference_id_function
+      Sequel.function :rpad, :referenced_id, 10, '0'
+    end
+  end
+
   def chapter_id=(chapter_id)
     self.referenced = Chapter.by_code(chapter_id).take if chapter_id.present?
   end

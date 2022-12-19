@@ -8,11 +8,9 @@ module Api
 
         set_id :goods_nomenclature_sid
 
-        attributes :goods_nomenclature_item_id, :description
-
-        attribute :search_references_count do |heading|
-          heading.search_references.count
-        end
+        attributes :goods_nomenclature_item_id,
+                   :description,
+                   :search_references_count
 
         has_one :chapter, serializer: Api::Admin::Headings::ChapterSerializer, id_method_name: :goods_nomenclature_sid, &:chapter
 
