@@ -27,22 +27,6 @@ module ImportGuides
     seed_guides_headings
   end
 
-  def self.seed_guides_chapters
-    file = Rails.root.join('data/chapters_guides.csv')
-
-    Rails.logger.debug 'Populating relationship Chapters <-> Guides ...'
-
-    CSV.foreach(file, headers: true) do |row|
-      goods_nomenclature_sid = row[5].to_i
-      guide_id = row[3].to_i
-      chapter_code = row[0]
-
-      GuidesGoodsNomenclature.insert(guide_id:, goods_nomenclature_sid:)
-
-      Rails.logger.debug "Added #{chapter_code}->#{guide_id}"
-    end
-  end
-
   def self.seed_guides_headings
     file = Rails.root.join('data/headings_guides.csv')
 

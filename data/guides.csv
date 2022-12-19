@@ -1,24 +1,20 @@
-id,title,image,url,strapline
-1,Aircraft parts,aircraft.png,https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories,Get help to classify drones and aircraft parts for import and export.
-2,Electrical equipment for import and export,audio.png,https://www.gov.uk/guidance/classifying-audio-and-video-equipment,"Get help to classify electrical equipment such as communication equipment, cameras, and their parts and accessories."
-3,Ceramics,ceramics.png,https://www.gov.uk/guidance/classifying-ceramics,Get help to classify ceramic articles for import and export.
-4,Computers and software,computers.png,https://www.gov.uk/guidance/classifying-computers-and-software,"Get help classifying computers, inkjet and toner cartridges and their components."
-5,"Edible fruits, nuts and peel",fruitnuts.png,https://www.gov.uk/guidance/classifying-edible-fruits-nuts-and-peel,"Get help to classify edible vegetables, roots, tubers, herbs, spices, fruit, nuts and peel for import and export."
-6,"Edible vegetables, roots and tubers",vegetables.png,https://www.gov.uk/guidance/classifying-edible-vegetables-roots-and-tubers,"Get help to classify edible vegetables, roots, tubers, herbs, spices, fruit, nuts and peel for import and export."
-7,Electric lamps,lamps.png,https://www.gov.uk/guidance/classifying-electric-lamps,Get help to classify electric lamps for import and export.
-8,Footwear,footwear.png,https://www.gov.uk/guidance/classifying-footwear,Get help to classify footwear and parts of footwear for import and export.
-9,"Herbal medicines, tonics and supplements",medicines.png,https://www.gov.uk/guidance/classifying-herbal-medicines-supplements-tonics,"Get help to classify herbal medicines, vitamins, food preparations, supplements and tonics for import and export."
-10,Iron and steel,ironsteel.png,https://www.gov.uk/guidance/classifying-iron-and-steel,"Get help to classify various items of iron and steel, primarily those classified under chapter 72."
-11,Leather,leather.png,https://www.gov.uk/guidance/classifying-leather,Get help to classify articles of leather and other items in chapter 42 of the tariff for import and export.
-12,Monitors,monitor.png,https://www.gov.uk/guidance/classifying-monitors-for-import-and-export,"Get help to classify electrical equipment such as communication equipment, cameras, and their parts and accessories."
-13,Organic chemicals,organic_chemicals.png,https://www.gov.uk/guidance/classifying-organic-chemicals,"Get help to classify organic chemicals that contain certain permitted additives or can be dissolved in water, for import and export."
-14,Pharmaceutical products,pharma.png,https://www.gov.uk/guidance/classifying-pharmaceutical-products,"Get help to classify pharmaceutical products used to treat or prevent diseases or ailments (in humans or animals), including comparators used in clinical trials and placebos."
-15,Placebos and comparators,placebos.png,https://www.gov.uk/guidance/classifying-placebos-and-comparators,"Get help to classify pharmaceutical products used to treat or prevent diseases or ailments (in humans or animals), including comparators used in clinical trials and placebos."
-16,Plastics,plastics.png,https://www.gov.uk/guidance/classifying-plastics,Get help to classify plastics for import and export.
-17,Rice,rice.png,https://www.gov.uk/guidance/classifying-rice,Get help to classify rice and related products for direct human consumption for import and export.
-18,Textiles and textile articles,textiles.png,https://www.gov.uk/guidance/classifying-textile-apparel,Get help to classify textiles and which headings and codes to use.
-19,Tobacco and manufactured tobacco substitutes,tobacco.png,https://www.gov.uk/guidance/classifying-tobacco,"Get help to classify cigarettes, cigars, raw tobacco, smoking tobacco, tobacco for heating and nicotine substitutes for import and export."
-20,"Toys, games and sports equipment",toys.png,https://www.gov.uk/guidance/classifying-toys-games-and-sports-equipment,"Get help to classify various toys, games and festive articles for import and export."
-21,"Vehicles, parts and accessories",vehicles.png,https://www.gov.uk/guidance/classifying-vehicles,"Get help to classify various types of vehicles such as mobility scooters, dumpers and utility vehicles, all-terrain vehicles and E-Bikes for import and export."
-22,Wood,wood.png,https://www.gov.uk/guidance/classifying-wood,Get help to classify various types of wood for import and export.
-23,Classification of goods,general.png,https://www.gov.uk/government/collections/classification-of-goods,
+"id","title","url","active","image","strapline"
+1,Drones and aircraft parts,https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories,true,aircraft.png,Get help to classify drones and aircraft parts for import and export
+3,Ceramics,https://www.gov.uk/guidance/classifying-ceramics,true,ceramics.png,Get help to classify ceramic articles for import and export
+4,Computers and software,https://www.gov.uk/guidance/classifying-computers-and-software,true,computers.png,"Get help classifying computers, inkjet and toner cartridges and their components"
+7,Electric lamps,https://www.gov.uk/guidance/classifying-electric-lamps,true,electric_lamps.png,Get help to classify electric lamps for import and export
+8,Footwear,https://www.gov.uk/guidance/classifying-footwear,true,footwear.png,Get help to classify footwear and parts of footwear for import and export
+9,"Herbal medicines, supplements and tonics",https://www.gov.uk/guidance/classifying-vitamins-supplements-and-herbal-medicines-for-import-and-export,true,herbal_medicines.png,"Get help to classify herbal medicines, vitamins, food preparations, supplements and tonics for import and export"
+10,Iron and steel,https://www.gov.uk/guidance/classifying-iron-and-steel,true,iron_steel.png,"Get help to classify various items of iron and steel, primarily those classified under chapter 72"
+11,Leather,https://www.gov.uk/guidance/classifying-leather,true,leather.png,Get help to classify articles of leather and other items in chapter 42 of the tariff for import and export
+13,Organic chemicals,https://www.gov.uk/guidance/classifying-organic-chemicals,true,organic_chemicals.png,"Get help to classify organic chemicals that contain certain permitted additives or can be dissolved in water, for import and export"
+16,Plastics,https://www.gov.uk/guidance/classifying-plastics,true,plastics.png,Get help to classify plastics for import and export
+17,Rice,https://www.gov.uk/guidance/classifying-rice,true,rice.png,Get help to classify rice and related products for direct human consumption for import and export
+18,Textile apparel,https://www.gov.uk/guidance/classifying-textile-apparel,true,textiles.png,Get help to classify textiles and which headings and codes to use
+19,Tobacco,https://www.gov.uk/guidance/classifying-tobacco,true,tobacco.png,"Get help to classify cigarettes, cigars, raw tobacco, smoking tobacco, tobacco for heating and nicotine substitutes for import and export"
+22,Wood,https://www.gov.uk/guidance/classifying-wood,true,wood.png,Get help to classify various types of wood for import and export
+24,"Edible fruit, vegetables and nuts",https://www.gov.uk/guidance/classifying-edible-fruit-vegetables-and-nuts-for-import-and-export,true,fruit_vegetables.png,"Get help to classify edible vegetables, roots, tubers, herbs, spices, fruit, nuts and peel for import and export"
+25,Electrical equipment,https://www.gov.uk/guidance/classifying-electrical-equipment-for-import-and-export,true,electrical_equipment.png,"Get help to classify electrical equipment such as communication equipment, cameras, and their parts and accessories"
+26,Pharmaceutical products and placebos,https://www.gov.uk/guidance/classifying-pharmaceutical-products,true,pharma.png,"Get help to classify pharmaceutical products used to treat or prevent diseases or ailments (in humans or animals), including comparators used in clinical trials and placebos"
+27,"Toys, games and festive articles",https://www.gov.uk/guidance/classifying-toys-games-and-festive-articles-for-import-and-export,true,toys.png,"Get help to classify various toys, games and festive articles for import and export"
+28,"Vehicles, bicycles, parts and accessories",https://www.gov.uk/guidance/classifying-vehicles,true,vehicles.png,"Get help to classify various types of vehicles such as mobility scooters, dumpers and utility vehicles, all-terrain vehicles and E-Bikes for import and export"
