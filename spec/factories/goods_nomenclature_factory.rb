@@ -346,4 +346,16 @@ FactoryBot.define do
       validity_end_date            { 1.year.ago.beginning_of_day }
     end
   end
+
+  trait :with_search_reference do
+    transient { title { 'foo' } }
+
+    after(:create) do |goods_nomenclature, evaluator|
+      create(
+        :search_reference,
+        referenced: goods_nomenclature,
+        title: evaluator.title,
+      )
+    end
+  end
 end

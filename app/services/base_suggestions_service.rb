@@ -15,7 +15,7 @@ class BaseSuggestionsService
 
     search_references = SearchReference
           .select(:id, :title)
-          .distinct
+          .distinct(:title)
           .order(Sequel.desc(:title))
           .map { |search_reference| handle_search_reference_record(search_reference) }
 
