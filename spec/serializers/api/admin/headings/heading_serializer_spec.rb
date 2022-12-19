@@ -2,7 +2,7 @@ RSpec.describe Api::Admin::Headings::HeadingSerializer do
   subject(:serialized) { described_class.new(serializable).serializable_hash }
 
   let(:heading) { create(:heading, :with_chapter, :non_declarable).reload }
-  let(:counts) { { heading.twelvedigit => 12 } }
+  let(:counts) { { heading.twelve_digit => 12 } }
   let(:serializable) { Api::Admin::Headings::HeadingPresenter.new(heading, counts) }
 
   let(:expected) do
@@ -25,7 +25,7 @@ RSpec.describe Api::Admin::Headings::HeadingSerializer do
           commodities: {
             data: heading.commodities.map do |c|
               {
-                id: c.twelvedigit,
+                id: c.twelve_digit,
                 type: :commodity,
               }
             end,

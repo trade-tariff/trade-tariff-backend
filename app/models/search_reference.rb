@@ -62,25 +62,25 @@ class SearchReference < Sequel::Model
 
   class << self
     def count_for(goods_nomenclatures)
-      id_pairs = goods_nomenclatures.map(&:twelvedigit)
+      id_pairs = goods_nomenclatures.map(&:twelve_digit)
 
-      select_group(twelvedigit_column)
-        .select_more(twelvedigit_count_column)
-        .where(twelvedigit_function => id_pairs)
-        .as_hash(:twelvedigit, :twelvedigit_count)
+      select_group(twelve_digit_column)
+        .select_more(twelve_digit_count_column)
+        .where(twelve_digit_function => id_pairs)
+        .as_hash(:twelve_digit, :twelve_digit_count)
     end
 
   private
 
-    def twelvedigit_column
-      Sequel.as twelvedigit_function, :twelvedigit
+    def twelve_digit_column
+      Sequel.as twelve_digit_function, :twelve_digit
     end
 
-    def twelvedigit_count_column
-      Sequel.as Sequel.function(:count, :referenced_id), :twelvedigit_count
+    def twelve_digit_count_column
+      Sequel.as Sequel.function(:count, :referenced_id), :twelve_digit_count
     end
 
-    def twelvedigit_function
+    def twelve_digit_function
       Sequel.function :concat, padded_reference_id_function, '-', :productline_suffix
     end
 

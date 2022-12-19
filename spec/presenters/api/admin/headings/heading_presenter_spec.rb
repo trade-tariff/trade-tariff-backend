@@ -4,8 +4,8 @@ RSpec.describe Api::Admin::Headings::HeadingPresenter do
 
   let(:counts) do
     {
-      heading.twelvedigit => 1,
-      commodity.twelvedigit => 3,
+      heading.twelve_digit => 1,
+      commodity.twelve_digit => 3,
     }
   end
 

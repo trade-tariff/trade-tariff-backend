@@ -2,7 +2,7 @@ RSpec.describe Api::Admin::Headings::CommodityPresenter do
   let(:commodity) { create :commodity }
 
   describe '.wrap' do
-    subject { described_class.wrap([commodity], { commodity.twelvedigit => 3 }) }
+    subject { described_class.wrap([commodity], { commodity.twelve_digit => 3 }) }
 
     it { is_expected.to have_attributes length: 1 }
     it { is_expected.to all be_instance_of described_class }
@@ -10,7 +10,7 @@ RSpec.describe Api::Admin::Headings::CommodityPresenter do
     it { is_expected.to all have_attributes search_references_count: 3 }
 
     context 'with nil count' do
-      subject { described_class.wrap([commodity], { commodity.twelvedigit => nil }) }
+      subject { described_class.wrap([commodity], { commodity.twelve_digit => nil }) }
 
       it { is_expected.to all have_attributes search_references_count: nil }
     end

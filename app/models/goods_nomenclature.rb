@@ -226,7 +226,7 @@ class GoodsNomenclature < Sequel::Model
     ancestors.dup.push(self).reverse
   end
 
-  def twelvedigit
+  def twelve_digit
     "#{goods_nomenclature_item_id}-#{producline_suffix}"
   end
 end

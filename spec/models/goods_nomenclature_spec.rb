@@ -592,8 +592,8 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#twelvedigit' do
-    subject { commodity.twelvedigit }
+  describe '#twelve_digit' do
+    subject { commodity.twelve_digit }
 
     let :commodity do
       create :commodity, goods_nomenclature_item_id: '0123456789',

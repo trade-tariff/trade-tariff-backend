@@ -21,7 +21,7 @@ module Api
         end
 
         def search_references_count
-          @search_reference_counts[twelvedigit]
+          @search_reference_counts[twelve_digit]
         end
       end
     end

@@ -133,8 +133,8 @@ RSpec.describe SearchReference do
         create_list(:search_reference, 1, referenced: commodities.first)
     end
 
-    it { is_expected.to include commodities.first.twelvedigit => 2 }
-    it { is_expected.to include commodities.second.twelvedigit => 1 }
-    it { is_expected.not_to include commodities.third.twelvedigit => 0 }
+    it { is_expected.to include commodities.first.twelve_digit => 2 }
+    it { is_expected.to include commodities.second.twelve_digit => 1 }
+    it { is_expected.not_to include commodities.third.twelve_digit => 0 }
   end
 end
