@@ -29,7 +29,7 @@ FactoryBot.define do
 
     trait :with_subheadings_to_transform do
       message do
-        'This should point to subheadiNg 010511 and subheadings 01051191 and never change subheading 1231 or subheading 1231312312 but for subheading 010512.'
+        'This should point to subheadiNg 010511 and subheadings 01051191 and never change subheading 1231312312 but for subheading 010512.'
       end
     end
 

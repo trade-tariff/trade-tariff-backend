@@ -83,7 +83,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       let(:trait) { :with_subheadings_to_transform }
 
       let(:expected_message) do
-        'This should point to [subheadiNg 010511](/subheadings/0105110000-80) and [subheadings 01051191](/subheadings/0105119100-80) and never change subheading 1231 or subheading 1231312312 but for [subheading 010512](/subheadings/0105120000-80).'
+        'This should point to [subheadiNg 010511](/subheadings/0105110000-80) and [subheadings 01051191](/subheadings/0105119100-80) and never change subheading 1231312312 but for [subheading 010512](/subheadings/0105120000-80).'
       end
 
       let(:expected_references) do
