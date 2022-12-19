@@ -16,6 +16,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
   describe '#query' do
     let(:expected_multi_match_fields) do
       [
+        'search_intercept_terms^15',
         'search_references^12',
         'ancestor_2_description_indexed^8',
         'description_indexed^6',
