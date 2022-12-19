@@ -5,7 +5,7 @@ module Beta
 
       SECTION_REGEX = /(?<type>section)s? (?<optional>code|position|id)?\s*(?<code>[XVI\d]{0,10})(?<terminator>[.,\s)])?/i
       CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s)])/i
-      HEADING_REGEX = /(?<type>(?<!sub)heading)s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s)])/i
+      HEADING_REGEX = /(?<type>(?<!sub)heading)?s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s)])/i
       SUBHEADING_REGEX = /(?<type>subheading)s? (?<optional>code )?(?<code>[0-9]{6,8})(?<terminator>[.,\s)])/i
       COMMODITY_REGEX = /(?<type>commodity|commodities) (?<optional>code )?(?<code>[0-9]{10})(?<terminator>[.,\s)])/i
 
@@ -34,10 +34,14 @@ module Beta
         HEADING_REGEX => lambda do |matched_text|
           match = matched_text.match(HEADING_REGEX)
 
-          short_code = match[:code]
+          short_code = match[:code].scan(/\w+/).first
           reference_id = "#{short_code}000000"
 
-          ["[#{matched_text[0..-2]}](/headings/#{short_code})#{match[:terminator]}", reference_id, :heading]
+          if match[:type].blank?
+            [" [#{short_code}](/headings/#{short_code})#{match[:terminator]}", reference_id, :heading]
+          else
+            ["[#{matched_text[0..-2]}](/headings/#{short_code})#{match[:terminator]}", reference_id, :heading]
+          end
         end,
 
         SUBHEADING_REGEX => lambda do |matched_text|

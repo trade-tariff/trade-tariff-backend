@@ -23,7 +23,7 @@ FactoryBot.define do
 
     trait :with_headings_to_transform do
       message do
-        'This should point to hEadIngs 0101 and heading 0102 but not heading 2 or heading 012012 but for heading 0105.'
+        'This should point to hEadIngs 0101 and heading 0102 but not heading 2 or heading 012012 but for heading 0105 / 9503.'
       end
     end
 

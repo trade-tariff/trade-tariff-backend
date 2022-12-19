@@ -70,7 +70,7 @@ RSpec.describe Beta::Search::InterceptMessage do
       let(:trait) { :with_headings_to_transform }
 
       let(:expected_message) do
-        'This should point to [hEadIngs 0101](/headings/0101) and [heading 0102](/headings/0102) but not heading 2 or heading 012012 but for [heading 0105](/headings/0105).'
+        'This should point to [hEadIngs 0101](/headings/0101) and [heading 0102](/headings/0102) but not heading 2 or heading 012012 but for [heading 0105](/headings/0105) / [9503](/headings/9503).'
       end
 
       let(:expected_references) { {} }
