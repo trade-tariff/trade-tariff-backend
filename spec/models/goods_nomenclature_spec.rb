@@ -597,9 +597,25 @@ RSpec.describe GoodsNomenclature do
 
     let :commodity do
       create :commodity, goods_nomenclature_item_id: '0123456789',
-                        producline_suffix: '01'
+                         producline_suffix: '01'
     end
 
     it { is_expected.to eql '0123456789-01' }
+  end
+
+  describe '#intercept_terms' do
+    subject(:goods_nomenclature) { build(:goods_nomenclature, goods_nomenclature_item_id:) }
+
+    context 'when there are intercept terms for the goods nomenclature' do
+      let(:goods_nomenclature_item_id) { '9031800000' }
+
+      it { expect(goods_nomenclature.intercept_terms).to eq('accelerometer bruel kjaer eddy current eddyfi ectane fitbit rotary encoder') }
+    end
+
+    context 'when there are `no` intercept terms for the goods nomenclature' do
+      let(:goods_nomenclature_item_id) { '9031810000' }
+
+      it { expect(goods_nomenclature.intercept_terms).to eq('') }
+    end
   end
 end

@@ -229,4 +229,8 @@ class GoodsNomenclature < Sequel::Model
   def twelve_digit
     "#{goods_nomenclature_item_id}-#{producline_suffix}"
   end
+
+  def intercept_terms
+    Beta::Search::InterceptMessage.all_references[goods_nomenclature_item_id]
+  end
 end
