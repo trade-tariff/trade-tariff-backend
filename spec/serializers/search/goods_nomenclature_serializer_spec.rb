@@ -3,12 +3,12 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
     context 'when the goods nomenclature is declarable' do
       subject(:serializable_hash) { described_class.new(goods_nomenclature).serializable_hash }
 
-      let(:goods_nomenclature) { GoodsNomenclature.find(goods_nomenclature_item_id: '0101210000') }
+      let(:goods_nomenclature) { GoodsNomenclature.find(goods_nomenclature_item_id: '0101900000') }
 
       let(:pattern) do
         {
           id: 3,
-          goods_nomenclature_item_id: '0101210000',
+          goods_nomenclature_item_id: '0101900000',
           heading_id: '0101',
           chapter_id: '01',
           producline_suffix: '80',
@@ -17,6 +17,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           description_indexed: 'Horses',
           formatted_description: 'Horses, other than lemmings',
           search_references: 'chapter search reference heading search reference commodity search reference',
+          search_intercept_terms: 'donkey',
           ancestors: [
             {
               id: 1,
@@ -35,6 +36,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
               ancestor_ids: [],
               ancestors: [],
               search_references: 'chapter search reference',
+              intercept_terms: '',
             },
             {
               id: 2,
@@ -52,7 +54,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
               formatted_description: 'Live animals',
               ancestor_ids: [],
               ancestors: [],
-              search_references: 'heading search reference',
+              intercept_terms: '',
             },
           ],
           validity_start_date: '2020-06-29T00:00:00Z',
@@ -87,7 +89,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           :commodity,
           :with_ancestors,
           include_search_references: true,
-          goods_nomenclature_item_id: '0101210000',
+          goods_nomenclature_item_id: '0101900000',
           producline_suffix: '80',
           validity_start_date: Date.parse('2020-06-29'),
         )
@@ -95,7 +97,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
         create(:search_reference, referenced: commodity, title: 'commodity search reference')
       end
 
-      it { is_expected.to eq(pattern) }
+      it { is_expected.to include_json(pattern) }
     end
 
     context 'when the goods nomenclature is non-declarable' do
@@ -115,6 +117,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
           description_indexed: nil,
           formatted_description: nil,
           search_references: '',
+          search_intercept_terms: '',
           ancestors: [],
           validity_start_date: '2020-06-29T00:00:00Z',
           validity_end_date: nil,
