@@ -103,6 +103,31 @@ RSpec.describe Api::Beta::SearchService do
     it_behaves_like 'a redirecting search result', '0101210000-80' # Subheading
     it_behaves_like 'a redirecting search result', '0101210000380' # Heading
     it_behaves_like 'a redirecting search result', '010121000038123' # Heading
+
+    context 'when the search query has multiple corresponding search references' do
+      let(:search_query) { 'same' }
+
+      before do
+        create(:heading, :with_search_reference, title: 'same')
+        create(:commodity, :with_search_reference, title: 'same')
+
+        search_result = Hashie::TariffMash.new(
+          JSON.parse(
+            file_fixture('beta/search/goods_nomenclatures/single_hit.json').read,
+          ),
+        )
+        allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
+        allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(
+          instance_double('Api::Beta::SearchQueryParserService', call: build(:search_query_parser_result)),
+        )
+        allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(build(:goods_nomenclature_query))
+        allow(Beta::Search::OpenSearchResult::WithHits).to receive(:build).and_call_original
+
+        call
+      end
+
+      it { is_expected.not_to be_redirect }
+    end
   end
   # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

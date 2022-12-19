@@ -73,7 +73,7 @@ module Api
 
       def exact_search_reference_match
         # TODO: Add normalised title to the search reference model and populate
-        @exact_search_reference_match ||= SearchReference.where(title: normalised_search_query).first
+        @exact_search_reference_match ||= SearchReference.where(title: normalised_search_query).one?
       end
 
       def normalised_search_query
