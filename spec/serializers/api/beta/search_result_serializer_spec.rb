@@ -17,17 +17,12 @@ RSpec.describe Api::Beta::SearchResultSerializer do
         data: {
           id: '6fc22ae4ee7f6fbe9b4988a4557dd3f9',
           type: :search_result,
-          attributes: {
-            took: 1,
-            timed_out: false,
-            max_score: 76.96534,
-            total_results: 10,
-          },
+          attributes: { took: 1, timed_out: false, max_score: 76.96534, total_results: 10 },
           relationships: {
             search_query_parser_result: {
               data: { id: '50cf19912960f65490b334ea9c196eea', type: :search_query_parser_result },
             },
-            intercept_message: { data: { id: 'be815ed834d0c282cab563ea73556f97', type: :intercept_message } },
+            intercept_message: { data: { id: '857d4c61d5d96446e1e0c1914df2fc88', type: :intercept_message } },
             hits: {
               data: [
                 { id: '43821', type: :subheading },
@@ -67,11 +62,8 @@ RSpec.describe Api::Beta::SearchResultSerializer do
               ],
             },
           },
-          meta: {
-            redirect: false,
-            redirect_to: nil,
-          },
-        },
+          meta: { redirect: false, redirect_to: nil },
+        }
       }
     end
 

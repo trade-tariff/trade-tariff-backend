@@ -10,7 +10,7 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
   describe '#id' do
     subject(:id) { build(:goods_nomenclature_query, :full_query).id }
 
-    it { is_expected.to eq('ce2599e07a29f13d42922303630abce0') }
+    it { is_expected.to be_present }
   end
 
   describe '#query' do

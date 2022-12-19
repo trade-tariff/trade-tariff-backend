@@ -17,6 +17,8 @@ module Api
                  :score,
                  :declarable
 
+      attribute :search_intercept_terms, if: ->(_) { TradeTariffBackend.beta_search_debug? }
+
       has_many :ancestors, lazy_load: true, serializer: proc { |record, _params|
         if record && record.respond_to?(:goods_nomenclature_class)
           "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize

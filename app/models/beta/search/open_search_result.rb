@@ -79,6 +79,7 @@ module Beta
 
             hit.public_send("#{filter}=", filter_classifications)
           end
+          hit.search_intercept_terms = hit_result._source.search_intercept_terms
 
           hit
         end

@@ -36,6 +36,7 @@ RSpec.describe Api::Beta::SearchService do
                   {
                     multi_match: {
                       fields: [
+                        'search_intercept_terms^15',
                         'search_references^12',
                         'ancestor_2_description_indexed^8',
                         'description_indexed^6',
