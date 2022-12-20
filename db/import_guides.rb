@@ -4,12 +4,6 @@ module ImportGuides
   def self.seed_guides
     file = Rails.root.join('data/guides.csv')
 
-    csv = CSV.open(file, headers: true).read
-
-    if csv.headers != CSV_HEADER
-      raise "The header of the CSV does not match with: #{CSV_HEADER}"
-    end
-
     Rails.logger.debug 'Remove existing guides ...'
     Sequel::Model.db[:guides].delete
     Sequel::Model.db[:guides_goods_nomenclatures].delete
@@ -19,11 +13,10 @@ module ImportGuides
     Guide.unrestrict_primary_key
 
     CSV.foreach(file, headers: true) do |row|
-      Guide.insert(row.to_hash)
+      Guide.insert(row.to_hash.slice(*CSV_HEADER))
       Rails.logger.debug "Added guide #{row['id']}: #{row['title']}"
     end
 
-    seed_guides_chapters
     seed_guides_headings
   end
 
