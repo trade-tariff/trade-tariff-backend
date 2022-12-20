@@ -38,7 +38,7 @@ module Api
                                nil,
                                search_query_parser_result,
                                generated_search_query,
-                               exact_search_reference_match,
+                               exact_search_reference_match.first,
                              )
                            end
       end
@@ -52,7 +52,7 @@ module Api
       end
 
       def search_query_parser_result
-        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, spell: @search_params[:spell], goods_nomenclature_item_id_match: goods_nomenclature_item_id_match?).call
+        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, spell: @search_params[:spell], should_search: should_search?).call
       end
 
       def should_search?

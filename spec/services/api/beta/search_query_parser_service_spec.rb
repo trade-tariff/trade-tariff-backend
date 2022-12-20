@@ -2,16 +2,16 @@ RSpec.describe Api::Beta::SearchQueryParserService do
   let(:search_query_parser_service_url) { 'http://localhost:5000/api/search' }
 
   describe '#call' do
-    shared_examples_for 'a null result search query parser call' do |search_query, goods_nomenclature_item_id_match|
-      subject(:result) { described_class.new(search_query, goods_nomenclature_item_id_match:).call }
+    shared_examples_for 'a null result search query parser call' do |search_query, should_search|
+      subject(:result) { described_class.new(search_query, should_search:).call }
 
       it { expect(result.null_result).to eq(true) }
     end
 
-    it_behaves_like 'a null result search query parser call', '', false # Empty search query
-    it_behaves_like 'a null result search query parser call', nil, false # Empty search query
-    it_behaves_like 'a null result search query parser call', 'yakutian laika', false # Synonym search query
-    it_behaves_like 'a null result search query parser call', 'ricotta', true # Specific goods nomenclature item id search query
+    it_behaves_like 'a null result search query parser call', '', true # Empty search query
+    it_behaves_like 'a null result search query parser call', nil, true # Empty search query
+    it_behaves_like 'a null result search query parser call', 'yakutian laika', true # Synonym search query
+    it_behaves_like 'a null result search query parser call', 'ricotta', false # No search due to instruction
 
     context 'when the search query parser response is success' do
       subject(:result) { described_class.new('aaa bbb', spell: '1').call }
