@@ -24,7 +24,7 @@ class Rollback < Sequel::Model
   end
 
   def after_create
-    RollbackWorker.perform_async(date, keep)
+    RollbackWorker.perform_async(date.to_formatted_s(:db), keep)
   end
 
   def before_create
