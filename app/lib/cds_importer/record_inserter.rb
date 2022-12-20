@@ -2,6 +2,7 @@ class CdsImporter
   class RecordInserter
     DESTROY_CASCADE_OPERATION = :destroy_cascade
     DESTROY_MISSING_OPERATION = :destroy_missing
+    SKIPPED_OPERATION = :skipped
 
     delegate :instrument, to: ActiveSupport::Notifications
 
@@ -58,6 +59,10 @@ class CdsImporter
     rescue StandardError => e
       instrument('cds_error.cds_importer', record:, xml_key:, xml_node: mapper.xml_node, exception: e)
       nil
+    end
+
+    def instrument_skip_record
+      instrument('cds_importer.import.operations', mapper:, operation: SKIPPED_OPERATION, count: 1, record:)
     end
 
     private

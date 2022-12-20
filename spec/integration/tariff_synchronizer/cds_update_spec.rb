@@ -40,6 +40,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
                 'records' => [{ 'oid' => Integer, 'measure_condition_sid' => 20_115_851 }],
               },
             },
+            'skipped' => { 'count' => 0, 'duration' => 0 },
           },
           'total_count' => 3,
           'total_duration' => be_a(Float),

@@ -27,6 +27,7 @@ RSpec.describe CdsImporter do
           destroy: { count: 0, duration: 0 },
           destroy_cascade: { count: 0, duration: 0 },
           destroy_missing: { count: 0, duration: 0 },
+          skipped: { count: 0, duration: 0 },
         },
         total_count: 0,
         total_duration: 0,
