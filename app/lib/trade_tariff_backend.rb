@@ -1,4 +1,6 @@
 module TradeTariffBackend
+  MAX_LOCK_LIFETIME = 600_000
+
   class << self
     SERVICE_CURRENCIES = {
       'uk' => 'GBP',
@@ -72,7 +74,7 @@ module TradeTariffBackend
 
     def with_redis_lock(lock_name = db_lock_key, &block)
       lock = Redlock::Client.new([RedisLockDb.redis])
-      lock.lock!(lock_name, 5000, &block)
+      lock.lock!(lock_name, MAX_LOCK_LIFETIME, &block)
     end
 
     def redis
