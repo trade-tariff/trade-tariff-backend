@@ -25,6 +25,7 @@ class CdsImporter
         destroy: { count: 0, duration: 0 },
         destroy_cascade: { count: 0, duration: 0 },
         destroy_missing: { count: 0, duration: 0 },
+        skipped: { count: 0, duration: 0 },
       },
       total_count: 0,
       total_duration: 0,
@@ -95,7 +96,7 @@ class CdsImporter
         oplog_inserts[:operations][operation][entity_class][:mapping_path] = mapping_path
 
         # We only accumulate missing destroy operations because we can work out from the file which record was inserted for non-missing operation types
-        if operation == CdsImporter::RecordInserter::DESTROY_MISSING_OPERATION
+        if [CdsImporter::RecordInserter::DESTROY_MISSING_OPERATION, :skipped].include?(operation)
           oplog_inserts[:operations][operation][entity_class][:records] ||= []
           oplog_inserts[:operations][operation][entity_class][:records] << record.identification
         end

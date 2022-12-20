@@ -60,6 +60,10 @@ class CdsImporter
       nil
     end
 
+    def skip_record
+      instrument('cds_importer.import.operations', mapper:, operation: :skipped, count: 1, record:)
+    end
+
     private
 
     attr_reader :record, :mapper, :filename

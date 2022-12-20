@@ -1,46 +1,53 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper do
   let(:xml_node) do
     {
-      'sid' => 20_142,
-      'validityStartDate' => current_definition_validity_start_date,
-      'quotaClosedAndTransferredEvent' => {
-        'hjid' => 12_172_305,
-        'metainfo' => {
-          'opType' => 'C',
-          'origin' => 'T',
-          'status' => 'L',
-          'transactionDate' => '2022-10-28T18:02:02',
-        },
-        'closingDate' => '2022-10-28T00:00:00',
-        'occurrenceTimestamp' => '2022-10-28T13:03:00',
-        'targetQuotaDefinition' => {
-          'hjid' => 11_272_027,
-          'sid' => 21_143,
-          'validityStartDate' => target_definition_validity_start_date,
-          'quotaOrderNumber' => {
-            'hjid' => 10_645_458,
-            'sid' => 20_142,
-            'quotaOrderNumberId' => '58001',
-            'validityStartDate' => '2021-01-01T00:00:00',
+      'sid' => '21321',
+      'validityStartDate' => '2022-01-01T00:00:00',
+      'quotaClosedAndTransferredEvent' => [
+        { # Valid newer dated transfer event - imported
+          'metainfo' => { 'opType' => 'C', 'transactionDate' => '2022-05-03T18:02:08' },
+          'closingDate' => '2022-05-03T00:00:00',
+          'occurrenceTimestamp' => '2022-05-03T13:04:00',
+          'targetQuotaDefinition' => {
+            'sid' => '21322',
+            'validityStartDate' => '2022-04-01T00:00:00', # newer date
           },
+          'transferredAmount' => '769858.493',
         },
-        'transferredAmount' => 86_055_072.137,
-      },
+        { # Invalid older dated transfer event - not imported
+          'metainfo' => { 'opType' => 'C', 'transactionDate' => '2022-01-31T17:38:16' },
+          'closingDate' => '2022-01-31T00:00:00',
+          'occurrenceTimestamp' => '2022-01-31T13:33:00',
+          'targetQuotaDefinition' => {
+            'sid' => '21320',
+            'validityStartDate' => '2021-10-01T00:00:00', # older date
+          },
+          'transferredAmount' => '3629563.69',
+        },
+        { # Invalid same dated transfer event - not imported
+          'metainfo' => { 'opType' => 'C', 'transactionDate' => '2022-05-03T18:02:08' },
+          'closingDate' => '2022-05-03T00:00:00',
+          'occurrenceTimestamp' => '2022-05-03T13:04:00',
+          'targetQuotaDefinition' => {
+            'sid' => '21323',
+            'validityStartDate' => '2022-01-01T00:00:00', # same date
+          },
+          'transferredAmount' => '112312312.493',
+        },
+      ],
     }
   end
-  let(:current_definition_validity_start_date) { '2022-07-01T00:00:00' }
-  let(:target_definition_validity_start_date) { '2022-07-01T00:00:00' }
 
   it_behaves_like 'an entity mapper', 'QuotaClosedAndTransferredEvent', 'QuotaDefinition' do
     let(:expected_values) do
       {
         operation: 'C',
-        operation_date: Date.parse('2022-10-28'),
-        quota_definition_sid: 20_142,
-        occurrence_timestamp: Time.zone.parse('2022-10-28T13:03:00'),
-        target_quota_definition_sid: 21_143,
-        transferred_amount: 86_055_072.137,
-        closing_date: Date.parse('2022-10-28'),
+        operation_date: Date.parse('2022-05-03'),
+        quota_definition_sid: 21_321,
+        occurrence_timestamp: Time.zone.parse('2022-05-03T13:04:00'),
+        target_quota_definition_sid: 21_322,
+        transferred_amount: 769_858.493,
+        closing_date: Date.parse('2022-05-03'),
       }
     end
   end
@@ -48,25 +55,83 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
   describe '#import' do
     subject(:entity_mapper) { CdsImporter::EntityMapper.new('QuotaDefinition', xml_node) }
 
-    context 'when the target quota definition is a newer quota definition' do
-      let(:current_definition_validity_start_date) { '2022-07-01T00:00:00' }
-      let(:target_definition_validity_start_date) { '2022-08-01T00:00:00' }
+    it { expect { entity_mapper.import }.to change(QuotaClosedAndTransferredEvent, :count).by(1) }
 
-      it { expect { entity_mapper.import }.to change(QuotaClosedAndTransferredEvent, :count) }
+    context 'when the transfer target definition is newer' do
+      let(:target_definition_transfer_event) do # imported
+        QuotaClosedAndTransferredEvent.where(
+          quota_definition_sid: '21321',
+          target_quota_definition_sid: '21322',
+        )
+      end
+
+      it 'imports the transfer event' do
+        entity_mapper.import
+
+        expect(target_definition_transfer_event).to be_present
+      end
     end
 
-    context 'when the target quota definition has the same start date' do
-      let(:current_definition_validity_start_date) { '2022-07-01T00:00:00' }
-      let(:target_definition_validity_start_date) { '2022-07-01T00:00:00' }
+    context 'when the transfer target definition is older' do
+      let(:target_definition_transfer_event) do
+        QuotaClosedAndTransferredEvent.where(
+          quota_definition_sid: '21321',
+          target_quota_definition_sid: '21320',
+        )
+      end
 
-      it { expect { entity_mapper.import }.not_to change(QuotaClosedAndTransferredEvent, :count) }
+      it 'does not import the transfer event' do
+        entity_mapper.import
+
+        expect(target_definition_transfer_event).not_to be_present
+      end
     end
 
-    context 'when the target quota definition is an older quota definition ' do
-      let(:current_definition_validity_start_date) { '2022-07-01T00:00:00' }
-      let(:target_definition_validity_start_date) { '2022-06-01T00:00:00' }
+    context 'when the transfer target definition is for the same date' do
+      let(:target_definition_transfer_event) do
+        QuotaClosedAndTransferredEvent.where(
+          quota_definition_sid: '21321',
+          target_quota_definition_sid: '21323',
+        )
+      end
 
-      it { expect { entity_mapper.import }.not_to change(QuotaClosedAndTransferredEvent, :count) }
+      it 'does not import the transfer event' do
+        entity_mapper.import
+
+        expect(target_definition_transfer_event).not_to be_present
+      end
+    end
+
+    context 'when there is only one transfer event in the xml node' do
+      let(:xml_node) do
+        {
+          'sid' => '21321',
+          'validityStartDate' => '2022-01-01T00:00:00',
+          'quotaClosedAndTransferredEvent' => {
+            'metainfo' => { 'opType' => 'C', 'transactionDate' => '2022-05-03T18:02:08' },
+            'closingDate' => '2022-05-03T00:00:00',
+            'occurrenceTimestamp' => '2022-05-03T13:04:00',
+            'targetQuotaDefinition' => {
+              'sid' => '21322',
+              'validityStartDate' => '2022-04-01T00:00:00', # newer date
+            },
+            'transferredAmount' => '769858.493',
+          },
+        }
+      end
+
+      let(:target_definition_transfer_event) do
+        QuotaClosedAndTransferredEvent.where(
+          quota_definition_sid: '21321',
+          target_quota_definition_sid: '21322',
+        )
+      end
+
+      it 'imports the transfer event' do
+        entity_mapper.import
+
+        expect(target_definition_transfer_event).to be_present
+      end
     end
   end
 end
