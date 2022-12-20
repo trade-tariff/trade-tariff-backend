@@ -24,7 +24,7 @@ class CdsImporter
 
           record_inserter = CdsImporter::RecordInserter.new(model_instance, mapper, @filename)
 
-          record_inserter.skip_record if model_instance.skip_import?
+          record_inserter.instrument_skip_record if model_instance.skip_import?
           next if model_instance.skip_import?
 
           if logger_enabled?
