@@ -1,17 +1,17 @@
 RSpec.describe Api::Beta::SearchService do
   # rubocop:disable RSpec/MultipleMemoizedHelpers
   describe '#call' do
-    subject(:call) { described_class.new(search_query, filters: {}, spell: '1').call }
+    subject(:search_result) { described_class.new(search_query, filters: {}, spell: '1').call }
 
     context 'when the search query is an empty string' do
       let(:search_query) { '' }
 
-      it { expect(call.empty_query).to eq(true) }
+      it { expect(search_result.empty_query).to eq(true) }
     end
 
     context 'when the search query is `ricotta`' do
       let(:search_query) { 'ricotta' }
-      let(:search_result) do
+      let(:opensearch_result) do
         fixture_file = file_fixture('beta/search/goods_nomenclatures/single_hit.json')
 
         Hashie::TariffMash.new(JSON.parse(fixture_file.read))
@@ -73,24 +73,24 @@ RSpec.describe Api::Beta::SearchService do
       end
 
       before do
-        allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
+        allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(opensearch_result)
         allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(search_query_parser_service)
         allow(Api::Beta::GoodsNomenclatureFilterGeneratorService).to receive(:new).and_call_original
         allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(goods_nomenclature_query)
         allow(Beta::Search::OpenSearchResult::WithHits).to receive(:build).and_call_original
 
-        call
+        search_result
       end
 
       it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta', spell: '1', goods_nomenclature_item_id_match: false) }
       it { expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args) }
-      it { expect(Beta::Search::OpenSearchResult::WithHits).to have_received(:build).with(search_result, search_query_parser_result, goods_nomenclature_query, nil) }
+      it { expect(Beta::Search::OpenSearchResult::WithHits).to have_received(:build).with(opensearch_result, search_query_parser_result, goods_nomenclature_query, nil) }
       it { expect(Beta::Search::GoodsNomenclatureQuery).to have_received(:build).with(search_query_parser_result, {}) }
-      it { expect(call).to be_a(Beta::Search::OpenSearchResult) }
+      it { expect(search_result).to be_a(Beta::Search::OpenSearchResult) }
     end
 
     shared_examples_for 'a redirecting search result' do |search_query|
-      subject(:call) { described_class.new(search_query).call }
+      subject(:search_result) { described_class.new(search_query).call }
 
       it { is_expected.to be_redirect }
     end
@@ -103,6 +103,31 @@ RSpec.describe Api::Beta::SearchService do
     it_behaves_like 'a redirecting search result', '0101210000-80' # Subheading
     it_behaves_like 'a redirecting search result', '0101210000380' # Heading
     it_behaves_like 'a redirecting search result', '010121000038123' # Heading
+
+    context 'when the search query has multiple corresponding search references' do
+      let(:search_query) { 'same' }
+
+      before do
+        create(:heading, :with_search_reference, title: 'same')
+        create(:commodity, :with_search_reference, title: 'same')
+
+        search_result = Hashie::TariffMash.new(
+          JSON.parse(
+            file_fixture('beta/search/goods_nomenclatures/single_hit.json').read,
+          ),
+        )
+        allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
+        allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(
+          instance_double('Api::Beta::SearchQueryParserService', call: build(:search_query_parser_result)),
+        )
+        allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(build(:goods_nomenclature_query))
+        allow(Beta::Search::OpenSearchResult::WithHits).to receive(:build).and_call_original
+
+        search_result
+      end
+
+      it { is_expected.not_to be_redirect }
+    end
   end
   # rubocop:enable RSpec/MultipleMemoizedHelpers
 end

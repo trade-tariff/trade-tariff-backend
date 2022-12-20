@@ -100,4 +100,19 @@ RSpec.describe Api::V2::SearchController do
       it { expect(response.body).to match_json_expression(pattern) }
     end
   end
+
+  describe 'GET /suggestions' do
+    subject(:response) { get :suggestions }
+
+    before do
+      create(:heading, :with_search_reference, title: 'same')
+      create(:commodity, :with_search_reference, title: 'same')
+      create(:chapter, :with_search_reference, title: 'but different')
+    end
+
+    it { expect(response.body.scan(/same/).size).to eq(1) }
+    it { expect(response.body.scan(/but different/).size).to eq(1) }
+
+    it_behaves_like 'a successful jsonapi response'
+  end
 end

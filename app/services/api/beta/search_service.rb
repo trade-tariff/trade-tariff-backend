@@ -68,12 +68,11 @@ module Api
       end
 
       def exact_search_reference_match?
-        exact_search_reference_match.present?
+        exact_search_reference_match.one?
       end
 
       def exact_search_reference_match
-        # TODO: Add normalised title to the search reference model and populate
-        @exact_search_reference_match ||= SearchReference.where(title: normalised_search_query).first
+        @exact_search_reference_match ||= SearchReference.where(title: normalised_search_query).limit(2)
       end
 
       def normalised_search_query
