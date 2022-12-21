@@ -20,9 +20,17 @@ RSpec.describe Api::Beta::SearchResultSerializer do
           attributes: { took: 1, timed_out: false, max_score: 76.96534, total_results: 10 },
           relationships: {
             search_query_parser_result: {
-              data: { id: '50cf19912960f65490b334ea9c196eea', type: :search_query_parser_result },
+              data: {
+                id: '50cf19912960f65490b334ea9c196eea',
+                type: :search_query_parser_result,
+              },
             },
-            intercept_message: { data: { id: '857d4c61d5d96446e1e0c1914df2fc88', type: :intercept_message } },
+            intercept_message: {
+              data: {
+                id: 'be815ed834d0c282cab563ea73556f97',
+                type: :intercept_message,
+              },
+            },
             hits: {
               data: [
                 { id: '43821', type: :subheading },
@@ -46,14 +54,9 @@ RSpec.describe Api::Beta::SearchResultSerializer do
               ],
             },
             chapter_statistics: {
-              data: [
-                { id: '62', type: :chapter_statistic },
-                { id: '63', type: :chapter_statistic },
-              ],
+              data: [{ id: '62', type: :chapter_statistic }, { id: '63', type: :chapter_statistic }],
             },
-            guide: {
-              data: { id: '18', type: :guide },
-            },
+            guide: { data: { id: '18', type: :guide } },
             facet_filter_statistics: {
               data: [
                 { id: '2ecbb6c19ee6282b0c79dda2aeaf0192', type: :facet_filter_statistic },

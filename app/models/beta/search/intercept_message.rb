@@ -98,7 +98,7 @@ module Beta
         private
 
         def normalise_query(search_query)
-          search_query.downcase.scan(/\w+/).reject { |term| TradeTariffBackend.stop_words.include?(term) }.join(' ')
+          search_query.squish.downcase
         end
 
         def normalise_message(message)
