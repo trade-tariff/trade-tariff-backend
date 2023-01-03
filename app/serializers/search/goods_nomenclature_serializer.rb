@@ -14,6 +14,7 @@ module Search
         description_indexed:,
         formatted_description:,
         search_references:,
+        search_intercept_terms:,
         ancestors:,
         validity_start_date:,
         validity_end_date:,
@@ -67,6 +68,14 @@ module Search
       }.join(' ')
     end
 
+    def search_intercept_terms
+      ancestors.reverse.each_with_object([intercept_terms]) { |serialized_ancestor, acc|
+        next if serialized_ancestor[:intercept_terms].blank?
+
+        acc.prepend(serialized_ancestor[:intercept_terms])
+      }.join(' ')
+    end
+
     def ancestors
       @ancestors ||= super.map do |ancestor|
         {
@@ -86,6 +95,7 @@ module Search
           ancestor_ids: [], # We are not interested in ancestor ancestors
           ancestors: [], # We are not interested in ancestor ancestors
           search_references: search_references_for(ancestor),
+          intercept_terms: ancestor.intercept_terms,
         }
       end
     end

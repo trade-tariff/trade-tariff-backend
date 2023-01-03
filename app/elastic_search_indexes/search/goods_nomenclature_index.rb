@@ -98,6 +98,7 @@ module Search
             chapter_id: { type: 'keyword' },
             heading_id: { type: 'keyword' },
             search_references: { analyzer: 'english', type: 'text' },
+            search_intercept_terms: { analyzer: 'english', type: 'text' },
             description_indexed: { analyzer: 'english', type: 'text' },
             ancestor_1_description_indexed: { analyzer: 'english', type: 'text' },
             ancestor_2_description_indexed: { analyzer: 'english', type: 'text' },

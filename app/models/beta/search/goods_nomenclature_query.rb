@@ -16,6 +16,7 @@ module Beta
       content_addressable_fields :query
 
       MULTI_MATCH_FIELDS = [
+        'search_intercept_terms^15',
         'search_references^12',
         'ancestor_2_description_indexed^8', # heading
         'description_indexed^6',

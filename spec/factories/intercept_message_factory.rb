@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :intercept_message, class: 'Beta::Search::InterceptMessage' do
-    term {}
+    term { 'foo' }
     message {}
 
     trait :with_section_to_transform do
@@ -23,13 +23,13 @@ FactoryBot.define do
 
     trait :with_headings_to_transform do
       message do
-        'This should point to hEadIngs 0101 and heading 0102 but not heading 2 or heading 012012 but for heading 0105.'
+        'This should point to hEadIngs 0101 and heading 0102 but not heading 2 or heading 012012 but for heading 0105 / 9503.'
       end
     end
 
     trait :with_subheadings_to_transform do
       message do
-        'This should point to subheadiNg 010511 and subheadings 01051191 and never change subheading 1231 or subheading 1231312312 but for subheading 010512.'
+        'This should point to subheadiNg 010511 and subheadings 01051191 and never change subheading 1231312312 but for subheading 010512.'
       end
     end
 

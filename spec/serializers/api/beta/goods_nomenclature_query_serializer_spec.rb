@@ -7,7 +7,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureQuerySerializer do
     let(:expected) do
       {
         data: {
-          id: 'ce2599e07a29f13d42922303630abce0',
+          id: '93dcee8cfefe2020949dd28f8c0086b2',
           type: :goods_nomenclature_query,
           attributes: {
             query: {
@@ -24,6 +24,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureQuerySerializer do
                         tie_breaker: 0.3,
                         type: 'best_fields',
                         fields: [
+                          'search_intercept_terms^15',
                           'search_references^12',
                           'ancestor_2_description_indexed^8',
                           'description_indexed^6',
@@ -52,6 +53,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureQuerySerializer do
                         tie_breaker: 0.3,
                         type: 'best_fields',
                         fields: [
+                          'search_intercept_terms^15',
                           'search_references^12',
                           'ancestor_2_description_indexed^8',
                           'description_indexed^6',
@@ -78,6 +80,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureQuerySerializer do
                         tie_breaker: 0.3,
                         type: 'best_fields',
                         fields: [
+                          'search_intercept_terms^15',
                           'search_references^12',
                           'ancestor_2_description_indexed^8',
                           'description_indexed^6',
