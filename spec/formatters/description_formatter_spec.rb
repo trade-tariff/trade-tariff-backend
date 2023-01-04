@@ -136,10 +136,16 @@ RSpec.describe DescriptionFormatter do
       ).to eq ' utilisation '
     end
 
-    it 'replaces ized  with ised' do
+    it 'replaces ized with ised' do
       expect(
         described_class.format(description: ' unpasteurized '),
       ).to eq ' unpasteurised '
+    end
+
+    it 'removes sub tag from emails' do
+      expect(
+        described_class.format(description: ' email<sub>h</sub>se.gov.uk '),
+      ).to eq ' email@hse.gov.uk '
     end
 
     context 'when xi' do
