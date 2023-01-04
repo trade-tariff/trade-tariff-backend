@@ -1,11 +1,9 @@
 RSpec.describe SlackNotifierService do
+  let(:slack_notifier) { instance_double('Slack::Notiifer', ping: 'pong') }
+
   before do
-    allow(Rails.application.config.slack_notifier).to receive(:ping)
+    allow(Rails.application.config).to receive(:slack_notifier).and_return(slack_notifier)
   end
 
-  it 'sends a Slack message' do
-    SlackNotifierService.call('Hello Slack')
-
-    expect(Rails.application.config.slack_notifier).to have_received(:ping).with("Hello Slack")
-  end
+  it { expect(described_class.call('Hello Slack')).to eq('pong') }
 end
