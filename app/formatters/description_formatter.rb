@@ -32,6 +32,7 @@ class DescriptionFormatter
     str.gsub! /\$(.)/ do
       "<sup>#{$1}</sup>"
     end
+    str.gsub!(/<sub>([a-z])<\/sub>/i, '@\1')
     str.strip
     str.html_safe
   end
