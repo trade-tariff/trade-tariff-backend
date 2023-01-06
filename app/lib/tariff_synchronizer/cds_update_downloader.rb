@@ -50,7 +50,7 @@ module TariffSynchronizer
       if @response.code == '200'
         @response
       else
-        raise ListDownloadFailedError.new(@response.code)
+        raise ListDownloadFailedError, @response.code
       end
     end
 
