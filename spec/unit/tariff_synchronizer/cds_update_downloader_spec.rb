@@ -63,4 +63,35 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
       end
     end
   end
+
+  context 'when response code is not 200' do
+    before do
+      stub_request(:post, 'https://example.com:80/oauth/token')
+        .with(
+          body: { 'client_id' => '123456789', 'client_secret' => '123456789', 'grant_type' => 'client_credentials' },
+          headers: {
+            'Accept' => '*/*',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Content-Type' => 'application/x-www-form-urlencoded',
+            'User-Agent' => 'Ruby',
+          },
+        )
+        .to_return(status: 200, body: { 'access_token' => 'valid_token' }.to_json, headers: {})
+
+      stub_request(:get, 'https://example.com:80/bulk-data-download/list/TARIFF-DAILY')
+        .with(
+          headers: {
+            'Accept' => 'application/vnd.hmrc.1.0+json',
+            'Accept-Encoding' => 'gzip;q=1.0,deflate;q=0.6,identity;q=0.3',
+            'Authorization' => 'Bearer valid_token',
+            'User-Agent' => 'Trade Tariff Backend',
+          },
+        )
+        .to_return(status: 404, body: '', headers: {})
+    end
+
+    it 'raises error' do
+      expect { downloader.perform }.to raise_error TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError, '404'
+    end
+  end
 end
