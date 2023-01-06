@@ -2,6 +2,8 @@ require 'sidekiq'
 
 redis_config = PaasConfig.redis
 
+Sidekiq.strict_args!
+
 Sidekiq.configure_server do |config|
   config.redis = redis_config
 end
