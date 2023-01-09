@@ -211,6 +211,22 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           end
         end
       end
+
+      context 'when ListDownloadFailedError is raised' do
+        before do
+          allow(TariffSynchronizer).to receive(:download_cds).and_raise TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
+
+          perform
+        end
+        
+        it 'creates a later job to re-attempt download and processing' do
+          expect(described_class.jobs.first).to \
+            include 'at' => be_within(2)
+                            .of(described_class::TRY_AGAIN_IN.from_now.to_f),
+                    'args' => [true],
+                    'retry' => false
+        end
+      end
     end
   end
 end

@@ -34,6 +34,8 @@ class UpdatesSynchronizerWorker
     # Repopulation of the goods nomenclature index depends on the materialised paths being present
     Sidekiq::Client.enqueue(ClearCacheWorker)
     Sidekiq::Client.enqueue(GenerateGoodsNomenclaturesCsvReportWorker)
+  rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
+    attempt_reschedule!
   end
 
 private
