@@ -77,6 +77,7 @@ commands:
               cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
               exit 1
             fi
+
       - run:
           name: "Switch dark app to live"
           command: |
@@ -91,8 +92,18 @@ commands:
             cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
             cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
 
+      - run:
+          name: Drain old app
+          command: sleep 30
+
+      - run:
+          name: Stop and remove old app
+          command: |
             # stop previous version
             cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+
+            # allow the old app to shutdown prior to deletion of the app
+            sleep 10
 
             # delete previous version
             cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -f

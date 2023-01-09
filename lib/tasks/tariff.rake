@@ -21,28 +21,28 @@ namespace :tariff do
     Sidekiq::Queue.all.each do |queue|
       puts "\nQueue '#{queue.name}': #{queue.size}"
 
-        queue
-        .map(&:item)
-        .group_by { |job| job['class'] }
-        .each do |job_class, jobs|
-          puts "  #{job_class}: #{jobs.size}"
+      queue
+      .map(&:item)
+      .group_by { |job| job['class'] }
+      .each do |job_class, jobs|
+        puts "  #{job_class}: #{jobs.size}"
 
-            case job_class
-            when 'BuildIndexPageWorker'
-              jobs.pluck('args').group_by(&:second).each do |indexable, index_jobs|
-                puts "    #{indexable}: #{index_jobs.length}"
-              end
-            end
+        case job_class
+        when 'BuildIndexPageWorker'
+          jobs.pluck('args').group_by(&:second).each do |indexable, index_jobs|
+            puts "    #{indexable}: #{index_jobs.length}"
+          end
         end
+      end
     end
   end
 
   desc 'Download and apply Taric or CDS data using Sidekiq'
-  task sync: %w[environment sync:update]
+  task sync: %w[environment sync:download_apply_and_reindex]
 
   namespace :sync do
     desc 'Update database by downloading and then applying TARIC or CDS updates via worker'
-    task download_and_apply: %i[environment class_eager_load] do
+    task download_apply_and_reindex: %i[environment class_eager_load] do
       UpdatesSynchronizerWorker.perform_async(true, true)
     end
 

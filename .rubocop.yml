@@ -64,7 +64,6 @@ Rails/UniqueValidationWithoutIndex:
 
 Style/Documentation:
   Enabled: false
-  EnforcedStyle: never
 
 Style/FrozenStringLiteralComment:
   Enabled: true
