@@ -218,7 +218,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
           perform
         end
-        
+
         it 'creates a later job to re-attempt download and processing' do
           expect(described_class.jobs.first).to \
             include 'at' => be_within(2)
