@@ -64,7 +64,7 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
     end
   end
 
-  context 'when response code is not 200' do
+  context 'when different http codes are returned' do
     before do
       stub_request(:post, 'https://example.com:80/oauth/token')
         .with(
@@ -87,11 +87,23 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
             'User-Agent' => 'Trade Tariff Backend',
           },
         )
-        .to_return(status: 404, body: '', headers: {})
+        .to_return(status: code, body: '', headers: {})
     end
 
-    it 'raises error' do
-      expect { downloader.perform }.to raise_error TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError, '404'
+    context 'when code is not 200' do
+      let(:code) { 404 }
+
+      it 'raises error' do
+        expect { downloader.perform }.to raise_error TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError, '404'
+      end
+    end
+
+    context 'when code is 200 and response body is empty' do
+      let(:code) { 200 }
+
+      it 'raises error' do
+        expect { downloader.perform }.to raise_error TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError, '200'
+      end
     end
   end
 end

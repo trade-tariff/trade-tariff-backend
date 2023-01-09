@@ -47,7 +47,7 @@ module TariffSynchronizer
         https.request(request)
       end
 
-      if @response.code == '200'
+      if @response.code == '200' && @response.body.present?
         @response
       else
         raise ListDownloadFailedError, @response.code
