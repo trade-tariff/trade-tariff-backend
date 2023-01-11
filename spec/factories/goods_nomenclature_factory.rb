@@ -1,7 +1,5 @@
 FactoryBot.define do
   sequence(:goods_nomenclature_sid) { |n| n }
-  sequence(:goods_nomenclature_group_id, LoopingSequence.lower_a_to_upper_z, &:value)
-  sequence(:goods_nomenclature_group_type, LoopingSequence.lower_a_to_upper_z, &:value)
 
   factory :goods_nomenclature do
     transient do
@@ -292,58 +290,6 @@ FactoryBot.define do
       language_id                                { 'EN' }
       goods_nomenclature_item_id                 { Forgery(:basic).text(exactly: 2) }
       productline_suffix                         { Forgery(:basic).text(exactly: 2) }
-    end
-  end
-
-  factory :goods_nomenclature_group do
-    validity_start_date                  { 3.years.ago.beginning_of_day }
-    validity_end_date                    { nil }
-    goods_nomenclature_group_type        { generate(:goods_nomenclature_group_type) }
-    goods_nomenclature_group_id          { Forgery(:basic).text(exactly: 2) }
-    nomenclature_group_facility_code     { 0 }
-
-    trait :xml do
-      validity_end_date { 1.year.ago.beginning_of_day }
-    end
-  end
-
-  factory :goods_nomenclature_group_description do
-    goods_nomenclature_group_type  { generate(:goods_nomenclature_group_type) }
-    goods_nomenclature_group_id    { generate(:goods_nomenclature_group_id) }
-    description                    { Forgery(:lorem_ipsum).sentence }
-
-    trait :xml do
-      language_id                  { 'EN' }
-    end
-  end
-
-  factory :goods_nomenclature_origin do
-    goods_nomenclature_sid              { generate(:sid) }
-    derived_goods_nomenclature_item_id  { Forgery(:basic).text(exactly: 2) }
-    derived_productline_suffix          { Forgery(:basic).text(exactly: 2) }
-    goods_nomenclature_item_id          { Forgery(:basic).text(exactly: 2) }
-    productline_suffix                  { Forgery(:basic).text(exactly: 2) }
-  end
-
-  factory :goods_nomenclature_successor do
-    goods_nomenclature_sid               { generate(:sid) }
-    absorbed_goods_nomenclature_item_id  { Forgery(:basic).text(exactly: 2) }
-    absorbed_productline_suffix          { Forgery(:basic).text(exactly: 2) }
-    goods_nomenclature_item_id           { Forgery(:basic).text(exactly: 2) }
-    productline_suffix                   { Forgery(:basic).text(exactly: 2) }
-  end
-
-  factory :nomenclature_group_membership do
-    goods_nomenclature_sid         { generate(:sid) }
-    goods_nomenclature_group_type  { generate(:goods_nomenclature_group_type) }
-    goods_nomenclature_group_id    { Forgery(:basic).text(exactly: 2) }
-    goods_nomenclature_item_id     { Forgery(:basic).text(exactly: 2) }
-    productline_suffix             { Forgery(:basic).text(exactly: 2) }
-    validity_start_date            { 3.years.ago.beginning_of_day }
-    validity_end_date              { nil }
-
-    trait :xml do
-      validity_end_date            { 1.year.ago.beginning_of_day }
     end
   end
 
