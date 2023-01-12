@@ -37,6 +37,10 @@ FactoryBot.define do
       end
     end
 
+    trait :with_goods_nomenclature_association do
+      with_gono_association
+    end
+
     trait :with_measure_association do
       after(:create) do |footnote, evaluator|
         create(

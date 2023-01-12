@@ -31,6 +31,10 @@ FactoryBot.define do
       )
     end
 
+    trait :with_goods_nomenclature_indent do
+      # See implicit behaviour above
+    end
+
     trait :non_current do
       validity_end_date { 1.day.ago }
     end
@@ -355,6 +359,16 @@ FactoryBot.define do
         :search_reference,
         referenced: goods_nomenclature,
         title: evaluator.title,
+      )
+    end
+  end
+
+  trait :with_footnote_association do
+    after(:build) do |goods_nomenclature, _evaluator|
+      create(
+        :footnote,
+        :with_goods_nomenclature_association,
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
       )
     end
   end
