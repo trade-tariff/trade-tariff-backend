@@ -18,7 +18,7 @@ module Api
           attribute :measurement_unit_qualifier, &:measurement_unit_qualifier_code
 
           attribute :last_allocation_date do |definition|
-            definition.last_balance_event&.last_import_date_in_allocation
+            definition.last_balance_event&.last_import_date_in_allocation&.beginning_of_day&.iso8601
           end
 
           attribute :suspension_period_start_date do |definition|
