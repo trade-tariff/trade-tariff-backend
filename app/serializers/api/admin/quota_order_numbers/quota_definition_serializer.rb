@@ -11,7 +11,8 @@ module Api
         attributes :validity_start_date,
                    :validity_end_date,
                    :initial_volume,
-                   :quota_order_number_id
+                   :quota_order_number_id,
+                   :quota_type
 
         attribute :measurement_unit, &:formatted_measurement_unit
 

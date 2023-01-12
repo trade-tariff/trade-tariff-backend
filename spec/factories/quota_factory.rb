@@ -126,6 +126,14 @@ FactoryBot.define do
       validity_end_date   { nil }
     end
 
+    trait :licensed do
+      quota_order_number_id { '094111' }
+    end
+
+    trait :first_come_first_served do
+      quota_order_number_id { '058002' }
+    end
+
     trait :with_quota_balance_and_active_critical_events do
       transient { event_new_balance { 100 } }
 

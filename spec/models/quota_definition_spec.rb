@@ -81,6 +81,24 @@ RSpec.describe QuotaDefinition do
     end
   end
 
+  describe '#quota_type' do
+    context 'when quota_order_number_id begins with 094' do
+      subject(:quota_definition) { create(:quota_definition, :licensed) }
+
+      it 'returns the event ids' do
+        expect(quota_definition.quota_type).to eq('Licensed')
+      end
+    end
+
+    context 'when quota_order_number_id does not begin with 094' do
+      subject(:quota_definition) { create(:quota_definition, :first_come_first_served) }
+
+      it 'returns the event ids' do
+        expect(quota_definition.quota_type).to eq('First Come First Served')
+      end
+    end
+  end
+
   describe '#balance' do
     around do |example|
       TimeMachine.at(Time.zone.today) do
