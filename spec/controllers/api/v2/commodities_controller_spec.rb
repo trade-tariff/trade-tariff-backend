@@ -25,6 +25,8 @@ RSpec.describe Api::V2::CommoditiesController do
     end
 
     context 'when a filter for geographical_area_id is passed' do
+      before { create :geographical_area, geographical_area_id: 'RO' }
+
       subject(:do_response) { get :show, params: { id: commodity.code, filter: { geographical_area_id: 'RO' } } }
 
       it 'passes the filter to the CachedCommodityService' do

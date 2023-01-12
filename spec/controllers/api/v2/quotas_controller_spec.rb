@@ -226,7 +226,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
         }
       end
 
-      context 'when included resouces are valid' do
+      context 'when included resources are valid' do
         let(:include_param) { 'quota_balance_events' }
 
         it 'returns rendered found quotas with the allowed resources' do
@@ -236,14 +236,13 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
         end
       end
 
-      context 'when included resouces are NOT allowed (or non-existent)' do
+      context 'when included resources are NOT allowed (or non-existent)' do
         let(:include_param) { 'wrong_resource' }
 
         it 'raises an ArgumentError' do
-          get :search, params:, format: :json
-
-          response_error = JSON.parse(response.body)['error']
-          expect(response_error).to include("invalid params in 'includes': [\"wrong_resource\"]")
+          expect {
+            get :search, params:, format: :json
+          }.to raise_error(ArgumentError, /wrong_resource/)
         end
       end
     end
