@@ -4,5 +4,6 @@ Sentry.init do |config|
   config.excluded_exceptions += %w[
     Sequel::Plugins::RailsExtensions::ModelNotFound
     Sequel::NoMatchingRow
+    Sequel::RecordNotFound
   ]
 end

@@ -6,52 +6,6 @@ class ApplicationController < ActionController::Base
   before_action :clear_association_queries
   around_action :configure_time_machine
 
-  unless Rails.application.config.consider_all_requests_local
-    rescue_from Exception,                          with: :render_internal_server_error
-    rescue_from ArgumentError,                      with: :render_bad_request
-    rescue_from Sequel::RecordNotFound,             with: :render_not_found
-    rescue_from ActionController::RoutingError,     with: :render_not_found
-    rescue_from AbstractController::ActionNotFound, with: :render_not_found
-  end
-
-  def render_not_found
-    respond_to do |format|
-      format.any do
-        response.headers['Content-Type'] = 'application/json'
-        serializer = TradeTariffBackend.error_serializer(request)
-        render json: serializer.serialized_errors(error: '404 - Not Found'), status: :not_found
-      end
-    end
-  end
-
-  def render_bad_request(exception)
-    logger.error exception
-    logger.error exception.backtrace
-    ::Sentry.capture_exception(exception)
-
-    respond_to do |format|
-      format.any do
-        response.headers['Content-Type'] = 'application/json'
-        serializer = TradeTariffBackend.error_serializer(request)
-        render json: serializer.serialized_errors(error: "400 - Bad request: #{exception.message}"), status: :bad_request
-      end
-    end
-  end
-
-  def render_internal_server_error(exception)
-    logger.error exception
-    logger.error exception.backtrace
-    ::Sentry.capture_exception(exception)
-
-    respond_to do |format|
-      format.any do
-        response.headers['Content-Type'] = 'application/json'
-        serializer = TradeTariffBackend.error_serializer(request)
-        render json: serializer.serialized_errors(error: '500 - Internal Server Error: Please contact the Tariff team for help with this issue.'), status: :internal_server_error
-      end
-    end
-  end
-
   def nothing
     head :ok
   end

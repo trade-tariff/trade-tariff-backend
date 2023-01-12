@@ -38,6 +38,9 @@ module TradeTariffBackend
       Sequel::Model.db.extension :null_dataset
     end
 
+    # Tells Rails to serve error pages from the app itself, rather than using static error pages in public/
+    config.exceptions_app = routes
+
     config.sequel.allow_missing_migration_files = \
       (ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true')
   end
