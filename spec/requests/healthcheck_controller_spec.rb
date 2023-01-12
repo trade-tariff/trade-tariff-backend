@@ -29,5 +29,16 @@ RSpec.describe HealthcheckController, type: :request do
       it { is_expected.to have_attributes media_type: /json/ }
       it { expect(rendered.body).to eq '{"healthy":false}' }
     end
+
+    context 'when maintenance mode enabled' do
+      before do
+        allow(ENV).to receive(:[]).and_call_original
+        allow(ENV).to receive(:[]).with('MAINTENANCE').and_return 'true'
+      end
+
+      let(:result) { { healthy: true } }
+
+      it { is_expected.to have_http_status :success }
+    end
   end
 end

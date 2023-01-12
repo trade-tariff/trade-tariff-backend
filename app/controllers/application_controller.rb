@@ -3,6 +3,7 @@ require 'clearable'
 class ApplicationController < ActionController::Base
   respond_to :json, :html
 
+  before_action :maintenance_mode_if_active
   before_action :clear_association_queries
   around_action :configure_time_machine
   after_action  :check_query_count, if: -> { TradeTariffBackend.check_query_count? }
@@ -41,5 +42,9 @@ class ApplicationController < ActionController::Base
 
   def check_query_count
     QueryCountChecker.new(TradeTariffBackend.excess_query_threshold).check
+  end
+
+  def maintenance_mode_if_active
+    MaintenanceMode.check! params[:maintenance_bypass]
   end
 end
