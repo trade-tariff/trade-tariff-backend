@@ -1,6 +1,7 @@
 module TariffSynchronizer
   class CdsUpdateDownloader
     class AuthorisationError < StandardError; end
+    class ListDownloadFailedError < StandardError; end
 
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
@@ -44,6 +45,12 @@ module TariffSynchronizer
         request['Accept'] = 'application/vnd.hmrc.1.0+json'
         request['Authorization'] = "Bearer #{access_token}"
         https.request(request)
+      end
+
+      if @response.code == '200' && @response.body.present?
+        @response
+      else
+        raise ListDownloadFailedError, @response.code
       end
     end
 
