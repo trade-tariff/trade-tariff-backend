@@ -176,6 +176,7 @@ commands:
       - run_migrations:
           service: << parameters.service >>
           environment_key: << parameters.environment_key >>
+          space: << parameters.space >>
 
   smoketest:
     parameters:
@@ -236,6 +237,8 @@ commands:
         type: string
       environment_key:
         type: string
+      space:
+        type: string
     steps:
       - run:
           name: "Run Migrations"
@@ -280,17 +283,22 @@ jobs:
       - run_migrations:
           service: << parameters.service >>
           environment_key: staging
+          space: staging
 
-  renew_search_references:
+  dump_search_references:
     parameters:
-      environment_key:
+      from_environment_key:
         type: string
+        default: production
+      from_service:
+        type: string
+        default: uk
     docker:
       - image: cimg/base:current-22.04
     steps:
       - checkout
       - tariff/cf-install:
-          space: << parameters.environment_key >>
+          space: << parameters.from_environment_key >>
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -298,16 +306,52 @@ jobs:
             sudo apt-get update -qq
             sudo apt-get install postgresql-client
       - run:
-          name: "Dump the uk search_references table"
+          name: "Dump search references"
           command: |
-            cf conduit "tariff-uk-<< parameters.environment_key >>-postgres" -- pg_dump --file tariff-uk-<< parameters.environment_key >>-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
+            mkdir dump
+            cf conduit "tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres" -- pg_dump --file dump/tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
+      - persist_to_workspace:
+          root: dump/
+          paths:
+            - tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql
+
+  renew_search_references:
+    parameters:
+      from_environment_key:
+        type: string
+        default: production
+      from_service:
+        type: string
+        default: uk
+      to_environment_key:
+        type: string
+      to_service:
+        type: string
+      to_space:
+        type: string
+    docker:
+      - image: cimg/base:current-22.04
+    steps:
+      - checkout
+      - tariff/cf-install:
+          space: << parameters.from_environment_key >>
       - run:
-          name: "Restore the uk search references into xi"
+          name: "Install necessary dependencies"
           command: |
-            cf conduit tariff-xi-<< parameters.environment_key >>-postgres -- psql $PGDATABASE < tariff-uk-<< parameters.environment_key >>-postgres-search_references.psql
+            cf install-plugin conduit -r CF-Community -f
+            sudo apt-get update -qq
+            sudo apt-get install postgresql-client
+      - attach_workspace:
+          at: dump/
+      - run:
+          name: "Restore search references"
+          command: |
+            cf target -s << parameters.to_space >>
+            cf conduit tariff-<< parameters.to_service >>-<< parameters.to_space >>-postgres -- psql $PGDATABASE < dump/tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql
       - run_migrations:
-          service: xi
-          environment_key: << parameters.environment_key >>
+          service: << parameters.to_service >>
+          space: << parameters.to_space >>
+          environment_key: << parameters.to_environment_key >>
 
   linters:
     docker:
@@ -609,6 +653,58 @@ jobs:
 workflows:
   version: 2
 
+  daily:
+    triggers:
+      - schedule:
+          # Every day at 6 pm
+          cron: "00 18 * * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - dump_search_references:
+          context: trade-tariff
+      - renew_search_references:
+          name: production_xi_renew
+          context: trade-tariff
+          to_space: production
+          to_environment_key: production
+          to_service: xi
+          requires:
+            - dump_search_references
+      - renew_search_references:
+          name: staging_uk_renew
+          context: trade-tariff
+          to_space: staging
+          to_environment_key: staging
+          to_service: uk
+          requires:
+            - dump_search_references
+      - renew_search_references:
+          name: staging_xi_renew
+          context: trade-tariff
+          to_space: staging
+          to_environment_key: staging
+          to_service: xi
+          requires:
+            - dump_search_references
+      - renew_search_references:
+          name: development_uk_renew
+          context: trade-tariff
+          to_space: development
+          to_environment_key: dev
+          to_service: uk
+          requires:
+            - dump_search_references
+      - renew_search_references:
+          name: development_xi_renew
+          context: trade-tariff
+          to_space: development
+          to_environment_key: dev
+          to_service: xi
+          requires:
+            - dump_search_references
   weekly:
     triggers:
       - schedule:
@@ -619,14 +715,6 @@ workflows:
               only:
                 - main
     jobs:
-      - renew_search_references:
-          context: trade-tariff
-          environment_key: production
-          filters:
-            branches:
-              only:
-                - main
-
       - refresh_staging_db:
           context: trade-tariff
           matrix:
@@ -634,8 +722,6 @@ workflows:
               service:
                 - xi
                 - uk
-          requires:
-            - renew_search_references
           filters:
             branches:
               only:

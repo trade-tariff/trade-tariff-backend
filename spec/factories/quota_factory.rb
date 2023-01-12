@@ -55,7 +55,7 @@ FactoryBot.define do
           validity_end_date: evaluator.quota_definition_validity_end_date,
         }
         if evaluator.quota_balance_events
-          create(:quota_definition, :with_quota_balance_events)
+          create(:quota_definition, :with_quota_balance_events, attributes)
         else
           create(:quota_definition, attributes)
         end

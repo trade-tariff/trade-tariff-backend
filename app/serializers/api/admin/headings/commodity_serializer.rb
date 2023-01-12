@@ -11,7 +11,7 @@ module Api
         attributes :description,
                    :search_references_count
 
-        attribute :declarable, &:declarable?
+        attribute :declarable, &:fast_declarable?
       end
     end
   end
