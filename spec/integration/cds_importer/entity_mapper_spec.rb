@@ -317,7 +317,6 @@ RSpec.describe CdsImporter::EntityMapper do
         FullTemporaryStopRegulation
         GeographicalArea
         GoodsNomenclature
-        GoodsNomenclatureGroup
         Language
         Measure
         MeasureAction
@@ -382,8 +381,6 @@ RSpec.describe CdsImporter::EntityMapper do
         CdsImporter::EntityMapper::GeographicalAreaMembershipMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureDescriptionMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapper,
-        CdsImporter::EntityMapper::GoodsNomenclatureGroupDescriptionMapper,
-        CdsImporter::EntityMapper::GoodsNomenclatureGroupMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureIndentMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureOriginMapper,
@@ -420,7 +417,6 @@ RSpec.describe CdsImporter::EntityMapper do
         CdsImporter::EntityMapper::MonetaryExchangeRateMapper,
         CdsImporter::EntityMapper::MonetaryUnitDescriptionMapper,
         CdsImporter::EntityMapper::MonetaryUnitMapper,
-        CdsImporter::EntityMapper::NomenclatureGroupMembershipMapper,
         CdsImporter::EntityMapper::ProrogationRegulationActionMapper,
         CdsImporter::EntityMapper::ProrogationRegulationMapper,
         CdsImporter::EntityMapper::QuotaAssociationMapper,
