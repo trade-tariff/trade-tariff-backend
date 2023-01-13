@@ -4,7 +4,7 @@ module Api
       class QuotaDefinitionsController < ApiController
         before_action :authenticate_user!
 
-        DEFAULT_INCLUDES = %w[quota_balance_events].freeze
+        DEFAULT_INCLUDES = %w[quota_balance_events quota_order_number_origins].freeze
 
         def current
           render json: serialized_quota_definition

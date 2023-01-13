@@ -17,7 +17,7 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
             initial_volume: nil,
             quota_type: 'First Come First Served'
           },
-          relationships: { quota_balance_events: { data: [] } },
+          relationships: { quota_balance_events: { data: [] }, quota_order_number_origins: { data: [] } },
         },
       }
     end

@@ -9,4 +9,6 @@ class QuotaOrderNumberOrigin < Sequel::Model
                                  class_name: GeographicalArea do |ds|
     ds.with_actual(GeographicalArea)
   end
+
+  delegate :description, to: :geographical_area, prefix: true
 end

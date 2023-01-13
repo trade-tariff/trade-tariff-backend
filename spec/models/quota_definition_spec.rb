@@ -81,19 +81,43 @@ RSpec.describe QuotaDefinition do
     end
   end
 
+  describe '#quota_order_number_origin_ids' do
+    let(:quota_order_number) { create :quota_order_number }
+    let(:quota_definition) { create(:quota_definition, :with_quota_balance_events,
+                             quota_order_number_sid: quota_order_number.quota_order_number_sid,
+                             quota_order_number_id: quota_order_number.quota_order_number_id) }
+
+    context 'when there are quota order number origins' do
+      before do 
+        create(:quota_order_number_origin, :with_geographical_area,
+                                        quota_order_number_sid: quota_order_number.quota_order_number_sid)
+      end
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_order_number_origin_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota order number origins' do
+      it 'returns empty ids' do
+        expect(quota_definition.quota_order_number_origin_ids).to eq([])
+      end
+    end
+  end
+
   describe '#quota_type' do
-    context 'when quota_order_number_id begins with 094' do
+    context 'when quota_order_number_id contains 4 as third digit' do
       subject(:quota_definition) { create(:quota_definition, :licensed) }
 
-      it 'returns the event ids' do
+      it 'returns Licensed' do
         expect(quota_definition.quota_type).to eq('Licensed')
       end
     end
 
-    context 'when quota_order_number_id does not begin with 094' do
+    context 'when quota_order_number_id does not contain 4 as third digit' do
       subject(:quota_definition) { create(:quota_definition, :first_come_first_served) }
 
-      it 'returns the event ids' do
+      it 'returns First Come First Served' do
         expect(quota_definition.quota_type).to eq('First Come First Served')
       end
     end

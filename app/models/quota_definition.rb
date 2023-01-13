@@ -124,9 +124,21 @@ class QuotaDefinition < Sequel::Model
   private
 
   def quota_type
-    quota_order_number_id[0, 3] == '094' ? 'Licensed' : 'First Come First Served'
+    quota_order_number_id[2] == '4' ? 'Licensed' : 'First Come First Served'
   end
 
+<<<<<<< HEAD
+=======
+
+  def quota_order_number_origin_ids
+    quota_order_number_origins&.map(&:quota_order_number_origin_sid)
+  end
+
+  delegate :quota_order_number_origins, to: :quota_order_number, allow_nil: true
+
+private
+
+>>>>>>> 89bb4e4d (HOTT-1530: Exposed quota order number origins on admin quota definitions API)
   # We only care about Open, Exhausted and Critical statuses from a UI perspective
   def has_active_critical_event?
     last_event.status == QuotaBalanceEvent.status && last_critical_event&.active?
