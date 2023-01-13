@@ -383,6 +383,8 @@ RSpec.describe CdsImporter::EntityMapper do
         CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureIndentMapper,
         CdsImporter::EntityMapper::GoodsNomenclatureMapper,
+        CdsImporter::EntityMapper::GoodsNomenclatureOriginMapper,
+        CdsImporter::EntityMapper::GoodsNomenclatureSuccessorMapper,
         CdsImporter::EntityMapper::LanguageDescriptionMapper,
         CdsImporter::EntityMapper::LanguageMapper,
         CdsImporter::EntityMapper::MeasureActionDescriptionMapper,

@@ -117,6 +117,16 @@ class GoodsNomenclature < Sequel::Model
 
   delegate :description, :description_indexed, :formatted_description, to: :goods_nomenclature_description, allow_nil: true
 
+  one_to_one :goods_nomenclature_origin, key: %i[goods_nomenclature_item_id
+                                                 productline_suffix],
+                                         primary_key: %i[goods_nomenclature_item_id
+                                                         producline_suffix]
+
+  one_to_many :goods_nomenclature_successors, key: %i[absorbed_goods_nomenclature_item_id
+                                                      absorbed_productline_suffix],
+                                              primary_key: %i[goods_nomenclature_item_id
+                                                              producline_suffix]
+
   one_to_many :export_refund_nomenclatures, key: :goods_nomenclature_sid,
                                             primary_key: :goods_nomenclature_sid do |ds|
     ds.with_actual(ExportRefundNomenclature)

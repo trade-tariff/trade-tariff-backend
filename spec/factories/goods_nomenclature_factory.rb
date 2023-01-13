@@ -293,6 +293,22 @@ FactoryBot.define do
     end
   end
 
+  factory :goods_nomenclature_origin do
+    goods_nomenclature_sid              { generate(:sid) }
+    derived_goods_nomenclature_item_id  { Forgery(:basic).text(exactly: 2) }
+    derived_productline_suffix          { Forgery(:basic).text(exactly: 2) }
+    goods_nomenclature_item_id          { Forgery(:basic).text(exactly: 2) }
+    productline_suffix                  { Forgery(:basic).text(exactly: 2) }
+  end
+
+  factory :goods_nomenclature_successor do
+    goods_nomenclature_sid               { generate(:sid) }
+    absorbed_goods_nomenclature_item_id  { Forgery(:basic).text(exactly: 2) }
+    absorbed_productline_suffix          { Forgery(:basic).text(exactly: 2) }
+    goods_nomenclature_item_id           { Forgery(:basic).text(exactly: 2) }
+    productline_suffix                   { Forgery(:basic).text(exactly: 2) }
+  end
+
   trait :with_search_reference do
     transient { title { 'foo' } }
 
