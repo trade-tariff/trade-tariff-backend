@@ -12,12 +12,16 @@ module SpellingCorrector
     SPELLING_MODEL_PATH = 'spelling-corrector/spelling-model.txt'.freeze
 
     def call
-      loaders = LOADERS.map { |loader| loader.new.tap(&:load) }
-      spelling_model_content = spelling_model_content_for(loaders)
+      if bucket.blank?
+        Rails.logger.warn('Cannot update. Have you configured your bucket and credentials?')
+      else
+        loaders = LOADERS.map { |loader| loader.new.tap(&:load) }
+        spelling_model_content = spelling_model_content_for(loaders)
 
-      bucket.put_object(key: SPELLING_MODEL_PATH, body: spelling_model_content_for(loaders))
+        bucket.put_object(key: SPELLING_MODEL_PATH, body: spelling_model_content_for(loaders))
 
-      spelling_model_content
+        spelling_model_content
+      end
     end
 
     private
