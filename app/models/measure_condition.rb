@@ -60,6 +60,8 @@ class MeasureCondition < Sequel::Model
   delegate :measure_condition_class, :threshold_class?, :negative_class?,
            :exemption_class?, :document_class?, to: :classification
 
+  delegate :requirement_operator, to: :measure_condition_code, allow_nil: true
+
   def before_create
     self.measure_condition_sid ||= self.class.next_national_sid
 
