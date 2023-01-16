@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
-  let(:serializable) { create(:measure_condition, :with_guidance) }
+  let(:serializable) { create(:measure_condition, :with_guidance, measure_condition_code: 'X') }
 
   let(:expected_pattern) do
     {
@@ -25,6 +25,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
           measure_condition_class: 'threshold',
           guidance_cds: be_a(String),
           guidance_chief: be_a(String),
+          requirement_operator: '>',
           threshold_unit_type: serializable.threshold_unit_type.to_s,
         },
         relationships: {

@@ -5,11 +5,12 @@ FactoryBot.define do
     transient do
       measurement_unit_code {}
       measurement_unit_qualifier_code {}
+      measure_condition_code { Forgery(:basic).text(exactly: 2) }
     end
 
     measure_condition_sid { generate(:measure_condition_sid) }
     measure_sid { generate(:measure_sid) }
-    condition_code { Forgery(:basic).text(exactly: 2) }
+    condition_code { create(:measure_condition_code, :with_description, condition_code: measure_condition_code).condition_code }
     component_sequence_number { Forgery(:basic).number }
     condition_duty_amount { Forgery(:basic).number }
     condition_monetary_unit_code { Forgery(:basic).text(exactly: 3) }
