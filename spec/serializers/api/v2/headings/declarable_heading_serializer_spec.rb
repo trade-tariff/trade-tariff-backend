@@ -9,7 +9,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingSerializer do
   end
 
   let(:heading) { create(:heading, :with_description) }
-  let(:measures) { [] }
+  let(:measures) { MeasureCollection.new [] }
 
   let(:chapter) do
     create(

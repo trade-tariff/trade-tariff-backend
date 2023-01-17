@@ -13,6 +13,7 @@ module Api
         def initialize(heading, measures)
           super(heading)
           @heading = heading
+          @filtering_by_country = measures.filtering_by_country?
           @import_measures = measures.select(&:import).map do |measure|
             Api::V2::Measures::MeasurePresenter.new(measure, self)
           end
@@ -79,7 +80,12 @@ module Api
         end
 
         def authorised_use_provisions_submission?
-          @authorised_use_provisions_submission ||= import_measures.any?(&:authorised_use_provisions_submission?)
+          @authorised_use_provisions_submission ||=
+            filtering_by_country? && import_measures.any?(&:authorised_use_provisions_submission?)
+        end
+
+        def filtering_by_country?
+          @filtering_by_country
         end
       end
     end

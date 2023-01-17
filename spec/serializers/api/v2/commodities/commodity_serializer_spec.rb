@@ -3,7 +3,7 @@ RSpec.describe Api::V2::Commodities::CommoditySerializer do
 
   let(:serializable) { Api::V2::Commodities::CommodityPresenter.new(commodity, measures) }
   let(:commodity) { create(:commodity, :with_heading, :with_chapter, :with_description).reload }
-  let(:measures) { [] }
+  let(:measures) { MeasureCollection.new [] }
 
   let(:expected_pattern) do
     {

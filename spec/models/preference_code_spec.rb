@@ -18,6 +18,7 @@ RSpec.describe PreferenceCode do
 
       let(:presented_measure) { Api::V2::Measures::MeasurePresenter.new(measure, presented_declarable) }
       let(:measures) { [measure] }
+      let(:measure_collection) { MeasureCollection.new measures }
 
       context 'when measure_type_id does not match any conditions' do
         let(:measure) { create(:measure) }
@@ -27,6 +28,10 @@ RSpec.describe PreferenceCode do
 
       context 'when third country duty measure' do
         let(:measure) { create(:measure, measure_type_id: '103') }
+
+        let :measure_collection do
+          MeasureCollection.new measures, geographical_area_id: 'CN'
+        end
 
         context 'when authorised_use_provisions_submission' do
           let(:measures) do
@@ -274,12 +279,18 @@ RSpec.describe PreferenceCode do
     end
 
     it_behaves_like 'a declarable preference code determine_code operation' do
-      let(:presented_declarable) { Api::V2::Commodities::CommodityPresenter.new(declarable, measures) }
+      let(:presented_declarable) do
+        Api::V2::Commodities::CommodityPresenter.new(declarable, measure_collection)
+      end
+
       let(:declarable) { create(:commodity, :with_heading) }
     end
 
     it_behaves_like 'a declarable preference code determine_code operation' do
-      let(:presented_declarable) { Api::V2::Headings::DeclarableHeadingPresenter.new(declarable, measures) }
+      let(:presented_declarable) do
+        Api::V2::Headings::DeclarableHeadingPresenter.new(declarable, measure_collection)
+      end
+
       let(:declarable) { create(:heading, :declarable) }
     end
   end
