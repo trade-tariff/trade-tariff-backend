@@ -279,7 +279,6 @@ jobs:
           name: "Restore the production database into staging"
           command: |
             cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < tariff-"<< parameters.service >>"-production-postgres.psql
-            cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < db/seeds/staging.sql
       - run_migrations:
           service: << parameters.service >>
           environment_key: staging
