@@ -13,7 +13,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginExclusionMapper 
               'transactionDate' => '2017-07-15T22:27:51',
             },
           },
-          'quotaOrderNumberOriginExclusion' => {
+          'quotaOrderNumberOriginExclusions' => {
             'geographicalArea' => {
               'sid' => '11993',
               'geographicalAreaId' => '1101',

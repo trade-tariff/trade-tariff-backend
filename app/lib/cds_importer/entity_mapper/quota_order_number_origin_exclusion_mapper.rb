@@ -10,7 +10,7 @@ class CdsImporter
 
       self.mapping_root = 'QuotaOrderNumber'.freeze
 
-      self.mapping_path = 'quotaOrderNumberOrigin.quotaOrderNumberOriginExclusion'.freeze
+      self.mapping_path = 'quotaOrderNumberOrigin.quotaOrderNumberOriginExclusions'.freeze
 
       self.exclude_mapping = ['metainfo.origin', 'validityStartDate', 'validityEndDate'].freeze
 
