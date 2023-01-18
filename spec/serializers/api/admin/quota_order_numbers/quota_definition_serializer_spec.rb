@@ -25,6 +25,7 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
                            quota_reopening_events: { data: [] },
                            quota_unblocking_events: { data: [] },
                            quota_exhaustion_events: { data: [] },
+                           quota_critical_events: { data: [] },
                          },
         },
       }

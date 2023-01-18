@@ -16,4 +16,8 @@ class QuotaCriticalEvent < Sequel::Model
   def self.status
     'Critical'
   end
+
+  def event_type
+    'Critical state change'
+  end
 end
