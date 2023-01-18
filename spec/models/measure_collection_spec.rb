@@ -51,4 +51,22 @@ RSpec.describe MeasureCollection do
       it { expect(collection.filter).to eq([italian_measure]) }
     end
   end
+
+  describe '#filtering_by_country?' do
+    subject { collection.filtering_by_country? }
+
+    let(:measures) { [] }
+
+    context 'with country filter' do
+      let(:filters) { { geographical_area_id: 'CN' } }
+
+      it { is_expected.to be true }
+    end
+
+    context 'without country filter' do
+      let(:filters) { {} }
+
+      it { is_expected.to be false }
+    end
+  end
 end

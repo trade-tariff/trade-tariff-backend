@@ -1,5 +1,7 @@
 RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
-  subject(:presenter) { described_class.new(heading, measures) }
+  subject(:presenter) do
+    described_class.new(heading, MeasureCollection.new(measures))
+  end
 
   let(:heading) { create(:heading, :declarable) }
   let(:measures) { [create(:measure)] }
@@ -174,16 +176,54 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
   end
 
   describe '#authorised_use_provisions_submission?' do
-    context 'when heading has at least one measure with authorised use submissions measure type id' do
-      let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
+    context 'when filtering by country' do
+      subject { described_class.new(heading, measure_collection) }
 
-      it { is_expected.to be_authorised_use_provisions_submission }
+      let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: 'CN' }
+
+      context 'when heading has at least one measure with authorised use submissions measure type id' do
+        let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
+
+        it { is_expected.to be_authorised_use_provisions_submission }
+      end
+
+      context 'when heading does not have any measures with authorised use submissions measure type id' do
+        let(:measures) { [create(:measure)] }
+
+        it { is_expected.not_to be_authorised_use_provisions_submission }
+      end
     end
 
-    context 'when heading does not have any measures with authorised use submissions measure type id' do
-      let(:measures) { [create(:measure)] }
+    context 'when not filtering by country' do
+      context 'when heading has at least one measure with authorised use submissions measure type id' do
+        let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
 
-      it { is_expected.not_to be_authorised_use_provisions_submission }
+        it { is_expected.not_to be_authorised_use_provisions_submission }
+      end
+
+      context 'when heading does not have any measures with authorised use submissions measure type id' do
+        let(:measures) { [create(:measure)] }
+
+        it { is_expected.not_to be_authorised_use_provisions_submission }
+      end
+    end
+  end
+
+  describe '#filtering_by_country?' do
+    subject { described_class.new(heading, measure_collection) }
+
+    let(:measure_collection) { MeasureCollection.new [], geographical_area_id: }
+
+    context 'with country filtering' do
+      let(:geographical_area_id) { 'CN' }
+
+      it { is_expected.to be_filtering_by_country }
+    end
+
+    context 'without country filtering' do
+      let(:geographical_area_id) { nil }
+
+      it { is_expected.not_to be_filtering_by_country }
     end
   end
 end

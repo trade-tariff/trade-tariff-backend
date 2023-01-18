@@ -22,7 +22,7 @@ class MeasureCollection < SimpleDelegator
   end
 
   def apply_country_filter
-    measures = if @filters[:geographical_area_id].present?
+    measures = if filtering_by_country?
                  @measures.select do |measure|
                    measure.relevant_for_country?(filtering_country.geographical_area_id)
                  end
@@ -31,6 +31,10 @@ class MeasureCollection < SimpleDelegator
                end
 
     new(measures, @filters)
+  end
+
+  def filtering_by_country?
+    @filters[:geographical_area_id].present?
   end
 
   private

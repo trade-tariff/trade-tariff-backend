@@ -241,6 +241,13 @@ FactoryBot.define do
       measure_type { create(:measure_type, measure_type_series_id: 'Q', measure_type_id: '306') }
     end
 
+    trait :mfn do
+      with_measure_components
+      with_measure_type
+      third_country
+      duty_amount { 1 }
+    end
+
     trait :single_unit do
       measurement_unit_code { 'DTN' }
       measurement_unit_qualifier_code { 'R' }
