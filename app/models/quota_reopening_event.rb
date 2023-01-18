@@ -9,4 +9,8 @@ class QuotaReopeningEvent < Sequel::Model
   def self.status
     'Open'
   end
+
+  def event_type
+    'Reopening event'
+  end
 end

@@ -19,7 +19,11 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
             critical_state: serializable.critical_state,
             critical_threshold: serializable.critical_threshold,
           },
-          relationships: { quota_balance_events: { data: [] }, quota_order_number_origins: { data: [] }, quota_unsuspension_events: { data: [] } },
+          relationships: { quota_balance_events: { data: [] },
+                           quota_order_number_origins: { data: [] },
+                           quota_unsuspension_events: { data: [] },
+                           quota_reopening_events: { data: [] },
+                         },
         },
       }
     end

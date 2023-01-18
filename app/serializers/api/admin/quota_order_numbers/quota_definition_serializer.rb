@@ -21,6 +21,7 @@ module Api
         has_many :quota_balance_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaBalanceEventSerializer
         has_many :quota_order_number_origins, serializer: Api::Admin::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer
         has_many :quota_unsuspension_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaUnsuspensionEventSerializer
+        has_many :quota_reopening_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaReopeningEventSerializer
       end
     end
   end

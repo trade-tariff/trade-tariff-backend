@@ -149,6 +149,10 @@ class QuotaDefinition < Sequel::Model
     quota_unsuspension_events&.map(&:quota_definition_sid)
   end
 
+  def quota_reopening_event_ids
+    quota_reopening_events&.map(&:quota_definition_sid)
+  end
+
 private
 
 >>>>>>> 89bb4e4d (HOTT-1530: Exposed quota order number origins on admin quota definitions API)
