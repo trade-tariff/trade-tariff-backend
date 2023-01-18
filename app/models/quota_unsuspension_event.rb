@@ -9,4 +9,8 @@ class QuotaUnsuspensionEvent < Sequel::Model
   def self.status
     'Open'
   end
+
+  def event_type
+    'Unsuspension event'
+  end
 end

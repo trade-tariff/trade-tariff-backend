@@ -12,12 +12,15 @@ module Api
                    :validity_end_date,
                    :initial_volume,
                    :quota_order_number_id,
-                   :quota_type
+                   :quota_type,
+                   :critical_state,
+                   :critical_threshold
 
         attribute :measurement_unit, &:formatted_measurement_unit
 
         has_many :quota_balance_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaBalanceEventSerializer
         has_many :quota_order_number_origins, serializer: Api::Admin::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer
+        has_many :quota_unsuspension_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaUnsuspensionEventSerializer
       end
     end
   end

@@ -120,6 +120,8 @@ FactoryBot.define do
     measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
     validity_start_date             { 4.years.ago.beginning_of_day }
     validity_end_date               { nil }
+    critical_state                  { 'N' }
+    critical_threshold              { Forgery(:basic).number }
 
     trait :actual do
       validity_start_date { 3.years.ago.beginning_of_day }

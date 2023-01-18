@@ -10,7 +10,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::QuotaDefinitionSerializer do
           id: serializable.quota_definition_sid.to_s,
           type: :quota_definition,
           attributes: {
-            critical_threshold: nil,
+            critical_threshold: serializable.critical_threshold,
             initial_volume: nil,
             maximum_precision: nil,
             measurement_unit_code: serializable.measurement_unit_code,

@@ -15,9 +15,11 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
             validity_start_date: serializable.validity_start_date.iso8601,
             validity_end_date: nil,
             initial_volume: nil,
-            quota_type: 'First Come First Served'
+            quota_type: 'First Come First Served',
+            critical_state: serializable.critical_state,
+            critical_threshold: serializable.critical_threshold,
           },
-          relationships: { quota_balance_events: { data: [] }, quota_order_number_origins: { data: [] } },
+          relationships: { quota_balance_events: { data: [] }, quota_order_number_origins: { data: [] }, quota_unsuspension_events: { data: [] } },
         },
       }
     end

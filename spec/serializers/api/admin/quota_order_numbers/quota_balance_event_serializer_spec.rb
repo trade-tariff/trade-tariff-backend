@@ -13,6 +13,8 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaBalanceEventSerializer do
             occurrence_timestamp: serializable.occurrence_timestamp,
             new_balance: serializable.new_balance,
             imported_amount: serializable.imported_amount,
+            last_import_date_in_allocation: serializable.last_import_date_in_allocation,
+            old_balance: serializable.old_balance,
           },
         },
       }
