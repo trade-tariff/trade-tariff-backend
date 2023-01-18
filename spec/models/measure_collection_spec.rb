@@ -50,6 +50,14 @@ RSpec.describe MeasureCollection do
 
       it { expect(collection.filter).to eq([italian_measure]) }
     end
+
+    context 'when filtering by unknown country' do
+      let(:measures) { create_pair :measure }
+      let(:filters) { { geographical_area_id: 'IT' } }
+      let(:service) { 'uk' }
+
+      it { expect { collection.filter }.to raise_exception Sequel::RecordNotFound }
+    end
   end
 
   describe '#filtering_by_country?' do
