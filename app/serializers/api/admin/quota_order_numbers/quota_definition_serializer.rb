@@ -22,6 +22,7 @@ module Api
         has_many :quota_order_number_origins, serializer: Api::Admin::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer
         has_many :quota_unsuspension_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaUnsuspensionEventSerializer
         has_many :quota_reopening_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaReopeningEventSerializer
+        has_many :quota_unblocking_events, serializer: Api::Admin::QuotaOrderNumbers::QuotaUnblockingEventSerializer
       end
     end
   end

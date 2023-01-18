@@ -23,6 +23,7 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
                            quota_order_number_origins: { data: [] },
                            quota_unsuspension_events: { data: [] },
                            quota_reopening_events: { data: [] },
+                           quota_unblocking_events: { data: [] },
                          },
         },
       }

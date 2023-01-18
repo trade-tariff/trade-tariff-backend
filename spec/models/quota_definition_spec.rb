@@ -141,6 +141,24 @@ RSpec.describe QuotaDefinition do
     end
   end
 
+  describe '#quota_unblocking_event_ids' do
+    context 'when there are quota unblocking events' do
+      let(:quota_definition) { create(:quota_definition, :with_quota_unblocking_events) }
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_unblocking_event_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota unblocking events' do
+      let(:quota_definition) { create(:quota_definition) }
+
+      it 'returns empty ids' do
+        expect(quota_definition.quota_unblocking_event_ids).to eq([])
+      end
+    end
+  end
+
   describe '#quota_type' do
     context 'when quota_order_number_id contains 4 as third digit' do
       subject(:quota_definition) { create(:quota_definition, :licensed) }
