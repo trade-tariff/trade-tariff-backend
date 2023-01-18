@@ -9,4 +9,8 @@ class QuotaExhaustionEvent < Sequel::Model
   def self.status
     'Exhausted'
   end
+
+  def event_type
+    'Exhaustion event'
+  end
 end
