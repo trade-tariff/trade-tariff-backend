@@ -76,6 +76,10 @@ class ApplicationController < ActionController::Base
     TimeMachine.at(actual_date, &block)
   end
 
+  def skip_time_machine(&block)
+    TimeMachine.no_time_machine(&block)
+  end
+
   def clear_association_queries
     TradeTariffBackend.clearable_models.map(&:clear_association_cache)
   end

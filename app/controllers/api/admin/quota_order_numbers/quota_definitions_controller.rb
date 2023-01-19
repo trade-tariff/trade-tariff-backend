@@ -3,6 +3,7 @@ module Api
     module QuotaOrderNumbers
       class QuotaDefinitionsController < ApiController
         before_action :authenticate_user!
+        around_action :skip_time_machine
 
         DEFAULT_EAGER_LOAD_GRAPH = %i[
           quota_balance_events
