@@ -7,7 +7,7 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionsController, type: 
         quota_balance_events: true,
       ).quota_order_number_id
 
-      authenticated_get quota_definitions_current_api_quota_order_number_path(id: quota_order_number_id)
+      authenticated_get current_api_quota_order_number_quota_definitions_path(quota_order_number_id:)
 
       response
     end
