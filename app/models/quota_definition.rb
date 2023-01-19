@@ -21,10 +21,10 @@ class QuotaDefinition < Sequel::Model
 
   one_to_many :quota_unsuspension_events, key: :quota_definition_sid,
                                           primary_key: :quota_definition_sid
-  
+
   one_to_many :quota_unblocking_events, key: :quota_definition_sid,
                                         primary_key: :quota_definition_sid
-                                
+
   one_to_many :quota_reopening_events, key: :quota_definition_sid,
                                        primary_key: :quota_definition_sid
 
@@ -130,14 +130,9 @@ class QuotaDefinition < Sequel::Model
     validity_start_date.to_date >= DATE_HMRC_STARTED_MANAGING_PENDING_BALANCES
   end
 
-  private
-
   def quota_type
     quota_order_number_id[2] == '4' ? 'Licensed' : 'First Come First Served'
   end
-
-<<<<<<< HEAD
-=======
 
   def quota_order_number_origin_ids
     quota_order_number_origins&.map(&:quota_order_number_origin_sid)
@@ -165,9 +160,8 @@ class QuotaDefinition < Sequel::Model
     quota_critical_events&.map(&:quota_definition_sid)
   end
 
-private
+  private
 
->>>>>>> 89bb4e4d (HOTT-1530: Exposed quota order number origins on admin quota definitions API)
   # We only care about Open, Exhausted and Critical statuses from a UI perspective
   def has_active_critical_event?
     last_event.status == QuotaBalanceEvent.status && last_critical_event&.active?
