@@ -7,21 +7,22 @@ module Api
 
         DEFAULT_EAGER_LOAD_GRAPH = %i[
           quota_balance_events
-          quota_order_number_origins
-          quota_unsuspension_events
-          quota_reopening_events
-          quota_exhaustion_events
           quota_critical_events
+          quota_exhaustion_events
+          quota_order_number_origins
+          quota_reopening_events
+          quota_unblocking_events
+          quota_unsuspension_events
         ].freeze
 
         DEFAULT_INCLUDES = %w[
           quota_balance_events
+          quota_critical_events
+          quota_exhaustion_events
           quota_order_number_origins
-          quota_unsuspension_events
           quota_reopening_events
           quota_unblocking_events
-          quota_exhaustion_events
-          quota_critical_events
+          quota_unsuspension_events
         ].freeze
 
         def index
