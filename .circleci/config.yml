@@ -314,6 +314,38 @@ jobs:
           paths:
             - tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql
 
+  dump_and_persist_database:
+    parameters:
+      space:
+        type: string
+      service:
+        type: string
+    docker:
+      - image: cimg/base:current-22.04
+    steps:
+      - checkout
+      - tariff/cf-install:
+          space: << parameters.space >>
+      - aws-cli/install
+      - run:
+          name: "Install additional dependencies"
+          command: |
+            cf install-plugin conduit -r CF-Community -f
+            sudo apt-get update -qq
+            sudo apt-get install postgresql-client
+      - run:
+          name: "Dump whole database"
+          command: |
+            cf conduit tariff-<< parameters.service >>-<< parameters.space >>-postgres -- pg_dump --file tariff-<< parameters.service >>-<< parameters.space >>-postgres.sql --no-acl --no-owner --clean --verbose
+      - run:
+          name: "Compress dump"
+          command: |
+            zip tariff-<< parameters.service >>-<< parameters.space >>.sql.zip tariff-<< parameters.service >>-<< parameters.space >>-postgres.sql
+      - run:
+          name: "Persist dump"
+          command: |
+            aws s3 cp tariff-<< parameters.service >>-<< parameters.space >>.sql.zip s3://$DATABASE_BACKUPS_BUCKET_NAME/snapshots/
+
   renew_search_references:
     parameters:
       from_environment_key:
@@ -652,6 +684,46 @@ jobs:
 workflows:
   version: 2
 
+  sunday:
+    triggers:
+      - schedule:
+          # Every Sunday at 2.30 PM UTC
+          cron: "30 2 * * 0"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - dump_and_persist_database:
+          name: uk_development_dump_and_persist_database
+          context: trade-tariff
+          service: uk
+          space: development
+      - dump_and_persist_database:
+          name: xi_development_dump_and_persist_database
+          context: trade-tariff
+          service: xi
+          space: development
+      - dump_and_persist_database:
+          name: uk_staging_dump_and_persist_database
+          context: trade-tariff
+          service: uk
+          space: staging
+      - dump_and_persist_database:
+          name: xi_staging_dump_and_persist_database
+          context: trade-tariff
+          service: xi
+          space: staging
+      - dump_and_persist_database:
+          name: uk_production_dump_and_persist_database
+          context: trade-tariff
+          service: uk
+          space: production
+      - dump_and_persist_database:
+          name: xi_production_dump_and_persist_database
+          context: trade-tariff
+          service: xi
+          space: production
   daily:
     triggers:
       - schedule:
