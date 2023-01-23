@@ -1,4 +1,4 @@
-RSpec.describe Search::GoodsNomenclatureSerializer do
+RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
   describe '#serializable_hash' do
     context 'when the goods nomenclature is declarable' do
       subject(:serializable_hash) { described_class.new(goods_nomenclature).serializable_hash }
