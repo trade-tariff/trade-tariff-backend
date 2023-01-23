@@ -1,11 +1,7 @@
-#
-# We are relying on CDS files structure, all target elements have depth == 3
-#
-
 class CdsImporter
   module XmlParser
-    class Reader < ::Ox::Sax
-      STRIP_NAMESPACE = '*'.freeze
+    class Reader < Nokogiri::XML::SAX::Document
+      EXTRA_CONTENT = /\n\s+/ # Uncompressed XML has a bunch of contiguous newline-starting strings in between each tag - we skip assigning these bits
       CONTENT_KEY = :__content__
 
       def initialize(stringio, target_handler)
@@ -21,10 +17,10 @@ class CdsImporter
       end
 
       def parse
-        Ox.sax_parse self, @stringio, symbolize: false, strip_namespace: STRIP_NAMESPACE
+        Nokogiri::XML::SAX::Parser.new(self).parse(@stringio)
       end
 
-      def start_element(key)
+      def start_element(key, _attrs = [])
         if @depth == @target_depth && @targets.include?(key)
           @in_target = true
         end
@@ -34,10 +30,10 @@ class CdsImporter
         @stack << @node = {}
       end
 
-      def text(val)
-        return unless @in_target
+      def characters(val)
+        return if !@in_target || val == EXTRA_CONTENT
 
-        @node[:__content__] = val
+        @node[CONTENT_KEY] = val
       end
 
       def end_element(key)
@@ -58,11 +54,15 @@ class CdsImporter
           @node[key] = [@node[key], child]
         else
           @node[key] = if child.size == 1 && child.key?(CONTENT_KEY)
-                         child[:__content__]
+                         child[CONTENT_KEY]
                        else
                          child
                        end
         end
+      end
+
+      def error(msg)
+        raise(CdsImporter::ImportException, msg)
       end
     end
   end

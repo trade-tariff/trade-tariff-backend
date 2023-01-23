@@ -29,22 +29,6 @@ module SynchronizerHelper
     create_file taric_file_path, content
   end
 
-  def create_chief_file(date = Time.zone.today)
-    date = Date.parse(date.to_s)
-
-    content =
-      <<~CSV
-        "AAAAAAAAAAA","01/01/1900:00:00:00"," ","20120312",
-        "TAME       ","01/03/2012:00:00:00","U","PR","TFC",null,"03038931",null,null,null,null,"20/02/2012:09:34:00",null,null,"Y",null,"N",null,null,null,null,null,null,"Y",null,"N",null,null,null,"ITP BATCH INTERFACE",null,null,null,null,null,null,"N",
-        "TAME       ","01/03/2012:00:00:00","U","DS","G","A10","16052190 45",null,null,null,null,"20/02/2012:09:40:00",null,null,"N",null,"N",null,null,null,null,null,null,"N",null,"N",null,null,null,"ITP BATCH INTERFACE",null,null,null,null,null,null,"N",
-        "ZZZZZZZZZZZ","31/12/9999:23:59:59"," ",434,
-      CSV
-
-    day = sprintf('%03d', date.yday)
-    chief_file_path = File.join(TariffSynchronizer.root_path, 'chief', "#{date}_KBT009(#{date.strftime('%y')}#{day}).txt")
-    create_file chief_file_path, content
-  end
-
   def prepare_synchronizer_folders
     FileUtils.mkdir_p File.join(TariffSynchronizer.root_path)
     FileUtils.mkdir_p File.join(TariffSynchronizer.root_path, 'taric')
@@ -52,7 +36,7 @@ module SynchronizerHelper
   end
 
   def purge_synchronizer_folders
-    FileUtils.rm_rf File.join(Rails.root, TariffSynchronizer.root_path)
+    FileUtils.rm_rf(Rails.root.join(TariffSynchronizer.root_path))
   end
 
   def create_file(path, content = '')
