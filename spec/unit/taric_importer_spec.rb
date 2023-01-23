@@ -5,7 +5,7 @@ RSpec.describe TaricImporter do
   describe '#import' do
     let(:example_date) { Date.new(2013, 8, 2) }
     let(:example_date2) { Date.new(2014, 8, 2) }
-    let(:taric_update) { create :taric_update, example_date: example_date }
+    let(:taric_update) { create :taric_update, example_date: }
     let(:taric_update2) { create :taric_update, example_date: example_date2 }
 
     before do

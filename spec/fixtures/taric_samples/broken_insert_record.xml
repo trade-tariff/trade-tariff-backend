@@ -8,7 +8,6 @@
           <oub:record.code>280</oub:record.code>
           <oub:subrecord.code>00</oub:subrecord.code>
           <oub:record.sequence.number>1</oub:record.sequence.number>
-          <oub:exp
         </oub:record>
       </oub:transmission>
     </env:app.message>
