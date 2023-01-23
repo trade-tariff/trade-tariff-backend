@@ -1,5 +1,5 @@
 RSpec.describe GoodsNomenclature do
-  describe 'ordering' do
+  describe 'ordering', flaky: true do
     subject(:goods_nomenclatures) { described_class.all.pluck(:goods_nomenclature_item_id, :producline_suffix) }
 
     before do

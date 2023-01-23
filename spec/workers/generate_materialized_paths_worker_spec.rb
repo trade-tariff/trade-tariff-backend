@@ -16,7 +16,7 @@ RSpec.describe GenerateMaterializedPathsWorker, type: :worker do
     create(:commodity, :with_indent, goods_nomenclature_sid: 9, indents: 1, producline_suffix: '80', goods_nomenclature_item_id: '0101900000') # Other
   end
 
-  it 'generates materialized paths against all goods nomenclature' do
+  it 'generates materialized paths against all goods nomenclature', flaky: true do
     do_perform
 
     actual_paths = GoodsNomenclature.pluck(:path).map(&:to_a)

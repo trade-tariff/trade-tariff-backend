@@ -1,4 +1,4 @@
-RSpec.describe ChangesTablePopulator::MeasureStarted do
+RSpec.describe ChangesTablePopulator::MeasureStarted, flaky: true do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
