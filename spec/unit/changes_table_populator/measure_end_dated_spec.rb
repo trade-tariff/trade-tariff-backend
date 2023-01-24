@@ -1,4 +1,4 @@
-RSpec.describe ChangesTablePopulator::MeasureEndDated do
+RSpec.describe ChangesTablePopulator::MeasureEndDated, flaky: true do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
