@@ -14,6 +14,7 @@ RSpec.describe SpellingCorrector::FileUpdaterService do
         allow(SpellingCorrector::Loaders::References).to receive(:new).and_call_original
         allow(SpellingCorrector::Loaders::Intercepts).to receive(:new).and_call_original
         allow(SpellingCorrector::Loaders::StopWords).to receive(:new).and_call_original
+        allow(SpellingCorrector::Loaders::OriginReference).to receive(:new).and_call_original
 
         upload_file
       end
@@ -34,6 +35,7 @@ RSpec.describe SpellingCorrector::FileUpdaterService do
       it { expect(SpellingCorrector::Loaders::References).to have_received(:new) }
       it { expect(SpellingCorrector::Loaders::Intercepts).to have_received(:new) }
       it { expect(SpellingCorrector::Loaders::StopWords).to have_received(:new) }
+      it { expect(SpellingCorrector::Loaders::OriginReference).to have_received(:new) }
     end
 
     context 'when the bucket is not setup' do

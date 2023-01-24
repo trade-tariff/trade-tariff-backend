@@ -7,6 +7,7 @@ module SpellingCorrector
       SpellingCorrector::Loaders::References,
       SpellingCorrector::Loaders::Intercepts,
       SpellingCorrector::Loaders::StopWords,
+      SpellingCorrector::Loaders::OriginReference,
     ].freeze
 
     SPELLING_MODEL_PATH = 'spelling-corrector/spelling-model.txt'.freeze
