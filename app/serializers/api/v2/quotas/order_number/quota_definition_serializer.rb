@@ -37,7 +37,7 @@ module Api
             definition.last_blocking_period.try(:blocking_end_date)
           end
 
-          has_one :incoming_quota_closed_and_transferred_event, serializer: Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer
+          has_one :incoming_quota_closed_and_transferred_event, serializer: Api::V2::Quotas::QuotaClosedAndTransferredEventSerializer, if: ->(definition) { definition.shows_balance_transfers? }
         end
       end
     end

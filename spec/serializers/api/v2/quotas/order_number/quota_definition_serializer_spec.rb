@@ -3,8 +3,6 @@ RSpec.describe Api::V2::Quotas::OrderNumber::QuotaDefinitionSerializer do
     subject(:serializable_hash) { described_class.new(serializable, options).serializable_hash.as_json }
 
     let(:serializable) { create(:quota_definition, :with_quota_balance_events) }
-    let(:options) { {} }
-
     let(:expected_pattern) do
       {
         data: {
@@ -32,7 +30,18 @@ RSpec.describe Api::V2::Quotas::OrderNumber::QuotaDefinitionSerializer do
         },
       }
     end
+    let(:options) { {} }
+
+    before do
+      allow(serializable).to receive(:shows_balance_transfers?).and_return(true)
+    end
 
     it { is_expected.to include_json(expected_pattern) }
+
+    it 'asks the quota definition is balance transfers should be shown' do
+      serializable_hash
+
+      expect(serializable).to have_received(:shows_balance_transfers?)
+    end
   end
 end

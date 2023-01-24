@@ -1,4 +1,5 @@
 class QuotaDefinition < Sequel::Model
+  DATE_HMRC_STARTED_MANAGING_PENDING_BALANCES = Date.parse('2022-07-01').freeze
   DEFINITION_CRITICAL_STATE = 'Y'.freeze
 
   plugin :time_machine
@@ -116,7 +117,11 @@ class QuotaDefinition < Sequel::Model
     @last_blocking_period ||= quota_blocking_periods.last
   end
 
-private
+  def shows_balance_transfers?
+    validity_start_date.to_date >= DATE_HMRC_STARTED_MANAGING_PENDING_BALANCES
+  end
+
+  private
 
   # We only care about Open, Exhausted and Critical statuses from a UI perspective
   def has_active_critical_event?
