@@ -45,10 +45,6 @@ module TariffSynchronizer
       Date.new(*sequence_date)
     end
 
-    def self.validate_file!(_gzip_string)
-      true
-    end
-
     def to_param
       filename.sub('.gzip', '')
     end

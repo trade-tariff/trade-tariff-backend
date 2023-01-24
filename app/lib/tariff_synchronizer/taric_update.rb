@@ -81,12 +81,6 @@ module TariffSynchronizer
       filename.match(REGEX_TARIC_SEQUENCE)
     end
 
-    def self.validate_file!(xml_string)
-      Ox.parse(xml_string)
-    rescue Ox::ParseError => e
-      raise InvalidContents.new(e.message, e)
-    end
-
     def next_update
       self.class.new(
         filename: next_update_sequence_update_filename,
