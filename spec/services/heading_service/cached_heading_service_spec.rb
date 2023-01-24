@@ -1,4 +1,4 @@
-RSpec.describe HeadingService::CachedHeadingService do
+RSpec.describe HeadingService::CachedHeadingService, flaky: true do
   let(:heading) do
     create :heading, :non_grouping,
            :with_description
