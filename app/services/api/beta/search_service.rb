@@ -15,7 +15,7 @@ module Api
         end
 
         search_result.generate_heading_and_chapter_statistics
-        search_result.generate_guide_statistics
+        search_result.generate_guide_statistics if TradeTariffBackend.beta_search_guides_enabled?
         search_result.generate_facet_statistics
 
         search_result
