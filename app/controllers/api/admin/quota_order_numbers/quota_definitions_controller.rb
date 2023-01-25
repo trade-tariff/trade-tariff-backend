@@ -9,13 +9,13 @@ module Api
           quota_balance_events
           quota_critical_events
           quota_exhaustion_events
-          quota_order_number_origins
           quota_reopening_events
           quota_unblocking_events
           quota_unsuspension_events
         ].freeze
 
         DEFAULT_INCLUDES = %w[
+          quota_order_number
           quota_balance_events
           quota_critical_events
           quota_exhaustion_events
