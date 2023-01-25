@@ -29,7 +29,6 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
               'Measure' => { 'count' => 1, 'duration' => be_a(Float), 'mapping_path' => nil },
             },
             'destroy' => { 'count' => 0, 'duration' => 0 },
-            'destroy_cascade' => { 'count' => 0, 'duration' => 0 },
             'destroy_missing' => {
               'count' => 1,
               'duration' => be_a(Float),

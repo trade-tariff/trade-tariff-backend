@@ -11,16 +11,6 @@ class CdsImporter
         'meursingTablePlan.meursingTablePlanId' => :meursing_table_plan_id,
       ).freeze
 
-      before_oplog_inserts do |_xml_node, mapper_instance, model_instance|
-        if mapper_instance.destroy_operation?
-          additional_code_type_id = model_instance.additional_code_type_id
-          filename = mapper_instance.filename
-
-          instrument_cascade_destroy(filename) { AdditionalCodeTypeMeasureType.where(additional_code_type_id:) }
-          instrument_cascade_destroy(filename) { AdditionalCodeTypeDescription.where(additional_code_type_id:) }
-        end
-      end
-
       delete_missing_entities AdditionalCodeTypeDescriptionMapper,
                               AdditionalCodeTypeMeasureTypeMapper
     end

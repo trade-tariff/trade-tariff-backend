@@ -21,6 +21,8 @@ module TradeTariffBackend
 
     config.time_zone = 'UTC'
 
+    config.api_only = true
+
     config.sequel.schema_format = :sql
     config.sequel.default_timezone = :utc
 

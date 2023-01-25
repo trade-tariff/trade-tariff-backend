@@ -72,19 +72,6 @@ class CdsImporter
           end
         end
 
-        def instrument_cascade_destroy(filename)
-          if TradeTariffBackend.handle_cascade_soft_deletes?
-            dataset = yield
-            mapper = "CdsImporter::EntityMapper::#{dataset.model.name}Mapper".constantize
-
-            dataset.each do |entity|
-              inserter = CdsImporter::RecordInserter.new(entity, mapper, filename)
-
-              inserter.destroy_cascade_record
-            end
-          end
-        end
-
         def entity
           entity_class.constantize
         end
@@ -132,7 +119,7 @@ class CdsImporter
         def database_entities_for(primary_model_instance)
           filter = filter_for(primary_model_instance)
 
-          entity.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
+          entity::Operation.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
             Array.wrap(composite_primary_key)
           end
         end
