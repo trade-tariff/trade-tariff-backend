@@ -61,16 +61,6 @@ module Api
 
         delegate :quota_definitions, to: :quota_order_number
 
-        def quota_definition
-          @quota_definition ||= QuotaDefinition
-            .where(
-              quota_order_number_id: params[:quota_order_number_id],
-              quota_definition_sid: params[:id],
-            )
-            .eager(DEFAULT_EAGER_LOAD_GRAPH)
-            .take
-        end
-
         def quota_order_number
           @quota_order_number ||= QuotaOrderNumber
             .by_order_number(params[:quota_order_number_id])

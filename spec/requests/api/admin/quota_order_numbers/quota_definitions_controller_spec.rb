@@ -1,17 +1,44 @@
 RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionsController, type: :request do
-  describe 'GET #index' do
-    subject(:do_request) do
-      quota_order_number_id = create(
-        :quota_order_number,
-        :with_quota_definition,
-        quota_balance_events: true,
-      ).quota_order_number_id
+  before do
+    allow(TimeMachine).to receive(:no_time_machine).and_call_original
+  end
 
-      authenticated_get current_api_quota_order_number_quota_definitions_path(quota_order_number_id:)
+  describe 'GET #show' do
+    subject(:do_request) do
+      quota_order_number = create(:quota_order_number, :with_quota_definition, quota_balance_events: true)
+
+      quota_order_number_id = quota_order_number.quota_order_number_id
+      id = quota_order_number.quota_definition.quota_definition_sid
+
+      authenticated_get api_quota_order_number_quota_definition_path(quota_order_number_id:, id:)
 
       response
     end
 
     it_behaves_like 'a successful jsonapi response'
+
+    it 'does not use the time machine' do
+      do_request
+      expect(TimeMachine).to have_received(:no_time_machine)
+    end
+  end
+
+  describe 'GET #index' do
+    subject(:do_request) do
+      quota_order_number = create(:quota_order_number, :with_quota_definition, quota_balance_events: true)
+
+      authenticated_get api_quota_order_number_quota_definitions_path(
+        quota_order_number_id: quota_order_number.quota_order_number_id,
+      )
+
+      response
+    end
+
+    it_behaves_like 'a successful jsonapi response'
+
+    it 'does not use the time machine' do
+      do_request
+      expect(TimeMachine).to have_received(:no_time_machine)
+    end
   end
 end

@@ -83,14 +83,16 @@ RSpec.describe QuotaDefinition do
 
   describe '#quota_order_number_origin_ids' do
     let(:quota_order_number) { create :quota_order_number }
-    let(:quota_definition) { create(:quota_definition, :with_quota_balance_events,
-                             quota_order_number_sid: quota_order_number.quota_order_number_sid,
-                             quota_order_number_id: quota_order_number.quota_order_number_id) }
+    let(:quota_definition) do
+      create(:quota_definition, :with_quota_balance_events,
+             quota_order_number_sid: quota_order_number.quota_order_number_sid,
+             quota_order_number_id: quota_order_number.quota_order_number_id)
+    end
 
     context 'when there are quota order number origins' do
-      before do 
+      before do
         create(:quota_order_number_origin, :with_geographical_area,
-                                        quota_order_number_sid: quota_order_number.quota_order_number_sid)
+               quota_order_number_sid: quota_order_number.quota_order_number_sid)
       end
 
       it 'returns the ids' do
