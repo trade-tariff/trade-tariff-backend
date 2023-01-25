@@ -44,11 +44,7 @@ Rails.application.routes.draw do
       end
 
       resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
-        resources :quota_definitions, only: :index do
-          collection do
-            get 'current'
-          end
-        end
+        resources :quota_definitions, only: %i[index show]
       end
     end
 

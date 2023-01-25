@@ -29,7 +29,7 @@ module Api
           render json: serialized_quota_definitions
         end
 
-        def current
+        def show
           render json: serialized_quota_definition
         end
 
@@ -60,6 +60,16 @@ module Api
         end
 
         delegate :quota_definitions, to: :quota_order_number
+
+        def quota_definition
+          @quota_definition ||= QuotaDefinition
+            .where(
+              quota_order_number_id: params[:quota_order_number_id],
+              quota_definition_sid: params[:id],
+            )
+            .eager(DEFAULT_EAGER_LOAD_GRAPH)
+            .take
+        end
 
         def quota_order_number
           @quota_order_number ||= QuotaOrderNumber
