@@ -44,11 +44,7 @@ class CdsImporter
       # this is managed by a separate callback process (see each primary entity mapper for what gets soft deleted).
       def applicable_mappers_for(key, xml_node)
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
-        mappers = mappers.map { |mapper| mapper.new(xml_node) }
-
-        primary_mapper = mappers.find(&:primary?)
-
-        mappers
+        mappers.map { |mapper| mapper.new(xml_node) }
       end
 
       def all_mapping_roots
