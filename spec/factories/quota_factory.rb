@@ -120,10 +120,20 @@ FactoryBot.define do
     measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
     validity_start_date             { 4.years.ago.beginning_of_day }
     validity_end_date               { nil }
+    critical_state                  { 'N' }
+    critical_threshold              { Forgery(:basic).number }
 
     trait :actual do
       validity_start_date { 3.years.ago.beginning_of_day }
       validity_end_date   { nil }
+    end
+
+    trait :licensed do
+      quota_order_number_id { '094111' }
+    end
+
+    trait :first_come_first_served do
+      quota_order_number_id { '058002' }
     end
 
     trait :with_quota_balance_and_active_critical_events do

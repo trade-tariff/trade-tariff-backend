@@ -19,6 +19,15 @@ class QuotaDefinition < Sequel::Model
   one_to_many :quota_exhaustion_events, key: :quota_definition_sid,
                                         primary_key: :quota_definition_sid
 
+  one_to_many :quota_unsuspension_events, key: :quota_definition_sid,
+                                          primary_key: :quota_definition_sid
+
+  one_to_many :quota_unblocking_events, key: :quota_definition_sid,
+                                        primary_key: :quota_definition_sid
+
+  one_to_many :quota_reopening_events, key: :quota_definition_sid,
+                                       primary_key: :quota_definition_sid
+
   one_to_one :incoming_quota_closed_and_transferred_event, class_name: 'QuotaClosedAndTransferredEvent',
                                                            key: :target_quota_definition_sid,
                                                            primary_key: :quota_definition_sid do |ds|
@@ -119,6 +128,36 @@ class QuotaDefinition < Sequel::Model
 
   def shows_balance_transfers?
     validity_start_date.to_date >= DATE_HMRC_STARTED_MANAGING_PENDING_BALANCES
+  end
+
+  def quota_type
+    quota_order_number_id[2] == '4' ? 'Licensed' : 'First Come First Served'
+  end
+
+  def quota_order_number_origin_ids
+    quota_order_number_origins&.map(&:quota_order_number_origin_sid)
+  end
+
+  delegate :quota_order_number_origins, to: :quota_order_number, allow_nil: true
+
+  def quota_unsuspension_event_ids
+    quota_unsuspension_events&.map(&:quota_definition_sid)
+  end
+
+  def quota_reopening_event_ids
+    quota_reopening_events&.map(&:quota_definition_sid)
+  end
+
+  def quota_unblocking_event_ids
+    quota_unblocking_events&.map(&:quota_definition_sid)
+  end
+
+  def quota_exhaustion_event_ids
+    quota_exhaustion_events&.map(&:quota_definition_sid)
+  end
+
+  def quota_critical_event_ids
+    quota_critical_events&.map(&:quota_definition_sid)
   end
 
   private

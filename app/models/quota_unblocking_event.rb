@@ -9,4 +9,8 @@ class QuotaUnblockingEvent < Sequel::Model
   def self.status
     'Open'
   end
+
+  def event_type
+    'Unblocking event'
+  end
 end

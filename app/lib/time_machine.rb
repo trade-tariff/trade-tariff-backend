@@ -4,6 +4,18 @@ module TimeMachine
   THREAD_DATETIME_KEY = :time_machine_now
   THREAD_RELEVANT_KEY = :time_machine_relevant
 
+  def self.no_time_machine
+    previous = Thread.current[THREAD_DATETIME_KEY]
+
+    raise ArgumentError, 'requires a block' unless block_given?
+
+    Thread.current[THREAD_DATETIME_KEY] = nil
+
+    yield
+  ensure
+    Thread.current[THREAD_DATETIME_KEY] = previous
+  end
+
   # Travel to specified date and time
   def self.at(datetime)
     datetime = DateTime.current if datetime.blank?

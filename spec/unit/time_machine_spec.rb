@@ -39,4 +39,8 @@ RSpec.describe TimeMachine do
       end
     end
   end
+
+  describe '.no_time_machine' do
+    it { described_class.no_time_machine { expect(Commodity.point_in_time).to be_nil } }
+  end
 end

@@ -5,6 +5,14 @@ RSpec.describe QuotaCriticalEvent do
     it { is_expected.to eq('Critical') }
   end
 
+  describe '#event_type' do
+    subject(:quota_critical_event) { build(:quota_critical_event) }
+
+    it 'returns event type string' do
+      expect(quota_critical_event.event_type).to eq('Critical state change')
+    end
+  end
+
   describe '#active?' do
     subject(:event) { build(:quota_critical_event, critical_state:) }
 

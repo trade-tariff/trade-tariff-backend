@@ -81,6 +81,142 @@ RSpec.describe QuotaDefinition do
     end
   end
 
+  describe '#quota_order_number_origin_ids' do
+    let(:quota_order_number) { create :quota_order_number }
+    let(:quota_definition) do
+      create(:quota_definition, :with_quota_balance_events,
+             quota_order_number_sid: quota_order_number.quota_order_number_sid,
+             quota_order_number_id: quota_order_number.quota_order_number_id)
+    end
+
+    context 'when there are quota order number origins' do
+      before do
+        create(:quota_order_number_origin, :with_geographical_area,
+               quota_order_number_sid: quota_order_number.quota_order_number_sid)
+      end
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_order_number_origin_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota order number origins' do
+      it 'returns empty ids' do
+        expect(quota_definition.quota_order_number_origin_ids).to eq([])
+      end
+    end
+  end
+
+  describe '#quota_unsuspension_event_ids' do
+    context 'when there are quota unsuspension events' do
+      let(:quota_definition) { create(:quota_definition, :with_quota_unsuspension_events) }
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_unsuspension_event_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota unsuspension events' do
+      let(:quota_definition) { create(:quota_definition) }
+
+      it 'returns empty ids' do
+        expect(quota_definition.quota_unsuspension_event_ids).to eq([])
+      end
+    end
+  end
+
+  describe '#quota_reopening_event_ids' do
+    context 'when there are quota reopening events' do
+      let(:quota_definition) { create(:quota_definition, :with_quota_reopening_events) }
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_reopening_event_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota reopening events' do
+      let(:quota_definition) { create(:quota_definition) }
+
+      it 'returns empty ids' do
+        expect(quota_definition.quota_reopening_event_ids).to eq([])
+      end
+    end
+  end
+
+  describe '#quota_unblocking_event_ids' do
+    context 'when there are quota unblocking events' do
+      let(:quota_definition) { create(:quota_definition, :with_quota_unblocking_events) }
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_unblocking_event_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota unblocking events' do
+      let(:quota_definition) { create(:quota_definition) }
+
+      it 'returns empty ids' do
+        expect(quota_definition.quota_unblocking_event_ids).to eq([])
+      end
+    end
+  end
+
+  describe '#quota_exhaustion_event_ids' do
+    context 'when there are quota exhaustion events' do
+      let(:quota_definition) { create(:quota_definition, :with_quota_exhaustion_events) }
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_exhaustion_event_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota exhaustion events' do
+      let(:quota_definition) { create(:quota_definition) }
+
+      it 'returns empty ids' do
+        expect(quota_definition.quota_exhaustion_event_ids).to eq([])
+      end
+    end
+  end
+
+  describe '#quota_critical_event_ids' do
+    around { |example| TimeMachine.now { example.run } }
+
+    context 'when there are quota critical events' do
+      let(:quota_definition) { create(:quota_definition, :with_quota_critical_events) }
+
+      it 'returns the ids' do
+        expect(quota_definition.quota_critical_event_ids.count).to be_positive
+      end
+    end
+
+    context 'when there are no quota exhaustion events' do
+      let(:quota_definition) { create(:quota_definition) }
+
+      it 'returns empty ids' do
+        expect(quota_definition.quota_critical_event_ids).to eq([])
+      end
+    end
+  end
+
+  describe '#quota_type' do
+    context 'when quota_order_number_id contains 4 as third digit' do
+      subject(:quota_definition) { create(:quota_definition, :licensed) }
+
+      it 'returns Licensed' do
+        expect(quota_definition.quota_type).to eq('Licensed')
+      end
+    end
+
+    context 'when quota_order_number_id does not contain 4 as third digit' do
+      subject(:quota_definition) { create(:quota_definition, :first_come_first_served) }
+
+      it 'returns First Come First Served' do
+        expect(quota_definition.quota_type).to eq('First Come First Served')
+      end
+    end
+  end
+
   describe '#balance' do
     around do |example|
       TimeMachine.at(Time.zone.today) do

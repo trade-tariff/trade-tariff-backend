@@ -8,7 +8,9 @@ module Api
 
         attributes :occurrence_timestamp,
                    :new_balance,
-                   :imported_amount
+                   :imported_amount,
+                   :last_import_date_in_allocation,
+                   :old_balance
       end
     end
   end
