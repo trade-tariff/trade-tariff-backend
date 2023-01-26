@@ -44,15 +44,7 @@ class CdsImporter
       # this is managed by a separate callback process (see each primary entity mapper for what gets soft deleted).
       def applicable_mappers_for(key, xml_node)
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
-        mappers = mappers.map { |mapper| mapper.new(xml_node) }
-
-        primary_mapper = mappers.find(&:primary?)
-
-        if TradeTariffBackend.handle_cascade_soft_deletes? && primary_mapper&.destroy_operation?
-          [primary_mapper]
-        else
-          mappers
-        end
+        mappers.map { |mapper| mapper.new(xml_node) }
       end
 
       def all_mapping_roots

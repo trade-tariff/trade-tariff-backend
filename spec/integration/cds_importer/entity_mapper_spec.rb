@@ -36,7 +36,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
       let(:measure) { create(:measure, measure_sid: '12348') }
 
-      before { create(:footnote, :with_measure_association, measure_sid: measure.measure_sid) }
+      before { create(:footnote, :with_description, :with_measure_association, measure_sid: measure.measure_sid) }
 
       it 'removes associated footnotes that are missing from the xml node' do
         expect { entity_mapper.import }
@@ -262,16 +262,7 @@ RSpec.describe CdsImporter::EntityMapper do
       }
     end
 
-    context 'when the primary node is set for soft deletion' do
-      let(:key) { 'Measure' }
-      let(:operation) { 'D' }
-
-      let(:expected_applicable_mappers) { [an_instance_of(CdsImporter::EntityMapper::MeasureMapper)] }
-
-      it { is_expected.to match_array(expected_applicable_mappers) }
-    end
-
-    context 'when the primary node is `not` set for soft deletion' do
+    context 'when the key belongs to a mapping root' do
       let(:key) { 'Measure' }
       let(:operation) { 'U' }
 

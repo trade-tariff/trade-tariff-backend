@@ -12,9 +12,9 @@ FactoryBot.define do
 
     trait :with_description do
       after(:create) do |measurement_unit, evaluator|
-        FactoryBot.create :measurement_unit_description,
-                          measurement_unit_code: measurement_unit.measurement_unit_code,
-                          description: evaluator.description
+        create :measurement_unit_description,
+               measurement_unit_code: measurement_unit.measurement_unit_code,
+               description: evaluator.description
       end
     end
   end

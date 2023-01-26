@@ -5,7 +5,7 @@ FactoryBot.define do
 
     trait :with_name do
       after(:create) do |chemical, _evaluator|
-        FactoryBot.create(:chemical_name, chemical_id: chemical.id)
+        create(:chemical_name, chemical_id: chemical.id)
       end
     end
   end

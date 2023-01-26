@@ -60,11 +60,11 @@ FactoryBot.define do
 
     trait :with_period do
       after(:create) do |cert_description, evaluator|
-        FactoryBot.create(:certificate_description_period, certificate_description_period_sid: cert_description.certificate_description_period_sid,
-                                                           certificate_type_code: cert_description.certificate_type_code,
-                                                           certificate_code: cert_description.certificate_code,
-                                                           validity_start_date: evaluator.valid_at,
-                                                           validity_end_date: evaluator.valid_to)
+        create(:certificate_description_period, certificate_description_period_sid: cert_description.certificate_description_period_sid,
+                                                certificate_type_code: cert_description.certificate_type_code,
+                                                certificate_code: cert_description.certificate_code,
+                                                validity_start_date: evaluator.valid_at,
+                                                validity_end_date: evaluator.valid_to)
       end
     end
   end
@@ -80,9 +80,9 @@ FactoryBot.define do
 
     trait :with_description do
       after(:create) do |certificate_type, evaluator|
-        FactoryBot.create(:certificate_type_description,
-                          certificate_type_code: certificate_type.certificate_type_code,
-                          description: evaluator.description)
+        create(:certificate_type_description,
+               certificate_type_code: certificate_type.certificate_type_code,
+               description: evaluator.description)
       end
     end
   end

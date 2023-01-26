@@ -23,13 +23,6 @@ RSpec.describe CdsImporter::RecordInserter do
   let(:record) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
   let(:args) { [] }
 
-  describe '#destroy_cascade_record' do
-    let(:expected_db_operation) { 'D' }
-    let(:expected_instrument_operation) { :destroy_cascade }
-
-    it_behaves_like 'an insert operation', :destroy_cascade_record
-  end
-
   describe '#destroy_missing_record' do
     let(:expected_db_operation) { 'D' }
     let(:expected_instrument_operation) { :destroy_missing }

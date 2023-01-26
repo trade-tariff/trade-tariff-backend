@@ -249,10 +249,6 @@ module TradeTariffBackend
       ENV['SYNONYM_REFERENCE_ANALYZER']
     end
 
-    def handle_cascade_soft_deletes?
-      ENV['SOFT_DELETES_CASCADE'].to_s == 'true'
-    end
-
     def handle_missing_soft_deletes?
       ENV['SOFT_DELETES_MISSING'].to_s == 'true'
     end

@@ -9,7 +9,7 @@ FactoryBot.define do
 
     trait :with_note do
       after(:create) do |section, _evaluator|
-        FactoryBot.create(:section_note, section_id: section.id)
+        create(:section_note, section_id: section.id)
       end
     end
 

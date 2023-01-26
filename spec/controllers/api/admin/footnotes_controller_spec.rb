@@ -1,5 +1,6 @@
 RSpec.describe Api::Admin::FootnotesController, 'GET to #index' do
-  let!(:non_national_footnote) { create :footnote, :non_national }
+  let!(:non_national_footnote) { create(:footnote, :non_national, :with_description) }
+  let!(:national_footnote) { create(:footnote, :national, :with_description) }
   let(:response_pattern) do
     {
       data: [{
@@ -17,7 +18,6 @@ RSpec.describe Api::Admin::FootnotesController, 'GET to #index' do
   let(:json_body) do
     JSON.parse(response.body)['data']
   end
-  let!(:national_footnote) { create :footnote, :national }
 
   before { login_as_api_user }
 
@@ -38,8 +38,8 @@ end
 RSpec.describe Api::Admin::FootnotesController, 'GET to #show' do
   before { login_as_api_user }
 
-  let!(:non_national_footnote) { create :footnote, :non_national }
-  let!(:national_footnote)     { create :footnote, :national }
+  let!(:non_national_footnote) { create(:footnote, :non_national, :with_description) }
+  let!(:national_footnote) { create(:footnote, :national, :with_description) }
 
   let(:response_pattern) do
     {
@@ -72,8 +72,8 @@ end
 RSpec.describe Api::Admin::FootnotesController, 'PUT to #update' do
   before { login_as_api_user }
 
-  let!(:non_national_footnote) { create :footnote, :non_national }
-  let!(:national_footnote)     { create :footnote, :national }
+  let!(:non_national_footnote) { create(:footnote, :non_national, :with_description) }
+  let!(:national_footnote) { create(:footnote, :national, :with_description) }
 
   specify 'updates national footnote' do
     expect {
