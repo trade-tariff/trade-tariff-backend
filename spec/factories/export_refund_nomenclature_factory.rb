@@ -17,7 +17,7 @@ FactoryBot.define do
     trait :with_indent do
       after(:create) do |gono, evaluator|
         create(:export_refund_nomenclature_indent, export_refund_nomenclature_sid: gono.export_refund_nomenclature_sid,
-                                                              number_export_refund_nomenclature_indents: evaluator.indents)
+                                                   number_export_refund_nomenclature_indents: evaluator.indents)
       end
     end
   end
@@ -51,10 +51,10 @@ FactoryBot.define do
 
     after(:create) do |gono_description, evaluator|
       create(:export_refund_nomenclature_description_period, export_refund_nomenclature_description_period_sid: gono_description.export_refund_nomenclature_description_period_sid,
-                                                                        export_refund_nomenclature_sid: gono_description.export_refund_nomenclature_sid,
-                                                                        goods_nomenclature_item_id: gono_description.goods_nomenclature_item_id,
-                                                                        validity_start_date: evaluator.valid_at,
-                                                                        validity_end_date: evaluator.valid_to)
+                                                             export_refund_nomenclature_sid: gono_description.export_refund_nomenclature_sid,
+                                                             goods_nomenclature_item_id: gono_description.goods_nomenclature_item_id,
+                                                             validity_start_date: evaluator.valid_at,
+                                                             validity_end_date: evaluator.valid_to)
     end
   end
 end

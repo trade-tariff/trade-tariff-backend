@@ -57,11 +57,11 @@ FactoryBot.define do
     trait :with_period do
       after(:create) do |adco_description, evaluator|
         create(:additional_code_description_period, additional_code_description_period_sid: adco_description.additional_code_description_period_sid,
-                                                               additional_code_sid: adco_description.additional_code_sid,
-                                                               additional_code_type_id: adco_description.additional_code_type_id,
-                                                               additional_code: adco_description.additional_code,
-                                                               validity_start_date: evaluator.valid_at,
-                                                               validity_end_date: evaluator.valid_to)
+                                                    additional_code_sid: adco_description.additional_code_sid,
+                                                    additional_code_type_id: adco_description.additional_code_type_id,
+                                                    additional_code: adco_description.additional_code,
+                                                    validity_start_date: evaluator.valid_at,
+                                                    validity_end_date: evaluator.valid_to)
       end
     end
   end
