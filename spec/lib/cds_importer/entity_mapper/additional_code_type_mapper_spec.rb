@@ -36,9 +36,6 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
   end
 
   let(:operation) { 'U' }
-  let(:additional_code_type_id) { '3' }
-  let(:language_id) { 'EN' }
-  let(:measure_type_id) { '468' }
 
   it_behaves_like 'an entity mapper', 'AdditionalCodeType', 'AdditionalCodeType' do
     let(:expected_values) do
@@ -76,12 +73,9 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
 
     context 'when the additional code type is being deleted' do
       before do
-        create(
-          :additional_code_type,
-          :with_description,
-          :with_measure_type,
-          additional_code_type_id: '3',
-        )
+        create(:additional_code_type, additional_code_type_id: '3')
+        create(:additional_code_type_measure_type, measure_type_id: '468', additional_code_type_id: '3')
+        create(:additional_code_type_description, additional_code_type_id: '3', language_id: 'EN')
       end
 
       let(:operation) { 'D' }
@@ -100,6 +94,7 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
           :with_measure_type,
           additional_code_type_id: '3',
           language_id: 'NO',
+          measure_type_id: '467',
         )
 
         # Control for a non-deleted entities

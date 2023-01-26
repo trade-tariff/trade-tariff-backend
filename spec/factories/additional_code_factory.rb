@@ -12,7 +12,7 @@ FactoryBot.define do
 
     trait :with_export_refund_nomenclature do
       after(:build) do |adco, _evaluator|
-        FactoryBot.create(:export_refund_nomenclature, export_refund_code: adco.additional_code)
+        create(:export_refund_nomenclature, export_refund_code: adco.additional_code)
       end
     end
 
@@ -22,7 +22,7 @@ FactoryBot.define do
       end
 
       after(:build) do |adco, evaluator|
-        FactoryBot.create(:additional_code_description, :with_period, additional_code_sid: adco.additional_code_sid, description: evaluator.additional_code_description)
+        create(:additional_code_description, :with_period, additional_code_sid: adco.additional_code_sid, description: evaluator.additional_code_description)
       end
     end
 
@@ -56,7 +56,7 @@ FactoryBot.define do
 
     trait :with_period do
       after(:create) do |adco_description, evaluator|
-        FactoryBot.create(:additional_code_description_period, additional_code_description_period_sid: adco_description.additional_code_description_period_sid,
+        create(:additional_code_description_period, additional_code_description_period_sid: adco_description.additional_code_description_period_sid,
                                                                additional_code_sid: adco_description.additional_code_sid,
                                                                additional_code_type_id: adco_description.additional_code_type_id,
                                                                additional_code: adco_description.additional_code,
@@ -97,8 +97,10 @@ FactoryBot.define do
     end
 
     trait :with_measure_type do
-      after(:build) do |additional_code_type, _evaluator|
-        create(:additional_code_type_measure_type, additional_code_type_id: additional_code_type.additional_code_type_id)
+      transient { measure_type_id { '468' } }
+
+      after(:build) do |additional_code_type, evaluator|
+        create(:additional_code_type_measure_type, additional_code_type_id: additional_code_type.additional_code_type_id, measure_type_id: evaluator.measure_type_id)
       end
     end
 

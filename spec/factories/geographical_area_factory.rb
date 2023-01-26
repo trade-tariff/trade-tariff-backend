@@ -93,7 +93,7 @@ FactoryBot.define do
     end
 
     after(:build) do |geographical_area, _evaluator|
-      FactoryBot.create(:geographical_area_description, :with_period,
+      create(:geographical_area_description, :with_period,
                         geographical_area_id: geographical_area.geographical_area_id,
                         geographical_area_sid: geographical_area.geographical_area_sid,
                         valid_at: geographical_area.validity_start_date,
@@ -126,7 +126,7 @@ FactoryBot.define do
 
     trait :with_period do
       after(:create) do |ga_description, evaluator|
-        FactoryBot.create(:geographical_area_description_period, geographical_area_description_period_sid: ga_description.geographical_area_description_period_sid,
+        create(:geographical_area_description_period, geographical_area_description_period_sid: ga_description.geographical_area_description_period_sid,
                                                                  geographical_area_sid: ga_description.geographical_area_sid,
                                                                  geographical_area_id: ga_description.geographical_area_id,
                                                                  validity_start_date: evaluator.valid_at,

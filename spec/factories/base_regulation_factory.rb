@@ -11,7 +11,7 @@ FactoryBot.define do
 
     trait :abrogated do
       after(:build) do |br, _evaluator|
-        FactoryBot.create(:complete_abrogation_regulation, complete_abrogation_regulation_id: br.base_regulation_id,
+        create(:complete_abrogation_regulation, complete_abrogation_regulation_id: br.base_regulation_id,
                                                            complete_abrogation_regulation_role: br.base_regulation_role)
       end
     end

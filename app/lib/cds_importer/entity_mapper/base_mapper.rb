@@ -119,7 +119,7 @@ class CdsImporter
         def database_entities_for(primary_model_instance)
           filter = filter_for(primary_model_instance)
 
-          entity::Operation.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
+          entity.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
             Array.wrap(composite_primary_key)
           end
         end

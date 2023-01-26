@@ -8,7 +8,7 @@ FactoryBot.define do
 
     trait :with_description do
       after(:create) do |duty_expression, _evaluator|
-        FactoryBot.create(:duty_expression_description, duty_expression_id: duty_expression.duty_expression_id)
+        create(:duty_expression_description, duty_expression_id: duty_expression.duty_expression_id)
       end
     end
   end

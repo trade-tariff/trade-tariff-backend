@@ -6,7 +6,7 @@ FactoryBot.define do
 
     trait :with_description do
       after(:create) do |monetary_unit, _evaluator|
-        FactoryBot.create :monetary_unit_description, monetary_unit_code: monetary_unit.monetary_unit_code
+        create :monetary_unit_description, monetary_unit_code: monetary_unit.monetary_unit_code
       end
     end
   end

@@ -18,6 +18,7 @@ RSpec.describe Cache::HeadingSerializer do
   let!(:footnote) do
     create(
       :footnote,
+      :with_description,
       :with_gono_association,
       goods_nomenclature_sid: heading.goods_nomenclature_sid,
     )

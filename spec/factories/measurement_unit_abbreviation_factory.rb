@@ -5,7 +5,7 @@ FactoryBot.define do
 
     trait :with_measurement_unit do
       after(:create) do |measurement_unit_abbreviation|
-        FactoryBot.create(:measurement_unit, :with_description, measurement_unit_code: measurement_unit_abbreviation.measurement_unit_code)
+        create(:measurement_unit, :with_description, measurement_unit_code: measurement_unit_abbreviation.measurement_unit_code)
       end
     end
 

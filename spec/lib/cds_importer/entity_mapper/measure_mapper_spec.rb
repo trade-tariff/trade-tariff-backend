@@ -193,13 +193,14 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
       before do
         create(
           :measure,
-          :with_footnote_association,
-          :with_measure_components,
-          :with_measure_conditions,
-          :with_measure_excluded_geographical_area,
-          :with_measure_partial_temporary_stop,
           measure_sid: '12348',
         )
+        create(:footnote_association_measure, measure_sid: '12348', footnote_type_id: '06', footnote_id: '08')
+        create(:measure_component, measure_sid: '12348', duty_expression_id: '01')
+        create(:measure_condition, measure_sid: '12348', measure_condition_sid: '3321')
+        create(:measure_condition_component, measure_condition_sid: '3321', duty_expression_id: '01')
+        create(:measure_excluded_geographical_area, measure_sid: '12348', geographical_area_sid: '11993')
+        create(:measure_partial_temporary_stop, measure_sid: '12348', partial_temporary_stop_regulation_id: 'R1312020')
       end
 
       let(:operation) { 'D' }

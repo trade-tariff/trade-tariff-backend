@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Cache::FootnoteIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 
@@ -12,7 +10,7 @@ RSpec.describe Cache::FootnoteIndex do
   describe '#serialize_record' do
     subject { instance.serialize_record record }
 
-    let(:record) { create :footnote }
+    let(:record) { create :footnote, :with_description }
 
     it { is_expected.to include footnote_id: record.footnote_id }
   end

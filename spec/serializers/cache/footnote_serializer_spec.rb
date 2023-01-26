@@ -1,7 +1,7 @@
 RSpec.describe Cache::FootnoteSerializer do
   subject(:serialized) { described_class.new(footnote).as_json }
 
-  let(:footnote) { create(:footnote) }
+  let(:footnote) { create(:footnote, :with_description) }
   let(:measure_with_goods_nomenclature) { create(:measure, :with_base_regulation, goods_nomenclature: create(:heading, :with_description)) }
 
   let(:pattern) do

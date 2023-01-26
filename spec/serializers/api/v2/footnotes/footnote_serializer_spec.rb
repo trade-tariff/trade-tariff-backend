@@ -7,7 +7,7 @@ RSpec.describe Api::V2::Footnotes::FootnoteSerializer do
     Hashie::TariffMash.new(cache_serialized_footnote)
   end
 
-  let(:footnote) { create(:footnote) }
+  let(:footnote) { create(:footnote, :with_description) }
 
   describe '#serializable_hash' do
     context 'when there are associated goods nomenclature' do

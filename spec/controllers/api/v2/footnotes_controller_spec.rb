@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::FootnotesController, type: :controller do
   subject(:do_response) { get :search, params: query, format: :json && response }
 
-  let(:footnote) { create(:footnote) }
+  let(:footnote) { create(:footnote, :with_description) }
   let(:pattern) do
     {
       data: [
