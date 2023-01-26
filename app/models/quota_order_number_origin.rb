@@ -11,4 +11,6 @@ class QuotaOrderNumberOrigin < Sequel::Model
   end
 
   delegate :description, to: :geographical_area, prefix: true
+
+  one_to_many :quota_order_number_origin_exclusions
 end

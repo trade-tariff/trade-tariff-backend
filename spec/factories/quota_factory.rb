@@ -42,6 +42,21 @@ FactoryBot.define do
       quota_definition_validity_end_date { Time.zone.yesterday }
     end
 
+    trait :with_quota_order_number_origin do
+      transient do
+        quota_order_number_origin_sid { generate(:sid) }
+      end
+
+      after(:create) do |quota_order_number, evaluator|
+        create(
+          :quota_order_number_origin,
+          :with_quota_order_number_origin_exclusion,
+          quota_order_number_sid: quota_order_number.quota_order_number_sid,
+          quota_order_number_origin_sid: evaluator.quota_order_number_origin_sid,
+        )
+      end
+    end
+
     trait :with_quota_definition do
       transient do
         quota_balance_events { false }
@@ -90,6 +105,15 @@ FactoryBot.define do
         geographical_area = create(:geographical_area)
         qon.geographical_area_id = geographical_area.geographical_area_id
         qon.geographical_area_sid = geographical_area.geographical_area_sid
+      end
+    end
+
+    trait :with_quota_order_number_origin_exclusion do
+      after(:create) do |qon|
+        create(
+          :quota_order_number_origin_exclusion,
+          quota_order_number_origin_sid: qon.quota_order_number_origin_sid,
+        )
       end
     end
   end
