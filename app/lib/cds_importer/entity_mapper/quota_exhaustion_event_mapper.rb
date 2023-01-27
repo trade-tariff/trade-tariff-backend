@@ -1,7 +1,3 @@
-#
-# QuotaExhaustionEvent is nested in to QuotaDefinition.
-#
-
 class CdsImporter
   class EntityMapper
     class QuotaExhaustionEventMapper < BaseMapper
