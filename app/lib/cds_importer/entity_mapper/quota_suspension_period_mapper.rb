@@ -1,7 +1,3 @@
-#
-# QuotaSuspensionPeriod is nested in to QuotaDefinition.
-#
-
 class CdsImporter
   class EntityMapper
     class QuotaSuspensionPeriodMapper < BaseMapper

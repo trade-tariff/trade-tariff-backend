@@ -1,8 +1,3 @@
-#
-# QuotaAssociation is nested in to QuotaDefinition.
-# So we will pass @values for QuotaAssociation the same as for QuotaDefinition.
-#
-
 class CdsImporter
   class EntityMapper
     class QuotaAssociationMapper < BaseMapper

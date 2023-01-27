@@ -1,7 +1,3 @@
-#
-# QuotaUnsuspensionEvent is nested in to QuotaDefinition.
-#
-
 class CdsImporter
   class EntityMapper
     class QuotaUnsuspensionEventMapper < BaseMapper
