@@ -25,6 +25,36 @@ class CdsImporter
       before_oplog_inserts do |xml_node|
         QuotaClosedAndTransferredEvent.operation_klass.where(quota_definition_sid: xml_node['sid']).delete
       end
+
+      delete_missing_entities QuotaAssociationMapper,
+                              QuotaBalanceEventMapper,
+                              QuotaBlockingPeriodMapper,
+                              QuotaCriticalEventMapper,
+                              QuotaExhaustionEventMapper,
+                              QuotaReopeningEventMapper,
+                              QuotaSuspensionPeriodMapper,
+                              QuotaUnsuspensionEventMapper,
+                              QuotaUnblockingEventMapper
+
+      QuotaAssociationMapper
+      QuotaBalanceEventMapper
+      QuotaBlockingPeriodMapper
+      QuotaCriticalEventMapper
+      QuotaExhaustionEventMapper
+      QuotaReopeningEventMapper
+      QuotaSuspensionPeriodMapper
+      QuotaUnsuspensionEventMapper
+      QuotaUnblockingEventMapper
     end
   end
 end
+
+# quotaAssociation
+# quotaBalanceEvent
+# quotaBlockingPeriod
+# quotaCriticalEvent
+# quotaExhaustionEvent
+# quotaReopeningEvent
+# quotaSuspensionPeriod
+# quotaUnsuspensionEvent
+# quotaUnblockingEvent

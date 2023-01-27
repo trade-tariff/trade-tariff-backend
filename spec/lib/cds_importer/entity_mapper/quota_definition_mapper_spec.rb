@@ -1,54 +1,171 @@
 RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
   let(:xml_node) do
     {
-      'sid' => '12113',
-      'volume' => '30.000',
-      'initialVolume' => '30.000',
-      'maximumPrecision' => '3',
-      'criticalThreshold' => '75',
-      'criticalState' => 'N',
-      'description' => 'some description',
-      'validityStartDate' => '1970-01-01T00:00:00',
-      'validityEndDate' => '1972-01-01T00:00:00',
-      'quotaOrderNumber' => {
-        'sid' => '1485',
-        'quotaOrderNumberId' => '092607',
+      'hjid' => '11530155',
+      'metainfo' => {
+        'opType' => operation,
+        'origin' => 'T',
+        'status' => 'L',
+        'transactionDate' => '2022-07-04T16:27:01',
       },
+      'sid' => '21891',
+      'criticalState' => 'N',
+      'criticalThreshold' => '90',
+      'initialVolume' => '264000',
+      'maximumPrecision' => '3',
+      'validityEndDate' => '2023-06-30T23:59:59',
+      'validityStartDate' => '2022-07-01T00:00:00',
+      'volume' => '264000',
       'measurementUnit' => {
+        'hjid' => '10707',
         'measurementUnitCode' => 'KGM',
       },
-      'measurementUnitQualifier' => {
-        'measurementUnitQualifierCode' => 'X',
+      'quotaBalanceEvent' => {
+        'hjid' => '11925094',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-07-04T16:27:01',
+        },
+        'importedAmount' => '15195',
+        'lastImportDateInAllocation' => '2022-07-01T00:00:00',
+        'newBalance' => '248805',
+        'occurrenceTimestamp' => '2022-07-04T14:48:00',
+        'oldBalance' => '264000',
       },
-      'monetaryUnit' => {
-        'monetaryUnitCode' => 'EUR',
+      'quotaCriticalEvent' => {
+        'hjid' => '11751144',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-03-23T17:31:08',
+        },
+        'criticalState' => 'Y',
+        'criticalStateChangeDate' => '2022-03-23T00:00:00',
+        'occurrenceTimestamp' => '2022-03-23T13:00:00',
       },
-      'metainfo' => {
-        'opType' => 'U',
-        'transactionDate' => '2017-06-29T20:04:37',
+      'quotaExhaustionEvent' => {
+        'hjid' => '11717110',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-02-10T18:02:05',
+        },
+        'exhaustionDate' => '2022-02-09T00:00:00',
+        'occurrenceTimestamp' => '2022-02-10T13:00:00',
+      },
+      'quotaReopeningEvent' => {
+        'hjid' => '11757076',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-03-24T14:30:01',
+        },
+        'occurrenceTimestamp' => '2022-03-24T11:56:00',
+        'reopeningDate' => '2022-03-24T00:00:00',
+      },
+      'quotaSuspensionPeriod' => {
+        'hjid' => '10731998',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2020-11-29T16:32:54',
+        },
+        'sid' => '2000',
+        'suspensionEndDate' => '2022-05-31T23:59:59',
+        'suspensionStartDate' => '2022-05-01T00:00:00',
+      },
+      'quotaUnsuspensionEvent' => {
+        'hjid' => '11883116',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-05-31T22:02:03',
+        },
+        'occurrenceTimestamp' => '2022-05-31T03:18:00',
+        'unsuspensionDate' => '2022-06-01T00:00:00',
+      },
+      'quotaOrderNumber' => {
+        'hjid' => '11005093',
+        'sid' => '20777',
+        'quotaOrderNumberId' => '050096',
+        'validityStartDate' => '2021-01-01T00:00:00',
+      },
+      'quotaAssociation' => {
+        'hjid' => '11851337',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-05-04T18:02:01',
+        },
+        'coefficient' => '1',
+        'relationType' => 'EQ',
+        'subQuotaDefinition' => {
+          'hjid' => '11272625',
+          'sid' => '21741',
+          'validityStartDate' => '2022-01-01T00:00:00',
+          'quotaOrderNumber' => {
+            'hjid' => '11271659',
+            'sid' => '20952',
+            'quotaOrderNumberId' => '058041',
+            'validityStartDate' => '2021-07-01T00:00:00',
+          },
+        },
+      },
+      'quotaClosedAndTransferredEvent' => {
+        'hjid' => '11851504',
+        'metainfo' => {
+          'opType' => operation,
+          'origin' => 'T',
+          'status' => 'L',
+          'transactionDate' => '2022-05-05T18:02:08',
+        },
+        'closingDate' => '2022-05-04T00:00:00',
+        'occurrenceTimestamp' => '2022-05-04T20:46:00',
+        'targetQuotaDefinition' => {
+          'hjid' => '11272625',
+          'sid' => '21741',
+          'validityStartDate' => '2022-01-01T00:00:00',
+          'quotaOrderNumber' => {
+            'hjid' => '11271659',
+            'sid' => '20952',
+            'quotaOrderNumberId' => '058041',
+            'validityStartDate' => '2021-07-01T00:00:00',
+          },
+        },
+        'transferredAmount' => '9243041.052',
       },
     }
   end
 
+  let(:operation) { 'U' }
+
   it_behaves_like 'an entity mapper', 'QuotaDefinition', 'QuotaDefinition' do
     let(:expected_values) do
       {
-        validity_start_date: Time.zone.parse('1970-01-01T00:00:00.000Z'),
-        validity_end_date: Time.zone.parse('1972-01-01T00:00:00.000Z'),
+        validity_start_date: '2022-07-01T00:00:00.000Z',
+        validity_end_date: '2023-06-30T23:59:59.000Z',
         operation: 'U',
-        operation_date: Date.parse('2017-06-29'),
-        quota_definition_sid: 12_113,
-        quota_order_number_sid: 1485,
-        quota_order_number_id: '092607',
-        volume: 30,
-        initial_volume: 30,
+        operation_date: Date.parse('2022-07-04'),
+        quota_definition_sid: 21_891,
+        quota_order_number_sid: 20_777,
+        quota_order_number_id: '050096',
+        volume: 264_000,
+        initial_volume: 264_000,
         maximum_precision: 3,
         critical_state: 'N',
-        critical_threshold: 75,
-        monetary_unit_code: 'EUR',
+        critical_threshold: 90,
+        monetary_unit_code: nil,
         measurement_unit_code: 'KGM',
-        measurement_unit_qualifier_code: 'X',
-        description: 'some description',
+        measurement_unit_qualifier_code: nil,
+        description: nil,
       }
     end
   end
@@ -56,16 +173,118 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
   describe '#import' do
     subject(:entity_mapper) { CdsImporter::EntityMapper.new('QuotaDefinition', xml_node) }
 
-    let(:change_definition_events_count) do
+    let(:change_definition_transfer_events_count) do
       change do
         QuotaClosedAndTransferredEvent.where(quota_definition_sid: xml_node['sid']).count
       end
     end
 
+    context 'when the quota definition is being updated' do
+      let(:operation) { 'U' }
+
+      it_behaves_like 'an entity mapper update operation', QuotaDefinition
+      it_behaves_like 'an entity mapper update operation', QuotaAssociation
+      it_behaves_like 'an entity mapper update operation', QuotaBalanceEvent
+      it_behaves_like 'an entity mapper update operation', QuotaCriticalEvent
+      it_behaves_like 'an entity mapper update operation', QuotaExhaustionEvent
+      it_behaves_like 'an entity mapper update operation', QuotaReopeningEvent
+      it_behaves_like 'an entity mapper update operation', QuotaSuspensionPeriod
+      it_behaves_like 'an entity mapper update operation', QuotaUnsuspensionEvent
+
+      # TODO: We need real examples of these - they haven't appeared in an XML file yet
+      # it_behaves_like 'an entity mapper update operation', QuotaBlockingPeriod
+      # it_behaves_like 'an entity mapper update operation', QuotaUnblockingEvent
+    end
+
+    context 'when the quota definition is being created' do
+      let(:operation) { 'C' }
+
+      it_behaves_like 'an entity mapper create operation', QuotaDefinition
+      it_behaves_like 'an entity mapper create operation', QuotaAssociation
+      it_behaves_like 'an entity mapper create operation', QuotaBalanceEvent
+      it_behaves_like 'an entity mapper create operation', QuotaCriticalEvent
+      it_behaves_like 'an entity mapper create operation', QuotaExhaustionEvent
+      it_behaves_like 'an entity mapper create operation', QuotaReopeningEvent
+      it_behaves_like 'an entity mapper create operation', QuotaSuspensionPeriod
+      it_behaves_like 'an entity mapper create operation', QuotaUnsuspensionEvent
+
+      # TODO: We need real examples of these - they haven't appeared in an XML file yet
+      # it_behaves_like 'an entity mapper create operation', QuotaBlockingPeriod
+      # it_behaves_like 'an entity mapper create operation', QuotaUnblockingEvent
+    end
+
+    context 'when the quota definition is being deleted' do
+      before do
+        create(:quota_definition, quota_definition_sid: '21891')
+        create(:quota_association, main_quota_definition_sid: '21891', sub_quota_definition_sid: '21741')
+        create(:quota_balance_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-07-04T14:48:00')
+        create(:quota_critical_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-03-23T13:00:00')
+        create(:quota_exhaustion_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-02-10T13:00:00')
+        create(:quota_reopening_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-03-24T11:56:00')
+        create(:quota_suspension_period, quota_definition_sid: '21891', quota_suspension_period_sid: '2000')
+        create(:quota_unsuspension_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-05-31T03:18:00')
+      end
+
+      let(:operation) { 'D' }
+
+      it_behaves_like 'an entity mapper destroy operation', QuotaDefinition
+      it_behaves_like 'an entity mapper destroy operation', QuotaAssociation
+      it_behaves_like 'an entity mapper destroy operation', QuotaBalanceEvent
+      it_behaves_like 'an entity mapper destroy operation', QuotaCriticalEvent
+      it_behaves_like 'an entity mapper destroy operation', QuotaExhaustionEvent
+      it_behaves_like 'an entity mapper destroy operation', QuotaReopeningEvent
+      it_behaves_like 'an entity mapper destroy operation', QuotaSuspensionPeriod
+      it_behaves_like 'an entity mapper destroy operation', QuotaUnsuspensionEvent
+
+      # TODO: We need real examples of these - they haven't appeared in an XML file yet
+      # it_behaves_like 'an entity mapper destroy operation', QuotaBlockingPeriod
+      # it_behaves_like 'an entity mapper destroy operation', QuotaUnblockingEvent
+    end
+
+    context 'when there are missing secondary entities to be soft deleted' do
+      before do
+        # Creates entities that will be missing from the xml node
+        create(
+          :quota_definition,
+          :with_quota_association,
+          :with_quota_balance_events,
+          :with_quota_critical_events,
+          :with_quota_exhaustion_events,
+          :with_quota_reopening_events,
+          :with_quota_suspension_period,
+          :with_quota_unsuspension_events,
+          quota_definition_sid: '21891',
+        )
+
+        # Control for non-deleted secondary entities
+        create(:quota_association, main_quota_definition_sid: '21891', sub_quota_definition_sid: '21741')
+        create(:quota_balance_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-07-04T14:48:00')
+        create(:quota_critical_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-03-23T13:00:00')
+        create(:quota_exhaustion_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-02-10T13:00:00')
+        create(:quota_reopening_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-03-24T11:56:00')
+        create(:quota_suspension_period, quota_definition_sid: '21891', quota_suspension_period_sid: '2000')
+        create(:quota_unsuspension_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-05-31T03:18:00')
+      end
+
+      let(:operation) { 'C' }
+
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaAssociation, main_quota_definition_sid: '21891'
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaBalanceEvent, quota_definition_sid: '21891'
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaCriticalEvent, quota_definition_sid: '21891'
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaExhaustionEvent, quota_definition_sid: '21891'
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaReopeningEvent, quota_definition_sid: '21891'
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaSuspensionPeriod, quota_definition_sid: '21891'
+      it_behaves_like 'an entity mapper missing destroy operation', QuotaUnsuspensionEvent, quota_definition_sid: '21891'
+
+      # TODO: We need real examples of these - they haven't appeared in an XML file yet
+      # it_behaves_like 'an entity mapper missing destroy operation', QuotaBlockingPeriod, quota_definition_sid: '21891'
+      # it_behaves_like 'an entity mapper missing destroy operation', QuotaUnblockingEvent, quota_definition_sid: '21891'
+    end
+
     context 'when there is already a quotaClosedAndTransferredEvent but none in the xml node' do
       before { create(:quota_closed_and_transferred_event, quota_definition_sid: xml_node['sid']) }
 
-      it { expect { entity_mapper.import }.to change_definition_events_count.by(-1) }
+      it { expect { entity_mapper.import }.to change_definition_transfer_events_count.by(-1) }
     end
 
     context 'when there is already a quotaClosedAndTransferredEvent and one in the xml node' do
@@ -101,7 +320,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
 
       before { create(:quota_closed_and_transferred_event, quota_definition_sid: xml_node['sid']) }
 
-      it { expect { entity_mapper.import }.not_to change_definition_events_count }
+      it { expect { entity_mapper.import }.not_to change_definition_transfer_events_count }
 
       it 'imports the new event' do
         entity_mapper.import

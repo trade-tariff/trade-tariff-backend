@@ -17,6 +17,10 @@ class CdsImporter
         "#{mapping_path}.description" => :description,
         "#{mapping_path}.quotaBlockingPeriodSid" => :quota_blocking_period_sid,
       ).freeze
+
+      self.primary_filters = {
+        quota_definition_sid: :quota_definition_sid,
+      }.freeze
     end
   end
 end
