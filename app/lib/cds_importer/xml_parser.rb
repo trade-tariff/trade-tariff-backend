@@ -31,7 +31,7 @@ class CdsImporter
       end
 
       def characters(val)
-        return if !@in_target || val == EXTRA_CONTENT
+        return if !@in_target || val =~ EXTRA_CONTENT
 
         @node[CONTENT_KEY] = val
       end
