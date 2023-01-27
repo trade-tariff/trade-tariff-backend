@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 10.21 (Debian 10.21-1.pgdg90+1)
--- Dumped by pg_dump version 14.3
+-- Dumped by pg_dump version 14.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -5826,9 +5826,7 @@ CREATE VIEW public.quota_critical_events AS
    FROM public.quota_critical_events_oplog quota_critical_events1
   WHERE ((quota_critical_events1.oid IN ( SELECT max(quota_critical_events2.oid) AS max
            FROM public.quota_critical_events_oplog quota_critical_events2
-          WHERE ((quota_critical_events1.quota_definition_sid = quota_critical_events2.quota_definition_sid) AND (quota_critical_events1.occurrence_timestamp = quota_critical_events2.occurrence_timestamp))
-          GROUP BY quota_critical_events2.oid
-          ORDER BY quota_critical_events2.oid DESC)) AND ((quota_critical_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_critical_events1.quota_definition_sid = quota_critical_events2.quota_definition_sid) AND (quota_critical_events1.occurrence_timestamp = quota_critical_events2.occurrence_timestamp)))) AND ((quota_critical_events1.operation)::text <> 'D'::text));
 
 
 --
@@ -5956,7 +5954,7 @@ CREATE VIEW public.quota_exhaustion_events AS
    FROM public.quota_exhaustion_events_oplog quota_exhaustion_events1
   WHERE ((quota_exhaustion_events1.oid IN ( SELECT max(quota_exhaustion_events2.oid) AS max
            FROM public.quota_exhaustion_events_oplog quota_exhaustion_events2
-          WHERE (quota_exhaustion_events1.quota_definition_sid = quota_exhaustion_events2.quota_definition_sid))) AND ((quota_exhaustion_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_exhaustion_events1.quota_definition_sid = quota_exhaustion_events2.quota_definition_sid) AND (quota_exhaustion_events1.occurrence_timestamp = quota_exhaustion_events2.occurrence_timestamp)))) AND ((quota_exhaustion_events1.operation)::text <> 'D'::text));
 
 
 --
@@ -6174,7 +6172,7 @@ CREATE VIEW public.quota_reopening_events AS
    FROM public.quota_reopening_events_oplog quota_reopening_events1
   WHERE ((quota_reopening_events1.oid IN ( SELECT max(quota_reopening_events2.oid) AS max
            FROM public.quota_reopening_events_oplog quota_reopening_events2
-          WHERE (quota_reopening_events1.quota_definition_sid = quota_reopening_events2.quota_definition_sid))) AND ((quota_reopening_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_reopening_events1.quota_definition_sid = quota_reopening_events2.quota_definition_sid) AND (quota_reopening_events1.occurrence_timestamp = quota_reopening_events2.occurrence_timestamp)))) AND ((quota_reopening_events1.operation)::text <> 'D'::text));
 
 
 --
@@ -6337,7 +6335,7 @@ CREATE VIEW public.quota_unsuspension_events AS
    FROM public.quota_unsuspension_events_oplog quota_unsuspension_events1
   WHERE ((quota_unsuspension_events1.oid IN ( SELECT max(quota_unsuspension_events2.oid) AS max
            FROM public.quota_unsuspension_events_oplog quota_unsuspension_events2
-          WHERE (quota_unsuspension_events1.quota_definition_sid = quota_unsuspension_events2.quota_definition_sid))) AND ((quota_unsuspension_events1.operation)::text <> 'D'::text));
+          WHERE ((quota_unsuspension_events1.quota_definition_sid = quota_unsuspension_events2.quota_definition_sid) AND (quota_unsuspension_events1.occurrence_timestamp = quota_unsuspension_events2.occurrence_timestamp)))) AND ((quota_unsuspension_events1.operation)::text <> 'D'::text));
 
 
 --
@@ -10980,6 +10978,7 @@ ALTER TABLE ONLY public.news_collections_news_items
 ALTER TABLE ONLY public.news_collections_news_items
     ADD CONSTRAINT news_collections_news_items_item_id_fkey FOREIGN KEY (item_id) REFERENCES public.news_items(id);
 
+
 --
 -- PostgreSQL database dump complete
 --
@@ -11100,3 +11099,7 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20221129151917_add_importe
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221202094157_add_slug_to_collections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221207150734_adds_quota_closed_and_balance_transferred_events.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20221207150921_adds_quota_closed_and_balance_transferred_events_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230127151505_fixes_quota_critical_events_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230127153630_fixes_quota_exhaustion_events_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230127154210_fixes_quota_reopening_events_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230127155444_fixes_quota_unsuspension_events_view.rb');
