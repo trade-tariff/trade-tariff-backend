@@ -35,26 +35,6 @@ class CdsImporter
                               QuotaSuspensionPeriodMapper,
                               QuotaUnsuspensionEventMapper,
                               QuotaUnblockingEventMapper
-
-      QuotaAssociationMapper
-      QuotaBalanceEventMapper
-      QuotaBlockingPeriodMapper
-      QuotaCriticalEventMapper
-      QuotaExhaustionEventMapper
-      QuotaReopeningEventMapper
-      QuotaSuspensionPeriodMapper
-      QuotaUnsuspensionEventMapper
-      QuotaUnblockingEventMapper
     end
   end
 end
-
-# quotaAssociation
-# quotaBalanceEvent
-# quotaBlockingPeriod
-# quotaCriticalEvent
-# quotaExhaustionEvent
-# quotaReopeningEvent
-# quotaSuspensionPeriod
-# quotaUnsuspensionEvent
-# quotaUnblockingEvent

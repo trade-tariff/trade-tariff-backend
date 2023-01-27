@@ -1,8 +1,6 @@
-# frozen_string_literal: true
-
 Sequel.migration do
   up do
-    run %Q{
+    run %{
       CREATE OR REPLACE VIEW public.quota_exhaustion_events AS
       SELECT
           quota_exhaustion_events1.quota_definition_sid,
@@ -27,7 +25,7 @@ Sequel.migration do
   end
 
   down do
-    run %Q{
+    run %{
       CREATE OR REPLACE VIEW public.quota_exhaustion_events
       AS SELECT quota_exhaustion_events1.quota_definition_sid,
           quota_exhaustion_events1.occurrence_timestamp,
