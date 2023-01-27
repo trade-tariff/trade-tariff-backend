@@ -3,13 +3,21 @@ module RulesOfOrigin
     include ActiveModel::Model
     include ContentAddressableId
 
-    content_addressable_fields 'summary', 'proof_class'
-
     attr_accessor :scheme, :summary, :detail, :proof_class, :subtext
-    attr_writer :id
+    attr_writer :id, :content
+
+    content_addressable_fields 'scheme_code', 'proof_class'
+    delegate :scheme_code, :scheme_set, to: :scheme
+    delegate :read_referenced_file, to: :scheme_set
 
     def url
       all_proof_urls[proof_class] if proof_class.present?
+    end
+
+    def content
+      @content ||= read_referenced_file('proofs', scheme_code, "#{proof_class}.md")
+    rescue Errno::ENOENT
+      nil
     end
 
   private

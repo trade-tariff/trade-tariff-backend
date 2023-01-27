@@ -6,7 +6,7 @@ module Api
 
         set_type :rules_of_origin_proof
 
-        attributes :summary, :subtext, :url
+        attributes :summary, :subtext, :url, :content
       end
     end
   end

@@ -8,6 +8,7 @@ RSpec.describe RulesOfOrigin::Proof do
     it { is_expected.to respond_to :detail }
     it { is_expected.to respond_to :proof_class }
     it { is_expected.to respond_to :subtext }
+    it { is_expected.to respond_to :content }
   end
 
   describe '.new' do
@@ -16,26 +17,30 @@ RSpec.describe RulesOfOrigin::Proof do
         'summary' => 'Proof summary',
         'detail' => 'detail.md',
         'proof_class' => 'origin-declaration',
-        'subtext' => 'subtext'
+        'subtext' => 'subtext',
+        'content' => 'some content'
     end
 
     it { is_expected.to have_attributes summary: 'Proof summary' }
     it { is_expected.to have_attributes detail: 'detail.md' }
     it { is_expected.to have_attributes proof_class: 'origin-declaration' }
     it { is_expected.to have_attributes subtext: 'subtext' }
+    it { is_expected.to have_attributes content: 'some content' }
   end
 
   describe '#id' do
     subject(:proof) { first_proof.id }
 
-    let(:first_proof) { build :rules_of_origin_proof, id: }
-    let(:second_proof) { build :rules_of_origin_proof }
+    let(:first_proof) { build :rules_of_origin_proof, :with_scheme, id: }
+    let(:second_proof) { build :rules_of_origin_proof, :with_scheme }
 
     let :third_proof do
       build :rules_of_origin_proof,
             id: nil,
             summary: first_proof.summary,
-            detail: first_proof.detail
+            proof_class: first_proof.proof_class,
+            detail: first_proof.detail,
+            scheme: first_proof.scheme
     end
 
     context 'when supplied' do
@@ -89,6 +94,32 @@ RSpec.describe RulesOfOrigin::Proof do
       let(:proof_class) { 'unknown' }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#content' do
+    subject(:content) { proof.content }
+
+    before { content }
+
+    let(:scheme) { build :rules_of_origin_scheme, scheme_set: }
+    let(:proof_class) { 'origin-declaration' }
+    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet, read_referenced_file: 'foobar' }
+
+    context 'when assigned directly' do
+      let(:proof) { build :rules_of_origin_proof, proof_class:, scheme: }
+
+      it { is_expected.to be_present }
+      it { expect(scheme_set).not_to have_received(:read_referenced_file) }
+    end
+
+    context 'when read from file' do
+      let :proof do
+        build :rules_of_origin_proof, proof_class:, scheme:, content: nil
+      end
+
+      it { is_expected.to be_present }
+      it { expect(scheme_set).to have_received(:read_referenced_file) }
     end
   end
 end

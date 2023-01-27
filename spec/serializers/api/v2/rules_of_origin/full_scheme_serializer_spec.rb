@@ -118,6 +118,7 @@ RSpec.describe Api::V2::RulesOfOrigin::FullSchemeSerializer do
             summary: scheme.proofs[0].summary,
             url: scheme.proofs[0].url,
             subtext: scheme.proofs[0].subtext,
+            content: scheme.proofs[0].content,
           },
         },
         {
@@ -125,8 +126,9 @@ RSpec.describe Api::V2::RulesOfOrigin::FullSchemeSerializer do
           type: :rules_of_origin_proof,
           attributes: {
             summary: scheme.proofs[1].summary,
-            url: scheme.proofs[0].url,
-            subtext: scheme.proofs[0].subtext,
+            url: scheme.proofs[1].url,
+            subtext: scheme.proofs[1].subtext,
+            content: scheme.proofs[1].content,
           },
         },
         {
