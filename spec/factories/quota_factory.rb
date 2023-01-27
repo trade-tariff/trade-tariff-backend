@@ -4,6 +4,126 @@ FactoryBot.define do
     "09#{Forgery(:basic).number(at_least: 5000, at_most: 9999)}"
   end
 
+  factory :quota_definition do
+    quota_definition_sid            { generate(:quota_order_number_sid) }
+    quota_order_number_sid          { generate(:quota_order_number_sid) }
+    quota_order_number_id           { generate(:quota_order_number_id) }
+    monetary_unit_code              { Forgery(:basic).text(exactly: 3) }
+    measurement_unit_code           { Forgery(:basic).text(exactly: 3) }
+    measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
+    validity_start_date             { 4.years.ago.beginning_of_day }
+    validity_end_date               { nil }
+    critical_state                  { 'N' }
+    critical_threshold              { Forgery(:basic).number }
+
+    trait :actual do
+      validity_start_date { 3.years.ago.beginning_of_day }
+      validity_end_date   { nil }
+    end
+
+    trait :licensed do
+      quota_order_number_id { '094111' }
+    end
+
+    trait :first_come_first_served do
+      quota_order_number_id { '058002' }
+    end
+
+    trait :with_quota_balance_and_active_critical_events do
+      transient { event_new_balance { 100 } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance, occurrence_timestamp: Time.zone.today)
+        create(:quota_critical_event, :active, quota_definition:, occurrence_timestamp: Time.zone.yesterday)
+      end
+    end
+
+    trait :with_quota_balance_and_inactive_critical_events do
+      transient { event_new_balance { 100 } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance, occurrence_timestamp: Time.zone.today)
+        create(:quota_critical_event, :inactive, quota_definition:, occurrence_timestamp: Time.zone.yesterday)
+      end
+    end
+
+    trait :with_incoming_quota_closed_and_transferred_event do
+      transient { closing_date { Time.zone.today } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(
+          :quota_closed_and_transferred_event,
+          target_quota_definition_sid: quota_definition.quota_definition_sid,
+          closing_date: evaluator.closing_date,
+        )
+      end
+    end
+
+    trait :with_quota_balance_events do
+      transient { event_new_balance { 100 } }
+
+      after(:create) do |quota_definition, evaluator|
+        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance)
+      end
+    end
+
+    trait :with_quota_critical_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_critical_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_exhaustion_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_exhaustion_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_unsuspension_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_unsuspension_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_reopening_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_reopening_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_unblocking_events do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_unblocking_event, quota_definition:)
+      end
+    end
+
+    trait :with_quota_association do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_association, main_quota_definition_sid: quota_definition.quota_definition_sid)
+      end
+    end
+
+    trait :with_quota_suspension_period do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_suspension_period, quota_definition_sid: quota_definition.quota_definition_sid)
+      end
+    end
+
+    trait :xml do
+      validity_start_date             { 3.years.ago.beginning_of_day }
+      validity_end_date               { 1.year.ago.beginning_of_day }
+      volume                          { Forgery(:basic).number }
+      initial_volume                  { Forgery(:basic).number }
+      measurement_unit_code           { Forgery(:basic).text(exactly: 2) }
+      maximum_precision               { Forgery(:basic).number }
+      critical_state                  { Forgery(:basic).text(exactly: 2) }
+      critical_threshold              { Forgery(:basic).number }
+      monetary_unit_code              { Forgery(:basic).text(exactly: 2) }
+      measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
+      description                     { Forgery(:lorem_ipsum).sentence }
+    end
+  end
+
   factory :quota_association do
     main_quota_definition_sid  { Forgery(:basic).number }
     sub_quota_definition_sid   { Forgery(:basic).number }
@@ -133,114 +253,6 @@ FactoryBot.define do
     quota_definition_sid  { generate(:sid) }
     occurrence_timestamp  { 24.hours.ago }
     reopening_date        { 1.year.ago.beginning_of_day }
-  end
-
-  factory :quota_definition do
-    quota_definition_sid            { generate(:quota_order_number_sid) }
-    quota_order_number_sid          { generate(:quota_order_number_sid) }
-    quota_order_number_id           { generate(:quota_order_number_id) }
-    monetary_unit_code              { Forgery(:basic).text(exactly: 3) }
-    measurement_unit_code           { Forgery(:basic).text(exactly: 3) }
-    measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
-    validity_start_date             { 4.years.ago.beginning_of_day }
-    validity_end_date               { nil }
-    critical_state                  { 'N' }
-    critical_threshold              { Forgery(:basic).number }
-
-    trait :actual do
-      validity_start_date { 3.years.ago.beginning_of_day }
-      validity_end_date   { nil }
-    end
-
-    trait :licensed do
-      quota_order_number_id { '094111' }
-    end
-
-    trait :first_come_first_served do
-      quota_order_number_id { '058002' }
-    end
-
-    trait :with_quota_balance_and_active_critical_events do
-      transient { event_new_balance { 100 } }
-
-      after(:create) do |quota_definition, evaluator|
-        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance, occurrence_timestamp: Time.zone.today)
-        create(:quota_critical_event, :active, quota_definition:, occurrence_timestamp: Time.zone.yesterday)
-      end
-    end
-
-    trait :with_quota_balance_and_inactive_critical_events do
-      transient { event_new_balance { 100 } }
-
-      after(:create) do |quota_definition, evaluator|
-        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance, occurrence_timestamp: Time.zone.today)
-        create(:quota_critical_event, :inactive, quota_definition:, occurrence_timestamp: Time.zone.yesterday)
-      end
-    end
-
-    trait :with_incoming_quota_closed_and_transferred_event do
-      transient { closing_date { Time.zone.today } }
-
-      after(:create) do |quota_definition, evaluator|
-        create(
-          :quota_closed_and_transferred_event,
-          target_quota_definition_sid: quota_definition.quota_definition_sid,
-          closing_date: evaluator.closing_date,
-        )
-      end
-    end
-
-    trait :with_quota_balance_events do
-      transient { event_new_balance { 100 } }
-
-      after(:create) do |quota_definition, evaluator|
-        create(:quota_balance_event, quota_definition:, new_balance: evaluator.event_new_balance)
-      end
-    end
-
-    trait :with_quota_critical_events do
-      after(:create) do |quota_definition, _evaluator|
-        create(:quota_critical_event, quota_definition:)
-      end
-    end
-
-    trait :with_quota_exhaustion_events do
-      after(:create) do |quota_definition, _evaluator|
-        create(:quota_exhaustion_event, quota_definition:)
-      end
-    end
-
-    trait :with_quota_unsuspension_events do
-      after(:create) do |quota_definition, _evaluator|
-        create(:quota_unsuspension_event, quota_definition:)
-      end
-    end
-
-    trait :with_quota_reopening_events do
-      after(:create) do |quota_definition, _evaluator|
-        create(:quota_reopening_event, quota_definition:)
-      end
-    end
-
-    trait :with_quota_unblocking_events do
-      after(:create) do |quota_definition, _evaluator|
-        create(:quota_unblocking_event, quota_definition:)
-      end
-    end
-
-    trait :xml do
-      validity_start_date             { 3.years.ago.beginning_of_day }
-      validity_end_date               { 1.year.ago.beginning_of_day }
-      volume                          { Forgery(:basic).number }
-      initial_volume                  { Forgery(:basic).number }
-      measurement_unit_code           { Forgery(:basic).text(exactly: 2) }
-      maximum_precision               { Forgery(:basic).number }
-      critical_state                  { Forgery(:basic).text(exactly: 2) }
-      critical_threshold              { Forgery(:basic).number }
-      monetary_unit_code              { Forgery(:basic).text(exactly: 2) }
-      measurement_unit_qualifier_code { generate(:measurement_unit_qualifier_code) }
-      description                     { Forgery(:lorem_ipsum).sentence }
-    end
   end
 
   factory :quota_balance_event do
