@@ -12,6 +12,12 @@ class CdsImporter
         'sid' => :geographical_area_sid,
         'geographicalAreaId' => :geographical_area_id,
       ).freeze
+
+      self.primary_filters = {
+        geographical_area_sid: :geographical_area_sid,
+      }.freeze
+
+      delete_missing_entities GeographicalAreaDescriptionMapper
     end
   end
 end
