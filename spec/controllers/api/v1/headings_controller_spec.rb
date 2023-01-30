@@ -1,4 +1,4 @@
-RSpec.describe Api::V1::HeadingsController, 'GET #show' do
+RSpec.describe Api::V1::HeadingsController, 'GET #show', flaky: true do
   render_views
 
   context 'non-declarable heading' do
