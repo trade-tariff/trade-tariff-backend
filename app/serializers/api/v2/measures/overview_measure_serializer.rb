@@ -13,6 +13,7 @@ module Api
 
         has_one :duty_expression, serializer: Api::V2::Measures::DutyExpressionSerializer
         has_one :measure_type, serializer: Api::V2::Measures::MeasureTypeSerializer
+        has_one :additional_code, if: proc { |measure| measure.additional_code.present? }, serializer: Api::V2::AdditionalCodeSerializer
       end
     end
   end
