@@ -126,20 +126,6 @@ module Cache
                               commodity.overview_measures
                             end
         commodity_attributes[:overview_measures] = overview_measures.map do |measure|
-          additional_code = if measure.additional_code
-                              {
-                                additional_code_id: measure.additional_code_sid.to_s,
-                                additional_code: {
-                                  additional_code_sid: measure.additional_code.additional_code_sid.to_s,
-                                  code: measure.additional_code.code,
-                                  description: measure.additional_code.description,
-                                  formatted_description: measure.additional_code.formatted_description,
-                                },
-                              }
-                            else
-                              {}
-                            end
-
           {
             measure_sid: measure.measure_sid,
             effective_start_date: measure.effective_start_date&.strftime('%FT%T.%LZ'),
@@ -158,7 +144,16 @@ module Cache
               measure_type_id: measure.measure_type.measure_type_id,
               description: measure.measure_type.description,
             },
-          }.merge(additional_code)
+            additional_code_id: measure.additional_code_sid,
+            additional_code: if measure.additional_code.present?
+                               {
+                                 additional_code_sid: measure.additional_code.additional_code_sid,
+                                 code: measure.additional_code.code,
+                                 description: measure.additional_code.description,
+                                 formatted_description: measure.additional_code.formatted_description,
+                               }
+                             end,
+          }
         end
         commodity_attributes
       end

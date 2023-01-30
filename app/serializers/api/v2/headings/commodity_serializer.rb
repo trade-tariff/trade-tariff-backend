@@ -18,15 +18,10 @@ module Api
                    :description_plain,
                    :parent_sid,
                    :validity_start_date,
-                   :validity_end_date
+                   :validity_end_date,
+                   :declarable
 
-        attribute :declarable do |commodity|
-          # TODO: Once we've got the ES cache populated with declarable we can use a simple attribute to pull this out
-          commodity.leaf && commodity.producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
-        end
-
-        has_many :overview_measures, record_type: :measure,
-                                     serializer: Api::V2::Measures::OverviewMeasureSerializer
+        has_many :overview_measures, serializer: Api::V2::Measures::OverviewMeasureSerializer
       end
     end
   end

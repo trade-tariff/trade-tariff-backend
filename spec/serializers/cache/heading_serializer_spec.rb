@@ -23,16 +23,14 @@ RSpec.describe Cache::HeadingSerializer do
       goods_nomenclature_sid: heading.goods_nomenclature_sid,
     )
   end
-  let!(:additional_code) { create :additional_code, validity_start_date: 3.years.ago.beginning_of_day }
-  let!(:additional_code_description) { create :additional_code_description, :with_period, additional_code_sid: additional_code.additional_code_sid }
   let!(:measure) do
     create(
       :measure,
       :with_measure_type,
       :with_base_regulation,
       :third_country_overview,
+      :with_additional_code,
       goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-      additional_code_sid: additional_code.additional_code_sid,
     )
   end
 
@@ -135,9 +133,9 @@ RSpec.describe Cache::HeadingSerializer do
                   measure_type_id: String,
                   description: String,
                 },
-                additional_code_id: String,
+                additional_code_id: Integer,
                 additional_code: {
-                  additional_code_sid: String,
+                  additional_code_sid: Integer,
                   code: String,
                   description: String,
                   formatted_description: String,
