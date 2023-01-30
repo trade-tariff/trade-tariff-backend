@@ -46,7 +46,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
         quota_definition_sid: 21_321,
         occurrence_timestamp: Time.zone.parse('2022-05-03T13:04:00'),
         target_quota_definition_sid: 21_322,
-        transferred_amount: 769_858.493,
+        transferred_amount: 769_858,
         closing_date: Date.parse('2022-05-03'),
       }
     end
