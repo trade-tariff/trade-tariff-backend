@@ -31,10 +31,9 @@ class CdsImporter
       end
 
       def self.xml_node_equivalent_to_model_instance?(model_instance, xml_node)
-        model_instance.transferred_amount.to_s == xml_node['transferredAmount'] &&
-          xml_node['closingDate'].to_s.include?(model_instance.closing_date.iso8601) &&
+        xml_node['closingDate'].to_s.include?(model_instance.closing_date.iso8601) &&
           model_instance.occurrence_timestamp.iso8601.include?(xml_node['occurrenceTimestamp']) &&
-          model_instance.target_quota_definition_sid.to_s == xml_node['targetQuotaDefinition']['sid']
+          model_instance.target_quota_definition_sid.to_s == xml_node.dig('targetQuotaDefinition', 'sid').to_s
       end
     end
   end

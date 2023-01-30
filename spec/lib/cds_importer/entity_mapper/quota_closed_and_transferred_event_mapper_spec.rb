@@ -12,7 +12,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
             'sid' => '21322',
             'validityStartDate' => '2022-04-01T00:00:00', # newer date
           },
-          'transferredAmount' => '769858.493',
+          'transferredAmount' => '769858',
         },
         { # Invalid older dated transfer event - not imported
           'metainfo' => { 'opType' => 'C', 'transactionDate' => '2022-01-31T17:38:16' },
@@ -46,7 +46,7 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
         quota_definition_sid: 21_321,
         occurrence_timestamp: Time.zone.parse('2022-05-03T13:04:00'),
         target_quota_definition_sid: 21_322,
-        transferred_amount: 769_858.493,
+        transferred_amount: 769_858,
         closing_date: Date.parse('2022-05-03'),
       }
     end
