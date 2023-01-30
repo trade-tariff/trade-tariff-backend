@@ -130,20 +130,6 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
     end
   end
 
-  describe '#primary?' do
-    context 'when the mapper entity class matches the derived entity class' do
-      subject(:mapper) { primary_mocked_mapper.new({}) }
-
-      it { is_expected.to be_primary }
-    end
-
-    context 'when the mapper entity class does not match the derived entity class' do
-      subject(:mapper) { secondary_mocked_mapper.new({}) }
-
-      it { is_expected.not_to be_primary }
-    end
-  end
-
   describe '#parse' do
     subject(:parsed) { secondary_mocked_mapper.new(xml_node).parse.first }
 
@@ -195,66 +181,29 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
       ]
     end
 
-    it { is_expected.to be_a(MockedModel) }
-    it { expect(parsed.values).to eq(expected_values) }
-    it { expect(parsed.fields).to eq(expected_fields) }
-  end
-
-  describe '#destroy_operation?' do
-    context 'when the mapper is a primary mapper and the operation is destroy' do
-      subject(:mapper) do
-        primary_mocked_mapper.new(
-          'metainfo' => {
-            'opType' => 'D',
-            'origin' => 'T',
-            'status' => 'L',
+    let(:expected_expanded_attributes) do
+      {
+        'sid' => '123',
+        'flibble' => 'Pratchett',
+        'mockedModel' => {
+          'validityStartDate' => '1970-01-01T00:00:00',
+          'validityEndDate' => '1972-01-01T00:00:00',
+          'foo' => {
+            'bar' => true,
+            'baz' => false,
           },
-        )
-      end
-
-      it { is_expected.to be_destroy_operation }
-    end
-
-    shared_examples_for 'an xml node and mapper that are not a destroy operation' do |operation|
-      subject(:mapper) do
-        mapper_class.new(
           'metainfo' => {
-            'opType' => operation,
-            'origin' => 'T',
-            'status' => 'L',
+            'opType' => 'U',
+            'origin' => 'N',
+            'transactionDate' => '2021-01-29T20:04:37',
           },
-        )
-      end
-
-      it { is_expected.not_to be_destroy_operation }
+        },
+      }
     end
 
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
-      let(:mapper_class) { primary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'U' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'C' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'D' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
-
-    it_behaves_like 'an xml node and mapper that are not a destroy operation', 'foo' do
-      let(:mapper_class) { secondary_mocked_mapper }
-    end
+    it { expect(parsed[:instance]).to be_a(MockedModel) }
+    it { expect(parsed[:instance].values).to eq(expected_values) }
+    it { expect(parsed[:instance].fields).to eq(expected_fields) }
+    it { expect(parsed[:expanded_attributes]).to eq(expected_expanded_attributes) }
   end
 end

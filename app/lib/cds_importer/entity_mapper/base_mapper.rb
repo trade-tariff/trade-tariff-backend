@@ -182,22 +182,6 @@ class CdsImporter
         expanded.map(&method(:build_instance))
       end
 
-      def destroy_operation?
-        @xml_node.dig('metainfo', 'opType') == Sequel::Plugins::Oplog::DESTROY_OPERATION &&
-          primary?
-      end
-
-      # In the CDS file we treat the parent node differently from the
-      # secondary child nodes when it comes to support for the destroy operation.
-      #
-      # Each entity mapper represents either a child or a parent node in the xml file.
-      #
-      # Parent nodes have the same assigned entity class as their derived class. Our internal naming
-      # for this has been to name this parent node the primary.
-      def primary?
-        derived_entity_class == entity_class
-      end
-
       def filename
         @xml_node['filename']
       end

@@ -37,11 +37,6 @@ class CdsImporter
     end
 
     class << self
-      # Constrains the applicable mappers in a primary node deletion operation
-      #
-      # This is required because CDS do not mark secondary and tertiary nested xml nodes for deletion
-      # themselves and we have to ignore importing them in the event of the primary xml node being deleted as
-      # this is managed by a separate callback process (see each primary entity mapper for what gets soft deleted).
       def applicable_mappers_for(key, xml_node)
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
         mappers.map { |mapper| mapper.new(xml_node) }
