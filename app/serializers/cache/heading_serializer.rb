@@ -127,18 +127,18 @@ module Cache
                             end
         commodity_attributes[:overview_measures] = overview_measures.map do |measure|
           additional_code = if measure.additional_code
-            {
-              additional_code_id: measure.additional_code_sid.to_s,
-              additional_code: {
-                additional_code_sid: measure.additional_code.additional_code_sid.to_s,
-                code: measure.additional_code.code,
-                description: measure.additional_code.description,
-                formatted_description: measure.additional_code.formatted_description,
-              },
-            }
-          else
-            {}
-          end
+                              {
+                                additional_code_id: measure.additional_code_sid.to_s,
+                                additional_code: {
+                                  additional_code_sid: measure.additional_code.additional_code_sid.to_s,
+                                  code: measure.additional_code.code,
+                                  description: measure.additional_code.description,
+                                  formatted_description: measure.additional_code.formatted_description,
+                                },
+                              }
+                            else
+                              {}
+                            end
 
           {
             measure_sid: measure.measure_sid,
