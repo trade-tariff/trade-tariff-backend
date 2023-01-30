@@ -44,9 +44,13 @@ FactoryBot.define do
                             measure_type_series_id:
     end
     geographical_area do
-      create(:geographical_area, geographical_area_sid:,
-                                 geographical_area_id:,
-                                 validity_start_date: validity_start_date - 1.day)
+      create(
+        :geographical_area,
+        :with_description,
+        geographical_area_sid:,
+        geographical_area_id:,
+        validity_start_date: validity_start_date - 1.day,
+      )
     end
 
     trait :with_gsp do

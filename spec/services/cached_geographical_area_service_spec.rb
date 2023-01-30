@@ -4,8 +4,8 @@ RSpec.describe CachedGeographicalAreaService do
   let(:actual_date) { Time.zone.today }
   let(:countries) { false }
 
-  let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'RO') }
-  let(:excluded_geographical_area) { create(:geographical_area, :country, geographical_area_id: 'JE') }
+  let(:geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'RO') }
+  let(:excluded_geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'JE') }
 
   describe '#call' do
     let(:pattern) do
@@ -38,7 +38,7 @@ RSpec.describe CachedGeographicalAreaService do
 
     context 'when fetching geographical area countries' do
       let(:countries) { true }
-      let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'BA') }
+      let(:geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'BA') }
 
       it 'returns a correctly serialized hash' do
         expect(service.call.to_json).to match_json_expression pattern
@@ -51,7 +51,7 @@ RSpec.describe CachedGeographicalAreaService do
       end
 
       it 'sorts the geographical areas by their id' do
-        create(:geographical_area, :country, geographical_area_id: 'AA')
+        create(:geographical_area, :country, :with_description, geographical_area_id: 'AA')
 
         expected_ids = service.call[:data].map { |area| area[:id] }
 
@@ -60,7 +60,7 @@ RSpec.describe CachedGeographicalAreaService do
     end
 
     context 'when fetching geographical areas' do
-      let(:geographical_area) { create(:geographical_area, :group, geographical_area_id: 'BA') }
+      let(:geographical_area) { create(:geographical_area, :group, :with_description, geographical_area_id: 'BA') }
       let(:countries) { false }
 
       it 'returns a correctly serialized hash' do
@@ -74,7 +74,7 @@ RSpec.describe CachedGeographicalAreaService do
       end
 
       it 'sorts the geographical areas by their id' do
-        create(:geographical_area, :group, geographical_area_id: 'AA')
+        create(:geographical_area, :group, :with_description, geographical_area_id: 'AA')
 
         expected_ids = service.call[:data].map { |area| area[:id] }
 
@@ -85,8 +85,8 @@ RSpec.describe CachedGeographicalAreaService do
     context 'when on the xi service' do
       before { allow(TradeTariffBackend).to receive(:xi?).and_return(true) }
 
-      let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'GB') }
-      let(:excluded_geographical_area) { create(:geographical_area, :country, geographical_area_id: 'XU') }
+      let(:geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'GB') }
+      let(:excluded_geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'XU') }
 
       it 'excludes XU' do
         excluded_geographical_area
@@ -100,11 +100,11 @@ RSpec.describe CachedGeographicalAreaService do
         allow(TradeTariffBackend).to receive(:xi?).and_return(false)
 
         %w[GB XU XI].map do |excluded_id|
-          create(:geographical_area, :country, geographical_area_id: excluded_id)
+          create(:geographical_area, :country, :with_description, geographical_area_id: excluded_id)
         end
       end
 
-      let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'GB') }
+      let(:geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'GB') }
 
       it 'excludes XU' do
         no_excluded_areas = service.call[:data].select { |country| country[:id].in?(%w[GB XU XI]) }
