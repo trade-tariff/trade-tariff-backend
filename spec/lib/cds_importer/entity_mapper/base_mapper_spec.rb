@@ -181,8 +181,12 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
       ]
     end
 
-    let(:expected_expanded_attributes) do
-      {
+    it { expect(parsed[:instance]).to be_a(MockedModel) }
+    it { expect(parsed[:instance].values).to eq(expected_values) }
+    it { expect(parsed[:instance].fields).to eq(expected_fields) }
+
+    it 'returns the correct expanded_attributes' do
+      expected_expanded_attributes = {
         'sid' => '123',
         'flibble' => 'Pratchett',
         'mockedModel' => {
@@ -199,11 +203,8 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
           },
         },
       }
-    end
 
-    it { expect(parsed[:instance]).to be_a(MockedModel) }
-    it { expect(parsed[:instance].values).to eq(expected_values) }
-    it { expect(parsed[:instance].fields).to eq(expected_fields) }
-    it { expect(parsed[:expanded_attributes]).to eq(expected_expanded_attributes) }
+      expect(parsed[:expanded_attributes]).to eq(expected_expanded_attributes)
+    end
   end
 end
