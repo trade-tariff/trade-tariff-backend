@@ -123,6 +123,17 @@ FactoryBot.define do
     geographical_area_id                     { Forgery(:basic).text(exactly: 3) }
     validity_start_date                      { 2.years.ago.beginning_of_day }
     validity_end_date                        { nil }
+
+    trait :with_description do
+      after(:create) do |geographical_area_description_period, _evaluator|
+        create(
+          :geographical_area_description,
+          geographical_area_id: geographical_area_description_period.geographical_area_id,
+          geographical_area_sid: geographical_area_description_period.geographical_area_sid,
+          geographical_area_description_period_sid: geographical_area_description_period.geographical_area_description_period_sid,
+        )
+      end
+    end
   end
 
   factory :geographical_area_description do

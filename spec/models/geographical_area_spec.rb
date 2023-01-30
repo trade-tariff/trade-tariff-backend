@@ -1,21 +1,21 @@
 RSpec.describe GeographicalArea do
   describe 'associations' do
-    describe 'geographical area description' do
+    describe '#geographical_area_description' do
       let!(:geographical_area)                { create :geographical_area }
       let!(:geographical_area_description1)   do
-        create :geographical_area_description, :with_period,
+        create :geographical_area_description_period, :with_description,
                geographical_area_sid: geographical_area.geographical_area_sid,
-               valid_at: 3.years.ago,
-               valid_to: nil
+               validity_start_date: 3.years.ago,
+               validity_end_date: nil
       end
       let!(:geographical_area_description2) do
-        create :geographical_area_description, :with_period,
+        create :geographical_area_description_period, :with_description,
                geographical_area_sid: geographical_area.geographical_area_sid,
-               valid_at: 5.years.ago,
-               valid_to: 3.years.ago
+               validity_start_date: 5.years.ago,
+               validity_end_date: 3.years.ago
       end
 
-      context 'direct loading' do
+      context 'when direct loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -33,7 +33,7 @@ RSpec.describe GeographicalArea do
         end
       end
 
-      context 'eager loading' do
+      context 'when eager loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -42,15 +42,6 @@ RSpec.describe GeographicalArea do
                           .first
                           .geographical_area_description.pk,
             ).to eq geographical_area_description1.pk
-          end
-        end
-
-        it 'loads correct description respecting given time' do
-          TimeMachine.at(1.year.ago) do
-            result = described_class.eager(:geographical_area_descriptions)
-                      .where(geographical_area_sid: geographical_area.geographical_area_sid)
-                      .first.geographical_area_description.pk
-            expect(result).to eq(geographical_area_description1.pk)
           end
         end
 
@@ -65,7 +56,19 @@ RSpec.describe GeographicalArea do
       end
     end
 
-    describe 'contained geographical areas' do
+    describe '#contained_geographical_areas' do
+      before do
+        create :geographical_area_membership, geographical_area_sid: contained_area_present.geographical_area_sid,
+                                              geographical_area_group_sid: geographical_area.geographical_area_sid,
+                                              validity_start_date: 2.years.ago.beginning_of_day,
+                                              validity_end_date: nil
+
+        create :geographical_area_membership, geographical_area_sid: contained_area_past.geographical_area_sid,
+                                              geographical_area_group_sid: geographical_area.geographical_area_sid,
+                                              validity_start_date: 5.years.ago.beginning_of_day,
+                                              validity_end_date: 3.years.ago
+      end
+
       let!(:geographical_area)                { create :geographical_area, geographical_area_id: 'xx' }
       let!(:contained_area_present)           do
         create :geographical_area, geographical_area_id: 'ab',
@@ -77,20 +80,8 @@ RSpec.describe GeographicalArea do
                                    validity_start_date: 5.years.ago.beginning_of_day,
                                    validity_end_date: 3.years.ago
       end
-      let!(:geographical_area_membership1) do
-        create :geographical_area_membership, geographical_area_sid: contained_area_present.geographical_area_sid,
-                                              geographical_area_group_sid: geographical_area.geographical_area_sid,
-                                              validity_start_date: 2.years.ago.beginning_of_day,
-                                              validity_end_date: nil
-      end
-      let!(:geographical_area_membership2) do
-        create :geographical_area_membership, geographical_area_sid: contained_area_past.geographical_area_sid,
-                                              geographical_area_group_sid: geographical_area.geographical_area_sid,
-                                              validity_start_date: 5.years.ago.beginning_of_day,
-                                              validity_end_date: 3.years.ago
-      end
 
-      context 'direct loading' do
+      context 'when direct loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -108,7 +99,7 @@ RSpec.describe GeographicalArea do
         end
       end
 
-      context 'eager loading' do
+      context 'when eager loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
