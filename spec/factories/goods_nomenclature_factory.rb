@@ -336,8 +336,11 @@ FactoryBot.define do
   end
 
   trait :hidden do
-    after(:create) do |goods_nomenclature, evaluator|
-      create :hidden_goods_nomenclature, goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id 
+    after(:create) do |goods_nomenclature, _evaluator|
+      create(
+        :hidden_goods_nomenclature,
+        goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+      )
     end
   end
 end
