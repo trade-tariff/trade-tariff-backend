@@ -14,7 +14,8 @@ RSpec.shared_examples_for 'an entity mapper' do |expected_entity_class, expected
   describe '#parse' do
     subject(:parsed) { described_class.new(xml_node).parse.first }
 
-    it { expect(parsed.values).to eq(expected_values) }
-    it { is_expected.to be_a(expected_entity_class.constantize) }
+    it { expect(parsed[:instance].values).to eq(expected_values) }
+    it { expect(parsed[:instance]).to be_a(expected_entity_class.constantize) }
+    it { expect(parsed[:expanded_attributes]).to be_a(Hash) }
   end
 end

@@ -19,8 +19,18 @@ class CdsImporter
 
         instances = mapper.parse
 
-        instances.each do |model_instance|
-          mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper, model_instance) }
+        instances.each do |model_configuration|
+          model_instance = model_configuration[:instance]
+          expanded_model_values = model_configuration[:expanded_attributes]
+
+          mapper.before_oplog_inserts_callbacks.each do |callback|
+            callback.call(
+              xml_node,
+              mapper,
+              model_instance,
+              expanded_model_values,
+            )
+          end
 
           record_inserter = CdsImporter::RecordInserter.new(model_instance, mapper, @filename)
 

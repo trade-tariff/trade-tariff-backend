@@ -54,7 +54,7 @@ class CdsImporter
 
         # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
         def delete_missing_entities(*secondary_mappers)
-          before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance|
+          before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance, _expanded_attributes|
             if TradeTariffBackend.handle_missing_soft_deletes?
               secondary_mappers.each do |secondary_mapper|
                 database_entities = secondary_mapper.database_entities_for(primary_model_instance)
@@ -125,7 +125,7 @@ class CdsImporter
         end
 
         def xml_entities_for(xml_node)
-          xml_node_entities = new(xml_node).parse
+          xml_node_entities = new(xml_node).parse.map { |model_configuration| model_configuration[:instance] }
 
           xml_node_entities.pluck(*entity.primary_key).map(&Array.method(:wrap))
         end
@@ -164,7 +164,7 @@ class CdsImporter
               # iterating through all items in Array and creating @values copy
               value.each do |v|
                 # [1,2,3] => {1=>{2=>{3=>value}}
-                tmp = current_path.lazy.reverse_each.inject(v) do |memo, i|
+                tmp = current_path.reverse.inject(v) do |memo, i|
                   memo = { i => memo }
                   memo
                 end
@@ -175,7 +175,7 @@ class CdsImporter
             expanded = new_expanded if new_expanded.present?
           end
         end
-        # creating instances for all expanded values
+        # building instances for all expanded values
         if mapping_path.present?
           expanded.select! { |values| values.dig(*mapping_path.split(PATH_SEPARATOR)).present? }
         end
@@ -189,10 +189,11 @@ class CdsImporter
       private
 
       def build_instance(values)
+        unmapped_values = values
         values = mapped_values(values)
         normalized_values = normalized_values(values)
         instance = entity_class.constantize.new
-        instance.set_fields(normalized_values, entity_mapping.values)
+        { instance: instance.set_fields(normalized_values, entity_mapping.values), expanded_attributes: unmapped_values }
       end
 
       def mapped_values(values)
