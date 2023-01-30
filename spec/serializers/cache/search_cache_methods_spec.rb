@@ -83,7 +83,7 @@ RSpec.describe Cache::SearchCacheMethods do
     subject(:geographical_area_attributes) { serializer.geographical_area_attributes(geographical_area) }
 
     context 'when the geographical area is present' do
-      let(:geographical_area) { create(:geographical_area) }
+      let(:geographical_area) { create(:geographical_area, :with_description) }
 
       let(:expected_pattern) do
         {

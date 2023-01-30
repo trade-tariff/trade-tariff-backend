@@ -133,7 +133,7 @@ RSpec.describe CachedCommodityService do
       }
     end
 
-    let(:geographical_area) { create(:geographical_area, :country, geographical_area_id: 'RO') }
+    let(:geographical_area) { create(:geographical_area, :country, :with_description, geographical_area_id: 'RO') }
 
     before do
       allow(Rails.cache).to receive(:fetch).and_call_original

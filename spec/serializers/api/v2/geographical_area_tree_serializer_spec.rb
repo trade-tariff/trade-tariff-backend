@@ -2,7 +2,7 @@ RSpec.describe Api::V2::GeographicalAreaTreeSerializer do
   describe '#serializable_hash' do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
-    let(:serializable) { create(:geographical_area, geographical_area_id: 'IT', hjid: '12312') }
+    let(:serializable) { create(:geographical_area, :with_description, geographical_area_id: 'IT', hjid: '12312') }
 
     let(:expected) do
       {
