@@ -112,7 +112,7 @@ module TradeTariffBackend
 
     def search_client
       @search_client ||= SearchClient.new(
-        Elasticsearch::Client.new,
+        OpenSearch::Client.new(opensearch_configuration),
         indexes: search_indexes,
         index_page_size: 500,
       )
@@ -120,7 +120,7 @@ module TradeTariffBackend
 
     def v2_search_client
       @v2_search_client ||= SearchClient.new(
-        Elasticsearch::Client.new,
+        OpenSearch::Client.new(opensearch_configuration),
         indexes: v2_search_indexes,
         index_page_size: 2000,
       )
@@ -128,7 +128,7 @@ module TradeTariffBackend
 
     def cache_client
       @cache_client ||= SearchClient.new(
-        Elasticsearch::Client.new,
+        OpenSearch::Client.new(opensearch_configuration),
         namespace: 'cache',
         indexes: cache_indexes,
         index_page_size: 5,
@@ -271,6 +271,21 @@ module TradeTariffBackend
 
     def aggregated_synonyms_file
       ENV.fetch('AGGREGATED_SYNONYMS_FILE', 'config/opensearch/synonyms_all.txt')
+    end
+
+    def opensearch_configuration
+      {
+        host: opensearch_host,
+        log: opensearch_debug,
+      }
+    end
+
+    def opensearch_host
+      ENV.fetch('ELASTICSEARCH_URL', 'http://localhost:9200')
+    end
+
+    def opensearch_debug
+      ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end
   end
 end
