@@ -37,7 +37,7 @@ RSpec.describe TariffSynchronizer do
       before do
         expect_any_instance_of(TaricImporter::Transaction).to receive(
           :persist,
-        ).and_raise Elasticsearch::Transport::Transport::SnifferTimeoutError
+        ).and_raise OpenSearch::Transport::Transport::SnifferTimeoutError
       end
 
       it 'stops syncing' do

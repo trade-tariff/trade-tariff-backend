@@ -112,7 +112,7 @@ module TradeTariffBackend
 
     def search_client
       @search_client ||= SearchClient.new(
-        Elasticsearch::Client.new,
+        OpenSearch::Client.new,
         indexes: search_indexes,
         index_page_size: 500,
       )
@@ -120,7 +120,7 @@ module TradeTariffBackend
 
     def v2_search_client
       @v2_search_client ||= SearchClient.new(
-        Elasticsearch::Client.new,
+        OpenSearch::Client.new,
         indexes: v2_search_indexes,
         index_page_size: 2000,
       )
@@ -128,7 +128,7 @@ module TradeTariffBackend
 
     def cache_client
       @cache_client ||= SearchClient.new(
-        Elasticsearch::Client.new,
+        OpenSearch::Client.new,
         namespace: 'cache',
         indexes: cache_indexes,
         index_page_size: 5,

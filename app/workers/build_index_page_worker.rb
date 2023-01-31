@@ -4,7 +4,7 @@ class BuildIndexPageWorker
   sidekiq_options queue: :default, retry: false
 
   def perform(index_namespace, index_name, page_number, page_size)
-    client = Elasticsearch::Client.new
+    client = OpenSearch::Client.new
     index_name = "#{index_name}Index" unless index_name.ends_with?('Index')
     index = "#{index_namespace.camelize}::#{index_name}".constantize.new
 

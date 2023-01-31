@@ -17,7 +17,7 @@ class SearchService
             })
           end
         end
-      rescue Elasticsearch::Transport::Transport::Error
+      rescue OpenSearch::Transport::Transport::Error
         # rescue from malformed queries, return empty resultset in that case
         BLANK_RESULT
       end
