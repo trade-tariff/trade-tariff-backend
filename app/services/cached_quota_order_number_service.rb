@@ -14,10 +14,6 @@ class CachedQuotaOrderNumberService
 
   private
 
-  def cache_key
-    "_commodity-v#{CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
-  end
-
   def quota_order_numbers
     QuotaOrderNumber.with_quota_definitions
   end
