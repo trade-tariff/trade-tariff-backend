@@ -485,6 +485,14 @@ jobs:
       - ruby/rspec-test:
           label: 'Run flaky tests'
           tag: "flaky"
+      - slack/notify:
+          channel: tariffs-regression
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          channel: tariffs-regression
+          event: pass
+          template: basic_success_1
   test:
     docker:
       - image: cimg/ruby:3.2.0
