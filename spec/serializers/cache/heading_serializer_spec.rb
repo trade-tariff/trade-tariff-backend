@@ -1,29 +1,17 @@
 RSpec.describe Cache::HeadingSerializer do
   subject(:serialized) { described_class.new(heading.reload).as_json }
 
-  let!(:chapter) do
-    create(
-      :chapter,
-      :with_section,
-      :with_description,
-      goods_nomenclature_item_id: heading.chapter_id,
-    )
-  end
-  let!(:forum_link) do
+  before do
     ForumLink.create(
       url: '123',
       goods_nomenclature_sid: chapter.goods_nomenclature_sid,
     )
-  end
-  let!(:footnote) do
     create(
       :footnote,
       :with_description,
       :with_gono_association,
       goods_nomenclature_sid: heading.goods_nomenclature_sid,
     )
-  end
-  let!(:measure) do
     create(
       :measure,
       :with_measure_type,
@@ -32,10 +20,19 @@ RSpec.describe Cache::HeadingSerializer do
       :with_additional_code,
       goods_nomenclature_sid: commodity.goods_nomenclature_sid,
     )
+    create(:measure_type, measure_type_id: '103')
+  end
+
+  let!(:chapter) do
+    create(
+      :chapter,
+      :with_section,
+      :with_description,
+      goods_nomenclature_item_id: heading.chapter_id,
+    )
   end
 
   let!(:commodity) { heading.commodities.first }
-  let!(:measure_type) { create :measure_type, measure_type_id: '103' }
 
   context 'when the heading is a Heading' do
     let(:heading) { create(:heading, :non_declarable) }
