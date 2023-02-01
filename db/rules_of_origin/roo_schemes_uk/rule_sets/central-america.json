@@ -1187,7 +1187,7 @@
                               "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;02](/chapters/02) used are wholly obtained, *and*\n\n- all the vegetable materials used are wholly obtained. However, materials of [heading&nbsp;1507](/headings/1507) and [heading&nbsp;1508](/headings/1508) may be used.",
                               "class": [
                                     "WO",
-                                    "(WO TOLERANCE MAY BE USED)"
+                                    "WO TOLERANCE MAY BE USED"
                               ],
                               "operator": null
                         }
@@ -1205,7 +1205,7 @@
                               "rule": "Manufacture in which:\n\n- all the materials of [chapter&nbsp;02](/chapters/02) and [chapter&nbsp;04](/chapters/04) used are wholly obtained, *and*\n\n- all the vegetable materials used are wholly obtained. However, materials of [heading&nbsp;1507](/headings/1507) and [heading&nbsp;1508](/headings/1508) may be used.",
                               "class": [
                                     "WO",
-                                    "(WO TOLERANCE MAY BE USED)"
+                                    "WO TOLERANCE MAY BE USED"
                               ],
                               "operator": null
                         }
@@ -3001,7 +3001,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3198,7 +3198,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3247,7 +3247,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3272,7 +3272,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3297,7 +3297,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3322,7 +3322,7 @@
                               "rule": "Manufacture from materials of any heading, including other materials of [heading&nbsp;2905](/headings/2905). However, metal alcoholates of this heading may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "AH INCLUDING TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "AH INCLUDING TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3347,7 +3347,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3372,7 +3372,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3397,7 +3397,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3422,7 +3422,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3447,7 +3447,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3472,7 +3472,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3497,7 +3497,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3522,7 +3522,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3547,7 +3547,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3572,7 +3572,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3621,7 +3621,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3646,7 +3646,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3671,7 +3671,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3696,7 +3696,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3721,7 +3721,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3746,7 +3746,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3771,7 +3771,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3796,7 +3796,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3821,7 +3821,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3846,7 +3846,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3871,7 +3871,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3896,7 +3896,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3921,7 +3921,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3946,7 +3946,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3971,7 +3971,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -3996,7 +3996,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4069,7 +4069,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4142,7 +4142,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4167,7 +4167,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4192,7 +4192,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4217,7 +4217,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4259,7 +4259,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4284,7 +4284,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4309,7 +4309,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4334,7 +4334,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4410,7 +4410,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -4510,7 +4510,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -4528,7 +4528,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4553,7 +4553,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4602,7 +4602,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4627,7 +4627,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4652,7 +4652,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4677,7 +4677,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4702,7 +4702,7 @@
                               "rule": "Manufacture from materials of any heading, except [heading&nbsp;3203](/headings/3203), [heading&nbsp;3204](/headings/3204) and [heading&nbsp;3205](/headings/3205). However, materials of [heading&nbsp;3205](/headings/3205) may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "AH EXCEPT TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "AH EXCEPT TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4727,7 +4727,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4752,7 +4752,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4777,7 +4777,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4802,7 +4802,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4827,7 +4827,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4852,7 +4852,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4877,7 +4877,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4902,7 +4902,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4927,7 +4927,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -4952,7 +4952,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5000,7 +5000,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5025,7 +5025,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5050,7 +5050,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5075,7 +5075,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5100,7 +5100,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5125,7 +5125,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5151,7 +5151,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5176,7 +5176,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5225,7 +5225,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5250,7 +5250,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **50%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -5268,7 +5268,7 @@
                               "rule": "Manufacture from materials of any heading, except:\n\n- hydrogenated oils having the character of waxes of [heading&nbsp;1516](/headings/1516),\n\n- fatty acids not chemically defined or industrial fatty alcohols having the character of waxes of [heading&nbsp;3823](/headings/3823), *and*\n\n- materials of heading&nbsp;3404\n\nHowever, these materials may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "AH EXCEPT TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "AH EXCEPT TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5293,7 +5293,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5318,7 +5318,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5343,7 +5343,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5368,7 +5368,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5393,7 +5393,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5418,7 +5418,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5443,7 +5443,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5516,7 +5516,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5558,7 +5558,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5583,7 +5583,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5608,7 +5608,7 @@
                               "rule": "Manufacture from materials of any heading, except those of [heading&nbsp;3701](/headings/3701) and [heading&nbsp;3702](/headings/3702). However, materials of [heading&nbsp;3702](/headings/3702) may be used, provided that their total value does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "AH EXCEPT TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "AH EXCEPT TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5633,7 +5633,7 @@
                               "rule": "Manufacture from materials of any heading, except those of [heading&nbsp;3701](/headings/3701) and [heading&nbsp;3702](/headings/3702). However, materials of [heading&nbsp;3701](/headings/3701) and [heading&nbsp;3702](/headings/3702) may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "AH EXCEPT TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "AH EXCEPT TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5681,7 +5681,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5730,7 +5730,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5755,7 +5755,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5780,7 +5780,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5847,7 +5847,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5872,7 +5872,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5921,7 +5921,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5946,7 +5946,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -5995,7 +5995,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6044,7 +6044,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6093,7 +6093,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6254,7 +6254,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6279,7 +6279,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6304,7 +6304,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6397,7 +6397,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6473,7 +6473,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6515,7 +6515,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6540,7 +6540,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6565,7 +6565,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -6638,7 +6638,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **50%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -7884,14 +7884,14 @@
             {
                   "heading": "4810",
                   "chapter": 48,
-                  "subdivision": "Paper and paperboard; articles of paper pulp, of paper or of paperboard",
+                  "subdivision": "Paper and paperboard, coated on one or both sides with kaolin (China clay) or other inorganic substances, with or without a binder, and with no other coating, whether or not surface-coloured, surface-decorated or printed, in rolls or rectangular (including square) sheets, of any size",
                   "min": "4810000000",
                   "max": "4810999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product.",
+                              "rule": "Manufacture from materials of any heading - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
                               "class": [
-                                    "CTH"
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -7909,6 +7909,13 @@
                               "rule": "Manufacture from paper-making materials of [chapter&nbsp;47](/chapters/47).",
                               "class": [
                                     "PRODUCTION FROM"
+                              ],
+                              "operator": null
+                        },
+                        {
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
+                              "class": [
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -7996,6 +8003,13 @@
                                     "PRODUCTION FROM"
                               ],
                               "operator": null
+                        },
+                        {
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
+                              "class": [
+                                    "Unspecified"
+                              ],
+                              "operator": null
                         }
                   ],
                   "valid": true
@@ -8008,16 +8022,17 @@
                   "max": "4817999999",
                   "rules": [
                         {
-                              "rule": "Manufacture.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, *and*\n\nin which the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
                               "class": [
-                                    "Unspecified"
+                                    "MAXNOM",
+                                    "CTH"
                               ],
                               "operator": null
                         },
                         {
-                              "rule": "From materials of any heading, except that of the product, *and*\n\nin which the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
                               "class": [
-                                    "MAXNOM"
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -8035,6 +8050,13 @@
                               "rule": "Manufacture from paper-making materials of [chapter&nbsp;47](/chapters/47).",
                               "class": [
                                     "PRODUCTION FROM"
+                              ],
+                              "operator": null
+                        },
+                        {
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
+                              "class": [
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -8066,16 +8088,17 @@
                   "max": "4819999999",
                   "rules": [
                         {
-                              "rule": "Manufacture.",
+                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and*\n\n- in which the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
                               "class": [
-                                    "Unspecified"
+                                    "MAXNOM",
+                                    "CTH"
                               ],
                               "operator": null
                         },
                         {
-                              "rule": "- from materials of any heading, except that of the product, *and*\n\n- in which the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
                               "class": [
-                                    "MAXNOM"
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -8110,6 +8133,13 @@
                               "rule": "Manufacture in which the value of all the materials used does not exceed **50%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
+                              ],
+                              "operator": null
+                        },
+                        {
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
+                              "class": [
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -8178,6 +8208,13 @@
                               "rule": "Manufacture from paper-making materials of [chapter&nbsp;47](/chapters/47).",
                               "class": [
                                     "PRODUCTION FROM"
+                              ],
+                              "operator": null
+                        },
+                        {
+                              "rule": "Manufacture from materials of any heading, except that of the product - <b>applies in the case of any increase above **0%** of the United Kingdom's WTO bound tariffs applicable to these products</b>.",
+                              "class": [
+                                    "Unspecified"
                               ],
                               "operator": null
                         }
@@ -8557,7 +8594,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -8700,7 +8737,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -8809,7 +8846,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -8935,7 +8972,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -8993,7 +9030,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9068,7 +9105,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9105,7 +9142,7 @@
                               "rule": "Manufacture from:\n\nnatural fibres, or\n\nchemical materials or textile pulp\n\nHowever:\n\npolypropylene filament of [heading&nbsp;5402](/headings/5402),\n\npolypropylene fibres of [heading&nbsp;5503](/headings/5503) or [heading&nbsp;5506](/headings/5506), or\n\npolypropylene filament tow of [heading&nbsp;5501](/headings/5501),\n\nof which the denomination in all cases of a single filament or fibre is less than 9 decitex, may be used, provided that their total value does not exceed **40%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "(PRODUCTION FROM OR_ENUM PRODUCTION FROM) TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "PRODUCTION FROM OR_ENUM PRODUCTION FROM TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -9586,7 +9623,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9627,7 +9664,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9668,7 +9705,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9709,7 +9746,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9767,7 +9804,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9808,7 +9845,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9849,7 +9886,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9890,7 +9927,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -9955,7 +9992,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -10031,7 +10068,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, rasing, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the imprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, rasing, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating, mending and burling), provided that the value of the imprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -10089,7 +10126,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent\n\nfinishing, decatising, impregnating,\n\nmending and burling), provided that the value of the unprinted fabric used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -11240,7 +11277,7 @@
                               "operator": null
                         },
                         {
-                              "rule": "Making up, followed by printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of all the unprinted goods of [heading&nbsp;6213](/headings/6213) and [heading&nbsp;6214](/headings/6214) used does not exceed 47.**5%** of the ex-works price of the product.",
+                              "rule": "Making up, followed by printing accompanied by at least two preparatory or finishing operations (such as scouring, bleaching, mercerising, heat setting, raising, calendering, shrink resistance processing, permanent finishing, decatising, impregnating, mending and burling), provided that the value of all the unprinted goods of [heading&nbsp;6213](/headings/6213) and [heading&nbsp;6214](/headings/6214) used does not exceed 47.5% of the ex-works price of the product.",
                               "class": [
                                     "Unspecified"
                               ],
@@ -11527,7 +11564,7 @@
                               "rule": "Each item in the set must satisfy the rule which would apply to it if it were not included in the set. However, non-originating articles may be incorporated, provided that their total value does not exceed **15%** of the ex-works price of the set.",
                               "class": [
                                     "MAXNOM",
-                                    "SET TOLERANCE (MAY BE USED SET RESTRICTION MAXNOM)"
+                                    "SET TOLERANCE MAY BE USED SET RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -15928,7 +15965,7 @@
                               "rule": "Manufacture from materials of any heading, except those of [heading&nbsp;8202](/headings/8202) to [heading&nbsp;8205](/headings/8205). However, tools of [heading&nbsp;8202](/headings/8202) to [heading&nbsp;8205](/headings/8205) may be incorporated into the set, provided that their total value does not exceed **15%** of the ex-works price of the set.",
                               "class": [
                                     "MAXNOM",
-                                    "AH EXCEPT TOLERANCE (MAY BE USED SET RESTRICTION MAXNOM)"
+                                    "AH EXCEPT TOLERANCE MAY BE USED SET RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -16147,7 +16184,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, other materials of [heading&nbsp;8302](/headings/8302) may be used, provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -16165,7 +16202,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, other materials of [heading&nbsp;8306](/headings/8306) may be used, provided that their total value does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
@@ -16613,7 +16650,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However materials of the same heading as the product may be used provided that their total value does not exceed **20%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -17993,7 +18030,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, other materials of the same heading may be used, provided that their total value does not exceed **20%** of the ex works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -18143,7 +18180,7 @@
                               "rule": "Manufacture from materials of any heading, except that of the product. However, other materials of the same heading may be used, provided that their total value does not exceed **20%** of the ex works price of the product.",
                               "class": [
                                     "MAXNOM",
-                                    "CTH TOLERANCE (MAY BE USED RESTRICTION MAXNOM)"
+                                    "CTH TOLERANCE MAY BE USED RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         },
@@ -21509,7 +21546,7 @@
                               "rule": "Each item in the set must satisfy the rule which would apply to it if it were not included in the set. However, non-originating articles may be incorporated, provided that their total value does not exceed **15%** of the ex-works price of the set.",
                               "class": [
                                     "MAXNOM",
-                                    "SET TOLERANCE (MAY BE USED SET RESTRICTION MAXNOM)"
+                                    "SET TOLERANCE MAY BE USED SET RESTRICTION MAXNOM"
                               ],
                               "operator": null
                         }
