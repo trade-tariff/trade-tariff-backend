@@ -1,10 +1,3 @@
-#
-# There is no collection with GoodsNomenclatureDescription in new xml.
-# GoodsNomenclatureDescription is nested in to GoodsNomenclatureDescriptionPeriod.
-# GoodsNomenclatureDescriptionPeriod is nested in to GoodsNomenclature.
-# We will pass @values for GoodsNomenclatureDescription the same as for GoodsNomenclature.
-#
-
 class CdsImporter
   class EntityMapper
     class GoodsNomenclatureDescriptionMapper < BaseMapper
@@ -24,6 +17,10 @@ class CdsImporter
         'produclineSuffix' => :productline_suffix,
         "#{mapping_path}.description" => :description,
       ).freeze
+
+      self.primary_filters = {
+        goods_nomenclature_description_period_sid: :goods_nomenclature_description_period_sid,
+      }.freeze
     end
   end
 end
