@@ -37,6 +37,8 @@ RSpec.describe Api::V2::Footnotes::FootnoteSerializer do
               description: String,
               formatted_description: String,
               extra_large_measures: false,
+              validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
+              validity_end_date: nil,
             },
             relationships: {
               measures: { data: [{ id: String, type: 'measure' }] },
@@ -76,6 +78,8 @@ RSpec.describe Api::V2::Footnotes::FootnoteSerializer do
               description: String,
               formatted_description: String,
               extra_large_measures: false,
+              validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
+              validity_end_date: nil,
             },
             relationships: {
               goods_nomenclatures: { data: [] },
