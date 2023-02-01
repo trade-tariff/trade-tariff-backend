@@ -15,7 +15,6 @@ require 'rspec/rails'
 require 'json_expressions/rspec'
 require 'fakefs/spec_helpers'
 require 'sidekiq/testing'
-require 'elasticsearch/extensions/test/cluster'
 
 Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 

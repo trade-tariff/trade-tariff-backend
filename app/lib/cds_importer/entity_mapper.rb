@@ -19,8 +19,18 @@ class CdsImporter
 
         instances = mapper.parse
 
-        instances.each do |model_instance|
-          mapper.before_oplog_inserts_callbacks.each { |callback| callback.call(xml_node, mapper, model_instance) }
+        instances.each do |model_configuration|
+          model_instance = model_configuration[:instance]
+          expanded_model_values = model_configuration[:expanded_attributes]
+
+          mapper.before_oplog_inserts_callbacks.each do |callback|
+            callback.call(
+              xml_node,
+              mapper,
+              model_instance,
+              expanded_model_values,
+            )
+          end
 
           record_inserter = CdsImporter::RecordInserter.new(model_instance, mapper, @filename)
 
@@ -37,11 +47,6 @@ class CdsImporter
     end
 
     class << self
-      # Constrains the applicable mappers in a primary node deletion operation
-      #
-      # This is required because CDS do not mark secondary and tertiary nested xml nodes for deletion
-      # themselves and we have to ignore importing them in the event of the primary xml node being deleted as
-      # this is managed by a separate callback process (see each primary entity mapper for what gets soft deleted).
       def applicable_mappers_for(key, xml_node)
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)
         mappers.map { |mapper| mapper.new(xml_node) }
