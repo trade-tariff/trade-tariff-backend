@@ -31,9 +31,9 @@ module Api
             pagination: {
               page: current_page,
               per_page:,
-              total_count: search_service.pagination_record_count
-            }
-          }
+              total_count: search_service.pagination_record_count,
+            },
+          },
         }
       end
     end

@@ -1,21 +1,21 @@
 RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapper do
-  it_behaves_like 'an entity mapper', 'GoodsNomenclatureDescriptionPeriod', 'GoodsNomenclature' do
-    let(:xml_node) do
-      {
-        'sid' => '27652',
-        'goodsNomenclatureItemId' => '0102901019',
-        'produclineSuffix' => '80',
-        'goodsNomenclatureDescriptionPeriod' => {
-          'sid' => '30993',
-          'validityStartDate' => '1992-03-01T00:00:00',
-          'metainfo' => {
-            'opType' => 'U',
-            'transactionDate' => '2017-06-29T20:04:37',
-          },
+  let(:xml_node) do
+    {
+      'sid' => '27652',
+      'goodsNomenclatureItemId' => '0102901019',
+      'produclineSuffix' => '80',
+      'goodsNomenclatureDescriptionPeriod' => {
+        'sid' => '30993',
+        'validityStartDate' => '1992-03-01T00:00:00',
+        'metainfo' => {
+          'opType' => 'U',
+          'transactionDate' => '2017-06-29T20:04:37',
         },
-      }
-    end
+      },
+    }
+  end
 
+  it_behaves_like 'an entity mapper', 'GoodsNomenclatureDescriptionPeriod', 'GoodsNomenclature' do
     let(:expected_values) do
       {
         validity_start_date: '1992-03-01T00:00:00.000Z',
@@ -27,6 +27,19 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapp
         goods_nomenclature_item_id: '0102901019',
         productline_suffix: '80',
       }
+    end
+  end
+
+  describe '#import' do
+    subject(:entity_mapper) { CdsImporter::EntityMapper.new('GoodsNomenclature', xml_node) }
+
+    context 'when there are missing secondary entities to be soft deleted' do
+      before do
+        # Creates entities that will be missing from the xml node
+        create(:goods_nomenclature_description, goods_nomenclature_description_period_sid: '30993')
+      end
+
+      it_behaves_like 'an entity mapper missing destroy operation', GoodsNomenclatureDescription, goods_nomenclature_description_period_sid: '30993'
     end
   end
 end

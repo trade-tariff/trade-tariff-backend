@@ -19,6 +19,8 @@ class CdsImporter
       self.primary_filters = {
         additional_code_sid: :additional_code_sid,
       }.freeze
+
+      delete_missing_entities AdditionalCodeDescriptionMapper
     end
   end
 end
