@@ -3,12 +3,13 @@ class BuildIndexPageWorker
 
   sidekiq_options queue: :default, retry: false
 
+  delegate :opensearch_client, to: TradeTariffBackend
+
   def perform(index_namespace, index_name, page_number, page_size)
-    client = OpenSearch::Client.new
     index_name = "#{index_name}Index" unless index_name.ends_with?('Index')
     index = "#{index_namespace.camelize}::#{index_name}".constantize.new
 
-    client.bulk(
+    opensearch_client.bulk(
       body: serialize_for(
         :index,
         index,
