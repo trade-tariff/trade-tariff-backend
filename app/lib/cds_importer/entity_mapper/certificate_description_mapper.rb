@@ -1,12 +1,3 @@
-#
-# There is no collection with CertificateDescriptions in new xml.
-# CertificateDescription is nested in to CertificateDescriptionPeriod,
-# and certificateDescriptionPeriod is nested in to Certificate xml object.
-# also CertificateDescription has attributes which are not present in CertificateDescription xml object
-# e.g. 'certificate_description_period_sid' - present in parent object
-# So we will pass @values for CertificateDescription the same as for Certificate.
-#
-
 class CdsImporter
   class EntityMapper
     class CertificateDescriptionMapper < BaseMapper
@@ -25,6 +16,10 @@ class CdsImporter
         'certificateCode' => :certificate_code,
         "#{mapping_path}.description" => :description,
       ).freeze
+
+      self.primary_filters = {
+        certificate_description_period_sid: :certificate_description_period_sid,
+      }.freeze
     end
   end
 end

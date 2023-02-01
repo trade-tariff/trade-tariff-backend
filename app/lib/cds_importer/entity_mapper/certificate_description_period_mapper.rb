@@ -17,6 +17,8 @@ class CdsImporter
         certificate_type_code: :certificate_type_code,
         certificate_code: :certificate_code,
       }.freeze
+
+      delete_missing_entities CertificateDescriptionMapper
     end
   end
 end

@@ -17,6 +17,8 @@ class CdsImporter
         footnote_type_id: :footnote_type_id,
         footnote_id: :footnote_id,
       }.freeze
+
+      delete_missing_entities FootnoteDescriptionMapper
     end
   end
 end

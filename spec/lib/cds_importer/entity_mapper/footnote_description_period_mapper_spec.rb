@@ -1,24 +1,24 @@
 RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionPeriodMapper do
-  it_behaves_like 'an entity mapper', 'FootnoteDescriptionPeriod', 'Footnote' do
-    let(:xml_node) do
-      {
-        'footnoteId' => '123',
-        'footnoteType' => {
-          'footnoteTypeId' => 'TM',
+  let(:xml_node) do
+    {
+      'footnoteId' => '123',
+      'footnoteType' => {
+        'footnoteTypeId' => 'TM',
+      },
+      'footnoteDescriptionPeriod' => {
+        'sid' => '1355',
+        'validityStartDate' => '1972-01-01T00:00:00',
+        'validityEndDate' => '1973-01-01T00:00:00',
+        'metainfo' => {
+          'opType' => 'C',
+          'origin' => 'T',
+          'transactionDate' => '2016-07-27T09:18:57',
         },
-        'footnoteDescriptionPeriod' => {
-          'sid' => '1355',
-          'validityStartDate' => '1972-01-01T00:00:00',
-          'validityEndDate' => '1973-01-01T00:00:00',
-          'metainfo' => {
-            'opType' => 'C',
-            'origin' => 'T',
-            'transactionDate' => '2016-07-27T09:18:57',
-          },
-        },
-      }
-    end
+      },
+    }
+  end
 
+  it_behaves_like 'an entity mapper', 'FootnoteDescriptionPeriod', 'Footnote' do
     let(:expected_values) do
       {
         validity_start_date: '1972-01-01T00:00:00.000Z',
@@ -30,6 +30,19 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionPeriodMapper do
         footnote_type_id: 'TM',
         footnote_id: '123',
       }
+    end
+  end
+
+  describe '#import' do
+    subject(:entity_mapper) { CdsImporter::EntityMapper.new('Footnote', xml_node) }
+
+    context 'when there are missing secondary entities to be soft deleted' do
+      before do
+        # Creates entities that will be missing from the xml node
+        create(:footnote_description, footnote_description_period_sid: '1355')
+      end
+
+      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescription, footnote_description_period_sid: '1355'
     end
   end
 end
