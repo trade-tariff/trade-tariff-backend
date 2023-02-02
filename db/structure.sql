@@ -6689,7 +6689,9 @@ CREATE TABLE public.search_references (
     title text,
     referenced_id character varying(10),
     referenced_class character varying(10),
-    productline_suffix text DEFAULT '80'::text NOT NULL
+    productline_suffix text DEFAULT '80'::text NOT NULL,
+    goods_nomenclature_sid integer,
+    goods_nomenclature_item_id text
 );
 
 
@@ -11103,3 +11105,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230127151505_fixes_quota
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230127153630_fixes_quota_exhaustion_events_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230127154210_fixes_quota_reopening_events_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230127155444_fixes_quota_unsuspension_events_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230202142148_adds_fields_to_search_references.rb');
