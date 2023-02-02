@@ -5,7 +5,7 @@ module Api
       GOOD_NOMENCLATURE_ITEM_ID_SEARCH = /^(\d+)(-\d{2})?$/
 
       def initialize(search_query, search_params = {})
-        @search_query = search_query
+        @search_query = search_query.to_s
         @search_params = search_params
       end
 
