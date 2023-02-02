@@ -1,6 +1,8 @@
 RSpec.describe Api::V2::SearchReferenceSerializer do
   describe '#serializable_hash' do
-    subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
+    subject(
+      :serializable_hash,
+    ) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) { create(:search_reference) }
 
@@ -13,6 +15,8 @@ RSpec.describe Api::V2::SearchReferenceSerializer do
             title: serializable.title,
             referenced_id: serializable.referenced_id,
             referenced_class: 'Heading',
+            goods_nomenclature_sid: serializable.goods_nomenclature_sid,
+            goods_nomenclature_item_id: serializable.goods_nomenclature_item_id,
             productline_suffix: '80',
           },
         },

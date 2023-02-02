@@ -8,7 +8,12 @@ module Api
 
         set_id :id
 
-        attributes :title, :referenced_id, :referenced_class
+        attributes :title,
+                   :referenced_id,
+                   :referenced_class,
+                   :goods_nomenclature_item_id,
+                   :productline_suffix,
+                   :goods_nomenclature_sid
 
         has_one :referenced, polymorphic: true
       end
