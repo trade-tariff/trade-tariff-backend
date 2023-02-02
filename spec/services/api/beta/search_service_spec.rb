@@ -1,7 +1,12 @@
 RSpec.describe Api::Beta::SearchService do
-  # rubocop:disable RSpec/MultipleMemoizedHelpers
   describe '#call' do
     subject(:search_result) { described_class.new(search_query, filters: {}, spell: '1').call }
+
+    context 'when the search query is nil' do
+      let(:search_query) { nil }
+
+      it { expect(search_result.empty_query).to eq(true) }
+    end
 
     context 'when the search query is an empty string' do
       let(:search_query) { '' }
@@ -19,8 +24,21 @@ RSpec.describe Api::Beta::SearchService do
       let(:search_query_parser_service) { instance_double('Api::Beta::SearchQueryParserService', call: search_query_parser_result) }
       let(:search_query_parser_result) { build(:search_query_parser_result, :single_hit) }
       let(:goods_nomenclature_query) { build(:goods_nomenclature_query, :single_hit) }
-      let(:expected_search_args) do
-        {
+
+      before do
+        allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(opensearch_result)
+        allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(search_query_parser_service)
+        allow(Api::Beta::GoodsNomenclatureFilterGeneratorService).to receive(:new).and_call_original
+        allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(goods_nomenclature_query)
+        allow(Beta::Search::OpenSearchResult::WithHits).to receive(:build).and_call_original
+
+        search_result
+      end
+
+      it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta', spell: '1', should_search: true) }
+
+      it 'uses the correct search query' do
+        expected_search_args = {
           body: {
             size: '10',
             query: {
@@ -66,25 +84,9 @@ RSpec.describe Api::Beta::SearchService do
           },
           index: 'tariff-test-goods_nomenclatures-uk',
         }
-      end
-      let(:expected_serialized_result) do
-        fixture_file = file_fixture('beta/search/goods_nomenclatures/serialized_result.json')
-
-        JSON.parse(fixture_file.read)
+        expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args)
       end
 
-      before do
-        allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(opensearch_result)
-        allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(search_query_parser_service)
-        allow(Api::Beta::GoodsNomenclatureFilterGeneratorService).to receive(:new).and_call_original
-        allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(goods_nomenclature_query)
-        allow(Beta::Search::OpenSearchResult::WithHits).to receive(:build).and_call_original
-
-        search_result
-      end
-
-      it { expect(Api::Beta::SearchQueryParserService).to have_received(:new).with('ricotta', spell: '1', should_search: true) }
-      it { expect(TradeTariffBackend.v2_search_client).to have_received(:search).with(expected_search_args) }
       it { expect(Beta::Search::OpenSearchResult::WithHits).to have_received(:build).with(opensearch_result, search_query_parser_result, goods_nomenclature_query, nil) }
       it { expect(Beta::Search::GoodsNomenclatureQuery).to have_received(:build).with(search_query_parser_result, {}) }
       it { expect(search_result).to be_a(Beta::Search::OpenSearchResult) }
@@ -135,5 +137,4 @@ RSpec.describe Api::Beta::SearchService do
       it { is_expected.not_to be_redirect }
     end
   end
-  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
