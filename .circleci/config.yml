@@ -746,7 +746,8 @@ workflows:
                 - main
 
     jobs:
-      - flaky_tests
+      - flaky_tests:
+          context: trade-tariff
   sunday:
     triggers:
       - schedule:
