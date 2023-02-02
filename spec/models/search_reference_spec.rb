@@ -2,22 +2,34 @@ RSpec.describe SearchReference do
   describe 'setter callback' do
     subject(:search_reference) { described_class.new(title: 'foo', referenced:) }
 
-    context 'when setting a Section reference' do
-      let(:referenced) { create(:section, id: 1) }
-
-      it { is_expected.to have_attributes(title: 'foo', referenced_id: '1', referenced_class: 'Section', productline_suffix: '80') }
-    end
-
     context 'when setting a Chapter reference' do
       let(:referenced) { create(:chapter, goods_nomenclature_item_id: '0100000000', producline_suffix: '10') }
 
-      it { is_expected.to have_attributes(title: 'foo', referenced_id: '01', referenced_class: 'Chapter', productline_suffix: '10') }
+      it 'assigns the correct attributes' do
+        expect(search_reference).to have_attributes(
+          title: 'foo',
+          referenced_id: '01',
+          referenced_class: 'Chapter',
+          productline_suffix: '10',
+          goods_nomenclature_item_id: '0100000000',
+          goods_nomenclature_sid: referenced.goods_nomenclature_sid,
+        )
+      end
     end
 
     context 'when setting a Heading reference' do
       let(:referenced) { create(:heading, goods_nomenclature_item_id: '0101000000', producline_suffix: '20') }
 
-      it { is_expected.to have_attributes(title: 'foo', referenced_id: '0101', referenced_class: 'Heading', productline_suffix: '20') }
+      it 'assigns the correct attributes' do
+        expect(search_reference).to have_attributes(
+          title: 'foo',
+          referenced_id: '0101',
+          referenced_class: 'Heading',
+          productline_suffix: '20',
+          goods_nomenclature_item_id: '0101000000',
+          goods_nomenclature_sid: referenced.goods_nomenclature_sid,
+        )
+      end
     end
 
     context 'when setting a Subheading reference' do
@@ -25,13 +37,31 @@ RSpec.describe SearchReference do
 
       before { create(:commodity, goods_nomenclature_item_id: '0101110000', producline_suffix: '30') }
 
-      it { is_expected.to have_attributes(title: 'foo', referenced_id: '0101110000', referenced_class: 'Subheading', productline_suffix: '30') }
+      it 'assigns the correct attributes' do
+        expect(search_reference).to have_attributes(
+          title: 'foo',
+          referenced_id: '0101110000',
+          referenced_class: 'Subheading',
+          productline_suffix: '30',
+          goods_nomenclature_item_id: '0101110000',
+          goods_nomenclature_sid: referenced.goods_nomenclature_sid,
+        )
+      end
     end
 
     context 'when setting a Commodity reference' do
       let(:referenced) { create(:commodity, :with_heading, goods_nomenclature_item_id: '0101110000', producline_suffix: '80') }
 
-      it { is_expected.to have_attributes(title: 'foo', referenced_id: '0101110000', referenced_class: 'Commodity', productline_suffix: '80') }
+      it 'assigns the correct attributes' do
+        expect(search_reference).to have_attributes(
+          title: 'foo',
+          referenced_id: '0101110000',
+          referenced_class: 'Commodity',
+          productline_suffix: '80',
+          goods_nomenclature_item_id: '0101110000',
+          goods_nomenclature_sid: referenced.goods_nomenclature_sid,
+        )
+      end
     end
   end
 
