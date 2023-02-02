@@ -213,7 +213,7 @@ FactoryBot.define do
     end
 
     trait :third_country_overview do
-      geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
+      erga_omnes
       third_country
     end
 

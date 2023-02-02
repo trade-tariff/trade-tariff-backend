@@ -119,6 +119,7 @@ module Cache
                                 [
                                   { measure_type: [:measure_type_description] },
                                   { measure_components: [{ duty_expression_description: :duty_expression_description }, :measurement_unit_qualifier] },
+                                  { additional_code: [:additional_code_description] },
                                 ],
                               )
                             else
@@ -143,6 +144,15 @@ module Cache
               measure_type_id: measure.measure_type.measure_type_id,
               description: measure.measure_type.description,
             },
+            additional_code_id: measure.additional_code_sid,
+            additional_code: if measure.additional_code.present?
+                               {
+                                 additional_code_sid: measure.additional_code.additional_code_sid,
+                                 code: measure.additional_code.code,
+                                 description: measure.additional_code.description,
+                                 formatted_description: measure.additional_code.formatted_description,
+                               }
+                             end,
           }
         end
         commodity_attributes

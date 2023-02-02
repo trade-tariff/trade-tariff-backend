@@ -28,7 +28,8 @@ module HeadingService
                                :commodities,
                                'commodities.overview_measures',
                                'commodities.overview_measures.duty_expression',
-                               'commodities.overview_measures.measure_type']
+                               'commodities.overview_measures.measure_type',
+                               'commodities.overview_measures.additional_code']
           Api::V2::Headings::HeadingSerializer.new(hash, options).serializable_hash
         end
       end

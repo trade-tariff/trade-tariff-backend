@@ -22,7 +22,7 @@ module Api
 
         attribute :productline_suffix, &:producline_suffix
 
-        has_many :overview_measures, record_type: :measure, serializer: Api::V2::Measures::OverviewMeasureSerializer
+        has_many :overview_measures, serializer: Api::V2::Measures::OverviewMeasureSerializer
       end
     end
   end
