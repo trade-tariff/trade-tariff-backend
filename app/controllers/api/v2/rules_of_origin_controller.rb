@@ -1,6 +1,9 @@
 module Api
   module V2
     class RulesOfOriginController < ApiController
+      DEFAULT_INCLUDES = %i[links origin_reference_document].freeze
+      OPTIONAL_INCLUDES = %i[proofs].freeze
+
       def index
         query = ::RulesOfOrigin::Query.new(
           TradeTariffBackend.rules_of_origin,
@@ -38,10 +41,11 @@ module Api
       end
 
       def minimal_serializer(schemes)
-        Api::V2::RulesOfOrigin::SchemeSerializer.new schemes, include: %i[
-          links
-          origin_reference_document
-        ]
+        Api::V2::RulesOfOrigin::SchemeSerializer.new schemes, include: includes
+      end
+
+      def includes
+        (params[:include].to_s.split(/\s+/).map(&:to_sym) & OPTIONAL_INCLUDES) + DEFAULT_INCLUDES
       end
     end
   end
