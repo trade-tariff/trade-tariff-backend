@@ -93,7 +93,7 @@ module Search
           properties: {
             id: { type: 'text' },
             goods_nomenclature_class: { type: 'keyword' },
-            goods_nomenclature_item_id: { type: 'text' },
+            goods_nomenclature_item_id: { analyzer: 'english', type: 'text' },
             producline_suffix: { type: 'keyword' },
             chapter_id: { type: 'keyword' },
             heading_id: { type: 'keyword' },
