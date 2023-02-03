@@ -11,10 +11,6 @@ class Commodity < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
-  def admin_id
-    "#{goods_nomenclature_item_id}-#{producline_suffix}"
-  end
-
   one_to_one :heading, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
     ds.with_actual(Heading)
       .filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)

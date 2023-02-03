@@ -231,4 +231,8 @@ class GoodsNomenclature < Sequel::Model
   def intercept_terms
     Beta::Search::InterceptMessage.all_references[goods_nomenclature_item_id]
   end
+
+  def admin_id
+    "#{goods_nomenclature_item_id}-#{producline_suffix}"
+  end
 end

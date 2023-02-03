@@ -23,10 +23,6 @@ module Api
 
           super(commodity)
         end
-
-        def commodity_id
-          admin_id
-        end
       end
     end
   end

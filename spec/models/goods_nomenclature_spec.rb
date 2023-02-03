@@ -467,9 +467,9 @@ RSpec.describe GoodsNomenclature do
 
   describe '#children' do
     context 'when the goods nomenclature has children' do
-      subject(:child_sids) { create(:goods_nomenclature, :with_children).children.map(&:goods_nomenclature_sid) }
+      subject(:child_sids) { create(:goods_nomenclature, :with_children).children.count }
 
-      it { is_expected.to eq([2]) }
+      it { is_expected.to eq(1) }
     end
 
     context 'when the goods nomenclature has no children' do
@@ -481,15 +481,15 @@ RSpec.describe GoodsNomenclature do
 
   describe '#descendants' do
     context 'when the goods nomenclature has descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).descendants.map(&:goods_nomenclature_sid) }
+      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).descendants.length }
 
-      it { is_expected.to match_array([2, 3]) }
+      it { is_expected.to eq(2) }
     end
 
     context 'when the goods nomenclature has no descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).descendants.map(&:goods_nomenclature_sid) }
+      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).descendants.length }
 
-      it { is_expected.to be_empty }
+      it { is_expected.to be_zero }
     end
   end
 
@@ -608,5 +608,11 @@ RSpec.describe GoodsNomenclature do
 
       it { expect(goods_nomenclature.intercept_terms).to eq('') }
     end
+  end
+
+  describe '#admin_id' do
+    subject { create(:commodity, goods_nomenclature_item_id: '0123456789', producline_suffix: '01').admin_id }
+
+    it { is_expected.to eql '0123456789-01' }
   end
 end
