@@ -14,7 +14,10 @@ module Api
       private
 
         def serializer(schemes)
-          Api::V2::RulesOfOrigin::SchemeSerializer.new(schemes)
+          Api::V2::RulesOfOrigin::SchemeSerializer.new schemes, include: %i[
+            rule_sets
+            rule_sets.rules
+          ]
         end
 
         def rule_sets_for_scheme(scheme)
