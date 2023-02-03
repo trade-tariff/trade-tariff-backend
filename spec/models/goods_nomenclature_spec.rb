@@ -25,19 +25,20 @@ RSpec.describe GoodsNomenclature do
 
   describe 'associations' do
     describe 'goods nomenclature indent' do
-      context 'fetching with absolute date' do
+      context 'when fetching with absolute date' do
+        before do
+          create :goods_nomenclature_indent,
+                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                 validity_start_date: 6.years.ago,
+                 validity_end_date: 3.years.ago
+        end
+
         let!(:goods_nomenclature)                { create :goods_nomenclature }
         let!(:goods_nomenclature_indent1)        do
           create :goods_nomenclature_indent,
                  goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
                  validity_start_date: 2.years.ago,
                  validity_end_date: nil
-        end
-        let!(:goods_nomenclature_indent2) do
-          create :goods_nomenclature_indent,
-                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-                 validity_start_date: 6.years.ago,
-                 validity_end_date: 3.years.ago
         end
         let!(:goods_nomenclature_indent3) do
           create :goods_nomenclature_indent,
@@ -46,7 +47,7 @@ RSpec.describe GoodsNomenclature do
                  validity_end_date: 3.years.ago
         end
 
-        context 'direct loading' do
+        context 'when loading without eager' do
           it 'loads correct indent respecting given actual time' do
             TimeMachine.now do
               expect(
@@ -64,7 +65,7 @@ RSpec.describe GoodsNomenclature do
           end
         end
 
-        context 'eager loading' do
+        context 'when eager loading' do
           it 'loads correct indent respecting given actual time' do
             TimeMachine.now do
               expect(
@@ -93,8 +94,8 @@ RSpec.describe GoodsNomenclature do
     end
 
     describe 'goods nomenclature description' do
-      context 'fetching with absolute date' do
-        context 'at least one end date present' do
+      context 'when fetching with absolute date' do
+        context 'when at least one end date present' do
           let!(:goods_nomenclature)                { create :goods_nomenclature }
           let!(:goods_nomenclature_description1)   do
             create :goods_nomenclature_description,
@@ -109,7 +110,7 @@ RSpec.describe GoodsNomenclature do
                    validity_end_date: 3.years.ago
           end
 
-          context 'direct loading' do
+          context 'when loading without eager' do
             it 'loads correct description respecting given actual time' do
               TimeMachine.now do
                 expect(
@@ -127,7 +128,7 @@ RSpec.describe GoodsNomenclature do
             end
           end
 
-          context 'eager loading' do
+          context 'when eager loading' do
             it 'loads correct description respecting given actual time' do
               TimeMachine.now do
                 expect(
@@ -154,7 +155,7 @@ RSpec.describe GoodsNomenclature do
           end
         end
 
-        context 'blank end dates' do
+        context 'when end dates are blank' do
           let!(:goods_nomenclature)                { create :goods_nomenclature }
           let!(:goods_nomenclature_description1)   do
             create :goods_nomenclature_description,
@@ -169,7 +170,7 @@ RSpec.describe GoodsNomenclature do
                    validity_end_date: nil
           end
 
-          context 'direct loading' do
+          context 'when loading without eager' do
             it 'loads correct description respecting given actual time' do
               TimeMachine.now do
                 expect(
@@ -187,7 +188,7 @@ RSpec.describe GoodsNomenclature do
             end
           end
 
-          context 'eager loading' do
+          context 'when eager loading' do
             it 'loads correct description respecting given actual time' do
               TimeMachine.now do
                 expect(
@@ -215,7 +216,14 @@ RSpec.describe GoodsNomenclature do
         end
       end
 
-      context 'fetching with relevant date' do
+      context 'when fetching with relevant date' do
+        before do
+          create :goods_nomenclature_description,
+                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                 validity_start_date: 5.years.ago,
+                 validity_end_date: 3.years.ago
+        end
+
         let!(:goods_nomenclature) do
           create :goods_nomenclature, validity_start_date: 1.year.ago,
                                       validity_end_date: nil
@@ -225,12 +233,6 @@ RSpec.describe GoodsNomenclature do
                  goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
                  validity_start_date: 2.years.ago,
                  validity_end_date: nil
-        end
-        let!(:goods_nomenclature_description2) do
-          create :goods_nomenclature_description,
-                 goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-                 validity_start_date: 5.years.ago,
-                 validity_end_date: 3.years.ago
         end
 
         it 'fetches correct description' do
@@ -258,7 +260,7 @@ RSpec.describe GoodsNomenclature do
                valid_to: 3.years.ago
       end
 
-      context 'direct loading' do
+      context 'when loading without eager' do
         it 'loads correct indent respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -276,7 +278,7 @@ RSpec.describe GoodsNomenclature do
         end
       end
 
-      context 'eager loading' do
+      context 'when eager loading' do
         it 'loads correct indent respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -305,14 +307,14 @@ RSpec.describe GoodsNomenclature do
   end
 
   describe '.declarable' do
-    let(:gono_80) { create(:goods_nomenclature, producline_suffix: '80') }
-    let(:gono_10) { create(:goods_nomenclature, producline_suffix: '10') }
+    subject(:declarable) { described_class.declarable }
 
-    it "returns goods_nomenclatures ony with producline_suffix == '80'" do
-      gonos = described_class.declarable
-      expect(gonos).to include(gono_80)
-      expect(gonos).not_to include(gono_10)
+    before do
+      create(:goods_nomenclature, producline_suffix: '80')
+      create(:goods_nomenclature, producline_suffix: '10')
     end
+
+    it { is_expected.to all(have_attributes(producline_suffix: '80')) }
   end
 
   describe '#code' do

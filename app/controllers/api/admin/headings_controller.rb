@@ -32,7 +32,6 @@ module Api
           .where(goods_nomenclature_sid: applicable_goods_nomenclature_sids)
           .pluck(:goods_nomenclature_sid, :count)
           .to_h
-
       end
 
       def applicable_goods_nomenclature_sids
