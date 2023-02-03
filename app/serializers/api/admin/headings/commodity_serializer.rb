@@ -9,9 +9,11 @@ module Api
         set_id :admin_id
 
         attributes :description,
-                   :search_references_count
+                   :search_references_count,
+                   :goods_nomenclature_item_id,
+                   :producline_suffix
 
-        attribute :declarable, &:fast_declarable?
+        attribute :declarable, &:declarable?
       end
     end
   end

@@ -3,8 +3,6 @@ require 'goods_nomenclature_mapper'
 module Api
   module Admin
     class HeadingsController < ApiController
-      before_action :find_heading, only: %i[show]
-
       def show
         options = { is_collection: false }
         options[:include] = %i[commodities chapter]
@@ -14,30 +12,31 @@ module Api
 
       private
 
-      def find_heading
-        @heading = Heading.actual
-                          .non_grouping
-                          .where(goods_nomenclatures__goods_nomenclature_item_id: heading_id)
-                          .eager(commodities: :goods_nomenclature_descriptions)
-                          .limit(1)
-                          .all
-                          .first
-
-        if !@heading || @heading.goods_nomenclature_item_id.in?(HiddenGoodsNomenclature.codes)
-          raise Sequel::RecordNotFound
-        end
-      end
-
-      def heading_id
-        "#{params[:id]}000000"
-      end
-
       def presented_heading
-        Api::Admin::Headings::HeadingPresenter.new(@heading, search_reference_counts)
+        Api::Admin::Headings::HeadingPresenter.new(heading, search_reference_counts)
+      end
+
+      def heading
+        @heading ||= Heading.actual
+                          .non_grouping
+                          .non_hidden
+                          .by_code(params[:id])
+                          .eager(descendants: %i[goods_nomenclature_descriptions descendants])
+                          .limit(1)
+                          .take
       end
 
       def search_reference_counts
-        SearchReference.count_for(@heading.commodities + [@heading])
+        SearchReference
+          .group_and_count(:goods_nomenclature_sid)
+          .where(goods_nomenclature_sid: applicable_goods_nomenclature_sids)
+          .pluck(:goods_nomenclature_sid, :count)
+          .to_h
+
+      end
+
+      def applicable_goods_nomenclature_sids
+        heading.descendants.pluck(:goods_nomenclature_sid).tap { |sids| sids << heading.goods_nomenclature_sid }
       end
     end
   end
