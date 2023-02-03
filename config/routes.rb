@@ -171,6 +171,9 @@ Rails.application.routes.draw do
         get '/rules_of_origin_schemes/:heading_code/:country_code',
             to: 'schemes#index',
             as: :rules_of_origin
+        get '/rules_of_origin_schemes/:commodity_code',
+            to: 'product_specific_rules#index',
+            as: :product_specific_rules
       end
 
       if TradeTariffBackend.uk?
