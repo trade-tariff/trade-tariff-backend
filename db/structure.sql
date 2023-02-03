@@ -1832,7 +1832,7 @@ ALTER SEQUENCE public.export_refund_nomenclatures_oid_seq OWNED BY public.export
 
 CREATE TABLE public.footnote_association_additional_codes_oplog (
     additional_code_sid integer,
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     footnote_id character varying(5),
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
@@ -1893,7 +1893,7 @@ ALTER SEQUENCE public.footnote_association_additional_codes_oid_seq OWNED BY pub
 
 CREATE TABLE public.footnote_association_erns_oplog (
     export_refund_nomenclature_sid integer,
-    footnote_type character varying(2),
+    footnote_type character varying(3),
     footnote_id character varying(5),
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
@@ -1958,7 +1958,7 @@ ALTER SEQUENCE public.footnote_association_erns_oid_seq OWNED BY public.footnote
 
 CREATE TABLE public.footnote_association_goods_nomenclatures_oplog (
     goods_nomenclature_sid integer,
-    footnote_type character varying(2),
+    footnote_type character varying(3),
     footnote_id character varying(5),
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
@@ -2021,7 +2021,7 @@ ALTER SEQUENCE public.footnote_association_goods_nomenclatures_oid_seq OWNED BY 
 
 CREATE TABLE public.footnote_association_measures_oplog (
     measure_sid integer,
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     footnote_id character varying(5),
     created_at timestamp without time zone,
     "national" boolean,
@@ -2078,7 +2078,7 @@ CREATE TABLE public.footnote_association_meursing_headings_oplog (
     meursing_table_plan_id character varying(2),
     meursing_heading_number character varying(255),
     row_column_code integer,
-    footnote_type character varying(2),
+    footnote_type character varying(3),
     footnote_id character varying(5),
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
@@ -2137,7 +2137,7 @@ ALTER SEQUENCE public.footnote_association_meursing_headings_oid_seq OWNED BY pu
 
 CREATE TABLE public.footnote_description_periods_oplog (
     footnote_description_period_sid integer,
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     footnote_id character varying(5),
     validity_start_date timestamp without time zone,
     created_at timestamp without time zone,
@@ -2196,7 +2196,7 @@ ALTER SEQUENCE public.footnote_description_periods_oid_seq OWNED BY public.footn
 
 CREATE TABLE public.footnote_descriptions_oplog (
     footnote_description_period_sid integer,
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     footnote_id character varying(5),
     language_id character varying(5),
     description text,
@@ -2254,7 +2254,7 @@ ALTER SEQUENCE public.footnote_descriptions_oid_seq OWNED BY public.footnote_des
 --
 
 CREATE TABLE public.footnote_type_descriptions_oplog (
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     language_id character varying(5),
     description text,
     created_at timestamp without time zone,
@@ -2309,7 +2309,7 @@ ALTER SEQUENCE public.footnote_type_descriptions_oid_seq OWNED BY public.footnot
 --
 
 CREATE TABLE public.footnote_types_oplog (
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     application_code integer,
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
@@ -2367,7 +2367,7 @@ ALTER SEQUENCE public.footnote_types_oid_seq OWNED BY public.footnote_types_oplo
 
 CREATE TABLE public.footnotes_oplog (
     footnote_id character varying(5),
-    footnote_type_id character varying(2),
+    footnote_type_id character varying(3),
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
     created_at timestamp without time zone,
@@ -11106,3 +11106,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230127153630_fixes_quota
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230127154210_fixes_quota_reopening_events_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230127155444_fixes_quota_unsuspension_events_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230202142148_adds_fields_to_search_references.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230203090107_tweak_footnote_type_id_field_length.rb');
