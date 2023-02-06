@@ -14,7 +14,9 @@ class SearchReference < Sequel::Model
                                         set(
                                           referenced_id: referenced.to_param.sub(/-\d{2}/, ''),
                                           referenced_class: referenced.class.name,
-                                          productline_suffix: referenced.try(:producline_suffix) || DEFAULT_PRODUCTLINE_SUFFIX,
+                                          productline_suffix: referenced.producline_suffix,
+                                          goods_nomenclature_item_id: referenced.goods_nomenclature_item_id,
+                                          goods_nomenclature_sid: referenced.goods_nomenclature_sid,
                                         )
                                       end
                                     end),

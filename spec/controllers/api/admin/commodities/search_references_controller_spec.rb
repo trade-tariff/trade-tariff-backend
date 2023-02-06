@@ -14,7 +14,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
   end
 
   describe 'POST to #create' do
-    subject(:do_post) { post :create, params: params }
+    subject(:do_post) { post :create, params: }
 
     before { login_as_api_user }
 
@@ -38,6 +38,8 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
           referenced_class: 'Commodity',
           referenced_id: '0101110000',
           productline_suffix: '80',
+          goods_nomenclature_item_id: '0101110000',
+          goods_nomenclature_sid: be_a(Integer),
         )
       end
     end
@@ -72,6 +74,8 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
           referenced_class: 'Commodity',
           referenced_id: '0101110000',
           productline_suffix: '80',
+          goods_nomenclature_item_id: '0101110000',
+          goods_nomenclature_sid: be_a(Integer),
         )
       end
     end
@@ -96,6 +100,8 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
           referenced_class: 'Subheading',
           referenced_id: '0101110000',
           productline_suffix: '10',
+          goods_nomenclature_item_id: '0101110000',
+          goods_nomenclature_sid: be_a(Integer),
         )
       end
     end

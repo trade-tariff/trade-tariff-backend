@@ -17,7 +17,7 @@ module Search
   private
 
     def serializer_for_referenced_class
-      Search.const_get("#{__getobj__.referenced.class}Serializer")
+      "Search::#{referenced.class}Serializer".constantize
     end
 
     def serializer_instance

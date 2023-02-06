@@ -1,21 +1,18 @@
 RSpec.describe Search::SearchReferenceSerializer do
   describe '#to_json' do
     context 'when there is a valid referenced object' do
-      let(:section) { create :section, position: 12 }
-      let(:search_reference) { described_class.new(create(:search_reference, referenced: section)) }
+      let(:search_reference) { described_class.new(create(:search_reference)) }
       let(:pattern) do
         {
           title: search_reference.title,
-          reference_class: String,
+          reference_class: 'Heading',
           reference: {
-            class: 'Section',
+            class: 'Heading',
           }.ignore_extra_keys!,
         }
       end
 
       it 'returns rendered referenced entity as json' do
-        section
-
         expect(search_reference.to_json).to match_json_expression pattern
       end
     end

@@ -18,6 +18,8 @@ RSpec.describe Api::V2::SearchReferencesController do
                 referenced_class: 'Commodity',
                 referenced_id: String,
                 productline_suffix: String,
+                goods_nomenclature_item_id: String,
+                goods_nomenclature_sid: Integer,
               },
             },
             {
@@ -28,6 +30,8 @@ RSpec.describe Api::V2::SearchReferencesController do
                 referenced_class: 'Chapter',
                 referenced_id: String,
                 productline_suffix: String,
+                goods_nomenclature_item_id: String,
+                goods_nomenclature_sid: Integer,
               },
             },
           ],
