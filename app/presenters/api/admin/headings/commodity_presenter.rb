@@ -7,8 +7,8 @@ module Api
         class << self
           def wrap(commodities, counts = {})
             commodities.map do |commodity|
-              count = if counts.key?(commodity.twelve_digit)
-                        counts[commodity.twelve_digit]
+              count = if counts.key?(commodity.goods_nomenclature_sid)
+                        counts[commodity.goods_nomenclature_sid]
                       else
                         0
                       end

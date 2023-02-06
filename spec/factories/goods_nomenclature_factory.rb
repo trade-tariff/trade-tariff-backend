@@ -71,20 +71,16 @@ FactoryBot.define do
     end
 
     trait :with_children do
-      goods_nomenclature_sid { 1 }
       path { Sequel.pg_array([], :integer) }
 
-      after(:create) do
-        create(
-          :goods_nomenclature,
-          goods_nomenclature_sid: 2,
-          path: Sequel.pg_array([1], :integer),
-        )
-        create(
-          :goods_nomenclature,
-          goods_nomenclature_sid: 3,
-          path: Sequel.pg_array([1, 2], :integer),
-        )
+      after(:create) do |parent|
+        child = build(:goods_nomenclature)
+        child.path = Sequel.pg_array([parent.goods_nomenclature_sid], :integer)
+        child.save
+
+        declarable_child = build(:goods_nomenclature)
+        declarable_child.path = Sequel.pg_array([parent.goods_nomenclature_sid, child.goods_nomenclature_sid], :integer)
+        declarable_child.save
       end
     end
 

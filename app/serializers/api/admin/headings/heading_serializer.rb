@@ -12,9 +12,9 @@ module Api
                    :description,
                    :search_references_count
 
-        has_one :chapter, serializer: Api::Admin::Headings::ChapterSerializer, id_method_name: :goods_nomenclature_sid, &:chapter
+        has_one :chapter, serializer: Api::Admin::Headings::ChapterSerializer
 
-        has_many :commodities, serializer: Api::Admin::Headings::CommoditySerializer, id_method_name: :admin_id, &:commodities
+        has_many :commodities, serializer: Api::Admin::Headings::CommoditySerializer
       end
     end
   end

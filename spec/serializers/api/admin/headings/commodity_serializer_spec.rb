@@ -13,6 +13,8 @@ RSpec.describe Api::Admin::Headings::CommoditySerializer do
           description: serializable.description,
           search_references_count: 3,
           declarable: true,
+          goods_nomenclature_item_id: serializable.goods_nomenclature_item_id,
+          producline_suffix: serializable.producline_suffix,
         },
       },
     }

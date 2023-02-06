@@ -16,12 +16,20 @@ module Api
           super(heading)
         end
 
+        def chapter_id
+          chapter.goods_nomenclature_sid
+        end
+
         def commodities
-          @commodities ||= CommodityPresenter.wrap(super, @search_reference_counts)
+          @commodities ||= CommodityPresenter.wrap(descendants, @search_reference_counts)
+        end
+
+        def commodity_ids
+          commodities.map(&:admin_id)
         end
 
         def search_references_count
-          @search_reference_counts[twelve_digit]
+          @search_reference_counts[goods_nomenclature_sid]
         end
       end
     end

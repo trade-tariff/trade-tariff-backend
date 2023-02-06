@@ -1,15 +1,14 @@
 RSpec.describe Api::Admin::Headings::HeadingSerializer do
   subject(:serialized) { described_class.new(serializable).serializable_hash }
 
-  let(:heading) { create(:heading, :with_chapter, :non_declarable).reload }
-  let(:counts) { { heading.twelve_digit => 12 } }
   let(:serializable) { Api::Admin::Headings::HeadingPresenter.new(heading, counts) }
-
+  let(:heading) { create(:heading, :with_chapter, :with_descendants).reload }
+  let(:counts) { { heading.goods_nomenclature_sid => 12 } }
   let(:expected) do
     {
       data: {
         id: heading.goods_nomenclature_sid.to_s,
-        type: :heading,
+        type: eq(:heading),
         attributes: {
           goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
           description: heading.description,
@@ -19,16 +18,14 @@ RSpec.describe Api::Admin::Headings::HeadingSerializer do
           chapter: {
             data: {
               id: heading.chapter.goods_nomenclature_sid.to_s,
-              type: :chapter,
+              type: eq(:chapter),
             },
           },
           commodities: {
-            data: heading.commodities.map do |c|
-              {
-                id: c.twelve_digit,
-                type: :commodity,
-              }
-            end,
+            data: [
+              { id: match(/\d+{10}-\d{2}/), type: eq(:commodity) },
+              { id: match(/\d+{10}-\d{2}/), type: eq(:commodity) },
+            ],
           },
         },
       },
@@ -36,6 +33,6 @@ RSpec.describe Api::Admin::Headings::HeadingSerializer do
   end
 
   describe '#serializable_hash' do
-    it { expect(serialized).to eq(expected) }
+    it { expect(serialized).to include_json(expected) }
   end
 end

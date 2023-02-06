@@ -10860,6 +10860,13 @@ CREATE INDEX rrto_regroltypopl_ionolepeslog_operation_date ON public.regulation_
 
 
 --
+-- Name: search_references_goods_nomenclature_sid_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX search_references_goods_nomenclature_sid_index ON public.search_references USING btree (goods_nomenclature_sid);
+
+
+--
 -- Name: search_references_referenced_id_referenced_class_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -11107,3 +11114,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230127154210_fixes_quota
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230127155444_fixes_quota_unsuspension_events_view.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230202142148_adds_fields_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230203090107_tweak_footnote_type_id_field_length.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230202192506_adds_index_to_search_references.rb');
