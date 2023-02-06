@@ -1,7 +1,7 @@
 class TaricImporter
   module XmlParser
     class Reader < Nokogiri::XML::SAX::Document
-      EXTRA_CONTENT = /\n\s+/
+      EXTRA_CONTENT = /^\n\s+/
       CONTENT_KEY = :__content__
 
       def initialize(stringio, target, target_handler)
@@ -23,12 +23,15 @@ class TaricImporter
         key = strip_namespace(key)
 
         @in_target = true if key == @target
+        @description = true if key == 'description'
         return unless @in_target
 
         @stack << @node = {}
       end
 
       def characters(val)
+        # The XML we receive has a bunch of contiguous newline-starting strings that get passed to this callback so we
+        # skip assigning any values that start with newline characters
         return if !@in_target || val =~ EXTRA_CONTENT
 
         @node[CONTENT_KEY] = val

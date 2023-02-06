@@ -1,7 +1,7 @@
 class CdsImporter
   module XmlParser
     class Reader < Nokogiri::XML::SAX::Document
-      EXTRA_CONTENT = /\n\s+/ # Uncompressed XML has a bunch of contiguous newline-starting strings in between each tag - we skip assigning these bits
+      EXTRA_CONTENT = /^\n\s+/
       CONTENT_KEY = :__content__
 
       def initialize(stringio, target_handler)
@@ -31,6 +31,8 @@ class CdsImporter
       end
 
       def characters(val)
+        # The XML we receive has a bunch of contiguous newline-starting strings that get passed to this callback so we
+        # skip assigning any values that start with newline characters
         return if !@in_target || val =~ EXTRA_CONTENT
 
         @node[CONTENT_KEY] = val
