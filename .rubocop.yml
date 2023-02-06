@@ -15,6 +15,7 @@ AllCops:
     - 'db/data_migrations/*'
     - 'tmp/**/*'
     - 'config/puma.rb'
+    - 'spec/services/search_service_spec.rb'
 
 Layout/LineLength:
   Max: 120

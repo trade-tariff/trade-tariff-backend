@@ -53,8 +53,8 @@ RSpec.describe SearchService do
       TimeMachine.now { example.run }
     end
 
-    context 'chapters' do
-      context 'chapter goods id has not got preceding zero' do
+    context 'when chapters' do
+      context 'when chapter goods id has not got preceding zero' do
         let(:chapter) { create :chapter, goods_nomenclature_item_id: '1100000000' }
         let(:pattern) do
           {
@@ -83,7 +83,7 @@ RSpec.describe SearchService do
         end
       end
 
-      context 'chapter goods code id has got preceding zero' do
+      context 'when chapter goods code id has got preceding zero' do
         let(:chapter) { create :chapter, goods_nomenclature_item_id: '0800000000' }
         let(:pattern) do
           {
@@ -105,7 +105,7 @@ RSpec.describe SearchService do
       end
     end
 
-    context 'headings' do
+    context 'when headings' do
       let(:heading) { create :heading }
       let(:pattern) do
         {
@@ -142,8 +142,8 @@ RSpec.describe SearchService do
       end
     end
 
-    context 'commodities' do
-      context 'declarable' do
+    context 'when commodities' do
+      context 'when declarable' do
         let(:commodity) { create :commodity, :declarable, :with_heading, :with_indent }
         let(:heading)   { commodity.heading }
         let(:chemical)  { create :chemical, :with_name }
@@ -168,7 +168,7 @@ RSpec.describe SearchService do
 
         it 'returns endpoint and identifier if provided with 6 symbol commoditity code' do
           commodity = create(:commodity, :declarable, :with_heading, :with_indent,
-                                         goods_nomenclature_item_id: '0101010000')
+                             goods_nomenclature_item_id: '0101010000')
 
           result = described_class.new(data_serializer,
                                        q: '010101',
@@ -179,7 +179,7 @@ RSpec.describe SearchService do
 
         it 'returns endpoint and identifier if provided with 8 symbol commoditity code' do
           commodity = create(:commodity, :declarable, :with_heading, :with_indent,
-                                         goods_nomenclature_item_id: '0101010100')
+                             goods_nomenclature_item_id: '0101010100')
 
           result = described_class.new(data_serializer,
                                        q: '01010101',
@@ -246,7 +246,7 @@ RSpec.describe SearchService do
         end
       end
 
-      context 'non declarable' do
+      context 'when non declarable' do
         let!(:heading) do
           create :heading, goods_nomenclature_item_id: '8418000000',
                            validity_start_date: Date.new(2011, 1, 1)
@@ -271,7 +271,7 @@ RSpec.describe SearchService do
             type: 'exact_match',
             entry: {
               endpoint: 'subheadings',
-              id: "8418213100-80",
+              id: '8418213100-80',
             },
           }
         end
@@ -285,7 +285,7 @@ RSpec.describe SearchService do
         end
       end
 
-      context 'codes mapping' do
+      context 'when codes mapping' do
         let!(:commodity1) { create :commodity, :declarable, :with_heading, :with_indent, goods_nomenclature_item_id: '1010111255' }
         let!(:commodity2) { create :commodity, :declarable, :with_heading, :with_indent, goods_nomenclature_item_id: '2210113355' }
 
@@ -297,7 +297,7 @@ RSpec.describe SearchService do
         end
       end
 
-      context 'unknown commodity' do
+      context 'when unknown commodity' do
         let(:pattern) do
           {
             type: 'fuzzy_match',
@@ -316,7 +316,7 @@ RSpec.describe SearchService do
           }
         end
 
-        context 'under unknown heading' do
+        context 'when under unknown heading' do
           it 'returns empty result' do
             result = described_class.new(data_serializer,
                                          q: '8418999999',
@@ -326,7 +326,7 @@ RSpec.describe SearchService do
           end
         end
 
-        context 'under known heading' do
+        context 'when under known heading' do
           let!(:heading) do
             create :heading, goods_nomenclature_item_id: '8418000000',
                              validity_start_date: Date.new(2011, 1, 1)
@@ -343,7 +343,7 @@ RSpec.describe SearchService do
       end
     end
 
-    context 'chemicals' do
+    context 'when chemicals' do
       let(:commodity) { create :commodity, :declarable, :with_heading, :with_indent }
       let(:chemical)  { create :chemical, :with_name }
       let(:relation)  { create :chemicals_goods_nomenclatures, chemical_id: chemical.id, goods_nomenclature_sid: commodity.goods_nomenclature_sid }
@@ -371,7 +371,7 @@ RSpec.describe SearchService do
       end
     end
 
-    context 'hidden commodities' do
+    context 'when hidden commodities' do
       let!(:commodity)    { create :commodity, :declarable }
       let!(:hidden_gono)  { create :hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id }
 
@@ -385,7 +385,7 @@ RSpec.describe SearchService do
       end
     end
 
-    context 'search references' do
+    context 'when search references' do
       subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today).to_json }
 
       let!(:search_reference) { create(:search_reference, title: 'Foo Bar') }
@@ -406,8 +406,8 @@ RSpec.describe SearchService do
 
   # Searching in ElasticSearch index
   describe 'fuzzy search' do
-    context 'filtering by date' do
-      context 'with goods codes that have bounded validity period' do
+    context 'when filtering by date' do
+      context 'when with goods codes that have bounded validity period' do
         let!(:heading) do
           create :heading, :with_description,
                  goods_nomenclature_item_id: '2851000000',
@@ -445,7 +445,7 @@ RSpec.describe SearchService do
         end
       end
 
-      context 'with goods codes that have unbounded validity period' do
+      context 'when with goods codes that have unbounded validity period' do
         let!(:heading) do
           create :heading, :with_description,
                  goods_nomenclature_item_id: '0102000000',
@@ -503,12 +503,12 @@ RSpec.describe SearchService do
       end
     end
 
-    context 'searching for sections' do
+    context 'when searching for sections' do
       # Sections do not have validity periods
       # We have to ensure there is special clause in Elasticsearch
       # query that takes that into account and they get found
       let(:title) { 'example title' }
-      let!(:section) { create :section, title: title }
+      let!(:section) { create :section, title: }
       let(:result) do
         described_class.new(data_serializer, q: title,
                                              as_of: '1970-01-01')
@@ -532,7 +532,7 @@ RSpec.describe SearchService do
     end
   end
 
-  context 'reference search' do
+  context 'when reference search' do
     describe 'validity period function' do
       let!(:heading) do
         create :heading, :with_description,
@@ -557,24 +557,14 @@ RSpec.describe SearchService do
         }.ignore_extra_keys!
       end
 
-      before do
-        travel_to Date.parse('17-05-2006')
-      end
-
-      after do
-        travel_back
-      end
-
       it 'returns goods code if search date falls within validity period' do
-        @result = described_class.new(data_serializer, q: 'water',
-                                                       as_of: '2005-01-01').to_json
+        @result = TimeMachine.at('2005-01-01') { described_class.new(data_serializer, q: 'water').to_json }
 
         expect(@result).to match_json_expression heading_pattern
       end
 
       it 'does not return goods code if search date does not fall within validity period' do
-        @result = described_class.new(data_serializer, q: 'water',
-                                                       as_of: '2007-01-01').to_json
+        @result = TimeMachine.at('2007-01-01') { described_class.new(data_serializer, q: 'water').to_json }
 
         expect(@result).not_to match_json_expression heading_pattern
       end
