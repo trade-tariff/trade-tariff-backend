@@ -77,11 +77,7 @@ class SearchService
     end
 
     def find_search_reference(query)
-      item = SearchReference.where(Sequel.function(:lower, :title) => singular_and_plural(query)).first.try(:referenced)
-
-      return nil if item && item.try(:validity_end_date) && item.validity_end_date < date
-
-      item
+      SearchReference.find(Sequel.function(:lower, :title) => singular_and_plural(query)).try(:referenced)
     end
 
     def find_by_chemical(query)

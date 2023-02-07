@@ -148,25 +148,11 @@ module Search
     end
 
     def search_references_for(ancestor)
-      filter = {}
-      filter[:referenced_id] = if ancestor.chapter?
-                                 ancestor.chapter_short_code
-                               elsif ancestor.heading?
-                                 ancestor.heading_short_code
-                               else
-                                 ancestor.goods_nomenclature_item_id
-                               end
-      filter[:productline_suffix] = ancestor.producline_suffix
-
-      SearchReference.where(filter).pluck(:title).join(' ')
+      SearchReference.where(goods_nomenclature_sid: ancestor.goods_nomenclature_sid).pluck(:title).join(' ')
     end
 
     def declarable_search_references
-      filter = {}
-      filter[:referenced_id] = heading? ? heading_short_code : goods_nomenclature_item_id
-      filter[:productline_suffix] = producline_suffix
-
-      SearchReference.where(filter).pluck(:title).join(' ')
+      SearchReference.where(goods_nomenclature_sid:).pluck(:title).join(' ')
     end
   end
 end
