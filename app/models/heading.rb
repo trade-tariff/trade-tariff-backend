@@ -13,6 +13,8 @@ class Heading < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
+  include SearchReferenceable
+
   one_to_many :commodities, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
     ds.with_actual(Commodity)
       .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
@@ -30,10 +32,10 @@ class Heading < GoodsNomenclature
     ds.with_actual(Chapter)
   end
 
-  one_to_many :search_references, key: :referenced_id, primary_key: :short_code, reciprocal: :referenced, conditions: { referenced_class: 'Heading' },
-                                  adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Heading') },
-                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
+  one_to_many :search_references, key: :goods_nomenclature_sid, reciprocal: :referenced, conditions: { referenced_class: 'Heading' },
+                                  adder: proc { |search_reference| search_reference.update(goods_nomenclature_sid:, referenced_class: 'Heading') },
+                                  remover: proc { |search_reference| search_reference.update(goods_nomenclature_sid: nil, referenced_class: nil) },
+                                  clearer: proc { search_references_dataset.update(goods_nomenclature_sid: nil, referenced_class: nil) }
 
   dataset_module do
     def by_code(code = '')

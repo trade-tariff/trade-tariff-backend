@@ -11,6 +11,8 @@ class Commodity < GoodsNomenclature
 
   set_primary_key [:goods_nomenclature_sid]
 
+  include SearchReferenceable
+
   one_to_one :heading, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
     ds.with_actual(Heading)
       .filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
@@ -28,13 +30,6 @@ class Commodity < GoodsNomenclature
         measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
       )
   }
-
-  one_to_many :search_references, key: :referenced_id, primary_key: :code, reciprocal: :referenced, conditions: { referenced_class: 'Commodity' },
-                                  adder: proc { |search_reference| search_reference.update(referenced_id: code, productline_suffix: producline_suffix, referenced_class: 'Commodity') },
-                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil, productline_suffix: nil) },
-                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil, productline_suffix: nil) } do |dataset|
-                                    dataset.where(productline_suffix: producline_suffix)
-                                  end
 
   delegate :section, :section_id, to: :chapter, allow_nil: true
 

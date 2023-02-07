@@ -13,8 +13,10 @@ class Chapter < GoodsNomenclature
   many_to_many :sections, left_key: :goods_nomenclature_sid,
                           join_table: :chapters_sections
 
+  include SearchReferenceable
+
   one_to_many :headings, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
-    ds.with_actual(Heading).exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+    ds.with_actual(Heading).non_hidden
   end
 
   one_to_many :goods_nomenclatures do |_ds|
@@ -25,11 +27,6 @@ class Chapter < GoodsNomenclature
   end
 
   one_to_one :chapter_note, primary_key: :to_param
-
-  one_to_many :search_references, key: :referenced_id, primary_key: :short_code, reciprocal: :referenced, conditions: { referenced_class: 'Chapter' },
-                                  adder: proc { |search_reference| search_reference.update(referenced_id: short_code, referenced_class: 'Chapter') },
-                                  remover: proc { |search_reference| search_reference.update(referenced_id: nil, referenced_class: nil) },
-                                  clearer: proc { search_references_dataset.update(referenced_id: nil, referenced_class: nil) }
 
   def guide_ids
     guides.pluck(:id)

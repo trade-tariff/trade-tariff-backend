@@ -1,8 +1,8 @@
 RSpec.describe Api::V2::SearchReferencesController do
   before do
-    create :search_reference, referenced: create(:heading), title: 'aa'
-    create :search_reference, referenced: create(:chapter), title: 'bb'
-    create :search_reference, referenced: create(:commodity), title: 'bb'
+    create :search_reference, :with_heading, title: 'aa'
+    create :search_reference, :with_chapter, title: 'bb'
+    create :search_reference, :with_commodity, title: 'bb'
   end
 
   describe '#index' do

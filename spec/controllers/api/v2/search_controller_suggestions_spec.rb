@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::SearchController do
   describe 'GET /search_suggestions' do
-    subject(:response) { get :suggestions, params: params }
+    subject(:response) { get :suggestions, params: }
 
     let(:params) { {} }
 
@@ -37,6 +37,24 @@ RSpec.describe Api::V2::SearchController do
     context 'when there are search_references' do
       before { create :search_reference, referenced: create(:heading), title: 'foo' }
 
+      let(:pattern) do
+        {
+          data: [
+            {
+              id: String,
+              type: 'search_suggestion',
+              attributes: { value: String },
+            },
+            {
+              id: String,
+              type: 'search_suggestion',
+              attributes: { value: String },
+            },
+          ],
+        }
+      end
+
+      it { expect(response.body).to match_json_expression pattern }
       it { expect(response.body.to_s).to include('foo') }
     end
   end

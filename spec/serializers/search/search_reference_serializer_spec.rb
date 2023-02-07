@@ -18,14 +18,7 @@ RSpec.describe Search::SearchReferenceSerializer do
     end
 
     context 'when there is no valid referenced object' do
-      let(:search_reference) do
-        described_class.new(
-          create(:search_reference,
-                 chapter_id: nil,
-                 heading_id: nil,
-                 referenced: nil),
-        )
-      end
+      let(:search_reference) { described_class.new(create(:search_reference, referenced: nil)) }
 
       it 'returns blank json hash' do
         expect(search_reference.to_json).to eq '{}'

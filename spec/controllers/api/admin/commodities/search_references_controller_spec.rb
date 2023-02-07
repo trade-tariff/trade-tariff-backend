@@ -1,7 +1,7 @@
 RSpec.describe Api::Admin::Commodities::SearchReferencesController do
   it_behaves_like 'v2 search references controller' do
     let(:search_reference_parent)  { create :commodity, :declarable, :with_heading }
-    let(:search_reference)         { create :search_reference, commodity_id: search_reference_parent.code }
+    let(:search_reference)         { create :search_reference, referenced: search_reference_parent }
     let(:collection_query)         do
       { commodity_id: search_reference_parent.goods_nomenclature_item_id }
     end

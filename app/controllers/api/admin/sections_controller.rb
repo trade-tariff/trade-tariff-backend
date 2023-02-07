@@ -2,7 +2,7 @@ module Api
   module Admin
     class SectionsController < ApiController
       def index
-        @sections = Section.eager(:search_references, { chapters: [:chapter_note] }, :section_note).all
+        @sections = Section.eager({ chapters: [:chapter_note] }, :section_note).all
 
         render json: Api::Admin::Sections::SectionListSerializer.new(@sections).serializable_hash
       end
