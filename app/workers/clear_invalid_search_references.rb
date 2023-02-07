@@ -4,16 +4,16 @@ class ClearInvalidSearchReferences
   sidekiq_options retry: false
 
   def perform
-    SearchReference.each do |ref|
-      next if ref.referenced.current?
+    cleared = SearchReference.each_with_object({}) do |search_reference, acc|
+      next if search_reference.referenced.current?
 
-      message = "Removed Search reference: id:#{ref.id}, title:'#{ref.title}'"
+      (acc[search_reference.goods_nomenclature_sid] ||= []) << search_reference.title
 
-      ref.delete
-
-      logger.info(message)
-
-      SlackNotifierService.call(message)
+      search_reference.delete
     end
+
+    message = "Removed Search references #{cleared.to_json}"
+    logger.info(message)
+    SlackNotifierService.call(message)
   end
 end
