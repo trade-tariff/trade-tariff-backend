@@ -186,6 +186,10 @@ class Commodity < GoodsNomenclature
     declarable? ? self : cast_to_subheading
   end
 
+  def to_admin_param
+    "#{goods_nomenclature_item_id}-#{producline_suffix}"
+  end
+
   private
 
   def load_children

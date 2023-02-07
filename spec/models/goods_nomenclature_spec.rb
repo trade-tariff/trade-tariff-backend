@@ -610,9 +610,11 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#admin_id' do
-    subject { create(:commodity, goods_nomenclature_item_id: '0123456789', producline_suffix: '01').admin_id }
+  describe '#to_admin_param' do
+    subject { goods_nomenclature.to_admin_param }
 
-    it { is_expected.to eql '0123456789-01' }
+    let(:goods_nomenclature) { create(:goods_nomenclature) }
+
+    it { is_expected.to eq(goods_nomenclature.to_param) }
   end
 end

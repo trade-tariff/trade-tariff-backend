@@ -7,7 +7,7 @@ RSpec.describe Api::Admin::Headings::CommoditySerializer do
   let(:expected) do
     {
       data: {
-        id: "#{serializable.goods_nomenclature_item_id}-#{serializable.producline_suffix}",
+        id: serializable.to_admin_param,
         type: :commodity,
         attributes: {
           description: serializable.description,

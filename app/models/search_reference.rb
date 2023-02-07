@@ -11,7 +11,6 @@ class SearchReference < Sequel::Model
   referenced_setter = proc do |referenced|
     if referenced.present?
       set(
-        referenced_id: referenced.to_param.sub(/-\d{2}/, ''),
         referenced_class: referenced.class.name,
         productline_suffix: referenced.producline_suffix,
         goods_nomenclature_item_id: referenced.goods_nomenclature_item_id,
@@ -20,12 +19,10 @@ class SearchReference < Sequel::Model
     end
   end
 
-  referenced_dataset = proc do
+  many_to_one :referenced, key: :goods_nomenclature_sid, reciprocal: :search_references, reciprocal_type: :many_to_one, setter: referenced_setter, dataset: proc {
     klass = referenced_class.constantize
     klass.actual.where(goods_nomenclature_sid:)
-  end
-
-  many_to_one :referenced, reciprocal: :search_references, reciprocal_type: :many_to_one, setter: referenced_setter, dataset: referenced_dataset
+  }
 
   self.raise_on_save_failure = false
 
@@ -43,19 +40,12 @@ class SearchReference < Sequel::Model
     end
   end
 
-  def resource_path
-    path = case referenced_class
-           when 'Chapter'
-             '/chapters/:id'
-           when 'Heading'
-             '/headings/:id'
-           when 'Subheading'
-             '/subheadings/:id'
-           else
-             '/commodities/:id'
-           end
+  def referenced_id
+    referenced.to_admin_param
+  end
 
-    path.sub(':id', referenced.to_param)
+  def resource_path
+    "/#{referenced_class.downcase.pluralize}/#{referenced.to_param}"
   end
 
   def validate

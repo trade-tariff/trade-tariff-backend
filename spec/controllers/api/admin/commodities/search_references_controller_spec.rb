@@ -9,7 +9,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       collection_query.merge(id: search_reference.id)
     end
     let(:to_param) do
-      search_reference_parent.admin_id
+      search_reference_parent.to_admin_param
     end
   end
 
@@ -36,7 +36,6 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
 
         expect(SearchReference.last).to have_attributes(
           referenced_class: 'Commodity',
-          referenced_id: '0101110000',
           productline_suffix: '80',
           goods_nomenclature_item_id: '0101110000',
           goods_nomenclature_sid: be_a(Integer),
@@ -72,7 +71,6 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
 
         expect(SearchReference.last).to have_attributes(
           referenced_class: 'Commodity',
-          referenced_id: '0101110000',
           productline_suffix: '80',
           goods_nomenclature_item_id: '0101110000',
           goods_nomenclature_sid: be_a(Integer),
@@ -98,7 +96,6 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
 
         expect(SearchReference.last).to have_attributes(
           referenced_class: 'Subheading',
-          referenced_id: '0101110000',
           productline_suffix: '10',
           goods_nomenclature_item_id: '0101110000',
           goods_nomenclature_sid: be_a(Integer),

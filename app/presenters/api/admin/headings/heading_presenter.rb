@@ -25,7 +25,7 @@ module Api
         end
 
         def commodity_ids
-          commodities.map(&:admin_id)
+          commodities.map(&:to_admin_param)
         end
 
         def search_references_count

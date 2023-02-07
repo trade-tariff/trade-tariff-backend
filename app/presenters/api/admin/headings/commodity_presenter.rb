@@ -23,6 +23,10 @@ module Api
 
           super(commodity)
         end
+
+        def to_admin_param
+          "#{goods_nomenclature_item_id}-#{producline_suffix}"
+        end
       end
     end
   end

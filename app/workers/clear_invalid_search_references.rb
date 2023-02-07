@@ -5,10 +5,15 @@ class ClearInvalidSearchReferences
 
   def perform
     SearchReference.each do |ref|
-      unless ref.referenced.current?
-        logger.info "Removed Search reference: id:#{ref.id}, title:'#{ref.title}'"
-        ref.delete
-      end
+      next if ref.referenced.current?
+
+      message = "Removed Search reference: id:#{ref.id}, title:'#{ref.title}'"
+
+      ref.delete
+
+      logger.info(message)
+
+      SlackNotifierService.call(message)
     end
   end
 end

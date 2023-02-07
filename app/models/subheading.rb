@@ -9,6 +9,10 @@ class Subheading < Commodity
 
   include SearchReferenceable
 
+  def to_admin_param
+    goods_nomenclature_item_id
+  end
+
   def to_param
     "#{goods_nomenclature_item_id}-#{producline_suffix}"
   end
