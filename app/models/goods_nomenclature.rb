@@ -120,7 +120,7 @@ class GoodsNomenclature < Sequel::Model
   delegate :description, :description_indexed, :formatted_description, to: :goods_nomenclature_description, allow_nil: true
 
   # Find goods nomenclature where I am the origin (e.g. who succeed me)
-  one_to_many :derived_goods_nomenclature_origins, key: %i[derived_goods_nomenclature_item_id derived_productline_suffix],
+  one_to_many :deriving_goods_nomenclature_origins, key: %i[derived_goods_nomenclature_item_id derived_productline_suffix],
                                                    primary_key: %i[goods_nomenclature_item_id producline_suffix],
                                                    class_name: 'GoodsNomenclatureOrigin'
 

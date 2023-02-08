@@ -2,21 +2,27 @@ module Api
   module V2
     class ValidityPeriodsController < ApiController
       def index
-        goods_nomenclatures_in_all_periods = goods_nomenclature_scope.exclude(validity_start_date: nil)
-                                         .limit(10)
-                                         .order(Sequel.desc(:validity_start_date))
-                                         .to_a
-
         presented_goods_nomenclatures = goods_nomenclatures_in_all_periods.map do |goods_nomenclature|
           Api::V2::ValidityPeriodPresenter.new(goods_nomenclature)
         end
 
-        serializer = Api::V2::ValidityPeriodSerializer.new(presented_goods_nomenclatures)
+        serializer = Api::V2::ValidityPeriodSerializer.new(
+          presented_goods_nomenclatures,
+          include: [:deriving_goods_nomenclatures],
+        )
 
         render json: serializer.serializable_hash
       end
 
-    private
+      private
+
+      def goods_nomenclatures_in_all_periods
+        goods_nomenclature_scope.exclude(validity_start_date: nil)
+          .limit(10)
+          .eager(deriving_goods_nomenclature_origins: :goods_nomenclature)
+          .order(Sequel.desc(:validity_start_date))
+          .to_a
+      end
 
       def goods_nomenclature_scope
         if params[:commodity_id].present?
@@ -27,7 +33,7 @@ module Api
 
           Subheading.by_code(code).by_productline_suffix(producline_suffix)
         elsif params[:heading_id].present?
-          Heading.by_code("#{params[:heading_id]}000000")
+          Heading.by_code("#{params[:heading_id]}000000").non_grouping
         else
           raise Sequel::RecordNotFound
         end
