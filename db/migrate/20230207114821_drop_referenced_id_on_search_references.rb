@@ -7,7 +7,7 @@ Sequel.migration do
 
   down do
     alter_table :search_references do
-      add_column :referenced_class, String, size: 10
+      add_column :referenced_id, String, size: 10
     end
   end
 end
