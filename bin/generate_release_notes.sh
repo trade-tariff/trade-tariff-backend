@@ -43,11 +43,19 @@ log_for() {
 
   # Check if there are merge commits in the specified range
   merge_commits=$(git rev-list HEAD...$sha1 --merges)
-
   if [ -n "$merge_commits" ]; then
     # Print the merge logs
-    git --no-pager log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request' \
-      | awk '{if (/^HOTT-[[:digit:]]+/ && !/:/) {sub(/^HOTT-[[:digit:]]+/, "&:");} print}'
+    while read -r line; do
+      message=$(echo "$line" | awk -F\| '{print $1}')
+      subject_line=$(echo "$line" | awk -F\| '{print $2}')
+      # Extract the pull request number from the commit message
+      pr_number=$(echo "$subject_line" | sed 's/^Merge pull request #\([0-9]*\).*$/\1/g')
+      # Construct the link to the pull request
+      pr_link="https://github.com/${repo}/pull/${pr_number}"
+      # Replace the commit message with a markdown link to the pull request
+      echo "- [${message}](${pr_link})"
+    done <<< "$(git --no-pager log --merges HEAD...$sha1 --format="format:%b|%s" --grep 'Merge pull request')"
+    echo
   else
     # Print a message indicating that there are no merge commits
     echo "Nothing to release."
