@@ -16,16 +16,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Run release notes script
-        id: release_notes
-        run: bash bin/generate_release_notes.sh
-
-      - name: Post release notes to Slack
-        uses: rtCamp/action-slack-notify@v2
+      - name: Post release notes to slack
+        run: bash bin/post_release_notes.sh
         env:
-          SLACK_MESSAGE: ${{ steps.release_notes.outputs.message }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: "trade_tariff"
-          SLACK_USERNAME: "Github Actions"
-          SLACK_COLOR: '#36a64f'
-          SLACK_MESSAGE_FORMAT: 'text/plain'
+          SLACK_CHANNEL: "deployments"
