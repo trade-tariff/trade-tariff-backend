@@ -50,6 +50,17 @@ RSpec.describe Api::V2::RulesOfOriginController do
       it_behaves_like 'a successful jsonapi response'
       it { expect(first_scheme).to include 'scheme_code' }
       it { expect(first_scheme).not_to include 'introductory_notes' }
+
+      context 'with custom includes' do
+        subject { JSON.parse(rendered.body)['included'] }
+
+        let :make_request do
+          get api_rules_of_origin_schemes_path(include: 'proofs', format: :json),
+              headers: { 'Accept' => 'application/vnd.uktt.v2' }
+        end
+
+        it { is_expected.to include include 'type' => 'rules_of_origin_proof' }
+      end
     end
 
     context 'with filtered list of schemes' do

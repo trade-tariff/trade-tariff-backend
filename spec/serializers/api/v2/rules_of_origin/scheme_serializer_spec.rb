@@ -47,6 +47,9 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
               type: :rules_of_origin_origin_reference_document,
             },
           },
+          proofs: {
+            data: [],
+          },
         },
       },
       included: [

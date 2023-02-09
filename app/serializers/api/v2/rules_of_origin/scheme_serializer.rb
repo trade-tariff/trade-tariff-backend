@@ -11,6 +11,7 @@ module Api
         attributes :scheme_code, :title, :countries, :unilateral
 
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
+        has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
         has_one :origin_reference_document, serializer: Api::V2::RulesOfOrigin::OriginReferenceDocumentSerializer
       end
     end
