@@ -164,12 +164,17 @@ Rails.application.routes.draw do
         collection { get :search }
       end
 
-      resources :rules_of_origin_schemes,
-                controller: 'rules_of_origin',
-                only: %i[index]
-      get '/rules_of_origin_schemes/:heading_code/:country_code',
-          to: 'rules_of_origin#index',
-          as: :rules_of_origin
+      scope module: :rules_of_origin do
+        resources :rules_of_origin_schemes,
+                  controller: 'schemes',
+                  only: %i[index]
+        get '/rules_of_origin_schemes/:heading_code/:country_code',
+            to: 'schemes#index',
+            as: :rules_of_origin
+        get '/rules_of_origin_schemes/:commodity_code',
+            to: 'product_specific_rules#index',
+            as: :product_specific_rules
+      end
 
       if TradeTariffBackend.uk?
         namespace :news do

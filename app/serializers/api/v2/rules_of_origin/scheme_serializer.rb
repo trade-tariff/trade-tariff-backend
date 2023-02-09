@@ -13,6 +13,7 @@ module Api
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
         has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
         has_one :origin_reference_document, serializer: Api::V2::RulesOfOrigin::OriginReferenceDocumentSerializer
+        has_many :rule_sets, serializer: Api::V2::RulesOfOrigin::V2::RuleSetSerializer
       end
     end
   end
