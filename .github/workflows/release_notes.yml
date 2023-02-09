@@ -1,0 +1,30 @@
+name: Release Notes
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 7 * * 1,4"
+  push:
+    branches:
+      - adds-release-notes-workflow
+
+jobs:
+  release_notes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Run release notes script
+        id: release_notes
+        run: bash bin/generate_release_notes.sh
+
+      - name: Post release notes to Slack
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_MESSAGE: ${{ steps.release_notes.outputs.message }}
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_CHANNEL: "trade_tariff"
+          SLACK_USERNAME: "Github Actions"
+          SLACK_COLOR: '#36a64f'
