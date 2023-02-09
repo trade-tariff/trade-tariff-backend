@@ -38,7 +38,7 @@ log_for() {
   echo
 
   # Print the SHA-1 hash
-  echo "[_${sha1}_](https://github.com/trade-tariff/$repo/commit/$sha1)"
+  echo "_[${sha1}](https://github.com/trade-tariff/$repo/commit/$sha1)_"
   echo
 
   # Check if there are merge commits in the specified range
@@ -51,7 +51,7 @@ log_for() {
       # Extract the pull request number from the commit message
       pr_number=$(echo "$subject_line" | sed 's/^Merge pull request #\([0-9]*\).*$/\1/g')
       # Construct the link to the pull request
-      pr_link="https://github.com/${repo}/pull/${pr_number}"
+      pr_link="https://github.com/trade-tariff/${repo}/pull/${pr_number}"
       # Replace the commit message with a markdown link to the pull request
       echo "- [${message}](${pr_link})"
     done <<< "$(git --no-pager log --merges HEAD...$sha1 --format="format:%b|%s" --grep 'Merge pull request')"
