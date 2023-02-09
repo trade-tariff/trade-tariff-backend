@@ -46,7 +46,8 @@ log_for() {
 
   if [ -n "$merge_commits" ]; then
     # Print the merge logs
-    git --no-pager log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request'
+    git --no-pager log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request' \
+      | awk '{if (/^HOTT-[[:digit:]]+/ && !/:/) {sub(/^HOTT-[[:digit:]]+/, "&:");} print}'
   else
     # Print a message indicating that there are no merge commits
     echo "Nothing to release."
