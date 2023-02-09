@@ -4,9 +4,6 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 7 * * 1,4"
-  push:
-    branches:
-      - adds-release-notes-workflow
 
 jobs:
   release_notes:
