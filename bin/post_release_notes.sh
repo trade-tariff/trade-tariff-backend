@@ -8,7 +8,7 @@ payload="{
   \"channel\": \"$channel\",
   \"text\": \"$message\",
   \"username\": \"$username\",
-  \"mrkdwn\": false
+  \"mrkdwn\": true
 }"
 
 curl -X POST -H "Content-type: application/json" --data "$payload" "$webhook_url"

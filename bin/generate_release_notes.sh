@@ -38,7 +38,7 @@ log_for() {
   echo
 
   # Print the SHA-1 hash
-  echo "_[${sha1}](https://github.com/trade-tariff/$repo/commit/$sha1)_"
+  echo "_<https://github.com/trade-tariff/$repo/commit/$sha1|${sha1}>_"
   echo
 
   # Check if there are merge commits in the specified range
@@ -53,9 +53,8 @@ log_for() {
       # Construct the link to the pull request
       pr_link="https://github.com/trade-tariff/${repo}/pull/${pr_number}"
       # Replace the commit message with a markdown link to the pull request
-      echo "- [${message}](${pr_link})"
+      echo "* <${pr_link}|${message}>"
     done <<< "$(git --no-pager log --merges HEAD...$sha1 --format="format:%b|%s" --grep 'Merge pull request')"
-    echo
   else
     # Print a message indicating that there are no merge commits
     echo "Nothing to release."
