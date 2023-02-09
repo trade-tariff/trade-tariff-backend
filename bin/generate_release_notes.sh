@@ -38,7 +38,7 @@ log_for() {
   echo
 
   # Print the SHA-1 hash
-  echo "_${sha1}_"
+  echo "[_${sha1}_](https://github.com/trade-tariff/$repo/commit/$sha1)"
   echo
 
   # Check if there are merge commits in the specified range
