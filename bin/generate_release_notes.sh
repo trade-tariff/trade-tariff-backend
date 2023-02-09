@@ -22,6 +22,13 @@ log_for() {
   # Retrieve the SHA-1 hash from the specified URL
   sha1=$(curl --silent "$url" | jq '.git_sha1' | tr -d '"')
 
+  # Check if there are any merge commits
+  if ! git log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request' | grep -q .; then
+    # If there are no merge commits, change back to the parent directory and return
+    cd ..
+    return
+  fi
+
   # Change to the specified repository or exit if unable to do so
   cd "$repo" || exit
 
