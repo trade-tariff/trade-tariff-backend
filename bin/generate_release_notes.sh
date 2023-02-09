@@ -1,5 +1,12 @@
 #!/usr/bin/env bash
 
+set -o errexit
+set -o nounset
+
+if [ -d "repos" ]; then
+  rm -rf repos
+fi
+
 # Create a directory to store the repositories
 mkdir repos
 
@@ -22,18 +29,11 @@ log_for() {
   # Retrieve the SHA-1 hash from the specified URL
   sha1=$(curl --silent "$url" | jq '.git_sha1' | tr -d '"')
 
-  # Check if there are any merge commits
-  if ! git log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request' | grep -q .; then
-    # If there are no merge commits, change back to the parent directory and return
-    cd ..
-    return
-  fi
-
   # Change to the specified repository or exit if unable to do so
   cd "$repo" || exit
 
   # Print the name of the repository
-	echo
+  echo
   echo "*$repo*"
   echo
 
@@ -41,8 +41,17 @@ log_for() {
   echo "_${sha1}_"
   echo
 
-  # Print the merge logs
-  git --no-pager log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request'
+  # Check if there are merge commits in the specified range
+  merge_commits=$(git rev-list HEAD...$sha1 --merges)
+
+  if [ -n "$merge_commits" ]; then
+    # Print the merge logs
+    git --no-pager log --merges HEAD...$sha1 --format="format:- %b" --grep 'Merge pull request'
+  else
+    # Print a message indicating that there are no merge commits
+    echo "Nothing to release."
+    echo
+  fi
   echo
 
   # Change back to the parent directory
@@ -62,4 +71,3 @@ all_logs
 
 # Clear repos directory if script ran locally and we need to rerun
 rm -rf repos
-
