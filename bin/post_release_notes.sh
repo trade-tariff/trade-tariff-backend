@@ -4,14 +4,16 @@
 # Get the SLACK_WEBHOOK and SLACK_CHANNEL environment variables
 webhook_url="$SLACK_WEBHOOK"
 channel="#$SLACK_CHANNEL"
+username="$SLACK_USERNAME"
 
 # Get the output of the release notes script
-release_notes=$(bash bin/generate_release_notes.sh)
+message=$(bash bin/generate_release_notes.sh)
 
 # Define the message payload in JSON format
 payload="{
   \"channel\": \"$channel\",
-  \"text\": \"$release_notes\",
+  \"text\": \"$message\",
+  \"username\": \"$username\",
   \"mrkdwn\": false
 }"
 

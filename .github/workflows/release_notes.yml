@@ -21,3 +21,4 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: "deployments"
+          SLACK_USERNAME: 'Release Bot'
