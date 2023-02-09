@@ -20,5 +20,5 @@ jobs:
         run: bash bin/post_release_notes.sh
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: "deployments"
+          SLACK_CHANNEL: "trade_tariff"
           SLACK_USERNAME: 'Release Bot'
