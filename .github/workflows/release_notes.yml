@@ -28,3 +28,4 @@ jobs:
           SLACK_CHANNEL: "trade_tariff"
           SLACK_USERNAME: "Github Actions"
           SLACK_COLOR: '#36a64f'
+          SLACK_MESSAGE_FORMAT: 'text/plain'
