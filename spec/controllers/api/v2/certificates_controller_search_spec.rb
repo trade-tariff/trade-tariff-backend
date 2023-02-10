@@ -61,6 +61,8 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
               description: String,
               formatted_description: String,
               producline_suffix: String,
+              validity_start_date: String,
+              validity_end_date: nil,
             },
           },
         ],

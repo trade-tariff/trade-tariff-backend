@@ -1,11 +1,6 @@
 RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
-  context 'additional codes search' do
+  describe 'GET #search' do
     let!(:additional_code) { create :additional_code }
-    let!(:additional_code_description) { create :additional_code_description, :with_period, additional_code_sid: additional_code.additional_code_sid }
-    let!(:measure) { create :measure, :with_base_regulation, additional_code_sid: additional_code.additional_code_sid, goods_nomenclature: create(:heading) }
-    let!(:excluded_measure) { create :measure, :with_base_regulation, additional_code_sid: additional_code.additional_code_sid, goods_nomenclature: nil }
-    let!(:goods_nomenclature) { measure.goods_nomenclature }
-    let!(:goods_nomenclature_description) { create :goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }
 
     let(:pattern) do
       {
@@ -64,6 +59,8 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
               description: String,
               formatted_description: String,
               producline_suffix: String,
+              validity_start_date: String,
+              validity_end_date: nil,
             },
           },
         ],
@@ -78,6 +75,28 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
     end
 
     before do
+      measure = create(
+        :measure,
+        :with_base_regulation,
+        additional_code_sid: additional_code.additional_code_sid,
+        goods_nomenclature: create(:heading),
+      )
+      create(
+        :goods_nomenclature_description,
+        goods_nomenclature_sid: measure.goods_nomenclature.goods_nomenclature_sid,
+      )
+      create(
+        :measure,
+        :with_base_regulation,
+        additional_code_sid: additional_code.additional_code_sid,
+        goods_nomenclature: nil,
+      )
+      create(
+        :additional_code_description,
+        :with_period,
+        additional_code_sid: additional_code.additional_code_sid,
+      )
+
       Sidekiq::Testing.inline! do
         TradeTariffBackend.cache_client.reindex(Cache::AdditionalCodeIndex.new)
         sleep(1)
