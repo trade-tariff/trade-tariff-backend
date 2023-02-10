@@ -33,6 +33,20 @@ FactoryBot.define do
       # See implicit behaviour above
     end
 
+    trait :with_deriving_goods_nomenclatures do
+      after(:create) do |origin_goods_nomenclature|
+        successor_goods_nomenclature = create(:commodity, :with_heading)
+
+        create(
+          :goods_nomenclature_origin,
+          goods_nomenclature_sid: successor_goods_nomenclature.goods_nomenclature_sid,
+          productline_suffix: successor_goods_nomenclature.producline_suffix,
+          derived_goods_nomenclature_item_id: origin_goods_nomenclature.goods_nomenclature_item_id,
+          derived_productline_suffix: origin_goods_nomenclature.producline_suffix,
+        )
+      end
+    end
+
     trait :non_current do
       validity_end_date { 1.day.ago }
     end
@@ -206,11 +220,11 @@ FactoryBot.define do
     end
 
     trait :with_description do
-      before(:create) do |gono, evaluator|
-        create(:goods_nomenclature_description, goods_nomenclature_sid: gono.goods_nomenclature_sid,
-                                                goods_nomenclature_item_id: gono.goods_nomenclature_item_id,
-                                                validity_start_date: gono.validity_start_date,
-                                                validity_end_date: gono.validity_end_date,
+      before(:create) do |goods_nomenclature, evaluator|
+        create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+                                                goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+                                                validity_start_date: goods_nomenclature.validity_start_date,
+                                                validity_end_date: goods_nomenclature.validity_end_date,
                                                 description: evaluator.description)
       end
     end
