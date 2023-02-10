@@ -987,6 +987,16 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
+      - smoketest_staging:
+          name: smoketest_release_to_staging
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - deploy_release_to_staging
       - hold_deploy_production:
           type: approval
           filters:
