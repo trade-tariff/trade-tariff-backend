@@ -3,6 +3,10 @@ module Api
     class ValidityPeriodPresenter < SimpleDelegator
       include ContentAddressableId
 
+      def self.wrap(goods_nomenclatures)
+        Array.wrap(goods_nomenclatures).map { |goods_nomenclature| new(goods_nomenclature) }
+      end
+
       content_addressable_fields :to_param,
                                  :validity_start_date,
                                  :validity_end_date

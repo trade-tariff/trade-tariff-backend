@@ -20,4 +20,20 @@ RSpec.describe Api::V2::ValidityPeriodPresenter do
       it { is_expected.to be_present }
     end
   end
+
+  describe '.wrap' do
+    subject(:wrap) { described_class.wrap(goods_nomenclatures) }
+
+    context 'when the goods nomenclature is a collection' do
+      let(:goods_nomenclatures) { build_list(:commodity, 2) }
+
+      it { is_expected.to all(be_a(described_class)) }
+    end
+
+    context 'when the goods nomenclature is a single goods nomenclature' do
+      let(:goods_nomenclatures) { build(:commodity) }
+
+      it { is_expected.to all(be_a(described_class)) }
+    end
+  end
 end
