@@ -21,6 +21,14 @@ RSpec.describe Api::V2::ValidityPeriodPresenter do
     end
   end
 
+  describe '#deriving_goods_nomenclatures' do
+    subject(:deriving_goods_nomenclatures) { described_class.new(goods_nomenclature).deriving_goods_nomenclatures }
+
+    let(:goods_nomenclature) { build(:commodity, :with_deriving_goods_nomenclatures) }
+
+    it { is_expected.to all(be_a(Commodity)) }
+  end
+
   describe '.wrap' do
     subject(:wrap) { described_class.wrap(goods_nomenclatures) }
 

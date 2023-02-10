@@ -121,8 +121,8 @@ class GoodsNomenclature < Sequel::Model
 
   # Find goods nomenclature where I am the origin (e.g. who succeed me)
   one_to_many :deriving_goods_nomenclature_origins, key: %i[derived_goods_nomenclature_item_id derived_productline_suffix],
-                                                   primary_key: %i[goods_nomenclature_item_id producline_suffix],
-                                                   class_name: 'GoodsNomenclatureOrigin'
+                                                    primary_key: %i[goods_nomenclature_item_id producline_suffix],
+                                                    class_name: 'GoodsNomenclatureOrigin'
 
   # Find goods nomenclature that I originate from (e.g. who preceded me)
   one_to_many :goods_nomenclature_origins, key: :goods_nomenclature_sid
