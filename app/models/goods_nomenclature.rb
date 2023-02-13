@@ -104,11 +104,6 @@ class GoodsNomenclature < Sequel::Model
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
   end
 
-  one_to_one :national_measurement_unit_set, key: :cmdty_code,
-                                             primary_key: :goods_nomenclature_item_id
-
-  delegate :national_measurement_unit_set_units, to: :national_measurement_unit_set, allow_nil: true
-
   def number_indents
     if goods_nomenclature_indent.present?
       goods_nomenclature_indent.number_indents
