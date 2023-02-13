@@ -67,7 +67,6 @@ class CachedCommodityService
 
   def call
     Rails.cache.fetch(cache_key, expires_in: TTL) do
-
       Api::V2::Commodities::CommoditySerializer.new(presented_commodity, options).serializable_hash
     end
   end
