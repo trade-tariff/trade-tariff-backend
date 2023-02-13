@@ -203,7 +203,6 @@ module TradeTariffBackend
         ModificationRegulation,
         MonetaryExchangePeriod,
         MonetaryUnit,
-        NationalMeasurementUnitSet,
         PublicationSigle,
         QuotaBlockingPeriod,
         QuotaDefinition,

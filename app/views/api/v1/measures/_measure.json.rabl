@@ -4,21 +4,21 @@ attributes :id,
            :effective_end_date,
            :import
 
-node(:excise) { |measure| measure.excise? }
-node(:vat)    { |measure| measure.vat? }
+node(:excise, &:excise?)
+node(:vat, &:vat?)
 
-node(:measure_type) { |measure|
+node(:measure_type) do |measure|
   {
     id: measure.measure_type_id,
-    description: measure.measure_type.description
+    description: measure.measure_type.description,
   }
-}
-node(:duty_expression) { |measure|
+end
+node(:duty_expression) do |measure|
   {
-    base: measure.duty_expression_with_national_measurement_units_for(locals[:declarable]),
-    formatted_base: measure.formatted_duty_expression_with_national_measurement_units_for(locals[:declarable])
+    base: measure.duty_expression,
+    formatted_base: measure.formatted_duty_expression,
   }
-}
+end
 
 node(:legal_acts, if: ->(measure) { !measure.national }) do |measure|
   measure.legal_acts.map do |regulation|
@@ -31,7 +31,7 @@ node(:suspension_legal_act, if: ->(measure) { !measure.national && measure.suspe
     regulation_code: regulation_code(measure.suspending_regulation),
     regulation_url: regulation_url(measure.suspending_regulation),
     validity_end_date: measure.suspending_regulation.effective_end_date,
-    validity_start_date: measure.suspending_regulation.effective_start_date
+    validity_start_date: measure.suspending_regulation.effective_start_date,
   }
 end
 
@@ -48,12 +48,10 @@ child(:geographical_area) do
 end
 
 child(excluded_geographical_areas: :excluded_countries) do
-  node(:geographical_area_id) { |ga|
-    ga.geographical_area_id
-  }
-  node(:description) { |ga|
+  node(:geographical_area_id, &:geographical_area_id)
+  node(:description) do |ga|
     ga.geographical_area_description.description
-  }
+  end
 end
 
 child(footnotes: :footnotes) do
@@ -64,27 +62,27 @@ node(:additional_code, if: ->(measure) { measure.additional_code.present? }) do 
   {
     code: measure.additional_code.code,
     description: measure.additional_code.description,
-    formatted_description: measure.additional_code.formatted_description
+    formatted_description: measure.additional_code.formatted_description,
   }
 end
 
 node(:additional_code, if: ->(measure) { measure.export_refund_nomenclature_sid.present? }) do |measure|
   {
     code: measure.export_refund_nomenclature.additional_code,
-    description: measure.export_refund_nomenclature.description
+    description: measure.export_refund_nomenclature.description,
   }
 end
 
 child(order_number: :order_number) do
-  node(:number) { |qon| qon.quota_order_number_id }
+  node(:number, &:quota_order_number_id)
 
   child(quota_definition!: :definition) do
     attributes :initial_volume, :validity_start_date, :validity_end_date, :status, :description
 
-    node(:measurement_unit) { |qd| qd.formatted_measurement_unit }
-    node(:monetary_unit) { |qd| qd.monetary_unit_code }
-    node(:measurement_unit_qualifier) { |qd| qd.measurement_unit_qualifier_code }
-    node(:balance) { |qd| qd.balance }
+    node(:measurement_unit, &:formatted_measurement_unit)
+    node(:monetary_unit, &:monetary_unit_code)
+    node(:measurement_unit_qualifier, &:measurement_unit_qualifier_code)
+    node(:balance, &:balance)
     node(:last_allocation_date) { |qd| qd.last_balance_event.try(:occurrence_timestamp) }
     node(:suspension_period_start_date) { |qd| qd.last_suspension_period.try(:suspension_start_date) }
     node(:suspension_period_end_date) { |qd| qd.last_suspension_period.try(:suspension_end_date) }

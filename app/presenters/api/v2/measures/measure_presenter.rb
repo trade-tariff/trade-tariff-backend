@@ -25,14 +25,20 @@ module Api
         end
 
         def duty_expression
-          Api::V2::Measures::DutyExpressionPresenter.new(self, @declarable)
+          @duty_expression ||= Class.new(SimpleDelegator) {
+            # This id field is the only reason all of this can't be done in the serializer
+            def id
+              "#{measure_sid}-duty_expression"
+            end
+          }.new(@measure)
         end
 
         def national_measurement_units
-          @national_measurement_units ||= @declarable.national_measurement_unit_set
-                                                    &.national_measurement_unit_set_units
-                                                    &.select(&:present?)
-                                                    &.select { |nmu| nmu.level > 1 } || []
+          []
+        end
+
+        def national_measurement_unit_ids
+          []
         end
 
         def additional_code
@@ -53,10 +59,6 @@ module Api
 
         def resolved_measure_component_ids
           resolved_measure_components.map(&:id)
-        end
-
-        def national_measurement_unit_ids
-          national_measurement_units.map { |unit| unit.pk.join('-') }
         end
 
         def excluded_geographical_area_ids
