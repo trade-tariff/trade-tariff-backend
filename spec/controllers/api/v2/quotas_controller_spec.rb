@@ -131,6 +131,8 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 producline_suffix: String,
                 description: String,
                 formatted_description: nil,
+                validity_start_date: String,
+                validity_end_date: nil,
               },
             },
           ],
@@ -145,7 +147,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
       end
 
       it 'returns rendered found quotas' do
-        get :search, params: params, format: :json
+        get :search, params:, format: :json
 
         expect(response.body).to match_json_expression pattern
       end
@@ -228,7 +230,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
         let(:include_param) { 'quota_balance_events' }
 
         it 'returns rendered found quotas with the allowed resources' do
-          get :search, params: params, format: :json
+          get :search, params:, format: :json
 
           expect(response.body).to match_json_expression pattern
         end

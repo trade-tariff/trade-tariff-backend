@@ -14,6 +14,8 @@ RSpec.shared_examples_for 'a serialized goods nomenclature' do |type|
             producline_suffix: match(/\d{2}/),
             description: '',
             formatted_description: nil,
+            validity_start_date: match(/\d{4}-\d{2}-\d{2}/),
+            validity_end_date: nil,
           },
         },
       }

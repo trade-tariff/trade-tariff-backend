@@ -9,7 +9,9 @@ module Api
         attributes :goods_nomenclature_item_id,
                    :producline_suffix,
                    :description,
-                   :formatted_description
+                   :formatted_description,
+                   :validity_start_date,
+                   :validity_end_date
       end
     end
   end
