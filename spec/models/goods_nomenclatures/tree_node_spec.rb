@@ -29,4 +29,22 @@ RSpec.describe GoodsNomenclatures::TreeNode do
       expect { described_class.refresh! }.to change(described_class, :count)
     end
   end
+
+  describe 'materialized view content' do
+    subject do
+      described_class
+        .where(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+        .first
+    end
+
+    let(:commodity) { create :goods_nomenclature }
+
+    let :expected_position do
+      commodity.goods_nomenclature_item_id.to_i * 100 +
+        commodity.producline_suffix.to_i
+    end
+
+    it { is_expected.to have_attributes position: expected_position }
+    it { is_expected.to have_attributes number_indents: commodity.number_indents }
+  end
 end
