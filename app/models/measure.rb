@@ -385,15 +385,6 @@ class Measure < Sequel::Model
     measure_components.map(&:duty_expression_str).join(' ')
   end
 
-  def duty_expression_with_national_measurement_units_for(declarable)
-    national_measurement_units = national_measurement_units_for(declarable)
-    if national_measurement_units.present?
-      "#{duty_expression} (#{national_measurement_units.join(' - ')})"
-    else
-      duty_expression
-    end
-  end
-
   def formatted_duty_expression
     measure_components.map(&:formatted_duty_expression).join(' ')
   end
@@ -404,35 +395,6 @@ class Measure < Sequel::Model
 
   def prettify_generated_duty_expression!(duty_expression)
     duty_expression.gsub(/\s\s/, ' ').gsub(/(\d)\s+%/, '\1%').sub(/\/\s[a-zA-Z]/, &:downcase)
-  end
-
-  def national_measurement_units_for(declarable)
-    if excise? && declarable && declarable.national_measurement_unit_set.present?
-      declarable.national_measurement_unit_set
-                .national_measurement_unit_set_units
-                .select(&:present?)
-                .select { |nmu| nmu.level > 1 }
-                .map(&:to_s)
-    end
-  end
-
-  def formatted_duty_expression_with_national_measurement_units_for(declarable)
-    national_measurement_units = national_measurement_units_for(declarable)
-    if national_measurement_units.present?
-      "#{formatted_duty_expression} (#{national_measurement_units.join(' - ')})"
-    else
-      formatted_duty_expression
-    end
-  end
-
-  def verbose_duty_expression_with_national_measurement_units_for(declarable)
-    national_measurement_units = national_measurement_units_for(declarable)
-
-    if national_measurement_units.present?
-      "#{verbose_duty_expression} (#{national_measurement_units.join(' - ')})"
-    else
-      verbose_duty_expression
-    end
   end
 
   def order_number

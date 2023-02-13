@@ -135,9 +135,9 @@ module Cache
             duty_expression_id: "#{measure.measure_sid}-duty_expression",
             duty_expression: {
               id: "#{measure.measure_sid}-duty_expression",
-              base: measure.duty_expression_with_national_measurement_units_for(commodity),
-              formatted_base: measure.formatted_duty_expression_with_national_measurement_units_for(commodity),
-              verbose_duty: measure.verbose_duty_expression_with_national_measurement_units_for(commodity),
+              base: measure.duty_expression,
+              formatted_base: measure.formatted_duty_expression,
+              verbose_duty: measure.verbose_duty_expression,
             },
             measure_type_id: measure.measure_type.measure_type_id,
             measure_type: {

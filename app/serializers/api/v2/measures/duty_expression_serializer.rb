@@ -6,9 +6,9 @@ module Api
 
         set_type :duty_expression
 
-        set_id :id
-
-        attributes :base, :formatted_base, :verbose_duty
+        attribute :base, &:duty_expression
+        attribute :formatted_base, &:formatted_duty_expression
+        attribute :verbose_duty, &:verbose_duty_expression
       end
     end
   end

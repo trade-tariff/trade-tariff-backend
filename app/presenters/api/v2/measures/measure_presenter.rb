@@ -25,7 +25,24 @@ module Api
         end
 
         def duty_expression
-          Api::V2::Measures::DutyExpressionPresenter.new(self, @declarable)
+          @duty_expression ||= Class.new(SimpleDelegator) {
+            # This id field is the only reason all of this can't be done in the serializer
+            def id
+              "#{measure_sid}-duty_expression"
+            end
+
+            def base
+              duty_expression
+            end
+
+            def formatted_base
+              formatted_duty_expression
+            end
+
+            def verbose_duty
+              verbose_duty_expression
+            end
+          }.new(@measure)
         end
 
         def national_measurement_units
