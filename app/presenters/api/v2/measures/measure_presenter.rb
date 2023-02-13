@@ -30,18 +30,6 @@ module Api
             def id
               "#{measure_sid}-duty_expression"
             end
-
-            def base
-              duty_expression
-            end
-
-            def formatted_base
-              formatted_duty_expression
-            end
-
-            def verbose_duty
-              verbose_duty_expression
-            end
           }.new(@measure)
         end
 
