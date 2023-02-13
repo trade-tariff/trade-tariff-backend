@@ -24,9 +24,23 @@ RSpec.describe Api::V2::ValidityPeriodPresenter do
   describe '#deriving_goods_nomenclatures' do
     subject(:deriving_goods_nomenclatures) { described_class.new(goods_nomenclature).deriving_goods_nomenclatures }
 
-    let(:goods_nomenclature) { build(:commodity, :with_deriving_goods_nomenclatures) }
+    context 'when the goods nomenclature has a validity start date before the Brexit starting date' do
+      let(:goods_nomenclature) { build(:commodity, validity_start_date: Date.new(2020, 1, 1)) }
 
-    it { is_expected.to all(be_a(Commodity)) }
+      it { is_expected.to be_empty }
+    end
+
+    context 'when the goods nomenclature has a validity start date after the Brexit starting date' do
+      let(:goods_nomenclature) { build(:commodity, validity_start_date: Date.new(2021, 1, 2)) }
+
+      it { is_expected.to all(be_a(Commodity)) }
+    end
+
+    context 'when the goods nomenclature has a validity start date equal to the Brexit starting date' do
+      let(:goods_nomenclature) { build(:commodity, validity_start_date: Date.new(2021, 1, 1)) }
+
+      it { is_expected.to all(be_a(Commodity)) }
+    end
   end
 
   describe '.wrap' do
