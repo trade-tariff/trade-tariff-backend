@@ -24,6 +24,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
       allow(DataMigrator).to receive(:migrations_dir).and_return(migrations_dir)
       allow(DataMigrator).to receive(:migrate_up!).and_return(true)
+
+      allow(GoodsNomenclatures::TreeNode).to receive(:refresh!).and_call_original
     end
 
     let(:changes_applied) { true }
@@ -40,6 +42,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
       it { expect(TariffSynchronizer).not_to have_received(:apply_cds) }
 
       it { expect(DataMigrator).not_to have_received(:migrate_up!) }
+
+      it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
 
       it_behaves_like 'a synchronizer worker that queues other workers'
 
@@ -125,6 +129,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
+          it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
+
           it_behaves_like 'a synchronizer worker that queues other workers'
 
           it { expect(described_class.jobs).to be_empty }
@@ -148,6 +154,8 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
+
+          it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
 
           it_behaves_like 'a synchronizer worker that queues other workers'
 

@@ -28,6 +28,7 @@ class UpdatesSynchronizerWorker
     end
 
     migrate_data if reapply_data_migrations
+    refresh_materialized_view
 
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(GenerateMaterializedPathsWorker)
@@ -61,6 +62,10 @@ private
 
     require 'data_migrator' unless defined?(DataMigrator)
     DataMigrator.migrate_up!(nil)
+  end
+
+  def refresh_materialized_view
+    GoodsNomenclatures::TreeNode.refresh!
   end
 
   def attempt_reschedule!
