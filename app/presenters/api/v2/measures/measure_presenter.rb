@@ -26,9 +26,20 @@ module Api
 
         def duty_expression
           @duty_expression ||= Class.new(SimpleDelegator) {
-            # This id field is the only reason all of this can't be done in the serializer
             def id
               "#{measure_sid}-duty_expression"
+            end
+
+            def base
+              duty_expression
+            end
+
+            def formatted_base
+              formatted_duty_expression
+            end
+
+            def verbose_duty
+              verbose_duty_expression
             end
           }.new(@measure)
         end

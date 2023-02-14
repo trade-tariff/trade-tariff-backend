@@ -209,4 +209,26 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
       it { is_expected.not_to be_authorised_use }
     end
   end
+
+  describe '#duty_expression' do
+    subject(:duty_expression) { presenter.duty_expression }
+
+    context 'when measure has measure components that make up a duty expression' do
+      let(:measure) { create(:measure, :with_measure_components) }
+
+      it { expect(duty_expression.id).to match(/#{measure.measure_sid}-duty_expression/) }
+      it { expect(duty_expression.base).to match(/- \d+.\d{2} %/) }
+      it { expect(duty_expression.formatted_base).to match(/- <span>\d+.\d{2}<\/span> %/) }
+      it { expect(duty_expression.verbose_duty).to match(/- \d+.\d{2}%/) }
+    end
+
+    context 'when measure has no measure components that make up a duty expression' do
+      let(:measure) { create(:measure) }
+
+      it { expect(duty_expression.id).to match(/#{measure.measure_sid}-duty_expression/) }
+      it { expect(duty_expression.base).to eq('') }
+      it { expect(duty_expression.formatted_base).to eq('') }
+      it { expect(duty_expression.verbose_duty).to eq('') }
+    end
+  end
 end
