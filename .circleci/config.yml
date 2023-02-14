@@ -853,6 +853,7 @@ workflows:
             branches:
               only:
                 - main
+
   ci:
     jobs:
       - linters:
@@ -871,8 +872,8 @@ workflows:
             branches:
               ignore:
                 - main
+                - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
-                - /^dependabot\/.*/
       - deploy_dev:
           matrix:
             parameters:
@@ -884,7 +885,7 @@ workflows:
             branches:
               ignore:
                 - main
-                - /^dependabot\/.*/
+                - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
           requires:
             - test
@@ -897,7 +898,7 @@ workflows:
             branches:
               ignore:
                 - main
-                - /^dependabot\/.*/
+                - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
       - smoketest_dev:
           name: smoketest_dev
@@ -907,7 +908,7 @@ workflows:
               ignore:
                 - main
                 - /^hotfix\/.+/
-                - /^dependabot\/.*/
+                - /^dependabot\/(?!docker\/).*/
           requires:
             - deploy_dev
             - sync_synonyms_dev
