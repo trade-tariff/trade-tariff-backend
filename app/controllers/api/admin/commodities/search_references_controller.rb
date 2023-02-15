@@ -13,7 +13,7 @@ module Api
         end
 
         def collection_url
-          [:admin, commodity.admin_id, @search_reference]
+          [:admin, commodity.to_admin_param, @search_reference]
         end
 
         def commodity_or_subheading

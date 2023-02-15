@@ -4,10 +4,13 @@
 # - Harmonised System Subheading (6 digits)
 # - Combined Nomenclature Subheading (8 digits)
 # - Taric Subheading (10 digits)
-class Subheading < Commodity
-  set_primary_key [:goods_nomenclature_sid]
-
+class Subheading < GoodsNomenclature
+  include TenDigitGoodsNomenclature
   include SearchReferenceable
+
+  def to_admin_param
+    to_param
+  end
 
   def to_param
     "#{goods_nomenclature_item_id}-#{producline_suffix}"

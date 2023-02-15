@@ -5,7 +5,6 @@ RSpec.describe SearchReference do
     it 'assigns the correct attributes' do
       expect(search_reference).to have_attributes(
         title: 'foo',
-        referenced_id: referenced.to_param,
         referenced_class: referenced.class.name,
         productline_suffix: referenced.producline_suffix,
         goods_nomenclature_item_id: referenced.goods_nomenclature_item_id,

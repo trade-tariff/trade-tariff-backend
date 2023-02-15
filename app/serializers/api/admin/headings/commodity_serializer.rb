@@ -6,7 +6,7 @@ module Api
 
         set_type :commodity
 
-        set_id :admin_id
+        set_id :to_admin_param
 
         attributes :description,
                    :search_references_count,
