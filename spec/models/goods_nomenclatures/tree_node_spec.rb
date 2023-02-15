@@ -1,6 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::TreeNode do
+  describe 'Sequel::Model config' do
+    subject { described_class }
+
+    it { is_expected.to have_attributes primary_key: :goods_nomenclature_indent_sid }
+  end
+
   describe 'attributes' do
     it { is_expected.to respond_to :goods_nomenclature_sid }
     it { is_expected.to respond_to :position }
