@@ -19,15 +19,6 @@ module TariffSynchronizer
     plugin :single_table_inheritance, :update_type
     plugin :validation_class_methods
 
-    class InvalidContents < StandardError
-      attr_reader :original
-
-      def initialize(msg, original)
-        @original = original
-        super(msg)
-      end
-    end
-
     APPLIED_STATE = 'A'.freeze
     PENDING_STATE = 'P'.freeze
     FAILED_STATE  = 'F'.freeze

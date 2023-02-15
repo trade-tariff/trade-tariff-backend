@@ -7,6 +7,20 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
     let(:date) { Date.current }
     let(:update_klass) { TariffSynchronizer::CdsUpdate }
 
+
+    context 'when the any part of the download process propagates an exception' do
+      before do
+        allow(TariffSynchronizer::TariffUpdatesRequester)
+          .to receive(:perform)
+          .with(url)
+          .and_raise(StandardError, 'Something went wrong')
+      end
+
+      let(:response) { build(:response, :not_found) }
+
+      it { expect { perform }.to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::FAILED_STATE).count }.by(1) }
+    end
+
     context 'when the file is already downloaded' do
       before do
         allow(TariffSynchronizer::FileService).to receive(:file_exists?).with('tmp/data/cds/foo.xml.gzip').and_return(true)
