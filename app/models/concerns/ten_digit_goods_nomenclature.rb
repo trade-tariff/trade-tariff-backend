@@ -74,8 +74,8 @@ module TenDigitGoodsNomenclature
         .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
         .from_self
         .where('number_indents < ?', goods_nomenclature_indent.number_indents),
-      t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
-      t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
+                    t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
+                    t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
         .order(Sequel.desc(:goods_nomenclatures__goods_nomenclature_item_id))
         .all
         .group_by(&:number_indents)
@@ -89,9 +89,9 @@ module TenDigitGoodsNomenclature
     def declarable?
       cache_key = "commodity-#{goods_nomenclature_sid}-#{point_in_time&.to_date&.iso8601}-is-declarable?"
 
-        Rails.cache.fetch(cache_key) do
-          non_grouping? && children.none?
-        end
+      Rails.cache.fetch(cache_key) do
+        non_grouping? && children.none?
+      end
     end
 
     def fast_declarable?
@@ -112,14 +112,14 @@ module TenDigitGoodsNomenclature
 
     def children
       @children ||= begin
-                      mapper = GoodsNomenclatureMapper.new(preloaded_children.presence || load_children)
+        mapper = GoodsNomenclatureMapper.new(preloaded_children.presence || load_children)
 
-                      mapped = mapper.all.detect do |goods_nomenclature|
-                        goods_nomenclature.goods_nomenclature_sid == goods_nomenclature_sid
-                      end
+        mapped = mapper.all.detect do |goods_nomenclature|
+          goods_nomenclature.goods_nomenclature_sid == goods_nomenclature_sid
+        end
 
-                      mapped.try(:children) || []
-                    end
+        mapped.try(:children) || []
+      end
     end
 
     def to_param
@@ -181,9 +181,6 @@ module TenDigitGoodsNomenclature
     def cast_to_subheading
       Subheading.call(values)
     end
-
-
-
 
     def cast_according_to_declarable
       declarable? ? self : cast_to_subheading
