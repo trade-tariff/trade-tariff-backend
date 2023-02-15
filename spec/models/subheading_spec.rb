@@ -1,6 +1,4 @@
 RSpec.describe Subheading do
-  it { is_expected.to be_a(Commodity) }
-
   describe '#commodities' do
     subject(:commodities) do
       subheading.commodities.flat_map do |commodity|
