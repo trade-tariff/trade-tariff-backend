@@ -47,13 +47,15 @@ class CdsImporter
 
         def inherited(subclass)
           if TradeTariffBackend.dump_cds_data_as_json?
-            subclass.before_oplog_inserts do |xml_node, mapper_instance, model_instance, _expanded_attributes|
+            subclass.before_oplog_inserts do |_xml_node, _mapper_instance, model_instance, _expanded_attributes|
               id = model_instance.identification.values.join('-')
-              filename = "data/cds_dumps/#{model_instance.class.table_name}-#{id}-#{Date.today.iso8601}.json"
+              filename = "data/cds_dumps/#{model_instance.class.table_name}-#{id}-#{Time.zone.today.iso8601}.json"
 
               File.write(filename, JSON.pretty_generate(model_instance.values))
             end
           end
+
+          super
         end
 
         def base_mapping
