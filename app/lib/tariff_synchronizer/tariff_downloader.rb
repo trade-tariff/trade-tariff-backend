@@ -20,6 +20,8 @@ module TariffSynchronizer
       else
         download_and_create_entry
       end
+    rescue StandardError => e
+      persist_exception_for_review(e)
     end
 
     private
@@ -70,15 +72,12 @@ module TariffSynchronizer
       update_or_create(filename, BaseUpdate::PENDING_STATE, response.content.size)
       write_update_file(response.content)
       @success = true
-    rescue BaseUpdate::InvalidContents => e
-      persist_exception_for_review(e)
     end
 
-    def update_or_create(file_name, state, file_size = nil)
-      update_klass.find_or_create(filename: file_name,
-                                  update_type: update_klass.name,
-                                  issue_date: date)
-        .update(state:, filesize: file_size)
+    def update_or_create(filename, state, filesize = nil)
+      update_klass
+        .find_or_create(filename:, update_type: update_klass.name, issue_date:)
+        .update(state:, filesize:)
     end
 
     def write_update_file(response_body)
@@ -86,19 +85,23 @@ module TariffSynchronizer
       instrument('downloaded_tariff_update.tariff_synchronizer',
                  date:,
                  url:,
-                 type: update_klass.update_type,
+                 type: update_type,
                  path: file_path,
                  size: response_body.size)
     end
 
     def file_path
-      File.join(TariffSynchronizer.root_path, update_klass.update_type.to_s, filename)
+      File.join(TariffSynchronizer.root_path, update_type.to_s, filename)
     end
 
     def persist_exception_for_review(exception)
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-        .update(exception_class: "#{exception.original.class}: #{exception.original.message}",
-                exception_backtrace: exception.original.backtrace.try(:join, "\n"))
+        .update(exception_class: "#{exception.class}: #{exception.message}",
+                exception_backtrace: exception.backtrace.try(:join, "\n"))
     end
+
+    delegate :update_type, to: :update_klass
+
+    alias_method :issue_date, :date
   end
 end
