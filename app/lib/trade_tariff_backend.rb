@@ -44,6 +44,10 @@ module TradeTariffBackend
       ENV['PATCH_BROKEN_TARIC_DOWNLOADS'] == 'true'
     end
 
+    def dump_cds_data_as_json?
+      ENV.fetch('DUMP_CDS_DATA_AS_JSON', 'false') == 'true'
+    end
+
     def uk?
       service == 'uk'
     end

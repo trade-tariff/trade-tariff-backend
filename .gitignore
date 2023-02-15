@@ -35,3 +35,6 @@ searches_without_match_or_synonym.csv
 /.vscode
 
 .nvimlog
+
+# Ignore all json files in the cds dump directory
+/data/cds_dumps/*.json
