@@ -47,4 +47,16 @@ namespace :data do
               end
     ::DataMigrator.migrate_down! version
   end
+
+  namespace :views do
+    desc 'Refresh materialized views within the site'
+    task refresh: :environment do
+      GoodsNomenclatures::TreeNode.refresh!(concurrently: true)
+    end
+
+    desc 'Refresh materialized views within the site when unpopulated (does not use CONCURRENTLY)'
+    task populate: :environment do
+      GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
+    end
+  end
 end
