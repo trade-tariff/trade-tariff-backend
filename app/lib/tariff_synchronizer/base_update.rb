@@ -126,7 +126,7 @@ module TariffSynchronizer
     end
 
     def mark_as_applied
-      update(state: APPLIED_STATE, applied_at: Time.now, last_error: nil, last_error_at: nil, exception_backtrace: nil, exception_class: nil)
+      update(state: APPLIED_STATE, applied_at: Time.zone.now, last_error: nil, last_error_at: nil, exception_backtrace: nil, exception_class: nil)
     end
 
     def mark_as_failed

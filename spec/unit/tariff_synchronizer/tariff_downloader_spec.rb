@@ -7,7 +7,6 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
     let(:date) { Date.current }
     let(:update_klass) { TariffSynchronizer::CdsUpdate }
 
-
     context 'when the any part of the download process propagates an exception' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester)
