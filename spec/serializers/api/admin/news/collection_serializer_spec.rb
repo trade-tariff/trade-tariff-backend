@@ -14,6 +14,9 @@ RSpec.describe Api::Admin::News::CollectionSerializer do
             slug: 'serialized',
             created_at: collection.created_at,
             updated_at: collection.updated_at,
+            description: collection.description,
+            priority: collection.priority,
+            published: collection.published,
           },
         },
       }
