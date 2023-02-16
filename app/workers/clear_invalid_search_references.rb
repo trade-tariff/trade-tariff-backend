@@ -12,8 +12,11 @@ class ClearInvalidSearchReferences
       search_reference.delete
     end
 
-    message = "Removed Search references #{cleared.to_json}"
-    logger.info(message)
-    SlackNotifierService.call(message)
+    if cleared.any?
+      message = "Removed Search references #{cleared.to_json}"
+
+      logger.info(message)
+      SlackNotifierService.call(message)
+    end
   end
 end
