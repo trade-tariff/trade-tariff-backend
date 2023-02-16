@@ -24,6 +24,8 @@ class GoodsNomenclature < Sequel::Model
     end
   }
 
+  include GoodsNomenclatures::NestedSet
+
   one_to_one :chapter, class_name: name, class: self do |_ds|
     Chapter
       .actual
