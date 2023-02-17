@@ -44,10 +44,6 @@ class SearchReference < Sequel::Model
     referenced.to_admin_param
   end
 
-  def resource_path
-    "/#{referenced_class.downcase.pluralize}/#{referenced.to_param}"
-  end
-
   def validate
     super
 

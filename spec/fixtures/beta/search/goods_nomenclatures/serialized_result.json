@@ -59,10 +59,6 @@
           }
         ]
       }
-    },
-    "meta": {
-      "redirect": false,
-      "redirect_to": null
     }
   },
   "included": [
