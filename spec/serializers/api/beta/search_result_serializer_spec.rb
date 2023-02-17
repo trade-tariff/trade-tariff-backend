@@ -70,7 +70,6 @@ RSpec.describe Api::Beta::SearchResultSerializer do
                 ],
               },
             },
-            meta: { redirect: false, redirect_to: nil },
           },
         }
       end
@@ -101,7 +100,6 @@ RSpec.describe Api::Beta::SearchResultSerializer do
               guide: { data: nil },
               facet_filter_statistics: { data: [] },
             },
-            meta: { redirect: false, redirect_to: nil },
           },
         }
       end

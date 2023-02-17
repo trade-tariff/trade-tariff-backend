@@ -8,7 +8,6 @@ FactoryBot.define do
     no_generate_heading_and_chapter_statistics
     no_generate_guide_statistics
     no_generate_facet_statistics
-    no_redirect
 
     goods_nomenclature_query {}
     search_reference {}
@@ -100,10 +99,6 @@ FactoryBot.define do
       end
     end
 
-    trait :redirect do
-      transient { redirect { true } }
-    end
-
     trait :with_search_reference do
       goods_nomenclature_query {}
       search_reference { create(:search_reference, :with_subheading) }
@@ -118,10 +113,6 @@ FactoryBot.define do
         )
       end
       search_reference {}
-    end
-
-    trait :no_redirect do
-      transient { redirect { false } }
     end
 
     trait :no_generate_facet_statistics do
@@ -161,7 +152,6 @@ FactoryBot.define do
       search_result.generate_heading_and_chapter_statistics if generate_heading_and_chapter_statistics
       search_result.generate_guide_statistics if generate_guide_statistics
       search_result.generate_facet_statistics if generate_facet_statistics
-      search_result.redirect! if redirect
 
       search_result
     end

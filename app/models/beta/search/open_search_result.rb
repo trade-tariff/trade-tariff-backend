@@ -171,50 +171,6 @@ module Beta
         !!@redirect
       end
 
-      alias_method :redirect, :redirect?
-
-      def redirect_to
-        return nil unless redirect?
-
-        resource_path = if search_reference.present?
-                          search_reference.resource_path
-                        else
-                          id = short_code
-
-                          path = case short_code.length
-                                 when 1
-                                   id = short_code.rjust(2, '0')
-                                   '/chapters/:id'
-                                 when 2
-                                   '/chapters/:id'
-                                 when 4
-                                   '/headings/:id'
-                                 when 6
-                                   '/subheadings/:id0000-80'
-                                 when 8
-                                   '/subheadings/:id00-80'
-                                 when 10
-                                   '/commodities/:id'
-                                 when 13
-                                   if short_code.match?(/\d{10}-\d{2}/)
-                                     '/subheadings/:id'
-                                   else
-                                     id = short_code.first(4)
-                                     '/headings/:id'
-                                   end
-                                 else
-                                   id = short_code.first(4)
-                                   '/headings/:id'
-                                 end
-
-                          path.sub(':id', id)
-                        end
-
-        resource_path.prepend('/xi/') if TradeTariffBackend.xi?
-
-        URI.join(TradeTariffBackend.frontend_host, resource_path).to_s
-      end
-
       def intercept_message
         @intercept_message ||= ::Beta::Search::InterceptMessage.build(search_query_parser_result.original_search_query)
       end
