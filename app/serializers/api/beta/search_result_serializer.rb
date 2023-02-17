@@ -25,6 +25,10 @@ module Api
         end
       }
 
+      has_one :direct_hit, serializer: proc { |record, _params|
+        "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize
+      }
+
       has_many :heading_statistics, serializer: Api::Beta::HeadingStatisticsSerializer
       has_many :chapter_statistics, serializer: Api::Beta::ChapterStatisticsSerializer
       has_one :guide, serializer: Api::Beta::GuideSerializer

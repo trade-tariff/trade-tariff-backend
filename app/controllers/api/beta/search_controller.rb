@@ -9,6 +9,7 @@ module Api
         :guide,
         :intercept_message,
         'facet_filter_statistics.facet_classification_statistics',
+        :direct_hit,
       ].freeze
 
       def index

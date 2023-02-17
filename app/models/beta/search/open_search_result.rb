@@ -9,6 +9,7 @@ module Beta
       delegate :id, to: :goods_nomenclature_query, prefix: true, allow_nil: true
       delegate :id, to: :guide, prefix: true, allow_nil: true
       delegate :id, to: :intercept_message, prefix: true, allow_nil: true
+      delegate :id, to: :direct_hit, prefix: true, allow_nil: true
 
       delegate :goods_nomenclature_item_id, :numeric?, :short_code, to: :goods_nomenclature_query, allow_nil: true
 
@@ -216,6 +217,10 @@ module Beta
 
       def intercept_message
         @intercept_message ||= ::Beta::Search::InterceptMessage.build(search_query_parser_result.original_search_query)
+      end
+
+      def direct_hit
+        @direct_hit ||= DirectHit.build(self)
       end
     end
   end
