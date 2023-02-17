@@ -136,6 +136,16 @@ FactoryBot.define do
       end
     end
 
+    trait :with_numeric_search_query do
+      goods_nomenclature_query do
+        build(
+          :goods_nomenclature_query,
+          :numeric,
+          original_search_query: goods_nomenclature_item_id || '0101',
+        )
+      end
+    end
+
     initialize_with do
       fixture_filename = Rails.root.join("spec/fixtures/beta/search/goods_nomenclatures/#{result_fixture}.json")
       search_result = JSON.parse(File.read(fixture_filename))

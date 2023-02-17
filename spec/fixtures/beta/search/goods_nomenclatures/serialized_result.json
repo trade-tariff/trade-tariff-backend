@@ -26,6 +26,12 @@
           }
         ]
       },
+      "direct_hit": {
+        "data": {
+          "id": "0406105090-80",
+          "type": "commodity"
+        }
+      },
       "heading_statistics": {
         "data": [
           {
@@ -78,14 +84,10 @@
       },
       "relationships": {
         "ancestors": {
-          "data": [
-
-          ]
+          "data": []
         },
         "guides": {
-          "data": [
-
-          ]
+          "data": []
         }
       }
     },
@@ -108,14 +110,10 @@
       },
       "relationships": {
         "ancestors": {
-          "data": [
-
-          ]
+          "data": []
         },
         "guides": {
-          "data": [
-
-          ]
+          "data": []
         }
       }
     },
@@ -140,9 +138,7 @@
       },
       "relationships": {
         "ancestors": {
-          "data": [
-
-          ]
+          "data": []
         }
       }
     },
@@ -167,9 +163,7 @@
       },
       "relationships": {
         "ancestors": {
-          "data": [
-
-          ]
+          "data": []
         }
       }
     },
@@ -194,9 +188,7 @@
       },
       "relationships": {
         "ancestors": {
-          "data": [
-
-          ]
+          "data": []
         }
       }
     },
@@ -252,15 +244,9 @@
       "attributes": {
         "corrected_search_query": "ricotta",
         "original_search_query": "ricotta",
-        "verbs": [
-
-        ],
-        "adjectives": [
-
-        ],
-        "nouns": [
-
-        ],
+        "verbs": [],
+        "adjectives": [],
+        "nouns": [],
         "noun_chunks": [
           "ricotta"
         ],
@@ -316,6 +302,31 @@
               "type": "facet_classification_statistic"
             }
           ]
+        }
+      }
+    },
+    {
+      "id": "0406105090-80",
+      "type": "commodity",
+      "attributes": {
+        "goods_nomenclature_item_id": "0406105090",
+        "producline_suffix": "80",
+        "formatted_description": null,
+        "description": null,
+        "description_indexed": null,
+        "search_references": [],
+        "validity_start_date": null,
+        "validity_end_date": null,
+        "chapter_id": null,
+        "score": null,
+        "declarable": null,
+        "chapter_description": null,
+        "heading_description": null,
+        "heading_id": null
+      },
+      "relationships": {
+        "ancestors": {
+          "data": []
         }
       }
     }
