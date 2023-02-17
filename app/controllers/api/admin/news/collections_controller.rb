@@ -52,6 +52,7 @@ module Api
             :priority,
             :description,
             :name,
+            :slug,
           )
         end
 
