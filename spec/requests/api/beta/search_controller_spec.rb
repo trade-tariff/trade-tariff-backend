@@ -43,11 +43,11 @@ RSpec.describe Api::Beta::SearchController, type: :request do
         response
       end
 
-      let(:actual_redirect_to) { JSON.parse(do_request.body).dig('data', 'meta', 'redirect_to') }
+      let(:redirect_to) { JSON.parse(do_request.body).dig('data', 'meta', 'redirect_to') }
 
       before { create(:search_reference, :with_heading, title: 'raw') }
 
-      it { expect(actual_redirect_to).to include('/headings/0101') }
+      it { expect(redirect_to).to include('/headings/0101') }
     end
   end
 end

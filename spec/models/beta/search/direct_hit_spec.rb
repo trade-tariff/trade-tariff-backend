@@ -8,12 +8,9 @@ RSpec.describe Beta::Search::DirectHit do
       it { expect(direct_hit.id).to match(/^[0-9]{10}-[0-9]{2}$/) }
       it { expect(direct_hit.goods_nomenclature_item_id).to match(/^[0-9]{10}$/) }
       it { expect(direct_hit.producline_suffix).to match(/^[0-9]{2}$/) }
-      it { is_expected.to respond_to(:goods_nomenclature_item_id) }
-      it { is_expected.to respond_to(:producline_suffix) }
-      it { is_expected.to respond_to(:description) }
-      it { is_expected.to respond_to(:formatted_description) }
-      it { is_expected.to respond_to(:validity_start_date) }
-      it { is_expected.to respond_to(:validity_end_date) }
+      it { expect(direct_hit.search_references).to be_empty }
+      it { expect(direct_hit.guides).to be_empty }
+      it { expect(direct_hit.ancestors).to be_empty }
     end
 
     shared_examples 'not a direct hit' do |search_result|
