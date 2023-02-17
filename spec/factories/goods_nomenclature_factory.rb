@@ -36,7 +36,6 @@ FactoryBot.define do
             1,
             goods_nomenclature: gono,
             number_indents: evaluator.indents,
-            productline_suffix: gono.producline_suffix,
           )
       end
     end

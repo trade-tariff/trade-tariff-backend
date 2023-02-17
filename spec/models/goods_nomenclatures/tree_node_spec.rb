@@ -55,4 +55,66 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     it { is_expected.to have_attributes position: expected_position }
     it { is_expected.to have_attributes number_indents: commodity.number_indents }
   end
+
+  describe '.previous_sibling' do
+    let(:subheading) { create :commodity, :with_chapter_and_heading }
+    let(:siblings) { create_list :commodity, 3, parent: subheading }
+
+    context 'with first sibling' do
+      subject do
+        described_class.previous_sibling(siblings.first.tree_node.position,
+                                         siblings.first.tree_node.depth)
+                       .first
+                       .values[:previous_sibling]
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with second sibling' do
+      subject do
+        described_class.previous_sibling(siblings.second.tree_node.position,
+                                         siblings.second.tree_node.depth)
+                       .first
+                       .values[:previous_sibling]
+      end
+
+      it { is_expected.to eq siblings.first.tree_node.position }
+    end
+
+    context 'with third sibling' do
+      subject do
+        described_class.previous_sibling(siblings.third.tree_node.position,
+                                         siblings.third.tree_node.depth)
+                       .first
+                       .values[:previous_sibling]
+      end
+
+      it { is_expected.to eq siblings.second.tree_node.position }
+    end
+  end
+
+  describe '#goods_nomenclature relationship' do
+    subject(:commodity) { tree_node.goods_nomenclature }
+
+    let(:indent) { commodity.goods_nomenclature_indent }
+
+    let :tree_node do
+      commodity = create :commodity,
+                         :with_indent,
+                         goods_nomenclature_item_id: '0101010101',
+                         indents: 1
+
+      described_class
+        .actual
+        .first(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+    end
+
+    it { is_expected.to be_instance_of Commodity }
+    it { is_expected.to have_attributes goods_nomenclature_sid: tree_node.goods_nomenclature_sid }
+
+    it 'reciprocates correctly' do
+      expect(commodity.tree_node.object_id).to eq tree_node.object_id
+    end
+  end
 end

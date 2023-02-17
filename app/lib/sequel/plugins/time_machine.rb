@@ -43,6 +43,24 @@ module Sequel
         def relevant_query?
           Thread.current[::TimeMachine::THREAD_RELEVANT_KEY]
         end
+
+        def validity_dates_filter(table = self,
+                                  start_column: :validity_start_date,
+                                  end_column: :validity_end_date)
+          return self if point_in_time.blank?
+
+          table_name = if table.is_a?(Class) && table < Sequel::Model
+                         table.table_name
+                       else
+                         table
+                       end
+
+          qualified_start_column = Sequel.qualify(table_name, start_column)
+          qualified_end_column   = Sequel.qualify(table_name, end_column)
+
+          (qualified_start_column <= point_in_time) &
+            ((qualified_end_column >= point_in_time) | (qualified_end_column =~ nil))
+        end
       end
 
       module InstanceMethods
@@ -97,6 +115,14 @@ module Sequel
             filter { |o| o.<=(klass.period_start_date_column, klass.point_in_time) & (o.>=(klass.period_end_date_column, klass.point_in_time) | ({ klass.period_end_date_column => nil })) }
           else
             self
+          end
+        end
+
+        def with_validity_dates(table = model.table_name,
+                                start_column: :validity_start_date,
+                                end_column: :validity_end_date)
+          where do |_query|
+            model.validity_dates_filter(table, start_column:, end_column:)
           end
         end
       end
