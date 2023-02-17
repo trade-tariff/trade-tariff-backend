@@ -5,13 +5,24 @@ module Beta
                     :goods_nomenclature_item_id,
                     :producline_suffix
 
-      attr_reader :description,
-                  :formatted_description,
-                  :validity_start_date,
-                  :validity_end_date
-
       def id
         "#{goods_nomenclature_item_id}-#{producline_suffix}"
+      end
+
+      def method_missing(method_name, *_arguments)
+        if method_name.to_s.start_with?('search_references')
+          []
+        elsif method_name.to_s.start_with?('guide')
+          []
+        elsif method_name.to_s.start_with?('ancestors')
+          []
+        end
+      end
+
+      def respond_to_missing?(method_name, _include_private = false)
+        method_name.to_s.start_with?('search_references') ||
+          method_name.to_s.start_with?('guide') ||
+          method_name.to_s.start_with?('ancestors')
       end
 
       def self.build(search_result)
@@ -39,7 +50,6 @@ module Beta
 
           direct_hit
         end
-
       end
     end
   end
