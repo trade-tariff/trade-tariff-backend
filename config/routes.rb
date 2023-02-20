@@ -53,7 +53,7 @@ Rails.application.routes.draw do
       if TradeTariffBackend.uk?
         namespace :news do
           resources :items, only: %i[index show create update destroy]
-          resources :collections, only: %i[index show create update edit]
+          resources :collections, only: %i[index show create update]
         end
 
         resources :news_items, only: %i[index show create update destroy],
