@@ -1,88 +1,84 @@
 class AdditionalCodeSearchService
-  attr_reader :code, :type, :description, :as_of, :current_page, :per_page, :pagination_record_count
+  MEASURE_EAGER_LOAD_GRAPH = [
+    { goods_nomenclature: :goods_nomenclature_descriptions },
+  ].freeze
+  ADDITIONAL_CODE_EAGER_LOAD_GRAPH = [:additional_code_descriptions].freeze
 
-  def initialize(attributes, current_page, per_page)
-    @as_of = AdditionalCode.point_in_time
-    @query = [{
-      bool: {
-        should: [
-          # actual date is either between item's (validity_start_date..validity_end_date)
-          {
-            bool: {
-              must: [
-                { range: { validity_start_date: { lte: as_of } } },
-                { range: { validity_end_date: { gte: as_of } } },
-              ],
-            },
-          },
-          # or is greater than item's validity_start_date
-          # and item has blank validity_end_date (is unbounded)
-          {
-            bool: {
-              must: [
-                { range: { validity_start_date: { lte: as_of } } },
-                { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
-              ],
-            },
-          },
-          # or item has blank validity_start_date and validity_end_date
-          {
-            bool: {
-              must: [
-                { bool: { must_not: { exists: { field: 'validity_start_date' } } } },
-                { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
-              ],
-            },
-          },
-        ],
-      },
-    }]
-
-    @code = attributes['code']
-    @code = @code[1..-1] if @code&.length == 4
-    @type = attributes['type']
-    @description = attributes['description']
-    @current_page = current_page
-    @per_page = per_page
-    @pagination_record_count = 0
+  def initialize(attributes)
+    @code = attributes[:code]
+    @type = attributes[:type]
+    @description = attributes[:description]
   end
 
-  def perform
-    apply_code_filter if code.present?
-    apply_type_filter if type.present?
-    apply_description_filter if description.present?
-    fetch
-    apply_post_fetch_filters
-    @result
+  def call
+    Rails.cache.fetch(cache_key, expires_in: 1.day) do
+      Api::V2::AdditionalCodes::AdditionalCodeSerializer.new(presented_additional_codes, options).serializable_hash
+    end
   end
 
   private
 
-  def fetch
-    search_client = ::TradeTariffBackend.cache_client
-    index = ::Cache::AdditionalCodeIndex.new.name
-    result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w[additional_code_type_id additional_code] }
-    @pagination_record_count = result&.hits&.total&.value || 0
-    @result = result&.hits&.hits&.map(&:_source)
+  attr_reader :code, :type, :description
+
+  def presented_additional_codes
+    Api::V2::AdditionalCodePresenter.wrap(
+      applicable_additional_codes,
+      applicable_goods_nomenclatures,
+    )
   end
 
-  def apply_code_filter
-    @query.push({ bool: { must: { term: { additional_code: code } } } })
+  def options
+    { include: [:goods_nomenclatures] }
   end
 
-  def apply_type_filter
-    @query.push({ bool: { must: { term: { additional_code_type_id: type } } } })
-  end
+  def applicable_goods_nomenclatures
+    return [] if applicable_additional_codes.blank?
 
-  def apply_description_filter
-    @query.push({ multi_match: { query: description, fields: %w[description], operator: 'and' } })
-  end
-
-  def apply_post_fetch_filters
-    @result.each do |serialized_additional_code|
-      serialized_additional_code.measures.delete_if do |measure|
-        measure.responds_to?(:goods_nomenclature) && measure.goods_nomenclature.blank?
+    Measure
+      .actual
+      .where(additional_code_sid: additional_code_sids)
+      .where('goods_nomenclature_item_id is not null')
+      .order(Sequel.asc(:goods_nomenclature_item_id))
+      .distinct(:goods_nomenclature_item_id)
+      .eager(MEASURE_EAGER_LOAD_GRAPH)
+      .all
+      .each_with_object({}) do |measure, acc|
+        acc[measure.additional_code_sid] ||= []
+        acc[measure.additional_code_sid] << measure.goods_nomenclature if measure.goods_nomenclature.present?
       end
+  end
+
+  def additional_code_sids
+    applicable_additional_codes.map(&:additional_code_sid)
+  end
+
+  def applicable_additional_codes
+    return [] unless code_search? || description_search?
+
+    @applicable_additional_codes ||= begin
+      candidate_query = if code_search?
+                          AdditionalCode.where(additional_code: code, additional_code_type_id: type)
+                        elsif description_search?
+                          AdditionalCode.where(Sequel.ilike(:description, "%#{description}%"))
+                        end
+
+      candidate_query.actual.eager(ADDITIONAL_CODE_EAGER_LOAD_GRAPH).all
     end
+  end
+
+  def code_search?
+    code.present? && type.present?
+  end
+
+  def description_search?
+    description.present?
+  end
+
+  def cache_key
+    content_addressable = additional_code_sids.sort.join
+
+    hash = Digest::MD5.hexdigest(content_addressable)
+
+    "additional_code_search_service/#{hash}"
   end
 end

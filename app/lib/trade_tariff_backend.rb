@@ -159,7 +159,6 @@ module TradeTariffBackend
       [
         Cache::HeadingIndex,
         Cache::CertificateIndex,
-        Cache::AdditionalCodeIndex,
         Cache::FootnoteIndex,
       ].map(&:new)
     end
