@@ -72,7 +72,7 @@ RSpec.describe Api::V1::HeadingsController, flaky: true do
 
       context 'when record is not present' do
         it 'returns not found if record was not found' do
-          id = heading.goods_nomenclature_item_id.first(4).to_i + 1
+          id = heading.goods_nomenclature_item_id.first(4).next
           get :show, params: { id: }, format: :json
 
           expect(response.status).to eq 404
@@ -117,7 +117,7 @@ RSpec.describe Api::V1::HeadingsController, flaky: true do
 
       context 'when record is not present' do
         it 'returns not found if record was not found' do
-          id = heading.goods_nomenclature_item_id.first(4).to_i + 1
+          id = heading.goods_nomenclature_item_id.first(4).next
           get :show, params: { id: }, format: :json
 
           expect(response.status).to eq 404

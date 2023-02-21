@@ -1,8 +1,6 @@
 FactoryBot.define do
   factory :heading, parent: :goods_nomenclature, class: 'Heading' do
-    # +1 is needed to avoid creating heading with gono id in form of
-    # xx00xxxxxx which is a Chapter
-    goods_nomenclature_item_id { "#{4.times.map { Random.rand(1..8) }.join}000000" }
+    goods_nomenclature_item_id { "#{generate(:heading_item_id)}000000" }
 
     trait :declarable do
       producline_suffix { '80' }
@@ -10,20 +8,28 @@ FactoryBot.define do
 
     trait :non_declarable do
       after(:create) do |heading, _evaluator|
-        create(:goods_nomenclature, :with_description,
-                          :with_indent,
-                          goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
+        create(:goods_nomenclature,
+               :with_description,
+               :with_indent,
+               goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
       end
     end
 
     trait :with_chapter do
-      after(:create) do |heading, _evaluator|
-        create(:chapter, :with_section,
-                          :with_note,
-                          :with_description,
-                          :with_guide,
-                          goods_nomenclature_item_id: heading.chapter_id)
+      before(:create) do |heading, _evaluator|
+        chapter = create(:chapter,
+                         :with_section,
+                         :with_note,
+                         :with_description,
+                         :with_guide,
+                         goods_nomenclature_item_id: heading.chapter_id)
+
+        heading.path = Sequel.pg_array([chapter.goods_nomenclature_sid])
       end
+    end
+
+    trait :heading101 do
+      goods_nomenclature_item_id { '0101000000' }
     end
   end
 end

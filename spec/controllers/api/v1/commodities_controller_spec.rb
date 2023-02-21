@@ -3,8 +3,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #show' do
 
   let!(:commodity) do
     create :commodity, :with_indent,
-           :with_chapter,
-           :with_heading,
+           :with_chapter_and_heading,
            :with_description,
            :declarable
   end
@@ -30,7 +29,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #show' do
 
   context 'when record is not present' do
     it 'returns not found if record was not found' do
-      id = commodity.goods_nomenclature_item_id.to_i + 1
+      id = commodity.goods_nomenclature_item_id.next
       get :show, params: { id: }, format: :json
 
       expect(response.status).to eq 404
@@ -81,8 +80,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
   context 'changes happened after chapter creation' do
     let!(:commodity) do
       create :commodity, :with_indent,
-             :with_chapter,
-             :with_heading,
+             :with_chapter_and_heading,
              :with_description,
              :declarable,
              operation_date: Time.zone.today
@@ -115,8 +113,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
   context 'changes happened before requested date' do
     let!(:commodity) do
       create :commodity, :with_indent,
-             :with_chapter,
-             :with_heading,
+             :with_chapter_and_heading,
              :with_description,
              :declarable,
              operation_date: Time.zone.today
@@ -132,8 +129,7 @@ RSpec.describe Api::V1::CommoditiesController, 'GET #changes' do
   context 'changes include deleted record' do
     let!(:commodity) do
       create :commodity, :with_indent,
-             :with_chapter,
-             :with_heading,
+             :with_chapter_and_heading,
              :with_description,
              :declarable,
              operation_date: Time.zone.today

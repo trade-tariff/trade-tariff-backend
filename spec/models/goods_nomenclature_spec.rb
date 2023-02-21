@@ -33,13 +33,15 @@ RSpec.describe GoodsNomenclature do
                  validity_end_date: 3.years.ago
         end
 
-        let!(:goods_nomenclature)                { create :goods_nomenclature }
-        let!(:goods_nomenclature_indent1)        do
+        let!(:goods_nomenclature) { create :goods_nomenclature, :without_indent }
+
+        let!(:goods_nomenclature_indent1) do
           create :goods_nomenclature_indent,
                  goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
                  validity_start_date: 2.years.ago,
                  validity_end_date: nil
         end
+
         let!(:goods_nomenclature_indent3) do
           create :goods_nomenclature_indent,
                  goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
@@ -558,13 +560,17 @@ RSpec.describe GoodsNomenclature do
     context 'when there are ancestors for the current goods nomenclature' do
       let(:goods_nomenclature) { create(:commodity, :with_ancestors) }
 
-      it { expect(classifiable_goods_nomenclatures).to eq([3, 2, 1]) }
+      let(:gn_sids) { [goods_nomenclature.goods_nomenclature_sid, 2, 1] }
+
+      it { expect(classifiable_goods_nomenclatures).to eq(gn_sids) }
     end
 
     context 'when there are no ancestors for the current goods nomenclature' do
-      let(:goods_nomenclature) { create(:commodity, goods_nomenclature_sid: 1) }
+      let(:goods_nomenclature) { create(:commodity) }
 
-      it { expect(classifiable_goods_nomenclatures).to eq([1]) }
+      let(:gn_sids) { [goods_nomenclature.goods_nomenclature_sid] }
+
+      it { expect(classifiable_goods_nomenclatures).to eq(gn_sids) }
     end
   end
 

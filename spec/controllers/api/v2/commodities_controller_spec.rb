@@ -3,8 +3,7 @@ RSpec.describe Api::V2::CommoditiesController do
     create(
       :commodity,
       :with_indent,
-      :with_chapter,
-      :with_heading,
+      :with_chapter_and_heading,
       :with_measures,
       :with_description,
       :declarable,
@@ -45,8 +44,7 @@ RSpec.describe Api::V2::CommoditiesController do
         create(
           :commodity,
           :with_indent,
-          :with_chapter,
-          :with_heading,
+          :with_chapter_and_heading,
           :with_description,
           :with_meursing_measures,
           :declarable,
@@ -70,7 +68,7 @@ RSpec.describe Api::V2::CommoditiesController do
     end
 
     context 'when fetching a commodity that does not exist' do
-      subject(:do_response) { get :show, params: { id: commodity.goods_nomenclature_item_id.to_i + 1 } }
+      subject(:do_response) { get :show, params: { id: commodity.goods_nomenclature_item_id.next } }
 
       it { is_expected.to have_http_status(:not_found) }
     end
@@ -118,8 +116,7 @@ RSpec.describe Api::V2::CommoditiesController, 'GET #changes' do
   context 'changes happened after chapter creation' do
     let!(:commodity) do
       create :commodity, :with_indent,
-             :with_chapter,
-             :with_heading,
+             :with_chapter_and_heading,
              :with_description,
              :declarable,
              operation_date: Time.zone.today
@@ -167,8 +164,7 @@ RSpec.describe Api::V2::CommoditiesController, 'GET #changes' do
   context 'changes happened before requested date' do
     let!(:commodity) do
       create :commodity, :with_indent,
-             :with_chapter,
-             :with_heading,
+             :with_chapter_and_heading,
              :with_description,
              :declarable,
              operation_date: Time.zone.today
@@ -191,8 +187,7 @@ RSpec.describe Api::V2::CommoditiesController, 'GET #changes' do
   context 'changes include deleted record' do
     let!(:commodity) do
       create :commodity, :with_indent,
-             :with_chapter,
-             :with_heading,
+             :with_chapter_and_heading,
              :with_description,
              :declarable,
              operation_date: Time.zone.today

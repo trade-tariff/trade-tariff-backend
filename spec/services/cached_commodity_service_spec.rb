@@ -7,8 +7,7 @@ RSpec.describe CachedCommodityService do
   let!(:commodity) do
     create(
       :commodity,
-      :with_chapter,
-      :with_heading,
+      :with_chapter_and_heading,
     )
   end
 

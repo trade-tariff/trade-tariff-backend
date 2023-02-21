@@ -1,41 +1,55 @@
 FactoryBot.define do
-  sequence(:goods_nomenclature_sid) { |n| n }
+  sequence(:goods_nomenclature_sid, 100) # Some factories hard code SIDs, so avoid clashing
+  sequence(:commodity_item_id) { |n| sprintf '%06d', n }
+  sequence(:heading_item_id, 10) { |n| sprintf '01%02d', n }
+  sequence(:chapter_item_id, 10) { |n| sprintf '%02d', n }
 
   factory :goods_nomenclature do
     transient do
-      indents { 1 }
       description { Forgery(:basic).text }
+      parent { nil }
+      indents { parent&.number_indents.to_i + 1 }
     end
 
     goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-    # do not allow zeroes in the goods item id as it causes unpredictable
-    # results
-    goods_nomenclature_item_id { 10.times.map { Random.rand(1..9) }.join }
     producline_suffix   { '80' }
     validity_start_date { 2.years.ago.beginning_of_day }
     validity_end_date   { nil }
-    path { Sequel.pg_array([], :integer) }
+
+    goods_nomenclature_item_id do
+      heading_code = parent ? parent.goods_nomenclature_item_id.first(4) : '0101'
+      [heading_code, generate(:commodity_item_id)].join
+    end
+
+    path do
+      ancestor_sids = parent ? (parent.path + [parent.goods_nomenclature_sid]) : []
+      Sequel.pg_array(ancestor_sids, :integer)
+    end
 
     # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
     #       what is passed to the individual factory and adds non-fun surprises for developers.
     after(:build) do |gono, evaluator|
-      create(
-        :goods_nomenclature_indent,
-        goods_nomenclature_sid: gono.goods_nomenclature_sid,
-        validity_start_date: gono.validity_start_date,
-        validity_end_date: gono.validity_end_date,
-        number_indents: evaluator.indents,
-        productline_suffix: gono.producline_suffix,
-      )
+      if evaluator.indents.present?
+        gono.associations[:goods_nomenclature_indents] = \
+          build_list(
+            :goods_nomenclature_indent,
+            1,
+            goods_nomenclature: gono,
+            number_indents: evaluator.indents,
+            productline_suffix: gono.producline_suffix,
+          )
+      end
     end
 
-    trait :with_goods_nomenclature_indent do
-      # See implicit behaviour above
+    after(:create) do |gono, _evaluator|
+      if gono.associations[:goods_nomenclature_indents]
+        gono.associations[:goods_nomenclature_indents].all?(&:save)
+      end
     end
 
     trait :with_deriving_goods_nomenclatures do
       after(:create) do |origin_goods_nomenclature|
-        successor_goods_nomenclature = create(:commodity, :with_heading)
+        successor_goods_nomenclature = create(:commodity, parent: create(:heading))
 
         create(
           :goods_nomenclature_origin,
@@ -52,55 +66,51 @@ FactoryBot.define do
     end
 
     trait :with_ancestors do
-      path { Sequel.pg_array([1, 2], :integer) }
+      parent do
+        first = create(:goods_nomenclature,
+                       :chapter,
+                       goods_nomenclature_item_id: '0200000000')
 
-      after(:create) do
-        create(:goods_nomenclature, goods_nomenclature_sid: 1)
-        create(:goods_nomenclature, goods_nomenclature_sid: 2)
+        create(:goods_nomenclature,
+               :heading,
+               parent: first,
+               goods_nomenclature_item_id: '0201000000')
       end
     end
 
     trait :without_ancestors do
-      path { Sequel.pg_array([], :integer) }
+      parent { nil }
     end
 
     trait :with_parent do
-      path { Sequel.pg_array([1], :integer) }
-
-      after(:create) { create(:goods_nomenclature, goods_nomenclature_sid: 1) }
+      parent { create(:goods_nomenclature) }
     end
 
     trait :without_parent do
-      path { Sequel.pg_array([1], :integer) }
+      parent { nil }
     end
 
     trait :with_siblings do
-      path { Sequel.pg_array([1, 2], :integer) }
+      with_ancestors
 
-      after(:create) { create(:goods_nomenclature, path: Sequel.pg_array([1, 2], :integer)) }
+      after(:create) do |_gn, evaluator|
+        create(:goods_nomenclature, parent: evaluator.parent)
+      end
     end
 
     trait :without_siblings do
-      path { Sequel.pg_array([1, 2], :integer) }
+      with_ancestors
     end
 
     trait :with_children do
-      path { Sequel.pg_array([], :integer) }
-
       after(:create) do |parent|
-        child = build(:goods_nomenclature)
-        child.path = Sequel.pg_array([parent.goods_nomenclature_sid], :integer)
-        child.save
-
-        declarable_child = build(:goods_nomenclature)
-        declarable_child.path = Sequel.pg_array([parent.goods_nomenclature_sid, child.goods_nomenclature_sid], :integer)
-        declarable_child.save
+        child = create(:goods_nomenclature, parent:)
+        create(:goods_nomenclature, parent: child)
       end
     end
 
     trait :without_children do
-      goods_nomenclature_sid { 1 }
-      path { Sequel.pg_array([], :integer) }
+      # default behaviour
     end
 
     trait :with_descendants do
@@ -112,15 +122,17 @@ FactoryBot.define do
     end
 
     trait :chapter do
-      goods_nomenclature_item_id { '0100000000' }
+      goods_nomenclature_item_id { sprintf '%s00000000', generate(:chapter_item_id) }
+      indents { 0 }
     end
 
     trait :heading do
-      goods_nomenclature_item_id { '0101000000' }
+      goods_nomenclature_item_id { sprintf '%s000000', generate(:heading_item_id) }
+      indents { 0 }
     end
 
     trait :commodity do
-      goods_nomenclature_item_id { '0102901019' }
+      # default behaviour
     end
 
     trait :grouping do
@@ -132,7 +144,12 @@ FactoryBot.define do
     end
 
     trait :with_indent do
-      # TODO: Populate this trait
+      # Implicit behaviour, always creates indents
+      # use indents transient value to control indent depth
+    end
+
+    trait :without_indent do
+      indents { nil }
     end
 
     trait :non_declarable do
@@ -211,7 +228,7 @@ FactoryBot.define do
     end
 
     trait :declarable do
-      producline_suffix { '80' }
+      non_grouping
     end
 
     trait :expired do
@@ -251,15 +268,21 @@ FactoryBot.define do
     end
   end
 
-  trait :without_children do
-    # This is just a labelling trait
-  end
-
   factory :goods_nomenclature_indent do
-    goods_nomenclature_sid { generate(:sid) }
+    transient do
+      goods_nomenclature { nil }
+    end
+
     goods_nomenclature_indent_sid { generate(:sid) }
+    goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:sid) }
+    productline_suffix { goods_nomenclature&.producline_suffix || '80' }
     number_indents { Forgery(:basic).number }
-    validity_start_date { 3.years.ago.beginning_of_day }
+
+    goods_nomenclature_item_id do
+      goods_nomenclature&.goods_nomenclature_item_id || "0101#{generate(:commodity_item_id)}"
+    end
+
+    validity_start_date { goods_nomenclature&.validity_start_date || 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
 
     trait :xml do

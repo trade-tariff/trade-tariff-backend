@@ -7,8 +7,7 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
     create(
       :commodity,
       :with_indent,
-      :with_chapter,
-      :with_heading,
+      :with_chapter_and_heading,
       :with_description,
       :declarable,
     )

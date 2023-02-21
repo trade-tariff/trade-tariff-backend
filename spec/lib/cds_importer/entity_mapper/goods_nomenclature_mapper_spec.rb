@@ -148,7 +148,7 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureMapper do
         create(
           :goods_nomenclature,
           :with_footnote_association,
-          :with_goods_nomenclature_indent,
+          :with_indent,
           :with_description,
           goods_nomenclature_sid: '87045',
         )
