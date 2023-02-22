@@ -5,23 +5,21 @@ RSpec.configure do |config|
     DatabaseCleaner.allow_remote_database_url = true
   end
 
+  DatabaseCleaner.strategy = :transaction
+
   config.before(:suite) do
     DatabaseCleaner.clean_with(:truncation)
   end
 
-  config.before do
+  config.around(:each, truncation: true) do |example|
+    DatabaseCleaner.strategy = :truncation
+    example.run
     DatabaseCleaner.strategy = :transaction
   end
 
-  config.before(:each, truncation: true) do
-    DatabaseCleaner.strategy = :truncation
-  end
-
-  config.before do
+  config.around do |example|
     DatabaseCleaner.start
-  end
-
-  config.after do
+    example.run
     DatabaseCleaner.clean
   end
 end
