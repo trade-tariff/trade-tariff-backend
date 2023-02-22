@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
   describe 'GET #search' do
-    let!(:additional_code) { create :additional_code }
+    let!(:additional_code) { create(:additional_code, :with_description) }
 
     let(:pattern) do
       {
@@ -75,21 +75,25 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
     end
 
     before do
-      measure = create(
+      current_goods_nomenclature = create(:heading)
+
+      create(
         :measure,
         :with_base_regulation,
         additional_code_sid: additional_code.additional_code_sid,
-        goods_nomenclature: create(:heading),
+        goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
       )
       create(
         :goods_nomenclature_description,
-        goods_nomenclature_sid: measure.goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
       )
       create(
         :measure,
         :with_base_regulation,
         additional_code_sid: additional_code.additional_code_sid,
-        goods_nomenclature: nil,
+        goods_nomenclature_sid: nil,
+        goods_nomenclature_item_id: nil,
       )
       create(
         :additional_code_description,

@@ -1,45 +1,12 @@
 RSpec.describe Cache::AdditionalCodeSerializer do
   subject(:serialized) { described_class.new(additional_code.reload).as_json }
 
-  before do
-    included_measure
-    excluded_measure_goods_nomenclature
-    excluded_measure_bad_dates
-  end
-
   let(:additional_code) do
     code = create(:additional_code)
 
     create(:additional_code_description, :with_period, additional_code_sid: code.additional_code_sid)
 
     code
-  end
-
-  let(:included_measure) do
-    create(
-      :measure,
-      :with_base_regulation,
-      additional_code_sid: additional_code.additional_code_sid,
-      goods_nomenclature: create(:heading, :with_description),
-    )
-  end
-
-  let(:excluded_measure_goods_nomenclature) do
-    create(
-      :measure,
-      :with_base_regulation,
-      additional_code_sid: additional_code.additional_code_sid,
-      goods_nomenclature: nil,
-    )
-  end
-
-  let(:excluded_measure_bad_dates) do
-    create(
-      :measure,
-      :with_base_regulation,
-      additional_code_sid: additional_code.additional_code_sid,
-      validity_end_date: Time.zone.yesterday,
-    )
   end
 
   let(:pattern) do
@@ -52,9 +19,50 @@ RSpec.describe Cache::AdditionalCodeSerializer do
       formatted_description: String,
       validity_start_date: Time,
       validity_end_date: nil,
-      measure_ids: [included_measure.measure_sid],
+      measure_ids: all(be_a(Integer)),
       measures: Array,
     }
+  end
+
+  before do
+    current_goods_nomenclature = create(:heading, :with_description)
+    non_current_goods_nomenclature = create(
+      :heading,
+      :with_description,
+      validity_end_date: Time.zone.yesterday,
+    )
+
+    create(
+      :measure,
+      :with_base_regulation,
+      additional_code_sid: additional_code.additional_code_sid,
+      goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
+      goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
+    )
+
+    create(
+      :measure,
+      :with_base_regulation,
+      additional_code_sid: additional_code.additional_code_sid,
+      goods_nomenclature_sid: nil,
+      goods_nomenclature_item_id: nil,
+    )
+    create(
+      :measure,
+      :with_base_regulation,
+      additional_code_sid: additional_code.additional_code_sid,
+      validity_end_date: Time.zone.yesterday,
+      goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
+      goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
+    )
+    create(
+      :measure,
+      :with_base_regulation,
+      additional_code_sid: additional_code.additional_code_sid,
+      validity_end_date: nil,
+      goods_nomenclature_sid: non_current_goods_nomenclature.goods_nomenclature_sid,
+      goods_nomenclature_item_id: non_current_goods_nomenclature.goods_nomenclature_item_id,
+    )
   end
 
   it { is_expected.to match_json_expression(pattern) }

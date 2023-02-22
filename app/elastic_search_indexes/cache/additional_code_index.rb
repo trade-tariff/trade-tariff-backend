@@ -1,5 +1,25 @@
 module Cache
   class AdditionalCodeIndex < ::Cache::CacheIndex
+    EXCLUDED_TYPES = %w[6 7 9 D F P].freeze
+
+    def dataset
+      TimeMachine.now do
+        current_sids = Measure
+          .actual
+          .distinct(:additional_code_id, :additional_code_type_id)
+          .select(:additional_code_sid, :additional_code_id, :additional_code_type_id)
+          .exclude(additional_code_sid: nil)
+          .exclude(additional_code_type_id: EXCLUDED_TYPES)
+          .exclude(goods_nomenclature_sid: nil)
+          .exclude(goods_nomenclature_item_id: nil)
+          .pluck(:additional_code_sid)
+
+        AdditionalCode
+          .actual
+          .where(additional_code_sid: current_sids)
+      end
+    end
+
     def definition
       {
         mappings: {
@@ -10,8 +30,8 @@ module Cache
             description: { type: 'text', analyzer: 'snowball' },
             validity_start_date: { type: 'date', format: 'date_optional_time' },
             validity_end_date: { type: 'date', format: 'date_optional_time' },
-          }
-        }
+          },
+        },
       }
     end
   end

@@ -2,7 +2,7 @@ class AdditionalCodeSearchService
   attr_reader :code, :type, :description, :as_of, :current_page, :per_page, :pagination_record_count
 
   def initialize(attributes, current_page, per_page)
-    @as_of = AdditionalCode.point_in_time
+    @as_of = Time.zone.today.iso8601
     @query = [{
       bool: {
         should: [
@@ -39,7 +39,7 @@ class AdditionalCodeSearchService
     }]
 
     @code = attributes['code']
-    @code = @code[1..-1] if @code&.length == 4
+    @code = @code[1..] if @code&.length == 4
     @type = attributes['type']
     @description = attributes['description']
     @current_page = current_page
@@ -47,13 +47,12 @@ class AdditionalCodeSearchService
     @pagination_record_count = 0
   end
 
-  def perform
-    apply_code_filter if code.present?
-    apply_type_filter if type.present?
-    apply_description_filter if description.present?
+  def call
+    apply_code_filter
+    apply_type_filter
+    apply_description_filter
+
     fetch
-    apply_post_fetch_filters
-    @result
   end
 
   private
@@ -61,28 +60,27 @@ class AdditionalCodeSearchService
   def fetch
     search_client = ::TradeTariffBackend.cache_client
     index = ::Cache::AdditionalCodeIndex.new.name
-    result = search_client.search index: index, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w[additional_code_type_id additional_code] }
+    result = search_client.search index:, body: { query: { constant_score: { filter: { bool: { must: @query } } } }, size: per_page, from: (current_page - 1) * per_page, sort: %w[additional_code_type_id additional_code] }
     @pagination_record_count = result&.hits&.total&.value || 0
     @result = result&.hits&.hits&.map(&:_source)
+    @result
   end
 
   def apply_code_filter
+    return if code.blank?
+
     @query.push({ bool: { must: { term: { additional_code: code } } } })
   end
 
   def apply_type_filter
+    return if type.blank?
+
     @query.push({ bool: { must: { term: { additional_code_type_id: type } } } })
   end
 
   def apply_description_filter
-    @query.push({ multi_match: { query: description, fields: %w[description], operator: 'and' } })
-  end
+    return if description.blank?
 
-  def apply_post_fetch_filters
-    @result.each do |serialized_additional_code|
-      serialized_additional_code.measures.delete_if do |measure|
-        measure.responds_to?(:goods_nomenclature) && measure.goods_nomenclature.blank?
-      end
-    end
+    @query.push({ multi_match: { query: description, fields: %w[description], operator: 'and' } })
   end
 end

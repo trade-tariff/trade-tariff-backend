@@ -44,12 +44,15 @@ module Cache
     end
 
     def measures
-      additional_code
-        .measures_dataset
-        .eager(:goods_nomenclature)
-        .exclude(goods_nomenclature_item_id: nil)
-        .all
-        .select { |measure| has_valid_dates(measure) && measure.goods_nomenclature.present? }
+      TimeMachine.now do
+        additional_code
+          .measures_dataset
+          .with_actual(Measure)
+          .eager(:goods_nomenclature)
+          .exclude(goods_nomenclature_item_id: nil)
+          .all
+          .select(&:goods_nomenclature)
+      end
     end
   end
 end
