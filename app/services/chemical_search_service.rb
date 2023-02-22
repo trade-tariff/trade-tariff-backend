@@ -1,8 +1,7 @@
 class ChemicalSearchService
   include CustomRegex
 
-  attr_reader :cas, :name
-  attr_reader :current_page, :per_page, :pagination_record_count
+  attr_reader :cas, :name, :current_page, :per_page, :pagination_record_count
 
   def initialize(attributes, current_page, per_page)
     @cas = attributes['cas']
@@ -19,12 +18,14 @@ class ChemicalSearchService
   private
 
   def fetch_by_cas
-    return unless cas = cas_cleaned
+    cas = cas_cleaned
+
+    return unless cas
 
     @chemicals = Rails.cache.fetch(cache_id, expires_in: cache_expiry) do
       Chemical.where(Sequel.like(:cas, "%#{cas}%")).all
     end
-    Rails.cache.delete(cache_id) unless @chemicals.present?
+    Rails.cache.delete(cache_id) if @chemicals.blank?
     custom_paginator(@chemicals)
   end
 
@@ -34,7 +35,7 @@ class ChemicalSearchService
     @chemicals = Rails.cache.fetch(cache_id, expires_in: cache_expiry) do
       ChemicalName.where(Sequel.like(:name, "%#{name}%")).map(&:chemical).uniq
     end
-    Rails.cache.delete(cache_id) unless @chemicals.present?
+    Rails.cache.delete(cache_id) if @chemicals.blank?
     custom_paginator(@chemicals)
   end
 
@@ -52,7 +53,7 @@ class ChemicalSearchService
   end
 
   def cache_id
-    "chemical-search-#{(cas_cleaned.presence || name.presence)}"
+    "chemical-search-#{cas_cleaned.presence || name.presence}"
   end
 
   def cache_expiry(seconds = nil)
@@ -62,8 +63,6 @@ class ChemicalSearchService
   def cas_cleaned
     return unless @cas
 
-    if m = cas_number_regex.match(@cas)
-      m[2]
-    end
+    cas_number_regex.match(@cas.to_s.first(100)).try(:[], 1)
   end
 end

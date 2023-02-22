@@ -51,8 +51,8 @@ class SearchService
     # if search term has no letters extract the digits
     # and perform search with just the digits (i.e., `no_alpha_regex`)
     # otherwise, ignore [ and ] characters to avoid range searches
-    @q = if (m = cas_number_regex.match(term))
-           m[2]
+    @q = if (m = cas_number_regex.match(term.to_s.first(100)))
+           m[1]
          elsif no_alpha_regex.match?(term) && digit_regex.match?(term)
            term.scan(/\d+/).join
          elsif no_alpha_regex.match(term) && !digit_regex.match?(term)

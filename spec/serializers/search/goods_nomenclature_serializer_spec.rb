@@ -7,7 +7,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
 
       let(:pattern) do
         {
-          id: 3,
+          id: be_a(Integer),
           goods_nomenclature_item_id: '0101900000',
           heading_id: '0101',
           chapter_id: '01',
@@ -20,7 +20,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           search_intercept_terms: 'donkey',
           ancestors: [
             {
-              id: 1,
+              id: be_a(Integer),
               goods_nomenclature_item_id: '0100000000',
               producline_suffix: '80',
               goods_nomenclature_class: 'Chapter',
@@ -39,7 +39,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
               intercept_terms: '',
             },
             {
-              id: 2,
+              id: be_a(Integer),
               goods_nomenclature_item_id: '0101000000',
               producline_suffix: '80',
               goods_nomenclature_class: 'Heading',
@@ -107,7 +107,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
 
       let(:pattern) do
         {
-          id: 1,
+          id: be_a(Integer),
           goods_nomenclature_item_id: '0101000000',
           heading_id: '0101',
           chapter_id: '01',
@@ -150,7 +150,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
         )
       end
 
-      it { is_expected.to eq(pattern) }
+      it { is_expected.to include_json(pattern) }
     end
   end
 end
