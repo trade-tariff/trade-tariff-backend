@@ -6687,7 +6687,6 @@ CREATE TABLE public.schema_migrations (
 CREATE TABLE public.search_references (
     id integer NOT NULL,
     title text,
-    referenced_id character varying(10),
     referenced_class character varying(10),
     productline_suffix text DEFAULT '80'::text NOT NULL,
     goods_nomenclature_sid integer,
@@ -10867,13 +10866,6 @@ CREATE INDEX search_references_goods_nomenclature_sid_index ON public.search_ref
 
 
 --
--- Name: search_references_referenced_id_referenced_class_index; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX search_references_referenced_id_referenced_class_index ON public.search_references USING btree (referenced_id, referenced_class);
-
-
---
 -- Name: section_notes_section_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -11076,9 +11068,9 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20181029112658_change_size
 INSERT INTO "schema_migrations" ("filename") VALUES ('20181211165412_create_guides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20190418162242_add_order_number_index_on_measure.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20191014165200_create_chemicals.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20200905141023_create_forum_links.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20180822124608_add_tariff_update_cds_error.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20191022065944_update_filename_size.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20200905141023_create_forum_links.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006192051_add_filename_to_oplog_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006193537_fix_index_on_chapters_sections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210108162807_add_hjid_to_geographical_areas_oplog.rb');
@@ -11115,3 +11107,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230127155444_fixes_quota
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230202142148_adds_fields_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230203090107_tweak_footnote_type_id_field_length.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230202192506_adds_index_to_search_references.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230207114821_drop_referenced_id_on_search_references.rb');
