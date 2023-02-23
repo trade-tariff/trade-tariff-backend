@@ -14,7 +14,7 @@ module Api
         if @chemical.present?
           render json: Api::V2::Chemicals::ChemicalSerializer.new(@chemical, object_serializer_options.merge(is_collection: false)).serializable_hash
         else
-          render_not_found
+          raise Sequel::RecordNotFound
         end
       end
 
@@ -23,7 +23,7 @@ module Api
         if @chemicals.present?
           render json: Api::V2::Chemicals::ChemicalListSerializer.new(@chemicals, object_serializer_options.merge(serialization_meta)).serializable_hash
         else
-          render_not_found
+          raise Sequel::RecordNotFound
         end
       end
 

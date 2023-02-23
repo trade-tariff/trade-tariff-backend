@@ -239,5 +239,9 @@ Rails.application.routes.draw do
 
   root to: 'application#nothing'
 
-  get '*path', to: 'application#render_not_found'
+  match '/400', to: 'errors#bad_request', via: :all
+  match '/404', to: 'errors#not_found', via: :all
+  match '/422', to: 'errors#unprocessable_entity', via: :all
+  match '/500', to: 'errors#internal_server_error', via: :all
+  match '/503', to: 'errors#maintenance', via: :all
 end

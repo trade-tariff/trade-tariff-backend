@@ -1,19 +1,11 @@
-class NullService
-  def self.call; end
-end
-
-RSpec.describe ApplicationController, type: :controller do
-  controller do
-    def index
-      render plain: NullService.call
-    end
-  end
-
+RSpec.describe ApplicationController, type: :request do
   describe 'GET #index' do
-    subject(:do_response) { get :index }
+    subject(:do_response) { get('/healthcheck') && response }
+
+    include_context 'with rescued exceptions'
 
     before do
-      allow(NullService).to receive(:call).and_raise(exception, 'foo')
+      allow(Healthcheck).to receive(:check).and_raise(exception, 'foo')
     end
 
     context 'when the request propagates a server generated error' do
@@ -27,7 +19,7 @@ RSpec.describe ApplicationController, type: :controller do
       let(:exception) { ArgumentError }
 
       it { is_expected.to have_http_status(:bad_request) }
-      it { expect(do_response.body).to eq('{"error":"400 - Bad request: foo"}') }
+      it { expect(do_response.body).to eq('{"error":"400 - Bad request: API documentation is available at https://api.trade-tariff.service.gov.uk/"}') }
     end
 
     shared_examples_for 'a not found request' do |error|
