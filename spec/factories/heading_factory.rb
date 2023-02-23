@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :heading, parent: :goods_nomenclature, class: 'Heading' do
-    goods_nomenclature_item_id { "#{generate(:heading_item_id)}000000" }
+    goods_nomenclature_item_id { "#{generate(:heading_short_code)}000000" }
 
     trait :declarable do
       producline_suffix { '80' }

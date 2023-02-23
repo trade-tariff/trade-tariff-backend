@@ -1,8 +1,8 @@
 FactoryBot.define do
   sequence(:goods_nomenclature_sid, 100) # Some factories hard code SIDs, so avoid clashing
-  sequence(:commodity_item_id) { |n| sprintf '%06d', n }
-  sequence(:heading_item_id, 10) { |n| sprintf '01%02d', n }
-  sequence(:chapter_item_id, 10) { |n| sprintf '%02d', n }
+  sequence(:chapter_short_code, 10) { |n| sprintf '%02d', n }
+  sequence(:heading_short_code, 10) { |n| sprintf '01%02d', n }
+  sequence(:commodity_short_code) { |n| sprintf '%06d', n }
 
   factory :goods_nomenclature do
     transient do
@@ -18,7 +18,7 @@ FactoryBot.define do
 
     goods_nomenclature_item_id do
       heading_code = parent ? parent.goods_nomenclature_item_id.first(4) : '0101'
-      [heading_code, generate(:commodity_item_id)].join
+      [heading_code, generate(:commodity_short_code)].join
     end
 
     path do
@@ -122,12 +122,12 @@ FactoryBot.define do
     end
 
     trait :chapter do
-      goods_nomenclature_item_id { sprintf '%s00000000', generate(:chapter_item_id) }
+      goods_nomenclature_item_id { sprintf '%s00000000', generate(:chapter_short_code) }
       indents { 0 }
     end
 
     trait :heading do
-      goods_nomenclature_item_id { sprintf '%s000000', generate(:heading_item_id) }
+      goods_nomenclature_item_id { sprintf '%s000000', generate(:heading_short_code) }
       indents { 0 }
     end
 
@@ -279,7 +279,7 @@ FactoryBot.define do
     number_indents { Forgery(:basic).number }
 
     goods_nomenclature_item_id do
-      goods_nomenclature&.goods_nomenclature_item_id || "0101#{generate(:commodity_item_id)}"
+      goods_nomenclature&.goods_nomenclature_item_id || "0101#{generate(:commodity_short_code)}"
     end
 
     validity_start_date { goods_nomenclature&.validity_start_date || 3.years.ago.beginning_of_day }

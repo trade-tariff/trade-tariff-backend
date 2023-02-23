@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :chapter, parent: :goods_nomenclature, class: 'Chapter' do
-    goods_nomenclature_item_id { "#{generate(:chapter_item_id)}00000000" }
+    goods_nomenclature_item_id { "#{generate(:chapter_short_code)}00000000" }
 
     trait :with_section do
       after(:create) do |chapter, _evaluator|
