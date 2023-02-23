@@ -34,6 +34,30 @@ module GoodsNomenclatures
               (ancestors_position =~ TreeNode.previous_sibling(origin_position, ancestors_depth))
           end
       end
+
+      one_through_one :ns_parent,
+                      left_primary_key: :goods_nomenclature_sid,
+                      left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                      right_primary_key: :goods_nomenclature_sid,
+                      right_key: :goods_nomenclature_sid,
+                      class_name: '::GoodsNomenclature',
+                      join_table: Sequel.as(:goods_nomenclature_tree_nodes, :parent_nodes),
+                      read_only: true do |ds|
+        ds.with_validity_dates(:parent_nodes)
+          .select_append(:parent_nodes__depth)
+          .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, ancestors_table, _join_clauses|
+            ancestors_position = Sequel.qualify(ancestors_table, :position)
+            ancestors_depth    = Sequel.qualify(ancestors_table, :depth)
+            origin_position    = Sequel.qualify(origin_table, :position)
+            origin_depth       = Sequel.qualify(origin_table, :depth)
+
+            (ancestors_depth =~ (origin_depth - 1)) &
+              (ancestors_position < origin_position) &
+              (ancestors_position >= TreeNode.start_of_chapter(origin_position)) &
+              model.validity_dates_filter(origin_table) &
+              (ancestors_position =~ TreeNode.previous_sibling(origin_position, ancestors_depth))
+          end
+      end
     end
 
     def depth

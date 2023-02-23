@@ -126,6 +126,52 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
       end
 
+      describe '#ns_parent' do
+        context 'with chapter' do
+          subject { tree[:chapter].ns_parent }
+
+          it { is_expected.to be_nil }
+        end
+
+        context 'with heading' do
+          subject { tree[:heading].ns_parent.goods_nomenclature_sid }
+
+          it { is_expected.to eq tree[:chapter].goods_nomenclature_sid }
+        end
+
+        context 'with subheading' do
+          subject { tree[:subheading].ns_parent.goods_nomenclature_sid }
+
+          it { is_expected.to eq tree[:heading].goods_nomenclature_sid }
+        end
+
+        context 'with nested subheading' do
+          subject { tree[:subsubheading].ns_parent.goods_nomenclature_sid }
+
+          it { is_expected.to eq tree[:subheading].goods_nomenclature_sid }
+        end
+
+        context 'for leaf commodity' do
+          subject { tree[:commodity1].ns_parent.goods_nomenclature_sid }
+
+          it { is_expected.to eq tree[:subsubheading].goods_nomenclature_sid }
+        end
+
+        context 'for second leaf commodity' do
+          subject { tree[:commodity3].ns_parent.goods_nomenclature_sid }
+
+          it { is_expected.to eq tree[:subheading].goods_nomenclature_sid }
+        end
+
+        context 'for second tree' do
+          subject { tree[:second_tree].ns_parent.goods_nomenclature_item_id }
+
+          let(:item_id) { "#{tree[:second_tree].goods_nomenclature_item_id.first(4)}000000" }
+
+          it { is_expected.to eq item_id }
+        end
+      end
+
       describe 'with time machine' do
         before do
           create :goods_nomenclature_indent,
@@ -144,7 +190,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
                  number_indents: 2
         end
 
-        describe '#ancestors' do
+        describe '#ns_ancestors' do
           context 'with subsubheading' do
             subject { tree[:subsubheading].ns_ancestors.map(&:goods_nomenclature_sid) }
 
@@ -164,29 +210,71 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           end
         end
 
+        describe '#ns_parent' do
+          context 'with subsubheading' do
+            subject { tree[:subsubheading].ns_parent.goods_nomenclature_sid }
+
+            it { is_expected.to eq tree[:heading].goods_nomenclature_sid }
+          end
+
+          context 'with commodity under subsubheading' do
+            subject { tree[:commodity1].ns_parent.goods_nomenclature_sid }
+
+            it { is_expected.to eq tree[:subsubheading].goods_nomenclature_sid }
+          end
+
+          context 'with commodity under subheading' do
+            subject { tree[:commodity3].ns_parent.goods_nomenclature_sid }
+
+            it { is_expected.to eq tree[:subsubheading].goods_nomenclature_sid }
+          end
+        end
+
         context 'when accessing historical data via TimeMachine' do
           around { |example| TimeMachine.at(2.weeks.ago) { example.run } }
 
-          context 'with nested subheading' do
-            subject { tree[:subsubheading].ns_ancestors.map(&:goods_nomenclature_sid) }
+          describe '#ns_ancestors' do
+            context 'with nested subheading' do
+              subject { tree[:subsubheading].ns_ancestors.map(&:goods_nomenclature_sid) }
 
-            it { is_expected.to eq tree.values_at(:chapter, :heading, :subheading).map(&:goods_nomenclature_sid) }
-          end
-
-          context 'for leaf commodity' do
-            subject { tree[:commodity1].ns_ancestors.map(&:goods_nomenclature_sid) }
-
-            let :ancestors do
-              tree.values_at(:chapter, :heading, :subheading, :subsubheading)
+              it { is_expected.to eq tree.values_at(:chapter, :heading, :subheading).map(&:goods_nomenclature_sid) }
             end
 
-            it { is_expected.to eq ancestors.map(&:goods_nomenclature_sid) }
+            context 'for leaf commodity' do
+              subject { tree[:commodity1].ns_ancestors.map(&:goods_nomenclature_sid) }
+
+              let :ancestors do
+                tree.values_at(:chapter, :heading, :subheading, :subsubheading)
+              end
+
+              it { is_expected.to eq ancestors.map(&:goods_nomenclature_sid) }
+            end
+
+            context 'for second leaf commodity' do
+              subject { tree[:commodity3].ns_ancestors.map(&:goods_nomenclature_sid) }
+
+              it { is_expected.to eq tree.values_at(:chapter, :heading, :subheading).map(&:goods_nomenclature_sid) }
+            end
           end
 
-          context 'for second leaf commodity' do
-            subject { tree[:commodity3].ns_ancestors.map(&:goods_nomenclature_sid) }
+          describe '#ns_parent' do
+            context 'with nested subheading' do
+              subject { tree[:subsubheading].ns_parent.goods_nomenclature_sid }
 
-            it { is_expected.to eq tree.values_at(:chapter, :heading, :subheading).map(&:goods_nomenclature_sid) }
+              it { is_expected.to eq tree[:subheading].goods_nomenclature_sid }
+            end
+
+            context 'for leaf commodity' do
+              subject { tree[:commodity1].ns_parent.goods_nomenclature_sid }
+
+              it { is_expected.to eq tree[:subsubheading].goods_nomenclature_sid }
+            end
+
+            context 'for second leaf commodity' do
+              subject { tree[:commodity3].ns_parent.goods_nomenclature_sid }
+
+              it { is_expected.to eq tree[:subheading].goods_nomenclature_sid }
+            end
           end
         end
       end
