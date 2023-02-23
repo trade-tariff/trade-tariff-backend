@@ -4,8 +4,7 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
   let!(:goods_nomenclature) do
     create :commodity,
            :with_indent,
-           :with_chapter,
-           :with_heading
+           :with_chapter_and_heading
   end
   let(:chapter) { goods_nomenclature.reload.chapter }
   let(:heading) { goods_nomenclature.reload.heading }

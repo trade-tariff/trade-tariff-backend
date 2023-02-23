@@ -2,7 +2,7 @@ RSpec.describe Api::V2::Commodities::CommoditySerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) { Api::V2::Commodities::CommodityPresenter.new(commodity, measures) }
-  let(:commodity) { create(:commodity, :with_heading, :with_chapter, :with_description).reload }
+  let(:commodity) { create(:commodity, :with_chapter_and_heading, :with_description) }
   let(:measures) { MeasureCollection.new [] }
 
   let(:expected_pattern) do

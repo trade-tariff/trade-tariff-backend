@@ -1,36 +1,23 @@
 FactoryBot.define do
   factory :commodity, parent: :goods_nomenclature, class: 'Commodity' do
     trait :declarable do
-      producline_suffix { '80' }
+      non_grouping
     end
 
     trait :non_declarable do
-      producline_suffix { '10' }
-    end
-
-    trait :with_indent do
-      after(:create) do |commodity, evaluator|
-        create(:goods_nomenclature_indent,
-               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-               validity_start_date: commodity.validity_start_date,
-               validity_end_date: commodity.validity_end_date,
-               productline_suffix: commodity.producline_suffix,
-               number_indents: evaluator.indents)
-      end
+      grouping
     end
 
     trait :with_ancestors do
       with_description
+
       transient do
         include_search_references { false }
       end
-      path { Sequel.pg_array([1, 2], :integer) }
-      description { 'Horses, other than lemmings' }
-      goods_nomenclature_item_id { '0101210000' }
-      goods_nomenclature_sid { 3 }
 
-      after(:create) do |commodity, evaluator|
+      description { 'Horses, other than lemmings' }
+
+      before(:create) do |commodity, evaluator|
         chapter = create(
           :chapter,
           :with_description,
@@ -65,66 +52,57 @@ FactoryBot.define do
           )
         end
 
+        # populate materialized path copy of hierarchy
+        ancestor_sids = [chapter, heading].map(&:goods_nomenclature_sid)
+        commodity.path = Sequel.pg_array(ancestor_sids, :integer)
+
         guide = create(:guide, :aircraft_parts)
         create(:guides_goods_nomenclature, guide:, goods_nomenclature: heading)
       end
     end
 
     trait :with_chapter do
-      after(:create) do |commodity, _evaluator|
-        create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
+      before(:create) do |commodity, _evaluator|
+        chapter = create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
+
+        commodity.path = Sequel.pg_array([chapter.goods_nomenclature_sid])
+      end
+    end
+
+    trait :with_chapter_and_heading do
+      before(:create) do |commodity, _evaluator|
+        chapter = create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
+        heading = create(:heading,
+                         goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
+                         parent: chapter)
+
+        commodity.path = Sequel.pg_array(heading.path + [heading.goods_nomenclature_sid])
       end
     end
 
     trait :with_heading do
-      after(:create) do |commodity, _evaluator|
-        create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
-        commodity.reload
+      before(:create) do |commodity, _evaluator|
+        heading = create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
+
+        commodity.path = Sequel.pg_array([heading.goods_nomenclature_sid])
       end
     end
 
     trait :with_children do
-      goods_nomenclature_sid { 1 }
-      path { Sequel.pg_array([], :integer) }
+      non_grouping
+      indents { 1 }
 
       after(:create) do |commodity, _evaluator|
-        # Prepare some intermediate item ids
-        item_id = commodity.goods_nomenclature_item_id.to_i
-
-        # Make the commodity a parent
-        commodity.producline_suffix = '80'
-        commodity.save
-        create(:goods_nomenclature_indent,
-               goods_nomenclature_sid: 1,
-               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-               validity_start_date: commodity.validity_start_date,
-               validity_end_date: commodity.validity_end_date,
-               productline_suffix: commodity.producline_suffix,
-               number_indents: 1)
-
         # Add another intermediate level
-        create(:commodity,
-               :with_indent,
-               goods_nomenclature_item_id: (item_id + 1).to_s,
-               goods_nomenclature_sid: 2,
-               path: Sequel.pg_array([1], :integer),
-               producline_suffix: '10',
-               indents: 2)
+        subheading = create(:commodity,
+                            :with_indent,
+                            :grouping,
+                            parent: commodity,
+                            indents: 2)
 
         # Add two leaf commodities
-        create(:commodity,
-               :with_indent,
-               goods_nomenclature_item_id: (item_id + 1).to_s,
-               goods_nomenclature_sid: 3,
-               path: Sequel.pg_array([1, 2], :integer),
-               indents: 3)
-        create(:commodity,
-               :with_indent,
-               goods_nomenclature_item_id: (item_id + 2).to_s,
-               goods_nomenclature_sid: 4,
-               path: Sequel.pg_array([1, 2], :integer),
-               indents: 3)
-        commodity.reload
+        create(:commodity, :with_indent, parent: subheading, indents: 3)
+        create(:commodity, :with_indent, parent: subheading, indents: 3)
       end
     end
   end

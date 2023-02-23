@@ -57,6 +57,9 @@ RSpec.configure do |config|
     Rails.cache.clear
     Sidekiq::Worker.clear_all
 
+    # things like nomenclature item id's risk wrapping otherwise
+    FactoryBot.rewind_sequences
+
     TradeTariffBackend.clearable_models.map(&:clear_association_cache)
   end
 end

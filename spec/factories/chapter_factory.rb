@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :chapter, parent: :goods_nomenclature, class: 'Chapter' do
-    goods_nomenclature_item_id { "#{2.times.map { Random.rand(9) }.join}00000000" }
+    goods_nomenclature_item_id { "#{generate(:chapter_short_code)}00000000" }
 
     trait :with_section do
       after(:create) do |chapter, _evaluator|
@@ -28,6 +28,10 @@ FactoryBot.define do
         chapter.add_guide guide
         chapter.save
       end
+    end
+
+    trait :chapter01 do
+      goods_nomenclature_item_id { '0100000000' }
     end
   end
 
