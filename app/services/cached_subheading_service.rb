@@ -11,6 +11,7 @@ class CachedSubheadingService
     'commodities.overview_measures',
     'commodities.overview_measures.duty_expression',
     'commodities.overview_measures.measure_type',
+    'commodities.overview_measures.additional_code',
   ].freeze
 
   def initialize(subheading, actual_date)
