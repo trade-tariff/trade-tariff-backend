@@ -90,6 +90,36 @@ module GoodsNomenclatures
               )
           end
       end
+
+      many_to_many :ns_children,
+                   left_primary_key: :goods_nomenclature_sid,
+                   left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                   right_primary_key: :goods_nomenclature_sid,
+                   right_key: :goods_nomenclature_sid,
+                   class_name: '::GoodsNomenclature',
+                   join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
+                   read_only: true do |ds|
+        ds.order(:child_nodes__position)
+          .with_validity_dates(:child_nodes)
+          .select_append(:child_nodes__depth)
+          .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
+            descendants_position = Sequel.qualify(descendants_table, :position)
+            descendants_depth    = Sequel.qualify(descendants_table, :depth)
+            origin_position      = Sequel.qualify(origin_table, :position)
+            origin_depth         = Sequel.qualify(origin_table, :depth)
+
+            (descendants_depth =~ (origin_depth + 1)) &
+              (descendants_position > origin_position) &
+              model.validity_dates_filter(origin_table) &
+              (descendants_position <
+                Sequel.function(
+                  :coalesce,
+                  TreeNode.next_sibling(origin_position, origin_depth),
+                  END_OF_TREE,
+                )
+              )
+          end
+      end
     end
 
     def depth

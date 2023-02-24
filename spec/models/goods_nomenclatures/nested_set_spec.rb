@@ -91,6 +91,14 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
       end
 
+      shared_examples 'it has children' do |context_name, node, children|
+        context "with #{context_name}" do
+          subject { tree[node].ns_children.map(&:goods_nomenclature_sid) }
+
+          it { is_expected.to eq tree.values_at(*children).map(&:goods_nomenclature_sid) }
+        end
+      end
+
       describe '#ns_ancestors' do
         let(:third_tier_ancestors) { tree.values_at(:chapter, :heading, :subheading) }
 
@@ -149,6 +157,21 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
       end
 
+      describe '#ns_children' do
+        it_behaves_like 'it has children', 'chapter', :chapter, %i[heading]
+        it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
+        it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
+        it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
+        it_behaves_like 'it has children', 'leaf commodity', :commodity1, %i[]
+        it_behaves_like 'it has children', 'second leaf commodity', :commodity3, %i[]
+
+        context 'for second tree' do
+          subject { tree[:second_tree].ns_children.map(&:goods_nomenclature_item_id) }
+
+          it { is_expected.to have_attributes length: 1 }
+        end
+      end
+
       describe 'with time machine' do
         before do
           create :goods_nomenclature_indent,
@@ -185,6 +208,12 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2 commodity3]
         end
 
+        describe '#ns_children' do
+          it_behaves_like 'it has children', 'heading', :heading, %i[subheading subsubheading]
+          it_behaves_like 'it has children', 'subheading', :subheading, %i[]
+          it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2 commodity3]
+        end
+
         context 'when accessing historical data via TimeMachine' do
           around { |example| TimeMachine.at(2.weeks.ago) { example.run } }
 
@@ -204,6 +233,12 @@ RSpec.describe GoodsNomenclatures::NestedSet do
             it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
             it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 commodity2 commodity3]
             it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
+          end
+
+          describe '#ns_children' do
+            it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
+            it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
+            it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
           end
         end
       end
