@@ -1,5 +1,13 @@
 RSpec.describe Api::V2::Subheadings::SubheadingSerializer do
-  subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
+  subject(:serializable_hash) { described_class.new(serializable, options).serializable_hash.as_json }
+
+  let(:options) do
+    includes = [
+      'commodities.overview_measures.additional_code',
+    ]
+
+    { include: includes }
+  end
 
   let(:serializable) do
     path = Rails.root.join(file_fixture_path, 'cached_subheading_exhaustive_annotated.json')
@@ -12,24 +20,22 @@ RSpec.describe Api::V2::Subheadings::SubheadingSerializer do
   let(:expected_pattern) do
     {
       'data' => {
-        'id' => '93798',
+        'id' => '35834',
         'type' => 'subheading',
-        'attributes' => {
-          'goods_nomenclature_item_id' => '0101290000',
-          'goods_nomenclature_sid' => 93_798,
-          'number_indents' => 2,
-          'producline_suffix' => '80',
-          'description' => 'Other',
-          'formatted_description' => 'Other',
-          'declarable' => false,
-          'validity_start_date' => serializable.validity_start_date,
-          'validity_end_date' => nil,
-        },
+        'attributes' => { 'goods_nomenclature_item_id' => '2818300000', 'goods_nomenclature_sid' => 35_834, 'number_indents' => 1, 'producline_suffix' => '80', 'description' => 'Aluminium hydroxide', 'formatted_description' => 'Aluminium hydroxide', 'validity_start_date' => '1972-01-01T00:00:00.000Z', 'validity_end_date' => nil, 'declarable' => false },
         'relationships' => {
-          'section' => { 'data' => { 'id' => '1', 'type' => 'section' } },
-          'chapter' => { 'data' => { 'id' => '27623', 'type' => 'chapter' } },
-          'heading' => { 'data' => { 'id' => '27624', 'type' => 'heading' } },
-          'commodities' => { 'data' => [{ 'id' => '93797', 'type' => 'commodity' }, { 'id' => '93798', 'type' => 'commodity' }, { 'id' => '93799', 'type' => 'commodity' }, { 'id' => '93800', 'type' => 'commodity' }] },
+          'section' => { 'data' => { 'id' => '6', 'type' => 'section' } },
+          'chapter' => { 'data' => { 'id' => '35719', 'type' => 'chapter' } },
+          'heading' => { 'data' => { 'id' => '35831', 'type' => 'heading' } },
+          'ancestors' => { 'data' => [] },
+          'commodities' => {
+            'data' => [
+              { 'id' => '35834', 'type' => 'commodity' },
+              { 'id' => '100107', 'type' => 'commodity' },
+              { 'id' => '100483', 'type' => 'commodity' },
+              { 'id' => '35836', 'type' => 'commodity' },
+            ],
+          },
           'footnotes' => { 'data' => [] },
         },
       },
@@ -37,6 +43,14 @@ RSpec.describe Api::V2::Subheadings::SubheadingSerializer do
   end
 
   describe '#serializable_hash' do
+    let(:additional_code_count) do
+      serializable_hash['included'].select { |i|
+        i['type'] == 'additional_code'
+      }.count
+    end
+
     it { is_expected.to include_json(expected_pattern) }
+
+    it { expect(additional_code_count).to eq(2) }
   end
 end
