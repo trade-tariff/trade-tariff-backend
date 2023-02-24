@@ -137,6 +137,26 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
           it { is_expected.to eq expected_ancestor_item_ids }
         end
+
+        xcontext 'when eager loading' do
+          let(:eager_loaded) { commodities.eager(:ns_ancestors).all.first }
+
+          let :commodities do
+            GoodsNomenclature.where(goods_nomenclature_sid: tree[:subheading].goods_nomenclature_sid)
+          end
+
+          context 'for eager loaded goods nomenclature' do
+            subject { eager_loaded.associations[:parent].goods_nomenclature_sid }
+
+            it { is_expected.to eq tree[:heading].goods_nomenclature_sid }
+          end
+
+          context 'for eager loaded goods nomenclatures child' do
+            subject { eager_loaded.children.first.associations[:parent].goods_nomenclature_sid }
+
+            it { is_expected.to eq tree[:chapter].goods_nomenclature_sid }
+          end
+        end
       end
 
       describe '#ns_parent' do
@@ -172,6 +192,44 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           subject { tree[:second_tree].ns_descendants.map(&:goods_nomenclature_item_id) }
 
           it { is_expected.to have_attributes length: 3 }
+        end
+
+        context 'when eager loading' do
+          let(:eager_loaded) { commodities.eager(:ns_descendants).all.first }
+
+          let :commodities do
+            GoodsNomenclature.where(goods_nomenclature_sid: tree[:subheading].goods_nomenclature_sid)
+          end
+
+          context 'for eager loaded goods nomenclatures children' do
+            subject { eager_loaded.associations[:ns_children] }
+
+            it { is_expected.to eq_pk [tree[:subsubheading], tree[:commodity3]] }
+          end
+
+          context 'for eager loaded goods_nomenclatures childs descendants' do
+            subject { eager_loaded.associations[:ns_children].first.associations[:ns_descendants] }
+
+            it { is_expected.to eq_pk tree.values_at(:commodity1, :commodity2) }
+          end
+
+          context 'for eager loaded goods nomenclatures childs children' do
+            subject { eager_loaded.associations[:ns_children].first.associations[:ns_children] }
+
+            it { is_expected.to eq_pk [tree[:commodity1], tree[:commodity2]] }
+          end
+
+          context 'for eager loaded goods nomenclatures childs parent' do
+            subject { eager_loaded.associations[:ns_children].first.associations[:ns_parent] }
+
+            it { is_expected.to eq_pk tree[:subheading] }
+          end
+
+          context 'for eager loaded goods nomenclatures childs chilrens parent' do
+            subject { eager_loaded.associations[:ns_children].first.associations[:ns_children].first.associations[:ns_parent] }
+
+            it { is_expected.to eq_pk tree[:subsubheading] }
+          end
         end
       end
 

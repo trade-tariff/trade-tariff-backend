@@ -68,6 +68,7 @@ module GoodsNomenclatures
                    right_key: :goods_nomenclature_sid,
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
+                   after_load: :recursive_descendant_populator,
                    read_only: true do |ds|
         ds.order(:descendant_nodes__position)
           .with_validity_dates(:descendant_nodes)
@@ -119,6 +120,36 @@ module GoodsNomenclatures
                 )
               )
           end
+      end
+    end
+
+    def recursive_descendant_populator(descendants, parent = nil)
+      @associations ||= { ns_descendants: descendants }
+
+      if parent
+        @associations[:ns_parent] ||= parent
+      end
+
+      if descendants.empty?
+        @associations[:ns_children] ||= []
+        return
+      end
+
+      # group descendants by the immediate child they belong to
+      childrens_depth = descendants.first.depth
+      grouped_by_child = descendants.each.with_object([]) do |descendant, child_groups|
+        if childrens_depth == descendant.depth
+          child_groups << [descendant, []]
+        else
+          child_groups.last.last << descendant
+        end
+      end
+
+      # populate children and assign to own association
+      @associations[:ns_children] ||= grouped_by_child.map do |child, childs_descendants|
+        child.recursive_descendant_populator(childs_descendants, self)
+
+        child
       end
     end
 
