@@ -23,6 +23,24 @@ RSpec.describe GoodsNomenclature do
     it { expect(goods_nomenclatures).to eq(expected_goods_nomenclatures) }
   end
 
+  describe 'single table inheritance loader' do
+    shared_examples 'it loads data into the correct class' do |klass, *traits|
+      subject do
+        described_class.where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
+                       .first
+      end
+
+      let(:gn) { create(:goods_nomenclature, *traits) }
+
+      it { is_expected.to be_instance_of klass }
+    end
+
+    it_behaves_like 'it loads data into the correct class', Chapter, :chapter
+    it_behaves_like 'it loads data into the correct class', Heading, :heading
+    it_behaves_like 'it loads data into the correct class', Commodity, :with_children
+    it_behaves_like 'it loads data into the correct class', Commodity
+  end
+
   describe 'associations' do
     describe 'goods nomenclature indent' do
       context 'when fetching with absolute date' do
@@ -429,7 +447,8 @@ RSpec.describe GoodsNomenclature do
     context 'when the goods nomenclature has ancestors' do
       subject(:ancestors) { create(:goods_nomenclature, :with_ancestors).path_ancestors }
 
-      it { expect(ancestors).to include(an_instance_of(described_class)) }
+      it { expect(ancestors).to include(an_instance_of(Chapter)) }
+      it { expect(ancestors).to include(an_instance_of(Heading)) }
     end
 
     context 'when the goods nomenclature has no ancestors' do
@@ -457,7 +476,7 @@ RSpec.describe GoodsNomenclature do
     context 'when the goods nomenclature has siblings' do
       subject(:siblings) { create(:goods_nomenclature, :with_siblings).path_siblings }
 
-      it { expect(siblings).to include(an_instance_of(described_class)) }
+      it { expect(siblings).to include(an_instance_of(Commodity)) }
     end
 
     context 'when the goods nomenclature has no siblings' do

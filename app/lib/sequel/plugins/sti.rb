@@ -6,7 +6,7 @@ module Sequel
       def self.configure(model, opts = {})
         model.instance_eval do
           @class_determinator = opts[:class_determinator]
-          dataset.with_row_proc(lambda { |r| model.sti_load(r) })
+          @dataset = @dataset.with_row_proc(model.method(:sti_load))
         end
       end
 
@@ -25,12 +25,12 @@ module Sequel
           subclass.instance_eval do
             dataset.with_row_proc(rp)
             @class_determinator = cd
-            dataset.with_row_proc(lambda { |r| model.sti_load(r) })
+            @dataset = @dataset.with_row_proc(model.method(:sti_load))
           end
         end
 
-        def sti_load(r)
-          constantize(class_determinator.call(r)).call(r)
+        def sti_load(record)
+          constantize(class_determinator.call(record)).call(record)
         end
       end
     end
