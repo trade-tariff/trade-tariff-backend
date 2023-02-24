@@ -99,6 +99,18 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
       end
 
+      shared_examples 'it supports eager loading' do |relationship|
+        subject do
+          commodities.eager(relationship).all.first.associations[relationship]
+        end
+
+        let :commodities do
+          GoodsNomenclature.where(goods_nomenclature_sid: tree[:subsubheading].goods_nomenclature_sid)
+        end
+
+        it { is_expected.not_to be_nil }
+      end
+
       describe '#ns_ancestors' do
         let(:third_tier_ancestors) { tree.values_at(:chapter, :heading, :subheading) }
 
@@ -108,6 +120,8 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has ancestors', 'nested subheading', :subsubheading, %i[chapter heading subheading]
         it_behaves_like 'it has ancestors', 'leaf commodity', :commodity1, %i[chapter heading subheading subsubheading]
         it_behaves_like 'it has ancestors', 'second leaf commodity', :commodity3, %i[chapter heading subheading]
+
+        it_behaves_like 'it supports eager loading', :ns_ancestors
 
         context 'for second tree' do
           subject { tree[:second_tree].ns_ancestors.map(&:goods_nomenclature_item_id) }
@@ -133,6 +147,8 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has parent', 'leaf commodity', :commodity1, :subsubheading
         it_behaves_like 'it has parent', 'second leaf commodity', :commodity3, :subheading
 
+        it_behaves_like 'it supports eager loading', :ns_parent
+
         context 'for second tree' do
           subject { tree[:second_tree].ns_parent.goods_nomenclature_item_id }
 
@@ -150,6 +166,8 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has descendants', 'leaf commodity', :commodity1, %i[]
         it_behaves_like 'it has descendants', 'second leaf commodity', :commodity3, %i[]
 
+        it_behaves_like 'it supports eager loading', :ns_descendants
+
         context 'for second tree' do
           subject { tree[:second_tree].ns_descendants.map(&:goods_nomenclature_item_id) }
 
@@ -164,6 +182,8 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
         it_behaves_like 'it has children', 'leaf commodity', :commodity1, %i[]
         it_behaves_like 'it has children', 'second leaf commodity', :commodity3, %i[]
+
+        it_behaves_like 'it supports eager loading', :ns_children
 
         context 'for second tree' do
           subject { tree[:second_tree].ns_children.map(&:goods_nomenclature_item_id) }
