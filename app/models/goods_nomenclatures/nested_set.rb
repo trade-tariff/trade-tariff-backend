@@ -2,6 +2,8 @@ module GoodsNomenclatures
   module NestedSet
     extend ActiveSupport::Concern
 
+    END_OF_TREE = 1_000_000_000_000
+
     included do
       one_to_one :tree_node, key: :goods_nomenclature_sid,
                              class_name: 'GoodsNomenclatures::TreeNode',
@@ -56,6 +58,36 @@ module GoodsNomenclatures
               (ancestors_position >= TreeNode.start_of_chapter(origin_position)) &
               model.validity_dates_filter(origin_table) &
               (ancestors_position =~ TreeNode.previous_sibling(origin_position, ancestors_depth))
+          end
+      end
+
+      many_to_many :ns_descendants,
+                   left_primary_key: :goods_nomenclature_sid,
+                   left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
+                   right_primary_key: :goods_nomenclature_sid,
+                   right_key: :goods_nomenclature_sid,
+                   class_name: '::GoodsNomenclature',
+                   join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
+                   read_only: true do |ds|
+        ds.order(:descendant_nodes__position)
+          .with_validity_dates(:descendant_nodes)
+          .select_append(:descendant_nodes__depth)
+          .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
+            descendants_position = Sequel.qualify(descendants_table, :position)
+            descendants_depth    = Sequel.qualify(descendants_table, :depth)
+            origin_position      = Sequel.qualify(origin_table, :position)
+            origin_depth         = Sequel.qualify(origin_table, :depth)
+
+            (descendants_depth > origin_depth) &
+              (descendants_position > origin_position) &
+              model.validity_dates_filter(origin_table) &
+              (descendants_position <
+                Sequel.function(
+                  :coalesce,
+                  TreeNode.next_sibling(origin_position, origin_depth),
+                  END_OF_TREE,
+                )
+              )
           end
       end
     end

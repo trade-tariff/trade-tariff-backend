@@ -94,6 +94,44 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     end
   end
 
+  describe '.next_sibling' do
+    let(:subheading) { create :commodity, :with_chapter_and_heading }
+    let(:siblings) { create_list :commodity, 3, parent: subheading }
+
+    context 'with first sibling' do
+      subject do
+        described_class.next_sibling(siblings.first.tree_node.position,
+                                     siblings.first.tree_node.depth)
+                       .first
+                       .values[:next_sibling]
+      end
+
+      it { is_expected.to eq siblings.second.tree_node.position }
+    end
+
+    context 'with second sibling' do
+      subject do
+        described_class.next_sibling(siblings.second.tree_node.position,
+                                     siblings.second.tree_node.depth)
+                       .first
+                       .values[:next_sibling]
+      end
+
+      it { is_expected.to eq siblings.third.tree_node.position }
+    end
+
+    context 'with third sibling' do
+      subject do
+        described_class.next_sibling(siblings.third.tree_node.position,
+                                     siblings.third.tree_node.depth)
+                       .first
+                       .values[:next_sibling]
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#goods_nomenclature relationship' do
     subject(:commodity) { tree_node.goods_nomenclature }
 

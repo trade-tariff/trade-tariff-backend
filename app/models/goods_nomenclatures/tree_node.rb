@@ -36,6 +36,20 @@ module GoodsNomenclatures
       def start_of_chapter(position_column)
         (position_column / 10_000_000_000) * 10_000_000_000
       end
+
+      def next_sibling(origin_position, origin_depth)
+        siblings_position = Sequel.qualify(:siblings, :position)
+        siblings_depth    = Sequel.qualify(:siblings, :depth)
+        siblings_table    = Sequel.as(table_name, :siblings)
+
+        from(siblings_table)
+          .select { Sequel.as(min(siblings_position), :next_sibling) }
+          .where do |_query|
+            (siblings_depth =~ origin_depth) &
+              (siblings_position > origin_position) &
+              validity_dates_filter(:siblings)
+          end
+      end
     end
   end
 end
