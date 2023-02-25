@@ -82,8 +82,8 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     }
   end
   let(:csv_first_row) { 'SID,Goods Nomenclature Item ID,Indents,Description,Product Line Suffix,Href' }
-  let(:csv_chapter_row) { "#{chapter.goods_nomenclature_sid},#{chapter.goods_nomenclature_item_id},1,\"\",#{chapter.producline_suffix},#{described_class.api_path_builder(chapter)}" }
-  let(:csv_heading_row) { "#{heading.goods_nomenclature_sid},#{heading.goods_nomenclature_item_id},1,\"\",#{heading.producline_suffix},#{described_class.api_path_builder(heading)}" }
+  let(:csv_chapter_row) { "#{chapter.goods_nomenclature_sid},#{chapter.goods_nomenclature_item_id},0,\"\",#{chapter.producline_suffix},#{described_class.api_path_builder(chapter)}" }
+  let(:csv_heading_row) { "#{heading.goods_nomenclature_sid},#{heading.goods_nomenclature_item_id},0,\"\",#{heading.producline_suffix},#{described_class.api_path_builder(heading)}" }
   let(:csv_commodity_row) { "#{goods_nomenclature.goods_nomenclature_sid},#{goods_nomenclature.goods_nomenclature_item_id},#{goods_nomenclature.number_indents},\"\",#{goods_nomenclature.producline_suffix},#{described_class.api_path_builder(goods_nomenclature)}" }
 
   context 'when GNs for a section are requested' do
