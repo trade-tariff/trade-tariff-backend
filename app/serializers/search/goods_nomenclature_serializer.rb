@@ -33,7 +33,7 @@ module Search
         ancestor_13_description_indexed:,
         guides:,
         guide_ids:,
-        declarable: declarable?,
+        declarable: path_declarable?,
       }
 
       serializable.merge(serializable_classifications)
@@ -48,7 +48,7 @@ module Search
         .name
 
       if class_name == 'Commodity'
-        goods_nomenclature.declarable? ? 'Commodity' : 'Subheading'
+        goods_nomenclature.path_declarable? ? 'Commodity' : 'Subheading'
       else
         class_name
       end
@@ -63,13 +63,13 @@ module Search
     end
 
     def search_references
-      ancestors.reverse.each_with_object([declarable_search_references]) { |serialized_ancestor, acc|
+      path_ancestors.reverse.each_with_object([declarable_search_references]) { |serialized_ancestor, acc|
         acc.prepend(serialized_ancestor[:search_references])
       }.join(' ')
     end
 
     def search_intercept_terms
-      ancestors.reverse.each_with_object([intercept_terms]) { |serialized_ancestor, acc|
+      path_ancestors.reverse.each_with_object([intercept_terms]) { |serialized_ancestor, acc|
         next if serialized_ancestor[:intercept_terms].blank?
 
         acc.prepend(serialized_ancestor[:intercept_terms])
@@ -77,7 +77,7 @@ module Search
     end
 
     def ancestors
-      @ancestors ||= super.map do |ancestor|
+      @ancestors ||= path_ancestors.map do |ancestor|
         {
           id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
@@ -140,7 +140,7 @@ module Search
     end
 
     def facet_classification
-      @facet_classification ||= if declarable?
+      @facet_classification ||= if path_declarable?
                                   Beta::Search::FacetClassification::Declarable.build(self)
                                 else
                                   Beta::Search::FacetClassification::NonDeclarable.build(self)

@@ -39,7 +39,7 @@ class GoodsNomenclature < Sequel::Model
   many_to_many :guides, left_key: :goods_nomenclature_sid,
                         join_table: :guides_goods_nomenclatures
 
-  one_to_many :ancestors, class_name: name, class: self do |_ds|
+  one_to_many :path_ancestors, class_name: name, class: self do |_ds|
     if path.present?
       GoodsNomenclature
         .actual
@@ -66,7 +66,7 @@ class GoodsNomenclature < Sequel::Model
       .where(path:)
   end
 
-  one_to_many :children, class_name: name, class: self do |_ds|
+  one_to_many :path_children, class_name: name, class: self do |_ds|
     child_path = Sequel.pg_array(path + [goods_nomenclature_sid], :integer)
 
     GoodsNomenclature
@@ -218,12 +218,12 @@ class GoodsNomenclature < Sequel::Model
     !!goods_nomenclature_item_id.match(/\A\d{2}00000000\z/)
   end
 
-  def declarable?
-    children.none? && producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+  def path_declarable?
+    path_children.none? && producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
   end
 
   def classifiable_goods_nomenclatures
-    ancestors.dup.push(self).reverse
+    path_ancestors.dup.push(self).reverse
   end
 
   def intercept_terms
