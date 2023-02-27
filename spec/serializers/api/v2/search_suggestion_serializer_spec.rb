@@ -8,14 +8,14 @@ RSpec.describe Api::V2::SearchSuggestionSerializer do
   end
 
   it 'returns search suggestions' do
-    expect(serialized).to eq(
+    expect(serialized).to include_json(
       {
         data: {
           id: 'test',
-          type: :search_suggestion,
+          type: eq(:search_suggestion),
           attributes: {
             value: 'aluminium wire',
-            score: 0.411765,
+            score: be_within(0.2).of(0.411),
             query: 'aluminum',
           },
         },

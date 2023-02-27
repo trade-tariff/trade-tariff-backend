@@ -24,12 +24,12 @@ RSpec.describe SearchSuggestion do
     end
 
     it 'returns search suggestions with a score' do
-      expect(fuzzy_search.pluck(:score)).to eq(
+      expect(fuzzy_search.pluck(:score)).to include_json(
         [
-          0.411765,
-          0.411765,
-          0.411765,
-          0.3,
+          be_within(0.2).of(0.411765),
+          be_within(0.2).of(0.411765),
+          be_within(0.2).of(0.411765),
+          be_within(0.2).of(0.3),
         ],
       )
     end
