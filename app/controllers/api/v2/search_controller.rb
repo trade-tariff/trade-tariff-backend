@@ -6,8 +6,15 @@ module Api
       end
 
       def suggestions
-        suggestions = Api::V2::SuggestionsService.new.perform
-        render json: Api::V2::SearchSuggestionSerializer.new(suggestions).serializable_hash
+        render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
+      end
+
+      private
+
+      def matching_suggestions
+        return SearchSuggestion.fuzzy_search(params[:q]) if params[:q].present?
+
+        []
       end
     end
   end
