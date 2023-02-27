@@ -21,7 +21,7 @@ module Api
         end
 
         def commodities
-          @commodities ||= CommodityPresenter.wrap(descendants, @search_reference_counts)
+          @commodities ||= CommodityPresenter.wrap(path_descendants, @search_reference_counts)
         end
 
         def commodity_ids

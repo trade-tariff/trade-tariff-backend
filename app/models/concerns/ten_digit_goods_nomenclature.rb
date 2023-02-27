@@ -95,7 +95,7 @@ module TenDigitGoodsNomenclature
     end
 
     def fast_declarable?
-      non_grouping? && descendants_dataset.count.zero?
+      non_grouping? && path_descendants_dataset.count.zero?
     end
 
     def non_grouping?

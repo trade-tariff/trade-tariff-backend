@@ -425,71 +425,71 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#ancestors' do
+  describe '#path_ancestors' do
     context 'when the goods nomenclature has ancestors' do
-      subject(:ancestors) { create(:goods_nomenclature, :with_ancestors).ancestors }
+      subject(:ancestors) { create(:goods_nomenclature, :with_ancestors).path_ancestors }
 
       it { expect(ancestors).to include(an_instance_of(described_class)) }
     end
 
     context 'when the goods nomenclature has no ancestors' do
-      subject(:ancestors) { create(:goods_nomenclature, :without_ancestors).ancestors }
+      subject(:ancestors) { create(:goods_nomenclature, :without_ancestors).path_ancestors }
 
       it { expect(ancestors).to be_empty }
     end
   end
 
-  describe '#parent' do
+  describe '#path_parent' do
     context 'when the goods nomenclature has an immediate parent' do
-      subject(:parent) { create(:goods_nomenclature, :with_parent).parent }
+      subject(:parent) { create(:goods_nomenclature, :with_parent).path_parent }
 
       it { expect(parent).to be_a(described_class) }
     end
 
     context 'when the goods nomenclature has no parent' do
-      subject(:parent) { create(:goods_nomenclature, :without_parent).parent }
+      subject(:parent) { create(:goods_nomenclature, :without_parent).path_parent }
 
       it { expect(parent).to be_nil }
     end
   end
 
-  describe '#siblings' do
+  describe '#path_siblings' do
     context 'when the goods nomenclature has siblings' do
-      subject(:siblings) { create(:goods_nomenclature, :with_siblings).siblings }
+      subject(:siblings) { create(:goods_nomenclature, :with_siblings).path_siblings }
 
       it { expect(siblings).to include(an_instance_of(described_class)) }
     end
 
     context 'when the goods nomenclature has no siblings' do
-      subject(:siblings) { create(:goods_nomenclature, :without_siblings).siblings }
+      subject(:siblings) { create(:goods_nomenclature, :without_siblings).path_siblings }
 
       it { expect(siblings).to be_empty }
     end
   end
 
-  describe '#children' do
+  describe '#path_children' do
     context 'when the goods nomenclature has children' do
-      subject(:child_sids) { create(:goods_nomenclature, :with_children).children.count }
+      subject(:child_sids) { create(:goods_nomenclature, :with_children).path_children.count }
 
       it { is_expected.to eq(1) }
     end
 
     context 'when the goods nomenclature has no children' do
-      subject(:child_sids) { create(:goods_nomenclature, :without_children).children.map(&:goods_nomenclature_sid) }
+      subject(:child_sids) { create(:goods_nomenclature, :without_children).path_children.map(&:goods_nomenclature_sid) }
 
       it { is_expected.to be_empty }
     end
   end
 
-  describe '#descendants' do
+  describe '#path_descendants' do
     context 'when the goods nomenclature has descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).descendants.length }
+      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).path_descendants.length }
 
       it { is_expected.to eq(2) }
     end
 
     context 'when the goods nomenclature has no descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).descendants.length }
+      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).path_descendants.length }
 
       it { is_expected.to be_zero }
     end
@@ -523,29 +523,29 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#declarable?' do
+  describe '#path_declarable?' do
     context 'when the goods nomenclature has children and a non grouping suffix' do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :with_children, :non_grouping) }
 
-      it { is_expected.not_to be_declarable }
+      it { is_expected.not_to be_path_declarable }
     end
 
     context 'when the goods nomenclature has children and a grouping suffix' do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :with_children, :grouping) }
 
-      it { is_expected.not_to be_declarable }
+      it { is_expected.not_to be_path_declarable }
     end
 
     context 'when the goods nomenclature has no children and a non grouping suffix' do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :without_children, :non_grouping) }
 
-      it { is_expected.to be_declarable }
+      it { is_expected.to be_path_declarable }
     end
 
     context 'when the goods nomenclature has no children and a grouping suffix' do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :without_children, :grouping) }
 
-      it { is_expected.not_to be_declarable }
+      it { is_expected.not_to be_path_declarable }
     end
   end
 

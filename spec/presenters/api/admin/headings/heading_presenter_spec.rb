@@ -4,8 +4,8 @@ RSpec.describe Api::Admin::Headings::HeadingPresenter do
   let(:counts) do
     {
       heading.goods_nomenclature_sid => 1,
-      heading.descendants.first.goods_nomenclature_sid => 3,
-      heading.descendants.last.goods_nomenclature_sid => 3,
+      heading.path_descendants.first.goods_nomenclature_sid => 3,
+      heading.path_descendants.last.goods_nomenclature_sid => 3,
     }
   end
 
@@ -27,7 +27,7 @@ RSpec.describe Api::Admin::Headings::HeadingPresenter do
     it { is_expected.to have_attributes values: heading.values }
     it { is_expected.to have_attributes search_references_count: 1 }
     it { expect(presented.commodities).to have_attributes length: 2 }
-    it { expect(presented.commodities.first).to have_attributes values: heading.descendants.first.values }
+    it { expect(presented.commodities.first).to have_attributes values: heading.path_descendants.first.values }
     it { expect(presented.commodities.first).to have_attributes search_references_count: 3 }
   end
 end
