@@ -31,7 +31,7 @@ module Api
       end
 
       def search_params
-        { spell:, filters: }
+        { expand_synonyms:, spell:, filters: }
       end
 
       def filters
@@ -52,6 +52,10 @@ module Api
 
       def spell
         params[:spell].presence || '1'
+      end
+
+      def expand_synonyms
+        params[:expand_synonyms].presence || '1'
       end
     end
   end

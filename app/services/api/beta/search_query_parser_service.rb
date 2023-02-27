@@ -3,9 +3,10 @@ module Api
     class SearchQueryParserService
       delegate :client, to: :class
 
-      def initialize(original_search_query, spell: '1', should_search: true)
+      def initialize(original_search_query, spell: '1', expand_synonyms: '1', should_search: true)
         @original_search_query = original_search_query
         @spell = spell
+        @expand_synonyms = expand_synonyms
         @should_search = should_search
       end
 
@@ -13,7 +14,12 @@ module Api
         if null_result?
           ::Beta::Search::SearchQueryParserResult::Null.build('original_search_query' => original_search_query)
         else
-          result_attributes = client.get('tokens', q: original_search_query, spell:).body
+          result_attributes = client.get(
+            'tokens',
+            q: original_search_query,
+            spell:,
+            expand_synonyms:,
+          ).body
 
           ::Beta::Search::SearchQueryParserResult::Standard.build(result_attributes)
         end
@@ -28,7 +34,7 @@ module Api
 
       private
 
-      attr_reader :original_search_query, :spell
+      attr_reader :original_search_query, :spell, :expand_synonyms
 
       def null_result?
         original_search_query.blank? || !@should_search || AggregatedSynonym.exists?(@original_search_query)

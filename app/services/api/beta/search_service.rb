@@ -52,7 +52,12 @@ module Api
       end
 
       def search_query_parser_result
-        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, spell: @search_params[:spell], should_search: should_search?).call
+        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(
+          @search_query,
+          spell: @search_params[:spell],
+          expand_synonyms: @search_params[:expand_synonyms],
+          should_search: should_search?,
+        ).call
       end
 
       def should_search?
@@ -76,7 +81,7 @@ module Api
       end
 
       def normalised_search_query
-        @normalised_search_query ||= @search_query.downcase.scan(/\w+/).join(' ')
+        @normalised_search_query ||= @search_query.downcase
       end
     end
   end

@@ -17,6 +17,7 @@ FactoryBot.define do
     noun_chunks { ['halibut sausage stenolepis cheese binocular parsnip pharmacy paper'] }
     original_search_query { 'halbiut sausadge stenolepsis chese bnoculars parnsip farmacy pape' }
     corrected_search_query { 'halibut sausage stenolepis cheese binocular parsnip pharmacy paper' }
+    expanded_search_query { 'fish sausage stenolepis cheese binocular root vegetables pharmacy paper' }
     null_result { false }
 
     trait :no_hits do

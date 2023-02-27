@@ -7,6 +7,7 @@ module Api
 
       attributes :corrected_search_query,
                  :original_search_query,
+                 :expanded_search_query,
                  :verbs,
                  :adjectives,
                  :nouns,
