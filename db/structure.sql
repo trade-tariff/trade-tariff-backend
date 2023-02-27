@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 10.21 (Debian 10.21-1.pgdg90+1)
--- Dumped by pg_dump version 14.6
+-- Dumped by pg_dump version 15.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -16,17 +16,38 @@ SET client_min_messages = warning;
 SET row_security = off;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
+-- Name: public; Type: SCHEMA; Schema: -; Owner: -
 --
 
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
+-- *not* creating schema, since initdb creates it
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
+-- Name: citext; Type: EXTENSION; Schema: -; Owner: -
 --
 
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
+CREATE EXTENSION IF NOT EXISTS citext WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION citext; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION citext IS 'data type for case-insensitive character strings';
+
+
+--
+-- Name: pg_trgm; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pg_trgm WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pg_trgm; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pg_trgm IS 'text similarity measurement and index searching based on trigrams';
 
 
 --
@@ -6714,6 +6735,18 @@ ALTER SEQUENCE public.search_references_id_seq OWNED BY public.search_references
 
 
 --
+-- Name: search_suggestions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.search_suggestions (
+    id text NOT NULL,
+    value text NOT NULL,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
 -- Name: section_notes; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -8776,6 +8809,14 @@ ALTER TABLE ONLY public.schema_migrations
 
 ALTER TABLE ONLY public.search_references
     ADD CONSTRAINT search_references_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: search_suggestions search_suggestions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.search_suggestions
+    ADD CONSTRAINT search_suggestions_pkey PRIMARY KEY (id, value);
 
 
 --
@@ -10866,6 +10907,13 @@ CREATE INDEX search_references_goods_nomenclature_sid_index ON public.search_ref
 
 
 --
+-- Name: search_suggestions_value_trgm_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX search_suggestions_value_trgm_idx ON public.search_suggestions USING gist (value public.gist_trgm_ops);
+
+
+--
 -- Name: section_notes_section_id_index; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -11068,9 +11116,9 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20181029112658_change_size
 INSERT INTO "schema_migrations" ("filename") VALUES ('20181211165412_create_guides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20190418162242_add_order_number_index_on_measure.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20191014165200_create_chemicals.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20200905141023_create_forum_links.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20180822124608_add_tariff_update_cds_error.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20191022065944_update_filename_size.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20200905141023_create_forum_links.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006192051_add_filename_to_oplog_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20201006193537_fix_index_on_chapters_sections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20210108162807_add_hjid_to_geographical_areas_oplog.rb');
@@ -11108,3 +11156,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230202142148_adds_fields
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230203090107_tweak_footnote_type_id_field_length.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230202192506_adds_index_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230207114821_drop_referenced_id_on_search_references.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230225194140_create_table_suggestions.rb');
