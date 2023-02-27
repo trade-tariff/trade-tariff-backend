@@ -24,6 +24,9 @@
   PopulateChangesTableWorker:
     cron: "30 4 * * *"
     description: "Populates the changes table"
+  PopulateSearchSuggestionsWorker:
+    cron: "0 18 * * *"
+    description: "Populates search suggestions which are used in the frontend"
   UKUpdatesSynchronizerWorker:
     cron: "0 5 * * *"
     description: "Runs ETL of CDS files and populates indexes"
