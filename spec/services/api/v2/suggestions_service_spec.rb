@@ -1,29 +1,16 @@
 RSpec.describe Api::V2::SuggestionsService do
-  describe '#perform' do
-    subject(:suggestions) do
-      commodities && described_class.new.perform
-    end
+  subject(:call) { described_class.new.perform }
 
-    let(:commodities) { create_list :commodity, 3 }
-    let(:commodity_ids) { commodities.map(&:goods_nomenclature_item_id) }
+  before do
+    create(:search_reference, :with_heading, title: 'gold ore')
+    create(:chapter, goods_nomenclature_item_id: '0100000000')
+    create(:heading, goods_nomenclature_item_id: '0101000000')
+    create(:commodity, goods_nomenclature_item_id: '0101090000')
 
-    it { is_expected.to have_attributes length: commodities.length }
-    it { is_expected.to all be_instance_of Api::V2::SuggestionPresenter }
-
-    describe 'suggestions' do
-      subject { suggestions.map(&:value) }
-
-      it { is_expected.to match_array commodity_ids }
-
-      context 'with hidden_goods_nomenclature_item_ids' do
-        before do
-          create :hidden_goods_nomenclature,
-                 goods_nomenclature_item_id: commodities.first.goods_nomenclature_item_id
-        end
-
-        it { is_expected.to have_attributes length: 2 }
-        it { is_expected.not_to include commodities.first.goods_nomenclature_item_id }
-      end
-    end
+    create(:chapter, :hidden, goods_nomenclature_item_id: '0200000000')
+    create(:heading, :hidden, goods_nomenclature_item_id: '0202000000')
+    create(:commodity, :hidden, goods_nomenclature_item_id: '0202090000')
   end
+
+  it { expect(call.map(&:value)).to eq(['01', '0101', '0101', '0101090000', 'gold ore']) }
 end
