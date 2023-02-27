@@ -49,7 +49,7 @@ class GoodsNomenclature < Sequel::Model
     end
   end
 
-  one_to_one :parent, class_name: name, class: self do |_ds|
+  one_to_one :path_parent, class_name: name, class: self do |_ds|
     parent_sid = !heading? ? path.last : chapter.goods_nomenclature_sid
 
     if parent_sid.present?
@@ -59,7 +59,7 @@ class GoodsNomenclature < Sequel::Model
     end
   end
 
-  one_to_many :siblings, class_name: name, class: self do |_ds|
+  one_to_many :path_siblings, class_name: name, class: self do |_ds|
     GoodsNomenclature
       .actual
       .exclude(goods_nomenclature_sid:)
@@ -74,7 +74,7 @@ class GoodsNomenclature < Sequel::Model
       .where(path: child_path)
   end
 
-  one_to_many :descendants, class_name: name, class: self do |_ds|
+  one_to_many :path_descendants, class_name: name, class: self do |_ds|
     GoodsNomenclature
       .actual
       .where('? = ANY(path)', goods_nomenclature_sid)

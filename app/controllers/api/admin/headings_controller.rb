@@ -21,7 +21,7 @@ module Api
                           .non_grouping
                           .non_hidden
                           .by_code(params[:id])
-                          .eager(descendants: %i[goods_nomenclature_descriptions descendants])
+                          .eager(path_descendants: %i[goods_nomenclature_descriptions path_descendants])
                           .limit(1)
                           .take
       end
@@ -35,7 +35,7 @@ module Api
       end
 
       def applicable_goods_nomenclature_sids
-        heading.descendants.pluck(:goods_nomenclature_sid).tap { |sids| sids << heading.goods_nomenclature_sid }
+        heading.path_descendants.pluck(:goods_nomenclature_sid).tap { |sids| sids << heading.goods_nomenclature_sid }
       end
     end
   end

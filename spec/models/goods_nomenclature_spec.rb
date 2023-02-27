@@ -439,29 +439,29 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#parent' do
+  describe '#path_parent' do
     context 'when the goods nomenclature has an immediate parent' do
-      subject(:parent) { create(:goods_nomenclature, :with_parent).parent }
+      subject(:parent) { create(:goods_nomenclature, :with_parent).path_parent }
 
       it { expect(parent).to be_a(described_class) }
     end
 
     context 'when the goods nomenclature has no parent' do
-      subject(:parent) { create(:goods_nomenclature, :without_parent).parent }
+      subject(:parent) { create(:goods_nomenclature, :without_parent).path_parent }
 
       it { expect(parent).to be_nil }
     end
   end
 
-  describe '#siblings' do
+  describe '#path_siblings' do
     context 'when the goods nomenclature has siblings' do
-      subject(:siblings) { create(:goods_nomenclature, :with_siblings).siblings }
+      subject(:siblings) { create(:goods_nomenclature, :with_siblings).path_siblings }
 
       it { expect(siblings).to include(an_instance_of(described_class)) }
     end
 
     context 'when the goods nomenclature has no siblings' do
-      subject(:siblings) { create(:goods_nomenclature, :without_siblings).siblings }
+      subject(:siblings) { create(:goods_nomenclature, :without_siblings).path_siblings }
 
       it { expect(siblings).to be_empty }
     end
@@ -481,15 +481,15 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#descendants' do
+  describe '#path_descendants' do
     context 'when the goods nomenclature has descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).descendants.length }
+      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).path_descendants.length }
 
       it { is_expected.to eq(2) }
     end
 
     context 'when the goods nomenclature has no descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).descendants.length }
+      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).path_descendants.length }
 
       it { is_expected.to be_zero }
     end
