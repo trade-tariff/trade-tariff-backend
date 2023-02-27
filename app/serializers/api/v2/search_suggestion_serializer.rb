@@ -6,6 +6,14 @@ module Api
       set_type :search_suggestion
 
       attribute :value
+
+      attribute :score do |search_suggestion|
+        search_suggestion[:score]
+      end
+
+      attribute :query do |search_suggestion|
+        search_suggestion[:query].to_s.gsub(/\\/, '')
+      end
     end
   end
 end
