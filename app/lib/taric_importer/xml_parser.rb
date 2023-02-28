@@ -42,7 +42,9 @@ class TaricImporter
         key = strip_namespace(key)
 
         if key == @target
-          @target_handler.process_xml_node @stack[-1]
+          node = remove_content_keys(@stack[-1])
+
+          @target_handler.process_xml_node node
           @in_target = false
         end
 
@@ -60,7 +62,7 @@ class TaricImporter
           @node[key] = [@node[key], child]
         else
           @node[key] = if child.keys == [CONTENT_KEY]
-                         child[CONTENT_KEY]
+                         child.delete(CONTENT_KEY)
                        else
                          child
                        end
@@ -80,6 +82,16 @@ class TaricImporter
 
       def strip_namespace(key)
         key.match(/(?<namespace>\w+:)?(?<key>.+)/)[:key]
+      end
+
+      def remove_content_keys(node)
+        node.delete(CONTENT_KEY)
+        node.each do |k, v|
+          if v.is_a?(Hash)
+            remove_content_keys(v)
+          end
+        end
+        node
       end
     end
   end

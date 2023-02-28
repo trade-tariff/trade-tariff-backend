@@ -42,7 +42,8 @@ class CdsImporter
       def end_element(key)
         @depth -= 1
         if @depth == @target_depth && @targets.include?(key)
-          @target_handler.process_xml_node(key, @stack[-1])
+          node = remove_content_keys(@stack[-1])
+          @target_handler.process_xml_node(key, node)
           @in_target = false
         end
         return unless @in_target
@@ -66,6 +67,16 @@ class CdsImporter
 
       def error(msg)
         raise(CdsImporter::ImportException, msg)
+      end
+
+      def remove_content_keys(node)
+        node.delete(CONTENT_KEY)
+        node.each do |_k, v|
+          if v.is_a?(Hash)
+            remove_content_keys(v)
+          end
+        end
+        node
       end
     end
   end
