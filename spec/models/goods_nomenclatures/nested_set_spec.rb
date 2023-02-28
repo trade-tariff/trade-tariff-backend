@@ -328,4 +328,24 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       end
     end
   end
+
+  describe '#ns_declarable?' do
+    context 'with descendants' do
+      subject { create :commodity, :non_grouping, :with_children }
+
+      it { is_expected.not_to be_ns_declarable }
+    end
+
+    context 'without descendants' do
+      subject { create :commodity, :non_grouping, :without_children }
+
+      it { is_expected.to be_ns_declarable }
+    end
+
+    context 'with grouping productline suffix' do
+      subject { create :commodity, :grouping, :without_children }
+
+      it { is_expected.not_to be_ns_declarable }
+    end
+  end
 end

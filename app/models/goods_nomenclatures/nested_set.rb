@@ -168,5 +168,9 @@ module GoodsNomenclatures
     def depth
       values.key?(:depth) ? values[:depth] : tree_node.depth
     end
+
+    def ns_declarable?
+      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && ns_children.empty?
+    end
   end
 end
