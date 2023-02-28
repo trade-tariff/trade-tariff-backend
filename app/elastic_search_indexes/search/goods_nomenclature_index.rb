@@ -13,7 +13,7 @@ module Search
         goods_nomenclature_indents
         chapter
         heading
-        ancestors
+        path_ancestors
       ]
     end
 
