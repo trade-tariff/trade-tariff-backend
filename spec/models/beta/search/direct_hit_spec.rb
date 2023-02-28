@@ -1,7 +1,9 @@
 RSpec.describe Beta::Search::DirectHit do
   describe '#build' do
-    shared_examples 'a direct hit' do |search_result|
+    shared_examples 'a direct hit' do |*search_result_traits|
       subject(:direct_hit) { described_class.build(search_result) }
+
+      let(:search_result) { build(:search_result, *search_result_traits) }
 
       it { is_expected.to be_a(described_class) }
       it { expect(direct_hit.goods_nomenclature_class).to be_in(%w[Heading Chapter Subheading Commodity]) }
@@ -13,16 +15,18 @@ RSpec.describe Beta::Search::DirectHit do
       it { expect(direct_hit.ancestors).to be_empty }
     end
 
-    shared_examples 'not a direct hit' do |search_result|
+    shared_examples 'not a direct hit' do |*search_result_traits|
       subject(:direct_hit) { described_class.build(search_result) }
+
+      let(:search_result) { build(:search_result, *search_result_traits) }
 
       it { is_expected.to be_nil }
     end
 
-    it_behaves_like 'a direct hit', FactoryBot.build(:search_result, :single_hit)
-    it_behaves_like 'a direct hit', FactoryBot.build(:search_result, :with_search_reference)
-    it_behaves_like 'a direct hit', FactoryBot.build(:search_result, :with_numeric_search_query)
-    it_behaves_like 'not a direct hit', FactoryBot.build(:search_result, :multiple_hits)
-    it_behaves_like 'not a direct hit', FactoryBot.build(:search_result, :no_hits)
+    it_behaves_like 'a direct hit', :single_hit
+    it_behaves_like 'a direct hit', :with_search_reference
+    it_behaves_like 'a direct hit', :with_numeric_search_query
+    it_behaves_like 'not a direct hit', :multiple_hits
+    it_behaves_like 'not a direct hit', :no_hits
   end
 end
