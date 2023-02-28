@@ -1,6 +1,8 @@
 RSpec.describe SearchReference do
-  shared_examples_for 'a setter callback' do |referenced|
+  shared_examples_for 'a setter callback' do |referenced_factory|
     subject(:search_reference) { described_class.new(title: 'foo', referenced:) }
+
+    let(:referenced) { create(referenced_factory) }
 
     it 'assigns the correct attributes' do
       expect(search_reference).to have_attributes(
@@ -13,9 +15,9 @@ RSpec.describe SearchReference do
     end
   end
 
-  it_behaves_like 'a setter callback', FactoryBot.create(:chapter)
-  it_behaves_like 'a setter callback', FactoryBot.create(:heading)
-  it_behaves_like 'a setter callback', FactoryBot.create(:commodity)
+  it_behaves_like 'a setter callback', :chapter
+  it_behaves_like 'a setter callback', :heading
+  it_behaves_like 'a setter callback', :commodity
 
   describe '#referenced' do
     subject(:search_reference) { described_class.find(title: 'foo') }
