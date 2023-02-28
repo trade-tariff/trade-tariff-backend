@@ -69,9 +69,9 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has ancestors' do |context_name, node, ancestors|
         context "with #{context_name}" do
-          subject { tree[node].ns_ancestors.map(&:goods_nomenclature_sid) }
+          subject { tree[node].ns_ancestors }
 
-          it { is_expected.to eq tree.values_at(*ancestors).map(&:goods_nomenclature_sid) }
+          it { is_expected.to eq_pk tree.values_at(*ancestors) }
         end
       end
 
@@ -85,17 +85,17 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has descendants' do |context_name, node, descendants|
         context "with #{context_name}" do
-          subject { tree[node].ns_descendants.map(&:goods_nomenclature_sid) }
+          subject { tree[node].ns_descendants }
 
-          it { is_expected.to eq tree.values_at(*descendants).map(&:goods_nomenclature_sid) }
+          it { is_expected.to eq_pk tree.values_at(*descendants) }
         end
       end
 
       shared_examples 'it has children' do |context_name, node, children|
         context "with #{context_name}" do
-          subject { tree[node].ns_children.map(&:goods_nomenclature_sid) }
+          subject { tree[node].ns_children }
 
-          it { is_expected.to eq tree.values_at(*children).map(&:goods_nomenclature_sid) }
+          it { is_expected.to eq_pk tree.values_at(*children) }
         end
       end
 
