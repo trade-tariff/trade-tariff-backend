@@ -27,6 +27,7 @@ class TaricImporter
         return unless @in_target
 
         @stack << @node = {}
+        @node[CONTENT_KEY] = ''
       end
 
       def characters(val)
@@ -34,7 +35,7 @@ class TaricImporter
         # skip assigning any values that start with newline characters
         return if !@in_target || val =~ EXTRA_CONTENT
 
-        @node[CONTENT_KEY] = val
+        @node[CONTENT_KEY] += val if val
       end
 
       def end_element(key)
