@@ -138,23 +138,29 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           it { is_expected.to eq expected_ancestor_item_ids }
         end
 
-        xcontext 'when eager loading' do
+        context 'when eager loading' do
           let(:eager_loaded) { commodities.eager(:ns_ancestors).all.first }
 
           let :commodities do
-            GoodsNomenclature.where(goods_nomenclature_sid: tree[:subheading].goods_nomenclature_sid)
+            GoodsNomenclature.where(goods_nomenclature_sid: tree[:subsubheading].goods_nomenclature_sid)
           end
 
           context 'for eager loaded goods nomenclature' do
-            subject { eager_loaded.associations[:parent].goods_nomenclature_sid }
+            subject { eager_loaded.associations[:ns_parent] }
 
-            it { is_expected.to eq tree[:heading].goods_nomenclature_sid }
+            it { is_expected.to eq_pk tree[:subheading] }
           end
 
-          context 'for eager loaded goods nomenclatures child' do
-            subject { eager_loaded.children.first.associations[:parent].goods_nomenclature_sid }
+          context 'for eager loaded goods nomenclatures parents parent' do
+            subject { eager_loaded.associations[:ns_parent].associations[:ns_parent] }
 
-            it { is_expected.to eq tree[:chapter].goods_nomenclature_sid }
+            it { is_expected.to eq_pk tree[:heading] }
+          end
+
+          context 'for eager loaded goods nomenclatures parents ancestors' do
+            subject { eager_loaded.associations[:ns_parent].associations[:ns_ancestors] }
+
+            it { is_expected.to eq_pk tree.values_at(:chapter, :heading) }
           end
         end
       end

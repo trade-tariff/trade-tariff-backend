@@ -19,6 +19,7 @@ module GoodsNomenclatures
                    right_key: :goods_nomenclature_sid,
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :ancestor_nodes),
+                   after_load: :recursive_ancestor_populator,
                    read_only: true do |ds|
         ds.order(:ancestor_nodes__depth)
           .with_validity_dates(:ancestor_nodes)
@@ -121,6 +122,17 @@ module GoodsNomenclatures
               )
           end
       end
+    end
+
+    def recursive_ancestor_populator(ancestors)
+      @associations ||= { ns_ancestors: ancestors }
+
+      parents_ancestors = ancestors.dup
+      parent = parents_ancestors.pop
+      @associations[:ns_parent] ||= parent
+      return if ancestors.empty?
+
+      parent.recursive_ancestor_populator(parents_ancestors)
     end
 
     def recursive_descendant_populator(descendants, parent = nil)
