@@ -8,16 +8,24 @@ class SearchSuggestion < Sequel::Model
 
   dataset_module do
     def fuzzy_search(query)
-      suggestions = where(id: distinct_values(query).from_self.select(:id))
+      if query =~ /^\d{10}$/
+        where(value: query)
         .with_query(query)
         .with_score(query)
-        .order(Sequel.desc(:score))
-        .limit(10)
+        .limit(1)
         .all
+      else
+        suggestions = where(id: distinct_values(query).from_self.select(:id))
+          .with_query(query)
+          .with_score(query)
+          .order(Sequel.desc(:score))
+          .limit(10)
+          .all
 
-      suggestions.select do |suggestion|
-        # ilike filters can return suggestions with a score of 0
-        suggestion[:score] > ILIKE_SIMILARITY_THRESHOLD
+        suggestions.select do |suggestion|
+          # ilike filters can return suggestions with a score of 0
+          suggestion[:score] > ILIKE_SIMILARITY_THRESHOLD
+        end
       end
     end
 

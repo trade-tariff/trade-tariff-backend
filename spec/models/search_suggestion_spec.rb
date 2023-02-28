@@ -37,5 +37,23 @@ RSpec.describe SearchSuggestion do
     it 'returns search suggestions with a query' do
       expect(fuzzy_search.pluck(:query)).to all(eq(query))
     end
+
+    context 'when the query is a 10 digit number' do
+      let(:query) { '1234567890' }
+
+      before do
+        create(:search_suggestion, id: 'abc', value: '1234567890')
+        create(:search_suggestion, id: 'def', value: '1234567890')
+        create(:search_suggestion, value: '1234567891')
+      end
+
+      it 'returns search suggestions' do
+        expect(fuzzy_search.pluck(:value)).to eq(
+          %w[
+            1234567890
+          ],
+        )
+      end
+    end
   end
 end
