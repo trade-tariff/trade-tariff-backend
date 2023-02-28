@@ -130,7 +130,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 goods_nomenclature_item_id: String,
                 producline_suffix: String,
                 description: String,
-                formatted_description: nil,
+                formatted_description: String,
                 validity_start_date: String,
                 validity_end_date: nil,
               },
