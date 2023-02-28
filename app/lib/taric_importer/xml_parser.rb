@@ -62,7 +62,7 @@ class TaricImporter
           @node[key] = [@node[key], child]
         else
           @node[key] = if child.keys == [CONTENT_KEY]
-                         child.delete(CONTENT_KEY)
+                         child[CONTENT_KEY]
                        else
                          child
                        end
@@ -86,7 +86,7 @@ class TaricImporter
 
       def remove_content_keys(node)
         node.delete(CONTENT_KEY)
-        node.each do |k, v|
+        node.each do |_k, v|
           if v.is_a?(Hash)
             remove_content_keys(v)
           end
