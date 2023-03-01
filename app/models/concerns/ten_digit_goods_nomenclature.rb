@@ -96,9 +96,7 @@ module TenDigitGoodsNomenclature
     end
 
     def declarable?
-      cache_key = "commodity-#{goods_nomenclature_sid}-#{point_in_time&.to_date&.iso8601}-is-declarable?"
-
-      Rails.cache.fetch(cache_key) do
+      Rails.cache.fetch(declarable_cache_key) do
         non_grouping? && children.none?
       end
     end
@@ -209,6 +207,10 @@ module TenDigitGoodsNomenclature
 
     def preloaded_children
       Thread.current[:heading_commodities].try(:fetch, heading_short_code, {})
+    end
+
+    def declarable_cache_key
+      "commodity-#{goods_nomenclature_sid}-#{point_in_time&.to_date&.iso8601}-is-declarable?"
     end
   end
 end

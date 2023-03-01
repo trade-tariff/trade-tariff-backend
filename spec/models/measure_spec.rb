@@ -75,6 +75,8 @@ RSpec.describe Measure do
         (67883, 68304, '1998-01-01 00:00:00', 2, '0805201000', '80', '2013-08-02 20:03:55', NULL, 38832, 'C', NULL),
         (69920, 70329, '1999-01-01 00:00:00', 3, '0805201005', '80', '2013-08-02 20:04:48', NULL, 40421, 'C', NULL);
                              })
+
+        GoodsNomenclatures::TreeNode.refresh!
       end
 
       it { expect(described_class.with_modification_regulations.all.count).to eq 3 }

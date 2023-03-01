@@ -2,6 +2,8 @@ class Chapter < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
 
+  prepend GoodsNomenclatures::Overrides::Chapter if TradeTariffBackend.use_nested_set?
+
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000')
               .order(
                 Sequel.asc(:goods_nomenclature_item_id),

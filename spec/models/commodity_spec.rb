@@ -502,7 +502,7 @@ RSpec.describe Commodity do
       end
 
       let!(:ancestor_commodity) do
-        create :commodity, :with_description,
+        create :commodity, :with_description, :without_indent,
                goods_nomenclature_item_id: '2204218900',
                producline_suffix: '80',
                validity_start_date: Date.new(1995, 1, 1)

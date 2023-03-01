@@ -1,5 +1,6 @@
 class Heading < GoodsNomenclature
   include Declarable
+  prepend GoodsNomenclatures::Overrides::Heading if TradeTariffBackend.use_nested_set?
 
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
