@@ -102,17 +102,24 @@ RSpec.describe Api::V2::SearchController do
   end
 
   describe 'GET /suggestions' do
-    subject(:response) { get :suggestions }
+    context 'when a query is provided' do
+      subject(:response) { get :suggestions, params: { q: 'same' } }
 
-    before do
-      create(:heading, :with_search_reference, title: 'same')
-      create(:commodity, :with_search_reference, title: 'same')
-      create(:chapter, :with_search_reference, title: 'but different')
+      before do
+        create(:search_suggestion, value: 'same')
+        create(:search_suggestion, value: 'but different')
+      end
+
+      it { expect(response.body.scan(/same/).size).to be_positive }
+      it { expect(response.body.scan(/but different/).size).to be_zero }
+
+      it_behaves_like 'a successful jsonapi response'
     end
 
-    it { expect(response.body.scan(/same/).size).to eq(1) }
-    it { expect(response.body.scan(/but different/).size).to eq(1) }
+    context 'when no query is provided' do
+      subject(:response) { get :suggestions }
 
-    it_behaves_like 'a successful jsonapi response'
+      it_behaves_like 'a successful jsonapi response'
+    end
   end
 end

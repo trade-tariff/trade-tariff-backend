@@ -4,14 +4,23 @@ class BaseSuggestionsService
   end
 
   def perform
+    chapters = Chapter
+      .select(:goods_nomenclature_sid, :goods_nomenclature_item_id)
+      .actual
+      .non_hidden
+      .map { |chapter| handle_chapter_record(chapter) }
+
+    headings = Heading
+      .select(:goods_nomenclature_sid, :goods_nomenclature_item_id)
+      .actual
+      .non_hidden
+      .map { |heading| handle_heading_record(heading) }
+
     commodities = Commodity
           .select(:goods_nomenclature_sid, :goods_nomenclature_item_id)
           .actual
-          .distinct
-          .order(Sequel.desc(:goods_nomenclature_item_id))
-          .index_by(&:goods_nomenclature_item_id)
-          .without(*hidden_goods_nomenclature_ids)
-          .map { |_commodity_code, commodity| handle_commodity_record(commodity) }
+          .non_hidden
+          .map { |commodity| handle_commodity_record(commodity) }
 
     search_references = SearchReference
           .select(:id, :title)
@@ -19,15 +28,18 @@ class BaseSuggestionsService
           .order(Sequel.desc(:title))
           .map { |search_reference| handle_search_reference_record(search_reference) }
 
-    chemicals = Chemical
-          .select(:id, :cas)
-          .order(Sequel.desc(:cas))
-          .map { |chemical| handle_chemical_record(chemical) }
-
-    [commodities, search_references, chemicals].flatten.compact
+    [chapters, headings, commodities, search_references].flatten.compact
   end
 
   protected
+
+  def handle_chapter_record(_chapter)
+    nil
+  end
+
+  def handle_heading_record(_heading)
+    nil
+  end
 
   def handle_commodity_record(_commodity)
     nil
@@ -35,9 +47,5 @@ class BaseSuggestionsService
 
   def handle_search_reference_record(_search_reference)
     nil
-  end
-
-  def hidden_goods_nomenclature_ids
-    @hidden_goods_nomenclature_ids ||= HiddenGoodsNomenclature.codes
   end
 end

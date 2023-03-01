@@ -3,6 +3,14 @@ module Api
     class SuggestionsService < ::BaseSuggestionsService
       protected
 
+      def handle_chapter_record(chapter)
+        Api::V2::SuggestionPresenter.new(chapter.goods_nomenclature_sid, chapter.short_code)
+      end
+
+      def handle_heading_record(heading)
+        Api::V2::SuggestionPresenter.new(heading.goods_nomenclature_sid, heading.short_code)
+      end
+
       def handle_commodity_record(commodity)
         Api::V2::SuggestionPresenter.new(commodity.goods_nomenclature_sid, commodity.goods_nomenclature_item_id)
       end
