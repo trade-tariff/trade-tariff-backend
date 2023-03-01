@@ -8,6 +8,11 @@ class Subheading < GoodsNomenclature
   include TenDigitGoodsNomenclature
   include SearchReferenceable
 
+  if TradeTariffBackend.use_nested_set?
+    prepend GoodsNomenclatures::Overrides::Commodity
+    prepend GoodsNomenclatures::Overrides::Subheading
+  end
+
   def to_admin_param
     to_param
   end
