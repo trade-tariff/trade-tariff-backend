@@ -290,5 +290,9 @@ module TradeTariffBackend
     def opensearch_debug
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end
+
+    def use_nested_set?
+      ENV['USE_NESTED_SET'] == 'true'
+    end
   end
 end
