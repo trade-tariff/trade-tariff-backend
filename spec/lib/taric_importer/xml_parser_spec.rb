@@ -4,7 +4,7 @@ RSpec.describe TaricImporter::XmlParser::Reader do
       subject(:reader) { described_class.new(xml_io, 'record', handler) }
 
       let(:xml_io) { StringIO.new }
-      let(:stack) { [{}] }
+      let(:stack) { [{ __content__: '' }] }
       let(:handler) { OpenStruct.new { def process_xml_node(_attributes); end } }
 
       before do

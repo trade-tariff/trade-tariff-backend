@@ -40,6 +40,12 @@ RSpec.configure do |config|
 
   config.include_context 'with fake global rules of origin data'
 
+  config.before(:all) do
+    FileUtils.rm_rf('tmp/data/cds')
+    FileUtils.mkpath('tmp/data/cds')
+    FileUtils.cp_r('spec/fixtures/cds_samples/.', 'tmp/data/cds')
+  end
+
   config.before(:suite) do
     TradeTariffBackend.redis.flushdb
 

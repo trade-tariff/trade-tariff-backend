@@ -1,22 +1,14 @@
 RSpec.describe CdsImporter do
+  subject(:importer) { described_class.new(cds_update) }
+
   # This xml file is empty
   let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'tariff_dailyExtract_v1_20201004T235959.gzip') }
-  let(:importer) { described_class.new(cds_update) }
-
-  before(:all) do
-    FileUtils.mkpath('tmp/data/cds')
-    FileUtils.cp('spec/fixtures/cds_samples/tariff_dailyExtract_v1_20201004T235959.gzip', 'tmp/data/cds/tariff_dailyExtract_v1_20201004T235959.gzip')
-  end
 
   describe '#import' do
     it 'creates new instance of XmlProcessor' do
-      expect(CdsImporter::XmlProcessor).to receive(:new).and_call_original
+      allow(CdsImporter::XmlProcessor).to receive(:new).and_call_original
       importer.import
-    end
-
-    it 'invokes CdsImporter::XmlParser::Reader' do
-      expect_any_instance_of(CdsImporter::XmlParser::Reader).to receive(:parse)
-      importer.import
+      expect(CdsImporter::XmlProcessor).to have_received(:new).with(cds_update.filename)
     end
 
     it 'returns hash of inserted records' do
@@ -42,6 +34,15 @@ RSpec.describe CdsImporter do
 
       expect(ActiveSupport::Notifications).to have_received(:subscribe).with('cds_importer.import.operations')
     end
+
+    context 'when importing a footnote with a long description' do
+      let(:cds_update) { TariffSynchronizer::CdsUpdate.new(filename: 'footnote.gzip') }
+
+      it 'creates a footnote with a large description' do
+        importer.import
+        expect(Footnote.last.description.bytesize).to eq(5985)
+      end
+    end
   end
 
   describe 'XmlProcessor' do
@@ -51,15 +52,17 @@ RSpec.describe CdsImporter do
       it 'invokes EntityMapper' do
         allow(CdsImporter::EntityMapper).to receive(:new).with('AdditionalCode', { 'filename' => cds_update.filename }).and_call_original
 
-        expect_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_call_original
-
         processor.process_xml_node('AdditionalCode', {})
+
+        expect(CdsImporter::EntityMapper).to have_received(:new)
       end
     end
 
     context 'when some error appears' do
       before do
+        # rubocop:disable RSpec/AnyInstance
         allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_raise(StandardError)
+        # rubocop:enable RSpec/AnyInstance
       end
 
       it 'raises ImportException' do
