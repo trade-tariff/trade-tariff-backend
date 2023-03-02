@@ -31,7 +31,7 @@ module Api
       attr_reader :original_search_query, :spell
 
       def null_result?
-        original_search_query.blank? || !@should_search || AggregatedSynonym.exists?(@original_search_query)
+        original_search_query.blank? || !@should_search
       end
     end
   end
