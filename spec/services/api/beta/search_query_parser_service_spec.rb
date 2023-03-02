@@ -10,7 +10,6 @@ RSpec.describe Api::Beta::SearchQueryParserService do
 
     it_behaves_like 'a null result search query parser call', '', true # Empty search query
     it_behaves_like 'a null result search query parser call', nil, true # Empty search query
-    it_behaves_like 'a null result search query parser call', 'yakutian laika', true # Synonym search query
     it_behaves_like 'a null result search query parser call', 'ricotta', false # No search due to instruction
 
     context 'when the search query parser response is success' do

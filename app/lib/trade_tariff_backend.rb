@@ -272,10 +272,6 @@ module TradeTariffBackend
       ENV.fetch('BETA_SEARCH_GUIDES_ENABLED', 'false') == 'true'
     end
 
-    def aggregated_synonyms_file
-      ENV.fetch('AGGREGATED_SYNONYMS_FILE', 'config/opensearch/synonyms_all.txt')
-    end
-
     def opensearch_client
       @opensearch_client ||= OpenSearch::Client.new(opensearch_configuration)
     end
