@@ -3,17 +3,10 @@
 # 1 2 3 4 5 6 7 8 9 0
 
 class MeasureType < Sequel::Model
-  # TODO: consider to refactor all the constants bellow with the use of enum
-  # Example:
-  # enum :measure_type, {
-  #     third_country: %w[103 105],
-  #     tariff_preference: %w[142 145],
-  #     preferential_quota: %w[143 146],
-  #   }
   IMPORT_MOVEMENT_CODES = [0, 2].freeze
   EXPORT_MOVEMENT_CODES = [1, 2].freeze
   THIRD_COUNTRY = %w[103 105].freeze # 105 measure types are for end use Third Country duties. 103 are for everything else
-  VAT_TYPES = %w[VTA VTE VTS VTZ 305].freeze # TODO: Remove dead VAT measure types from the old days of CHIEF
+  VAT_TYPES = %w[305].freeze
   SUPPLEMENTARY_TYPES = %w[109 110 111].freeze
   QUOTA_TYPES = %w[046 122 123 143 146 147 653 654].freeze
   NATIONAL_PR_TYPES = %w[AHC AIL ATT CEX CHM COE COI CVD DPO ECM EHC EQC EWP HOP HSE IWP PHC PRE PRT QRC SFS].freeze
@@ -126,15 +119,6 @@ class MeasureType < Sequel::Model
 
   def authorised_use_provisions_submission?
     measure_type_id.in?(AUTHORISED_USE_PROVISIONS_SUBMISSION)
-  end
-
-  # See Commodity#overview_measures
-  def self.overview_measure_types
-    if TradeTariffBackend.xi?
-      MeasureType::SUPPLEMENTARY_TYPES
-    else
-      MeasureType::VAT_TYPES + MeasureType::SUPPLEMENTARY_TYPES
-    end
   end
 
   def self.excluded_measure_types

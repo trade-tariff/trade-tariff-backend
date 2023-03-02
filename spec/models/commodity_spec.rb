@@ -197,12 +197,25 @@ RSpec.describe Commodity do
         it { is_expected.to include(measure) }
       end
 
-      context 'when a vat measure' do
+      context 'when a vat measure that is not explicitly erga omnes' do
         let(:measure) do
           create(
             :measure,
             :with_base_regulation,
             :vat,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+          )
+        end
+
+        it { is_expected.not_to include(measure) }
+      end
+
+      context 'when a vat measure that is explicitly erga omnes' do
+        let(:measure) do
+          create(
+            :measure,
+            :with_base_regulation,
+            :vat_overview,
             goods_nomenclature_sid: commodity.goods_nomenclature_sid,
           )
         end

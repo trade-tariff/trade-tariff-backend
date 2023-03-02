@@ -221,6 +221,11 @@ FactoryBot.define do
       measure_type_id { '305' }
     end
 
+    trait :vat_overview do
+      vat
+      erga_omnes
+    end
+
     trait :supplementary do
       measure_type_id { MeasureType::SUPPLEMENTARY_TYPES.sample }
     end
