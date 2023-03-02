@@ -1,8 +1,6 @@
 module Beta
   module Search
     class InterceptMessage
-      INTERCEPT_MESSAGES_SOURCE_PATH = Rails.root.join('data/intercept-messages.yml').freeze
-
       SECTION_REGEX = /(?<type>section)s? (?<optional>code|position|id)?\s*(?<code>[XVI\d]{0,10})(?<terminator>[.,\s)])?/i
       CHAPTER_REGEX = /(?<type>chapter)s? (?<optional>code )?(?<code>[0-9]{1,2})(?<terminator>[.,\s)])/i
       HEADING_REGEX = /(?<type>(?<!sub)heading)?s? (?<optional>code )?(?<code>[0-9]{4})(?<terminator>[.,\s)])/i
@@ -83,7 +81,7 @@ module Beta
         end
 
         def intercept_messages
-          @intercept_messages ||= YAML.load_file(INTERCEPT_MESSAGES_SOURCE_PATH).transform_keys(&method(:normalise_query))
+          @intercept_messages ||= Rails.application.config.intercept_messages.transform_keys(&method(:normalise_query))
         end
 
         def all_references
@@ -98,7 +96,7 @@ module Beta
         private
 
         def normalise_query(search_query)
-          search_query.squish.downcase
+          search_query.to_s.squish.downcase
         end
 
         def normalise_message(message)
