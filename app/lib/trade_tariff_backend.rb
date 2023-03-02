@@ -2,6 +2,8 @@ module TradeTariffBackend
   MAX_LOCK_LIFETIME = 600_000
 
   class << self
+    attr_accessor :chief_cds_guidance
+
     SERVICE_CURRENCIES = {
       'uk' => 'GBP',
       'xi' => 'EUR',
@@ -226,10 +228,6 @@ module TradeTariffBackend
 
     def rules_of_origin
       @rules_of_origin ||= RulesOfOrigin::DataSet.load_default
-    end
-
-    def chief_cds_guidance
-      @chief_cds_guidance ||= ChiefCdsGuidance.load_default
     end
 
     def search_facet_classifier_configuration
