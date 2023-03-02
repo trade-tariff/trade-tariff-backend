@@ -47,7 +47,7 @@ module Sequel
         def validity_dates_filter(table = self,
                                   start_column: :validity_start_date,
                                   end_column: :validity_end_date)
-          return self if point_in_time.blank?
+          return Sequel.expr(true) if point_in_time.blank?
 
           table_name = if table.is_a?(Class) && table < Sequel::Model
                          table.table_name
@@ -121,6 +121,8 @@ module Sequel
         def with_validity_dates(table = model.table_name,
                                 start_column: :validity_start_date,
                                 end_column: :validity_end_date)
+          return self if model.point_in_time.blank?
+
           where do |_query|
             model.validity_dates_filter(table, start_column:, end_column:)
           end
