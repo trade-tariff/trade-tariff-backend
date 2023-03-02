@@ -14,7 +14,7 @@ RSpec.describe Beta::Search::InterceptMessage do
     it_behaves_like 'an intercept message query with a corresponding message', 'apparel - clothing - worn, in bulk packings'
 
     context 'when the query does not correspond to an intercept message' do
-      subject(:intercept_message) { described_class.build('foo') }
+      subject(:intercept_message) { described_class.build('flibble') }
 
       it { is_expected.to be_nil }
     end

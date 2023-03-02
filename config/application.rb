@@ -21,6 +21,8 @@ module TradeTariffBackend
 
     config.time_zone = 'UTC'
 
+    config.intercept_messages = config_for(:intercept_messages)
+
     config.api_only = true
 
     config.sequel.schema_format = :sql

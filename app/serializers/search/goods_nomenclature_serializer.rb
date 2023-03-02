@@ -63,13 +63,13 @@ module Search
     end
 
     def search_references
-      path_ancestors.reverse.each_with_object([declarable_search_references]) { |serialized_ancestor, acc|
+      ancestors.reverse.each_with_object([declarable_search_references]) { |serialized_ancestor, acc|
         acc.prepend(serialized_ancestor[:search_references])
       }.join(' ')
     end
 
     def search_intercept_terms
-      path_ancestors.reverse.each_with_object([intercept_terms]) { |serialized_ancestor, acc|
+      ancestors.reverse.each_with_object([intercept_terms]) { |serialized_ancestor, acc|
         next if serialized_ancestor[:intercept_terms].blank?
 
         acc.prepend(serialized_ancestor[:intercept_terms])

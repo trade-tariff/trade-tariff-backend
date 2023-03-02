@@ -17,7 +17,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           description_indexed: 'Horses',
           formatted_description: 'Horses, other than lemmings',
           search_references: 'chapter search reference heading search reference commodity search reference',
-          search_intercept_terms: 'donkey',
+          search_intercept_terms: 'donkey baz',
           ancestors: [
             {
               id: be_a(Integer),
@@ -115,7 +115,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           goods_nomenclature_class: 'Heading',
           description: '',
           description_indexed: nil,
-          formatted_description: nil,
+          formatted_description: '',
           search_references: '',
           search_intercept_terms: '',
           ancestors: [],
