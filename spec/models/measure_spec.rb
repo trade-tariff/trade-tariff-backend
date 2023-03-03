@@ -19,6 +19,108 @@ RSpec.describe Measure do
     it { is_expected.to respond_to :trade_remedy? }
   end
 
+  describe '.effective_start_date_column' do
+    subject(:sql_column) { described_class.effective_start_date_column }
+
+    let :coalesced_columns do
+      %i[
+        measures__validity_start_date
+        base_regulation__validity_start_date
+        modification_regulation__validity_start_date
+      ]
+    end
+
+    it { is_expected.to be_instance_of Sequel::SQL::Function }
+    it { is_expected.to have_attributes name: :coalesce }
+    it { is_expected.to have_attributes args: coalesced_columns }
+  end
+
+  describe '.effective_end_date_column' do
+    subject(:sql_column) { described_class.effective_end_date_column }
+
+    let :coalesced_columns do
+      %i[
+        measures__validity_end_date
+        base_regulation__effective_end_date
+        base_regulation__validity_end_date
+        modification_regulation__effective_end_date
+        modification_regulation__validity_end_date
+      ]
+    end
+
+    it { is_expected.to be_instance_of Sequel::SQL::Function }
+    it { is_expected.to have_attributes name: :coalesce }
+    it { is_expected.to have_attributes args: coalesced_columns }
+  end
+
+  describe '.with_regulation_dates_query' do
+    subject { described_class.with_regulation_dates_query.all.first }
+
+    around { |example| TimeMachine.now { example.run } }
+    before { measure }
+
+    shared_examples 'it has effective dates' do |regulation_type|
+      let :regulation do
+        create regulation_type, validity_start_date: 3.days.ago.beginning_of_day,
+                                validity_end_date: 10.days.from_now.end_of_day
+      end
+
+      let :measure do
+        create :measure, generating_regulation: regulation,
+                         validity_start_date: nil,
+                         validity_end_date: nil
+      end
+
+      context 'with dates on measure' do
+        let :measure do
+          create :measure, generating_regulation: regulation,
+                           validity_start_date: 5.days.ago.beginning_of_day,
+                           validity_end_date: 3.days.from_now.end_of_day
+        end
+
+        it { is_expected.to have_attributes effective_start_date: 5.days.ago.beginning_of_day }
+        it { is_expected.to have_attributes effective_end_date: 3.days.from_now.end_of_day.floor(6) }
+      end
+
+      context 'with effective dates on regulation' do
+        let :regulation do
+          create regulation_type, validity_start_date: 3.days.ago.beginning_of_day,
+                                  validity_end_date: 10.days.from_now.end_of_day.floor(6),
+                                  effective_end_date: 12.days.from_now.end_of_day.floor(6)
+        end
+
+        it { is_expected.to have_attributes effective_start_date: 3.days.ago.beginning_of_day }
+        it { is_expected.to have_attributes effective_end_date: 12.days.from_now.end_of_day.floor(6) }
+      end
+
+      context 'with validity dates on regulation' do
+        it { is_expected.to have_attributes effective_start_date: 3.days.ago.beginning_of_day }
+        it { is_expected.to have_attributes effective_end_date: 10.days.from_now.end_of_day.floor(6) }
+      end
+
+      context 'with no dates at all' do
+        let :regulation do
+          create regulation_type, validity_start_date: nil,
+                                  validity_end_date: nil
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
+
+    it_behaves_like 'it has effective dates', :base_regulation
+    it_behaves_like 'it has effective dates', :modification_regulation
+
+    context 'without base_regulation or modification_regulation' do
+      let :measure do
+        create :measure, measure_generating_regulation_id: nil,
+                         measure_generating_regulation_role: nil
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#goods_nomenclature' do
     around { |example| TimeMachine.now { example.run } }
 

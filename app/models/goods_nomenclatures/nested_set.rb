@@ -93,6 +93,22 @@ module GoodsNomenclatures
               TreeNode.descendant_node_constraints(origin, children)
           end
       end
+
+      one_to_many :ns_measures,
+                  primary_key: :goods_nomenclature_sid,
+                  key: :goods_nomenclature_sid,
+                  class_name: '::Measure',
+                  read_only: true do |ds|
+        ds.with_actual(Measure)
+          .with_regulation_dates_query
+          .exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
+          .order(Sequel.asc(:measures__geographical_area_id),
+                 Sequel.asc(:measures__measure_type_id),
+                 Sequel.asc(:measures__additional_code_type_id),
+                 Sequel.asc(:measures__additional_code_id),
+                 Sequel.asc(:measures__ordernumber),
+                 Sequel.desc(:effective_start_date))
+      end
     end
 
     def recursive_ancestor_populator(ancestors)
