@@ -6,7 +6,7 @@ RSpec.describe RefreshChiefCdsGuidanceWorker, type: :worker do
       allow(TradeTariffBackend).to receive(:chief_cds_guidance=).and_call_original
       allow(TradeTariffBackend).to receive(:chief_cds_guidance).and_return(existing_guidance)
       allow(ChiefCdsGuidance).to receive(:load_latest).and_return(new_guidance)
-      allow(ChiefCdsGuidanceChangeNotificationService).to receive(:new).and_call_original
+      allow(GuidanceChangeNotificationService).to receive(:new).and_call_original
       allow(SlackNotifierService).to receive(:call).and_call_original
     end
 
@@ -23,7 +23,7 @@ RSpec.describe RefreshChiefCdsGuidanceWorker, type: :worker do
       it 'notifies slack' do
         worker.perform
 
-        expect(ChiefCdsGuidanceChangeNotificationService).to have_received(:new).with(
+        expect(GuidanceChangeNotificationService).to have_received(:new).with(
           new_guidance.guidance,
           existing_guidance.guidance,
         )
@@ -49,7 +49,7 @@ RSpec.describe RefreshChiefCdsGuidanceWorker, type: :worker do
       it 'does not notify slack' do
         worker.perform
 
-        expect(ChiefCdsGuidanceChangeNotificationService).not_to have_received(:new)
+        expect(GuidanceChangeNotificationService).not_to have_received(:new)
       end
     end
 
@@ -61,7 +61,7 @@ RSpec.describe RefreshChiefCdsGuidanceWorker, type: :worker do
       it 'does not notify slack of changes' do
         worker.perform
 
-        expect(ChiefCdsGuidanceChangeNotificationService).not_to have_received(:new)
+        expect(GuidanceChangeNotificationService).not_to have_received(:new)
       end
 
       it 'notifies slack that we are using a fallback' do

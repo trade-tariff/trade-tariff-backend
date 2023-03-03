@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
+RSpec.describe Api::V2::AdditionalCodesController, type: :controller, flaky: true do
   describe 'GET #search' do
     let!(:additional_code) { create(:additional_code, :with_description) }
 

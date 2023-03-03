@@ -28,7 +28,7 @@ class RefreshChiefCdsGuidanceWorker
   private
 
   def notify_slack
-    ChiefCdsGuidanceChangeNotificationService.new(
+    GuidanceChangeNotificationService.new(
       new_guidance.guidance,
       existing_guidance.guidance,
     ).call
