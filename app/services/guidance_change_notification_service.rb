@@ -1,4 +1,4 @@
-class ChiefCdsGuidanceChangeNotificationService
+class GuidanceChangeNotificationService
   def initialize(new_guidance, existing_guidance)
     @new_guidance = new_guidance
     @existing_guidance = existing_guidance
