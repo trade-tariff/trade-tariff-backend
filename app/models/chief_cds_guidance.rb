@@ -1,20 +1,35 @@
 class ChiefCdsGuidance
-  DEFAULT_SOURCE_PATH = Rails.root.join('db/')
-  DEFAULT_FILE = 'chief_cds_guidance.json'
-  DEFAULT_EMPTY_GUIDANCE = 'No additional information is available.'
-  CHIEF_GUIDANCE_KEY = 'guidance_chief'
-  CDS_GUIDANCE_KEY = 'guidance_cds'
+  FALLBACK_SOURCE_PATH = Rails.root.join('db/chief_cds_guidance.json').freeze
+  DEFAULT_EMPTY_GUIDANCE = 'No additional information is available.'.freeze
+  CHIEF_GUIDANCE_KEY = 'guidance_chief'.freeze
+  CDS_GUIDANCE_KEY = 'guidance_cds'.freeze
+  CDS_GUIDANCE_OBJECT_KEY = 'config/chief_cds_guidance.json'.freeze
 
-  def self.load_default
-    new(DEFAULT_SOURCE_PATH.join(DEFAULT_FILE)).tap(&:guidance)
+  class << self
+    def load_latest
+      if Rails.application.config.chief_cds_guidance_bucket.present?
+        guidance = Rails.application.config.chief_cds_guidance_bucket.object(CDS_GUIDANCE_OBJECT_KEY).get.body.read
+        guidance = JSON.parse(guidance)
+
+        new(guidance) if guidance.present?
+      end
+    rescue JSON::ParserError, Aws::S3::Errors::ServiceError
+      nil
+    end
+
+    def load_fallback
+      guidance = FALLBACK_SOURCE_PATH.read
+      guidance = JSON.parse(guidance)
+
+      new(guidance) if guidance.present?
+    end
   end
 
-  def initialize(source_file)
-    @source_file = source_file
-  end
+  attr_accessor :guidance_last_updated_at
+  attr_reader :guidance
 
-  def guidance
-    @guidance ||= JSON.parse(File.read(@source_file))
+  def initialize(guidance)
+    @guidance = guidance
   end
 
   def cds_guidance_for(document_code)

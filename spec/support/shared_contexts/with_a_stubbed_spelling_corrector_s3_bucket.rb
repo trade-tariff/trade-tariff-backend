@@ -1,4 +1,4 @@
-RSpec.shared_context 'with a stubbed s3 bucket' do
+RSpec.shared_context 'with a stubbed spelling corrector bucket' do
   before do
     s3_bucket.client.stub_responses(:get_object, get_object_handler)
     s3_bucket.client.stub_responses(:list_objects_v2, list_objects_v2_handler)
@@ -14,6 +14,8 @@ RSpec.shared_context 'with a stubbed s3 bucket' do
         { body: StringIO.new(file_fixture('spelling_corrector/origin_reference/foo.txt').read) }
       when 'spelling-corrector/origin-reference/bar.txt'
         { body: StringIO.new(file_fixture('spelling_corrector/origin_reference/bar.txt').read) }
+      when 'config/chief_cds_guidance.json'
+        { body: StringIO.new(file_fixture('chief_cds_guidance.json').read) }
       end
     end
   end

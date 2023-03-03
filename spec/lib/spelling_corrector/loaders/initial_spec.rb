@@ -1,5 +1,5 @@
 RSpec.describe SpellingCorrector::Loaders::Initial do
-  include_context 'with a stubbed s3 bucket'
+  include_context 'with a stubbed spelling corrector bucket'
 
   describe '#load' do
     subject(:load) { described_class.new.load }

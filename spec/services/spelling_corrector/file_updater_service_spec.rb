@@ -3,7 +3,7 @@ RSpec.describe SpellingCorrector::FileUpdaterService do
     subject(:upload_file) { described_class.new.call }
 
     context 'when the bucket is setup' do
-      include_context 'with a stubbed s3 bucket'
+      include_context 'with a stubbed spelling corrector bucket'
 
       before do
         allow(s3_bucket).to receive(:put_object).and_call_original
