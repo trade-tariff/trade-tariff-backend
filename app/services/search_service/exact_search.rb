@@ -76,6 +76,13 @@ class SearchService
              .first
     end
 
+    # Conclusions from meeting
+
+    # - Labels are not a good idea for now because we have too many concepts to manage already
+    # - Could we support inverted search references (e.g. "not a cookie", "not an apricot") to filter out results that have apricot/cookie in the ancestor description?
+    # - Adding additional search references to extend the list of results for clothing should do no harm in terms of ordering
+    # - We can avoid ordering changes for search references if we add clothing + some unique descriptor for the specific heading, subheading we want to return (e.g. "japanese style, clothing")
+
     def find_search_reference(query)
       SearchReference.find(Sequel.function(:lower, :title) => singular_and_plural(query)).try(:referenced)
     end

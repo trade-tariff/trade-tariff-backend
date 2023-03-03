@@ -13,7 +13,7 @@ class ChiefCdsGuidance
 
         new(guidance) if guidance.present?
       end
-    rescue Aws::S3::Errors::NoSuchKey, JSON::ParserError, Aws::S3::Errors::ServiceError
+    rescue JSON::ParserError, Aws::S3::Errors::ServiceError
       nil
     end
 
