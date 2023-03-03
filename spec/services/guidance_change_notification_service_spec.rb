@@ -23,11 +23,15 @@ RSpec.describe GuidanceChangeNotificationService do
     subject(:call) { guidance_change_notification_service.call }
 
     it 'calls SlackNotifierService with the correct message' do
-      expect(SlackNotifierService).to receive(:call).with(
-        'Chief CDS Guidance has been hot refreshed. </br>Added: quux </br>Removed: corge </br>Content changed: baz',
-      )
+      added = '</br>Added: quux '
+      removed = '</br>Removed: corge '
+      changed = '</br>Content changed: baz'
 
+      allow(SlackNotifierService).to receive(:call)
       call
+      expect(SlackNotifierService)
+        .to have_received(:call)
+        .with("Chief CDS Guidance has been hot refreshed. #{added}#{removed}#{changed}")
     end
   end
 end

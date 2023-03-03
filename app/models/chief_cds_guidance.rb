@@ -46,7 +46,6 @@ class ChiefCdsGuidance
 
   private
 
-
   def guidance_for(document_code)
     guidance.fetch(document_code, DEFAULT_EMPTY_GUIDANCE)
   end
