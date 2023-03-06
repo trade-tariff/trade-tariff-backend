@@ -16,6 +16,8 @@ module Cache
         formatted_description: certificate.formatted_description,
         validity_start_date: certificate.validity_start_date,
         validity_end_date: certificate.validity_end_date,
+        guidance_cds: certificate.guidance_cds,
+        guidance_chief: certificate.guidance_chief,
         measure_ids: measures.map(&:measure_sid),
         measures: measures.map do |measure|
           {

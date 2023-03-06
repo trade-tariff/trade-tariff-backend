@@ -6,7 +6,9 @@ module Api
       def search
         options = {}
         options[:include] = [:measures, 'measures.goods_nomenclature']
-        render json: Api::V2::Certificates::CertificatesSerializer.new(@certificates, options.merge(serialization_meta)).serializable_hash
+        render json: Api::V2::Certificates::CertificatesSerializer.new(
+          @certificates, options.merge(serialization_meta)
+        ).serializable_hash
       end
 
       def index
@@ -23,7 +25,12 @@ module Api
 
       def certificates
         Certificate.actual
-          .eager(:certificate_descriptions, :certificate_description_periods, :certificate_type_description)
+          .eager(
+            :certificate_descriptions,
+            :certificate_description_periods,
+            :certificate_type_description,
+            :appendix_5a,
+          )
           .order(Sequel.asc(%i[certificate_type_code certificate_code]))
           .all
       end

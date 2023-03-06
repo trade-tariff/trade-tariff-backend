@@ -14,6 +14,10 @@ class Certificate < Sequel::Model
       .order(Sequel.desc(:certificate_description_periods__validity_start_date))
   end
 
+  one_to_one :appendix_5a,
+             key: %i[certificate_type_code certificate_code],
+             primary_key: %i[certificate_type_code certificate_code]
+
   one_to_many :certificate_description_periods, key: %i[certificate_code certificate_type_code] do |ds|
     ds.with_actual(CertificateDescriptionPeriod)
       .order(Sequel.desc(:certificate_description_periods__validity_start_date))
@@ -58,4 +62,5 @@ class Certificate < Sequel::Model
   end
 
   delegate :description, :formatted_description, to: :certificate_description
+  delegate :guidance_chief, :guidance_cds, to: :appendix_5a, allow_nil: true
 end

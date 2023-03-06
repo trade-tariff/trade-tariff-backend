@@ -1,7 +1,13 @@
 RSpec.describe Cache::CertificateSerializer do
   subject(:serialized) { described_class.new(certificate).as_json }
 
-  let(:certificate) { create(:certificate, :with_description) }
+  let(:certificate) do
+    create(
+      :certificate,
+      :with_guidance,
+      :with_description,
+    )
+  end
 
   let(:measure_with_goods_nomenclature) do
     create(
@@ -36,6 +42,8 @@ RSpec.describe Cache::CertificateSerializer do
       validity_end_date: nil,
       measure_ids: [measure_with_goods_nomenclature.measure_sid],
       measures: Array,
+      guidance_cds: String,
+      guidance_chief: String,
     }
   end
 
