@@ -454,6 +454,20 @@ ALTER SEQUENCE public.additional_codes_oid_seq OWNED BY public.additional_codes_
 
 
 --
+-- Name: appendix_5as; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.appendix_5as (
+    certificate_type_code text NOT NULL,
+    certificate_code text NOT NULL,
+    chief_guidance text,
+    cds_guidance text,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
 -- Name: audits; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -7860,6 +7874,14 @@ ALTER TABLE ONLY public.additional_codes_oplog
 
 
 --
+-- Name: appendix_5as appendix_5as_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.appendix_5as
+    ADD CONSTRAINT appendix_5as_pkey PRIMARY KEY (certificate_type_code, certificate_code);
+
+
+--
 -- Name: audits audits_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -11157,3 +11179,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230203090107_tweak_footn
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230202192506_adds_index_to_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230207114821_drop_referenced_id_on_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230225194140_create_table_suggestions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230303170324_create_appendix_5a.rb');
