@@ -10,8 +10,10 @@ module Cache
             description: { type: 'text', analyzer: 'snowball' },
             validity_start_date: { type: 'date', format: 'date_optional_time' },
             validity_end_date: { type: 'date', format: 'date_optional_time' },
-          }
-        }
+            guidance_cds: { enabled: false },
+            guidance_chief: { enabled: false },
+          },
+        },
       }
     end
   end

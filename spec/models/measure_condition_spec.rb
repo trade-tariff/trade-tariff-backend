@@ -256,43 +256,15 @@ RSpec.describe MeasureCondition do
   end
 
   describe '#guidance_cds' do
-    context 'when the measure condition has a document code with guidance' do
-      subject(:guidance_cds) { build(:measure_condition, :with_guidance).guidance_cds }
+    subject(:guidance_cds) { create(:measure_condition, :with_guidance).guidance_cds }
 
-      it { is_expected.not_to be_nil }
-    end
-
-    context 'when the measure condition has a document code without guidance' do
-      subject(:guidance_cds) { build(:measure_condition, :without_guidance).guidance_cds }
-
-      it { is_expected.to eq('No additional information is available.') }
-    end
-
-    context 'when the measure condition has no document code' do
-      subject(:guidance_cds) { build(:measure_condition, :without_certificate).guidance_cds }
-
-      it { is_expected.to be_nil }
-    end
+    it { is_expected.not_to be_nil }
   end
 
   describe '#guidance_chief' do
-    context 'when the measure condition has a document code with guidance' do
-      subject(:guidance_chief) { build(:measure_condition, :with_guidance).guidance_chief }
+    subject(:guidance_chief) { create(:measure_condition, :with_guidance).guidance_chief }
 
-      it { is_expected.not_to be_nil }
-    end
-
-    context 'when the measure condition has a document code without guidance' do
-      subject(:guidance_chief) { build(:measure_condition, :without_guidance).guidance_chief }
-
-      it { is_expected.to eq('No additional information is available.') }
-    end
-
-    context 'when the measure condition has no document code' do
-      subject(:guidance_chief) { build(:measure_condition, :without_certificate).guidance_chief }
-
-      it { is_expected.to be_nil }
-    end
+    it { is_expected.not_to be_nil }
   end
 
   describe '#threshold_unit_type' do

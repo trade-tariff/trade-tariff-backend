@@ -323,6 +323,21 @@ FactoryBot.define do
           certificate_code: evaluator.certificate_code,
         )
 
+        if evaluator.certificate_type_code.present? || evaluator.certificate_code.present?
+          has_5a = Appendix5a.where(
+            certificate_type_code: evaluator.certificate_type_code,
+            certificate_code: evaluator.certificate_code,
+          ).any?
+
+          unless has_5a
+            create(
+              :appendix_5a,
+              certificate_type_code: evaluator.certificate_type_code,
+              certificate_code: evaluator.certificate_code,
+            )
+          end
+        end
+
         create(
           :measure_condition_component,
           :with_duty_expression,

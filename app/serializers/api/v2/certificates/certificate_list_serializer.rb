@@ -8,7 +8,12 @@ module Api
 
         set_id :id
 
-        attributes :certificate_type_code, :certificate_code, :description, :formatted_description
+        attributes :certificate_type_code,
+                   :certificate_code,
+                   :description,
+                   :formatted_description,
+                   :guidance_cds,
+                   :guidance_chief
 
         attribute :certificate_type_description do |certificate|
           certificate.certificate_type_description&.description
@@ -16,18 +21,6 @@ module Api
 
         attribute :validity_start_date do |certificate|
           certificate.certificate_description_period.validity_start_date
-        end
-
-        attribute :guidance_cds do |certificate|
-          TradeTariffBackend
-            .chief_cds_guidance
-            .cds_guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
-        end
-
-        attribute :guidance_chief do |certificate|
-          TradeTariffBackend
-            .chief_cds_guidance
-            .chief_guidance_for("#{certificate.certificate_type_code}#{certificate.certificate_code}")
         end
       end
     end

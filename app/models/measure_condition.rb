@@ -20,6 +20,10 @@ class MeasureCondition < Sequel::Model
     ds.with_actual(Certificate)
   end
 
+  one_to_one :appendix_5a,
+             key: %i[certificate_type_code certificate_code],
+             primary_key: %i[certificate_type_code certificate_code]
+
   one_to_one :certificate_type, key: :certificate_type_code,
                                 primary_key: :certificate_type_code do |ds|
     ds.with_actual(CertificateType)
@@ -61,6 +65,8 @@ class MeasureCondition < Sequel::Model
            :exemption_class?, :document_class?, to: :classification
 
   delegate :requirement_operator, to: :measure_condition_code, allow_nil: true
+
+  delegate :guidance_chief, :guidance_cds, to: :appendix_5a, allow_nil: true
 
   def before_create
     self.measure_condition_sid ||= self.class.next_national_sid
@@ -158,19 +164,7 @@ class MeasureCondition < Sequel::Model
     end
   end
 
-  def guidance_cds
-    TradeTariffBackend.chief_cds_guidance.cds_guidance_for(document_code)
-  end
-
-  def guidance_chief
-    TradeTariffBackend.chief_cds_guidance.chief_guidance_for(document_code)
-  end
-
 private
-
-  def guidance
-    @guidance ||= TradeTariffBackend.chief_cds_guidance.guidance_for(document_code)
-  end
 
   def classification
     @classification ||= MeasureConditionClassification.new(self)

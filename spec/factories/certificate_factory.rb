@@ -34,8 +34,20 @@ FactoryBot.define do
     end
 
     trait :with_guidance do
-      certificate_code { '001' }
-      certificate_type_code { 'A' }
+      after(:create) do |certificate, _evaluator|
+        has_5a = Appendix5a.where(
+          certificate_type_code: certificate.certificate_type_code,
+          certificate_code: certificate.certificate_code,
+        ).any?
+
+        unless has_5a
+          create(
+            :appendix_5a,
+            certificate_type_code: certificate.certificate_type_code,
+            certificate_code: certificate.certificate_code,
+          )
+        end
+      end
     end
   end
 

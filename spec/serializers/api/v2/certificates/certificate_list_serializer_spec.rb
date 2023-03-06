@@ -1,7 +1,14 @@
 RSpec.describe Api::V2::Certificates::CertificateListSerializer do
   subject(:serializer) { described_class.new([certificate]).serializable_hash.as_json }
 
-  let(:certificate) { create(:certificate, :with_description, :with_certificate_type, :with_guidance) }
+  let(:certificate) do
+    create(
+      :certificate,
+      :with_description,
+      :with_certificate_type,
+      :with_guidance,
+    )
+  end
 
   let(:expected_pattern) do
     {

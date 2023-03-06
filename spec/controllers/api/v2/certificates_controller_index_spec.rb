@@ -5,7 +5,14 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
       response.body
     end
 
-    let(:certificate) { create(:certificate, :with_description, :with_certificate_type) }
+    let(:certificate) do
+      create(
+        :certificate,
+        :with_description,
+        :with_certificate_type,
+        :with_guidance,
+      )
+    end
 
     let(:pattern) do
       {

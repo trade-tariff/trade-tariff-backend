@@ -117,13 +117,16 @@ FactoryBot.define do
   end
 
   trait :with_guidance do
-    certificate_code { '001' }
-    certificate_type_code { 'A' }
+    after(:create) do |measure_condition, _evaluator|
+      create(
+        :appendix_5a,
+        certificate_code: measure_condition.certificate_code,
+        certificate_type_code: measure_condition.certificate_type_code,
+      )
+    end
   end
 
   trait :without_guidance do
-    certificate_code { '000' }
-    certificate_type_code { 'F' }
   end
 
   trait :without_certificate do
