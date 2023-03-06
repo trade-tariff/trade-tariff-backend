@@ -148,6 +148,36 @@ RSpec.describe DescriptionFormatter do
       ).to eq ' email@hse.gov.uk '
     end
 
+    it 'removes br before li' do
+      expect(
+        described_class.format(description: ' <br><li> '),
+      ).to eq ' <li> '
+    end
+
+    it 'removes br before ul' do
+      expect(
+        described_class.format(description: ' <br><br><ul> '),
+      ).to eq ' <ul> '
+    end
+
+    it 'removes br surrounding ul' do
+      expect(
+        described_class.format(description: ' <br></ul><br> '),
+      ).to eq ' </ul> '
+    end
+
+    it 'replaces 3 or more br with 2' do
+      expect(
+        described_class.format(description: ' <br><br><br> '),
+      ).to eq ' <br><br> '
+    end
+
+    it 'replaces 4 br with 2' do
+      expect(
+        described_class.format(description: ' <br><br><br><br> '),
+      ).to eq ' <br><br> '
+    end
+
     context 'when xi' do
       before do
         allow(TradeTariffBackend).to receive(:uk?).and_return(false)
