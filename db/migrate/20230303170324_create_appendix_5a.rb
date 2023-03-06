@@ -7,7 +7,7 @@ Sequel.migration do
       String :cds_guidance
       DateTime :created_at
       DateTime :updated_at
-      primary_key [:certificate_type_code, :certificate_code]
+      primary_key %i[certificate_type_code certificate_code]
     end
   end
 

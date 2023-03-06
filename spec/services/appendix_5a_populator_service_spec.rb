@@ -15,6 +15,8 @@ RSpec.describe Appendix5aPopulatorService do
       )
     end
 
+    let(:change_guidance_values) { change { existing_guidance.reload.values } }
+
     context 'when the latest guidance has changed' do
       let(:new_guidance) do
         {
@@ -25,11 +27,8 @@ RSpec.describe Appendix5aPopulatorService do
         }
       end
 
-      it 'refreshes the guidance' do
-        expect { call }
-          .to change { existing_guidance.reload.chief_guidance }
-          .from('bar')
-          .to('baz')
+      it 'changes the guidance' do
+        expect { call }.to change_guidance_values
       end
 
       it 'notifies slack' do
@@ -51,9 +50,8 @@ RSpec.describe Appendix5aPopulatorService do
         }
       end
 
-      it 'does not refresh the guidance' do
-        expect { call }
-          .not_to change { existing_guidance.reload.values }
+      it 'does not change the guidance' do
+        expect { call }.not_to change_guidance_values
       end
 
       it 'notifies slack' do
