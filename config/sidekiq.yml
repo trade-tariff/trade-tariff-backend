@@ -21,7 +21,7 @@
   #
   # Online converter: https://crontab.guru/#0_22_*_*_*
   #
-  RefreshChiefCdsGuidanceWorker:
+  RefreshAppendix5aGuidanceWorker:
     cron: "00 22 * * *"
     description: "Hot refreshes Chief CDS Guidance"
   PopulateChangesTableWorker:
