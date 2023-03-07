@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
 set -e
-set -x
 
 SPACE=$1
 
@@ -12,7 +11,7 @@ function check_changed_packages {
 function package_id_for {
   package_name_suffix=$1
 
-  opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID" | tr '\n' ' '
+  aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID" | tr '\n' ' '
 }
 
 function sync_package_files_with_s3 {
