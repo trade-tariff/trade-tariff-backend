@@ -1,6 +1,6 @@
 class DescriptionFormatter
   def self.format(opts = {})
-    raise ArgumentError.new('DescriptionFormatter expects :using arg to be a single value') if opts.keys.many?
+    raise ArgumentError, 'DescriptionFormatter expects :using arg to be a single value' if opts.keys.many?
 
     str = opts.values.first
     return '' if str.blank?
@@ -26,11 +26,11 @@ class DescriptionFormatter
       str.gsub!(/ized/i, 'ised')
       str.gsub!(/(\d),(\d)/, '\1.\2')
     end
-    str.gsub! /@(.)/ do
-      "<sub>#{$1}</sub>"
+    str.gsub!(/@(.)/) do
+      "<sub>#{::Regexp.last_match(1)}</sub>"
     end
-    str.gsub! /\$(.)/ do
-      "<sup>#{$1}</sup>"
+    str.gsub!(/\$(.)/) do
+      "<sup>#{::Regexp.last_match(1)}</sup>"
     end
     str.gsub!(/<sub>([a-z])<\/sub>/i, '@\1')
     str.gsub!(/<br><li>/, '<li>')
