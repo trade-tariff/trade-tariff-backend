@@ -35,6 +35,15 @@ module Search
         }
       end
 
+      if TradeTariffBackend.stemming_exclusion_reference_analyzer.present?
+        # Unshifting is important here, as we want to apply the exclusion filter before the stemmer filters
+        base_definition[:settings][:index][:analysis][:analyzer][:english][:filter].unshift('english_stem_exclusions')
+        base_definition[:settings][:index][:analysis][:filter][:english_stem_exclusions] = {
+          type: 'stemmer_override',
+          rules_path: TradeTariffBackend.stemming_exclusion_reference_analyzer,
+        }
+      end
+
       base_definition
     end
 

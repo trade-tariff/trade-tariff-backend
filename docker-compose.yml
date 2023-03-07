@@ -46,6 +46,7 @@ services:
     volumes:
       - hmrc-os:/usr/share/opensearch/data
       - ./config/opensearch/synonyms_all.txt:/usr/share/opensearch/config/synonyms_all.txt
+      - ./config/opensearch/stemming_exclusions_all.txt:/usr/share/opensearch/config/stemming_exclusions_all.txt
 
 volumes:
   dev-env-redis-volume:

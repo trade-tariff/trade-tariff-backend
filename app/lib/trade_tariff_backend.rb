@@ -248,6 +248,10 @@ module TradeTariffBackend
       ENV['SYNONYM_REFERENCE_ANALYZER']
     end
 
+    def stemming_exclusion_reference_analyzer
+      ENV['STEMMING_EXCLUSION_REFERENCE_ANALYZER']
+    end
+
     def handle_missing_soft_deletes?
       ENV['SOFT_DELETES_MISSING'].to_s == 'true'
     end

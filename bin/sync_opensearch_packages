@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+
+set -e
+
+SPACE=$1
+
+function check_changed_packages {
+  aws s3 sync --exclude ".*" --dryrun --size-only config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
+}
+
+function package_id_for {
+  package_name_suffix=$1
+
+  aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID" | tr '\n' ' '
+}
+
+function sync_package_files_with_s3 {
+  aws s3 sync --exclude ".*" config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
+}
+
+function update_and_associate_package {
+  s3_key_suffix=$1
+  package_name_suffix=$2
+  package_description_prefix=$3
+  package_id=$(package_id_for $package_name_suffix)
+  domain_name=tariff-search-$SPACE
+
+  aws opensearch update-package --package-id $package_id \
+    --package-source "S3BucketName=trade-tariff-opensearch-packages-$SPACE,S3Key=config/opensearch/$s3_key_suffix" \
+    --package-description "$package_description_prefix for the $SPACE environment search" \
+    --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_BUILD_URL"
+
+  aws opensearch associate-package --package-id $package_id --domain-name $domain_name
+}
+
+function update_or_skip_all_packages {
+  packages_changed=$(check_changed_packages)
+
+  if [ -z "$packages_changed" ]; then
+    echo "No opensearch package updates to apply"
+  else
+    echo "Opensearch package updates to apply"
+
+    echo "Syncing package files with S3"
+    sync_package_files_with_s3
+
+    echo "Updating and associating new synonym package"
+    update_and_associate_package synonyms_all.txt synonyms "Synonyms"
+    echo "Updating and associating new stemming exclusions package"
+    update_and_associate_package stemming_exclusions_all.txt stemex "Stemming exclusions"
+
+    echo "Applied updates for all packages. These will become active soon"
+  fi
+}
+
+update_or_skip_all_packages
