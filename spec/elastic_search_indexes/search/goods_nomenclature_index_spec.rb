@@ -48,11 +48,11 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   end
 
   describe '#definition' do
-    before do
-      allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
-    end
-
     context 'when synonym reference is specified in the environment' do
+      before do
+        allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
+      end
+
       let(:synonym_reference_analyzer) { 'analyzers/F135140295' }
 
       it 'generates a correct english analyzer setting' do
@@ -81,6 +81,10 @@ RSpec.describe Search::GoodsNomenclatureIndex do
     end
 
     context 'when synonym reference is `not` specified in the environment' do
+      before do
+        allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
+      end
+
       let(:synonym_reference_analyzer) { nil }
 
       it 'generates a correct english analyzer setting' do
@@ -98,6 +102,44 @@ RSpec.describe Search::GoodsNomenclatureIndex do
       end
 
       it { expect(index.definition.dig(:settings, :index, :analysis, :filter, :synonym)).to be_nil }
+    end
+
+    context 'when the stemming exclusion reference is specified in the environment' do
+      before do
+        allow(TradeTariffBackend).to receive(:stemming_exclusion_reference_analyzer).and_return(stemming_exclusion_reference_analyzer)
+      end
+
+      let(:stemming_exclusion_reference_analyzer) { 'analyzers/F135140295' }
+
+      it 'generates the correct stemmer_override filter setting' do
+        expected_filter_setting = {
+          type: 'stemmer_override',
+          rules_path: 'analyzers/F135140295',
+        }
+
+        expect(index.definition.dig(:settings, :index, :analysis, :filter, :english_stem_exclusions)).to eq(expected_filter_setting)
+      end
+
+      it 'makes the english_stem_exclusions the first filter' do
+        expected_filter_order = %w[
+          english_stem_exclusions
+          english_possessive_stemmer
+          lowercase
+          english_stop
+          english_stemmer
+        ]
+
+        actual_filter_order = index.definition.dig(
+          :settings,
+          :index,
+          :analysis,
+          :analyzer,
+          :english,
+          :filter,
+        )
+
+        expect(actual_filter_order).to eq(expected_filter_order)
+      end
     end
   end
 end
