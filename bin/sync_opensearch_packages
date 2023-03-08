@@ -34,21 +34,8 @@ function package_active {
   [ "$status" == "ACTIVE" ]
 }
 
-function update_and_associate_package {
-  s3_key_suffix=$1
-  package_name_suffix=$2
-  package_description_prefix=$3
-  package_id=$(package_id_for $package_name_suffix)
-  domain_name=tariff-search-$SPACE
-
-  aws opensearch update-package --package-id $package_id \
-    --package-source "S3BucketName=trade-tariff-opensearch-packages-$SPACE,S3Key=config/opensearch/$s3_key_suffix" \
-    --package-description "$package_description_prefix for the $SPACE environment search" \
-    --commit-message "Commit: $(git rev-parse --short HEAD), branch: $CIRCLE_BRANCH"
-
-  aws opensearch associate-package --package-id $package_id --domain-name $domain_name
-
-  max_sleep_time=100
+function wait_for_package_to_become_active {
+  max_sleep_time=200
   sleep_time=5
 
   while [ $sleep_time -lt $max_sleep_time ]; do
@@ -63,6 +50,26 @@ function update_and_associate_package {
   done
 }
 
+function update_and_associate_package {
+  s3_key_suffix=$1
+  package_name_suffix=$2
+  package_description_prefix=$3
+  should_wait=$4
+  package_id=$(package_id_for $package_name_suffix)
+  domain_name=tariff-search-$SPACE
+
+  aws opensearch update-package --package-id $package_id \
+    --package-source "S3BucketName=trade-tariff-opensearch-packages-$SPACE,S3Key=config/opensearch/$s3_key_suffix" \
+    --package-description "$package_description_prefix for the $SPACE environment search" \
+    --commit-message "Commit: $(git rev-parse --short HEAD), branch: $CIRCLE_BRANCH"
+
+  aws opensearch associate-package --package-id $package_id --domain-name $domain_name
+
+  if [ "$should_wait" == "true" ]; then
+    wait_for_package_to_become_active $package_id
+  fi
+}
+
 function update_or_skip_all_packages {
   packages_changed=$(check_changed_packages)
 
@@ -75,9 +82,9 @@ function update_or_skip_all_packages {
     sync_package_files_with_s3
 
     echo "Updating and associating new synonym package"
-    update_and_associate_package synonyms_all.txt synonyms "Synonyms"
+    update_and_associate_package synonyms_all.txt synonyms "Synonyms" true
     echo "Updating and associating new stemming exclusions package"
-    update_and_associate_package stemming_exclusions_all.txt stemex "Stemming exclusions"
+    update_and_associate_package stemming_exclusions_all.txt stemex "Stemming exclusions" false
 
     echo "Applied updates for all packages. These will become active soon"
   fi
