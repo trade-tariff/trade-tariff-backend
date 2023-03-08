@@ -11,26 +11,63 @@ function check_changed_packages {
 function package_id_for {
   package_name_suffix=$1
 
-  aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID" | tr '\n' ' '
+  aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID"
 }
 
 function sync_package_files_with_s3 {
   aws s3 sync --exclude ".*" config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
 }
 
+function package_status {
+  package_id=$1
+
+  domain_name=tariff-search-$SPACE
+
+  aws opensearch list-packages-for-domain --domain-name $domain_name | jq -r ".DomainPackageDetailsList | .[] | select(.PackageID == \"$package_id\") | .DomainPackageStatus"
+}
+
+function package_active {
+  package_id=$1
+
+  status=$(package_status $package_id)
+
+  [ "$status" == "ACTIVE" ]
+}
+
+function wait_for_package_to_become_active {
+  max_sleep_time=200
+  sleep_time=5
+
+  while [ $sleep_time -lt $max_sleep_time ]; do
+    if package_active $package_id; then
+      echo "Package $package_id is now active"
+      break
+    else
+      echo "Package $package_id is not yet active, sleeping for $sleep_time seconds"
+      sleep $sleep_time
+      sleep_time=$((sleep_time * 2))
+    fi
+  done
+}
+
 function update_and_associate_package {
   s3_key_suffix=$1
   package_name_suffix=$2
   package_description_prefix=$3
+  should_wait=$4
   package_id=$(package_id_for $package_name_suffix)
   domain_name=tariff-search-$SPACE
 
   aws opensearch update-package --package-id $package_id \
     --package-source "S3BucketName=trade-tariff-opensearch-packages-$SPACE,S3Key=config/opensearch/$s3_key_suffix" \
     --package-description "$package_description_prefix for the $SPACE environment search" \
-    --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_BUILD_URL"
+    --commit-message "Commit: $(git rev-parse --short HEAD), branch: $CIRCLE_BRANCH"
 
   aws opensearch associate-package --package-id $package_id --domain-name $domain_name
+
+  if [ "$should_wait" == "true" ]; then
+    wait_for_package_to_become_active $package_id
+  fi
 }
 
 function update_or_skip_all_packages {
@@ -45,9 +82,9 @@ function update_or_skip_all_packages {
     sync_package_files_with_s3
 
     echo "Updating and associating new synonym package"
-    update_and_associate_package synonyms_all.txt synonyms "Synonyms"
+    update_and_associate_package synonyms_all.txt synonyms "Synonyms" true
     echo "Updating and associating new stemming exclusions package"
-    update_and_associate_package stemming_exclusions_all.txt stemex "Stemming exclusions"
+    update_and_associate_package stemming_exclusions_all.txt stemex "Stemming exclusions" false
 
     echo "Applied updates for all packages. These will become active soon"
   fi
