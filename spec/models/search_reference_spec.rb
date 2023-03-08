@@ -75,4 +75,10 @@ RSpec.describe SearchReference do
       end
     end
   end
+
+  describe '#title_indexed' do
+    subject(:search_reference) { build(:search_reference, title: 'foo, not bar') }
+
+    it { expect(search_reference.title_indexed).to eq('foo') }
+  end
 end

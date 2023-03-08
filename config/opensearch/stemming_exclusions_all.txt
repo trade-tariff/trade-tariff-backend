@@ -41,3 +41,4 @@ stretched => stretched
 stretcher => stretcher
 white => white
 whiting => whiting
+merling => merling

@@ -41,33 +41,13 @@ RSpec.describe GoodsNomenclatureDescription do
   end
 
   describe '#description_indexed' do
-    shared_examples_for 'a description that includes a negation' do |description, expected_description|
-      subject(:description_indexed) { build(:goods_nomenclature_description, description:).description_indexed }
+    it 'removes negation' do
+      goods_nomenclature_description = build(
+        :goods_nomenclature_description,
+        description: 'some text, not other text',
+      )
 
-      it { is_expected.to eq(expected_description) }
-    end
-
-    it_behaves_like 'a description that includes a negation', 'Hop cones, neither ground nor powdered nor in the form of pellets', 'Hop cones'
-    it_behaves_like 'a description that includes a negation', 'Other fish, excluding livers and roes', 'Other fish'
-    it_behaves_like 'a description that includes a negation', 'Bulls of the Schwyz, Fribourg and spotted Simmental breeds, other than for slaughter', 'Bulls of the Schwyz, Fribourg and spotted Simmental breeds'
-    it_behaves_like 'a description that includes a negation', 'Tulles and other net fabrics, not including woven, knitted or crocheted fabrics', 'Tulles and other net fabrics'
-
-    context 'when the description value is nil' do
-      subject(:description_indexed) { build(:goods_nomenclature_description, description: nil).description_indexed }
-
-      it { is_expected.to eq('') }
-    end
-
-    context 'when the description value does not include a negation' do
-      subject(:description_indexed) { build(:goods_nomenclature_description, description: 'I do not include a handled negation').description_indexed }
-
-      it { is_expected.to eq('I do not include a handled negation') }
-    end
-
-    context 'when the description value has a non-breaking space character' do
-      subject(:description_indexed) { build(:goods_nomenclature_description, description: "I have a\u00A0non-breaking space").description_indexed }
-
-      it { is_expected.to eq('I have a non-breaking space') }
+      expect(goods_nomenclature_description.description_indexed).to eq('some text')
     end
   end
 

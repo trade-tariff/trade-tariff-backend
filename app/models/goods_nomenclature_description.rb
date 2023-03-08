@@ -29,7 +29,7 @@ class GoodsNomenclatureDescription < Sequel::Model
   end
 
   def description_indexed
-    (super.match(DESCRIPTION_NEGATION_REGEX).try(:[], :keep).presence || description).try(:gsub, NO_BREAKING_SPACE, ' ')
+    SearchNegationService.new(description).call
   end
 
   def formatted_description
