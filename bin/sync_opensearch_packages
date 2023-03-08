@@ -44,7 +44,7 @@ function update_and_associate_package {
   aws opensearch update-package --package-id $package_id \
     --package-source "S3BucketName=trade-tariff-opensearch-packages-$SPACE,S3Key=config/opensearch/$s3_key_suffix" \
     --package-description "$package_description_prefix for the $SPACE environment search" \
-    --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_BUILD_URL"
+    --commit-message "Commit: $(git rev-parse --short HEAD), branch: $CIRCLE_BRANCH"
 
   aws opensearch associate-package --package-id $package_id --domain-name $domain_name
 
