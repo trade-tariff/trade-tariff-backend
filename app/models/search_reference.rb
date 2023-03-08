@@ -1,6 +1,10 @@
 class SearchReference < Sequel::Model
-  DEFAULT_PRODUCTLINE_SUFFIX = '80'.freeze
-  VALID_REFERENCED_CLASSES = %w[Chapter Heading Subheading Commodity].freeze
+  VALID_REFERENCED_CLASSES = %w[
+    Chapter
+    Heading
+    Subheading
+    Commodity
+  ].freeze
 
   extend ActiveModel::Naming
 
@@ -42,6 +46,10 @@ class SearchReference < Sequel::Model
 
   def referenced_id
     referenced.to_admin_param
+  end
+
+  def title_indexed
+    SearchNegationService.new(title).call
   end
 
   def validate
