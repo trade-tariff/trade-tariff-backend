@@ -18,7 +18,7 @@ function sync_package_files_with_s3 {
   aws s3 sync --exclude ".*" config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
 }
 
-function package_status{
+function package_status {
   package_id=$1
 
   domain_name=tariff-search-$SPACE
@@ -48,9 +48,18 @@ function update_and_associate_package {
 
   aws opensearch associate-package --package-id $package_id --domain-name $domain_name
 
-  while ! package_active $package_id; do
-    echo "Package is not active yet"
-    sleep 5
+  max_sleep_time=100
+  sleep_time=5
+
+  while [ $sleep_time -lt $max_sleep_time ]; do
+    if package_active $package_id; then
+      echo "Package $package_id is now active"
+      break
+    else
+      echo "Package $package_id is not yet active, sleeping for $sleep_time seconds"
+      sleep $sleep_time
+      sleep_time=$((sleep_time * 2))
+    fi
   done
 }
 
