@@ -94,7 +94,11 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           validity_start_date: Date.parse('2020-06-29'),
         )
 
-        create(:search_reference, referenced: commodity, title: 'commodity search reference')
+        create(
+          :search_reference,
+          referenced: commodity,
+          title: 'commodity search reference, except something else',
+        )
       end
 
       it { is_expected.to include_json(pattern) }

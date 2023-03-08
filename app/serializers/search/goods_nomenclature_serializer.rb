@@ -63,7 +63,7 @@ module Search
     end
 
     def search_references
-      ancestors.reverse.each_with_object([declarable_search_references]) { |serialized_ancestor, acc|
+      ancestors.reverse.each_with_object([search_references_for(goods_nomenclature_sid)]) { |serialized_ancestor, acc|
         acc.prepend(serialized_ancestor[:search_references])
       }.join(' ')
     end
@@ -94,7 +94,7 @@ module Search
           formatted_description: ancestor.formatted_description,
           ancestor_ids: [], # We are not interested in ancestor ancestors
           ancestors: [], # We are not interested in ancestor ancestors
-          search_references: search_references_for(ancestor),
+          search_references: search_references_for(ancestor.goods_nomenclature_sid),
           intercept_terms: ancestor.intercept_terms,
         }
       end
@@ -147,12 +147,12 @@ module Search
                                 end
     end
 
-    def search_references_for(ancestor)
-      SearchReference.where(goods_nomenclature_sid: ancestor.goods_nomenclature_sid).pluck(:title).join(' ')
-    end
-
-    def declarable_search_references
-      SearchReference.where(goods_nomenclature_sid:).pluck(:title).join(' ')
+    def search_references_for(goods_nomenclature_sid)
+      SearchReference
+        .where(goods_nomenclature_sid:)
+        .map(&:title_indexed)
+        .compact
+        .join(' ')
     end
   end
 end
