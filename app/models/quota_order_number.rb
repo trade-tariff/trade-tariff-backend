@@ -8,7 +8,9 @@ class QuotaOrderNumber < Sequel::Model
     ds.with_actual(QuotaDefinition)
   end
 
-  one_to_many :quota_definitions, key: :quota_order_number_sid, primary_key: :quota_order_number_sid
+  one_to_many :quota_definitions, key: :quota_order_number_sid, primary_key: :quota_order_number_sid do |ds|
+    ds.order(Sequel.desc(:validity_start_date))
+  end
 
   dataset_module do
     def by_order_number(order_number)
