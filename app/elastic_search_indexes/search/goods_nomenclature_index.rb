@@ -18,29 +18,22 @@ module Search
     end
 
     def definition
-      if TradeTariffBackend.synonym_reference_analyzer.present?
-        base_definition[:settings][:index][:analysis][:analyzer][:english] = {
-          tokenizer: 'standard',
-          filter: %w[
-            synonym
-            english_possessive_stemmer
-            lowercase
-            english_stop
-            english_stemmer
-          ],
-        }
-        base_definition[:settings][:index][:analysis][:filter][:synonym] = {
-          type: 'synonym',
-          synonyms_path: TradeTariffBackend.synonym_reference_analyzer,
-        }
-      end
-
       if TradeTariffBackend.stemming_exclusion_reference_analyzer.present?
-        # Unshifting is important here, as we want to apply the exclusion filter before the stemmer filters
+        # Stemming exclusions _must_ come before other filters
         base_definition[:settings][:index][:analysis][:analyzer][:english][:filter].unshift('english_stem_exclusions')
         base_definition[:settings][:index][:analysis][:filter][:english_stem_exclusions] = {
           type: 'stemmer_override',
           rules_path: TradeTariffBackend.stemming_exclusion_reference_analyzer,
+        }
+      end
+
+      if TradeTariffBackend.synonym_reference_analyzer.present?
+        # Synonyms _must_ come before the stemming exclusion filter otherwise
+        # they will have a mixture of stemmed/unstemmed expanded terms
+        base_definition[:settings][:index][:analysis][:analyzer][:english][:filter].unshift('synonym')
+        base_definition[:settings][:index][:analysis][:filter][:synonym] = {
+          type: 'synonym',
+          synonyms_path: TradeTariffBackend.synonym_reference_analyzer,
         }
       end
 

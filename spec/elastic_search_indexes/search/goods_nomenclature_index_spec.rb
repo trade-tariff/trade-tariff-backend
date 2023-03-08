@@ -48,68 +48,14 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   end
 
   describe '#definition' do
-    context 'when synonym reference is specified in the environment' do
-      before do
-        allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
-      end
-
-      let(:synonym_reference_analyzer) { 'analyzers/F135140295' }
-
-      it 'generates a correct english analyzer setting' do
-        expected_analyzer_setting = {
-          tokenizer: 'standard',
-          filter: %w[
-            synonym
-            english_possessive_stemmer
-            lowercase
-            english_stop
-            english_stemmer
-          ],
-        }
-
-        expect(index.definition.dig(:settings, :index, :analysis, :analyzer, :english)).to eq(expected_analyzer_setting)
-      end
-
-      it 'generates the correct synonym filter setting' do
-        expected_filter_setting = {
-          type: 'synonym',
-          synonyms_path: 'analyzers/F135140295',
-        }
-
-        expect(index.definition.dig(:settings, :index, :analysis, :filter, :synonym)).to eq(expected_filter_setting)
-      end
-    end
-
-    context 'when synonym reference is `not` specified in the environment' do
-      before do
-        allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
-      end
-
-      let(:synonym_reference_analyzer) { nil }
-
-      it 'generates a correct english analyzer setting' do
-        expected_analyzer_setting = {
-          tokenizer: 'standard',
-          filter: %w[
-            english_possessive_stemmer
-            lowercase
-            english_stop
-            english_stemmer
-          ],
-        }
-
-        expect(index.definition.dig(:settings, :index, :analysis, :analyzer, :english)).to eq(expected_analyzer_setting)
-      end
-
-      it { expect(index.definition.dig(:settings, :index, :analysis, :filter, :synonym)).to be_nil }
-    end
-
-    context 'when the stemming exclusion reference is specified in the environment' do
+    context 'when the stemming exclusion and synonym references are specified in the environment' do
       before do
         allow(TradeTariffBackend).to receive(:stemming_exclusion_reference_analyzer).and_return(stemming_exclusion_reference_analyzer)
+        allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
       end
 
       let(:stemming_exclusion_reference_analyzer) { 'analyzers/F135140295' }
+      let(:synonym_reference_analyzer) { 'analyzers/F135140296' }
 
       it 'generates the correct stemmer_override filter setting' do
         expected_filter_setting = {
@@ -117,11 +63,37 @@ RSpec.describe Search::GoodsNomenclatureIndex do
           rules_path: 'analyzers/F135140295',
         }
 
-        expect(index.definition.dig(:settings, :index, :analysis, :filter, :english_stem_exclusions)).to eq(expected_filter_setting)
+        actual_filter_setting = index.definition.dig(
+          :settings,
+          :index,
+          :analysis,
+          :filter,
+          :english_stem_exclusions,
+        )
+
+        expect(actual_filter_setting).to eq(expected_filter_setting)
       end
 
-      it 'makes the english_stem_exclusions the first filter' do
+      it 'generates the correct synonym filter setting' do
+        expected_filter_setting = {
+          type: 'synonym',
+          synonyms_path: 'analyzers/F135140296',
+        }
+
+        actual_filter_setting = index.definition.dig(
+          :settings,
+          :index,
+          :analysis,
+          :filter,
+          :synonym,
+        )
+
+        expect(actual_filter_setting).to eq(expected_filter_setting)
+      end
+
+      it 'uses the correct filter order' do
         expected_filter_order = %w[
+          synonym
           english_stem_exclusions
           english_possessive_stemmer
           lowercase
