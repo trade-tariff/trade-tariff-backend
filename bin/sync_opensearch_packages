@@ -11,11 +11,27 @@ function check_changed_packages {
 function package_id_for {
   package_name_suffix=$1
 
-  aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID" | tr '\n' ' '
+  aws opensearch describe-packages | jq -r ".PackageDetailsList | .[] | select(.PackageName == \"tariff-$SPACE-$package_name_suffix\") | .PackageID"
 }
 
 function sync_package_files_with_s3 {
   aws s3 sync --exclude ".*" config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
+}
+
+function package_status{
+  package_id=$1
+
+  domain_name=tariff-search-$SPACE
+
+  aws opensearch list-packages-for-domain --domain-name $domain_name | jq -r ".DomainPackageDetailsList | .[] | select(.PackageID == \"$package_id\") | .DomainPackageStatus"
+}
+
+function package_active {
+  package_id=$1
+
+  status=$(package_status $package_id)
+
+  [ "$status" == "ACTIVE" ]
 }
 
 function update_and_associate_package {
@@ -31,6 +47,11 @@ function update_and_associate_package {
     --commit-message "Integrated update from commit $(git rev-parse --short HEAD) on branch $CIRCLE_BRANCH with job $CIRCLE_BUILD_URL"
 
   aws opensearch associate-package --package-id $package_id --domain-name $domain_name
+
+  while ! package_active $package_id; do
+    echo "Package is not active yet"
+    sleep 5
+  done
 }
 
 function update_or_skip_all_packages {
