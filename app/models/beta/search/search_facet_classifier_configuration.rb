@@ -72,6 +72,7 @@ module Beta
 
         def each_classification
           file_paths = Dir.glob(CLASSIFIER_FILE_PATH)
+          file_paths = file_paths.grep_v(/entity/)
 
           if block_given?
             file_paths.each do |file_path|

@@ -31,7 +31,6 @@ RSpec.describe Api::Beta::ClassificationConverterService do
         egg_shell_state
         electrical_output
         electricity_type
-        entity
         fat_content
         fish_classification
         fish_preparation
