@@ -1,16 +1,18 @@
 RSpec.describe DescriptionFormatter do
   describe '.format' do
-    it 'corrects inconsistent newlines in lists' do
+    it 'correctly escapes lists' do
       description = '-| bread -| butter'
 
       expect(
         described_class.format(description:),
       ).to eq '<br/>- bread <br/>- butter'
+    end
 
-      description2 = "\n-| bread -| butter"
+    it 'corrects inconsistent newlines in lists' do
+      description = "\n-| bread -| butter"
 
       expect(
-        described_class.format(description: description2),
+        described_class.format(description:),
       ).to eq '<br/>- bread <br/>- butter'
     end
 
@@ -104,15 +106,25 @@ RSpec.describe DescriptionFormatter do
       ).to eq ' <sup>1</sup> '
     end
 
-    it 'return empty string for empty description' do
+    it 'replaces @<anycharacter> with html sub tag' do
+      expect(
+        described_class.format(description: ' @2 '),
+      ).to eq ' <sub>2</sub> '
+    end
+
+    it 'returns empty string for nil description' do
       expect(
         described_class.format(description: nil),
       ).to eq ''
+    end
 
+    it 'returns empty string for empty description' do
       expect(
         described_class.format(description: ''),
       ).to eq ''
+    end
 
+    it 'returns empty string for nothing but spaces' do
       expect(
         described_class.format(description: '    '),
       ).to eq ''
@@ -146,6 +158,36 @@ RSpec.describe DescriptionFormatter do
       expect(
         described_class.format(description: ' email<sub>h</sub>se.gov.uk '),
       ).to eq ' email@hse.gov.uk '
+    end
+
+    it 'removes br before li' do
+      expect(
+        described_class.format(description: ' <br><li> '),
+      ).to eq ' <li> '
+    end
+
+    it 'removes br before ul' do
+      expect(
+        described_class.format(description: ' <br><br><ul> '),
+      ).to eq ' <ul> '
+    end
+
+    it 'removes br surrounding ul' do
+      expect(
+        described_class.format(description: ' <br></ul><br> '),
+      ).to eq ' </ul> '
+    end
+
+    it 'replaces 3 or more br with 2' do
+      expect(
+        described_class.format(description: ' <br><br><br> '),
+      ).to eq ' <br><br> '
+    end
+
+    it 'replaces 4 br with 2' do
+      expect(
+        described_class.format(description: ' <br><br><br><br> '),
+      ).to eq ' <br><br> '
     end
 
     context 'when xi' do
