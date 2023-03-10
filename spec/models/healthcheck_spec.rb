@@ -1,6 +1,13 @@
 RSpec.describe Healthcheck do
   subject(:instance) { described_class.instance }
 
+  before do
+    search_result = Beta::Search::SearchQueryParserResult.new
+    service_double = instance_double('Api::Beta::SearchQueryParserService', call: search_result)
+
+    allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(service_double)
+  end
+
   describe '#current_revision' do
     subject { instance.current_revision }
 
@@ -44,20 +51,12 @@ RSpec.describe Healthcheck do
   describe '#check' do
     subject(:check) { instance.check }
 
-    before { allow(Section).to receive(:all).and_return [] }
-
-    it { is_expected.to include git_sha1: 'test' }
-
-    it 'tests postgres' do
-      check
-
-      expect(Section).to have_received(:all)
-    end
-
     context 'with broken db connection' do
-      before { allow(Section).to receive(:all).and_raise Sequel::DatabaseDisconnectError }
+      before do
+        allow(Sequel::Model.db).to receive(:test_connection).and_return(false)
+      end
 
-      it { expect { check }.to raise_exception Sequel::DatabaseDisconnectError }
+      it { expect(check).to include postgres: false }
     end
 
     describe 'sidekiq health' do
@@ -98,6 +97,17 @@ RSpec.describe Healthcheck do
         (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
     end
 
-    it { is_expected.to include sidekiq: true }
+    let(:expected) do
+      {
+        git_sha1: 'test',
+        opensearch: true,
+        postgres: true,
+        redis: true,
+        search_query_parser: true,
+        sidekiq: true,
+      }
+    end
+
+    it { is_expected.to eql expected }
   end
 end
