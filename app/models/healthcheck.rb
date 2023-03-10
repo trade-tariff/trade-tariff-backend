@@ -10,11 +10,13 @@ class Healthcheck
   end
 
   def check
-    check_postgres!
-
     {
       git_sha1: current_revision,
       sidekiq: sidekiq_healthy?,
+      postgres: postgres_healthy?,
+      redis: redis_healthy?,
+      opensearch: opensearch_healthy?,
+      search_query_parser: search_query_parser_healthy?,
     }
   end
 
@@ -30,8 +32,23 @@ private
     nil
   end
 
-  def check_postgres!
-    Section.all
+  def search_query_parser_healthy?
+    Api::Beta::SearchQueryParserService
+      .new('test')
+      .call
+      .is_a?(::Beta::Search::SearchQueryParserResult)
+  end
+
+  def opensearch_healthy?
+    TradeTariffBackend.opensearch_client.ping
+  end
+
+  def redis_healthy?
+    Sidekiq.redis(&:ping) == 'PONG'
+  end
+
+  def postgres_healthy?
+    Sequel::Model.db.test_connection
   end
 
   def sidekiq_healthy?

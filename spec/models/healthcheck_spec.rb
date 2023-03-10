@@ -98,6 +98,17 @@ RSpec.describe Healthcheck do
         (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601
     end
 
-    it { is_expected.to include sidekiq: true }
+    let(:expected) do
+      {
+        git_sha1: 'test',
+        opensearch: true,
+        postgres: true,
+        redis: true,
+        search_query_parser: true,
+        sidekiq: true,
+      }
+    end
+
+    it { is_expected.to eql expected }
   end
 end
