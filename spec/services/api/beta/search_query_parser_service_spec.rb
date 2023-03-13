@@ -24,8 +24,8 @@ RSpec.describe Api::Beta::SearchQueryParserService do
             corrected_search_query: 'aaa bib',
             original_search_query: 'aaa bbb',
             tokens: {
+              quoted: ["'something quoted'"],
               adjectives: [],
-              all: %w[aaa bib],
               noun_chunks: %w[aaa bib],
               nouns: %w[aaa bib],
               verbs: [],
@@ -37,6 +37,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
       it { is_expected.to be_a(Beta::Search::SearchQueryParserResult) }
 
       it { expect(result.id).to eq('ca476c11a9e6c7dea1e75d14ad4cbb10') }
+      it { expect(result.quoted).to eq(["'something quoted'"]) }
       it { expect(result.corrected_search_query).to eq('aaa bib') }
       it { expect(result.original_search_query).to eq('aaa bbb') }
       it { expect(result.adjectives).to eq([]) }

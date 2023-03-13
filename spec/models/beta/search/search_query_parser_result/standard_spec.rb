@@ -9,6 +9,7 @@ RSpec.describe Beta::Search::SearchQueryParserResult::Standard do
           'nouns' => %w[man],
           'noun_chunks' => ['tall man'],
           'verbs' => [],
+          'quoted' => ["'something quoted'"],
         },
         'original_search_query' => 'tall man',
         'corrected_search_query' => 'tall man',
@@ -16,6 +17,7 @@ RSpec.describe Beta::Search::SearchQueryParserResult::Standard do
     end
 
     it { is_expected.to be_a(Beta::Search::SearchQueryParserResult) }
+    it { expect(result.quoted).to eq(["'something quoted'"]) }
     it { expect(result.adjectives).to eq(%w[tall]) }
     it { expect(result.nouns).to eq(%w[man]) }
     it { expect(result.noun_chunks).to eq(['tall man']) }

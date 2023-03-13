@@ -1,5 +1,6 @@
 FactoryBot.define do
   factory :search_query_parser_result, class: 'Beta::Search::SearchQueryParserResult' do
+    quoted { ["'something quoted'"] }
     adjectives { [] }
     nouns do
       %w[
