@@ -100,6 +100,7 @@ RSpec.describe Healthcheck do
     let(:expected) do
       {
         git_sha1: 'test',
+        healthy: true,
         opensearch: true,
         postgres: true,
         redis: true,

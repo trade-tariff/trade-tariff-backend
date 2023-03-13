@@ -10,7 +10,7 @@ class Healthcheck
   end
 
   def check
-    {
+    checks = {
       git_sha1: current_revision,
       sidekiq: sidekiq_healthy?,
       postgres: postgres_healthy?,
@@ -18,6 +18,8 @@ class Healthcheck
       opensearch: opensearch_healthy?,
       search_query_parser: search_query_parser_healthy?,
     }
+
+    checks.merge(healthy: checks.values.all?)
   end
 
   def current_revision

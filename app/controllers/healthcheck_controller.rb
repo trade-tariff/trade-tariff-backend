@@ -1,5 +1,15 @@
 class HealthcheckController < ApplicationController
   def index
-    render json: Healthcheck.check
+    if result[:healthy] == true
+      render :success, json: result
+    else
+      render status: :service_unavailable, json: result
+    end
+  end
+
+  private
+
+  def result
+    @result ||= Healthcheck.check
   end
 end
