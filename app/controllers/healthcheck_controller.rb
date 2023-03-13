@@ -3,7 +3,7 @@ class HealthcheckController < ApplicationController
     if result[:healthy] == true
       render :success, json: result
     else
-      render :service_unavailable, json: result
+      render status: :service_unavailable, json: result
     end
   end
 

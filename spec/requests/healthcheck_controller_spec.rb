@@ -11,19 +11,11 @@ RSpec.describe HealthcheckController, type: :request do
 
       allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(service_double)
       allow(Healthcheck).to receive(:new).and_return healthcheck
-      allow(healthcheck).to receive(:check).and_call_original
-    end
-
-    it 'calls Healthcheck#check' do
-      rendered
-
-      expect(healthcheck).to have_received(:check)
+      allow(healthcheck).to receive(:check).and_return(result)
     end
 
     context 'when Healthcheck#check returns healthy' do
-      before do
-        allow(healthcheck).to receive(:check).and_return(healthy: true)
-      end
+      let(:result) { { healthy: true } }
 
       it { is_expected.to have_http_status :success }
       it { is_expected.to have_attributes media_type: /json/ }
@@ -31,9 +23,7 @@ RSpec.describe HealthcheckController, type: :request do
     end
 
     context 'when Healthcheck#check returns unhealthy' do
-      before do
-        allow(healthcheck).to receive(:check).and_return(healthy: false)
-      end
+      let(:result) { { healthy: false } }
 
       it { is_expected.to have_http_status :service_unavailable }
       it { is_expected.to have_attributes media_type: /json/ }
