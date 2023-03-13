@@ -12,6 +12,7 @@ class Healthcheck
   def check
     {
       git_sha1: current_revision,
+      healthy: all_healthy?,
       sidekiq: sidekiq_healthy?,
       postgres: postgres_healthy?,
       redis: redis_healthy?,
@@ -30,6 +31,16 @@ private
     File.read(REVISION_FILE).chomp if File.file?(REVISION_FILE)
   rescue Errno::EACCES
     nil
+  end
+
+  def all_healthy?
+    [
+      sidekiq_healthy?,
+      postgres_healthy?,
+      redis_healthy?,
+      opensearch_healthy?,
+      search_query_parser_healthy?,
+    ].all?
   end
 
   def search_query_parser_healthy?
