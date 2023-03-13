@@ -1,7 +1,8 @@
 module Beta
   module Search
     class GoodsNomenclatureQuery
-      attr_writer :nouns,
+      attr_writer :quoted,
+                  :nouns,
                   :verbs,
                   :adjectives,
                   :noun_chunks,
@@ -34,11 +35,15 @@ module Beta
         'goods_nomenclature_item_id',
       ].freeze
 
+      ANCESTOR_SHINGLES = 2.upto(13).map { |i| "ancestor_#{i}_description_indexed_shingled" }.freeze
+      SHINGLE_FIELDS = %w[description_indexed_shingled].concat(ANCESTOR_SHINGLES).freeze
+
       def self.build(search_query_parser_result, filters = {})
         query = new
 
         is_numeric = search_query_parser_result.original_search_query.match(/^\d+$/).is_a?(MatchData)
 
+        query.quoted = search_query_parser_result.quoted
         query.nouns = search_query_parser_result.nouns
         query.noun_chunks = search_query_parser_result.noun_chunks
         query.verbs = search_query_parser_result.verbs
@@ -92,6 +97,7 @@ module Beta
         candidate_query[:query][:bool][:filter] = filter_part
         candidate_query[:query][:bool][:must] = must_part if must_part.any?
         candidate_query[:query][:bool][:should] = should_part if should_part.any?
+        candidate_query[:query][:bool].merge!(quote_part) if quoted.any?
 
         candidate_query
       end
@@ -126,6 +132,28 @@ module Beta
         if nouns.present? || noun_chunks.present?
           part.concat(verb_part) if verbs.present?
           part.concat(adjective_part) if adjectives.present?
+        end
+
+        part
+      end
+
+      def quote_part
+        part = {
+          should: [],
+          minimum_should_match: 1,
+        }
+
+        quoted.each do |phrase|
+          SHINGLE_FIELDS.each do |field|
+            part[:should] << {
+              match_phrase: {
+                field => {
+                  query: phrase,
+                  slop: 0, # exact order of terms
+                },
+              },
+            }
+          end
         end
 
         part
@@ -178,6 +206,12 @@ module Beta
 
       def filters
         @filters.presence || []
+      end
+
+      def quoted
+        (@quoted.presence || []).map do |quoted|
+          quoted.gsub(/[",']/, '')
+        end
       end
 
       def nouns

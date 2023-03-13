@@ -274,6 +274,39 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
         expect(Api::Beta::GoodsNomenclatureFilterGeneratorService).to have_received(:new).with('cheese_type' => 'fresh')
       end
     end
+
+    context 'when there are quoted phrases' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :quoted).query }
+
+      let(:expected_query) do
+        {
+          size: '10',
+          query: {
+            bool: {
+              filter: { bool: { must: [{ term: { declarable: true } }] } },
+              should: [
+                { match_phrase: { 'description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_2_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_3_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_4_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_5_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_6_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_7_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_8_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_9_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_10_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_11_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_12_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+                { match_phrase: { 'ancestor_13_description_indexed_shingled' => { query: 'cherry tomatoes', slop: 0 } } },
+              ],
+              minimum_should_match: 1,
+            },
+          },
+        }
+      end
+
+      it { is_expected.to eq(expected_query) }
+    end
   end
 
   describe '#goods_nomenclature_item_id' do
