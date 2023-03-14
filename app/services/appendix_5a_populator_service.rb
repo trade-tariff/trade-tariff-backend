@@ -81,6 +81,8 @@ class Appendix5aPopulatorService
   end
 
   def notify
+    return if no_guidance_changes?
+
     message = "Appendix 5a has been updated with #{added_guidance.count} new, "
     message += "#{changed_guidance.count} changed and "
     message += "#{removed_guidance.count} removed guidance documents"
@@ -88,5 +90,9 @@ class Appendix5aPopulatorService
     logger.info message
 
     SlackNotifierService.call(message)
+  end
+
+  def no_guidance_changes?
+    added_guidance.empty? && changed_guidance.empty? && removed_guidance.empty?
   end
 end

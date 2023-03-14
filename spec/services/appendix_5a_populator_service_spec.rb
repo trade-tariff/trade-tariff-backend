@@ -57,9 +57,7 @@ RSpec.describe Appendix5aPopulatorService do
       it 'notifies slack' do
         call
 
-        expect(SlackNotifierService)
-          .to have_received(:call)
-          .with('Appendix 5a has been updated with 0 new, 0 changed and 0 removed guidance documents')
+        expect(SlackNotifierService).not_to have_received(:call)
       end
     end
 
