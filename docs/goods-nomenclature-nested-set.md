@@ -65,7 +65,7 @@ The primary index used for hierarchy lookups is `depth` + `position`.
 
 There are also 2 other indexes
 * `goods_nomenclature_sid` - this allows for efficient JOINs to the goods_nomenclatures table
-* `oid` (unique) - this is the `oid` from the indents table is there to allow concurrent refreshes of the view
+* `oid` (unique) - this is the `oid` from the indents table. Refreshing a materialized view concurrently (ie without blocking reads from the view) requires the materialized view to have a unique index.
 
 ## Querying
 
@@ -73,7 +73,7 @@ There are also 2 other indexes
 
 ### Ancestors
 
-These can can be queried by fetching the maximium `position` at every `depth`, where -;
+These can be queried by fetching the maximium `position` at every `depth`, where -;
 * `depth` is less than the `depth` of the origin `tree_node` record
 * and the `position` is less than the `position` of the origin record
 

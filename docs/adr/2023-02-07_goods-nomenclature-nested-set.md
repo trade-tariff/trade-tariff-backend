@@ -6,7 +6,7 @@ Present: Matt Lavis, William Fish, Jeremy Wilkins, Ata Dahri
 
 ## Context
 
-We currently access the Goods Nomenclature hierarchy in an inefficient manner. We load all relevant descents of the containing Heading from the database, then filter for what is relevant.
+We currently access the Goods Nomenclature hierarchy in an inefficient manner. We load all relevant descendants of the containing Heading from the database, then filter for what is relevant.
 
 We cannot eager load measures, because they need to do their own (non-eager loadable) queries to determine ancestors before they can know which measures to look for.
 
