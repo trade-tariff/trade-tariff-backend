@@ -62,6 +62,16 @@ module GoodsNomenclatures
           ns_declarable?
         end
       end
+
+      def number_indents
+        if !values.key?(:depth)
+          super
+        elsif values[:depth] > 1
+          values[:depth] - 2
+        else
+          0
+        end
+      end
     end
   end
 end
