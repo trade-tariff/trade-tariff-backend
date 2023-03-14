@@ -1,11 +1,12 @@
 FactoryBot.define do
   factory :goods_nomenclature_query, class: 'Beta::Search::GoodsNomenclatureQuery' do
     original_search_query {}
-    adjectives {}
-    noun_chunks {}
-    nouns {}
-    verbs {}
+    adjectives { [] }
+    noun_chunks { [] }
+    nouns { [] }
+    verbs { [] }
     filters { {} }
+    quoted { [] }
 
     trait :quoted do
       quoted { ["'cherry tomatoes'"] }
@@ -16,6 +17,19 @@ FactoryBot.define do
       noun_chunks { ['tall running man'] }
       nouns { %w[man] }
       verbs { %w[run] }
+    end
+
+    trait :nouns do
+      noun_chunks { %w[ricotta] }
+      nouns { %w[ricotta] }
+    end
+
+    trait :adjectives do
+      adjectives { %w[ricotta] }
+    end
+
+    trait :verbs do
+      verbs { %w[ricotta] }
     end
 
     trait :single_hit do
@@ -31,6 +45,16 @@ FactoryBot.define do
     trait :filter do
       single_hit
       filters { { 'cheese_type' => 'fresh' } }
+    end
+
+    trait :untokenised do
+      original_search_query { 'qwdwefwfwWWWWWWWWRGRGEWGEWGEWGEWG' }
+      adjectives { [] }
+      noun_chunks { [] }
+      nouns { [] }
+      verbs { [] }
+      filters { {} }
+      quoted { [] }
     end
   end
 end
