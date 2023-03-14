@@ -238,6 +238,7 @@
       "id": "0e956af30bdc0dcd5679f2249adc6d94",
       "type": "search_query_parser_result",
       "attributes": {
+        "quoted": ["'something quoted'"],
         "corrected_search_query": "ricotta",
         "original_search_query": "ricotta",
         "verbs": [],

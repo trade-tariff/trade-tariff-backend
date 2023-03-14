@@ -15,6 +15,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           goods_nomenclature_class: 'Commodity',
           description: 'Horses, other than lemmings',
           description_indexed: 'Horses',
+          description_indexed_shingled: 'Horses',
           formatted_description: 'Horses, other than lemmings',
           search_references: 'chapter search reference heading search reference commodity search reference',
           search_intercept_terms: 'donkey baz',
@@ -72,6 +73,19 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           ancestor_11_description_indexed: nil,
           ancestor_12_description_indexed: nil,
           ancestor_13_description_indexed: nil,
+          ancestor_1_description_indexed_shingled: 'Live horses, asses, mules and hinnies',
+          ancestor_2_description_indexed_shingled: 'Live animals',
+          ancestor_3_description_indexed_shingled: nil,
+          ancestor_4_description_indexed_shingled: nil,
+          ancestor_5_description_indexed_shingled: nil,
+          ancestor_6_description_indexed_shingled: nil,
+          ancestor_7_description_indexed_shingled: nil,
+          ancestor_8_description_indexed_shingled: nil,
+          ancestor_9_description_indexed_shingled: nil,
+          ancestor_10_description_indexed_shingled: nil,
+          ancestor_11_description_indexed_shingled: nil,
+          ancestor_12_description_indexed_shingled: nil,
+          ancestor_13_description_indexed_shingled: nil,
           guides: [
             {
               id: 1, title: 'Aircraft parts', image: 'aircraft.png', url: 'https://www.gov.uk/guidance/classifying-aircraft-parts-and-accessories', strapline: 'Get help to classify drones and aircraft parts for import and export.'

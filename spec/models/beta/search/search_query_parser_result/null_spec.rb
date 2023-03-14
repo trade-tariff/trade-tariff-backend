@@ -10,6 +10,7 @@ RSpec.describe Beta::Search::SearchQueryParserResult::Null do
 
     it { is_expected.to be_a(Beta::Search::SearchQueryParserResult) }
     it { expect(result.adjectives).to eq([]) }
+    it { expect(result.quoted).to eq([]) }
     it { expect(result.nouns).to eq([]) }
     it { expect(result.noun_chunks).to eq(['ash trees']) }
     it { expect(result.verbs).to eq([]) }

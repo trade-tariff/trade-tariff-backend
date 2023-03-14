@@ -12,6 +12,7 @@ module Beta
                     :noun_chunks,
                     :original_search_query,
                     :corrected_search_query,
+                    :quoted,
                     :null_result
 
       class Standard
@@ -22,6 +23,7 @@ module Beta
 
           search_query_parser_result.original_search_query = attributes['original_search_query']
           search_query_parser_result.corrected_search_query = attributes['corrected_search_query']
+          search_query_parser_result.quoted = attributes.dig('tokens', 'quoted')
           search_query_parser_result.adjectives = attributes.dig('tokens', 'adjectives')
           search_query_parser_result.nouns = attributes.dig('tokens', 'nouns')
           search_query_parser_result.verbs = attributes.dig('tokens', 'verbs')
@@ -38,6 +40,7 @@ module Beta
 
           search_query_parser_result.original_search_query = attributes['original_search_query']
           search_query_parser_result.corrected_search_query = attributes['original_search_query']
+          search_query_parser_result.quoted = []
           search_query_parser_result.adjectives = []
           search_query_parser_result.nouns = []
           search_query_parser_result.verbs = []

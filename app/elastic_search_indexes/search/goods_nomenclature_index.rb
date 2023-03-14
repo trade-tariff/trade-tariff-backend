@@ -61,6 +61,13 @@ module Search
                     english_stemmer
                   ],
                 },
+                english_shingle: {
+                  tokenizer: 'standard',
+                  filter: %w[
+                    lowercase
+                    shingle
+                  ],
+                },
               },
               filter: {
                 english_stop: {
@@ -74,6 +81,10 @@ module Search
                 english_possessive_stemmer: {
                   type: 'stemmer',
                   language: 'possessive_english',
+                },
+                shingle: {
+                  type: 'shingle',
+                  max_shingle_size: 3,
                 },
               },
               char_filter: {
@@ -115,6 +126,20 @@ module Search
             ancestor_11_description_indexed: { analyzer: 'english', type: 'text' },
             ancestor_12_description_indexed: { analyzer: 'english', type: 'text' },
             ancestor_13_description_indexed: { analyzer: 'english', type: 'text' },
+            description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_1_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_2_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_3_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_4_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_5_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_6_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_7_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_8_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_9_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_10_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_11_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_12_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
+            ancestor_13_description_indexed_shingled: { analyzer: 'english_shingle', type: 'text' },
             filter_alcohol_volume: { type: 'keyword' },
             filter_animal_product_state: { type: 'keyword' },
             filter_animal_type: { type: 'keyword' },

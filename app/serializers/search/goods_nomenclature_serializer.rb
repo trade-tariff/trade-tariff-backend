@@ -12,29 +12,22 @@ module Search
         goods_nomenclature_class:,
         description:,
         description_indexed:,
+        description_indexed_shingled: description_indexed,
         formatted_description:,
         search_references:,
         search_intercept_terms:,
         ancestors:,
         validity_start_date:,
         validity_end_date:,
-        ancestor_1_description_indexed:, # Chapter
-        ancestor_2_description_indexed:, # Heading
-        ancestor_3_description_indexed:,
-        ancestor_4_description_indexed:,
-        ancestor_5_description_indexed:,
-        ancestor_6_description_indexed:,
-        ancestor_7_description_indexed:,
-        ancestor_8_description_indexed:,
-        ancestor_9_description_indexed:,
-        ancestor_10_description_indexed:,
-        ancestor_11_description_indexed:,
-        ancestor_12_description_indexed:,
-        ancestor_13_description_indexed:,
         guides:,
         guide_ids:,
         declarable: path_declarable?,
       }
+
+      1.upto(MAX_ANCESTORS) do |i|
+        serializable["ancestor_#{i}_description_indexed"] = send("ancestor_#{i}_description_indexed")
+        serializable["ancestor_#{i}_description_indexed_shingled"] = send("ancestor_#{i}_description_indexed_shingled")
+      end
 
       serializable.merge(serializable_classifications)
     end
@@ -129,6 +122,10 @@ module Search
 
     1.upto(MAX_ANCESTORS) do |ancestor_number|
       define_method("ancestor_#{ancestor_number}_description_indexed") do
+        ancestors[ancestor_number - 1].try(:[], :description_indexed)
+      end
+
+      define_method("ancestor_#{ancestor_number}_description_indexed_shingled") do
         ancestors[ancestor_number - 1].try(:[], :description_indexed)
       end
     end

@@ -7,6 +7,10 @@ FactoryBot.define do
     verbs {}
     filters { {} }
 
+    trait :quoted do
+      quoted { ["'cherry tomatoes'"] }
+    end
+
     trait :full_query do
       adjectives { %w[tall] }
       noun_chunks { ['tall running man'] }
