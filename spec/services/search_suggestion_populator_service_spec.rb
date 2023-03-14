@@ -38,4 +38,44 @@ RSpec.describe SearchSuggestionPopulatorService do
 
     it { expect { call }.not_to raise_error }
   end
+
+  context 'when some search suggestions belong to expired goods nomenclature' do
+    before do
+      current_goods_nomenclature = create(
+        :goods_nomenclature,
+        :with_indent,
+        goods_nomenclature_item_id: '0101090002',
+      )
+
+      expired_goods_nomenclature = create(
+        :goods_nomenclature,
+        :with_indent,
+        goods_nomenclature_item_id: '0101090003',
+        validity_start_date: 2.years.ago,
+        validity_end_date: 1.year.ago,
+      )
+
+      create(
+        :search_suggestion,
+        id: current_goods_nomenclature.goods_nomenclature_sid,
+        value: '0101090002',
+      )
+      create(
+        :search_suggestion,
+        id: expired_goods_nomenclature.goods_nomenclature_sid,
+        value: '0101090003',
+      )
+    end
+
+    let(:change_current) { change { SearchSuggestion.find(value: '0101090002') } }
+    let(:change_expired) { change { SearchSuggestion.find(value: '0101090003') } }
+
+    it 'does not remove the current search suggestions' do
+      expect { call }.not_to change_current
+    end
+
+    it 'removes the expired search suggestions' do
+      expect { call }.to change_expired.to(nil)
+    end
+  end
 end
