@@ -17,6 +17,8 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :proofs }
     it { is_expected.to respond_to :ord }
     it { is_expected.to respond_to :cumulation_methods }
+    it { is_expected.to respond_to :validity_start_date }
+    it { is_expected.to respond_to :validity_end_date }
   end
 
   describe '#links=' do
@@ -301,6 +303,74 @@ RSpec.describe RulesOfOrigin::Scheme do
       subject { scheme.has_article? 'something-unknown' }
 
       it { is_expected.to be false }
+    end
+  end
+
+  describe '#validity_start_date=' do
+    subject { described_class.new(validity_start_date: date).validity_start_date }
+
+    context 'with null' do
+      let(:date) { nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with blank string' do
+      let(:date) { '' }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with date string' do
+      let(:date) { '2023-01-01' }
+
+      it { is_expected.to eq Time.utc(2023, 1, 1, 0, 0, 0).in_time_zone }
+    end
+
+    context 'with date' do
+      let(:date) { Date.new(2023, 1, 1) }
+
+      it { is_expected.to eq Time.utc(2023, 1, 1, 0, 0, 0).in_time_zone }
+    end
+
+    context 'with datetime' do
+      let(:date) { Time.utc(2023, 1, 1, 10, 30, 0).in_time_zone }
+
+      it { is_expected.to eq Time.utc(2023, 1, 1, 10, 30, 0).in_time_zone }
+    end
+  end
+
+  describe '#validity_end_date=' do
+    subject { described_class.new(validity_end_date: date).validity_end_date }
+
+    context 'with null' do
+      let(:date) { nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with blank string' do
+      let(:date) { '' }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with date string' do
+      let(:date) { '2023-01-01' }
+
+      it { is_expected.to eq Time.utc(2023, 1, 1).end_of_day.in_time_zone }
+    end
+
+    context 'with date' do
+      let(:date) { Date.new(2023, 1, 1) }
+
+      it { is_expected.to eq Time.utc(2023, 1, 1).end_of_day.in_time_zone }
+    end
+
+    context 'with datetime' do
+      let(:date) { Time.utc(2023, 1, 1, 10, 30, 0).in_time_zone }
+
+      it { is_expected.to eq Time.utc(2023, 1, 1, 10, 30, 0).in_time_zone }
     end
   end
 end
