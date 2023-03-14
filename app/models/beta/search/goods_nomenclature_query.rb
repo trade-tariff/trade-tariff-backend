@@ -58,6 +58,8 @@ module Beta
       def query
         @query ||= if numeric?
                      goods_nomenclature_item_id_term_query
+                   elsif untokenised?
+                     fallback_query
                    else
                      multi_match_query
                    end
@@ -71,6 +73,14 @@ module Beta
 
           original_search_query + '0' * padding
         end
+      end
+
+      def untokenised?
+        @quoted.none? &&
+          @nouns.none? &&
+          @noun_chunks.none? &&
+          @verbs.none? &&
+          @adjectives.none?
       end
 
       def numeric?
@@ -88,6 +98,17 @@ module Beta
               },
             },
           },
+        }
+      end
+
+      def fallback_query
+        {
+          query: {
+            query_string: {
+              query: original_search_query,
+            },
+          },
+          size:,
         }
       end
 

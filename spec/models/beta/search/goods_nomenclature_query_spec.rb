@@ -53,6 +53,23 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       it { is_expected.to eq(expected_query) }
     end
 
+    context 'when the search query includes no tokens' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :untokenised).query }
+
+      let(:expected_query) do
+        {
+          query: {
+            query_string: {
+              query: 'qwdwefwfwWWWWWWWWRGRGEWGEWGEWGEWG',
+            },
+          },
+          size: '10',
+        }
+      end
+
+      it { is_expected.to eq(expected_query) }
+    end
+
     context 'when there are nouns, noun_chunks, verbs and adjectives' do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :full_query).query }
 
@@ -336,6 +353,26 @@ RSpec.describe Beta::Search::GoodsNomenclatureQuery do
       subject(:goods_nomenclature_query) { build(:goods_nomenclature_query) }
 
       it { is_expected.not_to be_numeric }
+    end
+  end
+
+  describe '#untokenised?' do
+    shared_examples 'a tokenized query' do |trait|
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, trait) }
+
+      it { is_expected.not_to be_untokenised }
+    end
+
+    it_behaves_like 'a tokenized query', :full_query
+    it_behaves_like 'a tokenized query', :quoted
+    it_behaves_like 'a tokenized query', :nouns
+    it_behaves_like 'a tokenized query', :adjectives
+    it_behaves_like 'a tokenized query', :verbs
+
+    context 'when there are no tokens set' do
+      subject(:goods_nomenclature_query) { build(:goods_nomenclature_query, :untokenised) }
+
+      it { is_expected.to be_untokenised }
     end
   end
 end
