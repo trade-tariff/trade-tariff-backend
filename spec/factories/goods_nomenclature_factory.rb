@@ -44,6 +44,7 @@ FactoryBot.define do
     after(:create) do |gono, _evaluator|
       if gono.associations[:goods_nomenclature_indents]
         gono.associations[:goods_nomenclature_indents].all?(&:save)
+        GoodsNomenclatures::TreeNode.refresh!
       end
     end
 
@@ -290,6 +291,8 @@ FactoryBot.define do
       productline_suffix             { Forgery(:basic).text(exactly: 2) }
       validity_end_date              { 1.year.ago.beginning_of_day }
     end
+
+    after(:create) { GoodsNomenclatures::TreeNode.refresh! }
   end
 
   factory :goods_nomenclature_description_period do

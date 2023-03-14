@@ -9,5 +9,7 @@ class RollbackWorker
     else
       TariffSynchronizer.rollback(date, keep: redownload)
     end
+
+    GoodsNomenclatures::TreeNode.refresh!
   end
 end

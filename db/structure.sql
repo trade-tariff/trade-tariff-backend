@@ -3308,6 +3308,28 @@ CREATE VIEW public.goods_nomenclatures AS
 
 
 --
+-- Name: goods_nomenclature_tree_nodes; Type: MATERIALIZED VIEW; Schema: public; Owner: -
+--
+
+CREATE MATERIALIZED VIEW public.goods_nomenclature_tree_nodes AS
+ SELECT indents.goods_nomenclature_indent_sid,
+    indents.goods_nomenclature_sid,
+    indents.number_indents,
+    indents.goods_nomenclature_item_id,
+    indents.productline_suffix,
+    (concat(indents.goods_nomenclature_item_id, indents.productline_suffix))::bigint AS "position",
+    indents.validity_start_date,
+    COALESCE(indents.validity_end_date, (min(replacement_indents.validity_start_date) - '00:00:01'::interval), nomenclatures.validity_end_date) AS validity_end_date,
+    indents.oid,
+    ((indents.number_indents + 2) - ((((indents.goods_nomenclature_item_id)::text ~~ '%00000000'::text) AND (indents.number_indents = 0)))::integer) AS depth
+   FROM ((public.goods_nomenclature_indents indents
+     JOIN public.goods_nomenclatures nomenclatures ON ((indents.goods_nomenclature_sid = nomenclatures.goods_nomenclature_sid)))
+     LEFT JOIN public.goods_nomenclature_indents replacement_indents ON (((indents.goods_nomenclature_sid = replacement_indents.goods_nomenclature_sid) AND (indents.validity_start_date < replacement_indents.validity_start_date) AND (indents.validity_end_date IS NULL))))
+  GROUP BY indents.goods_nomenclature_indent_sid, indents.goods_nomenclature_sid, indents.number_indents, indents.goods_nomenclature_item_id, indents.productline_suffix, indents.validity_start_date, indents.validity_end_date, nomenclatures.validity_end_date, indents.oid
+  WITH NO DATA;
+
+
+--
 -- Name: goods_nomenclatures_oid_seq; Type: SEQUENCE; Schema: public; Owner: -
 --
 
@@ -9711,6 +9733,27 @@ CREATE INDEX goods_nomenclature_sid ON public.goods_nomenclature_indents_oplog U
 
 
 --
+-- Name: goods_nomenclature_tree_nodes_depth_position_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX goods_nomenclature_tree_nodes_depth_position_index ON public.goods_nomenclature_tree_nodes USING btree (depth, "position");
+
+
+--
+-- Name: goods_nomenclature_tree_nodes_goods_nomenclature_sid_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX goods_nomenclature_tree_nodes_goods_nomenclature_sid_index ON public.goods_nomenclature_tree_nodes USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: goods_nomenclature_tree_nodes_oid_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX goods_nomenclature_tree_nodes_oid_index ON public.goods_nomenclature_tree_nodes USING btree (oid);
+
+
+--
 -- Name: goods_nomenclature_validity_dates; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -11180,3 +11223,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230202192506_adds_index_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230207114821_drop_referenced_id_on_search_references.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230225194140_create_table_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230303170324_create_appendix_5a.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230210140401_add_goods_nomenclature_tree_nodes.rb');
