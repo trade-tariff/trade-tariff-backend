@@ -46,7 +46,8 @@ class QuotaDefinition < Sequel::Model
                                                             primary_key: :quota_definition_sid
   one_to_many :quota_balance_events,
               key: :quota_definition_sid,
-              primary_key: :quota_definition_sid
+              primary_key: :quota_definition_sid,
+              order: Sequel.desc(:occurrence_timestamp)
 
   one_to_many :quota_suspension_periods, key: :quota_definition_sid,
                                          primary_key: :quota_definition_sid do |ds|
