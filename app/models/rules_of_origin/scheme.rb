@@ -102,6 +102,10 @@ module RulesOfOrigin
               &.content.present?
     end
 
+    def valid_for_today?
+      !(validity_start_date&.>(Time.zone.now) || validity_end_date&.<(Time.zone.now))
+    end
+
     private
 
     def new_proof(proof_attrs)

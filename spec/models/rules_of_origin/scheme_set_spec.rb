@@ -42,8 +42,20 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     end
   end
 
+  describe '#schemes' do
+    subject { scheme_set.schemes }
+
+    let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json' }
+
+    it { is_expected.to include 'eu' }
+    it { is_expected.not_to include 'past' }
+    it { is_expected.not_to include 'future' }
+  end
+
   describe '#scheme' do
     subject(:scheme) { scheme_set.scheme(scheme_code) }
+
+    let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json' }
 
     context 'for known scheme' do
       let(:scheme_code) { 'eu' }
@@ -53,6 +65,18 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
     context 'for unknown scheme' do
       let(:scheme_code) { 'UNKNOWN' }
+
+      it { expect { scheme }.to raise_exception described_class::SchemeNotFound }
+    end
+
+    context 'for scheme with past dates' do
+      let(:scheme_code) { 'past' }
+
+      it { expect { scheme }.to raise_exception described_class::SchemeNotFound }
+    end
+
+    context 'for scheme with future dates' do
+      let(:scheme_code) { 'future' }
 
       it { expect { scheme }.to raise_exception described_class::SchemeNotFound }
     end

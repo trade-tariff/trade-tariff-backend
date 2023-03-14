@@ -373,4 +373,43 @@ RSpec.describe RulesOfOrigin::Scheme do
       it { is_expected.to eq Time.utc(2023, 1, 1, 10, 30, 0).in_time_zone }
     end
   end
+
+  describe '#valid_for_today?' do
+    subject do
+      described_class.new(validity_start_date: start_date,
+                          validity_end_date: end_date)
+                     .valid_for_today?
+    end
+
+    let(:start_date) { nil }
+    let(:end_date) { nil }
+
+    context 'with future start date' do
+      let(:start_date) { 2.days.from_now }
+
+      it { is_expected.to be false }
+    end
+
+    context 'with past start date' do
+      let(:start_date) { 2.days.ago }
+
+      it { is_expected.to be true }
+    end
+
+    context 'with null start and end date' do
+      it { is_expected.to be true }
+    end
+
+    context 'with past end date' do
+      let(:end_date) { 2.days.ago }
+
+      it { is_expected.to be false }
+    end
+
+    context 'with future end date' do
+      let(:end_date) { 2.days.from_now }
+
+      it { is_expected.to be true }
+    end
+  end
 end
