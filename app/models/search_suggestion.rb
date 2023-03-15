@@ -8,12 +8,23 @@ class SearchSuggestion < Sequel::Model
 
   dataset_module do
     def fuzzy_search(query)
-      if query =~ /^\d{10}$/
+      case query
+      when nil, ''
+        []
+      when /^\d{10}$/
         where(value: query)
         .with_query(query)
         .with_score(query)
         .limit(1)
         .all
+      when /^\d+$/
+        where(Sequel.ilike(:value, "#{query}%"))
+        .with_query(query)
+        .with_score(query)
+        .order(
+          Sequel.asc(Sequel.function(:length, :value)),
+          Sequel.asc(:value),
+        )
       else
         suggestions = where(id: distinct_values(query).from_self.select(:id))
           .with_query(query)
