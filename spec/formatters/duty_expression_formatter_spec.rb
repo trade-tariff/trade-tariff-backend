@@ -227,7 +227,7 @@ RSpec.describe DutyExpressionFormatter do
                                    measurement_unit_qualifier:,
                                    duty_expression_description: 'abc',
                                    verbose: true),
-          ).to eq('abc / Percentage ABV (% vol) per 100 litre (hl)')
+          ).to eq('abc / percentage ABV (% vol) per 100 litre (hl)')
         end
       end
 
