@@ -1,5 +1,8 @@
 module GoodsNomenclatures
   class TreeNode < Sequel::Model(:goods_nomenclature_tree_nodes)
+    END_OF_TREE           = 1_000_000_000_000
+    ROUND_DOWN_TO_CHAPTER = 10_000_000_000
+
     plugin :time_machine
     set_primary_key :goods_nomenclature_indent_sid
 
@@ -34,7 +37,7 @@ module GoodsNomenclatures
       end
 
       def start_of_chapter(position_column)
-        (position_column / 10_000_000_000) * 10_000_000_000
+        (position_column / ROUND_DOWN_TO_CHAPTER) * ROUND_DOWN_TO_CHAPTER
       end
 
       def next_sibling(origin_position, origin_depth)
@@ -49,6 +52,22 @@ module GoodsNomenclatures
               (siblings_position > origin_position) &
               validity_dates_filter(:siblings)
           end
+      end
+
+      def ancestor_node_constraints(origin, ancestors)
+        (ancestors.position < origin.position) &
+          (ancestors.position >= start_of_chapter(origin.position)) &
+          validity_dates_filter(origin.table) &
+          (ancestors.position =~ previous_sibling(origin.position, ancestors.depth))
+      end
+
+      def descendant_node_constraints(origin, descendants)
+        (descendants.position > origin.position) &
+          validity_dates_filter(origin.table) &
+          (descendants.position <
+            Sequel.function(:coalesce,
+                            next_sibling(origin.position, origin.depth),
+                            END_OF_TREE))
       end
     end
   end
