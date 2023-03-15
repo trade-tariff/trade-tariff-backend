@@ -57,7 +57,7 @@ RSpec.describe MeasureUnitService do
         {
           'ASV' => {
             'abbreviation' => '% vol',
-            'expansion' => 'Percentage ABV (% vol)',
+            'expansion' => 'percentage ABV (% vol)',
             'measurement_unit_code' => 'ASV',
             'measurement_unit_qualifier_code' => nil,
             'unit' => 'percent',

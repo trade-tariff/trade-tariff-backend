@@ -694,7 +694,7 @@
   },
   "RET": {
     "measurement_unit_code": "RET",
-    "expansion": "Retail price",
+    "expansion": "retail price",
     "measurement_unit_qualifier_code": null,
     "abbreviation": "GBP",
     "unit_question": "What is the retail price of the goods you will be importing?",
