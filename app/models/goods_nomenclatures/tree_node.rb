@@ -5,7 +5,7 @@ module GoodsNomenclatures
       # If the Materialized View has never been populated, eg after a
       # rake db:test:prepare or rake db:structure:load then a non-concurrent
       # refresh is required
-      def refresh!(concurrently: true)
+      def refresh!(concurrently: false)
         db.refresh_view(:goods_nomenclature_tree_nodes, concurrently:)
       end
     end
