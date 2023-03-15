@@ -20,7 +20,7 @@ module GoodsNomenclatures
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :ancestor_nodes),
                    read_only: true do |ds|
-        ds.order(:ancestor_nodes__depth)
+        ds.order(:ancestor_nodes__position)
           .with_validity_dates(:ancestor_nodes)
           .select_append(:ancestor_nodes__depth)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, ancestors_table, _join_clauses|
@@ -40,7 +40,8 @@ module GoodsNomenclatures
                       class_name: '::GoodsNomenclature',
                       join_table: Sequel.as(:goods_nomenclature_tree_nodes, :parent_nodes),
                       read_only: true do |ds|
-        ds.with_validity_dates(:parent_nodes)
+        ds.order(:parent_nodes__position)
+          .with_validity_dates(:parent_nodes)
           .select_append(:parent_nodes__depth)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, parents_table, _join_clauses|
             parents = TreeNodeAlias.new(parents_table)
