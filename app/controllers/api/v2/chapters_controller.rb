@@ -3,57 +3,71 @@ require 'goods_nomenclature_mapper'
 module Api
   module V2
     class ChaptersController < ApiController
-      before_action :find_chapter, only: %i[show changes headings]
+      CACHE_VERSION = 1
 
       def index
-        @chapters = Chapter.eager(:chapter_note, :goods_nomenclature_descriptions).all
         respond_to do |format|
           format.csv do
             send_data(
-              Api::V2::Csv::ChapterSerializer.new(@chapters).serialized_csv,
+              Api::V2::Csv::ChapterSerializer.new(chapters).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
               disposition: "attachment; filename=#{TradeTariffBackend.service}-chapters-#{actual_date.iso8601}.csv",
             )
           end
 
-          format.any { render json: Api::V2::Chapters::ChapterListSerializer.new(@chapters).serializable_hash }
+          format.any do
+            cache_key = "_chapters-#{actual_date}/v#{CACHE_VERSION}-#{TradeTariffBackend.service}"
+
+            serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
+              Api::V2::Chapters::ChapterListSerializer.new(chapters).serializable_hash.to_json
+            end
+
+            render json: serialized_result
+          end
         end
       end
 
       def show
-        root_headings = GoodsNomenclatureMapper.new(chapter.headings_dataset
-                                                      .eager(:goods_nomenclature_descriptions,
-                                                             :goods_nomenclature_indents)
-                                                      .all).root_entries
+        cache_key = "_chapter-#{chapter_id}-#{actual_date}/v#{CACHE_VERSION}-#{TradeTariffBackend.service}"
 
-        options = { is_collection: false }
-        options[:include] = [:section, :guides, :headings, 'headings.children']
-        presenter = Api::V2::Chapters::ChapterPresenter.new(chapter, root_headings)
-        render json: Api::V2::Chapters::ChapterSerializer.new(presenter, options).serializable_hash
+        serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
+          headings = chapter.headings_dataset
+            .eager(:goods_nomenclature_descriptions,
+                   :goods_nomenclature_indents)
+            .all
+          root_headings = GoodsNomenclatureMapper.new(headings).root_entries
+
+          options = { is_collection: false }
+          options[:include] = [:section, :guides, :headings, 'headings.children']
+          presenter = Api::V2::Chapters::ChapterPresenter.new(chapter, root_headings)
+
+          Api::V2::Chapters::ChapterSerializer.new(presenter, options).serializable_hash.to_json
+        end
+
+        render json: serialized_result
       end
 
       def changes
-        key = "chapter-#{@chapter.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}/changes"
-        @changes = Rails.cache.fetch(key, expires_at: actual_date.end_of_day) do
-          ChangeLog.new(@chapter.changes.where do |o|
-            o.operation_date <= actual_date
-          end)
-        end
-
+        cache_key = "_chapter-#{chapter_id}-#{actual_date}/changes-v#{CACHE_VERSION}-#{TradeTariffBackend.service}"
         options = {}
         options[:include] = [:record, 'record.geographical_area', 'record.measure_type']
-        render json: Api::V2::Changes::ChangeSerializer.new(@changes.changes, options).serializable_hash
+        serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
+          changes = chapter.changes.where { |o| o.operation_date <= actual_date }
+          change_log = ChangeLog.new(changes)
+
+          Api::V2::Changes::ChangeSerializer.new(change_log.changes, options).serializable_hash.to_json
+        end
+
+        render json: serialized_result
       end
 
       def headings
-        chapter_headings = chapter.headings
-
         respond_to do |format|
           filename = "#{TradeTariffBackend.service}-chapter-#{params[:id]}-headings-#{actual_date.iso8601}.csv"
 
           format.csv do
             send_data(
-              Api::V2::Csv::HeadingSerializer.new(chapter_headings).serialized_csv,
+              Api::V2::Csv::HeadingSerializer.new(chapter.headings).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
               disposition: "attachment; filename=#{filename}",
             )
@@ -63,18 +77,21 @@ module Api
 
       private
 
-      attr_reader :chapter
+      def chapter
+        @chapter ||= Chapter.actual
+                            .by_code(chapter_id)
+                            .non_hidden
+                            .take
+      end
 
-      def find_chapter
-        @chapter = Chapter.actual
-                          .where(goods_nomenclature_item_id: chapter_id)
-                          .take
-
-        raise Sequel::RecordNotFound if @chapter.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
+      def chapters
+        Chapter
+          .eager(:chapter_note, :goods_nomenclature_descriptions)
+          .all
       end
 
       def chapter_id
-        "#{params[:id]}00000000"
+        params[:id]
       end
     end
   end
