@@ -16,7 +16,7 @@ module Api
           end
 
           format.any do
-            cache_key = "_chapters-#{actual_date}/v#{CACHE_VERSION}-#{TradeTariffBackend.service}"
+            cache_key = "_chapters-#{actual_date}/v#{CACHE_VERSION}"
 
             serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
               Api::V2::Chapters::ChapterListSerializer.new(chapters).serializable_hash.to_json
@@ -28,7 +28,7 @@ module Api
       end
 
       def show
-        cache_key = "_chapter-#{chapter_id}-#{actual_date}/v#{CACHE_VERSION}-#{TradeTariffBackend.service}"
+        cache_key = "_chapter-#{chapter_id}-#{actual_date}/v#{CACHE_VERSION}"
 
         serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
           headings = chapter.headings_dataset
@@ -48,7 +48,7 @@ module Api
       end
 
       def changes
-        cache_key = "_chapter-#{chapter_id}-#{actual_date}/changes-v#{CACHE_VERSION}-#{TradeTariffBackend.service}"
+        cache_key = "_chapter-#{chapter_id}-#{actual_date}/changes-v#{CACHE_VERSION}"
         options = {}
         options[:include] = [:record, 'record.geographical_area', 'record.measure_type']
         serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
