@@ -163,41 +163,49 @@ RSpec.describe DutyExpressionFormatter do
         end
       end
 
-      context 'when monetary unit present' do
+      context 'when monetary unit present and formatted is `true`' do
         let(:options) do
           {
             duty_amount: 0.52,
             duty_expression_id: '66',
             duty_expression_description: 'abc',
             monetary_unit: 'EUR',
-            formatted:,
-            verbose:,
+            formatted: true,
+            verbose: false,
           }
         end
-        let(:verbose) { false }
-        let(:formatted) { false }
 
-        context 'when formatted is `true`' do
-          let(:formatted) { true }
+        it { expect(described_class.format(options)).to eq('<span>0.52</span> EUR') }
+      end
 
-          it 'result includes monetary unit' do
-            expect(described_class.format(options)).to eq('<span>0.52</span> EUR')
-          end
+      context 'when monetary unit present and formatted is `false`' do
+        let(:options) do
+          {
+            duty_amount: 0.52,
+            duty_expression_id: '66',
+            duty_expression_description: 'abc',
+            monetary_unit: 'EUR',
+            formatted: false,
+            verbose: false,
+          }
         end
 
-        context 'when not formatted is `false`' do
-          it 'result includes monetary unit' do
-            expect(described_class.format(options)).to eq('0.52 EUR')
-          end
+        it { expect(described_class.format(options)).to eq('0.52 EUR') }
+      end
+
+      context 'when monetary unit present and formatted is `false` and verbose is `true`' do
+        let(:options) do
+          {
+            duty_amount: 0.52,
+            duty_expression_id: '66',
+            duty_expression_description: 'abc',
+            monetary_unit: 'EUR',
+            formatted: false,
+            verbose: true,
+          }
         end
 
-        context 'when verbose is true' do
-          let(:verbose) { true }
-
-          it 'returns the amount with currency sign' do
-            expect(described_class.format(options)).to eq('€0.52')
-          end
-        end
+        it { expect(described_class.format(options)).to eq('€0.52') }
       end
 
       context 'when measurement unit and measurement unit qualifier present' do
@@ -227,7 +235,7 @@ RSpec.describe DutyExpressionFormatter do
                                    measurement_unit_qualifier:,
                                    duty_expression_description: 'abc',
                                    verbose: true),
-          ).to eq('abc / Percentage ABV (% vol) per 100 litre (hl)')
+          ).to eq('abc / percentage ABV (% vol) per 100 litre (hl)')
         end
       end
 

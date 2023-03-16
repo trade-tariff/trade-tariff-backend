@@ -390,11 +390,14 @@ class Measure < Sequel::Model
   end
 
   def verbose_duty_expression
-    prettify_generated_duty_expression!(measure_components.map(&:verbose_duty_expression).join(' '))
+    expression = measure_components.map(&:verbose_duty_expression).join(' ')
+    prettify_generated_duty_expression(expression)
   end
 
-  def prettify_generated_duty_expression!(duty_expression)
-    duty_expression.gsub(/\s\s/, ' ').gsub(/(\d)\s+%/, '\1%').sub(/\/\s[a-zA-Z]/, &:downcase)
+  def prettify_generated_duty_expression(duty_expression)
+    duty_expression
+      .gsub(/\s\s/, ' ') # Replace double spaces with single space
+      .gsub(/(\d)\s+%/, '\1%') # Remove space between number and percentage
   end
 
   def order_number

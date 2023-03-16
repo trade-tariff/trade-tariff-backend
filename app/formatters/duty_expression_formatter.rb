@@ -17,16 +17,24 @@ class DutyExpressionFormatter
       monetary_unit = opts[:monetary_unit_abbreviation].presence || opts[:monetary_unit]
       measurement_unit = opts[:measurement_unit]
       measurement_unit_qualifier = opts[:measurement_unit_qualifier]
-      measurement_unit_abbreviation = measurement_unit.try :abbreviation,
-                                                           measurement_unit_qualifier: measurement_unit_qualifier
-      measurement_unit_expansion = measurement_unit.try :expansion,
-                                                        measurement_unit_qualifier: measurement_unit_qualifier
+      measurement_unit_abbreviation = measurement_unit.try(:abbreviation,
+                                                           measurement_unit_qualifier:)
       resolved_meursing_component = opts[:resolved_meursing]
       formatted = opts[:formatted]
       verbose = opts[:verbose]
-      if monetary_unit && verbose
-        monetary_unit_to_symbol = Currency.new(monetary_unit).try :format,
-                                                                  prettify(duty_amount).to_s
+
+      if verbose
+        measurement_unit_expansion = measurement_unit.try(
+          :expansion,
+          measurement_unit_qualifier:,
+        )
+        monetary_unit_to_symbol = Currency.new(monetary_unit).try(
+          :format,
+          prettify(duty_amount).to_s,
+        )
+      else
+        measurement_unit_expansion = nil
+        monetary_unit_to_symbol = nil
       end
 
       output = []
@@ -34,7 +42,7 @@ class DutyExpressionFormatter
       when '99'
         output << if formatted
                     "<abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
-                  elsif verbose
+                  elsif verbose && measurement_unit_expansion
                     measurement_unit_expansion
                   else
                     measurement_unit_abbreviation.to_s
@@ -68,7 +76,7 @@ class DutyExpressionFormatter
         if measurement_unit_abbreviation.present?
           output << if formatted
                       "/ <abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
-                    elsif verbose
+                    elsif verbose && measurement_unit_expansion
                       "/ #{measurement_unit_expansion}"
                     else
                       "/ #{measurement_unit_abbreviation}"
@@ -97,7 +105,7 @@ class DutyExpressionFormatter
         if measurement_unit_abbreviation.present?
           output << if formatted
                       "/ <abbr title='#{measurement_unit.description}'>#{measurement_unit_abbreviation}</abbr>"
-                    elsif verbose
+                    elsif verbose && measurement_unit_expansion
                       "/ #{measurement_unit_expansion}"
                     else
                       "/ #{measurement_unit_abbreviation}"

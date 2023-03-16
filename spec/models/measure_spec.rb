@@ -1266,26 +1266,19 @@ RSpec.describe Measure do
     it { is_expected.to eq([4]) } # Modification regulation measure
   end
 
-  describe '.prettify_generated_duty_expression!' do
-    subject(:measure) { create(:measure) }
+  describe '#prettify_generated_duty_expression' do
+    subject(:measure) { create(:measure).prettify_generated_duty_expression(duty_expression) }
 
-    let(:generated_string) { '100 % /  Percentage ABV (% vol) per 100 litre (hl)' }
-    let(:generated_string_without_percent_amount) { '£0.30 / 100 kg per % of sucrose by weight, including other sugars expressed as sucrose (%sacchar.)' }
+    context 'when there are multiple spaces in the duty expression' do
+      let(:duty_expression) { '100 with  multiple space  in it' }
 
-    it 'removes extra spaces and space before percent symbol and lowercase first character of expansion text' do
-      expect(measure.prettify_generated_duty_expression!(generated_string)).to eq '100% / percentage ABV (% vol) per 100 litre (hl)'
+      it { is_expected.to eq '100 with multiple space in it' }
     end
 
-    it 'removes spaces if there are multiple % symbols' do
-      expect(measure.prettify_generated_duty_expression!('2.70 % + EAR MAX 6.20 % +ADSZR 11 %')).to eq '2.70% + EAR MAX 6.20% +ADSZR 11%'
-    end
+    context 'when there are simple expressed ad valorem percentages' do
+      let(:duty_expression) { '100 %' }
 
-    it 'does not remove space if unit is not present' do
-      expect(measure.prettify_generated_duty_expression!(generated_string_without_percent_amount)).to eq generated_string_without_percent_amount
-    end
-
-    it 'removes space from unit and not from expansion' do
-      expect(measure.prettify_generated_duty_expression!('100 % /  100 kg per % of sucrose')).to eq '100% / 100 kg per % of sucrose'
+      it { is_expected.to eq '100%' }
     end
   end
 end
