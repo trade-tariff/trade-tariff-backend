@@ -231,10 +231,39 @@ RSpec.describe GoodsNomenclatures::NestedSet do
             it { is_expected.to eq_pk tree[:subheading] }
           end
 
-          context 'for eager loaded goods nomenclatures childs chilrens parent' do
-            subject { eager_loaded.associations[:ns_children].first.associations[:ns_children].first.associations[:ns_parent] }
+          context 'for eager loaded goods nomenclatures childs childrens parent' do
+            subject do
+              eager_loaded.associations[:ns_children]
+                          .first
+                          .associations[:ns_children]
+                          .first
+                          .associations[:ns_parent]
+            end
 
             it { is_expected.to eq_pk tree[:subsubheading] }
+          end
+
+          context 'when including ancestors' do
+            let(:eager_loaded) do
+              commodities.eager(:ns_ancestors, :ns_descendants).all.first
+            end
+
+            context 'for eager loaded goods nomenclatures childs childrens parent' do
+              subject(:leaf) do
+                eager_loaded.associations[:ns_children]
+                            .first
+                            .associations[:ns_children]
+                            .first
+                            .associations[:ns_ancestors]
+              end
+
+              it 'populates descendant ancestors automatically' do
+                expect(leaf).to eq_pk tree.values_at(:chapter,
+                                                     :heading,
+                                                     :subheading,
+                                                     :subsubheading)
+              end
+            end
           end
         end
       end

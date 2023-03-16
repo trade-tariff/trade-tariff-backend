@@ -140,6 +140,10 @@ module GoodsNomenclatures
 
       if parent
         @associations[:ns_parent] ||= parent
+
+        if parent.associations[:ns_ancestors]
+          @associations[:ns_ancestors] ||= (parent.associations[:ns_ancestors] + [parent])
+        end
       end
 
       if descendants.empty?
