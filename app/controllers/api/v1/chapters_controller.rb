@@ -51,7 +51,7 @@ module Api
       private
 
       def chapter
-        @chapter = Chapter.actual
+        @chapter ||= Chapter.actual
           .by_code(chapter_id)
           .non_hidden
           .take
