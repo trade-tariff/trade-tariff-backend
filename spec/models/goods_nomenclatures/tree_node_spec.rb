@@ -1,6 +1,14 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::TreeNode do
+  around { |example| TimeMachine.now { example.run } }
+
+  describe 'Sequel::Model config' do
+    subject { described_class }
+
+    it { is_expected.to have_attributes primary_key: :goods_nomenclature_indent_sid }
+  end
+
   describe 'attributes' do
     it { is_expected.to respond_to :goods_nomenclature_sid }
     it { is_expected.to respond_to :position }
@@ -46,5 +54,123 @@ RSpec.describe GoodsNomenclatures::TreeNode do
 
     it { is_expected.to have_attributes position: expected_position }
     it { is_expected.to have_attributes number_indents: commodity.number_indents }
+  end
+
+  describe '.previous_sibling' do
+    let(:subheading) { create :commodity, :with_chapter_and_heading }
+    let(:siblings) { create_list :commodity, 3, parent: subheading }
+
+    context 'with first sibling' do
+      subject do
+        described_class.previous_sibling(siblings.first.tree_node.position,
+                                         siblings.first.tree_node.depth)
+                       .first
+                       .values[:previous_sibling]
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with second sibling' do
+      subject do
+        described_class.previous_sibling(siblings.second.tree_node.position,
+                                         siblings.second.tree_node.depth)
+                       .first
+                       .values[:previous_sibling]
+      end
+
+      it { is_expected.to eq siblings.first.tree_node.position }
+    end
+
+    context 'with third sibling' do
+      subject do
+        described_class.previous_sibling(siblings.third.tree_node.position,
+                                         siblings.third.tree_node.depth)
+                       .first
+                       .values[:previous_sibling]
+      end
+
+      it { is_expected.to eq siblings.second.tree_node.position }
+    end
+  end
+
+  describe '.next_sibling' do
+    let(:subheading) { create :commodity, :with_chapter_and_heading }
+    let(:siblings) { create_list :commodity, 3, parent: subheading }
+
+    context 'with first sibling' do
+      subject do
+        described_class.next_sibling(siblings.first.tree_node.position,
+                                     siblings.first.tree_node.depth)
+                       .first
+                       .values[:next_sibling]
+      end
+
+      it { is_expected.to eq siblings.second.tree_node.position }
+    end
+
+    context 'with second sibling' do
+      subject do
+        described_class.next_sibling(siblings.second.tree_node.position,
+                                     siblings.second.tree_node.depth)
+                       .first
+                       .values[:next_sibling]
+      end
+
+      it { is_expected.to eq siblings.third.tree_node.position }
+    end
+
+    context 'with third sibling' do
+      subject do
+        described_class.next_sibling(siblings.third.tree_node.position,
+                                     siblings.third.tree_node.depth)
+                       .first
+                       .values[:next_sibling]
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.ancestor_node_constraints' do
+    subject { described_class.ancestor_node_constraints(table1, table2) }
+
+    let(:table1) { GoodsNomenclatures::TreeNodeAlias.new(:table1) }
+    let(:table2) { GoodsNomenclatures::TreeNodeAlias.new(:table2) }
+
+    it { is_expected.to be_instance_of Sequel::SQL::BooleanExpression }
+  end
+
+  describe '.descendant_node_constraints' do
+    subject { described_class.descendant_node_constraints(table1, table2) }
+
+    let(:table1) { GoodsNomenclatures::TreeNodeAlias.new(:table1) }
+    let(:table2) { GoodsNomenclatures::TreeNodeAlias.new(:table2) }
+
+    it { is_expected.to be_instance_of Sequel::SQL::BooleanExpression }
+  end
+
+  describe '#goods_nomenclature relationship' do
+    subject(:commodity) { tree_node.goods_nomenclature }
+
+    let(:indent) { commodity.goods_nomenclature_indent }
+
+    let :tree_node do
+      commodity = create :commodity,
+                         :with_indent,
+                         goods_nomenclature_item_id: '0101010101',
+                         indents: 1
+
+      described_class
+        .actual
+        .first(goods_nomenclature_sid: commodity.goods_nomenclature_sid)
+    end
+
+    it { is_expected.to be_instance_of Commodity }
+    it { is_expected.to have_attributes goods_nomenclature_sid: tree_node.goods_nomenclature_sid }
+
+    it 'reciprocates correctly' do
+      expect(commodity.tree_node.object_id).to eq tree_node.object_id
+    end
   end
 end

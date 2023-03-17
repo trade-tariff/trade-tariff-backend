@@ -1,6 +1,14 @@
 FactoryBot.define do
   factory :heading, parent: :goods_nomenclature, class: 'Heading' do
-    goods_nomenclature_item_id { "#{generate(:heading_short_code)}000000" }
+    indents { 0 }
+
+    goods_nomenclature_item_id do
+      if parent
+        "#{parent.goods_nomenclature_item_id.first(2)}01000000"
+      else
+        "#{generate(:heading_short_code)}000000"
+      end
+    end
 
     trait :declarable do
       producline_suffix { '80' }
