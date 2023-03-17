@@ -163,5 +163,9 @@ module GoodsNomenclatures
     def ns_declarable?
       producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && ns_children.empty?
     end
+
+    def applicable_measures
+      ns_ancestors.flat_map(&:ns_measures) + ns_measures
+    end
   end
 end
