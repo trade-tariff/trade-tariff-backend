@@ -101,13 +101,20 @@ module GoodsNomenclatures
                   read_only: true do |ds|
         ds.with_actual(Measure)
           .with_regulation_dates_query
-          .exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
-          .order(Sequel.asc(:measures__geographical_area_id),
-                 Sequel.asc(:measures__measure_type_id),
-                 Sequel.asc(:measures__additional_code_type_id),
-                 Sequel.asc(:measures__additional_code_id),
-                 Sequel.asc(:measures__ordernumber),
-                 Sequel.desc(:effective_start_date))
+          .without_excluded_types
+          .order(*Declarable::MEASURES_SORT_ORDER)
+      end
+
+      one_to_many :ns_overview_measures,
+                  primary_key: :goods_nomenclature_sid,
+                  key: :goods_nomenclature_sid,
+                  class_name: '::Measure',
+                  read_only: true do |ds|
+        ds.with_actual(Measure)
+          .with_regulation_dates_query
+          .without_excluded_types
+          .overview
+          .order(*Declarable::MEASURES_SORT_ORDER)
       end
     end
 

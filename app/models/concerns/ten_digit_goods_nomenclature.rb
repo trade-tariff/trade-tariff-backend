@@ -23,21 +23,7 @@ module TenDigitGoodsNomenclature
     end
 
     one_to_many :overview_measures, key: {}, primary_key: {}, class_name: 'Measure', dataset: lambda {
-      dataset = measures_dataset
-        .filter(measures__measure_type_id: MeasureType::SUPPLEMENTARY_TYPES)
-        .or(
-          measures__measure_type_id: MeasureType::THIRD_COUNTRY,
-          measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
-        )
-
-      if TradeTariffBackend.uk?
-        dataset.or(
-          measures__measure_type_id: MeasureType::VAT_TYPES,
-          measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
-        )
-      else
-        dataset
-      end
+      measures_dataset.overview
     }
 
     delegate :section, :section_id, to: :chapter, allow_nil: true

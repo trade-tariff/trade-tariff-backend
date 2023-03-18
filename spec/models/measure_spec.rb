@@ -53,6 +53,83 @@ RSpec.describe Measure do
     it { is_expected.to have_attributes args: coalesced_columns }
   end
 
+  shared_examples 'includes measure type' do |measure_type, geographical_area|
+    context %(with measures of type #{MeasureType.const_get(measure_type).first} are included#{" for #{geographical_area}" if geographical_area}) do
+      let(:geographical_area_id) { geographical_area } if geographical_area
+      let(:measure_type_id) { MeasureType.const_get(measure_type).first }
+
+      it { is_expected.to include measure.measure_sid }
+    end
+  end
+
+  shared_examples 'excludes measure type' do |measure_type, geographical_area|
+    context %(with measures of type #{MeasureType.const_get(measure_type).first} are excluded#{" for #{geographical_area}" if geographical_area}) do
+      let(:geographical_area_id) { geographical_area } if geographical_area
+      let(:measure_type_id) { MeasureType.const_get(measure_type).first }
+
+      it { is_expected.not_to include measure.measure_sid }
+    end
+  end
+
+  describe '.without_excluded_types' do
+    subject { measure.class.without_excluded_types.all.map(&:measure_sid) }
+
+    before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
+
+    let(:measure) { create :measure, :with_base_regulation, measure_type_id: }
+
+    context 'for UK service' do
+      let(:service) { 'uk' }
+
+      it_behaves_like 'excludes measure type', 'DEFAULT_EXCLUDED_TYPES'
+      it_behaves_like 'includes measure type', 'QUOTA_TYPES'
+      it_behaves_like 'includes measure type', 'NATIONAL_PR_TYPES'
+    end
+
+    context 'for XI service' do
+      let(:service) { 'xi' }
+
+      it_behaves_like 'excludes measure type', 'DEFAULT_EXCLUDED_TYPES'
+      it_behaves_like 'excludes measure type', 'QUOTA_TYPES'
+      it_behaves_like 'excludes measure type', 'NATIONAL_PR_TYPES'
+    end
+  end
+
+  describe '.overview' do
+    subject { measure.class.overview.all.map(&:measure_sid) }
+
+    before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
+
+    let(:measure) do
+      create :measure, :with_base_regulation, measure_type_id:,
+                                              geographical_area_id:
+    end
+
+    let(:geographical_area_id) { GeographicalArea::ERGA_OMNES_ID }
+
+    context 'for UK service' do
+      let(:service) { 'uk' }
+
+      it_behaves_like 'excludes measure type', 'TARIFF_PREFERENCE'
+      it_behaves_like 'includes measure type', 'SUPPLEMENTARY_TYPES'
+      it_behaves_like 'includes measure type', 'THIRD_COUNTRY'
+      it_behaves_like 'excludes measure type', 'THIRD_COUNTRY', 'FR'
+      it_behaves_like 'includes measure type', 'VAT_TYPES'
+      it_behaves_like 'excludes measure type', 'VAT_TYPES', 'FR'
+    end
+
+    context 'for XI service' do
+      let(:service) { 'xi' }
+
+      it_behaves_like 'excludes measure type', 'TARIFF_PREFERENCE'
+      it_behaves_like 'includes measure type', 'SUPPLEMENTARY_TYPES'
+      it_behaves_like 'includes measure type', 'THIRD_COUNTRY'
+      it_behaves_like 'excludes measure type', 'THIRD_COUNTRY', 'FR'
+      it_behaves_like 'excludes measure type', 'VAT_TYPES'
+      it_behaves_like 'excludes measure type', 'VAT_TYPES', 'FR'
+    end
+  end
+
   describe '.with_regulation_dates_query' do
     subject { described_class.with_regulation_dates_query.all.first }
 

@@ -355,6 +355,31 @@ class Measure < Sequel::Model
           end
         end
     end
+
+    def without_excluded_types
+      exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
+    end
+
+    def overview
+      where do
+        overview_types = [
+          { measures__measure_type_id: MeasureType::SUPPLEMENTARY_TYPES },
+          {
+            measures__measure_type_id: MeasureType::THIRD_COUNTRY,
+            measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+          },
+        ]
+
+        if TradeTariffBackend.uk?
+          overview_types << {
+            measures__measure_type_id: MeasureType::VAT_TYPES,
+            measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+          }
+        end
+
+        Sequel.|(*overview_types)
+      end
+    end
   end
 
   def_column_accessor :effective_end_date, :effective_start_date

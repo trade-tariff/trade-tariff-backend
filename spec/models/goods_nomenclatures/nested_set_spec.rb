@@ -360,54 +360,18 @@ RSpec.describe GoodsNomenclatures::NestedSet do
     describe '#ns_measures' do
       subject { measure.goods_nomenclature.ns_measures.map(&:measure_sid) }
 
-      before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
-
       let :measure do
         create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
       end
 
-      context 'when the service version is the UK' do
-        let(:service) { 'uk' }
+      let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
 
-        context 'with measures that are excluded for the UK service' do
-          let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
+      it { is_expected.to include measure.measure_sid }
 
-          it { is_expected.not_to include measure.measure_sid }
-        end
+      context 'with measures that are excluded' do
+        let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
 
-        context 'with quota measures that are excluded for the XI service' do
-          let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
-
-          it { is_expected.to include measure.measure_sid }
-        end
-
-        context 'with P&R national measures that are excluded for the XI service' do
-          let(:measure_type_id) { MeasureType::NATIONAL_PR_TYPES.first }
-
-          it { is_expected.to include measure.measure_sid }
-        end
-      end
-
-      context 'when the service version is the XI' do
-        let(:service) { 'xi' }
-
-        context 'with measures that are excluded for the UK service' do
-          let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
-
-          it { is_expected.not_to include measure.measure_sid }
-        end
-
-        context 'with quota measures that are excluded for the XI service' do
-          let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
-
-          it { is_expected.not_to include measure.measure_sid }
-        end
-
-        context 'with P&R national measures that are excluded for the XI service' do
-          let(:measure_type_id) { MeasureType::NATIONAL_PR_TYPES.first }
-
-          it { is_expected.not_to include measure.measure_sid }
-        end
+        it { is_expected.not_to include measure.measure_sid }
       end
 
       context 'with eager loading' do
@@ -422,8 +386,44 @@ RSpec.describe GoodsNomenclatures::NestedSet do
             .map(&:measure_sid)
         end
 
-        let(:service) { 'uk' }
+        it { is_expected.to include measure.measure_sid }
+      end
+    end
+
+    describe '#ns_overview_measures' do
+      subject { measure.goods_nomenclature.ns_overview_measures.map(&:measure_sid) }
+
+      let :measure do
+        create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
+      end
+
+      let(:measure_type_id) { MeasureType::SUPPLEMENTARY_TYPES.first }
+
+      it { is_expected.to include measure.measure_sid }
+
+      context 'with non overview measure types' do
         let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
+
+        it { is_expected.not_to include measure.measure_sid }
+      end
+
+      context 'with measures that are excluded' do
+        let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
+
+        it { is_expected.not_to include measure.measure_sid }
+      end
+
+      context 'with eager loading' do
+        subject do
+          GoodsNomenclature
+            .actual
+            .where(goods_nomenclature_sid: measure.goods_nomenclature_sid)
+            .eager(:ns_overview_measures)
+            .all
+            .first
+            .associations[:ns_overview_measures]
+            .map(&:measure_sid)
+        end
 
         it { is_expected.to include measure.measure_sid }
       end
