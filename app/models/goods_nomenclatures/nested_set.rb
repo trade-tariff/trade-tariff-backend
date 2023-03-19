@@ -174,5 +174,9 @@ module GoodsNomenclatures
     def applicable_measures
       ns_ancestors.flat_map(&:ns_measures) + ns_measures
     end
+
+    def applicable_overview_measures
+      ns_ancestors.flat_map(&:ns_overview_measures) + ns_overview_measures
+    end
   end
 end

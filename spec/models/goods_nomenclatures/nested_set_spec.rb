@@ -481,4 +481,38 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       it { is_expected.to eq_pk [ancestor_measure, parent_measure, measure] }
     end
   end
+
+  describe '#applicable_overview_measures' do
+    subject { measure.goods_nomenclature.applicable_overview_measures }
+
+    let(:subheading) { create :commodity, :with_chapter_and_heading, :with_children }
+
+    let :measure do
+      create :measure,
+             :supplementary,
+             :with_base_regulation,
+             goods_nomenclature: subheading.ns_children.first
+    end
+
+    it { is_expected.to eq_pk [measure] }
+
+    context 'with measures against ancestors' do
+      before { ancestor_measure && parent_measure }
+
+      let :ancestor_measure do
+        create :measure,
+               :supplementary,
+               :with_base_regulation,
+               goods_nomenclature: subheading.ns_parent
+      end
+
+      let :parent_measure do
+        create :measure,
+               :with_base_regulation,
+               goods_nomenclature: subheading
+      end
+
+      it { is_expected.to eq_pk [ancestor_measure, measure] }
+    end
+  end
 end
