@@ -93,6 +93,29 @@ module GoodsNomenclatures
               TreeNode.descendant_node_constraints(origin, children)
           end
       end
+
+      one_to_many :ns_measures,
+                  primary_key: :goods_nomenclature_sid,
+                  key: :goods_nomenclature_sid,
+                  class_name: '::Measure',
+                  read_only: true do |ds|
+        ds.with_actual(Measure)
+          .with_regulation_dates_query
+          .without_excluded_types
+          .order(*Declarable::MEASURES_SORT_ORDER)
+      end
+
+      one_to_many :ns_overview_measures,
+                  primary_key: :goods_nomenclature_sid,
+                  key: :goods_nomenclature_sid,
+                  class_name: '::Measure',
+                  read_only: true do |ds|
+        ds.with_actual(Measure)
+          .with_regulation_dates_query
+          .without_excluded_types
+          .overview
+          .order(*Declarable::MEASURES_SORT_ORDER)
+      end
     end
 
     def recursive_ancestor_populator(ancestors)
@@ -146,6 +169,14 @@ module GoodsNomenclatures
 
     def ns_declarable?
       producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && ns_children.empty?
+    end
+
+    def applicable_measures
+      ns_ancestors.flat_map(&:ns_measures) + ns_measures
+    end
+
+    def applicable_overview_measures
+      ns_ancestors.flat_map(&:ns_overview_measures) + ns_overview_measures
     end
   end
 end

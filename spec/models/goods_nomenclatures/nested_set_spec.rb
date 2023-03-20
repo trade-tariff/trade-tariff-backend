@@ -356,6 +356,78 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
       end
     end
+
+    describe '#ns_measures' do
+      subject { measure.goods_nomenclature.ns_measures.map(&:measure_sid) }
+
+      let :measure do
+        create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
+      end
+
+      let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
+
+      it { is_expected.to include measure.measure_sid }
+
+      context 'with measures that are excluded' do
+        let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
+
+        it { is_expected.not_to include measure.measure_sid }
+      end
+
+      context 'with eager loading' do
+        subject do
+          GoodsNomenclature
+            .actual
+            .where(goods_nomenclature_sid: measure.goods_nomenclature_sid)
+            .eager(:ns_measures)
+            .all
+            .first
+            .associations[:ns_measures]
+            .map(&:measure_sid)
+        end
+
+        it { is_expected.to include measure.measure_sid }
+      end
+    end
+
+    describe '#ns_overview_measures' do
+      subject { measure.goods_nomenclature.ns_overview_measures.map(&:measure_sid) }
+
+      let :measure do
+        create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
+      end
+
+      let(:measure_type_id) { MeasureType::SUPPLEMENTARY_TYPES.first }
+
+      it { is_expected.to include measure.measure_sid }
+
+      context 'with non overview measure types' do
+        let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
+
+        it { is_expected.not_to include measure.measure_sid }
+      end
+
+      context 'with measures that are excluded' do
+        let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
+
+        it { is_expected.not_to include measure.measure_sid }
+      end
+
+      context 'with eager loading' do
+        subject do
+          GoodsNomenclature
+            .actual
+            .where(goods_nomenclature_sid: measure.goods_nomenclature_sid)
+            .eager(:ns_overview_measures)
+            .all
+            .first
+            .associations[:ns_overview_measures]
+            .map(&:measure_sid)
+        end
+
+        it { is_expected.to include measure.measure_sid }
+      end
+    end
   end
 
   describe '#ns_declarable?' do
@@ -375,6 +447,72 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       subject { create :commodity, :grouping, :without_children }
 
       it { is_expected.not_to be_ns_declarable }
+    end
+  end
+
+  describe '#applicable_measures' do
+    subject { measure.goods_nomenclature.applicable_measures }
+
+    let(:subheading) { create :commodity, :with_chapter_and_heading, :with_children }
+
+    let :measure do
+      create :measure,
+             :with_base_regulation,
+             goods_nomenclature: subheading.ns_children.first
+    end
+
+    it { is_expected.to eq_pk [measure] }
+
+    context 'with measures against ancestors' do
+      before { ancestor_measure && parent_measure }
+
+      let :ancestor_measure do
+        create :measure,
+               :with_base_regulation,
+               goods_nomenclature: subheading.ns_parent
+      end
+
+      let :parent_measure do
+        create :measure,
+               :with_base_regulation,
+               goods_nomenclature: subheading
+      end
+
+      it { is_expected.to eq_pk [ancestor_measure, parent_measure, measure] }
+    end
+  end
+
+  describe '#applicable_overview_measures' do
+    subject { measure.goods_nomenclature.applicable_overview_measures }
+
+    let(:subheading) { create :commodity, :with_chapter_and_heading, :with_children }
+
+    let :measure do
+      create :measure,
+             :supplementary,
+             :with_base_regulation,
+             goods_nomenclature: subheading.ns_children.first
+    end
+
+    it { is_expected.to eq_pk [measure] }
+
+    context 'with measures against ancestors' do
+      before { ancestor_measure && parent_measure }
+
+      let :ancestor_measure do
+        create :measure,
+               :supplementary,
+               :with_base_regulation,
+               goods_nomenclature: subheading.ns_parent
+      end
+
+      let :parent_measure do
+        create :measure,
+               :with_base_regulation,
+               goods_nomenclature: subheading
+      end
+
+      it { is_expected.to eq_pk [ancestor_measure, measure] }
     end
   end
 end

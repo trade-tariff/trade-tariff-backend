@@ -317,6 +317,69 @@ class Measure < Sequel::Model
 
       query.where(measure_generating_regulation_role: role)
     end
+
+    def effective_start_date_column
+      Sequel.function(:coalesce,
+                      :measures__validity_start_date,
+                      :base_regulation__validity_start_date,
+                      :modification_regulation__validity_start_date)
+    end
+
+    def effective_end_date_column
+      Sequel.function(:coalesce,
+                      :measures__validity_end_date,
+                      :base_regulation__effective_end_date,
+                      :base_regulation__validity_end_date,
+                      :modification_regulation__effective_end_date,
+                      :modification_regulation__validity_end_date)
+    end
+
+    def with_regulation_dates_query
+      association_left_join(:base_regulation, :modification_regulation)
+        .select_append(Sequel.as(effective_start_date_column, :effective_start_date))
+        .select_append(Sequel.as(effective_end_date_column, :effective_end_date))
+        .where do |_query|
+          regulation_check = \
+            (Sequel.qualify(:base_regulation, :base_regulation_id) !~ nil) |
+            (Sequel.qualify(:modification_regulation, :modification_regulation_id) !~ nil)
+
+          if model.point_in_time
+            start_date = effective_start_date_column
+            end_date   = effective_end_date_column
+
+            regulation_check &
+              (start_date <= model.point_in_time) &
+              ((end_date >= model.point_in_time) | (end_date =~ nil))
+          else
+            regulation_check
+          end
+        end
+    end
+
+    def without_excluded_types
+      exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
+    end
+
+    def overview
+      where do
+        overview_types = [
+          { measures__measure_type_id: MeasureType::SUPPLEMENTARY_TYPES },
+          {
+            measures__measure_type_id: MeasureType::THIRD_COUNTRY,
+            measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+          },
+        ]
+
+        if TradeTariffBackend.uk?
+          overview_types << {
+            measures__measure_type_id: MeasureType::VAT_TYPES,
+            measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+          }
+        end
+
+        Sequel.|(*overview_types)
+      end
+    end
   end
 
   def_column_accessor :effective_end_date, :effective_start_date

@@ -19,6 +19,185 @@ RSpec.describe Measure do
     it { is_expected.to respond_to :trade_remedy? }
   end
 
+  describe '.effective_start_date_column' do
+    subject(:sql_column) { described_class.effective_start_date_column }
+
+    let :coalesced_columns do
+      %i[
+        measures__validity_start_date
+        base_regulation__validity_start_date
+        modification_regulation__validity_start_date
+      ]
+    end
+
+    it { is_expected.to be_instance_of Sequel::SQL::Function }
+    it { is_expected.to have_attributes name: :coalesce }
+    it { is_expected.to have_attributes args: coalesced_columns }
+  end
+
+  describe '.effective_end_date_column' do
+    subject(:sql_column) { described_class.effective_end_date_column }
+
+    let :coalesced_columns do
+      %i[
+        measures__validity_end_date
+        base_regulation__effective_end_date
+        base_regulation__validity_end_date
+        modification_regulation__effective_end_date
+        modification_regulation__validity_end_date
+      ]
+    end
+
+    it { is_expected.to be_instance_of Sequel::SQL::Function }
+    it { is_expected.to have_attributes name: :coalesce }
+    it { is_expected.to have_attributes args: coalesced_columns }
+  end
+
+  shared_examples 'includes measure type' do |measure_type, geographical_area|
+    context %(with measures of type #{MeasureType.const_get(measure_type).first} are included#{" for #{geographical_area}" if geographical_area}) do
+      let(:geographical_area_id) { geographical_area } if geographical_area
+      let(:measure_type_id) { MeasureType.const_get(measure_type).first }
+
+      it { is_expected.to include measure.measure_sid }
+    end
+  end
+
+  shared_examples 'excludes measure type' do |measure_type, geographical_area|
+    context %(with measures of type #{MeasureType.const_get(measure_type).first} are excluded#{" for #{geographical_area}" if geographical_area}) do
+      let(:geographical_area_id) { geographical_area } if geographical_area
+      let(:measure_type_id) { MeasureType.const_get(measure_type).first }
+
+      it { is_expected.not_to include measure.measure_sid }
+    end
+  end
+
+  describe '.without_excluded_types' do
+    subject { measure.class.without_excluded_types.all.map(&:measure_sid) }
+
+    before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
+
+    let(:measure) { create :measure, :with_base_regulation, measure_type_id: }
+
+    context 'for UK service' do
+      let(:service) { 'uk' }
+
+      it_behaves_like 'excludes measure type', 'DEFAULT_EXCLUDED_TYPES'
+      it_behaves_like 'includes measure type', 'QUOTA_TYPES'
+      it_behaves_like 'includes measure type', 'NATIONAL_PR_TYPES'
+    end
+
+    context 'for XI service' do
+      let(:service) { 'xi' }
+
+      it_behaves_like 'excludes measure type', 'DEFAULT_EXCLUDED_TYPES'
+      it_behaves_like 'excludes measure type', 'QUOTA_TYPES'
+      it_behaves_like 'excludes measure type', 'NATIONAL_PR_TYPES'
+    end
+  end
+
+  describe '.overview' do
+    subject { measure.class.overview.all.map(&:measure_sid) }
+
+    before { allow(TradeTariffBackend).to receive(:service).and_return(service) }
+
+    let(:measure) do
+      create :measure, :with_base_regulation, measure_type_id:,
+                                              geographical_area_id:
+    end
+
+    let(:geographical_area_id) { GeographicalArea::ERGA_OMNES_ID }
+
+    context 'for UK service' do
+      let(:service) { 'uk' }
+
+      it_behaves_like 'excludes measure type', 'TARIFF_PREFERENCE'
+      it_behaves_like 'includes measure type', 'SUPPLEMENTARY_TYPES'
+      it_behaves_like 'includes measure type', 'THIRD_COUNTRY'
+      it_behaves_like 'excludes measure type', 'THIRD_COUNTRY', 'FR'
+      it_behaves_like 'includes measure type', 'VAT_TYPES'
+      it_behaves_like 'excludes measure type', 'VAT_TYPES', 'FR'
+    end
+
+    context 'for XI service' do
+      let(:service) { 'xi' }
+
+      it_behaves_like 'excludes measure type', 'TARIFF_PREFERENCE'
+      it_behaves_like 'includes measure type', 'SUPPLEMENTARY_TYPES'
+      it_behaves_like 'includes measure type', 'THIRD_COUNTRY'
+      it_behaves_like 'excludes measure type', 'THIRD_COUNTRY', 'FR'
+      it_behaves_like 'excludes measure type', 'VAT_TYPES'
+      it_behaves_like 'excludes measure type', 'VAT_TYPES', 'FR'
+    end
+  end
+
+  describe '.with_regulation_dates_query' do
+    subject { described_class.with_regulation_dates_query.all.first }
+
+    around { |example| TimeMachine.now { example.run } }
+    before { measure }
+
+    shared_examples 'it has effective dates' do |regulation_type|
+      let :regulation do
+        create regulation_type, validity_start_date: 3.days.ago.beginning_of_day,
+                                validity_end_date: 10.days.from_now.end_of_day
+      end
+
+      let :measure do
+        create :measure, generating_regulation: regulation,
+                         validity_start_date: nil,
+                         validity_end_date: nil
+      end
+
+      context 'with dates on measure' do
+        let :measure do
+          create :measure, generating_regulation: regulation,
+                           validity_start_date: 5.days.ago.beginning_of_day,
+                           validity_end_date: 3.days.from_now.end_of_day
+        end
+
+        it { is_expected.to have_attributes effective_start_date: 5.days.ago.beginning_of_day }
+        it { is_expected.to have_attributes effective_end_date: 3.days.from_now.end_of_day.floor(6) }
+      end
+
+      context 'with effective dates on regulation' do
+        let :regulation do
+          create regulation_type, validity_start_date: 3.days.ago.beginning_of_day,
+                                  validity_end_date: 10.days.from_now.end_of_day.floor(6),
+                                  effective_end_date: 12.days.from_now.end_of_day.floor(6)
+        end
+
+        it { is_expected.to have_attributes effective_start_date: 3.days.ago.beginning_of_day }
+        it { is_expected.to have_attributes effective_end_date: 12.days.from_now.end_of_day.floor(6) }
+      end
+
+      context 'with validity dates on regulation' do
+        it { is_expected.to have_attributes effective_start_date: 3.days.ago.beginning_of_day }
+        it { is_expected.to have_attributes effective_end_date: 10.days.from_now.end_of_day.floor(6) }
+      end
+
+      context 'with no dates at all' do
+        let :regulation do
+          create regulation_type, validity_start_date: nil,
+                                  validity_end_date: nil
+        end
+
+        it { is_expected.to be_nil }
+      end
+    end
+
+    it_behaves_like 'it has effective dates', :base_regulation
+    it_behaves_like 'it has effective dates', :modification_regulation
+
+    context 'without base_regulation or modification_regulation' do
+      let :measure do
+        create :measure, measure_generating_regulation_id: nil,
+                         measure_generating_regulation_role: nil
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
+
   describe '#goods_nomenclature' do
     around { |example| TimeMachine.now { example.run } }
 
