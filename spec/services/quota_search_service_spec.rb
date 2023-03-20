@@ -24,7 +24,8 @@ RSpec.describe QuotaSearchService do
   let!(:duplicate_measure) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number1.quota_order_number_id, validity_start_date: validity_start_date + 1.hour }
 
   let(:quota_order_number2) { create :quota_order_number }
-  let!(:measure2) { create :measure, :with_goods_nomenclature, ordernumber: quota_order_number2.quota_order_number_id, validity_start_date: }
+  let(:goods_nomenclature2) { create :goods_nomenclature, parent: create(:heading) }
+  let!(:measure2) { create :measure, goods_nomenclature: goods_nomenclature2, ordernumber: quota_order_number2.quota_order_number_id, validity_start_date: }
   let!(:quota_definition2) do
     create :quota_definition,
            quota_order_number_sid: quota_order_number2.quota_order_number_sid,

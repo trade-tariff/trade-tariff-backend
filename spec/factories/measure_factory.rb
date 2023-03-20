@@ -18,38 +18,41 @@ FactoryBot.define do
       monetary_unit_code { nil }
       measure_type_series_id { 'S' }
       base_regulation_effective_end_date { nil }
+      generating_regulation { nil }
+      default_start_date { 3.years.ago.beginning_of_day }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
 
     measure_sid { generate(:measure_sid) }
     measure_type_id { generate(:measure_type_id) }
-    measure_generating_regulation_id { generate(:base_regulation_sid) }
-    measure_generating_regulation_role { Measure::BASE_REGULATION_ROLE }
+    measure_generating_regulation_id { generating_regulation&.regulation_id || generate(:base_regulation_sid) }
+    measure_generating_regulation_role { generating_regulation&.role || Measure::BASE_REGULATION_ROLE }
     additional_code_type_id { generate(:additional_code_type_id) }
-    goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
+    goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
+    goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || 10.times.map { Random.rand(9) }.join }
     geographical_area_sid { generate(:geographical_area_sid) }
     geographical_area_id { generate(:geographical_area_id) }
-    validity_start_date { 3.years.ago.beginning_of_day }
+    validity_start_date { default_start_date }
     validity_end_date   { nil }
     reduction_indicator { [nil, 1, 2, 3].sample }
 
     measure_type do
       create :measure_type, measure_type_id:,
-                            validity_start_date: validity_start_date - 1.day,
+                            validity_start_date: (validity_start_date || default_start_date) - 1.day,
                             measure_explosion_level: type_explosion_level,
                             order_number_capture_code:,
                             trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
                             measure_type_series_id:
     end
+
     geographical_area do
       create(
         :geographical_area,
         :with_description,
         geographical_area_sid:,
         geographical_area_id:,
-        validity_start_date: validity_start_date - 1.day,
+        validity_start_date: (validity_start_date || default_start_date) - 1.day,
       )
     end
 
@@ -142,8 +145,6 @@ FactoryBot.define do
       goods_nomenclature do
         create(:goods_nomenclature,
                validity_start_date: validity_start_date - 1.day,
-               goods_nomenclature_item_id:,
-               goods_nomenclature_sid:,
                producline_suffix: gono_producline_suffix,
                indents: gono_number_indents)
       end

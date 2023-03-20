@@ -8,16 +8,15 @@ RSpec.describe Measure do
   end
 
   describe 'methods delegated to measure_type' do
-    it do
-      expect(build(:measure)).to respond_to :rules_of_origin_apply?,
-                                            :third_country?,
-                                            :excise?,
-                                            :vat?,
-                                            :preferential_quota?,
-                                            :tariff_preference?,
-                                            :trade_remedy?,
-                                            :excise?
-    end
+    subject { build :measure }
+
+    it { is_expected.to respond_to :rules_of_origin_apply? }
+    it { is_expected.to respond_to :third_country? }
+    it { is_expected.to respond_to :excise? }
+    it { is_expected.to respond_to :vat? }
+    it { is_expected.to respond_to :preferential_quota? }
+    it { is_expected.to respond_to :tariff_preference? }
+    it { is_expected.to respond_to :trade_remedy? }
   end
 
   describe '#goods_nomenclature' do
