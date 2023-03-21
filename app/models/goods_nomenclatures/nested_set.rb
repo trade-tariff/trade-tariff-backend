@@ -64,7 +64,8 @@ module GoodsNomenclatures
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
                    after_load: :recursive_descendant_populator,
                    read_only: true do |ds|
-        ds.order(:descendant_nodes__position)
+        ds.non_hidden
+          .order(:descendant_nodes__position)
           .with_validity_dates(:descendant_nodes)
           .select_append(:descendant_nodes__depth)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
@@ -84,7 +85,8 @@ module GoodsNomenclatures
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
                    read_only: true do |ds|
-        ds.order(:child_nodes__position)
+        ds.non_hidden
+          .order(:child_nodes__position)
           .with_validity_dates(:child_nodes)
           .select_append(:child_nodes__depth)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, children_table, _join_clauses|
