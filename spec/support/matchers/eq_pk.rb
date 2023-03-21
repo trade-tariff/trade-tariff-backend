@@ -4,7 +4,7 @@ RSpec::Matchers.define :eq_pk do
       actual.map(&:class) == expected.map(&:class) &&
         actual.map(&:pk) == expected.map(&:pk)
     else
-      actual.instance_of?(expected.class) && actual.pk == expected.pk
+      actual.instance_of?(expected.class) && actual&.pk == expected&.pk
     end
   end
 

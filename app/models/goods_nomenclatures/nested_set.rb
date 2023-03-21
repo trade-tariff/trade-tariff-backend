@@ -24,6 +24,7 @@ module GoodsNomenclatures
         ds.order(:ancestor_nodes__position)
           .with_validity_dates(:ancestor_nodes)
           .select_append(:ancestor_nodes__depth)
+          .select_append(Sequel.as(false, :leaf))
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, ancestors_table, _join_clauses|
             ancestors = TreeNodeAlias.new(ancestors_table)
             origin    = TreeNodeAlias.new(origin_table)
@@ -44,6 +45,7 @@ module GoodsNomenclatures
         ds.order(:parent_nodes__position)
           .with_validity_dates(:parent_nodes)
           .select_append(:parent_nodes__depth)
+          .select_append(Sequel.as(false, :leaf))
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, parents_table, _join_clauses|
             parents = TreeNodeAlias.new(parents_table)
             origin  = TreeNodeAlias.new(origin_table)
@@ -168,7 +170,11 @@ module GoodsNomenclatures
     end
 
     def ns_declarable?
-      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && ns_children.empty?
+      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && ns_leaf?
+    end
+
+    def ns_leaf?
+      values.key?(:leaf) ? values[:leaf] : ns_children.empty?
     end
 
     def applicable_measures
