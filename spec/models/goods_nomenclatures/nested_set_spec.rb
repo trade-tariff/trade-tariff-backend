@@ -77,9 +77,9 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has parent' do |context_name, node, parent_node|
         context "with #{context_name}" do
-          subject { tree[node].ns_parent&.goods_nomenclature_sid }
+          subject { tree[node].ns_parent }
 
-          it { is_expected.to eq tree[parent_node]&.goods_nomenclature_sid }
+          it { is_expected.to eq_pk tree[parent_node] }
         end
       end
 
