@@ -420,7 +420,7 @@ FactoryBot.define do
       measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
       after(:build) do |measure, _evaluator|
-        create(:modification_regulation, :unapproved,  modification_regulation_id: measure.measure_generating_regulation_id)
+        create(:modification_regulation, :unapproved, modification_regulation_id: measure.measure_generating_regulation_id)
       end
     end
 
