@@ -145,12 +145,14 @@ class Measure < Sequel::Model
   many_to_one :modification_regulation, primary_key: %i[modification_regulation_id
                                                         modification_regulation_role],
                                         key: %i[measure_generating_regulation_id
-                                                measure_generating_regulation_role]
+                                                measure_generating_regulation_role],
+                                        conditions: { approved_flag: true }
 
   many_to_one :base_regulation, primary_key: %i[base_regulation_id
                                                 base_regulation_role],
                                 key: %i[measure_generating_regulation_id
-                                        measure_generating_regulation_role]
+                                        measure_generating_regulation_role],
+                                conditions: { approved_flag: true }
 
   def validity_start_date
     self[:validity_start_date].presence || generating_regulation.validity_start_date
@@ -208,6 +210,7 @@ class Measure < Sequel::Model
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('base_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), :effective_end_date))
         .join_table(:inner, :base_regulations, base_regulations__base_regulation_id: :measures__measure_generating_regulation_id)
+        .where(approved_flag: true)
         .actual_for_base_regulations
     end
 
@@ -216,6 +219,7 @@ class Measure < Sequel::Model
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('modification_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_end_date) => nil } => Sequel.lit('modification_regulations.effective_end_date') }, Sequel.lit('measures.validity_end_date')), :effective_end_date))
         .join_table(:inner, :modification_regulations, modification_regulations__modification_regulation_id: :measures__measure_generating_regulation_id)
+        .where(approved_flag: true)
         .actual_for_modifications_regulations
     end
 

@@ -121,6 +121,18 @@ FactoryBot.define do
       end
     end
 
+    trait :with_unapproved_base_regulation do
+      after(:create) do |measure, evaluator|
+        create(
+          :base_regulation,
+          :unapproved,
+          base_regulation_id: measure.measure_generating_regulation_id,
+          base_regulation_role: measure.measure_generating_regulation_role,
+          effective_end_date: evaluator.base_regulation_effective_end_date || Time.zone.today.in(10.years),
+        )
+      end
+    end
+
     trait :with_justification_regulation do
       after(:create) do |measure, _evaluator|
         measure.update(justification_regulation_id: 12_345, justification_regulation_role: Measure::BASE_REGULATION_ROLE)
@@ -401,6 +413,14 @@ FactoryBot.define do
 
       after(:build) do |measure, _evaluator|
         create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
+      end
+    end
+
+    trait :with_unapproved_modification_regulation do
+      measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
+
+      after(:build) do |measure, _evaluator|
+        create(:modification_regulation, :unapproved,  modification_regulation_id: measure.measure_generating_regulation_id)
       end
     end
 

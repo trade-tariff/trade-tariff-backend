@@ -265,6 +265,34 @@ RSpec.describe Measure do
     end
   end
 
+  describe '#base_regulation' do
+    context 'when base regulation approved_flag is set to true' do
+      let(:measure) { create :measure, :with_base_regulation }
+
+      it { expect(measure.base_regulation).to eq measure.base_regulation }
+    end
+
+    context 'when base regulation approved_flag is set to false' do
+      let(:measure) { create :measure, :with_unapproved_base_regulation }
+
+      it { expect(measure.base_regulation).to eq nil }
+    end
+  end
+
+  describe '#modification_regulation' do
+    context 'when modification regulation approved_flag is set to true' do
+      let(:measure) { create :measure, :with_modification_regulation }
+
+      it { expect(measure.modification_regulation).to eq measure.modification_regulation }
+    end
+
+    context 'when modification regulation approved_flag is set to false' do
+      let(:measure) { create :measure, :with_unapproved_modification_regulation }
+
+      it { expect(measure.modification_regulation).to eq nil }
+    end
+  end
+
   describe '#measures' do
     context 'with different dates and generating regulation types' do
       before do
@@ -1437,11 +1465,6 @@ RSpec.describe Measure do
     end
 
     before do
-      create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 1)
-      create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 2)
-      create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 3)
-      create(:modification_regulation, modification_regulation_id: 'R9726580')
-
       non_distinct_measure_opts = {
         goods_nomenclature_sid: 1,
         geographical_area_id: 'GB',
@@ -1466,19 +1489,55 @@ RSpec.describe Measure do
   end
 
   describe '.with_base_regulations' do
-    subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
+    context "when approved_flag is set to true" do
+      before do
+        create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 1)
+        create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 2)
+        create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 3)
+      end
 
-    include_context 'with regulation measures'
+      subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
 
-    it { is_expected.to eq([1, 2, 3]) } # Base regulation measures
+      include_context 'with regulation measures'
+
+      it { is_expected.to eq([1, 2, 3]) } # Base regulation measures
+    end
+
+    context "when approved_flag is set to false" do
+      before do
+        create(:base_regulation, :unapproved, base_regulation_id: 'R9726580', base_regulation_role: 1)
+        create(:base_regulation, :unapproved, base_regulation_id: 'R9726580', base_regulation_role: 2)
+        create(:base_regulation, :unapproved, base_regulation_id: 'R9726580', base_regulation_role: 3)
+      end
+
+      subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
+
+      include_context 'with regulation measures'
+
+      it { is_expected.to eq([]) } # Base regulation measures
+    end
   end
 
   describe '.with_modification_regulations' do
-    subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
+    context "when approved_flag is set to true" do
+      before { create(:modification_regulation, modification_regulation_id: 'R9726580') }
 
-    include_context 'with regulation measures'
+      subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
 
-    it { is_expected.to eq([4]) } # Modification regulation measure
+      include_context 'with regulation measures'
+
+      it { is_expected.to eq([4]) } # Modification regulation measure
+    end
+
+    context "when approved_flag is set to false" do
+      before { create(:modification_regulation, :unapproved,  modification_regulation_id: 'R9726580') }
+
+      subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
+
+      include_context 'with regulation measures'
+
+      it { is_expected.to eq([]) } # Modification regulation measure
+    end
   end
 
   describe '#prettify_generated_duty_expression' do
