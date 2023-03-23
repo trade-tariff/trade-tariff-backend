@@ -183,6 +183,13 @@ RSpec.describe Measure do
 
         it { is_expected.to be_nil }
       end
+
+      context 'without an approved generating regulation' do
+        let(:measure) { create :measure, generating_regulation: regulation }
+        let(:regulation) { create regulation_type, :unapproved }
+
+        it { is_expected.to be_nil }
+      end
     end
 
     it_behaves_like 'it has effective dates', :base_regulation
