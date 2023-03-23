@@ -121,7 +121,8 @@ module GoodsNomenclatures
     end
 
     def recursive_ancestor_populator(ancestors)
-      @associations ||= { ns_ancestors: ancestors }
+      @associations ||= {}
+      @associations[:ns_ancestors] ||= ancestors
 
       parents_ancestors = ancestors.dup
       parent = parents_ancestors.pop
@@ -132,7 +133,8 @@ module GoodsNomenclatures
     end
 
     def recursive_descendant_populator(descendants, parent = nil)
-      @associations ||= { ns_descendants: descendants }
+      @associations ||= {}
+      @associations[:ns_descendants] ||= descendants
 
       if parent
         @associations[:ns_parent] ||= parent
