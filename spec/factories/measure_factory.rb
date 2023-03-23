@@ -116,7 +116,7 @@ FactoryBot.define do
           :base_regulation,
           base_regulation_id: measure.measure_generating_regulation_id,
           base_regulation_role: measure.measure_generating_regulation_role,
-          effective_end_date: evaluator.base_regulation_effective_end_date || Time.zone.today.in(10.years),
+          effective_end_date: evaluator.base_regulation_effective_end_date,
         )
       end
     end
@@ -128,7 +128,7 @@ FactoryBot.define do
           :unapproved,
           base_regulation_id: measure.measure_generating_regulation_id,
           base_regulation_role: measure.measure_generating_regulation_role,
-          effective_end_date: evaluator.base_regulation_effective_end_date || Time.zone.today.in(10.years),
+          effective_end_date: evaluator.base_regulation_effective_end_date,
         )
       end
     end
@@ -140,7 +140,7 @@ FactoryBot.define do
         create(:base_regulation,
                base_regulation_id: measure.justification_regulation_id,
                base_regulation_role: measure.justification_regulation_role,
-               effective_end_date: Time.zone.today.in(10.years))
+               effective_end_date: nil)
       end
     end
 
