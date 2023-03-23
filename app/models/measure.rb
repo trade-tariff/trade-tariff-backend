@@ -351,24 +351,28 @@ class Measure < Sequel::Model
                       :modification_regulation__validity_end_date)
     end
 
-    def with_regulation_dates_query
+    def with_generating_regulation
       association_left_join(:base_regulation, :modification_regulation)
+        .where do |_query|
+          (Sequel.qualify(:base_regulation, :base_regulation_id) !~ nil) |
+            (Sequel.qualify(:modification_regulation, :modification_regulation_id) !~ nil)
+        end
+    end
+
+    def with_regulation_dates_query
+      with_generating_regulation
         .select_append(Sequel.as(effective_start_date_column, :effective_start_date))
         .select_append(Sequel.as(effective_end_date_column, :effective_end_date))
-        .where do |_query|
-          regulation_check = \
-            (Sequel.qualify(:base_regulation, :base_regulation_id) !~ nil) |
-            (Sequel.qualify(:modification_regulation, :modification_regulation_id) !~ nil)
-
+        .where do |dataset|
           if model.point_in_time
             start_date = effective_start_date_column
             end_date   = effective_end_date_column
 
-            regulation_check &
+            dataset &
               (start_date <= model.point_in_time) &
               ((end_date >= model.point_in_time) | (end_date =~ nil))
           else
-            regulation_check
+            dataset
           end
         end
     end

@@ -6,6 +6,7 @@ module Cache
       TimeMachine.now do
         current_sids = Measure
           .actual
+          .with_generating_regulation
           .distinct(:additional_code_id, :additional_code_type_id)
           .select(:additional_code_sid, :additional_code_id, :additional_code_type_id)
           .exclude(additional_code_sid: nil)
