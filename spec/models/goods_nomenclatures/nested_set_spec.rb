@@ -101,7 +101,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it supports eager loading' do |relationship|
         subject do
-          commodities.eager(relationship).all.first.associations[relationship]
+          commodities.eager(:tree_node, relationship).all.first.associations[relationship]
         end
 
         let :commodities do
