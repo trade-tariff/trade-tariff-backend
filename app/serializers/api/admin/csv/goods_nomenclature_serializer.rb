@@ -10,17 +10,19 @@ module Api
         column :description, column_name: 'Description'
         column :validity_start_date, column_name: 'Start date'
         column :validity_end_date, column_name: 'End date'
-        column :number_indents, column_name: 'Indentation'
-        column :end_line, column_name: 'End line', &:path_declarable?
+
+        column(:number_indents, column_name: 'Indentation') do |goods_nomenclature|
+          goods_nomenclature.depth > 1 ? goods_nomenclature.depth - 2 : 0
+        end
+
+        column :end_line, column_name: 'End line', &:ns_declarable?
 
         # Uses materialized path to determine declarability of goods nomenclature to avoid slow csv generation
         column :goods_nomenclature_class, column_name: 'Class' do |goods_nomenclature|
-          goods_nomenclature_item_id = goods_nomenclature.goods_nomenclature_item_id
-
-          class_name = GoodsNomenclature.sti_load(goods_nomenclature_item_id:).class.name
+          class_name = goods_nomenclature.class.name
 
           if class_name == 'Commodity'
-            goods_nomenclature.path_declarable? ? 'Commodity' : 'Subheading'
+            goods_nomenclature.ns_declarable? ? 'Commodity' : 'Subheading'
           else
             class_name
           end
@@ -31,7 +33,7 @@ module Api
         end
 
         column :ancestors, column_name: 'Hierarchy' do |goods_nomenclature|
-          ancestor_ids = goods_nomenclature.path_ancestors.map do |ancestor|
+          ancestor_ids = goods_nomenclature.ns_ancestors.map do |ancestor|
             "#{ancestor.goods_nomenclature_item_id}_#{ancestor.producline_suffix}"
           end
 
