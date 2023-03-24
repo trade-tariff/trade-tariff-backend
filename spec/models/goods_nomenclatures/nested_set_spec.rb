@@ -463,13 +463,15 @@ RSpec.describe GoodsNomenclatures::NestedSet do
   end
 
   describe '#applicable_measures' do
-    subject { measure.goods_nomenclature.applicable_measures }
+    subject(:applied_measures) { measure.goods_nomenclature.applicable_measures }
 
     let(:subheading) { create :commodity, :with_chapter_and_heading, :with_children }
 
     let :measure do
       create :measure,
              :with_base_regulation,
+             geographical_area_id: 'ES',
+             measure_type_id: 2,
              goods_nomenclature: subheading.ns_children.first
     end
 
@@ -481,21 +483,26 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       let :ancestor_measure do
         create :measure,
                :with_base_regulation,
+               geographical_area_id: 'FR',
                goods_nomenclature: subheading.ns_parent
       end
 
       let :parent_measure do
         create :measure,
                :with_base_regulation,
+               geographical_area_id: 'ES',
+               measure_type_id: 4,
                goods_nomenclature: subheading
       end
 
-      it { is_expected.to eq_pk [ancestor_measure, parent_measure, measure] }
+      it 'has correct and sorted measures' do
+        expect(applied_measures).to eq_pk [measure, parent_measure, ancestor_measure]
+      end
     end
   end
 
   describe '#applicable_overview_measures' do
-    subject { measure.goods_nomenclature.applicable_overview_measures }
+    subject(:applied_measures) { measure.goods_nomenclature.applicable_overview_measures }
 
     let(:subheading) { create :commodity, :with_chapter_and_heading, :with_children }
 
@@ -503,6 +510,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       create :measure,
              :supplementary,
              :with_base_regulation,
+             :erga_omnes,
              goods_nomenclature: subheading.ns_children.first
     end
 
@@ -513,18 +521,23 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       let :ancestor_measure do
         create :measure,
-               :supplementary,
+               :vat,
                :with_base_regulation,
+               :erga_omnes,
                goods_nomenclature: subheading.ns_parent
       end
 
       let :parent_measure do
         create :measure,
+               :tariff_preference,
                :with_base_regulation,
+               :erga_omnes,
                goods_nomenclature: subheading
       end
 
-      it { is_expected.to eq_pk [ancestor_measure, measure] }
+      it 'has correct and sorted measures' do
+        expect(applied_measures).to eq_pk [measure, ancestor_measure]
+      end
     end
   end
 end

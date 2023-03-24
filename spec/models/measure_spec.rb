@@ -1459,4 +1459,51 @@ RSpec.describe Measure do
       it { is_expected.to eq '100%' }
     end
   end
+
+  describe '#sort_key' do
+    subject { measure.sort_key }
+
+    let :measure do
+      create :measure,
+             :with_additional_code,
+             :with_additional_code_type,
+             geographical_area_id: 'FR',
+             ordernumber: '10',
+             validity_end_date:
+    end
+
+    context 'with end date' do
+      let(:validity_end_date) { 10.days.from_now.end_of_day }
+
+      let :sort_key do
+        [
+          'FR',
+          measure.measure_type_id,
+          measure.additional_code_type_id,
+          measure.additional_code_id,
+          '10',
+          measure.values[:validity_end_date],
+        ]
+      end
+
+      it { is_expected.to eq sort_key }
+    end
+
+    context 'without end date' do
+      let(:validity_end_date) { nil }
+
+      let :sort_key do
+        [
+          'FR',
+          measure.measure_type_id,
+          measure.additional_code_type_id,
+          measure.additional_code_id,
+          '10',
+          Measure::FAR_FUTURE_END_DATE,
+        ]
+      end
+
+      it { is_expected.to eq sort_key }
+    end
+  end
 end

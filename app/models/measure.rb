@@ -18,6 +18,8 @@ class Measure < Sequel::Model
     DEFINITIVE_ANTIDUMPING_ROLE,
   ].freeze
 
+  FAR_FUTURE_END_DATE = Date.parse('3023-12-31').end_of_day.freeze
+
   set_primary_key [:measure_sid]
 
   plugin :time_machine
@@ -551,6 +553,19 @@ class Measure < Sequel::Model
 
   def meursing_measures
     @meursing_measures ||= MeursingMeasureFinderService.new(self, meursing_additional_code_id).call
+  end
+
+  def sort_key
+    end_date_key = values.key?(:effective_end_date) ? :effective_end_date : :validity_end_date
+
+    [
+      geographical_area_id,
+      measure_type_id,
+      additional_code_type_id,
+      additional_code_id,
+      ordernumber,
+      values[end_date_key] || FAR_FUTURE_END_DATE,
+    ]
   end
 
   private
