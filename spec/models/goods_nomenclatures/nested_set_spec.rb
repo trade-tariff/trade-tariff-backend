@@ -212,6 +212,15 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           it { is_expected.to have_attributes length: 3 }
         end
 
+        context 'with hidden_goods_nomenclatures' do
+          before do
+            create :hidden_goods_nomenclature,
+                   goods_nomenclature_item_id: tree[:commodity2].goods_nomenclature_item_id
+          end
+
+          it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1]
+        end
+
         context 'when eager loading' do
           let(:eager_loaded) { commodities.eager(:ns_descendants).all.first }
 
@@ -294,6 +303,15 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           subject { tree[:second_tree].ns_children.map(&:goods_nomenclature_item_id) }
 
           it { is_expected.to have_attributes length: 1 }
+        end
+
+        context 'with hidden_goods_nomenclatures' do
+          before do
+            create :hidden_goods_nomenclature,
+                   goods_nomenclature_item_id: tree[:commodity3].goods_nomenclature_item_id
+          end
+
+          it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading]
         end
       end
 
