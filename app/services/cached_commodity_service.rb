@@ -32,6 +32,7 @@ class CachedCommodityService
         { certificate: :certificate_descriptions },
         { certificate_type: :certificate_type_description },
         { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
+        :appendix_5a,
         :monetary_unit,
         :measurement_unit_qualifier,
         { measure_condition_code: :measure_condition_code_description },

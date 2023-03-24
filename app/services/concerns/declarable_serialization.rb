@@ -11,7 +11,6 @@ module DeclarableSerialization
     import_measures.legal_acts
     import_measures.suspending_regulation
     import_measures.measure_conditions
-    import_measures.measure_conditions.appendix_5a
     import_measures.measure_conditions.measure_condition_code
     import_measures.measure_condition_permutation_groups
     import_measures.measure_condition_permutation_groups.permutations
@@ -32,7 +31,6 @@ module DeclarableSerialization
     export_measures.legal_acts
     export_measures.suspending_regulation
     export_measures.measure_conditions
-    export_measures.measure_conditions.appendix_5a
     export_measures.measure_conditions.measure_condition_code
     export_measures.measure_condition_permutation_groups
     export_measures.measure_condition_permutation_groups.permutations
