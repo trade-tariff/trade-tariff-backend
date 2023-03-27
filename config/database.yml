@@ -1,7 +1,10 @@
+<% require_relative '../app/lib/trade_tariff_backend' %>
+
 default: &default
   adapter: postgresql
   encoding: utf8
   pool: 12
+  search_path: <%= TradeTariffBackend.merged_xi_uk_databases? ? TradeTariffBackend.service : "public" %>
 
 development:
   <<: *default

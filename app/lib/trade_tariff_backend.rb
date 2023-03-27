@@ -64,6 +64,10 @@ module TradeTariffBackend
       ENV.fetch('SERVICE', 'uk')
     end
 
+    def merged_xi_uk_databases?
+      ENV.fetch('MERGED_XI_UK_DATABASES', 'false') == 'true'
+    end
+
     def deployed_environment
       PaasConfig.space
     end
