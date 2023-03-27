@@ -73,6 +73,17 @@ RSpec.describe Cache::AdditionalCodeIndex, flaky: true do
         goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
         goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
       )
+
+      # Non-approved measure
+      create(
+        :measure,
+        :with_unapproved_base_regulation,
+        additional_code_sid: additional_code.additional_code_sid,
+        additional_code_type_id: additional_code.additional_code_type_id,
+        additional_code_id: additional_code.additional_code,
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
+      )
     end
 
     it { expect(dataset.count).to eq 1 }

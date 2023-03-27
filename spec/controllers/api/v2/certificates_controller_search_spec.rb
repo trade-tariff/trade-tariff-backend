@@ -79,6 +79,7 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
     before do
       create(
         :measure,
+        :with_base_regulation,
         :with_measure_conditions,
         goods_nomenclature: create(:heading, :with_description),
         certificate_type_code: certificate.certificate_type_code,

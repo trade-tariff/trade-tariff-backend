@@ -39,6 +39,13 @@ RSpec.describe Cache::AdditionalCodeSerializer do
       goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
       goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
     )
+    create(
+      :measure,
+      :with_unapproved_base_regulation,
+      additional_code_sid: additional_code.additional_code_sid,
+      goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
+      goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
+    )
 
     create(
       :measure,

@@ -2,7 +2,13 @@ RSpec.describe Cache::FootnoteSerializer do
   subject(:serialized) { described_class.new(footnote).as_json }
 
   let(:footnote) { create(:footnote, :with_description) }
-  let(:measure_with_goods_nomenclature) { create(:measure, :with_base_regulation, goods_nomenclature: create(:heading, :with_description)) }
+  let(:measure_with_goods_nomenclature) do
+    create(
+      :measure,
+      :with_base_regulation,
+      goods_nomenclature: create(:heading, :with_description),
+    )
+  end
 
   let(:pattern) do
     {
@@ -23,9 +29,15 @@ RSpec.describe Cache::FootnoteSerializer do
 
   before do
     measure_no_goods_nomenclature = create(:measure, :with_base_regulation, goods_nomenclature: nil)
+    measure_no_approved_regulation = create(
+      :measure,
+      :with_unapproved_base_regulation,
+      goods_nomenclature: create(:heading, :with_description),
+    )
 
     create(:footnote_association_measure, measure: measure_with_goods_nomenclature, footnote:)
     create(:footnote_association_measure, measure: measure_no_goods_nomenclature, footnote:)
+    create(:footnote_association_measure, measure: measure_no_approved_regulation, footnote:)
   end
 
   it { is_expected.to match_json_expression(pattern) }

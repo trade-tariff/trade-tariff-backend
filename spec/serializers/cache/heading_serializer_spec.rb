@@ -115,7 +115,7 @@ RSpec.describe Cache::HeadingSerializer do
               {
                 measure_sid: Integer,
                 effective_start_date: String,
-                effective_end_date: String,
+                effective_end_date: nil,
                 goods_nomenclature_sid: Integer,
                 vat: false,
                 duty_expression_id: String,

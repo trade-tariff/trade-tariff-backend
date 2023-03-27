@@ -20,17 +20,6 @@ RSpec.describe Cache::CertificateSerializer do
     )
   end
 
-  let(:measure_with_no_goods_nomenclature) do
-    create(
-      :measure,
-      :with_base_regulation,
-      :with_measure_conditions,
-      certificate_code: certificate.certificate_code,
-      certificate_type_code: certificate.certificate_type_code,
-      goods_nomenclature: nil,
-    )
-  end
-
   let(:pattern) do
     {
       id: String,
@@ -49,7 +38,25 @@ RSpec.describe Cache::CertificateSerializer do
 
   before do
     measure_with_goods_nomenclature
-    measure_with_no_goods_nomenclature
+    # Missing goods nomenclature
+    create(
+      :measure,
+      :with_base_regulation,
+      :with_measure_conditions,
+      certificate_code: certificate.certificate_code,
+      certificate_type_code: certificate.certificate_type_code,
+      goods_nomenclature: nil,
+    )
+
+    # No approved regulation
+    create(
+      :measure,
+      :with_unapproved_base_regulation,
+      :with_measure_conditions,
+      certificate_code: certificate.certificate_code,
+      certificate_type_code: certificate.certificate_type_code,
+      goods_nomenclature: create(:heading, :with_description),
+    )
   end
 
   it { is_expected.to match_json_expression(pattern) }

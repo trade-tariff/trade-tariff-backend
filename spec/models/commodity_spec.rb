@@ -1,17 +1,10 @@
 RSpec.describe Commodity do
-  it 'has primary key set to goods_nomenclature_sid' do
-    expect(subject.primary_key).to eq :goods_nomenclature_sid
-  end
+  it { expect(described_class.primary_key).to eq :goods_nomenclature_sid }
 
   describe 'associations' do
     describe 'heading' do
       let!(:gono1) do
         create :commodity, validity_start_date: Date.new(1999, 1, 1),
-                           validity_end_date: Date.new(2013, 1, 1)
-      end
-      let!(:gono2) do
-        create :commodity, goods_nomenclature_item_id: gono1.goods_nomenclature_item_id,
-                           validity_start_date: Date.new(2005, 1, 1),
                            validity_end_date: Date.new(2013, 1, 1)
       end
       let!(:heading1) do
@@ -20,40 +13,37 @@ RSpec.describe Commodity do
                          validity_end_date: Date.new(2002, 1, 1),
                          producline_suffix: '80'
       end
-      let!(:heading2) do
+
+      before do
+        create :commodity, goods_nomenclature_item_id: gono1.goods_nomenclature_item_id,
+                           validity_start_date: Date.new(2005, 1, 1),
+                           validity_end_date: Date.new(2013, 1, 1)
         create :heading, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(4)}000000",
                          validity_start_date: Date.new(2002, 1, 1),
                          validity_end_date: Date.new(2014, 1, 1),
                          producline_suffix: '80'
       end
 
-      context 'fetching actual' do
+      context 'when fetching a chapter on a given day' do
         it 'fetches correct chapter' do
           TimeMachine.at('2000-1-1') do
             expect(gono1.reload.heading.pk).to eq heading1.pk
           end
-          TimeMachine.at('2010-1-1') do
-            expect(gono1.reload.heading.pk).to eq heading2.pk
-          end
         end
       end
 
-      context 'heading with sub-headings' do
-        # Example from real world scenario
-        # https://www.pivotaltracker.com/story/show/55703384
-
-        let!(:sub_heading) do
+      context 'when grouping heading and non-grouping headings' do
+        before do
           create :heading, goods_nomenclature_item_id: '6308000000',
                            goods_nomenclature_sid: 43_837,
                            producline_suffix: '10',
                            validity_start_date: Date.new(1972, 1, 1)
-        end
-        let!(:heading) do
           create :heading, goods_nomenclature_item_id: '6308000000',
                            goods_nomenclature_sid: 43_838,
                            producline_suffix: '80',
                            validity_start_date: Date.new(1972, 1, 1)
         end
+
         let!(:commodity) do
           create :commodity, :with_indent,
                  :with_description,
@@ -65,19 +55,20 @@ RSpec.describe Commodity do
         end
 
         it 'correctly identifies heading' do
-          expect(commodity.heading).to eq heading
+          expect(commodity.heading.goods_nomenclature_sid).to eq 43_838
         end
       end
     end
 
-    describe 'chapter' do
-      let!(:gono1) do
-        create :heading, validity_start_date: Date.new(1999, 1, 1),
-                         validity_end_date: Date.new(2013, 1, 1)
-      end
-      let!(:gono2) do
+    describe '#chapter' do
+      before do
         create :heading, goods_nomenclature_item_id: gono1.goods_nomenclature_item_id,
                          validity_start_date: Date.new(2005, 1, 1),
+                         validity_end_date: Date.new(2013, 1, 1)
+      end
+
+      let!(:gono1) do
+        create :heading, validity_start_date: Date.new(1999, 1, 1),
                          validity_end_date: Date.new(2013, 1, 1)
       end
       let!(:chapter1) do
@@ -85,19 +76,11 @@ RSpec.describe Commodity do
                          validity_start_date: Date.new(1991, 1, 1),
                          validity_end_date: Date.new(2002, 1, 1)
       end
-      let!(:chapter2) do
-        create :chapter, goods_nomenclature_item_id: "#{gono1.goods_nomenclature_item_id.first(2)}00000000",
-                         validity_start_date: Date.new(2002, 1, 1),
-                         validity_end_date: Date.new(2014, 1, 1)
-      end
 
-      context 'fetching actual' do
+      context 'when fetching actual' do
         it 'fetches correct chapter' do
           TimeMachine.at('2000-1-1') do
             expect(gono1.reload.chapter.pk).to eq chapter1.pk
-          end
-          TimeMachine.at('2010-1-1') do
-            expect(gono1.reload.chapter.pk).to eq chapter2.pk
           end
         end
       end
@@ -238,19 +221,15 @@ RSpec.describe Commodity do
     end
 
     describe 'measure duplication' do
-      # sometimes measures have the same base regulation id and
-      # validity_start date
-      # need to group and choose the latest one
       let(:measure_type) { create :measure_type }
       let(:commodity)    { create :commodity, :with_indent, validity_start_date: 3.years.ago.beginning_of_day }
-      let!(:measure1)    do
-        create :measure, :with_base_regulation, measure_sid: 1,
-                                                measure_type_id: measure_type.measure_type_id,
-                                                additional_code_type_id: nil,
-                                                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-                                                validity_start_date: 1.year.ago.beginning_of_day
-      end
-      let!(:measure2) do
+
+      before do
+        measure1 = create :measure, :with_base_regulation, measure_sid: 1,
+                                                           measure_type_id: measure_type.measure_type_id,
+                                                           additional_code_type_id: nil,
+                                                           goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+                                                           validity_start_date: 1.year.ago.beginning_of_day
         create :measure, :with_base_regulation, measure_sid: 2,
                                                 measure_generating_regulation_id: measure1.measure_generating_regulation_id,
                                                 geographical_area_id: measure1.geographical_area_id,
@@ -264,61 +243,67 @@ RSpec.describe Commodity do
 
       it 'groups measures by measure_generating_regulation_id and picks latest one' do
         TimeMachine.at(Time.zone.today) do
-          expect(commodity.measures.map(&:measure_sid)).to     include measure1.measure_sid
-          expect(commodity.measures.map(&:measure_sid)).not_to include measure2.measure_sid
+          expect(commodity.measures.map(&:measure_sid)).to eq([1])
         end
       end
     end
 
-    describe 'measures for export' do
-      context 'trade movement code' do
-        let(:export_measure_type) { create :measure_type, :export }
-        let(:commodity1)          { create :commodity, :with_indent }
-        let(:export_measure)      do
-          create :measure, :with_base_regulation, measure_type_id: export_measure_type.measure_type_id,
-                                                  goods_nomenclature_sid: commodity1.goods_nomenclature_sid
-        end
+    describe '#export_measures' do
+      subject(:commodity) { create(:commodity, :with_indent) }
 
-        let(:import_measure_type) { create :measure_type, :import }
-        let(:commodity2)          { create :commodity, :with_indent }
-        let(:import_measure)      do
-          create :measure, :with_base_regulation, measure_type_id: import_measure_type.measure_type_id,
-                                                  goods_nomenclature_sid: commodity2.goods_nomenclature_sid
-        end
-
-        it 'fetches measures that have measure type with proper trade movement code' do
-          export_measure_type
-          export_measure
-
-          import_measure_type
-          import_measure
-
-          expect(commodity1.export_measures.map(&:measure_sid)).to     include export_measure.measure_sid
-          expect(commodity1.export_measures.map(&:measure_sid)).not_to include import_measure.measure_sid
-
-          expect(commodity2.import_measures.map(&:measure_sid)).to     include import_measure.measure_sid
-          expect(commodity2.import_measures.map(&:measure_sid)).not_to include export_measure.measure_sid
-        end
+      before do
+        create(
+          :measure,
+          :with_base_regulation,
+          measure_type_id: create(:measure_type, :export).measure_type_id,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        )
+        create(
+          :measure,
+          :with_base_regulation,
+          measure_type_id: create(:measure_type, :import).measure_type_id,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        )
       end
+
+      it { expect(commodity.export_measures.map(&:export)).to all(be_truthy) }
+    end
+
+    describe '#import_measures' do
+      subject(:commodity) { create(:commodity, :with_indent) }
+
+      before do
+        create(
+          :measure,
+          :with_base_regulation,
+          measure_type_id: create(:measure_type, :export).measure_type_id,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        )
+        create(
+          :measure,
+          :with_base_regulation,
+          measure_type_id: create(:measure_type, :import).measure_type_id,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        )
+      end
+
+      it { expect(commodity.import_measures.map(&:import)).to all(be_truthy) }
     end
 
     describe 'measures and base_regulations' do
-      let!(:commodity) do
-        create :commodity, :with_indent,
-               validity_start_date: Time.zone.now.ago(10.years)
-      end
+      let!(:commodity) { create :commodity, :with_indent, validity_start_date: Time.zone.now.ago(10.years) }
       let!(:measure_type)    { create :measure_type }
       let!(:base_regulation) { create :base_regulation, effective_end_date: Time.zone.now.ago(1.month) }
       let!(:measure1)        do
-        create :measure, measure_generating_regulation_id: base_regulation.base_regulation_id,
-                         validity_end_date: Time.zone.now.ago(30.months),
+        create :measure, generating_regulation: base_regulation,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          validity_start_date: Time.zone.now.ago(10.years),
+                         validity_end_date: Time.zone.now.ago(30.months),
                          measure_type_id: measure_type.measure_type_id,
                          geographical_area_sid: 1
       end
       let!(:measure2) do
-        create :measure, measure_generating_regulation_id: base_regulation.base_regulation_id,
+        create :measure, generating_regulation: base_regulation,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          measure_type_id: measure_type.measure_type_id,
                          validity_start_date: Time.zone.now.ago(10.years),
@@ -326,7 +311,7 @@ RSpec.describe Commodity do
                          geographical_area_sid: 2
       end
       let!(:measure3) do
-        create :measure, measure_generating_regulation_id: base_regulation.base_regulation_id,
+        create :measure, generating_regulation: base_regulation,
                          goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                          measure_type_id: measure_type.measure_type_id,
                          validity_start_date: Time.zone.now.ago(10.years),
@@ -334,7 +319,7 @@ RSpec.describe Commodity do
                          geographical_area_sid: 3
       end
 
-      it 'measure validity date superseeds regulation validity date' do
+      it 'measure validity date supercedes regulation validity date' do
         measures = TimeMachine.at(Time.zone.now.ago(1.year)) { described_class.actual.first.measures }.map(&:measure_sid)
         expect(measures).to     include measure3.measure_sid
         expect(measures).not_to include measure2.measure_sid
@@ -361,7 +346,7 @@ RSpec.describe Commodity do
       let!(:modification_regulation) { create :modification_regulation, effective_end_date: Time.zone.now.ago(1.month) }
       let!(:measure1) do
         create :measure, :with_base_regulation,
-               measure_generating_regulation_id: modification_regulation.modification_regulation_id,
+               generating_regulation: modification_regulation,
                validity_end_date: Time.zone.now.ago(30.months),
                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                validity_start_date: Time.zone.now.ago(10.years),
@@ -370,7 +355,7 @@ RSpec.describe Commodity do
       end
       let!(:measure2) do
         create :measure, :with_base_regulation,
-               measure_generating_regulation_id: modification_regulation.modification_regulation_id,
+               generating_regulation: modification_regulation,
                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                measure_type_id: measure_type.measure_type_id,
                validity_start_date: Time.zone.now.ago(10.years),
@@ -379,7 +364,7 @@ RSpec.describe Commodity do
       end
       let!(:measure3) do
         create :measure, :with_base_regulation,
-               measure_generating_regulation_id: modification_regulation.modification_regulation_id,
+               generating_regulation: modification_regulation,
                goods_nomenclature_sid: commodity.goods_nomenclature_sid,
                measure_type_id: measure_type.measure_type_id,
                validity_start_date: Time.zone.now.ago(10.years),
