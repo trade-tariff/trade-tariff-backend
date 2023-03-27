@@ -31,7 +31,7 @@ module DeclarableSerialization
     export_measures.legal_acts
     export_measures.suspending_regulation
     export_measures.measure_conditions
-    import_measures.measure_conditions.measure_condition_code
+    export_measures.measure_conditions.measure_condition_code
     export_measures.measure_condition_permutation_groups
     export_measures.measure_condition_permutation_groups.permutations
     export_measures.measure_conditions.measure_condition_components
