@@ -181,6 +181,16 @@ module GoodsNomenclatures
       values.key?(:leaf) ? values[:leaf] : ns_children.empty?
     end
 
+    def ns_number_indents
+      if !values.key?(:depth)
+        number_indents
+      elsif values[:depth] > 1
+        values[:depth] - 2
+      else
+        0
+      end
+    end
+
     def applicable_measures
       (ns_ancestors.flat_map(&:ns_measures) + ns_measures).sort_by(&:sort_key)
     end
