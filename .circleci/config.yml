@@ -9,7 +9,7 @@ orbs:
   tariff: trade-tariff/trade-tariff-ci-orb@0 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
 
 commands:
-  cf_install:
+  cf-install:
     parameters:
       space:
         type: string
