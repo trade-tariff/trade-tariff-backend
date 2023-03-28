@@ -43,6 +43,7 @@ commands:
         type: string
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: << parameters.space >>
           version: "7.6.0"
@@ -152,6 +153,7 @@ commands:
         type: string
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: << parameters.space >>
           version: "7.6.0"
@@ -178,6 +180,7 @@ commands:
         type: string
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: << parameters.space >>
           version: "7.6.0"
@@ -270,6 +273,7 @@ jobs:
         type: string
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: "production"
           version: "7.6.0"
@@ -312,6 +316,7 @@ jobs:
       - image: cimg/base:current-22.04
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: << parameters.from_environment_key >>
           version: "7.6.0"
@@ -341,10 +346,10 @@ jobs:
       - image: cimg/base:current-22.04
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: << parameters.space >>
           version: "7.6.0"
-      - aws-cli/install
       - run:
           name: "Install additional dependencies"
           command: |
@@ -382,6 +387,7 @@ jobs:
       - image: cimg/base:current-22.04
     steps:
       - checkout
+      - aws-cli/install
       - cf-install:
           space: << parameters.from_environment_key >>
           version: "7.6.0"
