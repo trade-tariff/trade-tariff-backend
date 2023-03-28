@@ -54,7 +54,7 @@ class SearchSuggestion < Sequel::Model
     end
 
     def with_query(query)
-      select_append(Sequel.lit("'#{query}'").as(:query))
+      select_append(Sequel.lit('?', query).as(:query))
     end
 
     def with_score(query)
