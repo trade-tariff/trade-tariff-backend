@@ -480,6 +480,36 @@ RSpec.describe GoodsNomenclatures::NestedSet do
     end
   end
 
+  describe 'ns_number_indents' do
+    subject { gn.ns_number_indents }
+
+    let(:commodity) { create :commodity, :with_chapter_and_heading }
+
+    context 'without depth value loaded' do
+      let(:gn) { commodity }
+
+      it { is_expected.to be commodity.number_indents }
+    end
+
+    context 'with chapter' do
+      let(:gn) { commodity.ns_ancestors[0] }
+
+      it { is_expected.to be 0 }
+    end
+
+    context 'with heading' do
+      let(:gn) { commodity.ns_ancestors[1] }
+
+      it { is_expected.to be 0 }
+    end
+
+    context 'with commodity' do
+      let(:gn) { commodity.ns_parent.ns_descendants[0] }
+
+      it { is_expected.to be commodity.number_indents }
+    end
+  end
+
   describe '#applicable_measures' do
     subject(:applied_measures) { measure.goods_nomenclature.applicable_measures }
 

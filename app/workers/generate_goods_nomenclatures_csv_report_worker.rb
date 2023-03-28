@@ -21,10 +21,11 @@ class GenerateGoodsNomenclaturesCsvReportWorker
 
   def goods_nomenclatures
     Chapter
-      .dataset
-      .eager(:goods_nomenclature_indents)
-      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
+      .non_hidden
+      .eager(:goods_nomenclature_descriptions,
+             ns_ancestors: :goods_nomenclature_descriptions,
+             ns_descendants: :goods_nomenclature_descriptions)
       .all
-      .flat_map(&:goods_nomenclatures)
+      .flat_map(&:ns_descendants)
   end
 end
