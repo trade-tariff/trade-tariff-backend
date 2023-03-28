@@ -20,7 +20,7 @@ commands:
       - run:
           name: "Setup CF CLI"
           command: |
-            aws s3 cp s3://trade-tariff-hosted-binaries/cf7-cli-installer_7.4.0_x86-64.deb cf.deb
+            curl -L -o cf.deb --retry 3 'https://trade-tariff-hosted-binaries.s3.eu-west-2.amazonaws.com/cf7-cli-installer_7.4.0_x86-64.deb'
             sudo dpkg -i cf.deb
             cf -v
             cf api "$CF_ENDPOINT"
