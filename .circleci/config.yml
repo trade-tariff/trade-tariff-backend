@@ -25,6 +25,7 @@ commands:
       - checkout
       - tariff/cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Fetch existing manifest"
           command: |
@@ -133,6 +134,7 @@ commands:
       - checkout
       - tariff/cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Fetch existing manifest"
           command: |
@@ -158,6 +160,7 @@ commands:
       - checkout
       - tariff/cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Create tasks app manifest"
           command: |
@@ -249,6 +252,7 @@ jobs:
       - checkout
       - tariff/cf-install:
           space: "production"
+          version: "7.6.0"
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -290,6 +294,7 @@ jobs:
       - checkout
       - tariff/cf-install:
           space: << parameters.from_environment_key >>
+          version: "7.6.0"
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -318,6 +323,7 @@ jobs:
       - checkout
       - tariff/cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - aws-cli/install
       - run:
           name: "Install additional dependencies"
@@ -358,6 +364,7 @@ jobs:
       - checkout
       - tariff/cf-install:
           space: << parameters.from_environment_key >>
+          version: "7.6.0"
       - run:
           name: "Install necessary dependencies"
           command: |
