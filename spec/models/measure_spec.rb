@@ -53,6 +53,29 @@ RSpec.describe Measure do
     it { is_expected.to have_attributes args: coalesced_columns }
   end
 
+  describe '.sorter' do
+    subject(:sorted) { [first, second, third].sort(&described_class.method(:sorter)) }
+
+    let(:first) { build :measure, geographical_area_id: 'FR', measure_type_id: 2 }
+    let(:second) { build :measure, geographical_area_id: 'ES', measure_type_id: 1 }
+    let(:third) { build :measure, geographical_area_id: 'ES', measure_type_id: 2 }
+
+    it { is_expected.to eq [second, third, first] }
+
+    context 'with nil values on one side of comparison' do
+      let(:second) { build :measure, geographical_area_id: nil, measure_type_id: 1 }
+
+      it { is_expected.to eq [third, first, second] }
+    end
+
+    context 'with nils on both sides of comparison' do
+      let(:first) { build :measure, geographical_area_id: nil, measure_type_id: 2 }
+      let(:second) { build :measure, geographical_area_id: nil, measure_type_id: 1 }
+
+      it { is_expected.to eq [third, second, first] }
+    end
+  end
+
   shared_examples 'includes measure type' do |measure_type, geographical_area|
     context %(with measures of type #{MeasureType.const_get(measure_type).first} are included#{" for #{geographical_area}" if geographical_area}) do
       let(:geographical_area_id) { geographical_area } if geographical_area
@@ -1499,7 +1522,7 @@ RSpec.describe Measure do
           measure.additional_code_type_id,
           measure.additional_code_id,
           '10',
-          Measure::FAR_FUTURE_END_DATE,
+          nil,
         ]
       end
 

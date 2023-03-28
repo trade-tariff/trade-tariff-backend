@@ -18,8 +18,6 @@ class Measure < Sequel::Model
     DEFINITIVE_ANTIDUMPING_ROLE,
   ].freeze
 
-  FAR_FUTURE_END_DATE = Date.parse('3023-12-31').end_of_day.freeze
-
   set_primary_key [:measure_sid]
 
   plugin :time_machine
@@ -113,6 +111,28 @@ class Measure < Sequel::Model
            :trade_remedy?, to: :measure_type, allow_nil: true
 
   delegate :gsp?, to: :geographical_area, allow_nil: true
+
+  class << self
+    def sorter(left, right)
+      right_key = right.sort_key
+
+      left.sort_key.each.with_index do |value, index|
+        if value.nil?
+          next if right_key[index].nil?
+
+          return 1
+        elsif right_key[index].nil?
+          return -1
+        else
+          comparison_result = value <=> right_key[index]
+
+          return comparison_result unless comparison_result.zero?
+        end
+      end
+
+      0
+    end
+  end
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)
@@ -564,7 +584,7 @@ class Measure < Sequel::Model
       additional_code_type_id,
       additional_code_id,
       ordernumber,
-      values[end_date_key] || FAR_FUTURE_END_DATE,
+      values[end_date_key],
     ]
   end
 
