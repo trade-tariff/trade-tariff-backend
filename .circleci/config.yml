@@ -9,6 +9,26 @@ orbs:
   tariff: trade-tariff/trade-tariff-ci-orb@0 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
 
 commands:
+  cf-install:
+    parameters:
+      space:
+        type: string
+      version:
+        type: string
+        default: "7.6.0"
+    steps:
+      - run:
+          name: "Setup CF CLI"
+          command: |
+            curl -L -o cf.deb --retry 3 'https://trade-tariff-hosted-binaries.s3.eu-west-2.amazonaws.com/cf7-cli-installer_7.4.0_x86-64.deb'
+            sudo dpkg -i cf.deb
+            cf -v
+            cf api "$CF_ENDPOINT"
+            cf auth "$CF_USER" "$CF_PASSWORD"
+            cf add-plugin-repo CF-Community https://plugins.cloudfoundry.org
+            cf install-plugin app-autoscaler-plugin -r CF-Community -f
+            cf target -o "$CF_ORG" -s "<< parameters.space >>"
+
   cf_deploy_docker:
     parameters:
       docker_image_tag:
@@ -23,8 +43,10 @@ commands:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - aws-cli/install
+      - cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Fetch existing manifest"
           command: |
@@ -131,8 +153,10 @@ commands:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - aws-cli/install
+      - cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Fetch existing manifest"
           command: |
@@ -156,8 +180,10 @@ commands:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - aws-cli/install
+      - cf-install:
           space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Create tasks app manifest"
           command: |
@@ -247,8 +273,10 @@ jobs:
         type: string
     steps:
       - checkout
-      - tariff/cf-install:
+      - aws-cli/install
+      - cf-install:
           space: "production"
+          version: "7.6.0"
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -288,8 +316,10 @@ jobs:
       - image: cimg/base:current-22.04
     steps:
       - checkout
-      - tariff/cf-install:
+      - aws-cli/install
+      - cf-install:
           space: << parameters.from_environment_key >>
+          version: "7.6.0"
       - run:
           name: "Install necessary dependencies"
           command: |
@@ -316,9 +346,10 @@ jobs:
       - image: cimg/base:current-22.04
     steps:
       - checkout
-      - tariff/cf-install:
-          space: << parameters.space >>
       - aws-cli/install
+      - cf-install:
+          space: << parameters.space >>
+          version: "7.6.0"
       - run:
           name: "Install additional dependencies"
           command: |
@@ -356,8 +387,10 @@ jobs:
       - image: cimg/base:current-22.04
     steps:
       - checkout
-      - tariff/cf-install:
+      - aws-cli/install
+      - cf-install:
           space: << parameters.from_environment_key >>
+          version: "7.6.0"
       - run:
           name: "Install necessary dependencies"
           command: |
