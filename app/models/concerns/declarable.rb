@@ -2,19 +2,6 @@ module Declarable
   extend ActiveSupport::Concern
   include Formatter
 
-  COMMON_UNION_MEASURE_ORDER = [
-    Sequel.desc(:measures__measure_generating_regulation_id),
-    Sequel.desc(:measures__measure_generating_regulation_role),
-    Sequel.desc(:measures__measure_type_id),
-    Sequel.desc(:measures__goods_nomenclature_sid),
-    Sequel.desc(:measures__geographical_area_id),
-    Sequel.desc(:measures__geographical_area_sid),
-    Sequel.desc(:measures__additional_code_type_id),
-    Sequel.desc(:measures__additional_code_id),
-    Sequel.desc(:measures__ordernumber),
-    Sequel.desc(:effective_start_date),
-  ].freeze
-
   MEASURES_SORT_ORDER = [
     Sequel.asc(:measures__geographical_area_id),
     Sequel.asc(:measures__measure_type_id),
@@ -31,13 +18,13 @@ module Declarable
                .with_actual(BaseRegulation)
                .where(measures__goods_nomenclature_sid: uptree.map(&:goods_nomenclature_sid))
                .without_excluded_types
-               .order(*COMMON_UNION_MEASURE_ORDER)
+               .order(*Measure::DEDUPE_SORT_ORDER)
        .union(
          Measure.with_modification_regulations
                 .with_actual(ModificationRegulation)
                 .where(measures__goods_nomenclature_sid: uptree.map(&:goods_nomenclature_sid))
                 .without_excluded_types
-                .order(*COMMON_UNION_MEASURE_ORDER),
+                .order(*Measure::DEDUPE_SORT_ORDER),
          alias: :measures,
        )
        .with_actual(Measure)

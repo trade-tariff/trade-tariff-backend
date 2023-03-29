@@ -18,6 +18,19 @@ class Measure < Sequel::Model
     DEFINITIVE_ANTIDUMPING_ROLE,
   ].freeze
 
+  DEDUPE_SORT_ORDER = [
+    Sequel.desc(:measures__measure_generating_regulation_id),
+    Sequel.desc(:measures__measure_generating_regulation_role),
+    Sequel.desc(:measures__measure_type_id),
+    Sequel.desc(:measures__goods_nomenclature_sid),
+    Sequel.desc(:measures__geographical_area_id),
+    Sequel.desc(:measures__geographical_area_sid),
+    Sequel.desc(:measures__additional_code_type_id),
+    Sequel.desc(:measures__additional_code_id),
+    Sequel.desc(:measures__ordernumber),
+    Sequel.desc(:effective_start_date),
+  ].freeze
+
   set_primary_key [:measure_sid]
 
   plugin :time_machine
@@ -354,6 +367,21 @@ class Measure < Sequel::Model
             regulation_check
           end
         end
+    end
+
+    def dedupe_similar
+      # Needs with_regulation_dates_query and only works within time machine but should be used before not after
+      select(Sequel.expr(:measures).*)
+        .distinct(:measure_generating_regulation_id,
+                  :measure_generating_regulation_role,
+                  :measure_type_id,
+                  :goods_nomenclature_sid,
+                  :geographical_area_id,
+                  :geographical_area_sid,
+                  :additional_code_type_id,
+                  :additional_code_id,
+                  :ordernumber)
+        .order(*DEDUPE_SORT_ORDER)
     end
 
     def without_excluded_types
