@@ -198,6 +198,43 @@ RSpec.describe Measure do
     end
   end
 
+  describe '.dedupe_similar' do
+    subject :measures do
+      described_class.dedupe_similar.with_regulation_dates_query.all
+    end
+
+    before { first && second }
+
+    let :first do
+      create :measure, generating_regulation:,
+                       validity_start_date: 3.days.ago.beginning_of_day
+    end
+
+    let :second do
+      create :measure, generating_regulation:,
+                       validity_start_date: 7.days.ago.beginning_of_day
+    end
+
+    let(:generating_regulation) { create :base_regulation }
+
+    context 'with unmatched measures' do
+      it { is_expected.to eq_pk [second, first] }
+    end
+
+    context 'with matching measures' do
+      let :second do
+        create :measure,
+               first.values
+                    .without(:measure_sid)
+                    .merge(validity_start_date: 20.days.ago.beginning_of_day)
+      end
+
+      it 'includes only the most recent' do
+        expect(measures).to eq_pk [first]
+      end
+    end
+  end
+
   describe '#goods_nomenclature' do
     around { |example| TimeMachine.now { example.run } }
 

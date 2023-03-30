@@ -104,9 +104,9 @@ module GoodsNomenclatures
                   class_name: '::Measure',
                   read_only: true do |ds|
         ds.with_actual(Measure)
+          .dedupe_similar
           .with_regulation_dates_query
           .without_excluded_types
-          .order(*Declarable::MEASURES_SORT_ORDER)
       end
 
       one_to_many :ns_overview_measures,
@@ -115,10 +115,10 @@ module GoodsNomenclatures
                   class_name: '::Measure',
                   read_only: true do |ds|
         ds.with_actual(Measure)
+          .dedupe_similar
           .with_regulation_dates_query
           .without_excluded_types
           .overview
-          .order(*Declarable::MEASURES_SORT_ORDER)
       end
     end
 
