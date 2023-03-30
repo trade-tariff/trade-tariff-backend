@@ -58,4 +58,37 @@ RSpec.describe GoodsNomenclatureDescription do
       expect(gono_description.to_s).to eq gono_description.description
     end
   end
+
+  describe '#consigned_from' do
+    subject(:goods_nomenclature_description) { create(:goods_nomenclature_description, description:) }
+
+    shared_examples 'a consigned from description' do |description, expected_countries|
+      subject(:goods_nomenclature_description) { create(:goods_nomenclature_description, description:) }
+
+      it 'returns the consigned from countries' do
+        expect(goods_nomenclature_description.consigned_from).to eq(expected_countries)
+      end
+    end
+
+    it_behaves_like 'a consigned from description', 'consigned from Vietnam', 'Vietnam'
+    it_behaves_like 'a consigned from description', 'consigned from Viet Nam', 'Viet Nam'
+    it_behaves_like 'a consigned from description', 'consigned from Taiwan or Malaysia', 'Taiwan or Malaysia'
+    it_behaves_like 'a consigned from description', 'consigned from Vietnam, Pakistan or the Philippines', 'Vietnam, Pakistan or the Philippines'
+    it_behaves_like 'a consigned from description', 'Originating in or consigned from China:<br>- in quantities below 300 units per month or to be transferred to a party in quantities below 300 units per month; or<br>- to be transferred to another holder of an end-use authorisation or to exempted parties', 'China'
+    it_behaves_like 'a consigned from description', 'Consigned from Türkiye', 'Türkiye'
+    it_behaves_like 'a consigned from description', 'consigned from or originating in Taiwan', 'Taiwan'
+    it_behaves_like 'a consigned from description', 'Consigned from Brazil; consigned from Israel', 'Brazil, Israel'
+
+    context 'when there is no `consigned from` in the description' do
+      let(:description) { 'some description' }
+
+      it { expect(goods_nomenclature_description.consigned_from).to be_nil }
+    end
+
+    context 'when the description is nil' do
+      let(:description) { nil }
+
+      it { expect(goods_nomenclature_description.consigned_from).to be_nil }
+    end
+  end
 end

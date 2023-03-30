@@ -869,4 +869,10 @@ RSpec.describe Commodity do
       it { is_expected.to have_attributes values: commodity.values }
     end
   end
+
+  describe '#consigned_from' do
+    subject(:commodity) { create(:commodity, :with_description, description: 'Consigned from Türkiye') }
+
+    it { expect(commodity.consigned_from).to eq('Türkiye') }
+  end
 end
