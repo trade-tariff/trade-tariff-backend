@@ -31,4 +31,12 @@ RSpec.describe Api::V2::Subheadings::SubheadingPresenter do
     it { is_expected.to have_attributes ancestors: [leaf.ns_parent] }
     it { is_expected.to have_attributes commodity_ids: leaf_commodities.map(&:pk) }
   end
+
+  describe '#footnote_ids' do
+    let :subheading do
+      create :subheading, :with_chapter_and_heading, :with_children, :with_footnote_association
+    end
+
+    it { is_expected.to have_attributes footnote_ids: subheading.footnotes.map(&:id) }
+  end
 end

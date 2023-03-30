@@ -3,7 +3,7 @@ module Api
     module Subheadings
       class SubheadingPresenter < SimpleDelegator
         def footnote_ids
-          footnotes.map(&:footnote_id)
+          footnotes.map(&:id)
         end
 
         def heading_id
