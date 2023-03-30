@@ -192,13 +192,11 @@ module GoodsNomenclatures
     end
 
     def applicable_measures
-      (ns_ancestors.flat_map(&:ns_measures) + ns_measures)
-        .sort(&Measure.method(:sorter))
+      (ns_ancestors.flat_map(&:ns_measures) + ns_measures).sort
     end
 
     def applicable_overview_measures
-      (ns_ancestors.flat_map(&:ns_overview_measures) + ns_overview_measures)
-        .sort(&Measure.method(:sorter))
+      (ns_ancestors.flat_map(&:ns_overview_measures) + ns_overview_measures).sort
     end
   end
 end
