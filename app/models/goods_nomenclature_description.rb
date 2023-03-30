@@ -1,5 +1,6 @@
 class GoodsNomenclatureDescription < Sequel::Model
   DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not).*\z)/
+  CONSIGNED_FROM_REGEX = /consigned from(?: or originating in)?([\p{L},'\s]+)(?:\W|$)/i
   NO_BREAKING_SPACE = "\u00A0".freeze
 
   include Formatter
@@ -38,5 +39,16 @@ class GoodsNomenclatureDescription < Sequel::Model
 
   def to_s
     description
+  end
+
+  def consigned_from
+    consigned_countries = description.scan(CONSIGNED_FROM_REGEX)
+
+    if consigned_countries.present?
+      consigned_countries
+        .flatten
+        .map(&:strip)
+        .join(', ')
+    end
   end
 end

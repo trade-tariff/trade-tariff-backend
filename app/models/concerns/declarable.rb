@@ -70,14 +70,6 @@ module Declarable
     "#{goods_nomenclature_item_id.first(2)}00000000"
   end
 
-  def consigned?
-    !!(description =~ /consigned from/i)
-  end
-
-  def consigned_from
-    description.scan(/consigned from ([a-zA-Z,' ]+)(?:\W|$)/i).join(', ') if consigned?
-  end
-
   def basic_duty_rate
     if basic_duty_rate_components.count == 1
       basic_duty_rate_components.map(&:formatted_duty_expression).join(' ')
@@ -94,4 +86,5 @@ module Declarable
   end
 
   delegate :id, to: :import_trade_summary, prefix: true
+  delegate :consigned_from, to: :goods_nomenclature_description, allow_nil: true
 end

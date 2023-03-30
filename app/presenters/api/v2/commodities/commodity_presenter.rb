@@ -25,7 +25,7 @@ module Api
         end
 
         def consigned
-          commodity.consigned?
+          commodity.consigned_from.present?
         end
 
         def footnote_ids
