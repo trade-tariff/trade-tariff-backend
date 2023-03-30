@@ -79,7 +79,7 @@ RSpec.describe GoodsNomenclatureDescription do
     it_behaves_like 'a consigned from description', 'consigned from or originating in Taiwan', 'Taiwan'
     it_behaves_like 'a consigned from description', 'Consigned from Brazil; consigned from Israel', 'Brazil, Israel'
 
-    context 'when there is no a consigned from description in the description' do
+    context 'when there is no `consigned from` in the description' do
       let(:description) { 'some description' }
 
       it { expect(goods_nomenclature_description.consigned_from).to be_nil }
