@@ -18,8 +18,6 @@ class Measure < Sequel::Model
     DEFINITIVE_ANTIDUMPING_ROLE,
   ].freeze
 
-  FAR_FUTURE_END_DATE = Date.parse('3023-12-31').end_of_day.freeze
-
   set_primary_key [:measure_sid]
 
   plugin :time_machine
@@ -556,16 +554,34 @@ class Measure < Sequel::Model
   end
 
   def sort_key
-    end_date_key = values.key?(:effective_end_date) ? :effective_end_date : :validity_end_date
-
-    [
+    @sort_key ||= [
       geographical_area_id,
       measure_type_id,
       additional_code_type_id,
       additional_code_id,
       ordernumber,
-      values[end_date_key] || FAR_FUTURE_END_DATE,
+      values[
+        values.key?(:effective_end_date) ? :effective_end_date : :validity_end_date
+      ],
     ]
+  end
+
+  def <=>(other)
+    sort_key.each.with_index do |value, index|
+      if value.nil?
+        next if other.sort_key[index].nil?
+
+        return 1
+      elsif other.sort_key[index].nil?
+        return -1
+      else
+        comparison_result = value <=> other.sort_key[index]
+
+        return comparison_result unless comparison_result.zero?
+      end
+    end
+
+    0
   end
 
   private

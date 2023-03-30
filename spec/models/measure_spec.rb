@@ -1499,11 +1499,34 @@ RSpec.describe Measure do
           measure.additional_code_type_id,
           measure.additional_code_id,
           '10',
-          Measure::FAR_FUTURE_END_DATE,
+          nil,
         ]
       end
 
       it { is_expected.to eq sort_key }
+    end
+  end
+
+  describe '#<=>' do
+    subject(:sorted) { [first, second, third].sort }
+
+    let(:first) { build :measure, geographical_area_id: 'FR', measure_type_id: 2 }
+    let(:second) { build :measure, geographical_area_id: 'ES', measure_type_id: 1 }
+    let(:third) { build :measure, geographical_area_id: 'ES', measure_type_id: 2 }
+
+    it { is_expected.to eq [second, third, first] }
+
+    context 'with nil values on one side of comparison' do
+      let(:second) { build :measure, geographical_area_id: nil, measure_type_id: 1 }
+
+      it { is_expected.to eq [third, first, second] }
+    end
+
+    context 'with nils on both sides of comparison' do
+      let(:first) { build :measure, geographical_area_id: nil, measure_type_id: 2 }
+      let(:second) { build :measure, geographical_area_id: nil, measure_type_id: 1 }
+
+      it { is_expected.to eq [third, second, first] }
     end
   end
 end
