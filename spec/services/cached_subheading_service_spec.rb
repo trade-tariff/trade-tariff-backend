@@ -18,61 +18,85 @@ RSpec.describe CachedSubheadingService do
     create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 9, indents: 1, producline_suffix: '80', goods_nomenclature_item_id: '0101900000') # Other
   end
 
-  describe '#call' do
-    let(:pattern) do
-      {
-        data: {
-          id: subheading.goods_nomenclature_sid.to_s,
-          type: 'subheading',
-          attributes: {
-            goods_nomenclature_item_id: subheading.code,
-            description: String,
-            formatted_description: String,
+  shared_examples 'subheading service' do
+    describe '#call' do
+      let(:pattern) do
+        {
+          data: {
+            id: subheading.goods_nomenclature_sid.to_s,
+            type: 'subheading',
+            attributes: {
+              goods_nomenclature_item_id: subheading.code,
+              description: String,
+              formatted_description: String,
+            }.ignore_extra_keys!,
+            relationships: {
+              section: Hash,
+              heading: Hash,
+              commodities: Hash,
+              chapter: Hash,
+              ancestors: Hash,
+            }.ignore_extra_keys!,
           }.ignore_extra_keys!,
-          relationships: {
-            section: Hash,
-            heading: Hash,
-            commodities: Hash,
-            chapter: Hash,
-            ancestors: Hash,
-          }.ignore_extra_keys!,
-        }.ignore_extra_keys!,
-      }.ignore_extra_keys!
-    end
+        }.ignore_extra_keys!
+      end
 
-    let(:actual_commodities) do
-      commodities = service.call[:included].select { |include| include[:type] == :commodity }
+      let(:actual_commodities) do
+        commodities = service.call[:included].select { |include| include[:type] == :commodity }
 
-      commodities.map do |commodity|
-        commodity[:attributes].slice(
-          :goods_nomenclature_item_id,
-          :productline_suffix,
-          :number_indents,
-          :parent_sid,
-          :leaf,
-        )
+        commodities.map do |commodity|
+          commodity[:attributes].slice(
+            :goods_nomenclature_item_id,
+            :productline_suffix,
+            :number_indents,
+            :parent_sid,
+            :leaf,
+          )
+        end
+      end
+
+      it 'returns a correctly serialized hash' do
+        expect(service.call.to_json).to match_json_expression(pattern)
+      end
+
+      it 'surfaces and annotates the correct commodities' do
+        expected_commodities = [
+          { goods_nomenclature_item_id: '0101210000', productline_suffix: '10', number_indents: 1, parent_sid: nil, leaf: false }, # Horses
+          { goods_nomenclature_item_id: '0101290000', productline_suffix: '80', number_indents: 2, parent_sid: 3, leaf: false },   # -- Other < targeted subheading
+          { goods_nomenclature_item_id: '0101291000', productline_suffix: '80', number_indents: 3, parent_sid: 5, leaf: true },    # ---- For slaughter
+          { goods_nomenclature_item_id: '0101299000', productline_suffix: '80', number_indents: 3, parent_sid: 5, leaf: true },    # ---- Other
+        ]
+
+        expect(actual_commodities).to eq(expected_commodities)
       end
     end
+  end
 
-    it 'returns a correctly serialized hash' do
-      expect(service.call.to_json).to match_json_expression(pattern)
+  context 'without nested set subheadings' do
+    before do
+      allow(TradeTariffBackend).to receive(:nested_set_subheadings?).and_return false
     end
 
-    it 'surfaces and annotates the correct commodities' do
-      expected_commodities = [
-        { goods_nomenclature_item_id: '0101210000', productline_suffix: '10', number_indents: 1, parent_sid: nil, leaf: false }, # Horses
-        { goods_nomenclature_item_id: '0101290000', productline_suffix: '80', number_indents: 2, parent_sid: 3, leaf: false },   # -- Other < targeted subheading
-        { goods_nomenclature_item_id: '0101291000', productline_suffix: '80', number_indents: 3, parent_sid: 5, leaf: true },    # ---- For slaughter
-        { goods_nomenclature_item_id: '0101299000', productline_suffix: '80', number_indents: 3, parent_sid: 5, leaf: true },    # ---- Other
-      ]
-
-      expect(actual_commodities).to eq(expected_commodities)
-    end
+    it_behaves_like 'subheading service'
 
     it 'caches with the correct key' do
       allow(Rails.cache).to receive(:fetch).and_call_original
       service.call.to_json
       expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01", expires_in: 23.hours)
+    end
+  end
+
+  context 'with nested set subheadings' do
+    before do
+      allow(TradeTariffBackend).to receive(:nested_set_subheadings?).and_return true
+    end
+
+    it_behaves_like 'subheading service'
+
+    it 'caches with the correct key' do
+      allow(Rails.cache).to receive(:fetch).and_call_original
+      service.call.to_json
+      expect(Rails.cache).to have_received(:fetch).with("_subheading-#{subheading.goods_nomenclature_sid}-2021-01-01-v1", expires_in: 23.hours)
     end
   end
 end
