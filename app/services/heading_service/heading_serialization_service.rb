@@ -1,5 +1,7 @@
 module HeadingService
   class HeadingSerializationService
+    delegate :nested_set_headings?, to: TradeTariffBackend
+
     def initialize(heading, actual_date, filters = {})
       @heading = heading
       @actual_date = actual_date
@@ -20,6 +22,9 @@ module HeadingService
       if heading.declarable?
         HeadingService::Serialization::DeclarableService
           .new(heading, filters)
+      elsif nested_set_headings?
+        HeadingService::Serialization::NsNondeclarableService
+          .new(heading)
       else
         HeadingService::Serialization::NondeclarableService
           .new(heading, actual_date)

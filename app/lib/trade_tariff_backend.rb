@@ -272,6 +272,10 @@ module TradeTariffBackend
       ENV['NESTED_SET_SUBHEADINGS'] == 'true'
     end
 
+    def nested_set_headings?
+      ENV['NESTED_SET_HEADINGS'] == 'true'
+    end
+
     def beta_search_max_hits
       ENV['BETA_SEARCH_MAX_HITS']
     end
