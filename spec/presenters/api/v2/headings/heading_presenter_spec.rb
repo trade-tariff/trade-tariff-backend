@@ -4,7 +4,7 @@ RSpec.describe Api::V2::Headings::HeadingPresenter do
   let(:heading) { create :heading, :with_chapter, :non_declarable }
 
   it { is_expected.to have_attributes goods_nomenclature_sid: heading.goods_nomenclature_sid }
-  it { is_expected.to have_attributes section_id: heading.section.id }
+  it { is_expected.to have_attributes section_id: heading.chapter.section.id }
   it { is_expected.to have_attributes chapter_id: heading.chapter.goods_nomenclature_sid }
   it { is_expected.to have_attributes section: instance_of(Api::V2::Headings::SectionPresenter) }
   it { is_expected.to have_attributes chapter: instance_of(Api::V2::Headings::ChapterPresenter) }

@@ -2,6 +2,8 @@ module Api
   module V2
     module Headings
       class HeadingPresenter < SimpleDelegator
+        delegate :id, to: :section, prefix: true
+
         def chapter_id
           chapter.goods_nomenclature_sid
         end
@@ -11,11 +13,12 @@ module Api
         end
 
         def section
-          SectionPresenter.new(super)
+          SectionPresenter.new(chapter.section)
         end
 
         def chapter
-          ChapterPresenter.new(super)
+          @chapter ||= \
+            ChapterPresenter.new(ns_ancestors.find { |a| a.is_a? Chapter })
         end
 
         def commodities

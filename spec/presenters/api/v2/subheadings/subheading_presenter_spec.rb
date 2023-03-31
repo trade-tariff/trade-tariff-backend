@@ -4,6 +4,7 @@ RSpec.describe Api::V2::Subheadings::SubheadingPresenter do
   let(:subheading) { create :subheading, :with_chapter_and_heading, :with_children }
 
   it { is_expected.to have_attributes goods_nomenclature_sid: subheading.goods_nomenclature_sid }
+  it { is_expected.to have_attributes section_id: subheading.chapter.section.id }
   it { is_expected.to have_attributes heading_id: subheading.heading.goods_nomenclature_sid }
   it { is_expected.to have_attributes chapter_id: subheading.chapter.goods_nomenclature_sid }
   it { is_expected.to have_attributes section: instance_of(Api::V2::Headings::SectionPresenter) }

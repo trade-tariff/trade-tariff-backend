@@ -2,6 +2,8 @@ module Api
   module V2
     module Subheadings
       class SubheadingPresenter < SimpleDelegator
+        delegate :id, to: :section, prefix: true
+
         def footnote_ids
           footnotes.map(&:id)
         end
@@ -33,11 +35,20 @@ module Api
         end
 
         def section
-          Headings::SectionPresenter.new(super)
+          Headings::SectionPresenter.new(chapter.section)
         end
 
         def chapter
-          Headings::ChapterPresenter.new(super)
+          @chapter ||= \
+            Headings::ChapterPresenter.new(ns_ancestors.find { |a| a.is_a? Chapter })
+        end
+
+        def heading
+          @heading ||= ns_ancestors.find { |a| a.is_a? Heading }
+        end
+
+        def number_indents
+          ns_number_indents
         end
       end
     end
