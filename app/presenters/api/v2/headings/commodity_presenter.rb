@@ -1,6 +1,6 @@
 module Api
   module V2
-    module Subheadings
+    module Headings
       class CommodityPresenter < SimpleDelegator
         class << self
           def wrap(commodities)

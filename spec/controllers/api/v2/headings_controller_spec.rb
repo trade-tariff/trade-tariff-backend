@@ -8,6 +8,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
     let(:heading) do
       create(
         :heading,
+        :with_chapter,
         :non_grouping,
         :non_declarable,
         :with_description,

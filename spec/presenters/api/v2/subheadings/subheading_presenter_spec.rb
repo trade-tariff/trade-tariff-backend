@@ -6,8 +6,8 @@ RSpec.describe Api::V2::Subheadings::SubheadingPresenter do
   it { is_expected.to have_attributes goods_nomenclature_sid: subheading.goods_nomenclature_sid }
   it { is_expected.to have_attributes heading_id: subheading.heading.goods_nomenclature_sid }
   it { is_expected.to have_attributes chapter_id: subheading.chapter.goods_nomenclature_sid }
-  it { is_expected.to have_attributes section: instance_of(Api::V2::Subheadings::SectionPresenter) }
-  it { is_expected.to have_attributes chapter: instance_of(Api::V2::Subheadings::ChapterPresenter) }
+  it { is_expected.to have_attributes section: instance_of(Api::V2::Headings::SectionPresenter) }
+  it { is_expected.to have_attributes chapter: instance_of(Api::V2::Headings::ChapterPresenter) }
   it { is_expected.to have_attributes ancestors: [] }
 
   it 'includes ancestors and self in commodities' do
@@ -19,7 +19,7 @@ RSpec.describe Api::V2::Subheadings::SubheadingPresenter do
   end
 
   it 'maps commodities to their presenter' do
-    expect(presenter.commodities).to all be_instance_of Api::V2::Subheadings::CommodityPresenter
+    expect(presenter.commodities).to all be_instance_of Api::V2::Headings::CommodityPresenter
   end
 
   context 'for subsubheading' do

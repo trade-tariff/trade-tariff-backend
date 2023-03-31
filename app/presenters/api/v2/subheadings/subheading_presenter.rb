@@ -15,7 +15,7 @@ module Api
         end
 
         def commodities
-          @commodities ||= CommodityPresenter.wrap(ancestors + [self] + ns_descendants)
+          @commodities ||= Headings::CommodityPresenter.wrap(ancestors + [self] + ns_descendants)
         end
 
         def commodity_ids
@@ -33,11 +33,11 @@ module Api
         end
 
         def section
-          SectionPresenter.new(super)
+          Headings::SectionPresenter.new(super)
         end
 
         def chapter
-          ChapterPresenter.new(super)
+          Headings::ChapterPresenter.new(super)
         end
       end
     end

@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Subheadings::CommodityPresenter do
+RSpec.describe Api::V2::Headings::CommodityPresenter do
   subject(:presenter) { described_class.new commodity }
 
   let(:commodity) { create :commodity }
