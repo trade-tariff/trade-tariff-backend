@@ -1,5 +1,6 @@
 class CachedSubheadingService
   TTL = 23.hours # Expire just before the ETL job runs and prewarms expensive subheadings
+  CACHE_VERSION = 1
 
   DEFAULT_INCLUDES = [
     :section,
@@ -28,6 +29,10 @@ class CachedSubheadingService
   private
 
   def presented_subheading
+    if TradeTariffBackend.nested_set_subheadings?
+      return Api::V2::Subheadings::SubheadingPresenter.new(@subheading)
+    end
+
     @presented_subheading ||= begin
       presenter_serialized = Cache::HeadingSerializer.new(@subheading).as_json
 
@@ -65,7 +70,11 @@ class CachedSubheadingService
   end
 
   def cache_key
-    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}"
+    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}#{cache_version}"
+  end
+
+  def cache_version
+    "-v#{CACHE_VERSION}" if TradeTariffBackend.nested_set_subheadings?
   end
 
   def options
