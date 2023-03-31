@@ -29,7 +29,7 @@ commands:
             cf install-plugin app-autoscaler-plugin -r CF-Community -f
             cf target -o "$CF_ORG" -s "<< parameters.space >>"
 
-  cf_deploy_docker:
+  cf_deploy_docker_api:
     parameters:
       docker_image_tag:
         type: string
@@ -41,6 +41,9 @@ commands:
         type: string
       environment_key:
         type: string
+      is_admin:
+        type: boolean
+        default: false
     steps:
       - checkout
       - aws-cli/install
@@ -50,27 +53,36 @@ commands:
       - run:
           name: "Fetch existing manifest"
           command: |
-            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
+            if [ << parameters.is_admin >> = true ]; then
+              cf create-app-manifest "tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>" -p deploy_manifest.yml
+            else
+              cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
+            fi
       - run:
           name: "Push new app in dark mode"
           command: |
             export DOCKER_IMAGE=tariff-backend
             export DOCKER_TAG="<< parameters.docker_image_tag >>"
 
-            # Push as "dark" instance
-            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
+            if [ << parameters.is_admin >> = true ]; then
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>-dark"
+            else
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            fi
 
-            # Map dark route
-            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push $DARK_APP_NAME -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
 
-            # Attach precreated autoscaling policy
-            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" config/autoscaling/<< parameters.space >>-policy.json
+            cf map-route $DARK_APP_NAME apps.internal -n $DARK_APP_NAME
+            cf attach-autoscaling-policy $DARK_APP_NAME config/autoscaling/<< parameters.space >>-policy.json
 
-            # Enable routing from this frontend to backend applications which are private
-            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
+            if [ << parameters.is_admin >> = true ]; then
+              cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" $DARK_APP_NAME --protocol tcp --port 8080
+              cf add-network-policy $DARK_APP_NAME "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
+            else
+              cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" $DARK_APP_NAME --protocol tcp --port 8080
+              cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" $DARK_APP_NAME --protocol tcp --port 8080
+              cf add-network-policy $DARK_APP_NAME "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
+            fi
 
       - when:
           condition:
@@ -79,40 +91,67 @@ commands:
             - run:
                 name: "Recreate review app network policies"
                 command: |
-                  for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
-                  do
-                    cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
-                  done
+                  if [ << parameters.is_admin >> = true ]; then
+                    echo "Admin apis have no review apps"
+                  else
+                    for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
+                    do
+                      cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
+                    done
+                  fi
 
       - run:
           name: "Verify new version is working on dark URL."
           command: |
             sleep 15
             # Verify new version is working on dark URL.
-            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            if [ << parameters.is_admin >> = true ]; then
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>-dark"
+            else
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            fi
 
-            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
+            HTTPCODE=`cf ssh $DARK_APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
 
             if [ "$HTTPCODE" -ne 200 ];then
               echo "dark route not available, failing deploy ($HTTPCODE)"
-              cf logs "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --recent
-              cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+              cf logs $DARK_APP_NAME --recent
+              cf delete -f $DARK_APP_NAME
               exit 1
             fi
 
       - run:
           name: "Switch dark app to live"
           command: |
-            # Send "real" url to new version
-            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            if [ << parameters.is_admin >> = true ]; then
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>-dark"
+              APP_NAME="tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>"
+            else
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+              APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            fi
 
-            # Start sending traffic to new version
-            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
-            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
+            # Kill internal dns for to-be-removed dark app
+            cf unmap-route  $DARK_APP_NAME apps.internal -n $DARK_APP_NAME
+
+            # Map the internal route
+            cf map-route $DARK_APP_NAME apps.internal -n $APP_NAME
+
+            # Map the public route to beta search
+            if [ << parameters.is_admin >> = true ]; then
+              echo "Beta search not available for admin api"
+            else
+              cf map-route $DARK_APP_NAME "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
+            fi
 
             # Stop sending traffic to previous version
-            cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
-            cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
+            cf unmap-route $APP_NAME apps.internal -n $APP_NAME
+
+            if [ << parameters.is_admin >> = true ]; then
+              echo "Beta search not available for admin api"
+            else
+              cf unmap-route $APP_NAME "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
+            fi
 
       - run:
           name: Drain old app
@@ -121,17 +160,26 @@ commands:
       - run:
           name: Stop and remove old app
           command: |
+            if [ << parameters.is_admin >> = true ]; then
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>-dark"
+              APP_NAME="tariff-<< parameters.service >>-backend-admin-<< parameters.environment_key >>"
+            else
+              DARK_APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+              APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            fi
+
             # stop previous version
-            cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            cf stop $APP_NAME
 
             # allow the old app to shutdown prior to deletion of the app
             sleep 10
 
             # delete previous version
-            cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -f
+            cf delete $APP_NAME -f
 
             # Switch name of "dark" version to claim correct name
-            cf rename "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            cf rename $DARK_APP_NAME $APP_NAME
+
 
       - slack/notify:
           channel: deployments
@@ -619,12 +667,20 @@ jobs:
           space: "development"
           environment_key: "dev"
           service: << parameters.service >>
-      - cf_deploy_docker:
+      - cf_deploy_docker_api:
           docker_image_tag: dev-$CIRCLE_SHA1
           space: "development"
           environment_key: "dev"
           domain_prefix: "dev"
           service: << parameters.service >>
+          is_admin: false
+      - cf_deploy_docker_api:
+          docker_image_tag: dev-$CIRCLE_SHA1
+          space: "development"
+          environment_key: "dev"
+          domain_prefix: "dev"
+          service: << parameters.service >>
+          is_admin: true
       - sentry-release
 
   deploy_main_to_staging:
@@ -649,7 +705,7 @@ jobs:
           space: "staging"
           environment_key: "staging"
           service: << parameters.service >>
-      - cf_deploy_docker:
+      - cf_deploy_docker_api:
           docker_image_tag: $CIRCLE_SHA1
           space: "staging"
           environment_key: "staging"
@@ -676,12 +732,20 @@ jobs:
           space: "staging"
           environment_key: "staging"
           service: << parameters.service >>
-      - cf_deploy_docker:
+      - cf_deploy_docker_api:
           docker_image_tag: $CIRCLE_TAG
           space: "staging"
           environment_key: "staging"
           domain_prefix: "staging"
           service: << parameters.service >>
+          is_admin: false
+      - cf_deploy_docker_api:
+          docker_image_tag: $CIRCLE_TAG
+          space: "staging"
+          environment_key: "staging"
+          domain_prefix: "staging"
+          service: << parameters.service >>
+          is_admin: true
 
   deploy_production:
     docker:
@@ -702,12 +766,20 @@ jobs:
           space: "production"
           environment_key: "production"
           service: << parameters.service >>
-      - cf_deploy_docker:
+      - cf_deploy_docker_api:
           docker_image_tag: $CIRCLE_TAG
           space: "production"
           environment_key: "production"
           domain_prefix: "www"
           service: << parameters.service >>
+          is_admin: false
+      - cf_deploy_docker_api:
+          docker_image_tag: $CIRCLE_TAG
+          space: "production"
+          environment_key: "production"
+          domain_prefix: "www"
+          service: << parameters.service >>
+          is_admin: true
       - sentry-release
 
   sync_opensearch_packages:
