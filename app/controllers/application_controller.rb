@@ -5,6 +5,7 @@ class ApplicationController < ActionController::Base
 
   before_action :clear_association_queries
   around_action :configure_time_machine
+  after_action  :check_query_count, if: -> { TradeTariffBackend.check_query_count? }
 
   def nothing
     head :ok
@@ -36,5 +37,9 @@ class ApplicationController < ActionController::Base
 
   def clear_association_queries
     TradeTariffBackend.clearable_models.map(&:clear_association_cache)
+  end
+
+  def check_query_count
+    QueryCountChecker.new(TradeTariffBackend.excess_query_threshold).check
   end
 end
