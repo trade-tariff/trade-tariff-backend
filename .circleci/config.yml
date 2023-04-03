@@ -265,45 +265,6 @@ commands:
             cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails data:migrate" --name "data-migrate" --wait
 
 jobs:
-  refresh_staging_db:
-    docker:
-      - image: cimg/base:current-22.04
-    parameters:
-      service:
-        type: string
-    steps:
-      - checkout
-      - aws-cli/install
-      - cf-install:
-          space: "production"
-          version: "7.6.0"
-      - run:
-          name: "Install necessary dependencies"
-          command: |
-            cf install-plugin conduit -r CF-Community -f
-            sudo apt-get update -qq
-            sudo apt-get install postgresql-client
-      - run:
-          name: "Switch to production space"
-          command: |
-            cf target -s production
-      - run:
-          name: "Dump the production database"
-          command: |
-            cf conduit tariff-"<< parameters.service >>"-production-postgres -- pg_dump --file tariff-"<< parameters.service >>"-production-postgres.psql --no-acl --no-owner --clean --verbose
-      - run:
-          name: "Switch to staging space"
-          command: |
-            cf target -s staging
-      - run:
-          name: "Restore the production database into staging"
-          command: |
-            cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < tariff-"<< parameters.service >>"-production-postgres.psql
-      - run_migrations:
-          service: << parameters.service >>
-          environment_key: staging
-          space: staging
-
   dump_search_references:
     parameters:
       from_environment_key:
@@ -749,119 +710,98 @@ workflows:
     jobs:
       - flaky_tests:
           context: trade-tariff
-  sunday:
-    triggers:
-      - schedule:
-          # Every Sunday at 2.30 PM UTC
-          cron: "30 2 * * 0"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - dump_and_persist_database:
-          name: uk_development_dump_and_persist_database
-          context: trade-tariff
-          service: uk
-          space: development
-      - dump_and_persist_database:
-          name: xi_development_dump_and_persist_database
-          context: trade-tariff
-          service: xi
-          space: development
-      - dump_and_persist_database:
-          name: uk_staging_dump_and_persist_database
-          context: trade-tariff
-          service: uk
-          space: staging
-      - dump_and_persist_database:
-          name: xi_staging_dump_and_persist_database
-          context: trade-tariff
-          service: xi
-          space: staging
-      - dump_and_persist_database:
-          name: uk_production_dump_and_persist_database
-          context: trade-tariff
-          service: uk
-          space: production
-      - dump_and_persist_database:
-          name: xi_production_dump_and_persist_database
-          context: trade-tariff
-          service: xi
-          space: production
-  daily:
-    triggers:
-      - schedule:
-          # Every day at 6 pm
-          cron: "00 18 * * *"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - dump_search_references:
-          context: trade-tariff
-      - renew_search_references:
-          name: production_xi_renew
-          context: trade-tariff
-          to_space: production
-          to_environment_key: production
-          to_service: xi
-          requires:
-            - dump_search_references
-      - renew_search_references:
-          name: staging_uk_renew
-          context: trade-tariff
-          to_space: staging
-          to_environment_key: staging
-          to_service: uk
-          requires:
-            - dump_search_references
-      - renew_search_references:
-          name: staging_xi_renew
-          context: trade-tariff
-          to_space: staging
-          to_environment_key: staging
-          to_service: xi
-          requires:
-            - dump_search_references
-      - renew_search_references:
-          name: development_uk_renew
-          context: trade-tariff
-          to_space: development
-          to_environment_key: dev
-          to_service: uk
-          requires:
-            - dump_search_references
-      - renew_search_references:
-          name: development_xi_renew
-          context: trade-tariff
-          to_space: development
-          to_environment_key: dev
-          to_service: xi
-          requires:
-            - dump_search_references
-  weekly:
-    triggers:
-      - schedule:
-          # Every Saturday at midnight.
-          cron: "00 23 * * 6" # Needs to not collide with xi ETL
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - refresh_staging_db:
-          context: trade-tariff
-          matrix:
-            parameters:
-              service:
-                - xi
-                - uk
-          filters:
-            branches:
-              only:
-                - main
+  # sunday:
+  #   triggers:
+  #     - schedule:
+  #         # Every Sunday at 2.30 PM UTC
+  #         cron: "30 2 * * 0"
+  #         filters:
+  #           branches:
+  #             only:
+  #               - main
+  #   jobs:
+  #     - dump_and_persist_database:
+  #         name: uk_development_dump_and_persist_database
+  #         context: trade-tariff
+  #         service: uk
+  #         space: development
+  #     - dump_and_persist_database:
+  #         name: xi_development_dump_and_persist_database
+  #         context: trade-tariff
+  #         service: xi
+  #         space: development
+  #     - dump_and_persist_database:
+  #         name: uk_staging_dump_and_persist_database
+  #         context: trade-tariff
+  #         service: uk
+  #         space: staging
+  #     - dump_and_persist_database:
+  #         name: xi_staging_dump_and_persist_database
+  #         context: trade-tariff
+  #         service: xi
+  #         space: staging
+  #     - dump_and_persist_database:
+  #         name: uk_production_dump_and_persist_database
+  #         context: trade-tariff
+  #         service: uk
+  #         space: production
+  #     - dump_and_persist_database:
+  #         name: xi_production_dump_and_persist_database
+  #         context: trade-tariff
+  #         service: xi
+  #         space: production
+  # daily:
+  #   triggers:
+  #     - schedule:
+  #         # Every day at 6 pm
+  #         cron: "00 18 * * *"
+  #         filters:
+  #           branches:
+  #             only:
+  #               - main
+  #   jobs:
+  #     - dump_search_references:
+  #         context: trade-tariff
+  #     - renew_search_references:
+  #         name: production_xi_renew
+  #         context: trade-tariff
+  #         to_space: production
+  #         to_environment_key: production
+  #         to_service: xi
+  #         requires:
+  #           - dump_search_references
+  #     - renew_search_references:
+  #         name: staging_uk_renew
+  #         context: trade-tariff
+  #         to_space: staging
+  #         to_environment_key: staging
+  #         to_service: uk
+  #         requires:
+  #           - dump_search_references
+  #     - renew_search_references:
+  #         name: staging_xi_renew
+  #         context: trade-tariff
+  #         to_space: staging
+  #         to_environment_key: staging
+  #         to_service: xi
+  #         requires:
+  #           - dump_search_references
+  #     - renew_search_references:
+  #         name: development_uk_renew
+  #         context: trade-tariff
+  #         to_space: development
+  #         to_environment_key: dev
+  #         to_service: uk
+  #         requires:
+  #           - dump_search_references
+  #     - renew_search_references:
+  #         name: development_xi_renew
+  #         context: trade-tariff
+  #         to_space: development
+  #         to_environment_key: dev
+  #         to_service: xi
+  #         requires:
+  #           - dump_search_references
 
   ci:
     jobs:
