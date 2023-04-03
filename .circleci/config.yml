@@ -265,45 +265,6 @@ commands:
             cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails data:migrate" --name "data-migrate" --wait
 
 jobs:
-  refresh_staging_db:
-    docker:
-      - image: cimg/base:current-22.04
-    parameters:
-      service:
-        type: string
-    steps:
-      - checkout
-      - aws-cli/install
-      - cf-install:
-          space: "production"
-          version: "7.6.0"
-      - run:
-          name: "Install necessary dependencies"
-          command: |
-            cf install-plugin conduit -r CF-Community -f
-            sudo apt-get update -qq
-            sudo apt-get install postgresql-client
-      - run:
-          name: "Switch to production space"
-          command: |
-            cf target -s production
-      - run:
-          name: "Dump the production database"
-          command: |
-            cf conduit tariff-"<< parameters.service >>"-production-postgres -- pg_dump --file tariff-"<< parameters.service >>"-production-postgres.psql --no-acl --no-owner --clean --verbose
-      - run:
-          name: "Switch to staging space"
-          command: |
-            cf target -s staging
-      - run:
-          name: "Restore the production database into staging"
-          command: |
-            cf conduit tariff-"<< parameters.service >>"-staging-postgres -- psql $PGDATABASE < tariff-"<< parameters.service >>"-production-postgres.psql
-      - run_migrations:
-          service: << parameters.service >>
-          environment_key: staging
-          space: staging
-
   dump_search_references:
     parameters:
       from_environment_key:
@@ -841,28 +802,6 @@ workflows:
   #         to_service: xi
   #         requires:
   #           - dump_search_references
-
-  # weekly:
-  #   triggers:
-  #     - schedule:
-  #         # Every Saturday at midnight.
-  #         cron: "00 23 * * 6" # Needs to not collide with xi ETL
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #   jobs:
-  #     - refresh_staging_db:
-  #         context: trade-tariff
-  #         matrix:
-  #           parameters:
-  #             service:
-  #               - xi
-  #               - uk
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
 
   ci:
     jobs:
