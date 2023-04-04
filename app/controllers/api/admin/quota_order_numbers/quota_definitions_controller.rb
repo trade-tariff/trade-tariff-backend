@@ -5,16 +5,18 @@ module Api
         before_action :authenticate_user!
         around_action :skip_time_machine
 
-        DEFAULT_EAGER_LOAD_GRAPH = %i[
-          quota_balance_events
-          quota_critical_events
-          quota_exhaustion_events
-          quota_reopening_events
-          quota_unblocking_events
-          quota_unsuspension_events
+        DEFAULT_EAGER_LOAD_GRAPH = [
+          { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
+          :quota_balance_events,
+          :quota_critical_events,
+          :quota_exhaustion_events,
+          :quota_reopening_events,
+          :quota_unblocking_events,
+          :quota_unsuspension_events,
         ].freeze
 
         DEFAULT_INCLUDES = %w[
+          measurement_unit
           quota_order_number
           quota_balance_events
           quota_critical_events
@@ -55,7 +57,7 @@ module Api
               quota_order_number_id: params[:quota_order_number_id],
               quota_definition_sid: params[:id],
             )
-            .eager(DEFAULT_EAGER_LOAD_GRAPH)
+            .eager(*DEFAULT_EAGER_LOAD_GRAPH)
             .take
         end
 

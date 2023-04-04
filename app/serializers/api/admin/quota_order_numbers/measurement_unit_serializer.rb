@@ -1,13 +1,12 @@
 module Api
-  module V2
-    module Measures
+  module Admin
+    module QuotaOrderNumbers
       class MeasurementUnitSerializer
         include JSONAPI::Serializer
 
-        set_id :measurement_unit_code
         set_type :measurement_unit
 
-        attributes :description, :measurement_unit_code
+        attributes :description, :measurement_unit_code, :abbreviation
       end
     end
   end
