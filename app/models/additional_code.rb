@@ -69,8 +69,8 @@ class AdditionalCode < Sequel::Model
     def additional_codes
       @additional_codes ||=
         begin
-          file = File.join(::Rails.root, 'db', 'additional_codes.json').freeze
-          JSON.parse(File.read(file))
+          file_path = Rails.root.join('db/additional_codes.json').freeze
+          JSON.parse(File.read(file_path))
         end
     end
   end

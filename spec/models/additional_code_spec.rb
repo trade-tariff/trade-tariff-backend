@@ -10,6 +10,13 @@ RSpec.describe AdditionalCode do
 
   describe 'associations' do
     describe 'additional code description' do
+      before do
+        create :additional_code_description, :with_period,
+               additional_code_sid: additional_code.additional_code_sid,
+               valid_at: 6.years.ago.beginning_of_day,
+               valid_to: 1.year.ago.beginning_of_day
+      end
+
       let!(:additional_code)                { create :additional_code }
       let!(:additional_code_description1)   do
         create :additional_code_description, :with_period,
@@ -23,14 +30,8 @@ RSpec.describe AdditionalCode do
                valid_at: 5.years.ago.beginning_of_day,
                valid_to: 3.years.ago.beginning_of_day
       end
-      let!(:additional_code_description3) do
-        create :additional_code_description, :with_period,
-               additional_code_sid: additional_code.additional_code_sid,
-               valid_at: 6.years.ago.beginning_of_day,
-               valid_to: 1.year.ago.beginning_of_day
-      end
 
-      context 'direct loading' do
+      context 'when direct loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -48,7 +49,7 @@ RSpec.describe AdditionalCode do
         end
       end
 
-      context 'eager loading' do
+      context 'when eager loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
