@@ -24,9 +24,10 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         do_response
 
         expected_hash = Digest::MD5.hexdigest('{}')
+        cache_suffix = TradeTariffBackend.nested_set_headings? ? '-v1' : ''
 
         expect(Rails.cache).to have_received(:fetch).with(
-          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}",
+          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
           { expires_in: 24.hours },
         )
       end
@@ -38,9 +39,10 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
           do_response
 
           expected_hash = Digest::MD5.hexdigest(filter.to_json)
+          cache_suffix = TradeTariffBackend.nested_set_headings? ? '-v1' : ''
 
           expect(Rails.cache).to have_received(:fetch).with(
-            "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}",
+            "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
             { expires_in: 24.hours },
           )
         end
