@@ -4,6 +4,20 @@ class ApplicableAdditionalCodeService
   end
 
   def call
+    applicable_additional_codes.tap do |codes|
+      codes.each_key do |measure_type_id|
+        none_option_additional_code_measure = measure_no_additional_codes_for(measure_type_id)
+
+        if none_option_additional_code_measure.present?
+          codes[measure_type_id]['additional_codes'] << code_annotations_for(none_option_additional_code_measure)
+        end
+      end
+    end
+  end
+
+  private
+
+  def applicable_additional_codes
     unique_applicable_measures.each_with_object({}) do |measure, acc|
       measure_type_id = measure.measure_type_id
 
@@ -15,7 +29,11 @@ class ApplicableAdditionalCodeService
     end
   end
 
-  private
+  def measure_no_additional_codes_for(measure_type_id)
+    @measures.find do |measure|
+      measure.measure_type_id == measure_type_id && measure.additional_code.blank?
+    end
+  end
 
   def unique_applicable_measures
     applicable_measures.uniq(&:measure_sid)
@@ -26,7 +44,7 @@ class ApplicableAdditionalCodeService
   end
 
   def code_annotations_for(measure)
-    additional_code = measure.additional_code
+    additional_code = measure.additional_code.presence || AdditionalCode.null_code
     overriding_annotation = AdditionalCode.additional_codes['code_overrides'][additional_code.code]
 
     if overriding_annotation.present?

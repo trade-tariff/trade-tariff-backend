@@ -61,11 +61,17 @@ class AdditionalCode < Sequel::Model
     UNKNOWN_TYPE
   end
 
-  def self.additional_codes
-    @additional_codes ||=
-      begin
-        file = File.join(::Rails.root, 'db', 'additional_codes.json').freeze
-        JSON.parse(File.read(file))
-      end
+  class << self
+    def null_code
+      OpenStruct.new(code: 'none', description: 'No additional code')
+    end
+
+    def additional_codes
+      @additional_codes ||=
+        begin
+          file = File.join(::Rails.root, 'db', 'additional_codes.json').freeze
+          JSON.parse(File.read(file))
+        end
+    end
   end
 end

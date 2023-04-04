@@ -125,4 +125,9 @@ RSpec.describe AdditionalCode do
       it { is_expected.to be_applicable }
     end
   end
+
+  describe '.null_code' do
+    it { expect(described_class.null_code.code).to eq('none') }
+    it { expect(described_class.null_code.description).to eq('No additional code') }
+  end
 end
