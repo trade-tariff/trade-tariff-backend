@@ -18,8 +18,11 @@ module Api
                    :description_plain,
                    :parent_sid,
                    :validity_start_date,
-                   :validity_end_date,
-                   :declarable
+                   :validity_end_date
+
+        attribute :declarable do |commodity|
+          commodity.leaf && commodity.producline_suffix == '80'
+        end
 
         has_many :overview_measures, serializer: Api::V2::Measures::OverviewMeasureSerializer
       end
