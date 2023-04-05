@@ -14,7 +14,11 @@ module ChangesTablePopulator
       end
 
       def import_records(elements:, day: Time.zone.today)
-        elements.map { |element| integrate_element(row: element, day:) }
+        elements.map do |element|
+          integrate_element(row: element,
+                            day:,
+                            is_end_line: end_line?(row: element, day:))
+        end
       end
 
       def change_type

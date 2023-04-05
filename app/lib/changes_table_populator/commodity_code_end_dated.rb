@@ -14,7 +14,12 @@ module ChangesTablePopulator
       end
 
       def import_records(elements:, day: Time.zone.today)
-        elements.map { |element| integrate_element(row: element, day:) }
+        elements.map do |element|
+          last_valid_day = (day - 1.day).beginning_of_day
+          declarable_on_last_day = end_line?(row: element, day: last_valid_day)
+
+          integrate_element(row: element, day:, is_end_line: declarable_on_last_day)
+        end
       end
 
       def change_type
