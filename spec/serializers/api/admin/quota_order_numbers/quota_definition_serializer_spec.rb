@@ -17,9 +17,10 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionSerializer do
             quota_type: 'First Come First Served',
             critical_state: 'N',
             critical_threshold: serializable.critical_threshold,
-            measurement_unit: nil,
+            formatted_measurement_unit: nil,
           },
           relationships: {
+            measurement_unit: { data: { id: serializable.measurement_unit_id, type: eq(:measurement_unit) } },
             quota_order_number: { data: { id: serializable.quota_order_number_id, type: eq(:quota_order_number) } },
             quota_balance_events: { data: [] },
             quota_order_number_origins: { data: [] },

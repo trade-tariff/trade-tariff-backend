@@ -79,6 +79,10 @@ class QuotaDefinition < Sequel::Model
 
   delegate :description, :abbreviation, to: :measurement_unit, prefix: true, allow_nil: true
 
+  def measurement_unit_id
+    measurement_unit_code
+  end
+
   def formatted_measurement_unit
     "#{measurement_unit_description} (#{measurement_unit_abbreviation})" if measurement_unit_description.present?
   end
