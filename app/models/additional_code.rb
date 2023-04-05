@@ -61,11 +61,31 @@ class AdditionalCode < Sequel::Model
     UNKNOWN_TYPE
   end
 
-  def self.additional_codes
-    @additional_codes ||=
-      begin
-        file = File.join(::Rails.root, 'db', 'additional_codes.json').freeze
-        JSON.parse(File.read(file))
-      end
+  class << self
+    def null_code
+      OpenStruct.new(code: 'none', description: 'No additional code')
+    end
+
+    def heading_for(type)
+      additional_codes.dig('headings', type)
+    end
+
+    def override_for(code)
+      overrides_for(code).dup
+    end
+
+    private
+
+    def overrides_for(code)
+      additional_codes.dig('code_overrides', code) || {}
+    end
+
+    def additional_codes
+      @additional_codes ||=
+        begin
+          file_path = Rails.root.join('db/additional_codes.json').freeze
+          JSON.parse(File.read(file_path))
+        end
+    end
   end
 end

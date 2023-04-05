@@ -10,6 +10,13 @@ RSpec.describe AdditionalCode do
 
   describe 'associations' do
     describe 'additional code description' do
+      before do
+        create :additional_code_description, :with_period,
+               additional_code_sid: additional_code.additional_code_sid,
+               valid_at: 6.years.ago.beginning_of_day,
+               valid_to: 1.year.ago.beginning_of_day
+      end
+
       let!(:additional_code)                { create :additional_code }
       let!(:additional_code_description1)   do
         create :additional_code_description, :with_period,
@@ -23,14 +30,8 @@ RSpec.describe AdditionalCode do
                valid_at: 5.years.ago.beginning_of_day,
                valid_to: 3.years.ago.beginning_of_day
       end
-      let!(:additional_code_description3) do
-        create :additional_code_description, :with_period,
-               additional_code_sid: additional_code.additional_code_sid,
-               valid_at: 6.years.ago.beginning_of_day,
-               valid_to: 1.year.ago.beginning_of_day
-      end
 
-      context 'direct loading' do
+      context 'when direct loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -48,7 +49,7 @@ RSpec.describe AdditionalCode do
         end
       end
 
-      context 'eager loading' do
+      context 'when eager loading' do
         it 'loads correct description respecting given actual time' do
           TimeMachine.now do
             expect(
@@ -123,6 +124,43 @@ RSpec.describe AdditionalCode do
       let(:additional_code_type_id) { '2' }
 
       it { is_expected.to be_applicable }
+    end
+  end
+
+  describe '.null_code' do
+    it { expect(described_class.null_code.code).to eq('none') }
+    it { expect(described_class.null_code.description).to eq('No additional code') }
+  end
+
+  describe '.heading_for' do
+    subject(:heading) { described_class.heading_for(type) }
+
+    context 'when there is a heading for the given code' do
+      let(:type) { 'remedy' }
+
+      it { expect(heading.keys).to include('hint', 'overlay') }
+    end
+
+    context 'when there is no heading for the given code' do
+      let(:type) { 'foo' }
+
+      it { expect(heading).to be_nil }
+    end
+  end
+
+  describe '.annotation_for' do
+    subject(:annotations) { described_class.override_for(additional_code) }
+
+    context 'when there are ovverides for the given code' do
+      let(:additional_code) { '2600' }
+
+      it { expect(annotations).to include('code' => '2600') }
+    end
+
+    context 'when there are no ovverides for the given code' do
+      let(:additional_code) { 'foo' }
+
+      it { expect(annotations).to eq({}) }
     end
   end
 end
