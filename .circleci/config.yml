@@ -372,7 +372,7 @@ jobs:
 
   linters:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     resource_class: small
     steps:
       - checkout
@@ -403,7 +403,7 @@ jobs:
         default: false
         type: boolean
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     steps:
       - checkout
       - setup_remote_docker:
@@ -430,7 +430,7 @@ jobs:
 
   flaky_tests:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -481,7 +481,7 @@ jobs:
           template: basic_success_1
   test:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -559,7 +559,7 @@ jobs:
 
   deploy_dev:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     environment:
       SENTRY_ENVIRONMENT: "development"
     parameters:
@@ -590,7 +590,7 @@ jobs:
 
   deploy_main_to_staging:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -620,7 +620,7 @@ jobs:
 
   deploy_release_to_staging:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     environment:
       SENTRY_ENVIRONMENT: "staging"
     parameters:
@@ -646,7 +646,7 @@ jobs:
 
   deploy_production:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     environment:
       SENTRY_ENVIRONMENT: "production"
     parameters:
@@ -687,7 +687,7 @@ jobs:
 
   notify_production_deployment:
     docker:
-      - image: cimg/ruby:3.2.1
+      - image: cimg/ruby:3.2.2
     steps:
       - tariff/notify-production-release:
           app-name: Backend
