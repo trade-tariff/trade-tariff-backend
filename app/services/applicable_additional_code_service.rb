@@ -23,7 +23,7 @@ class ApplicableAdditionalCodeService
 
       acc[measure_type_id] = {} if acc[measure_type_id].blank?
       acc[measure_type_id]['measure_type_description'] = measure&.measure_type&.description
-      acc[measure_type_id]['heading'] = heading_annotations_for(measure.additional_code.type)
+      acc[measure_type_id]['heading'] = heading_for(measure.additional_code.type)
       acc[measure_type_id]['additional_codes'] = [] if acc[measure_type_id]['additional_codes'].blank?
       acc[measure_type_id]['additional_codes'] << code_annotations_for(measure)
     end
@@ -44,23 +44,23 @@ class ApplicableAdditionalCodeService
   end
 
   def code_annotations_for(measure)
-    additional_code = measure.additional_code.presence || AdditionalCode.null_code
-    overriding_annotation = AdditionalCode.additional_codes['code_overrides'][additional_code.code]
+    additional_code = measure.additional_code.presence || null_code
+    overriding_annotation = override_for(additional_code.code)
 
     if overriding_annotation.present?
       overriding_annotation['measure_sid'] = measure.measure_sid
+      overriding_annotation['geographical_area_id'] = measure.geographical_area_id
       overriding_annotation
     else
       {
         'code' => additional_code.code,
         'overlay' => additional_code.description,
         'hint' => '',
+        'geographical_area_id' => measure.geographical_area_id,
         'measure_sid' => measure.measure_sid,
       }
     end
   end
 
-  def heading_annotations_for(type)
-    AdditionalCode.additional_codes['headings'][type]
-  end
+  delegate :heading_for, :override_for, :null_code, to: AdditionalCode
 end

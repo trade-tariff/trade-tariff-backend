@@ -131,4 +131,36 @@ RSpec.describe AdditionalCode do
     it { expect(described_class.null_code.code).to eq('none') }
     it { expect(described_class.null_code.description).to eq('No additional code') }
   end
+
+  describe '.heading_for' do
+    subject(:heading) { described_class.heading_for(type) }
+
+    context 'when there is a heading for the given code' do
+      let(:type) { 'remedy' }
+
+      it { expect(heading.keys).to include('hint', 'overlay') }
+    end
+
+    context 'when there is no heading for the given code' do
+      let(:type) { 'foo' }
+
+      it { expect(heading).to be_nil }
+    end
+  end
+
+  describe '.annotation_for' do
+    subject(:annotations) { described_class.override_for(additional_code) }
+
+    context 'when there are ovverides for the given code' do
+      let(:additional_code) { '2600' }
+
+      it { expect(annotations).to include('code' => '2600') }
+    end
+
+    context 'when there are no ovverides for the given code' do
+      let(:additional_code) { 'foo' }
+
+      it { expect(annotations).to eq({}) }
+    end
+  end
 end
