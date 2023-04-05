@@ -47,7 +47,7 @@ module ChangesTablePopulator
         raise NotImplementedError, 'Implement this method in the subclasses'
       end
 
-      def integrate_element(row:, is_end_line:, day: Time.zone.today)
+      def build_change_record(row:, is_end_line:, day: Time.zone.today)
         [
           row[:goods_nomenclature_item_id],
           row[:goods_nomenclature_sid],
@@ -69,7 +69,7 @@ module ChangesTablePopulator
 
       def integrate_and_find_children(row:, day: Time.zone.today)
         find_children(row:, day:).map do |child|
-          integrate_element(row: child, day:, is_end_line: child.ns_declarable?)
+          build_change_record(row: child, day:, is_end_line: child.ns_declarable?)
         end
       end
 
