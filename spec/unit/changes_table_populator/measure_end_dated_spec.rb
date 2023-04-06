@@ -22,10 +22,34 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
       end
     end
 
-    context 'when there are measures that ended on the previous day' do
+    context 'when there are measures that ended on the previous day in Taric' do
       before do
-        create :measure, :with_goods_nomenclature, validity_end_date: Time.zone.today - 1.day
+        create :measure, :with_goods_nomenclature, validity_end_date: taric_end_date
       end
+
+      let(:taric_end_date) { 1.day.ago.beginning_of_day }
+
+      it 'extracts changes' do
+        expect { described_class.populate }.to change(Change, :count).by(1)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.populate
+        expect(db[:changes].first[:productline_suffix]).to eq('80')
+      end
+
+      it 'will flag it as end line' do
+        described_class.populate
+        expect(db[:changes].first[:end_line]).to be true
+      end
+    end
+
+    context 'when there are measures that ended on the previous day in CDS' do
+      before do
+        create :measure, :with_goods_nomenclature, validity_end_date: cds_end_date
+      end
+
+      let(:cds_end_date) { 1.day.ago.end_of_day }
 
       it 'extracts changes' do
         expect { described_class.populate }.to change(Change, :count).by(1)
