@@ -74,12 +74,17 @@ module ChangesTablePopulator
       end
 
       def find_children(row:, day: Time.zone.today)
-        TimeMachine.at(day) do
-          gn = GoodsNomenclature
-                 .actual
-                 .where(goods_nomenclature_sid: row[:goods_nomenclature_sid])
-                 .first
+        gn = GoodsNomenclature
+               .where(goods_nomenclature_sid: row[:goods_nomenclature_sid])
+               .first
 
+        last_valid_day = if gn.validity_end_date && gn.validity_end_date < day
+                           gn.validity_end_date
+                         else
+                           day
+                         end
+
+        TimeMachine.at(last_valid_day) do
           [gn] + gn.ns_descendants
         end
       end

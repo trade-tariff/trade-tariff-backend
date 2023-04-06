@@ -116,5 +116,27 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
         expect(db[:changes].first[:end_line]).to be false
       end
     end
+
+    context 'when the measure is associated to a goods_nomenclature which is end dated on the same day' do
+      before { measure }
+
+      let(:yesterday) { Time.zone.today - 1.day }
+      let(:commodity) { create :commodity, :with_heading, :with_children, validity_end_date: yesterday }
+      let(:measure) { create :measure, goods_nomenclature: commodity, validity_end_date: yesterday }
+
+      it 'extracts the commodity and the child commodity as change' do
+        expect { described_class.populate }.to change(Change, :count).by(4)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.populate
+        expect(db[:changes].first[:productline_suffix]).to eq('80')
+      end
+
+      it 'will flag it as not end line' do
+        described_class.populate
+        expect(db[:changes].first[:end_line]).to be false
+      end
+    end
   end
 end
