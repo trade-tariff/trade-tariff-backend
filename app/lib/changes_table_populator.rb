@@ -16,12 +16,12 @@ module ChangesTablePopulator
         MeasureDeleted,
         MeasureCreatedOrUpdated,
       ].map do |importer|
-        importer.populate(day:)
+        importer.new(day).populate
       end
       return nil
     rescue StandardError => e
       ActiveSupport::Notifications.instrument('populate_failed.changes_table_populator', exception: e)
-      raise e.original
+      raise
     end
   end
 
@@ -41,7 +41,7 @@ module ChangesTablePopulator
       return nil
     rescue StandardError => e
       ActiveSupport::Notifications.instrument('populate_failed.changes_table_populator', exception: e)
-      raise e.original
+      raise
     end
   end
 
@@ -51,7 +51,7 @@ module ChangesTablePopulator
       return nil
     rescue StandardError => e
       ActiveSupport::Notifications.instrument('cleanup_failed.changes_table_populator', exception: e)
-      raise e.original
+      raise
     end
   end
 end
