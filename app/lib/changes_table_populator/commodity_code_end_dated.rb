@@ -10,7 +10,9 @@ module ChangesTablePopulator
       end
 
       def where_condition(day: Time.zone.today)
-        { validity_end_date: day - 1.day }
+        previous_day = (day - 1.day)
+
+        { validity_end_date: (previous_day.beginning_of_day..previous_day.end_of_day) }
       end
 
       def import_records(elements:, day: Time.zone.today)
