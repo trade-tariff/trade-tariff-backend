@@ -363,16 +363,15 @@ class Measure < Sequel::Model
       with_generating_regulation
         .select_append(Sequel.as(effective_start_date_column, :effective_start_date))
         .select_append(Sequel.as(effective_end_date_column, :effective_end_date))
-        .where do |dataset|
+        .where do |_query|
           if model.point_in_time
             start_date = effective_start_date_column
             end_date   = effective_end_date_column
 
-            dataset &
-              (start_date <= model.point_in_time) &
+            (start_date <= model.point_in_time) &
               ((end_date >= model.point_in_time) | (end_date =~ nil))
           else
-            dataset
+            true # .where method needs _something_ to AND to the query
           end
         end
     end
