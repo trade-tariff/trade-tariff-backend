@@ -9,7 +9,9 @@ module Api
         end
 
         def parent_sid
-          ns_parent&.goods_nomenclature_sid if depth > 3
+          if ns_parent.is_a?(Commodity) || ns_parent.is_a?(Subheading)
+            ns_parent.goods_nomenclature_sid
+          end
         end
 
         def overview_measures
