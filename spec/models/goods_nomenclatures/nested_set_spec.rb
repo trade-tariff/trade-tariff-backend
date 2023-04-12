@@ -17,6 +17,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       it { is_expected.to be_instance_of GoodsNomenclatures::TreeNode }
       it { is_expected.to have_attributes goods_nomenclature_sid: commodity.goods_nomenclature_sid }
       it { is_expected.to have_attributes depth: 3 }
+      it { is_expected.to have_attributes number_indents: 1 }
       it { is_expected.to have_attributes goods_nomenclature_indent_sid: indent.pk }
 
       it 'reciprocates correctly' do
@@ -164,10 +165,11 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           end
         end
 
-        describe 'leaf value from db query' do
+        describe 'values from db query' do
           subject { tree[:subheading].ns_ancestors.map(&:values) }
 
           it { is_expected.to all include leaf: false }
+          it { is_expected.to all include :number_indents }
         end
       end
 
@@ -189,10 +191,11 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           it { is_expected.to eq item_id }
         end
 
-        describe 'leaf value from db query' do
+        describe 'values from db query' do
           subject { tree[:subheading].ns_parent.values }
 
           it { is_expected.to include leaf: false }
+          it { is_expected.to include number_indents: 0 }
         end
       end
 
@@ -287,6 +290,12 @@ RSpec.describe GoodsNomenclatures::NestedSet do
             end
           end
         end
+
+        describe 'values from db query' do
+          subject { tree[:subheading].ns_descendants[0].values }
+
+          it { is_expected.to include number_indents: 2 }
+        end
       end
 
       describe '#ns_children' do
@@ -312,6 +321,12 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           end
 
           it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading]
+        end
+
+        describe 'values from db query' do
+          subject { tree[:subheading].ns_children[0].values }
+
+          it { is_expected.to include number_indents: 2 }
         end
       end
 
@@ -480,33 +495,39 @@ RSpec.describe GoodsNomenclatures::NestedSet do
     end
   end
 
-  describe 'ns_number_indents' do
-    subject { gn.ns_number_indents }
+  describe '#number_indents' do
+    subject { gn.number_indents }
 
     let(:commodity) { create :commodity, :with_chapter_and_heading }
 
-    context 'without depth value loaded' do
+    context 'with goods_nomenclature_indents' do
       let(:gn) { commodity }
 
-      it { is_expected.to be commodity.number_indents }
+      it { is_expected.to be 1 }
     end
 
-    context 'with chapter' do
-      let(:gn) { commodity.ns_ancestors[0] }
+    context 'with tree nodes' do
+      before do
+        allow(gn.goods_nomenclature_indent).to receive(:number_indents).and_return 200
+      end
 
-      it { is_expected.to be 0 }
-    end
+      context 'with chapter' do
+        let(:gn) { commodity.ns_ancestors[0] }
 
-    context 'with heading' do
-      let(:gn) { commodity.ns_ancestors[1] }
+        it { is_expected.to be 0 }
+      end
 
-      it { is_expected.to be 0 }
-    end
+      context 'with heading' do
+        let(:gn) { commodity.ns_ancestors[1] }
 
-    context 'with commodity' do
-      let(:gn) { commodity.ns_parent.ns_descendants[0] }
+        it { is_expected.to be 0 }
+      end
 
-      it { is_expected.to be commodity.number_indents }
+      context 'with commodity' do
+        let(:gn) { commodity.ns_parent.ns_descendants[0] }
+
+        it { is_expected.to be 1 }
+      end
     end
   end
 

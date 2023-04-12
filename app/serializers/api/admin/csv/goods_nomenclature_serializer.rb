@@ -10,7 +10,7 @@ module Api
         column :description, column_name: 'Description'
         column :validity_start_date, column_name: 'Start date'
         column :validity_end_date, column_name: 'End date'
-        column :number_indents, column_name: 'Indentation', &:ns_number_indents
+        column :number_indents, column_name: 'Indentation'
         column :end_line, column_name: 'End line', &:ns_declarable?
 
         # Uses materialized path to determine declarability of goods nomenclature to avoid slow csv generation
