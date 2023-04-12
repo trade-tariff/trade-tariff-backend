@@ -33,7 +33,7 @@ module Api
         end
 
         def footnote_ids
-          footnotes.map(&:footnote_id)
+          footnotes.map(&:id)
         end
 
         def chapter_id
