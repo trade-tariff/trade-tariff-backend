@@ -29,7 +29,7 @@ module Api
         end
 
         def footnote_ids
-          footnotes.map(&:footnote_id)
+          footnotes.map(&:id)
         end
 
         def import_measure_ids

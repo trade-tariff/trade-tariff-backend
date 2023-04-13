@@ -18,6 +18,6 @@ RSpec.describe Api::V2::Headings::HeadingPresenter do
       create :heading, :with_chapter, :with_children, :with_footnote_association
     end
 
-    it { is_expected.to have_attributes footnote_ids: heading.footnotes.map(&:footnote_id) }
+    it { is_expected.to have_attributes footnote_ids: heading.footnotes.map(&:id) }
   end
 end
