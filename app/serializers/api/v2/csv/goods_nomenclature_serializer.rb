@@ -11,7 +11,8 @@ module Api
         column :producline_suffix, column_name: 'Product Line Suffix'
 
         column :href, column_name: 'Href' do |goods_nomenclature, _options|
-          Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature)
+          Api::V2::GoodsNomenclaturesController
+            .api_path_builder(goods_nomenclature, check_for_subheadings: true)
         end
 
         column :formatted_description, column_name: 'Formatted description'

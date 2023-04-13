@@ -57,9 +57,9 @@ RSpec.describe Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer 
       end
 
       context 'with subheading' do
-        let(:gn) { create :subheading }
+        let(:gn) { create :subheading, :with_children }
 
-        it { is_expected.to include href: "/api/v2/commodities/#{gn.goods_nomenclature_item_id}" }
+        it { is_expected.to include href: "/api/v2/subheadings/#{gn.to_param}" }
         it { is_expected.to include declarable: false }
       end
     end

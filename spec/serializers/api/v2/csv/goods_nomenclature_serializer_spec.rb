@@ -1,5 +1,5 @@
 RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
-  describe '#serializable_array' do
+  describe '#serializable_csv' do
     subject(:rows) { serialized.lines.map(&:strip) }
 
     let(:serialized) { described_class.new(serializable).serialized_csv }
@@ -40,6 +40,12 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
           'true',
         ],
       )
+    end
+
+    context 'with subheading' do
+      let(:goods_nomenclature) { create :commodity, :with_children }
+
+      it { expect(rows[1]).to match "api/v2/subheadings/#{goods_nomenclature.to_param}" }
     end
   end
 end
