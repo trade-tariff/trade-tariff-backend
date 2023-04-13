@@ -2730,6 +2730,26 @@ ALTER SEQUENCE uk.fts_regulation_actions_oid_seq OWNED BY uk.fts_regulation_acti
 
 
 --
+-- Name: full_chemicals; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.full_chemicals (
+    cus text NOT NULL,
+    goods_nomenclature_sid integer NOT NULL,
+    cn_code text,
+    cas_rn text,
+    ec_number text,
+    un_number text,
+    nomen text,
+    name text,
+    goods_nomenclature_item_id text,
+    producline_suffix text,
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
+);
+
+
+--
 -- Name: full_temporary_stop_regulations_oplog; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -6973,7 +6993,10 @@ CREATE TABLE uk.search_suggestions (
     id text NOT NULL,
     value text NOT NULL,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    type text,
+    priority integer,
+    goods_nomenclature_sid integer
 );
 
 
@@ -8411,6 +8434,14 @@ ALTER TABLE ONLY uk.fts_regulation_actions_oplog
 
 
 --
+-- Name: full_chemicals full_chemicals_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.full_chemicals
+    ADD CONSTRAINT full_chemicals_pkey PRIMARY KEY (cus, goods_nomenclature_sid);
+
+
+--
 -- Name: full_temporary_stop_regulations_oplog full_temporary_stop_regulations_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -9729,6 +9760,34 @@ CREATE INDEX fts_reg_act_pk ON uk.fts_regulation_actions_oplog USING btree (fts_
 --
 
 CREATE INDEX ftsro_fultemstoregopl_ullarytoponslog_operation_date ON uk.full_temporary_stop_regulations_oplog USING btree (operation_date);
+
+
+--
+-- Name: full_chemicals_cas_rn_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX full_chemicals_cas_rn_idx ON uk.full_chemicals USING btree (cas_rn);
+
+
+--
+-- Name: full_chemicals_cus_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX full_chemicals_cus_idx ON uk.full_chemicals USING btree (cus);
+
+
+--
+-- Name: full_chemicals_goods_nomenclature_item_id_producline_suffix_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX full_chemicals_goods_nomenclature_item_id_producline_suffix_idx ON uk.full_chemicals USING btree (goods_nomenclature_item_id, producline_suffix);
+
+
+--
+-- Name: full_chemicals_goods_nomenclature_sid_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX full_chemicals_goods_nomenclature_sid_idx ON uk.full_chemicals USING btree (goods_nomenclature_sid);
 
 
 --
@@ -11167,6 +11226,20 @@ CREATE INDEX search_references_goods_nomenclature_sid_index ON uk.search_referen
 
 
 --
+-- Name: search_suggestions_goods_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX search_suggestions_goods_nomenclature_sid_index ON uk.search_suggestions USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: search_suggestions_type_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX search_suggestions_type_index ON uk.search_suggestions USING btree (type);
+
+
+--
 -- Name: search_suggestions_value_trgm_idx; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11459,3 +11532,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230207114821_drop_refere
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230225194140_create_table_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230303170324_create_appendix_5a.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230210140401_add_goods_nomenclature_tree_nodes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230411105850_create_table_full_chemicals.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230411140112_adds_type_and_priority_to_search_suggestions.rb');
