@@ -42,7 +42,7 @@ module HeadingService
         has_valid_dates(footnote)
       end
       result.footnote_ids = result.footnotes.map do |footnote|
-        footnote.footnote_id
+        footnote.id
       end
     end
 
