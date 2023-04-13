@@ -1,6 +1,6 @@
 module Api
   module V2
-    module Subheadings
+    module Headings
       class SectionPresenter < SimpleDelegator
         def section_note
           super&.content

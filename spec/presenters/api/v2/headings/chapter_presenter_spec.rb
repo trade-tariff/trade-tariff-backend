@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Subheadings::ChapterPresenter do
+RSpec.describe Api::V2::Headings::ChapterPresenter do
   subject(:presenter) { described_class.new chapter }
 
   let(:chapter) { create :chapter, :with_note }

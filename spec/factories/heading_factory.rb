@@ -16,10 +16,7 @@ FactoryBot.define do
 
     trait :non_declarable do
       after(:create) do |heading, _evaluator|
-        create(:goods_nomenclature,
-               :with_description,
-               :with_indent,
-               goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
+        create(:commodity, :with_description, parent: heading)
       end
     end
 

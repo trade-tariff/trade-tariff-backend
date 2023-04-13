@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Subheadings::SectionPresenter do
+RSpec.describe Api::V2::Headings::SectionPresenter do
   subject(:presenter) { described_class.new section }
 
   let(:section) { create :section, :with_note }

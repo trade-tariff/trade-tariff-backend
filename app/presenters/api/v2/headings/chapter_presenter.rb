@@ -1,6 +1,6 @@
 module Api
   module V2
-    module Subheadings
+    module Headings
       class ChapterPresenter < SimpleDelegator
         def chapter_note
           super&.content

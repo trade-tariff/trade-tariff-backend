@@ -8,6 +8,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
     let(:heading) do
       create(
         :heading,
+        :with_chapter,
         :non_grouping,
         :non_declarable,
         :with_description,
@@ -18,116 +19,126 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       allow(Rails.cache).to receive(:fetch).and_call_original
     end
 
-    it 'calls the Rails cache with the correct key' do
-      do_response
-
-      expected_hash = Digest::MD5.hexdigest('{}')
-
-      expect(Rails.cache).to have_received(:fetch).with(
-        "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}",
-        { expires_in: 24.hours },
-      )
-    end
-
-    context 'when filtering by a specific geographical area' do
-      let(:filter) { { geographical_area_id: 'BR' } }
-
+    shared_examples 'a heading json response' do
       it 'calls the Rails cache with the correct key' do
         do_response
 
-        expected_hash = Digest::MD5.hexdigest(filter.to_json)
+        expected_hash = Digest::MD5.hexdigest('{}')
+        cache_suffix = TradeTariffBackend.nested_set_headings? ? '-v1' : ''
 
         expect(Rails.cache).to have_received(:fetch).with(
-          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}",
+          "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
           { expires_in: 24.hours },
         )
       end
-    end
 
-    context 'when the heading does not exist' do
-      let(:id) { heading.short_code.next }
+      context 'when filtering by a specific geographical area' do
+        let(:filter) { { geographical_area_id: 'BR' } }
 
-      it { expect(do_response).to have_http_status(:not_found) }
-    end
+        it 'calls the Rails cache with the correct key' do
+          do_response
 
-    context 'when the heading is not declarable' do
-      before { chapter }
+          expected_hash = Digest::MD5.hexdigest(filter.to_json)
+          cache_suffix = TradeTariffBackend.nested_set_headings? ? '-v1' : ''
 
-      let(:heading) do
-        create(
-          :heading,
-          :non_grouping,
-          :non_declarable,
-          :with_description,
-        )
-      end
-
-      let(:chapter) do
-        create(
-          :chapter,
-          :with_section, :with_description,
-          goods_nomenclature_item_id: heading.chapter_id
-        )
-      end
-
-      context 'when record is present' do
-        let(:pattern) do
-          {
-            data: {
-              id: String,
-              type: String,
-              attributes: {
-                goods_nomenclature_item_id: heading.code,
-                description: String,
-              }.ignore_extra_keys!,
-              relationships: {
-                commodities: Hash,
-                chapter: Hash,
-              }.ignore_extra_keys!,
-            }.ignore_extra_keys!,
-          }.ignore_extra_keys!
-        end
-
-        it { expect(do_response.body).to match_json_expression(pattern) }
-      end
-
-      context 'when heading is present and commodity has hidden commodities' do
-        let(:heading) { create(:heading, :non_declarable, :with_description) }
-
-        let(:hidden_commodity) do
-          create(
-            :commodity,
-            :with_description,
-            goods_nomenclature_item_id: "#{heading.short_code}020000",
+          expect(Rails.cache).to have_received(:fetch).with(
+            "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
+            { expires_in: 24.hours },
           )
         end
-
-        let(:hidden_goods_nomenclature) do
-          create(
-            :hidden_goods_nomenclature,
-            goods_nomenclature_item_id: hidden_commodity.goods_nomenclature_item_id,
-          )
-        end
-
-        before do
-          hidden_goods_nomenclature
-        end
-
-        it 'does not return the hidden commodity' do
-          parsed_body = JSON.parse(do_response.body)
-          resources = parsed_body['included']
-          commodities = resources.select { |resource| resource['type'] == 'commodity' }
-          actual_commodity_codes = commodities.map { |commodity| commodity['attributes']['goods_nomenclature_item_id'] }
-
-          expect(actual_commodity_codes).not_to include(hidden_goods_nomenclature.goods_nomenclature_item_id)
-        end
       end
 
-      context 'when the record is not present' do
+      context 'when the heading does not exist' do
         let(:id) { heading.short_code.next }
 
         it { expect(do_response).to have_http_status(:not_found) }
       end
+
+      context 'when the heading is not declarable' do
+        before { chapter }
+
+        let(:heading) do
+          create(
+            :heading,
+            :non_grouping,
+            :non_declarable,
+            :with_description,
+          )
+        end
+
+        let(:chapter) do
+          create(
+            :chapter,
+            :with_section, :with_description,
+            goods_nomenclature_item_id: heading.chapter_id
+          )
+        end
+
+        context 'when record is present' do
+          let(:pattern) do
+            {
+              data: {
+                id: String,
+                type: String,
+                attributes: {
+                  goods_nomenclature_item_id: heading.code,
+                  description: String,
+                }.ignore_extra_keys!,
+                relationships: {
+                  commodities: Hash,
+                  chapter: Hash,
+                }.ignore_extra_keys!,
+              }.ignore_extra_keys!,
+            }.ignore_extra_keys!
+          end
+
+          it { expect(do_response.body).to match_json_expression(pattern) }
+        end
+
+        context 'when heading is present and commodity has hidden commodities' do
+          let(:heading) { create(:heading, :non_declarable, :with_description) }
+
+          let(:hidden_commodity) do
+            create(
+              :commodity,
+              :hidden,
+              :with_description,
+              goods_nomenclature_item_id: "#{heading.short_code}020000",
+            )
+          end
+
+          it 'does not return the hidden commodity' do
+            parsed_body = JSON.parse(do_response.body)
+            resources = parsed_body['included']
+            commodities = resources.select { |resource| resource['type'] == 'commodity' }
+            actual_commodity_codes = commodities.map { |commodity| commodity['attributes']['goods_nomenclature_item_id'] }
+
+            expect(actual_commodity_codes).not_to include(hidden_commodity.goods_nomenclature_item_id)
+          end
+        end
+
+        context 'when the record is not present' do
+          let(:id) { heading.short_code.next }
+
+          it { expect(do_response).to have_http_status(:not_found) }
+        end
+      end
+    end
+
+    context 'with opensearch backed headings data' do
+      before do
+        allow(TradeTariffBackend).to receive(:nested_set_headings?).and_return false
+      end
+
+      it_behaves_like 'a heading json response'
+    end
+
+    context 'with nested set derived headings data' do
+      before do
+        allow(TradeTariffBackend).to receive(:nested_set_headings?).and_return true
+      end
+
+      it_behaves_like 'a heading json response'
     end
 
     context 'when the heading is declarable' do
