@@ -21,12 +21,13 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
           'Start date',
           'End date',
           'Declarable',
+          'Parent SID',
         ],
       )
     end
 
     it 'serializes row correctly' do
-      expect(rows[1].split(',')).to eq(
+      expect(rows[1].split(',', -1)).to eq(
         [
           goods_nomenclature.goods_nomenclature_sid.to_s,
           goods_nomenclature.goods_nomenclature_item_id,
@@ -38,6 +39,7 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
           "#{goods_nomenclature.validity_start_date.to_date} 00:00:00 UTC",
           '',
           'true',
+          '',
         ],
       )
     end
@@ -46,6 +48,15 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
       let(:goods_nomenclature) { create :commodity, :with_children }
 
       it { expect(rows[1]).to match "api/v2/subheadings/#{goods_nomenclature.to_param}" }
+    end
+
+    context 'with parent' do
+      let(:goods_nomenclature) { create :commodity, :with_heading }
+
+      it 'includes the parent sid' do
+        expect(rows[1].split(',')[10]).to eq \
+          goods_nomenclature.heading.goods_nomenclature_sid.to_s
+      end
     end
   end
 end

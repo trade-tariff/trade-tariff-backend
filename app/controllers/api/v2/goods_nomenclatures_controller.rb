@@ -7,7 +7,8 @@ module Api
 
       def index
         commodities = Chapter.non_hidden
-                             .eager(:ns_descendants)
+                             .eager(:ns_ancestors,
+                                    ns_descendants: :goods_nomenclature_descriptions)
                              .all
                              .flat_map(&:ns_descendants)
 
@@ -20,6 +21,7 @@ module Api
                           .non_hidden
                           .eager(:goods_nomenclature_descriptions,
                                  :goods_nomenclature_indents,
+                                 :ns_ancestors,
                                  ns_descendants: :goods_nomenclature_descriptions)
                           .all
 
@@ -32,7 +34,8 @@ module Api
         chapter = Chapter.actual
                          .non_hidden
                          .by_code(params[:chapter_id])
-                         .eager(ns_descendants: :goods_nomenclature_descriptions)
+                         .eager(:ns_ancestors,
+                                ns_descendants: :goods_nomenclature_descriptions)
                          .limit(1)
                          .all
                          .first
@@ -47,7 +50,8 @@ module Api
         headings = Heading.actual
                           .non_hidden
                           .by_code(params[:heading_id])
-                          .eager(ns_descendants: :goods_nomenclature_descriptions)
+                          .eager(:ns_ancestors,
+                                 ns_descendants: :goods_nomenclature_descriptions)
                           .all
 
         raise Sequel::RecordNotFound if headings.empty?

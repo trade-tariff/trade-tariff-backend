@@ -63,5 +63,26 @@ RSpec.describe Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer 
         it { is_expected.to include declarable: false }
       end
     end
+
+    describe 'relationships' do
+      subject { serializable[:relationships] }
+
+      context 'with parent' do
+        let(:gn) { create :commodity, :with_heading }
+
+        let :parent do
+          {
+            id: gn.heading.goods_nomenclature_sid.to_s,
+            type: :goods_nomenclature,
+          }
+        end
+
+        it { is_expected.to include parent: { data: parent } }
+      end
+
+      context 'without parent' do
+        it { is_expected.to include parent: { data: nil } }
+      end
+    end
   end
 end
