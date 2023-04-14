@@ -1,4 +1,6 @@
 RSpec.describe GoodsNomenclature do
+  it { is_expected.to have_one_to_many :full_chemicals }
+
   describe 'ordering', flaky: true do
     subject(:goods_nomenclatures) { described_class.all.pluck(:goods_nomenclature_item_id, :producline_suffix) }
 

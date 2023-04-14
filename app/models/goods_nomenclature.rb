@@ -38,6 +38,8 @@ class GoodsNomenclature < Sequel::Model
 
   one_to_many :search_references, key: :goods_nomenclature_sid
 
+  one_to_many :full_chemicals, key: :goods_nomenclature_sid
+
   many_to_many :guides, left_key: :goods_nomenclature_sid,
                         join_table: :guides_goods_nomenclatures
 
