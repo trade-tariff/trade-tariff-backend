@@ -6,49 +6,55 @@ module Api
       before_action :set_request_format, only: %w[show_by_section show_by_chapter show_by_heading]
 
       def index
-        commodities = GoodsNomenclature.non_hidden
+        commodities = Chapter.non_hidden
+                             .eager(:ns_descendants)
+                             .all
+                             .flat_map(&:ns_descendants)
 
         respond_with(commodities)
       end
 
       def show_by_section
-        section = Section.where(position: params[:position]).take
-        chapters = section.chapters.map(&:goods_nomenclature_item_id).map { |gn| gn[0..1] }.join('|')
-        @goods_nomenclatures = GoodsNomenclature
-          .actual
-          .non_hidden
-          .where(goods_nomenclature_item_id: /(#{chapters})\d{8}/)
-          .eager(
-            :goods_nomenclature_indents,
-            :goods_nomenclature_descriptions,
-          ).all
+        section  = Section.where(position: params[:position]).take
+        chapters = section.chapters_dataset
+                          .non_hidden
+                          .eager(:goods_nomenclature_descriptions,
+                                 :goods_nomenclature_indents,
+                                 ns_descendants: :goods_nomenclature_descriptions)
+                          .all
+
+        @goods_nomenclatures = chapters.flat_map { |ch| [ch] + ch.ns_descendants }
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_chapter
-        @goods_nomenclatures = GoodsNomenclature
-          .actual
-          .non_hidden.where(Sequel.like(:goods_nomenclature_item_id, "#{params[:chapter_id]}%"))
-          .eager(
-            :goods_nomenclature_indents,
-            :goods_nomenclature_descriptions,
-          )
-          .all
+        chapter = Chapter.actual
+                         .non_hidden
+                         .by_code(params[:chapter_id])
+                         .eager(ns_descendants: :goods_nomenclature_descriptions)
+                         .limit(1)
+                         .all
+                         .first
+                         .presence || (raise Sequel::RecordNotFound)
+
+        @goods_nomenclatures = [chapter] + chapter.ns_descendants
 
         respond_with(@goods_nomenclatures)
       end
 
       def show_by_heading
-        @goods_nomenclatures = GoodsNomenclature
-          .actual
-          .non_hidden
-          .where(Sequel.like(:goods_nomenclature_item_id, "#{params[:heading_id]}%"))
-          .eager(
-            :goods_nomenclature_indents,
-            :goods_nomenclature_descriptions,
-          )
-          .all
+        heading = Heading.actual
+                         .non_hidden
+                         .non_grouping
+                         .by_code(params[:heading_id])
+                         .eager(ns_descendants: :goods_nomenclature_descriptions)
+                         .limit(1)
+                         .all
+                         .first
+                         .presence || (raise Sequel::RecordNotFound)
+
+        @goods_nomenclatures = [heading] + heading.ns_descendants
 
         respond_with(@goods_nomenclatures)
       end
