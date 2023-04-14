@@ -25,9 +25,7 @@ module Api
         end
 
         def ancestors
-          @ancestors ||= ns_ancestors.select do |ancestor|
-            ancestor.ns_number_indents.positive?
-          end
+          @ancestors ||= ns_ancestors.select { |ancestor| ancestor.is_a?(Commodity) }
         end
 
         def ancestor_ids
@@ -45,10 +43,6 @@ module Api
 
         def heading
           @heading ||= ns_ancestors.find { |a| a.is_a? Heading }
-        end
-
-        def number_indents
-          ns_number_indents
         end
       end
     end

@@ -31,10 +31,6 @@ module Api
         def declarable
           ns_declarable?
         end
-
-        def number_indents
-          ns_number_indents
-        end
       end
     end
   end

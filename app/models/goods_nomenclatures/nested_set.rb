@@ -24,6 +24,7 @@ module GoodsNomenclatures
         ds.order(:ancestor_nodes__position)
           .with_validity_dates(:ancestor_nodes)
           .select_append(:ancestor_nodes__depth)
+          .select_append(:ancestor_nodes__number_indents)
           .select_append(Sequel.as(false, :leaf))
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, ancestors_table, _join_clauses|
             ancestors = TreeNodeAlias.new(ancestors_table)
@@ -45,6 +46,7 @@ module GoodsNomenclatures
         ds.order(:parent_nodes__position)
           .with_validity_dates(:parent_nodes)
           .select_append(:parent_nodes__depth)
+          .select_append(:parent_nodes__number_indents)
           .select_append(Sequel.as(false, :leaf))
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, parents_table, _join_clauses|
             parents = TreeNodeAlias.new(parents_table)
@@ -68,6 +70,7 @@ module GoodsNomenclatures
           .order(:descendant_nodes__position)
           .with_validity_dates(:descendant_nodes)
           .select_append(:descendant_nodes__depth)
+          .select_append(:descendant_nodes__number_indents)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, descendants_table, _join_clauses|
             descendants = TreeNodeAlias.new(descendants_table)
             origin      = TreeNodeAlias.new(origin_table)
@@ -89,6 +92,7 @@ module GoodsNomenclatures
           .order(:child_nodes__position)
           .with_validity_dates(:child_nodes)
           .select_append(:child_nodes__depth)
+          .select_append(:child_nodes__number_indents)
           .join(Sequel.as(:goods_nomenclature_tree_nodes, :origin_nodes)) do |origin_table, children_table, _join_clauses|
             children = TreeNodeAlias.new(children_table)
             origin   = TreeNodeAlias.new(origin_table)
@@ -179,16 +183,6 @@ module GoodsNomenclatures
 
     def ns_leaf?
       values.key?(:leaf) ? values[:leaf] : ns_children.empty?
-    end
-
-    def ns_number_indents
-      if !values.key?(:depth)
-        number_indents
-      elsif values[:depth] > 1
-        values[:depth] - 2
-      else
-        0
-      end
     end
 
     def applicable_measures

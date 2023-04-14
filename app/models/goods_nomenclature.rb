@@ -107,7 +107,9 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def number_indents
-    if goods_nomenclature_indent.present?
+    if values.key?(:number_indents)
+      values[:number_indents]
+    elsif goods_nomenclature_indent.present?
       goods_nomenclature_indent.number_indents
     else
       reload && goods_nomenclature_indent&.number_indents
