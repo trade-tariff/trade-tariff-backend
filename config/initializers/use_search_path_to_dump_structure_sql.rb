@@ -26,12 +26,12 @@ if Rails.env.development?
 
         def _add_schemas(commands)
           search_path = Rails
-                        .configuration
-                        .database_configuration
-                        .dig(Rails.env, 'search_path')
-                        .to_s
-                        .split(',')
-                        .map(&:strip)
+            .configuration
+            .database_configuration
+            .dig(Rails.env, 'search_path')
+            .to_s
+            .split(',')
+            .map(&:strip)
 
           if search_path.any?
             search_path.each do |schema|
@@ -49,6 +49,9 @@ if Rails.env.development?
       end
     end
   end
+
+  require 'sequel_rails/storage/abstract'
+  require 'sequel_rails/storage/postgres'
 
   SequelRails::Storage::Postgres.prepend(SequelRails::Storage::PostgresDumpSchemas)
 end
