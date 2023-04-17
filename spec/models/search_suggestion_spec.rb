@@ -1,9 +1,15 @@
 RSpec.describe SearchSuggestion do
+  describe '#goods_nomenclature' do
+    subject(:goods_nomenclature) { create(:search_suggestion, goods_nomenclature: create(:heading)).goods_nomenclature }
+
+    it { is_expected.to be_a(Heading) }
+  end
+
   describe '.fuzzy_search' do
     subject(:fuzzy_search) { described_class.fuzzy_search(query) }
 
     context 'when the query is a similar but mispelled word' do
-      let(:query) { 'aluminum' }
+      let(:query) { 'alu' }
 
       before do
         create(:search_suggestion, :search_reference, value: 'aluminium wire')
@@ -16,10 +22,10 @@ RSpec.describe SearchSuggestion do
       it 'returns search suggestions' do
         expect(fuzzy_search.pluck(:value)).to eq(
           [
+            'alu',
             'aluminium wire',
             'nuts, aluminium',
             'bars - aluminium',
-            'alu',
           ],
         )
       end
@@ -27,10 +33,10 @@ RSpec.describe SearchSuggestion do
       it 'returns search suggestions with a score' do
         expect(fuzzy_search.pluck(:score)).to include_json(
           [
-            be_within(0.2).of(0.411765),
-            be_within(0.2).of(0.411765),
-            be_within(0.2).of(0.411765),
-            be_within(0.2).of(0.3),
+            be_within(0.2).of(1.0),
+            be_within(0.2).of(0.1875),
+            be_within(0.2).of(0.1875),
+            be_within(0.2).of(0.1875),
           ],
         )
       end
@@ -98,6 +104,75 @@ RSpec.describe SearchSuggestion do
       it 'returns an empty array' do
         expect(fuzzy_search).to be_empty
       end
+    end
+  end
+
+  describe '.by_suggestion_type_and_value' do
+    subject(:by_suggestion_type_and_value) { described_class.by_suggestion_type_and_value('search_reference', 'gold ore') }
+
+    context 'when the search suggestion exists' do
+      let!(:search_suggestion) { create(:search_suggestion, :search_reference, value: 'gold ore') }
+
+      it { is_expected.to include(search_suggestion) }
+    end
+
+    context 'when the search suggestion does not exist' do
+      it { is_expected.to be_empty }
+    end
+  end
+
+  describe '.goods_nomenclature_type' do
+    subject(:goods_nomenclature_type) { described_class.goods_nomenclature_type.sql }
+
+    it { is_expected.to include("WHERE (\"type\" = 'goods_nomenclature')") }
+  end
+
+  describe '.text_type' do
+    subject(:text_type) { described_class.text_type.select_map(:value) }
+
+    before do
+      create(:search_suggestion, :search_reference, value: 'gold ore')
+      create(:search_suggestion, :full_chemical_name, value: 'ore')
+      create(:search_suggestion, value: 'null type')
+
+      allow(TradeTariffBackend).to receive(:full_chemical_search_enabled?).and_return(full_chemical_search_enabled)
+    end
+
+    context 'when full chemical search is enabled' do
+      let(:full_chemical_search_enabled) { true }
+
+      it { is_expected.to eq(['gold ore', 'ore']) }
+    end
+
+    context 'when full chemical search is disabled' do
+      let(:full_chemical_search_enabled) { false }
+
+      it { is_expected.to eq(['gold ore', 'null type']) }
+    end
+  end
+
+  describe '.numeric_type' do
+    subject(:numeric_type) { described_class.numeric_type.select_map(:value) }
+
+    before do
+      create(:search_suggestion, :goods_nomenclature, value: '1234')
+      create(:search_suggestion, :full_chemical_cus, value: '0154438-3')
+      create(:search_suggestion, :full_chemical_cas, value: '8028-66-8')
+      create(:search_suggestion, value: '1235')
+
+      allow(TradeTariffBackend).to receive(:full_chemical_search_enabled?).and_return(full_chemical_search_enabled)
+    end
+
+    context 'when full chemical search is enabled' do
+      let(:full_chemical_search_enabled) { true }
+
+      it { is_expected.to eq(%w[1234 0154438-3 8028-66-8]) }
+    end
+
+    context 'when full chemical search is disabled' do
+      let(:full_chemical_search_enabled) { false }
+
+      it { is_expected.to eq(%w[1234 1235]) }
     end
   end
 end

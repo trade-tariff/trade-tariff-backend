@@ -1,7 +1,14 @@
 FactoryBot.define do
   factory :search_suggestion do
+    transient do
+      goods_nomenclature { nil }
+    end
+
     id { 'test' }
     value { 'test' }
+    goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || 124_456_789 }
+    type { nil }
+    priority { 0 }
 
     trait :search_reference do
       type { 'search_reference' }

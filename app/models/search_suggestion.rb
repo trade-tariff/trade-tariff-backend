@@ -87,6 +87,10 @@ class SearchSuggestion < Sequel::Model
             TYPE_SEARCH_REFERENCE,
           ],
         )
+        # TODO: remove this when we have populated all types
+        .or(
+          type: nil,
+        )
       end
     end
 
@@ -104,6 +108,10 @@ class SearchSuggestion < Sequel::Model
           type: [
             TYPE_GOODS_NOMENCLATURE,
           ],
+        )
+        # TODO: remove this when we have populated all types
+        .or(
+          type: nil,
         )
       end
     end
