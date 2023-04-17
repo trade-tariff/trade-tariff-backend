@@ -7,7 +7,7 @@ RSpec.describe SearchSuggestionPopulatorService do
     create(:heading, goods_nomenclature_item_id: '0101000000')
     create(:commodity, goods_nomenclature_item_id: '0101090000')
 
-    allow(Api::V2::SuggestionsService).to receive(:new).and_call_original
+    allow(SuggestionsService).to receive(:new).and_call_original
   end
 
   it { expect { call }.to change(SearchSuggestion, :count).by(5) }
@@ -28,7 +28,7 @@ RSpec.describe SearchSuggestionPopulatorService do
   it 'calls the SuggestionsService' do
     call
 
-    expect(Api::V2::SuggestionsService).to have_received(:new)
+    expect(SuggestionsService).to have_received(:new)
   end
 
   context 'when the search suggestion already exists' do

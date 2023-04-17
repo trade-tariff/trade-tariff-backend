@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::SuggestionsService do
+RSpec.describe SuggestionsService do
   subject(:call) { described_class.new.call }
 
   before do

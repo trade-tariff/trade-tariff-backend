@@ -2,7 +2,7 @@ class SearchSuggestionPopulatorService
   def call
     SearchSuggestion.unrestrict_primary_key
     TimeMachine.now do
-      suggestions = Api::V2::SuggestionsService.new.call
+      suggestions = SuggestionsService.new.call
       suggestions = suggestions.uniq { |suggestion| [suggestion[:id], suggestion[:value]] }
 
       suggestions.each_slice(5000) do |values|
