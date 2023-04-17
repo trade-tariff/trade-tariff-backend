@@ -1,10 +1,18 @@
 RSpec.describe FullChemical do
-  it { is_expected.to have_many_to_one :goods_nomenclature }
+  describe '#goods_nomenclature' do
+    subject(:goods_nomenclature) { create(:full_chemical).goods_nomenclature }
 
-  it { is_expected.to validate_presence_of(:goods_nomenclature_sid) }
-  it { is_expected.to validate_presence_of(:goods_nomenclature_item_id) }
-  it { is_expected.to validate_presence_of(:producline_suffix) }
-  it { is_expected.to validate_presence_of(:name) }
+    it { is_expected.to be_a(GoodsNomenclature) }
+  end
+
+  describe 'validations' do
+    subject(:errors) { described_class.new.tap(&:valid?).errors }
+
+    it { is_expected.to include(goods_nomenclature_sid: ['is not present']) }
+    it { is_expected.to include(goods_nomenclature_item_id: ['is not present']) }
+    it { is_expected.to include(producline_suffix: ['is not present']) }
+    it { is_expected.to include(name: ['is not present']) }
+  end
 
   describe 'dataset methods' do
     describe '.by_code' do

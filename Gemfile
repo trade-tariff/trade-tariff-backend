@@ -76,7 +76,6 @@ group :test do
   gem 'rspec-json_expectations'
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
-  gem 'sequel_spec'
   gem 'simplecov', require: false
   gem 'webmock'
 end
