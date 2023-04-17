@@ -378,4 +378,10 @@ FactoryBot.define do
       )
     end
   end
+
+  trait :with_full_chemicals do
+    after(:create) do |goods_nomenclature, _evaluator|
+      create(:full_chemical, goods_nomenclature:)
+    end
+  end
 end
