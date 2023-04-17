@@ -15,14 +15,16 @@ FactoryBot.define do
     producline_suffix { goods_nomenclature&.producline_suffix || '80' }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || 123_456_789 }
 
-    before(:create) do |full_chemical, _evaluator|
-      goods_nomenclature_sid = create(
-        :goods_nomenclature,
-        goods_nomenclature_item_id: full_chemical.goods_nomenclature_item_id,
-        producline_suffix: full_chemical.producline_suffix,
-      ).goods_nomenclature_sid
+    before(:create) do |full_chemical, evaluator|
+      unless evaluator.goods_nomenclature
+        goods_nomenclature_sid = create(
+          :goods_nomenclature,
+          goods_nomenclature_item_id: full_chemical.goods_nomenclature_item_id,
+          producline_suffix: full_chemical.producline_suffix,
+        ).goods_nomenclature_sid
 
-      full_chemical.goods_nomenclature_sid = goods_nomenclature_sid
+        full_chemical.goods_nomenclature_sid = goods_nomenclature_sid
+      end
     end
   end
 end

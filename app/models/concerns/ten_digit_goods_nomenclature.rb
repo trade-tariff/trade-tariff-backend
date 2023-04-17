@@ -125,6 +125,10 @@ module TenDigitGoodsNomenclature
       goods_nomenclature_item_id
     end
 
+    def short_code
+      goods_nomenclature_item_id
+    end
+
     def self.changes_for(depth = 0, conditions = {})
       operation_klass.select(
         Sequel.as(Sequel.cast_string('Commodity'), :model),
