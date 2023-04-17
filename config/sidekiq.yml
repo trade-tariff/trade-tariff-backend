@@ -48,3 +48,6 @@
     description: "Uploads a new snapshot of the spelling model based on the latest data."
     class: SpellingFileUploaderWorker
     status: <%= TradeTariffBackend.uk? ? 'enabled' : 'disabled' %>
+  PrecacheHeadingsWorker:
+    cron: "00 22 * * *"
+    description: Precaches all headings and subheadings ready for tomorrow
