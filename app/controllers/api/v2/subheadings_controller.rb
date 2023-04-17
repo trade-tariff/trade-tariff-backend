@@ -43,23 +43,13 @@ module Api
         params[:id].split('-', 2)[1] || '80'
       end
 
-      def ns_eager_load
-        HeadingService::Serialization::NsNondeclarableService::HEADING_EAGER_LOAD
-      end
-
       def ns_subheading
-        @subheading = Subheading.actual
-                                .non_hidden
-                                .by_code(subheading_code)
-                                .by_productline_suffix(productline_suffix)
-                                .eager(*ns_eager_load)
-                                .limit(1)
-                                .all
-                                .first
-
-        raise Sequel::RecordNotFound if !@subheading || @subheading.ns_leaf?
-
-        @subheading
+        Subheading.actual
+                  .non_hidden
+                  .by_code(subheading_code)
+                  .by_productline_suffix(productline_suffix)
+                  .take
+                  .tap { |sh| raise Sequel::RecordNotFound if sh.ns_leaf? }
       end
     end
   end

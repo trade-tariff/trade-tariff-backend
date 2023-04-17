@@ -56,7 +56,8 @@ module HeadingService
     end
 
     def write_subheading(subheading)
-      CachedSubheadingService.new(subheading, actual_date).call
+      CachedSubheadingService.new(subheading, actual_date, eager_reload: false)
+                             .call
     end
   end
 end
