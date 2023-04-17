@@ -44,17 +44,17 @@ module Api
       end
 
       def show_by_heading
-        heading = Heading.actual
-                         .non_hidden
-                         .non_grouping
-                         .by_code(params[:heading_id])
-                         .eager(ns_descendants: :goods_nomenclature_descriptions)
-                         .limit(1)
-                         .all
-                         .first
-                         .presence || (raise Sequel::RecordNotFound)
+        headings = Heading.actual
+                          .non_hidden
+                          .by_code(params[:heading_id])
+                          .eager(ns_descendants: :goods_nomenclature_descriptions)
+                          .all
 
-        @goods_nomenclatures = [heading] + heading.ns_descendants
+        raise Sequel::RecordNotFound if headings.empty?
+
+        @goods_nomenclatures = headings.flat_map do |heading|
+          [heading] + heading.ns_descendants
+        end
 
         respond_with(@goods_nomenclatures)
       end
