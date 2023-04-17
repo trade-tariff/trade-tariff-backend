@@ -12,6 +12,14 @@ module HeadingService
       TimeMachine.at(actual_date) do
         each_heading do |heading|
           write_heading(heading) if TradeTariffBackend.nested_set_headings?
+
+          next unless TradeTariffBackend.nested_set_subheadings?
+
+          heading.ns_descendants.each do |subheading|
+            next if subheading.ns_declarable?
+
+            write_subheading subheading
+          end
         end
       end
     end
@@ -45,6 +53,10 @@ module HeadingService
                .serializable_hash
 
       Rails.cache.write(heading_cache_key(heading), data, expires_in: CACHE_TTL)
+    end
+
+    def write_subheading(subheading)
+      CachedSubheadingService.new(subheading, actual_date).call
     end
   end
 end

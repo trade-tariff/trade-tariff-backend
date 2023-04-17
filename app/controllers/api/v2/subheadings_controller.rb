@@ -43,42 +43,8 @@ module Api
         params[:id].split('-', 2)[1] || '80'
       end
 
-      def ns_measures_eager_load
-        {
-          ns_overview_measures: [
-            {
-              measure_components: {
-                duty_expression: :duty_expression_description,
-                measurement_unit: %i[measurement_unit_description
-                                     measurement_unit_abbreviations],
-                monetary_unit: :monetary_unit_description,
-                measurement_unit_qualifier: [],
-              },
-              measure_type: %i[measure_type_description
-                               measure_type_series
-                               measure_type_series_description],
-            },
-            :additional_code,
-          ],
-        }
-      end
-
       def ns_eager_load
-        [
-          :goods_nomenclature_descriptions,
-          :footnotes,
-          ns_measures_eager_load,
-          {
-            ns_ancestors: [
-              :goods_nomenclature_descriptions,
-              ns_measures_eager_load,
-            ],
-            ns_descendants: [
-              :goods_nomenclature_descriptions,
-              ns_measures_eager_load,
-            ],
-          },
-        ]
+        HeadingService::Serialization::NsNondeclarableService::HEADING_EAGER_LOAD
       end
 
       def ns_subheading

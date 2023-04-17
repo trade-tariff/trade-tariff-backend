@@ -26,6 +26,10 @@ class CachedSubheadingService
     end
   end
 
+  def cache_key
+    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}#{cache_version}"
+  end
+
   private
 
   def presented_subheading
@@ -67,10 +71,6 @@ class CachedSubheadingService
 
       presented
     end
-  end
-
-  def cache_key
-    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}#{cache_version}"
   end
 
   def cache_version
