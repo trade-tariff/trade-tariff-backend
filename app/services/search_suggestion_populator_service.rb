@@ -2,11 +2,20 @@ class SearchSuggestionPopulatorService
   def call
     SearchSuggestion.unrestrict_primary_key
     TimeMachine.now do
-      Api::V2::SuggestionsService.new.perform.each do |suggestion|
-        SearchSuggestion.find_or_create(
-          id: suggestion.id.to_s,
-          value: suggestion.value.to_s,
-        )
+      suggestions = Api::V2::SuggestionsService.new.call
+      suggestions = suggestions.uniq { |suggestion| [suggestion[:id], suggestion[:value]] }
+
+      suggestions.each_slice(5000) do |values|
+        SearchSuggestion.dataset.insert_conflict(
+          constraint: :search_suggestions_pkey,
+          update: {
+            value: Sequel[:excluded][:value],
+            type: Sequel[:excluded][:type],
+            goods_nomenclature_sid: Sequel[:excluded][:goods_nomenclature_sid],
+            priority: Sequel[:excluded][:priority],
+            updated_at: Sequel[:excluded][:updated_at],
+          },
+        ).multi_insert(values)
       end
 
       clear_old_suggestions
@@ -17,21 +26,21 @@ class SearchSuggestionPopulatorService
   private
 
   def clear_old_suggestions
-    candidate_goods_nomenclature_sids = SearchSuggestion.where("id ~ '^[0-9]+$'").pluck(:id)
+    candidate_goods_nomenclature_sids = SearchSuggestion.goods_nomenclature_type.select_map(:id)
 
     all_goods_nomenclature_sids = GoodsNomenclature
       .where(goods_nomenclature_sid: candidate_goods_nomenclature_sids)
-      .pluck(:goods_nomenclature_sid)
+      .select_map(:goods_nomenclature_sid)
 
     current_goods_nomenclature_sids = GoodsNomenclature
       .where(goods_nomenclature_sid: all_goods_nomenclature_sids)
       .actual
-      .pluck(:goods_nomenclature_sid)
+      .select_map(:goods_nomenclature_sid)
 
     expired_goods_nomenclature_sids = all_goods_nomenclature_sids - current_goods_nomenclature_sids
 
     SearchSuggestion
       .where(id: expired_goods_nomenclature_sids.map(&:to_s))
-      .map(&:destroy)
+      .delete
   end
 end

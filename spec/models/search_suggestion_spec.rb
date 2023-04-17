@@ -6,11 +6,11 @@ RSpec.describe SearchSuggestion do
       let(:query) { 'aluminum' }
 
       before do
-        create(:search_suggestion, value: 'aluminium wire')
-        create(:search_suggestion, value: 'nuts, aluminium')
-        create(:search_suggestion, value: 'bars - aluminium')
-        create(:search_suggestion, value: 'alu')
-        create(:search_suggestion, value: 'test')
+        create(:search_suggestion, :search_reference, value: 'aluminium wire')
+        create(:search_suggestion, :search_reference, value: 'nuts, aluminium')
+        create(:search_suggestion, :search_reference, value: 'bars - aluminium')
+        create(:search_suggestion, :search_reference, value: 'alu')
+        create(:search_suggestion, :search_reference, value: 'test')
       end
 
       it 'returns search suggestions' do
@@ -44,9 +44,9 @@ RSpec.describe SearchSuggestion do
       let(:query) { '1234567890' }
 
       before do
-        create(:search_suggestion, id: 'abc', value: '1234567890')
-        create(:search_suggestion, id: 'def', value: '1234567890')
-        create(:search_suggestion, value: '1234567891')
+        create(:search_suggestion, :goods_nomenclature, id: 'abc', value: '1234567890')
+        create(:search_suggestion, :goods_nomenclature, id: 'def', value: '1234567890')
+        create(:search_suggestion, :goods_nomenclature, value: '1234567891')
       end
 
       it 'returns search suggestions' do
@@ -62,10 +62,10 @@ RSpec.describe SearchSuggestion do
       let(:query) { '123' }
 
       before do
-        create(:search_suggestion, value: '1234567890')
-        create(:search_suggestion, value: '1234')
-        create(:search_suggestion, value: '1235')
-        create(:search_suggestion, value: '1234567891')
+        create(:search_suggestion, :goods_nomenclature, value: '1234567890')
+        create(:search_suggestion, :goods_nomenclature, value: '1234')
+        create(:search_suggestion, :goods_nomenclature, value: '1235')
+        create(:search_suggestion, :goods_nomenclature, value: '1234567891')
       end
 
       it 'returns search suggestions' do

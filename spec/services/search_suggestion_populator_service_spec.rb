@@ -57,17 +57,19 @@ RSpec.describe SearchSuggestionPopulatorService do
 
       create(
         :search_suggestion,
+        :goods_nomenclature,
         id: current_goods_nomenclature.goods_nomenclature_sid,
         value: '0101090002',
       )
       create(
         :search_suggestion,
+        :goods_nomenclature,
         id: expired_goods_nomenclature.goods_nomenclature_sid,
         value: '0101090003',
       )
     end
 
-    let(:change_current) { change { SearchSuggestion.find(value: '0101090002') } }
+    let(:change_current) { change { SearchSuggestion.find(value: '0101090002')&.value } }
     let(:change_expired) { change { SearchSuggestion.find(value: '0101090003') } }
 
     it 'does not remove the current search suggestions' do
