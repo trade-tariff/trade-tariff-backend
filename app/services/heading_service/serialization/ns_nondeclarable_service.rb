@@ -56,11 +56,16 @@ module HeadingService
 
       delegate :serializable_hash, to: :serializer
 
-      def initialize(heading)
+      def initialize(heading, eager_reload: true)
         @heading = heading
+        @eager_reload = eager_reload
       end
 
     private
+
+      def eager_reload?
+        @eager_reload
+      end
 
       def presented_heading
         Api::V2::Headings::HeadingPresenter.new(eager_loaded_heading)
@@ -72,6 +77,8 @@ module HeadingService
       end
 
       def eager_loaded_heading
+        return @heading unless eager_reload?
+
         Heading.actual
                .non_hidden
                .where(goods_nomenclature_sid: heading.goods_nomenclature_sid)
