@@ -53,6 +53,8 @@ class SearchService
     # otherwise, ignore [ and ] characters to avoid range searches
     @q = if (m = cas_number_regex.match(term.to_s.first(100)))
            m[1]
+         elsif cus_number_regex.match?(term) && digit_regex.match?(term)
+           term
          elsif no_alpha_regex.match?(term) && digit_regex.match?(term)
            term.scan(/\d+/).join
          elsif no_alpha_regex.match(term) && !digit_regex.match?(term)

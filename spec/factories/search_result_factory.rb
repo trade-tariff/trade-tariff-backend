@@ -99,9 +99,9 @@ FactoryBot.define do
       end
     end
 
-    trait :with_search_reference do
+    trait :with_goods_nomenclature do
       goods_nomenclature_query {}
-      search_reference { create(:search_reference, :with_subheading) }
+      goods_nomenclature { create(:commodity) }
     end
 
     trait :without_search_reference do

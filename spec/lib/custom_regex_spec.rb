@@ -43,4 +43,20 @@ RSpec.describe CustomRegex do
       it { is_expected.not_to match(input) }
     end
   end
+
+  describe '#cus_number_regex' do
+    subject(:custom_regex) { Class.new { include CustomRegex }.new.cus_number_regex }
+
+    context 'when the input is a CUS number' do
+      let(:input) { '1234567-1' }
+
+      it { is_expected.to match(input) }
+    end
+
+    context 'when the input is not a CUS number ' do
+      let(:input) { '1234567-12' }
+
+      it { is_expected.not_to match(input) }
+    end
+  end
 end

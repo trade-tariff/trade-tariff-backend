@@ -96,7 +96,7 @@ RSpec.describe Api::Beta::SearchService do
       subject(:search_result) { described_class.new(search_query).call }
 
       before do
-        create(:search_reference, title: 'raw')
+        create(:search_suggestion, :search_reference, value: 'raw')
       end
 
       it { is_expected.to be_redirect }

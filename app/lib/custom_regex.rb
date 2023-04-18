@@ -9,6 +9,10 @@ module CustomRegex
     /\A(?:cas\s*.*?\s*)?(\d+-\d+-\d{1}).*\z/i
   end
 
+  def cus_number_regex
+    /\A\d{7}-\d\z/
+  end
+
   def no_alpha_regex
     /^(?!.*[A-Za-z]+).*$/
   end

@@ -61,20 +61,12 @@ RSpec.describe SearchService do
             type: 'exact_match',
             entry: {
               endpoint: 'chapters',
-              id: chapter.goods_nomenclature_item_id.first(2),
+              id: chapter.short_code,
             },
           }
         end
 
         it 'returns endpoint and identifier if provided with 2 digit chapter code' do
-          result = described_class.new(data_serializer,
-                                       q: chapter.goods_nomenclature_item_id.first(2),
-                                       as_of: Time.zone.today).to_json
-
-          expect(result).to match_json_expression pattern
-        end
-
-        it 'returns endpoint and identifier if provided with matching 3 digit chapter code' do
           result = described_class.new(data_serializer,
                                        q: chapter.goods_nomenclature_item_id.first(2),
                                        as_of: Time.zone.today).to_json
@@ -90,7 +82,7 @@ RSpec.describe SearchService do
             type: 'exact_match',
             entry: {
               endpoint: 'chapters',
-              id: "0#{chapter.goods_nomenclature_item_id[1, 1]}",
+              id: chapter.short_code,
             },
           }
         end
@@ -247,21 +239,21 @@ RSpec.describe SearchService do
       end
 
       context 'when non declarable' do
-        let!(:heading) do
+        before do
           create :heading, goods_nomenclature_item_id: '8418000000',
                            validity_start_date: Date.new(2011, 1, 1)
-        end
-        let!(:commodity1) do
-          create :commodity, :with_indent,
-                 indents: 3,
-                 goods_nomenclature_item_id: '8418213100',
-                 producline_suffix: '80',
-                 validity_start_date: Date.new(2011, 1, 1)
-        end
-        let!(:commodity2) do
+
           create :commodity, :with_indent,
                  indents: 4,
                  goods_nomenclature_item_id: '8418215100',
+                 producline_suffix: '80',
+                 validity_start_date: Date.new(2011, 1, 1)
+        end
+
+        let!(:commodity) do
+          create :commodity, :with_indent,
+                 indents: 3,
+                 goods_nomenclature_item_id: '8418213100',
                  producline_suffix: '80',
                  validity_start_date: Date.new(2011, 1, 1)
         end
@@ -278,7 +270,7 @@ RSpec.describe SearchService do
 
         it 'does not exact match commodity with children' do
           # even though productline suffix (80) suggests that it is declarable
-          result = described_class.new(data_serializer, q: commodity1.goods_nomenclature_item_id,
+          result = described_class.new(data_serializer, q: commodity.goods_nomenclature_item_id,
                                                         as_of: Time.zone.today).to_json
 
           expect(result).to match_json_expression subheading_pattern
@@ -286,14 +278,16 @@ RSpec.describe SearchService do
       end
 
       context 'when codes mapping' do
-        let!(:commodity1) { create :commodity, :declarable, :with_heading, :with_indent, goods_nomenclature_item_id: '1010111255' }
-        let!(:commodity2) { create :commodity, :declarable, :with_heading, :with_indent, goods_nomenclature_item_id: '2210113355' }
+        before do
+          create :commodity, :declarable, :with_heading, :with_indent, goods_nomenclature_item_id: '1010111255'
+        end
+
+        let!(:commodity) { create :commodity, :declarable, :with_heading, :with_indent, goods_nomenclature_item_id: '2210113355' }
 
         it 'returns mapped commodity' do
-          result = described_class.new(data_serializer, q: '1010111255',
-                                                        as_of: Time.zone.today).to_json
+          result = described_class.new(data_serializer, q: '1010111255', as_of: Time.zone.today).to_json
 
-          expect(result).to match_json_expression commodity_pattern(commodity2)
+          expect(result).to match_json_expression commodity_pattern(commodity)
         end
       end
 
@@ -327,7 +321,7 @@ RSpec.describe SearchService do
         end
 
         context 'when under known heading' do
-          let!(:heading) do
+          before do
             create :heading, goods_nomenclature_item_id: '8418000000',
                              validity_start_date: Date.new(2011, 1, 1)
           end
@@ -372,30 +366,37 @@ RSpec.describe SearchService do
     end
 
     context 'when hidden commodities' do
-      let!(:commodity)    { create :commodity, :declarable }
-      let!(:hidden_gono)  { create :hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id }
-
       before do
-        @result = described_class.new(data_serializer, q: commodity.goods_nomenclature_item_id.first(10),
-                                                       as_of: Time.zone.today).to_json
+        create :hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id
       end
 
+      let!(:commodity)    { create :commodity, :declarable }
+
       it 'does not return hidden commodity as exact match' do
-        expect(@result).not_to match_json_expression commodity_pattern(commodity)
+        result = described_class.new(data_serializer, q: commodity.goods_nomenclature_item_id.first(10),
+                                                      as_of: Time.zone.today).to_json
+        expect(result).not_to match_json_expression commodity_pattern(commodity)
       end
     end
 
     context 'when search references' do
       subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today).to_json }
 
-      let!(:search_reference) { create(:search_reference, title: 'Foo Bar') }
+      before do
+        create(
+          :search_suggestion,
+          :search_reference,
+          goods_nomenclature: create(:heading, goods_nomenclature_item_id: '0102000000'),
+          value: 'foo bar',
+        )
+      end
 
       let(:expected_pattern) do
         {
           type: 'exact_match',
           entry: {
             endpoint: 'headings',
-            id: search_reference.referenced_id,
+            id: '0102',
           },
         }
       end
@@ -408,7 +409,7 @@ RSpec.describe SearchService do
   describe 'fuzzy search' do
     context 'when filtering by date' do
       context 'when with goods codes that have bounded validity period' do
-        let!(:heading) do
+        before do
           create :heading, :with_description,
                  goods_nomenclature_item_id: '2851000000',
                  validity_start_date: Date.new(1972, 1, 1),
@@ -431,22 +432,22 @@ RSpec.describe SearchService do
         end
 
         it 'returns goods code if search date falls within validity period' do
-          @result = described_class.new(data_serializer, q: 'water',
-                                                         as_of: '2005-01-01').to_json
+          result = described_class.new(data_serializer, q: 'water',
+                                                        as_of: '2005-01-01').to_json
 
-          expect(@result).to match_json_expression heading_pattern
+          expect(result).to match_json_expression heading_pattern
         end
 
         it 'does not return goods code if search date does not fall within validity period' do
-          @result = described_class.new(data_serializer, q: 'water',
-                                                         as_of: '2007-01-01').to_json
+          result = described_class.new(data_serializer, q: 'water',
+                                                        as_of: '2007-01-01').to_json
 
-          expect(@result).not_to match_json_expression heading_pattern
+          expect(result).not_to match_json_expression heading_pattern
         end
       end
 
       context 'when with goods codes that have unbounded validity period' do
-        let!(:heading) do
+        before do
           create :heading, :with_description,
                  goods_nomenclature_item_id: '0102000000',
                  validity_start_date: Date.new(1972, 1, 1),
@@ -469,17 +470,17 @@ RSpec.describe SearchService do
         end
 
         it 'returns goods code if search date is greater than start of validity period' do
-          @result = described_class.new(data_serializer, q: 'bovine animal',
-                                                         as_of: '2007-01-01').to_json
+          result = described_class.new(data_serializer, q: 'bovine animal',
+                                                        as_of: '2007-01-01').to_json
 
-          expect(@result).to match_json_expression heading_pattern
+          expect(result).to match_json_expression heading_pattern
         end
 
         it 'does not return goods code if search date is less than start of validity period' do
-          @result = described_class.new(data_serializer, q: 'bovine animal',
-                                                         as_of: '1970-01-01').to_json
+          result = described_class.new(data_serializer, q: 'bovine animal',
+                                                        as_of: '1970-01-01').to_json
 
-          expect(@result).not_to match_json_expression heading_pattern
+          expect(result).not_to match_json_expression heading_pattern
         end
       end
     end
@@ -507,19 +508,17 @@ RSpec.describe SearchService do
       # Sections do not have validity periods
       # We have to ensure there is special clause in Elasticsearch
       # query that takes that into account and they get found
-      let(:title) { 'example title' }
-      let!(:section) { create :section, title: }
-      let(:result) do
-        described_class.new(data_serializer, q: title,
-                                             as_of: '1970-01-01')
+      before do
+        create :section, title: 'example title'
       end
+
       let(:response_pattern) do
         {
           type: 'fuzzy_match',
           goods_nomenclature_match: {
             sections: [
               { '_source' => {
-                'title' => title,
+                'title' => 'example title',
               }.ignore_extra_keys! }.ignore_extra_keys!,
             ].ignore_extra_values!,
           }.ignore_extra_keys!,
@@ -527,6 +526,8 @@ RSpec.describe SearchService do
       end
 
       it 'finds relevant sections' do
+        result = described_class.new(data_serializer, q: 'example title',
+                                                      as_of: '1970-01-01')
         expect(result.to_json).to match_json_expression response_pattern
       end
     end
@@ -534,17 +535,18 @@ RSpec.describe SearchService do
 
   context 'when reference search' do
     describe 'validity period function' do
+      before do
+        create :search_suggestion,
+               goods_nomenclature: heading,
+               value: 'water'
+      end
+
       let!(:heading) do
         create :heading, :with_description,
                goods_nomenclature_item_id: '2851000000',
                validity_start_date: Date.new(1972, 1, 1),
                validity_end_date: Date.new(2006, 12, 31),
                description: 'Test'
-      end
-      let!(:search_reference) do
-        create :search_reference,
-               referenced: heading,
-               title: 'water'
       end
 
       let(:heading_pattern) do
@@ -558,38 +560,40 @@ RSpec.describe SearchService do
       end
 
       it 'returns goods code if search date falls within validity period' do
-        @result = TimeMachine.at('2005-01-01') { described_class.new(data_serializer, q: 'water').to_json }
+        result = TimeMachine.at('2005-01-01') { described_class.new(data_serializer, q: 'water').to_json }
 
-        expect(@result).to match_json_expression heading_pattern
+        expect(result).to match_json_expression heading_pattern
       end
 
       it 'does not return goods code if search date does not fall within validity period' do
-        @result = TimeMachine.at('2007-01-01') { described_class.new(data_serializer, q: 'water').to_json }
+        result = TimeMachine.at('2007-01-01') { described_class.new(data_serializer, q: 'water').to_json }
 
-        expect(@result).not_to match_json_expression heading_pattern
+        expect(result).not_to match_json_expression heading_pattern
       end
     end
 
     describe 'reference matching for multi term searches' do
+      before do
+        create :search_suggestion,
+               :search_reference,
+               goods_nomenclature: heading1,
+               value: 'acid oil'
+
+        create :search_suggestion,
+               :search_reference,
+               goods_nomenclature: heading2,
+               value: 'other kind of oil'
+      end
+
       let!(:heading1) do
         create :heading, :with_description,
                goods_nomenclature_item_id: '2851000000',
                description: 'Test 1'
       end
-      let!(:search_reference1) do
-        create :search_reference,
-               referenced: heading1,
-               title: 'acid oil'
-      end
       let!(:heading2) do
         create :heading, :with_description,
                goods_nomenclature_item_id: '2920000000',
                description: 'Test 2'
-      end
-      let!(:search_reference2) do
-        create :search_reference,
-               referenced: heading2,
-               title: 'other kind of oil'
       end
 
       let(:heading_pattern) do
@@ -603,10 +607,10 @@ RSpec.describe SearchService do
       end
 
       it 'only matches exact phrases' do
-        @result = described_class.new(data_serializer, q: 'acid oil',
-                                                       as_of: Time.zone.today).to_json
+        result = described_class.new(data_serializer, q: 'acid oil',
+                                                      as_of: Time.zone.today).to_json
 
-        expect(@result).to match_json_expression heading_pattern
+        expect(result).to match_json_expression heading_pattern
       end
     end
   end

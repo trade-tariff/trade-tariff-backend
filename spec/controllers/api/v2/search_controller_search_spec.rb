@@ -101,17 +101,34 @@ RSpec.describe Api::V2::SearchController do
     end
   end
 
-  describe 'GET /suggestions' do
+  describe 'GET /search_suggestions' do
     context 'when a query is provided' do
       subject(:response) { get :suggestions, params: { q: 'same' } }
 
-      before do
-        create(:search_suggestion, value: 'same')
-        create(:search_suggestion, value: 'but different')
+      let(:pattern) do
+        {
+          'data' => [
+            {
+              'id' => 'test',
+              'type' => 'search_suggestion',
+              'attributes' => {
+                'value' => 'same',
+                'score' => 1.0,
+                'query' => 'same',
+                'suggestion_type' => 'search_reference',
+                'priority' => 1,
+              },
+            },
+          ],
+        }
       end
 
-      it { expect(response.body.scan(/same/).size).to be_positive }
-      it { expect(response.body.scan(/but different/).size).to be_zero }
+      before do
+        create(:search_suggestion, :search_reference, value: 'same')
+        create(:search_suggestion, :search_reference, value: 'but different')
+      end
+
+      it { expect(response.body).to match_json_expression pattern }
 
       it_behaves_like 'a successful jsonapi response'
     end
