@@ -382,14 +382,21 @@ RSpec.describe SearchService do
     context 'when search references' do
       subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today).to_json }
 
-      let!(:search_reference) { create(:search_reference, title: 'Foo Bar') }
+      before do
+        create(
+          :search_suggestion,
+          :search_reference,
+          goods_nomenclature: create(:heading, goods_nomenclature_item_id: '0102000000'),
+          value: 'foo bar',
+        )
+      end
 
       let(:expected_pattern) do
         {
           type: 'exact_match',
           entry: {
             endpoint: 'headings',
-            id: search_reference.referenced_id,
+            id: '0102',
           },
         }
       end
@@ -502,7 +509,7 @@ RSpec.describe SearchService do
       # We have to ensure there is special clause in Elasticsearch
       # query that takes that into account and they get found
       before do
-        create :section, title:
+        create :section, title: 'example title'
       end
 
       let(:response_pattern) do
@@ -511,7 +518,7 @@ RSpec.describe SearchService do
           goods_nomenclature_match: {
             sections: [
               { '_source' => {
-                'title' => title,
+                'title' => 'example title',
               }.ignore_extra_keys! }.ignore_extra_keys!,
             ].ignore_extra_values!,
           }.ignore_extra_keys!,
@@ -529,9 +536,9 @@ RSpec.describe SearchService do
   context 'when reference search' do
     describe 'validity period function' do
       before do
-        create :search_reference,
-               referenced: heading,
-               title: 'water'
+        create :search_suggestion,
+               goods_nomenclature: heading,
+               value: 'water'
       end
 
       let!(:heading) do
@@ -567,13 +574,15 @@ RSpec.describe SearchService do
 
     describe 'reference matching for multi term searches' do
       before do
-        create :search_reference,
-               referenced: heading1,
-               title: 'acid oil'
+        create :search_suggestion,
+               :search_reference,
+               goods_nomenclature: heading1,
+               value: 'acid oil'
 
-        create :search_reference,
-               referenced: heading2,
-               title: 'other kind of oil'
+        create :search_suggestion,
+               :search_reference,
+               goods_nomenclature: heading2,
+               value: 'other kind of oil'
       end
 
       let!(:heading1) do

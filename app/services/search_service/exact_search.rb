@@ -16,8 +16,8 @@ class SearchService
                    # A CAS number, in the format e.g., "178535-93-8", e.g. /\d+-\d+-\d/
                    find_by_chemical(query_string)
                  else
-                   # exact match for search references
-                   find_search_reference(query_string)
+                   # exact match for search suggestions
+                   find_search_suggestion(query_string)
                  end
       self
     end
@@ -76,8 +76,8 @@ class SearchService
              .first
     end
 
-    def find_search_reference(query)
-      SearchReference.find(Sequel.function(:lower, :title) => singular_and_plural(query)).try(:referenced)
+    def find_search_suggestion(query)
+      SearchSuggestion.find(value: singular_and_plural(query)).try(:goods_nomenclature)
     end
 
     def find_by_chemical(query)
