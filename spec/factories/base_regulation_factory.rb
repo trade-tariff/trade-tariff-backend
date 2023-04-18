@@ -8,6 +8,11 @@ FactoryBot.define do
     validity_end_date   { nil }
     effective_end_date  { nil }
     information_text { 'This is some explanatory information text' }
+    approved_flag { true }
+
+    trait :unapproved do
+      approved_flag { false }
+    end
 
     trait :abrogated do
       after(:build) do |br, _evaluator|

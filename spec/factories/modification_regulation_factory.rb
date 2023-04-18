@@ -6,5 +6,10 @@ FactoryBot.define do
     modification_regulation_role { 4 }
     validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }
+    approved_flag { true }
+
+    trait :unapproved do
+      approved_flag { false }
+    end
   end
 end

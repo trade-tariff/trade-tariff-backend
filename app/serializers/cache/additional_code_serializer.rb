@@ -48,6 +48,7 @@ module Cache
         additional_code
           .measures_dataset
           .with_actual(Measure)
+          .with_generating_regulation
           .eager(:goods_nomenclature)
           .exclude(goods_nomenclature_item_id: nil)
           .all

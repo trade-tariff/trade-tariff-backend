@@ -111,14 +111,11 @@ FactoryBot.define do
     end
 
     trait :with_base_regulation do
-      after(:create) do |measure, evaluator|
-        create(
-          :base_regulation,
-          base_regulation_id: measure.measure_generating_regulation_id,
-          base_regulation_role: measure.measure_generating_regulation_role,
-          effective_end_date: evaluator.base_regulation_effective_end_date || Time.zone.today.in(10.years),
-        )
-      end
+      generating_regulation { create(:base_regulation) }
+    end
+
+    trait :with_unapproved_base_regulation do
+      generating_regulation { create(:base_regulation, :unapproved) }
     end
 
     trait :with_justification_regulation do
@@ -128,7 +125,7 @@ FactoryBot.define do
         create(:base_regulation,
                base_regulation_id: measure.justification_regulation_id,
                base_regulation_role: measure.justification_regulation_role,
-               effective_end_date: Time.zone.today.in(10.years))
+               effective_end_date: nil)
       end
     end
 
@@ -399,9 +396,13 @@ FactoryBot.define do
     trait :with_modification_regulation do
       measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
-      after(:build) do |measure, _evaluator|
-        create(:modification_regulation, modification_regulation_id: measure.measure_generating_regulation_id)
-      end
+      generating_regulation { create(:modification_regulation, :unapproved) }
+    end
+
+    trait :with_unapproved_modification_regulation do
+      measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
+
+      generating_regulation { create(:modification_regulation, :unapproved) }
     end
 
     trait :with_abrogated_modification_regulation do

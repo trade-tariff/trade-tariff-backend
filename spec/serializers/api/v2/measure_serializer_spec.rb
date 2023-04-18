@@ -22,7 +22,7 @@ RSpec.describe Api::V2::MeasureSerializer do
         type: 'measure',
         attributes: {
           effective_start_date: 3.years.ago.beginning_of_day.strftime('%FT%T.%LZ'),
-          effective_end_date: 10.years.since.beginning_of_day.strftime('%FT%T.%LZ'),
+          effective_end_date: nil,
           excise: false,
           export: true,
           import: true,

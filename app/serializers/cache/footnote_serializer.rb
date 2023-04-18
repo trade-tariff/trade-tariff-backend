@@ -59,6 +59,7 @@ module Cache
     def measures
       @measures ||= footnote
         .measures_dataset
+        .with_generating_regulation
         .eager(:goods_nomenclature)
         .exclude(goods_nomenclature_item_id: nil)
         .all

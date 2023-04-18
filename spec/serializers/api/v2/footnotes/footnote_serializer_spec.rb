@@ -21,7 +21,11 @@ RSpec.describe Api::V2::Footnotes::FootnoteSerializer do
         create(
           :footnote_association_measure,
           footnote:,
-          measure: create(:measure, goods_nomenclature: create(:chapter)),
+          measure: create(
+            :measure,
+            :with_base_regulation,
+            goods_nomenclature: create(:chapter),
+          ),
         )
       end
 
