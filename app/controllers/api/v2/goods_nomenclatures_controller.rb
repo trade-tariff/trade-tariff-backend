@@ -72,7 +72,7 @@ module Api
           "/api/v2/subheadings/#{object.to_param}"
         else
           if check_for_subheadings && !object.ns_declarable?
-            "/api/v2/subheadings/#{object.to_param}"
+            "/api/v2/subheadings/#{gnid.first(10)}-#{object.producline_suffix}"
           else
             "/api/v2/commodities/#{gnid.first(10)}"
           end
