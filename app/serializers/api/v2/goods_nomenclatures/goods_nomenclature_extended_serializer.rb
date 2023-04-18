@@ -9,7 +9,7 @@ module Api
 
         attributes :goods_nomenclature_item_id, :goods_nomenclature_sid, :producline_suffix, :description, :number_indents
         attribute :href do |c|
-          GoodsNomenclaturesController.api_path_builder(c)
+          GoodsNomenclaturesController.api_path_builder(c, check_for_subheadings: true)
         end
 
         attributes :formatted_description, :validity_start_date, :validity_end_date

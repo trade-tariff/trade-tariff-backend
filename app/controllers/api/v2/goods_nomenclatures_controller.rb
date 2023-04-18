@@ -59,19 +59,23 @@ module Api
         respond_with(@goods_nomenclatures)
       end
 
-      def self.api_path_builder(object)
+      def self.api_path_builder(object, check_for_subheadings: false)
         gnid = object.goods_nomenclature_item_id
         return nil unless gnid
 
-        case GoodsNomenclature.class_determinator.call(object)
-        when 'Chapter'
+        case object
+        when Chapter
           "/api/v2/chapters/#{gnid.first(2)}"
-        when 'Heading'
+        when Heading
           "/api/v2/headings/#{gnid.first(4)}"
-        when 'Commodity'
-          "/api/v2/commodities/#{gnid.first(10)}"
+        when Subheading
+          "/api/v2/subheadings/#{object.to_param}"
         else
-          "/api/v2/commodities/#{gnid.first(10)}"
+          if check_for_subheadings && !object.ns_declarable?
+            "/api/v2/subheadings/#{object.to_param}"
+          else
+            "/api/v2/commodities/#{gnid.first(10)}"
+          end
         end
       end
       helper_method :api_path_builder
