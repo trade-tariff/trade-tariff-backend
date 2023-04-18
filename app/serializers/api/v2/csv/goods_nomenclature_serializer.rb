@@ -13,6 +13,11 @@ module Api
         column :href, column_name: 'Href' do |goods_nomenclature, _options|
           Api::V2::GoodsNomenclaturesController.api_path_builder(goods_nomenclature)
         end
+
+        column :formatted_description, column_name: 'Formatted description'
+        column :validity_start_date, column_name: 'Start date'
+        column :validity_end_date, column_name: 'End date'
+        column :declarable, column_name: 'Declarable', &:ns_declarable?
       end
     end
   end

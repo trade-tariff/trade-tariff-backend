@@ -85,7 +85,7 @@ module Api
         respond_to do |format|
           format.json do
             headers['Content-Type'] = 'application/json'
-            render json: Api::V2::GoodsNomenclatures::GoodsNomenclatureListSerializer.new(@goods_nomenclatures.to_a).serializable_hash
+            render json: Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer.new(@goods_nomenclatures.to_a).serializable_hash
           end
           format.csv do
             send_data(
