@@ -2,7 +2,7 @@ RSpec.describe Api::V2::SearchSuggestionSerializer do
   subject(:serialized) { described_class.new(search_suggestion).serializable_hash }
 
   let(:search_suggestion) do
-    create(:search_suggestion, value: 'aluminium wire')
+    create(:search_suggestion, :search_reference, value: 'aluminium wire')
 
     SearchSuggestion.fuzzy_search('alu').first
   end
@@ -17,6 +17,8 @@ RSpec.describe Api::V2::SearchSuggestionSerializer do
             value: 'aluminium wire',
             score: be_within(0.2).of(0.18),
             query: 'alu',
+            suggestion_type: 'search_reference',
+            priority: 1,
           },
         },
       },

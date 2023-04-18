@@ -22,10 +22,10 @@ module Beta
                     :search_query_parser_result,
                     :goods_nomenclature_query,
                     :empty_query,
-                    :search_reference
+                    :goods_nomenclature
 
       class WithHits
-        def self.build(result, search_query_parser_result, goods_nomenclature_query, search_reference)
+        def self.build(result, search_query_parser_result, goods_nomenclature_query, goods_nomenclature)
           search_result = ::Beta::Search::OpenSearchResult.new
 
           search_result.took = result.took
@@ -35,7 +35,7 @@ module Beta
           search_result.search_query_parser_result = search_query_parser_result
           search_result.goods_nomenclature_query = goods_nomenclature_query
           search_result.empty_query = false
-          search_result.search_reference = search_reference
+          search_result.goods_nomenclature = goods_nomenclature
 
           search_result
         end
@@ -87,7 +87,7 @@ module Beta
       end
 
       class NoHits
-        def self.build(_result, search_query_parser_result, goods_nomenclature_query, search_reference)
+        def self.build(_result, search_query_parser_result, goods_nomenclature_query, goods_nomenclature)
           search_result = ::Beta::Search::OpenSearchResult.new
 
           search_result.took = 0
@@ -97,7 +97,7 @@ module Beta
           search_result.search_query_parser_result = search_query_parser_result
           search_result.goods_nomenclature_query = goods_nomenclature_query
           search_result.empty_query = true
-          search_result.search_reference = search_reference
+          search_result.goods_nomenclature = goods_nomenclature
 
           search_result
         end

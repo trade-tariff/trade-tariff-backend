@@ -54,7 +54,14 @@ RSpec.describe Api::Beta::SearchController, type: :request do
         }
       end
 
-      before { create(:search_reference, :with_heading, title: 'raw') }
+      before do
+        create(
+          :search_suggestion,
+          :search_reference,
+          goods_nomenclature: create(:heading, goods_nomenclature_item_id: '0101000000'),
+          value: 'raw',
+        )
+      end
 
       it { expect(direct_hit).to eq(expected_direct_hit) }
     end

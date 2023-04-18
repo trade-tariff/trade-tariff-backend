@@ -56,8 +56,8 @@ class SearchSuggestion < Sequel::Model
       end
     end
 
-    def by_suggestion_type_and_value(type, value)
-      where(type:, value:)
+    def by_value(value)
+      where(value:)
         .eager(:goods_nomenclature)
         .limit(2)
         .all

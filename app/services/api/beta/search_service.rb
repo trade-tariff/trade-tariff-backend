@@ -38,7 +38,7 @@ module Api
                                nil,
                                search_query_parser_result,
                                generated_search_query,
-                               exact_search_reference_match.first,
+                               matching_goods_nomenclature,
                              )
                            end
       end
@@ -47,37 +47,48 @@ module Api
         v2_search_client.search(index: DEFAULT_SEARCH_INDEX, body: generated_search_query.query)
       end
 
-      def generated_search_query
-        @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(search_query_parser_result, @search_params[:filters])
+      def search_query_parser_result
+        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(
+          search_query,
+          spell: search_params[:spell],
+          should_search: should_search?,
+        ).call
       end
 
-      def search_query_parser_result
-        @search_query_parser_result ||= Api::Beta::SearchQueryParserService.new(@search_query, spell: @search_params[:spell], should_search: should_search?).call
+      def generated_search_query
+        @generated_search_query ||= ::Beta::Search::GoodsNomenclatureQuery.build(
+          search_query_parser_result,
+          search_params[:filters],
+        )
+      end
+
+      def matching_goods_nomenclature
+        if exact_search_suggestion_match?
+          search_suggestion_match.first.goods_nomenclature
+        end
       end
 
       def should_search?
-        !(@search_query.blank? || redirect?)
+        !(search_query.blank? || redirect?)
       end
 
       def redirect?
-        goods_nomenclature_item_id_match? || exact_search_reference_match?
+        goods_nomenclature_item_id_match? || exact_search_suggestion_match?
       end
 
       def goods_nomenclature_item_id_match?
-        @search_query.match?(GOOD_NOMENCLATURE_ITEM_ID_SEARCH)
+        search_query.match?(GOOD_NOMENCLATURE_ITEM_ID_SEARCH)
       end
 
-      def exact_search_reference_match?
-        exact_search_reference_match.one?
+      def exact_search_suggestion_match?
+        search_suggestion_match.one?
       end
 
-      def exact_search_reference_match
-        @exact_search_reference_match ||= SearchReference.where(title: normalised_search_query).limit(2)
+      def search_suggestion_match
+        @search_suggestion_match ||= SearchSuggestion.by_value(search_query.downcase)
       end
 
-      def normalised_search_query
-        @normalised_search_query ||= @search_query.downcase.scan(/\w+/).join(' ')
-      end
+      attr_reader :search_query, :search_params
     end
   end
 end

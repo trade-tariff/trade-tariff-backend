@@ -24,7 +24,7 @@ RSpec.describe Beta::Search::DirectHit do
     end
 
     it_behaves_like 'a direct hit', :single_hit
-    it_behaves_like 'a direct hit', :with_search_reference
+    it_behaves_like 'a direct hit', :with_goods_nomenclature
     it_behaves_like 'a direct hit', :with_numeric_search_query
     it_behaves_like 'not a direct hit', :multiple_hits
     it_behaves_like 'not a direct hit', :no_hits

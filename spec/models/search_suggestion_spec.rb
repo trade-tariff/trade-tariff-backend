@@ -107,13 +107,13 @@ RSpec.describe SearchSuggestion do
     end
   end
 
-  describe '.by_suggestion_type_and_value' do
-    subject(:by_suggestion_type_and_value) { described_class.by_suggestion_type_and_value('search_reference', 'gold ore') }
+  describe '.by_value' do
+    subject(:by_value) { described_class.by_value('gold ore') }
 
     context 'when the search suggestion exists' do
       let!(:search_suggestion) { create(:search_suggestion, :search_reference, value: 'gold ore') }
 
-      it { is_expected.to include(search_suggestion) }
+      it { is_expected.to eq([search_suggestion]) }
     end
 
     context 'when the search suggestion does not exist' do
