@@ -2,7 +2,7 @@ RSpec.describe SuggestionsService do
   subject(:call) { described_class.new.call }
 
   before do
-    create(:search_reference, :with_heading, title: 'gold ore')
+    create(:search_reference, :with_heading, title: 'gold Ore')
     create(:chapter, goods_nomenclature_item_id: '0100000000')
     create(:commodity, goods_nomenclature_item_id: '0101090000')
     create(

@@ -50,7 +50,7 @@ class SuggestionsService
   def handle_search_reference_record(search_reference)
     SearchSuggestion.new(
       id: search_reference.id,
-      value: search_reference.title,
+      value: search_reference.title.downcase,
       priority: 1,
       type: SearchSuggestion::TYPE_SEARCH_REFERENCE,
       goods_nomenclature_sid: search_reference.goods_nomenclature_sid,
