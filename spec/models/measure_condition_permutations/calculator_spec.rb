@@ -49,6 +49,14 @@ RSpec.describe MeasureConditionPermutations::Calculator do
 
       it { is_expected.to include negative_condition }
     end
+
+    context 'with negative condition with document code' do
+      let :negative_condition do
+        create :measure_condition, :negative, :document, measure_sid: measure.measure_sid
+      end
+
+      it { is_expected.to include negative_condition }
+    end
   end
 
   describe '#permutation_groups' do

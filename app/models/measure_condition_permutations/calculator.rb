@@ -45,6 +45,7 @@ module MeasureConditionPermutations
     def excluded_condition?(condition)
       condition.negative_class? &&
         condition.measure_action.present? &&
+        condition.document_code.blank? &&
         INCLUDED_NEGATIVE_ACTIONS.exclude?(condition.measure_action.action_code)
     end
   end
