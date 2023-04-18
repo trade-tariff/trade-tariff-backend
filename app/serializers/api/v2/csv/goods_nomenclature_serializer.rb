@@ -19,6 +19,10 @@ module Api
         column :validity_start_date, column_name: 'Start date'
         column :validity_end_date, column_name: 'End date'
         column :declarable, column_name: 'Declarable', &:ns_declarable?
+
+        column :parent_sid, column_name: 'Parent SID' do |goods_nomenclature|
+          goods_nomenclature.ns_parent&.goods_nomenclature_sid
+        end
       end
     end
   end
