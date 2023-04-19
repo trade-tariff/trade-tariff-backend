@@ -44,7 +44,7 @@ RSpec.describe FullChemical do
           }
         end
 
-        it { is_expected.to eq([described_class.first]) }
+        it { is_expected.to eq([described_class.first.reload]) }
       end
 
       context 'when a goods_nomenclature_sid filter is provided' do
@@ -114,13 +114,14 @@ RSpec.describe FullChemical do
 
       context 'when an expired goods nomenclature is filtered' do
         subject(:full_chemicals) do
-          TimeMachine.now { described_class.with_filter(goods_nomenclature_item_id: '0409000000') }
+          TimeMachine.now { described_class.with_filter(goods_nomenclature_item_id: '0409000002') }
         end
 
         before do
-          full_chemical = create(:full_chemical, goods_nomenclature_item_id: '0409000000')
+          full_chemical = create(:full_chemical, goods_nomenclature_item_id: '0409000002')
           full_chemical.goods_nomenclature.validity_end_date = Time.zone.yesterday
           full_chemical.goods_nomenclature.save
+          full_chemical.reload
         end
 
         it { is_expected.to be_empty }

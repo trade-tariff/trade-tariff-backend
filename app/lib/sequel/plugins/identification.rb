@@ -12,7 +12,7 @@ module Sequel
         end
 
         def [](key)
-          if key == :id || key == 'id'
+          if [:id, 'id'].include?(key)
             id
           else
             super
