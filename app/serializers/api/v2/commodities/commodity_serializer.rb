@@ -20,7 +20,8 @@ module Api
                    :basic_duty_rate,
                    :meursing_code,
                    :validity_start_date,
-                   :validity_end_date
+                   :validity_end_date,
+                   :has_chemicals
 
         attribute :declarable, &:declarable?
 

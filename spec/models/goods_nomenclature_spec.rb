@@ -648,4 +648,18 @@ RSpec.describe GoodsNomenclature do
 
     it { is_expected.to eq(goods_nomenclature.to_param) }
   end
+
+  describe '#has_chemicals' do
+    context 'when the goods nomenclature has no chemicals' do
+      subject(:has_chemicals) { create(:goods_nomenclature).has_chemicals }
+
+      it { is_expected.to be(false) }
+    end
+
+    context 'when the goods nomenclature has chemicals' do
+      subject(:has_chemicals) { create(:goods_nomenclature, :with_full_chemicals).has_chemicals }
+
+      it { is_expected.to be(true) }
+    end
+  end
 end

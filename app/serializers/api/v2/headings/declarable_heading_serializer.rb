@@ -17,7 +17,8 @@ module Api
                    :validity_end_date,
                    :bti_url,
                    :basic_duty_rate,
-                   :meursing_code
+                   :meursing_code,
+                   :has_chemicals
 
         attribute :declarable do
           true

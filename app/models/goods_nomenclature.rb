@@ -232,6 +232,10 @@ class GoodsNomenclature < Sequel::Model
     path_ancestors.dup.push(self).reverse
   end
 
+  def has_chemicals
+    @has_chemicals ||= full_chemicals_dataset.limit(1).any?
+  end
+
   def intercept_terms
     Beta::Search::InterceptMessage.all_references[goods_nomenclature_item_id]
   end
