@@ -339,29 +339,53 @@ RSpec.describe SearchService do
 
     context 'when chemicals' do
       let(:commodity) { create :commodity, :declarable, :with_heading, :with_indent }
-      let(:chemical)  { create :chemical, :with_name }
-      let(:relation)  { create :chemicals_goods_nomenclatures, chemical_id: chemical.id, goods_nomenclature_sid: commodity.goods_nomenclature_sid }
 
-      before { relation }
-
-      it 'returns endpoint and identifier if provided with CAS number with the leading string "cas "' do
-        result = described_class.new(
-          data_serializer,
-          q: "cas #{chemical.cas}",
-          as_of: Time.zone.today,
-        ).to_json
-
-        expect(result).to match_json_expression commodity_pattern(commodity)
+      before do
+        allow(TradeTariffBackend).to receive(:full_chemical_search_enabled?).and_return(full_chemical_search_enabled)
       end
 
-      it 'returns endpoint and identifier if provided with CAS number only' do
-        result = described_class.new(
-          data_serializer,
-          q: chemical.cas,
-          as_of: Time.zone.today,
-        ).to_json
+      shared_examples_for 'a chemical search' do
+        it 'returns endpoint and identifier if provided with CAS number with the leading string "cas "' do
+          result = described_class.new(
+            data_serializer,
+            q: 'cas 8028-66-8',
+            as_of: Time.zone.today,
+          ).to_json
 
-        expect(result).to match_json_expression commodity_pattern(commodity)
+          expect(result).to match_json_expression commodity_pattern(commodity)
+        end
+
+        it 'returns endpoint and identifier if provided with CAS number only' do
+          result = described_class.new(
+            data_serializer,
+            q: '8028-66-8',
+            as_of: Time.zone.today,
+          ).to_json
+
+          expect(result).to match_json_expression commodity_pattern(commodity)
+        end
+      end
+
+      context 'when full chemical search is disabled' do
+        let(:full_chemical_search_enabled) { false }
+        let(:chemical)  { create :chemical, :with_name, cas: '8028-66-8' }
+        let(:relation)  { create :chemicals_goods_nomenclatures, chemical_id: chemical.id, goods_nomenclature_sid: commodity.goods_nomenclature_sid }
+
+        before do
+          relation
+        end
+
+        it_behaves_like 'a chemical search'
+      end
+
+      context 'when full chemical search is enabled' do
+        let(:full_chemical_search_enabled) { true }
+
+        before do
+          create(:search_suggestion, goods_nomenclature: commodity, value: '8028-66-8')
+        end
+
+        it_behaves_like 'a chemical search'
       end
     end
 
