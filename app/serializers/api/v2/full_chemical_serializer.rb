@@ -3,7 +3,7 @@ module Api
     class FullChemicalSerializer
       include JSONAPI::Serializer
 
-      set_type :full_chemical
+      set_type :chemical_substance
 
       attributes :cus,
                  :goods_nomenclature_sid,

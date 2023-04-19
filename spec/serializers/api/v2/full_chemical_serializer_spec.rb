@@ -8,7 +8,7 @@ RSpec.describe Api::V2::FullChemicalSerializer do
       {
         data: {
           id: match(/\d+-\d+/),
-          type: eq(:full_chemical),
+          type: eq(:chemical_substance),
           attributes: {
             cus: serializable.cus,
             goods_nomenclature_sid: serializable.goods_nomenclature_sid,
