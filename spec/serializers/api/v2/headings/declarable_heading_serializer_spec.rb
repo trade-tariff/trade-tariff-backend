@@ -36,6 +36,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingSerializer do
           basic_duty_rate: nil,
           meursing_code: false,
           declarable: true,
+          has_chemicals: false,
         },
         relationships: {
           footnotes: { data: [] },
