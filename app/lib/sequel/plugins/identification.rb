@@ -11,6 +11,22 @@ module Sequel
           end
         end
 
+        def [](key)
+          if [:id, 'id'].include?(key)
+            id
+          else
+            super
+          end
+        end
+
+        def identifier
+          identification.values.compact.join('-')
+        end
+
+        def id
+          (super.presence || identifier)
+        end
+
         def oplog?
           self.class.plugins.include?(Sequel::Plugins::Oplog)
         end

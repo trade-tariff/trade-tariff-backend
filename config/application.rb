@@ -31,7 +31,6 @@ module TradeTariffBackend
     config.sequel.after_connect = proc do
       Sequel::Model.plugin :take
       Sequel::Model.plugin :validation_class_methods
-      Sequel::Model.plugin :identification
 
       Sequel::Model.db.extension :pagination
       Sequel::Model.db.extension :server_block
