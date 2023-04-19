@@ -1,11 +1,11 @@
-RSpec.describe Api::V2::FullChemicalsController, type: :request do
+RSpec.describe Api::V2::ChemicalSubstancesController, type: :request do
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 
     let(:make_request) do
       create(:full_chemical, cus: '1234567890')
 
-      get api_full_chemicals_path(params:, format: :json),
+      get api_chemical_substances_path(params:, format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2' }
     end
 

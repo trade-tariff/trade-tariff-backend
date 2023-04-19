@@ -1,6 +1,6 @@
 module Api
   module V2
-    class FullChemicalsController < ApplicationController
+    class ChemicalSubstancesController < ApplicationController
       def index
         render json: serialized_chemicals
       end
