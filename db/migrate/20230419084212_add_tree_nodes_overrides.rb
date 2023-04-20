@@ -25,7 +25,10 @@ Sequel.migration do
         indents.validity_start_date,
         COALESCE(indents.validity_end_date, MIN(replacement_indents.validity_start_date) - INTERVAL '1 second', nomenclatures.validity_end_date) as validity_end_date,
         indents.oid,
-        COALESCE(overrides.depth, indents.number_indents + 2 - (indents.goods_nomenclature_item_id LIKE '%00000000' AND indents.number_indents = 0)::integer) AS "depth"
+        COALESCE(
+          overrides.depth,
+          indents.number_indents + 2 - (indents.goods_nomenclature_item_id LIKE '%00000000' AND indents.number_indents = 0)::integer + COUNT(grouping_headings.goods_nomenclature_sid)
+        ) AS "depth"
       FROM goods_nomenclature_indents indents
       INNER JOIN goods_nomenclatures nomenclatures ON
         indents.goods_nomenclature_sid = nomenclatures.goods_nomenclature_sid
@@ -36,6 +39,14 @@ Sequel.migration do
       LEFT JOIN goods_nomenclature_tree_node_overrides overrides ON
         indents.goods_nomenclature_indent_sid = overrides.goods_nomenclature_indent_sid
         AND indents.operation_date < coalesce(overrides.updated_at, overrides.created_at)
+      LEFT JOIN goods_nomenclatures grouping_headings ON
+        indents.goods_nomenclature_item_id NOT LIKE '%00000000'
+        AND grouping_headings.producline_suffix < '80'
+        AND grouping_headings.goods_nomenclature_item_id = CONCAT(substring(indents.goods_nomenclature_item_id, 1, 4), '000000')
+        AND grouping_headings.goods_nomenclature_sid <> indents.goods_nomenclature_sid
+        AND (grouping_headings.producline_suffix < indents.productline_suffix OR indents.goods_nomenclature_item_id NOT LIKE '%000000')
+        AND grouping_headings.validity_start_date <= indents.validity_start_date
+        AND (grouping_headings.validity_end_date IS NULL OR grouping_headings.validity_end_date >= indents.validity_start_date)
       GROUP BY
         indents.goods_nomenclature_indent_sid,
         indents.goods_nomenclature_sid,
