@@ -3563,11 +3563,12 @@ CREATE MATERIALIZED VIEW uk.goods_nomenclature_tree_nodes AS
     indents.validity_start_date,
     COALESCE(indents.validity_end_date, (min(replacement_indents.validity_start_date) - '00:00:01'::interval), nomenclatures.validity_end_date) AS validity_end_date,
     indents.oid,
-    ((indents.number_indents + 2) - ((((indents.goods_nomenclature_item_id)::text ~~ '%00000000'::text) AND (indents.number_indents = 0)))::integer) AS depth
-   FROM ((uk.goods_nomenclature_indents indents
+    COALESCE(overrides.depth, ((indents.number_indents + 2) - ((((indents.goods_nomenclature_item_id)::text ~~ '%00000000'::text) AND (indents.number_indents = 0)))::integer)) AS depth
+   FROM (((uk.goods_nomenclature_indents indents
      JOIN uk.goods_nomenclatures nomenclatures ON ((indents.goods_nomenclature_sid = nomenclatures.goods_nomenclature_sid)))
      LEFT JOIN uk.goods_nomenclature_indents replacement_indents ON (((indents.goods_nomenclature_sid = replacement_indents.goods_nomenclature_sid) AND (indents.validity_start_date < replacement_indents.validity_start_date) AND (indents.validity_end_date IS NULL))))
-  GROUP BY indents.goods_nomenclature_indent_sid, indents.goods_nomenclature_sid, indents.number_indents, indents.goods_nomenclature_item_id, indents.productline_suffix, indents.validity_start_date, indents.validity_end_date, nomenclatures.validity_end_date, indents.oid
+     LEFT JOIN uk.goods_nomenclature_tree_node_overrides overrides ON (((indents.goods_nomenclature_indent_sid = overrides.goods_nomenclature_indent_sid) AND (indents.operation_date < COALESCE(overrides.updated_at, overrides.created_at)))))
+  GROUP BY indents.goods_nomenclature_indent_sid, indents.goods_nomenclature_sid, indents.number_indents, indents.goods_nomenclature_item_id, indents.productline_suffix, indents.validity_start_date, indents.validity_end_date, nomenclatures.validity_end_date, indents.oid, overrides.depth
   WITH NO DATA;
 
 
