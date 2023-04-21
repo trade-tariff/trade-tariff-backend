@@ -13,24 +13,6 @@ RSpec.describe GoodsNomenclatures::TreeNodeOverride do
 
     it { is_expected.to include goods_nomenclature_indent_sid: ['is not present'] }
     it { is_expected.to include depth: ['is not present'] }
-  end
-
-  describe 'timestamps' do
-    subject(:override) do
-      described_class.create \
-        goods_nomenclature_indent_sid: bad_indent.goods_nomenclature_indent_sid,
-        depth: bad_indent.number_indents + 3
-    end
-
-    let(:bad_indent) { create :goods_nomenclature_indent }
-
-    it { is_expected.to have_attributes created_at: be_present }
-    it { is_expected.to have_attributes updated_at: be_nil }
-
-    context 'when modified' do
-      before { override.save }
-
-      it { is_expected.to have_attributes updated_at: be_present }
-    end
+    it { is_expected.to include created_at: ['is not present'] }
   end
 end
