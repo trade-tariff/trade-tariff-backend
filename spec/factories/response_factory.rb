@@ -12,7 +12,7 @@ FactoryBot.define do
       content do
         File.read(
           'spec/fixtures/cds_samples/tariff_dailyExtract_v1_20201004T235959.gzip',
-          encoding: 'binary'
+          encoding: 'binary',
         )
       end
     end

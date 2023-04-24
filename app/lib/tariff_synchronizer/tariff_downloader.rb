@@ -85,7 +85,7 @@ module TariffSynchronizer
     end
 
     def write_update_file(response_body)
-      handle_zip_verification(response_body) do
+      if should_write_file?(response_body)
         FileService.write_file(file_path, response_body)
 
         instrument('downloaded_tariff_update.tariff_synchronizer',
@@ -94,6 +94,8 @@ module TariffSynchronizer
                    type: update_type,
                    path: file_path,
                    size: response_body.size)
+      else
+        persist_exception_for_review(TariffDownloaderZipError.new('Response was not a zip file. Skipping persistence'))
       end
     end
 
@@ -107,17 +109,15 @@ module TariffSynchronizer
                 exception_backtrace: exception.backtrace.try(:join, "\n"))
     end
 
-    def handle_zip_verification(response_body)
-      if update_klass != TariffSynchronizer::CdsUpdate
-        yield
-        return
-      end
+    def should_write_file?(response_body)
+      return true if update_klass == TariffSynchronizer::TaricUpdate
+      return true if zip_file?(response_body)
 
-      if response_body.to_s.start_with?(ZIP_SIGNATURE)
-        yield
-      else
-        persist_exception_for_review(TariffDownloaderZipError.new('Response was not a zip file. Skipping persistence'))
-      end
+      false
+    end
+
+    def zip_file?(content)
+      content.to_s.start_with?(ZIP_SIGNATURE)
     end
 
     delegate :update_type, to: :update_klass
