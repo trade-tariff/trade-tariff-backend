@@ -1,6 +1,10 @@
 module TariffSynchronizer
   # Download pending updates for TARIC and CDS data
   class TariffDownloader
+    TariffDownloaderZipError = Class.new(StandardError)
+
+    ZIP_SIGNATURE = "\x50\x4B\x03\x04".freeze
+
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
     attr_reader :filename, :url, :date, :update_klass, :success
@@ -81,13 +85,16 @@ module TariffSynchronizer
     end
 
     def write_update_file(response_body)
-      FileService.write_file(file_path, response_body)
-      instrument('downloaded_tariff_update.tariff_synchronizer',
-                 date:,
-                 url:,
-                 type: update_type,
-                 path: file_path,
-                 size: response_body.size)
+      handle_zip_verification(response_body) do
+        FileService.write_file(file_path, response_body)
+
+        instrument('downloaded_tariff_update.tariff_synchronizer',
+                   date:,
+                   url:,
+                   type: update_type,
+                   path: file_path,
+                   size: response_body.size)
+      end
     end
 
     def file_path
@@ -98,6 +105,19 @@ module TariffSynchronizer
       update_or_create(filename, BaseUpdate::FAILED_STATE)
         .update(exception_class: "#{exception.class}: #{exception.message}",
                 exception_backtrace: exception.backtrace.try(:join, "\n"))
+    end
+
+    def handle_zip_verification(response_body)
+      if update_klass != TariffSynchronizer::CdsUpdate
+        yield
+        return
+      end
+
+      if response_body.to_s.start_with?(ZIP_SIGNATURE)
+        yield
+      else
+        persist_exception_for_review(TariffDownloaderZipError.new('Response was not a zip file. Skipping persistence'))
+      end
     end
 
     delegate :update_type, to: :update_klass
