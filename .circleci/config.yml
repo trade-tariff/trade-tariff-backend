@@ -416,7 +416,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
-      - image: circleci/redis:4.0.9
+      - image: cimg/redis:6.2
         environment:
           REDIS_URL: "redis://localhost:6379/"
       - image: opensearchproject/opensearch:1.2.4
@@ -467,7 +467,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
-      - image: circleci/redis:4.0.9
+      - image: cimg/redis:6.2
         environment:
           - REDIS_URL: "redis://localhost:6379/"
       - image: opensearchproject/opensearch:1.2.4
