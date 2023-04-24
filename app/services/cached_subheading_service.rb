@@ -15,10 +15,10 @@ class CachedSubheadingService
     'commodities.overview_measures.additional_code',
   ].freeze
 
-  def initialize(subheading, actual_date, use_nested_set: false, eager_reload: true)
+  def initialize(subheading, actual_date, eager_reload: true)
     @subheading = subheading
     @actual_date = actual_date.to_date.to_formatted_s(:db)
-    @use_nested_set = use_nested_set
+    @use_nested_set = true
     @eager_reload = eager_reload
   end
 

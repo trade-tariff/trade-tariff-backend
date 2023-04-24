@@ -11,12 +11,11 @@ module Api
         CachedSubheadingService.new(
           subheading,
           actual_date.iso8601,
-          use_nested_set: TradeTariffBackend.nested_set_subheadings?,
         ).call
       end
 
       def subheading
-        return ns_subheading if TradeTariffBackend.nested_set_subheadings?
+        return ns_subheading
 
         @subheading = Subheading.actual
                               .by_code(subheading_code)

@@ -11,9 +11,7 @@ module HeadingService
     def call
       TimeMachine.at(actual_date) do
         each_heading do |heading|
-          write_heading(heading) if TradeTariffBackend.nested_set_headings?
-
-          next unless TradeTariffBackend.nested_set_subheadings?
+          write_heading(heading)
 
           heading.ns_descendants.each do |subheading|
             next if subheading.ns_declarable?
@@ -58,7 +56,6 @@ module HeadingService
         subheading,
         actual_date,
         eager_reload: false,
-        use_nested_set: true,
       ).call
     end
   end

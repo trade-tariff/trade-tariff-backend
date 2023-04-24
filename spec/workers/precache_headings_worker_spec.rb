@@ -3,7 +3,6 @@ RSpec.describe PrecacheHeadingsWorker, type: :worker do
 
   describe '#perform' do
     before do
-      allow(TradeTariffBackend).to receive(:nested_set_headings?).and_return(true)
       allow(Rails.cache).to receive(:write).and_call_original
 
       heading

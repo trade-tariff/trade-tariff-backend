@@ -24,7 +24,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         do_response
 
         expected_hash = Digest::MD5.hexdigest('{}')
-        cache_suffix = TradeTariffBackend.nested_set_headings? ? '-v1' : ''
+        cache_suffix = '-v1'
 
         expect(Rails.cache).to have_received(:fetch).with(
           "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
@@ -39,7 +39,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
           do_response
 
           expected_hash = Digest::MD5.hexdigest(filter.to_json)
-          cache_suffix = TradeTariffBackend.nested_set_headings? ? '-v1' : ''
+          cache_suffix = '-v1'
 
           expect(Rails.cache).to have_received(:fetch).with(
             "_heading-uk-#{heading.goods_nomenclature_sid}-#{Time.zone.today.iso8601}-false-#{expected_hash}#{cache_suffix}",
@@ -125,19 +125,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       end
     end
 
-    context 'with opensearch backed headings data' do
-      before do
-        allow(TradeTariffBackend).to receive(:nested_set_headings?).and_return false
-      end
-
-      it_behaves_like 'a heading json response'
-    end
-
     context 'with nested set derived headings data' do
-      before do
-        allow(TradeTariffBackend).to receive(:nested_set_headings?).and_return true
-      end
-
       it_behaves_like 'a heading json response'
     end
 
