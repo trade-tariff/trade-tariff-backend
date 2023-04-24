@@ -30,6 +30,7 @@ gem 'opensearch-ruby'
 
 # Helpers
 gem 'bootsnap', require: false
+gem 'excon'
 gem 'gds-sso'
 gem 'hashie'
 gem 'holidays'
