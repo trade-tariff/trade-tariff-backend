@@ -83,15 +83,60 @@ RSpec.describe TariffSynchronizer::TariffDownloader do
 
       context 'when the download response is successful' do
         before do
-          allow(TariffSynchronizer::FileService).to receive(:write_file).with('tmp/data/cds/foo.xml.gzip', be_a(String))
+          allow(TariffSynchronizer::FileService).to receive(:write_file).with("tmp/data/#{update_klass.update_type}/foo.xml.gzip", be_a(String))
         end
 
-        let(:response) { build(:response, :success) }
+        context 'when the response body is a valid ZIP file' do
+          let(:response) { build(:response, :success_cds) }
 
-        it 'creates a pending update' do
-          expect { perform }
-            .to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::PENDING_STATE).count }
-            .by(1)
+          it 'creates a pending update' do
+            expect { perform }
+              .to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::PENDING_STATE).count }
+              .by(1)
+          end
+
+          it 'writes using the FileService' do
+            perform
+            expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/cds/foo.xml.gzip', be_a(String))
+          end
+        end
+
+        context 'when the response body is not a ZIP file and the update type is Taric' do
+          let(:response) { build(:response, :success, content: 'not_a_zip_file') }
+          let(:update_klass) { TariffSynchronizer::TaricUpdate }
+
+          it 'creates a pending update' do
+            expect { perform }
+              .to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::PENDING_STATE).count }
+              .by(1)
+          end
+
+          it 'writes using the FileService' do
+            perform
+            expect(TariffSynchronizer::FileService).to have_received(:write_file).with('tmp/data/taric/foo.xml.gzip', 'not_a_zip_file')
+          end
+        end
+
+        context 'when the response body is not a ZIP file and the update type is CDS' do
+          let(:response) { build(:response, :success, content: 'not_a_zip_file') }
+          let(:update_klass) { TariffSynchronizer::CdsUpdate }
+
+          it 'creates a failed update' do
+            expect { perform }
+              .to change { update_klass.where(state: TariffSynchronizer::BaseUpdate::FAILED_STATE).count }
+              .by(1)
+          end
+
+          it 'persists the exception for review' do
+            perform
+            update = update_klass.find(filename:, update_type: update_klass.name, issue_date: date)
+            expect(update.exception_class).to include('TariffDownloaderZipError')
+          end
+
+          it 'does not write using the FileService' do
+            perform
+            expect(TariffSynchronizer::FileService).not_to have_received(:write_file)
+          end
         end
       end
     end

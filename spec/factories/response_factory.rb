@@ -7,6 +7,16 @@ FactoryBot.define do
       response_code { 200 }
     end
 
+    trait :success_cds do
+      success
+      content do
+        File.read(
+          'spec/fixtures/cds_samples/tariff_dailyExtract_v1_20201004T235959.gzip',
+          encoding: 'binary',
+        )
+      end
+    end
+
     trait :not_found do
       response_code { 404 }
       content { nil }
