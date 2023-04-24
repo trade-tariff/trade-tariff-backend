@@ -4,6 +4,33 @@ module HeadingService
 
     delegate :nested_set_headings?, to: TradeTariffBackend
 
+    class << self
+      def cache_key(heading, actual_date, is_declarable, filters)
+        cache_key = [
+          'heading',
+          TradeTariffBackend.service,
+          heading.goods_nomenclature_sid,
+          date_string(actual_date),
+          is_declarable,
+          filters_hash(filters),
+        ]
+
+        cache_key << CACHE_VERSION if TradeTariffBackend.nested_set_headings?
+
+        "_#{cache_key.map(&:to_s).join('-')}"
+      end
+
+    private
+
+      def filters_hash(filters)
+        Digest::MD5.hexdigest(filters.to_json)
+      end
+
+      def date_string(date)
+        date.is_a?(String) ? date : date.to_date.to_formatted_s(:db)
+      end
+    end
+
     def initialize(heading, actual_date, filters = {})
       @heading = heading
       @actual_date = actual_date
@@ -11,7 +38,7 @@ module HeadingService
     end
 
     def serializable_hash
-      Rails.cache.fetch("_#{heading_cache_key}", expires_in: 24.hours) do
+      Rails.cache.fetch(heading_cache_key, expires_in: 24.hours) do
         serialization_service.serializable_hash
       end
     end
@@ -34,13 +61,7 @@ module HeadingService
     end
 
     def heading_cache_key
-      cache_key = "heading-#{TradeTariffBackend.service}-#{heading.goods_nomenclature_sid}-#{actual_date}-#{heading.declarable?}-#{filters_hash}"
-      cache_key += "-#{CACHE_VERSION}" if nested_set_headings?
-      cache_key
-    end
-
-    def filters_hash
-      Digest::MD5.hexdigest(filters.to_json)
+      self.class.cache_key(heading, actual_date, heading.declarable?, filters)
     end
   end
 end

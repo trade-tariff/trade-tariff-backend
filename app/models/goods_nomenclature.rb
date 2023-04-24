@@ -104,7 +104,8 @@ class GoodsNomenclature < Sequel::Model
                            left_primary_key: :goods_nomenclature_sid,
                            left_key: :goods_nomenclature_sid,
                            right_key: %i[footnote_type footnote_id],
-                           right_primary_key: %i[footnote_type_id footnote_id] do |ds|
+                           right_primary_key: %i[footnote_type_id footnote_id],
+                           order: %i[footnote_type_id footnote_id] do |ds|
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
   end
 

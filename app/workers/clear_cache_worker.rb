@@ -8,6 +8,7 @@ class ClearCacheWorker
     Rails.cache.clear
     logger.info 'Clearing Rails cache completed'
 
+    Sidekiq::Client.enqueue(PrecacheHeadingsWorker, Time.zone.today.to_formatted_s(:db))
     Sidekiq::Client.enqueue(PrewarmQuotaOrderNumbersWorker)
     Sidekiq::Client.enqueue(ReindexModelsWorker)
     Sidekiq::Client.enqueue(PrewarmSubheadingsWorker)

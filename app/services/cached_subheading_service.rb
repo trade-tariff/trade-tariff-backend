@@ -15,22 +15,29 @@ class CachedSubheadingService
     'commodities.overview_measures.additional_code',
   ].freeze
 
-  def initialize(subheading, actual_date)
+  def initialize(subheading, actual_date, eager_reload: true)
     @subheading = subheading
-    @actual_date = actual_date
+    @actual_date = actual_date.to_date.to_formatted_s(:db)
+    @eager_reload = eager_reload
   end
 
   def call
     Rails.cache.fetch(cache_key, expires_in: TTL) do
-      Api::V2::Subheadings::SubheadingSerializer.new(presented_subheading, options).serializable_hash
+      Api::V2::Subheadings::SubheadingSerializer
+        .new(presented_subheading, options)
+        .serializable_hash
     end
+  end
+
+  def cache_key
+    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}#{cache_version}"
   end
 
   private
 
   def presented_subheading
     if TradeTariffBackend.nested_set_subheadings?
-      return Api::V2::Subheadings::SubheadingPresenter.new(@subheading)
+      return Api::V2::Subheadings::SubheadingPresenter.new(ns_eager_loaded_subheading)
     end
 
     @presented_subheading ||= begin
@@ -69,10 +76,6 @@ class CachedSubheadingService
     end
   end
 
-  def cache_key
-    "_subheading-#{@subheading.goods_nomenclature_sid}-#{@actual_date}#{cache_version}"
-  end
-
   def cache_version
     "-v#{CACHE_VERSION}" if TradeTariffBackend.nested_set_subheadings?
   end
@@ -82,5 +85,23 @@ class CachedSubheadingService
     opts[:is_collection] = false
     opts[:include] = DEFAULT_INCLUDES
     opts
+  end
+
+  def ns_eager_loaded_subheading
+    return @subheading unless eager_reload?
+
+    @ns_eager_loaded_subheading ||=
+      Subheading
+        .actual
+        .non_hidden
+        .where(goods_nomenclature_sid: @subheading.goods_nomenclature_sid)
+        .eager(*HeadingService::Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
+        .limit(1)
+        .all
+        .first || (raise Sequel::RecordNotFound)
+  end
+
+  def eager_reload?
+    @eager_reload
   end
 end
