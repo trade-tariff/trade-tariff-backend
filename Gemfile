@@ -20,9 +20,10 @@ gem 'rubyzip'
 
 # Background jobs
 gem 'connection_pool'
-gem 'redis-elasticache'
+gem 'redis', '>= 5.0.6'
+gem 'redis-client', '>= 0.11.2'
 gem 'redlock'
-gem 'sidekiq'
+gem 'sidekiq', '< 8'
 gem 'sidekiq-scheduler'
 
 # Elasticsearch
