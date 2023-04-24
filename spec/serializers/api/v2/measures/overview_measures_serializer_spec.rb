@@ -2,9 +2,9 @@ RSpec.describe Api::V2::Measures::OverviewMeasureSerializer do
   subject(:serializable_hash) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) do
-    measure
-    mashed_heading = Hashie::TariffMash.new(Cache::HeadingSerializer.new(commodity.heading).as_json)
-    mashed_heading.commodities.first.overview_measures.first
+    Api::V2::Measures::MeasurePresenter.new \
+      measure.goods_nomenclature.applicable_overview_measures.first,
+      commodity
   end
 
   let(:commodity) { create(:commodity, :with_heading) }
@@ -17,7 +17,7 @@ RSpec.describe Api::V2::Measures::OverviewMeasureSerializer do
       :with_measure_components,
       :with_base_regulation,
       :with_measure_type,
-      goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+      goods_nomenclature: commodity,
     )
   end
 

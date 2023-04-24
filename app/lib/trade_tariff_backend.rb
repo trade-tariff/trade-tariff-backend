@@ -157,7 +157,6 @@ module TradeTariffBackend
 
     def cache_indexes
       [
-        Cache::HeadingIndex,
         Cache::CertificateIndex,
         Cache::AdditionalCodeIndex,
         Cache::FootnoteIndex,

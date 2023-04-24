@@ -19,7 +19,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       allow(Rails.cache).to receive(:fetch).and_call_original
     end
 
-    shared_examples 'a heading json response' do
+    context 'when the heading is not declarable' do
       it 'calls the Rails cache with the correct key' do
         do_response
 
@@ -123,10 +123,6 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
           it { expect(do_response).to have_http_status(:not_found) }
         end
       end
-    end
-
-    context 'with nested set derived headings data' do
-      it_behaves_like 'a heading json response'
     end
 
     context 'when the heading is declarable' do
