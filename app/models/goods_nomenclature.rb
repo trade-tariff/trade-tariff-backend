@@ -243,4 +243,15 @@ class GoodsNomenclature < Sequel::Model
   def to_admin_param
     to_param
   end
+
+  def self.cn_codes
+    expression = Sequel.function(
+      :concat,
+      Sequel.qualify(:goods_nomenclatures, :goods_nomenclature_item_id),
+      '-',
+      Sequel.qualify(:goods_nomenclatures, :producline_suffix),
+    ).as(:combined_column)
+
+    select(expression).pluck(:combined_column).to_set
+  end
 end

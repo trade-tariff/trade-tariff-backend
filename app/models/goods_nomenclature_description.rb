@@ -2,6 +2,7 @@ class GoodsNomenclatureDescription < Sequel::Model
   DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not).*\z)/
   CONSIGNED_FROM_REGEX = /consigned from(?: or originating in)?([\p{L},'\s]+)(?:\W|$)/i
   NO_BREAKING_SPACE = "\u00A0".freeze
+  CAS_REGEX = /(?<cas_number>[0-9]+-[0-9]+-[0-9]+)/i
 
   include Formatter
 
@@ -49,6 +50,27 @@ class GoodsNomenclatureDescription < Sequel::Model
         .flatten
         .map(&:strip)
         .join(', ')
+    end
+  end
+
+  def cas_numbers
+    description.scan(CAS_REGEX).flatten
+  end
+
+  def self.all_cas_numbers
+    with_chemical_substances.map(&:cas_numbers).flatten.sort.uniq
+  end
+
+  def self.all_item_ids
+    with_chemical_substances.select_map(:goods_nomenclatures__goods_nomenclature_item_id)
+  end
+
+  dataset_module do
+    def with_chemical_substances
+      select_all(:goods_nomenclature_descriptions)
+        .join(:goods_nomenclatures, goods_nomenclature_sid: :goods_nomenclature_sid)
+        .where(GoodsNomenclature.validity_dates_filter)
+        .where(description: /CAS RN/)
     end
   end
 end
