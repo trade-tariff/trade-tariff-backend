@@ -45,7 +45,7 @@ module HeadingService
     attr_reader :heading, :actual_date, :filters
 
     def serialization_service
-      if heading.declarable?
+      if heading.ns_declarable?
         HeadingService::Serialization::DeclarableService
           .new(heading, filters)
       else
