@@ -328,6 +328,12 @@ RSpec.describe Heading do
     end
   end
 
+  describe '#ns_goods_nomenclature_class' do
+    subject(:ns_goods_nomenclature_class) { build(:heading).ns_goods_nomenclature_class }
+
+    it { is_expected.to eq('Heading') }
+  end
+
   describe '.declarable' do
     let(:heading_80) { create(:heading, producline_suffix: '80') }
     let(:heading_10) { create(:heading, producline_suffix: '10') }

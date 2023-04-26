@@ -31,7 +31,7 @@ module Api
       end
 
       def search_params
-        { spell:, filters: }
+        { spell:, filters:, resource_id: }
       end
 
       def filters
@@ -52,6 +52,10 @@ module Api
 
       def spell
         params[:spell].presence || '1'
+      end
+
+      def resource_id
+        params[:resource_id].presence
       end
     end
   end

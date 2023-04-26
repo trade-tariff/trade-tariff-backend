@@ -92,25 +92,25 @@ RSpec.describe Api::Beta::SearchService do
       it { expect(search_result).to be_a(Beta::Search::OpenSearchResult) }
     end
 
-    shared_examples_for 'a redirecting search result' do |search_query|
-      subject(:search_result) { described_class.new(search_query).call }
+    shared_examples_for 'a redirecting search result' do |search_query, resource_id|
+      subject(:search_result) { described_class.new(search_query, 'resource_id' => resource_id).call }
 
       before do
-        create(:search_suggestion, :search_reference, value: 'raw')
+        create(:search_suggestion, :search_reference, id: 'foo', value: 'raw')
       end
 
       it { is_expected.to be_redirect }
     end
 
-    it_behaves_like 'a redirecting search result', '01' # Chapter
-    it_behaves_like 'a redirecting search result', '0101' # Heading
-    it_behaves_like 'a redirecting search result', '010129' # Subheading
-    it_behaves_like 'a redirecting search result', '01012960' # Subheading
-    it_behaves_like 'a redirecting search result', '0101210000' # Commodity
-    it_behaves_like 'a redirecting search result', '0101210000-80' # Subheading
-    it_behaves_like 'a redirecting search result', '0101210000380' # Heading
-    it_behaves_like 'a redirecting search result', '010121000038123' # Heading
-    it_behaves_like 'a redirecting search result', 'raw'
+    it_behaves_like 'a redirecting search result', '01', nil # Chapter
+    it_behaves_like 'a redirecting search result', '0101', nil # Heading
+    it_behaves_like 'a redirecting search result', '010129', nil # Subheading
+    it_behaves_like 'a redirecting search result', '01012960', nil # Subheading
+    it_behaves_like 'a redirecting search result', '0101210000', nil # Commodity
+    it_behaves_like 'a redirecting search result', '0101210000-80', nil # Subheading
+    it_behaves_like 'a redirecting search result', '0101210000380', nil # Heading
+    it_behaves_like 'a redirecting search result', '010121000038123', nil # Heading
+    it_behaves_like 'a redirecting search result', 'raw', 'foo'
 
     context 'when the search query has multiple corresponding search references' do
       let(:search_query) { 'same' }

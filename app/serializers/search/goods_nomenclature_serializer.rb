@@ -9,7 +9,7 @@ module Search
         heading_id: heading_short_code,
         chapter_id: chapter_short_code,
         producline_suffix:,
-        goods_nomenclature_class:,
+        goods_nomenclature_class: ns_goods_nomenclature_class,
         description:,
         description_indexed:,
         description_indexed_shingled: description_indexed,
@@ -33,19 +33,6 @@ module Search
     end
 
     private
-
-    def goods_nomenclature_class(goods_nomenclature = self)
-      class_name = GoodsNomenclature
-        .sti_load(goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id)
-        .class
-        .name
-
-      if class_name == 'Commodity'
-        goods_nomenclature.path_declarable? ? 'Commodity' : 'Subheading'
-      else
-        class_name
-      end
-    end
 
     def chapter_description
       chapter&.description unless chapter?
@@ -75,7 +62,7 @@ module Search
           id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
           producline_suffix: ancestor.producline_suffix,
-          goods_nomenclature_class: goods_nomenclature_class(ancestor),
+          goods_nomenclature_class: ancestor.ns_goods_nomenclature_class,
           description: ancestor.description,
           description_indexed: ancestor.description_indexed,
           validity_start_date: ancestor.validity_start_date,

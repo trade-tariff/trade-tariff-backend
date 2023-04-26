@@ -19,6 +19,7 @@ RSpec.describe Api::V2::SearchSuggestionSerializer do
             query: 'alu',
             suggestion_type: 'search_reference',
             priority: 1,
+            goods_nomenclature_class: 'Heading',
           },
         },
       },
