@@ -42,7 +42,7 @@ module Api
         end
 
         def heading
-          @heading ||= ns_ancestors.find { |a| a.is_a? Heading }
+          @heading ||= ns_ancestors.reverse.find { |a| a.is_a? Heading }
         end
       end
     end
