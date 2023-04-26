@@ -12,7 +12,7 @@ Sequel.migration do
         COALESCE(indents.validity_end_date, MIN(replacement_indents.validity_start_date) - INTERVAL '1 second', nomenclatures.validity_end_date) as validity_end_date,
         indents.oid,
         indents.number_indents + 2 - (indents.goods_nomenclature_item_id LIKE '%00000000' AND indents.number_indents = 0)::integer AS "depth"
-      FROM public.goods_nomenclature_indents indents
+      FROM goods_nomenclature_indents indents
       INNER JOIN goods_nomenclatures nomenclatures ON
         indents.goods_nomenclature_sid = nomenclatures.goods_nomenclature_sid
       LEFT JOIN goods_nomenclature_indents replacement_indents ON
