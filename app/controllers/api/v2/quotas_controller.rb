@@ -9,6 +9,7 @@ module Api
         measures.geographical_area
         incoming_quota_closed_and_transferred_event
         quota_order_number_origins
+        quota_order_number_origins.geographical_area
       ].freeze
 
       ALLOWED_INCLUDES = %w[quota_balance_events].freeze

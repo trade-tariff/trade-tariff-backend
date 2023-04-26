@@ -143,6 +143,14 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 validity_start_date: String,
                 validity_end_date: nil,
               },
+              relationships: {
+                geographical_area: {
+                  data: {
+                    id: String,
+                    type: 'geographical_area',
+                  },
+                },
+              },
             },
           ],
           meta: {

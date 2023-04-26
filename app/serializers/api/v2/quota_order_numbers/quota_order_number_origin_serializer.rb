@@ -10,6 +10,8 @@ module Api
 
         attributes :validity_start_date,
                    :validity_end_date
+
+        has_one :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
       end
     end
   end
