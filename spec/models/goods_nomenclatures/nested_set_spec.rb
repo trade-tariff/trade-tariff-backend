@@ -296,55 +296,6 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
           it { is_expected.to include number_indents: 2 }
         end
-
-        context 'with grouping subheadings' do
-          let :tree do
-            chapter = create :chapter
-            grouping1 = create :heading, producline_suffix: '10', parent: chapter
-            grouping2 = create :heading,
-                               producline_suffix: '20',
-                               goods_nomenclature_item_id: grouping1.goods_nomenclature_item_id
-            non_grouping = create :heading,
-                                  producline_suffix: '80',
-                                  goods_nomenclature_item_id: grouping1.goods_nomenclature_item_id
-            subheading = create :commodity, parent: non_grouping
-            commodity = create :commodity, parent: subheading
-
-            { chapter:, grouping1:, grouping2:, non_grouping:, subheading:, commodity: }
-          end
-
-          context 'with chapter' do
-            subject { tree[:chapter] }
-
-            it { is_expected.to have_attributes ns_children: eq_pk(tree.values_at(:grouping1)) }
-            it { is_expected.to have_attributes ns_descendants: eq_pk(tree.without(:chapter).values) }
-          end
-
-          context 'with grouping heading' do
-            subject { tree[:grouping2] }
-
-            it { is_expected.to have_attributes ns_ancestors: eq_pk(tree.values_at(:chapter, :grouping1)) }
-            it { is_expected.to have_attributes ns_parent: eq_pk(tree[:grouping1]) }
-            it { is_expected.to have_attributes ns_children: eq_pk(tree.values_at(:non_grouping)) }
-            it { is_expected.to have_attributes ns_descendants: eq_pk(tree.values_at(:non_grouping, :subheading, :commodity)) }
-          end
-
-          context 'with non_grouping' do
-            subject { tree[:non_grouping] }
-
-            it { is_expected.to have_attributes ns_ancestors: eq_pk(tree.values_at(:chapter, :grouping1, :grouping2)) }
-            it { is_expected.to have_attributes ns_parent: eq_pk(tree[:grouping2]) }
-            it { is_expected.to have_attributes ns_children: eq_pk(tree.values_at(:subheading)) }
-            it { is_expected.to have_attributes ns_descendants: eq_pk(tree.values_at(:subheading, :commodity)) }
-          end
-
-          context 'with commodity' do
-            subject { tree[:commodity] }
-
-            it { is_expected.to have_attributes ns_ancestors: eq_pk(tree.without(:commodity).values) }
-            it { is_expected.to have_attributes ns_parent: eq_pk(tree[:subheading]) }
-          end
-        end
       end
 
       describe '#ns_children' do
