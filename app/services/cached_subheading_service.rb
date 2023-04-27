@@ -15,9 +15,10 @@ class CachedSubheadingService
     'commodities.overview_measures.additional_code',
   ].freeze
 
-  def initialize(subheading, actual_date, eager_reload: true)
+  def initialize(subheading, actual_date, use_nested_set: false, eager_reload: true)
     @subheading = subheading
     @actual_date = actual_date.to_date.to_formatted_s(:db)
+    @use_nested_set = use_nested_set
     @eager_reload = eager_reload
   end
 
@@ -36,7 +37,7 @@ class CachedSubheadingService
   private
 
   def presented_subheading
-    if TradeTariffBackend.nested_set_subheadings?
+    if use_nested_set?
       return Api::V2::Subheadings::SubheadingPresenter.new(ns_eager_loaded_subheading)
     end
 
@@ -77,7 +78,7 @@ class CachedSubheadingService
   end
 
   def cache_version
-    "-v#{CACHE_VERSION}" if TradeTariffBackend.nested_set_subheadings?
+    "-v#{CACHE_VERSION}" if use_nested_set?
   end
 
   def options
@@ -99,6 +100,10 @@ class CachedSubheadingService
         .limit(1)
         .all
         .first || (raise Sequel::RecordNotFound)
+  end
+
+  def use_nested_set?
+    @use_nested_set
   end
 
   def eager_reload?

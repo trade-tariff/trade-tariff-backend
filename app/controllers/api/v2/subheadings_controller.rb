@@ -8,7 +8,11 @@ module Api
       private
 
       def cached_subheading
-        CachedSubheadingService.new(subheading, actual_date.iso8601).call
+        CachedSubheadingService.new(
+          subheading,
+          actual_date.iso8601,
+          use_nested_set: TradeTariffBackend.nested_set_subheadings?,
+        ).call
       end
 
       def subheading
