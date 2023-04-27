@@ -73,10 +73,6 @@ RSpec.describe CachedSubheadingService do
   end
 
   context 'without nested set subheadings' do
-    before do
-      allow(TradeTariffBackend).to receive(:nested_set_subheadings?).and_return false
-    end
-
     it_behaves_like 'subheading service'
 
     it 'caches with the correct key' do
@@ -87,9 +83,7 @@ RSpec.describe CachedSubheadingService do
   end
 
   context 'with nested set subheadings' do
-    before do
-      allow(TradeTariffBackend).to receive(:nested_set_subheadings?).and_return true
-    end
+    subject(:service) { described_class.new(subheading, actual_date, use_nested_set: true) }
 
     it_behaves_like 'subheading service'
 

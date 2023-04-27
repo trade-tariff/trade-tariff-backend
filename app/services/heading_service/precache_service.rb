@@ -56,8 +56,12 @@ module HeadingService
     end
 
     def write_subheading(subheading)
-      CachedSubheadingService.new(subheading, actual_date, eager_reload: false)
-                             .call
+      CachedSubheadingService.new(
+        subheading,
+        actual_date,
+        eager_reload: false,
+        use_nested_set: true,
+      ).call
     end
   end
 end

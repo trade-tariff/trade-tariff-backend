@@ -18,7 +18,7 @@ RSpec.describe HeadingService::PrecacheService do
   end
 
   let :subheading_key do
-    CachedSubheadingService.new(commodity, Time.zone.today).cache_key
+    CachedSubheadingService.new(commodity, Time.zone.today, use_nested_set: true).cache_key
   end
 
   describe '#call' do
