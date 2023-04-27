@@ -12,5 +12,10 @@ class QuotaOrderNumberOrigin < Sequel::Model
 
   delegate :description, to: :geographical_area, prefix: true
 
-  one_to_many :quota_order_number_origin_exclusions
+  one_to_many :quota_order_number_origin_exclusions,
+              key: :quota_order_number_origin_sid
+
+  def quota_order_number_origin_exclusion_ids
+    quota_order_number_origin_exclusions&.map(&:id)
+  end
 end

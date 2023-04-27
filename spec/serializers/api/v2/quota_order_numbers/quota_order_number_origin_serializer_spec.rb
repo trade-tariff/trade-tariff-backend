@@ -15,6 +15,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer do
           },
           relationships: {
             geographical_area: { data: { id: serializable.geographical_area.id.to_s, type: :geographical_area } },
+            quota_order_number_origin_exclusions: { data: [] },
           },
         },
       }

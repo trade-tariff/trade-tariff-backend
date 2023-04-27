@@ -144,6 +144,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 validity_end_date: nil,
               },
               relationships: {
+                quota_order_number_origin_exclusions: { data: [] },
                 geographical_area: {
                   data: {
                     id: String,

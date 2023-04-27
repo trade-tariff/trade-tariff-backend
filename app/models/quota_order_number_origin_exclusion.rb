@@ -3,4 +3,8 @@ class QuotaOrderNumberOriginExclusion < Sequel::Model
                                  excluded_geographical_area_sid]
 
   set_primary_key %i[quota_order_number_origin_sid excluded_geographical_area_sid]
+
+  def id
+    pk.map(&:to_s).join('-')
+  end
 end
