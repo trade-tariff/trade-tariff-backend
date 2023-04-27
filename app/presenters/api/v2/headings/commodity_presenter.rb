@@ -1,13 +1,7 @@
 module Api
   module V2
     module Headings
-      class CommodityPresenter < SimpleDelegator
-        class << self
-          def wrap(commodities)
-            commodities.map(&method(:new))
-          end
-        end
-
+      class CommodityPresenter < WrapDelegator
         def parent_sid
           if ns_parent.is_a?(Commodity) || ns_parent.is_a?(Subheading)
             ns_parent.goods_nomenclature_sid

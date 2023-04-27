@@ -1,15 +1,7 @@
 module Api
   module Admin
     module Headings
-      class HeadingPresenter < SimpleDelegator
-        class << self
-          def wrap(headings, search_reference_counts)
-            headings.map do |heading|
-              new(heading, search_reference_counts)
-            end
-          end
-        end
-
+      class HeadingPresenter < WrapDelegator
         def initialize(heading, search_reference_counts)
           @search_reference_counts = search_reference_counts
 

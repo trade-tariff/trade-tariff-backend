@@ -15,7 +15,7 @@ module Api
                    :validity_start_date,
                    :validity_end_date
 
-        attribute :chapter_note, if: Proc.new { |chapter| chapter.chapter_note.present? } do |chapter|
+        attribute :chapter_note, if: proc { |chapter| chapter.chapter_note.present? } do |chapter|
           chapter.chapter_note.content
         end
 

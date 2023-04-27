@@ -13,7 +13,7 @@ RSpec.describe Api::V2::ChaptersController, type: :request do
       expect(Rails.cache)
         .to have_received(:fetch)
         .with(
-          "_chapters-#{now.iso8601}/v1",
+          "_chapters-#{now.iso8601}/v2",
           expires_at:,
         )
     end
@@ -37,7 +37,7 @@ RSpec.describe Api::V2::ChaptersController, type: :request do
       expect(Rails.cache)
         .to have_received(:fetch)
         .with(
-          "_chapter-#{chapter.short_code}-#{now.iso8601}/v1",
+          "_chapter-#{chapter.short_code}-#{now.iso8601}/v2",
           expires_at:,
         )
     end
@@ -52,7 +52,7 @@ RSpec.describe Api::V2::ChaptersController, type: :request do
       expect(Rails.cache)
         .to have_received(:fetch)
         .with(
-          "_chapter-#{chapter.short_code}-#{now.iso8601}/changes-v1",
+          "_chapter-#{chapter.short_code}-#{now.iso8601}/changes-v2",
           expires_at:,
         )
     end

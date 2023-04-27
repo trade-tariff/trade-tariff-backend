@@ -3,7 +3,7 @@ require 'goods_nomenclature_mapper'
 module Api
   module V2
     class ChaptersController < ApiController
-      CACHE_VERSION = 1
+      CACHE_VERSION = 2
 
       def index
         respond_to do |format|
@@ -31,15 +31,10 @@ module Api
         cache_key = "_chapter-#{chapter_id}-#{actual_date}/v#{CACHE_VERSION}"
 
         serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
-          headings = chapter.headings_dataset
-            .eager(:goods_nomenclature_descriptions,
-                   :goods_nomenclature_indents)
-            .all
-          root_headings = GoodsNomenclatureMapper.new(headings).root_entries
+          presenter = Api::V2::Chapters::ChapterPresenter.new(chapter)
 
           options = { is_collection: false }
-          options[:include] = [:section, :guides, :headings, 'headings.children']
-          presenter = Api::V2::Chapters::ChapterPresenter.new(chapter, root_headings)
+          options[:include] = %i[section guides headings headings.children]
 
           Api::V2::Chapters::ChapterSerializer.new(presenter, options).serializable_hash.to_json
         end
@@ -67,7 +62,7 @@ module Api
 
           format.csv do
             send_data(
-              Api::V2::Csv::HeadingSerializer.new(chapter.headings).serialized_csv,
+              Api::V2::Csv::HeadingSerializer.new(chapter_headings).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
               disposition: "attachment; filename=#{filename}",
             )
@@ -78,20 +73,32 @@ module Api
       private
 
       def chapter
-        @chapter ||= Chapter.actual
-                            .by_code(chapter_id)
-                            .non_hidden
-                            .take
+        Chapter
+          .by_code(chapter_id)
+          .non_hidden
+          .eager(ns_children: %i[ns_children goods_nomenclature_descriptions])
+          .limit(1)
+          .all
+          .first || (raise Sequel::RecordNotFound)
       end
 
       def chapters
         Chapter
+          .non_hidden
           .eager(:chapter_note, :goods_nomenclature_descriptions)
           .all
       end
 
       def chapter_id
         params[:id]
+      end
+
+      def chapter_headings
+        Heading.actual
+               .non_hidden
+               .by_code("#{chapter_id}00")
+               .eager(:ns_children)
+               .all
       end
     end
   end
