@@ -2,7 +2,7 @@ module Api
   module Beta
     class SearchService
       DEFAULT_SEARCH_INDEX = Search::GoodsNomenclatureIndex.new.name
-      GOOD_NOMENCLATURE_ITEM_ID_SEARCH = /^(\d+)(-\d{2})?$/
+      SHORT_CODE_MATCH = /^(\d+)(-\d{2})?$/
 
       def initialize(search_query, search_params = {})
         @search_query = search_query.to_s
@@ -38,7 +38,7 @@ module Api
                                nil,
                                search_query_parser_result,
                                generated_search_query,
-                               matching_goods_nomenclature,
+                               goods_nomenclature,
                              )
                            end
       end
@@ -62,30 +62,45 @@ module Api
         )
       end
 
-      def matching_goods_nomenclature
-        if exact_search_suggestion_match?
-          search_suggestion_match.first.goods_nomenclature
-        end
-      end
-
       def should_search?
         !(search_query.blank? || redirect?)
       end
 
       def redirect?
-        goods_nomenclature_item_id_match? || exact_search_suggestion_match?
+        search_suggestion_match.one? || goods_nomenclature_item_id_match?
       end
 
       def goods_nomenclature_item_id_match?
-        search_query.match?(GOOD_NOMENCLATURE_ITEM_ID_SEARCH)
+        search_query.match?(SHORT_CODE_MATCH)
       end
 
-      def exact_search_suggestion_match?
-        search_suggestion_match.one?
+      def goods_nomenclature
+        custom_sti_goods_nomenclature || search_suggestion&.goods_nomenclature
+      end
+
+      def custom_sti_goods_nomenclature
+        return unless search_suggestion
+
+        search_suggestion
+          .goods_nomenclature_class
+          .constantize
+          .actual
+          .non_hidden
+          .where(goods_nomenclature_sid: search_suggestion.goods_nomenclature_sid)
+          .limit(1)
+          .first
+      end
+
+      def search_suggestion
+        @search_suggestion ||= search_suggestion_match.first
       end
 
       def search_suggestion_match
-        @search_suggestion_match ||= SearchSuggestion.by_value(search_query.downcase)
+        SearchSuggestion.by_value(search_query.downcase, resource_id)
+      end
+
+      def resource_id
+        search_params[:resource_id]
       end
 
       attr_reader :search_query, :search_params

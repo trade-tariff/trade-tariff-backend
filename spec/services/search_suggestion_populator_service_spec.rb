@@ -6,13 +6,14 @@ RSpec.describe SearchSuggestionPopulatorService do
     create(:chapter, goods_nomenclature_item_id: '0100000000')
     create(:heading, goods_nomenclature_item_id: '0101000000')
     create(:commodity, goods_nomenclature_item_id: '0101090000')
+    create(:commodity, :with_children, goods_nomenclature_item_id: '0101090001')
 
     allow(SuggestionsService).to receive(:new).and_call_original
   end
 
-  it { expect { call }.to change(SearchSuggestion, :count).by(5) }
+  it { expect { call }.to change(SearchSuggestion, :count).by(9) }
 
-  it 'creates search suggestions with the proper id and value' do
+  it 'creates search suggestions with the proper value' do
     call
 
     search_suggestions = SearchSuggestion.all.pluck(:value)

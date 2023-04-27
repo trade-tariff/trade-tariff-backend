@@ -192,5 +192,13 @@ module GoodsNomenclatures
     def applicable_overview_measures
       (ns_ancestors.flat_map(&:ns_overview_measures) + ns_overview_measures).sort
     end
+
+    def ns_goods_nomenclature_class
+      @ns_goods_nomenclature_class ||= begin
+        return self.class.name unless instance_of?(::Commodity) || instance_of?(::Subheading)
+
+        ns_declarable? ? Commodity.name : Subheading.name
+      end
+    end
   end
 end

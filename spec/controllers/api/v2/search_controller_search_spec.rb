@@ -117,6 +117,7 @@ RSpec.describe Api::V2::SearchController do
                 'query' => 'same',
                 'suggestion_type' => 'search_reference',
                 'priority' => 1,
+                'goods_nomenclature_class' => 'Heading',
               },
             },
           ],

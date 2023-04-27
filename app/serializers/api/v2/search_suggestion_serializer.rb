@@ -5,7 +5,7 @@ module Api
 
       set_type :search_suggestion
 
-      attribute :value, :priority
+      attribute :value, :priority, :goods_nomenclature_class
       attribute :suggestion_type, &:type
 
       attribute :score do |search_suggestion|

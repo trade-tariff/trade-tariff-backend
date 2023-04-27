@@ -126,7 +126,15 @@ module TenDigitGoodsNomenclature
     end
 
     def short_code
-      goods_nomenclature_item_id
+      if ns_declarable?
+        goods_nomenclature_item_id
+      else
+        case goods_nomenclature_item_id
+        when /^\d+0000$/ then harmonised_system_code
+        when /^\d+00$/ then combined_nomenclature_code
+        else taric_code
+        end
+      end
     end
 
     def self.changes_for(depth = 0, conditions = {})
@@ -190,6 +198,18 @@ module TenDigitGoodsNomenclature
     end
 
     private
+
+    def harmonised_system_code
+      goods_nomenclature_item_id.first(6)
+    end
+
+    def combined_nomenclature_code
+      goods_nomenclature_item_id.first(8)
+    end
+
+    def taric_code
+      goods_nomenclature_item_id
+    end
 
     def load_children
       heading.commodities_dataset

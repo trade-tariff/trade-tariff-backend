@@ -33,7 +33,6 @@ class SearchSuggestion < Sequel::Model
           .with_query(query)
           .order(
             Sequel.asc(:priority),
-            Sequel.asc(Sequel.function(:length, :value)),
             Sequel.asc(:value),
           )
           .limit(10)
@@ -56,11 +55,15 @@ class SearchSuggestion < Sequel::Model
       end
     end
 
-    def by_value(value)
-      where(value:)
+    def by_value(value, id = nil)
+      suggestions = if id
+                      where(value:, id:)
+                    else
+                      where(value:)
+                    end
+      suggestions
         .eager(:goods_nomenclature)
         .limit(2)
-        .all
     end
 
     def distinct_values(query)
@@ -122,6 +125,42 @@ class SearchSuggestion < Sequel::Model
 
     def with_score(query)
       select_append(Sequel.function(:similarity, :value, query).as(:score))
+    end
+  end
+
+  class << self
+    PRIORITIES = {
+      TYPE_SEARCH_REFERENCE => 1,
+      TYPE_FULL_CHEMICAL_NAME => 2,
+      TYPE_GOODS_NOMENCLATURE => proc do |suggestion|
+        case suggestion[:goods_nomenclature_class]
+        when 'Chapter' then 1
+        when 'Heading' then 2
+        when 'Subheading' then 3
+        when 'Commodity' then 4
+        else 5
+        end
+      end,
+      TYPE_FULL_CHEMICAL_CUS => 5,
+      TYPE_FULL_CHEMICAL_CAS => 6,
+    }.freeze
+
+    def build(attributes)
+      unrestrict_primary_key
+      suggestion = new
+      suggestion.set(attributes)
+      suggestion.priority = priority_for(suggestion)
+      suggestion
+    end
+
+    def priority_for(suggestion)
+      priority = PRIORITIES[suggestion[:type]]
+
+      if priority.is_a?(Proc)
+        priority.call(suggestion)
+      else
+        priority
+      end
     end
   end
 end

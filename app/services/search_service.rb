@@ -23,6 +23,7 @@ class SearchService
   end
 
   attr_reader :q, :result, :as_of, :data_serializer
+  attr_accessor :resource_id
 
   delegate :serializable_hash, to: :result
 
@@ -88,7 +89,7 @@ class SearchService
   end
 
   def exact_search
-    ExactSearch.new(q, as_of).search!
+    ExactSearch.new(q, as_of, resource_id).search!
   end
 
   def fuzzy_search

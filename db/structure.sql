@@ -7024,7 +7024,8 @@ CREATE TABLE uk.search_suggestions (
     updated_at timestamp without time zone,
     type text,
     priority integer,
-    goods_nomenclature_sid integer
+    goods_nomenclature_sid integer,
+    goods_nomenclature_class text
 );
 
 
@@ -11592,3 +11593,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230210140401_add_goods_n
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230411105850_create_table_full_chemicals.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230411140112_adds_type_and_priority_to_search_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230419084212_add_tree_nodes_overrides.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230425151153_adds_goods_nomenclature_class_to_search_suggestions.rb');

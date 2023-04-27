@@ -235,4 +235,10 @@ RSpec.describe Chapter do
       expect(chapter.send(:relevant_goods_nomenclature)).to eq("#{chapter.short_code}________")
     end
   end
+
+  describe '#ns_goods_nomenclature_class' do
+    subject(:ns_goods_nomenclature_class) { build(:chapter).ns_goods_nomenclature_class }
+
+    it { is_expected.to eq('Chapter') }
+  end
 end

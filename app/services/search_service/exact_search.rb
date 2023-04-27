@@ -18,6 +18,7 @@ class SearchService
                  else
                    # exact match for search suggestions
                    find_search_suggestion(query_string)
+
                  end
 
       self
@@ -78,7 +79,25 @@ class SearchService
     end
 
     def find_search_suggestion(query)
-      SearchSuggestion.find(value: singular_and_plural(query)).try(:goods_nomenclature)
+      filter = { value: singular_and_plural(query) }
+      if resource_id.present?
+        filter[:id] = resource_id
+      end
+
+      suggestion = SearchSuggestion.find(filter)
+
+      if suggestion.present? && suggestion.goods_nomenclature_class.present?
+        suggestion
+          .goods_nomenclature_class
+          .constantize
+          .actual
+          .non_hidden
+          .where(goods_nomenclature_sid: suggestion.goods_nomenclature_sid)
+          .limit(1)
+          .first
+      elsif suggestion.present?
+        suggestion.goods_nomenclature
+      end
     end
 
     def find_by_chemical(query)

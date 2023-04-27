@@ -404,13 +404,14 @@ RSpec.describe SearchService do
     end
 
     context 'when search references' do
-      subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today).to_json }
+      subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 'foo').to_json }
 
       before do
         create(
           :search_suggestion,
           :search_reference,
           goods_nomenclature: create(:heading, goods_nomenclature_item_id: '0102000000'),
+          id: 'foo',
           value: 'foo bar',
         )
       end

@@ -860,4 +860,16 @@ RSpec.describe Commodity do
 
     it { expect(commodity.consigned_from).to eq('Türkiye') }
   end
+
+  describe '#short_code' do
+    subject(:short_code) { build(:commodity, goods_nomenclature_item_id: '0101210000').short_code }
+
+    it { is_expected.to eq('0101210000') }
+  end
+
+  describe '#ns_goods_nomenclature_class' do
+    subject(:ns_goods_nomenclature_class) { create(:commodity).ns_goods_nomenclature_class }
+
+    it { is_expected.to eq('Commodity') }
+  end
 end

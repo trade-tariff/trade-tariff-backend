@@ -12,6 +12,7 @@ class SearchSuggestionPopulatorService
             value: Sequel[:excluded][:value],
             type: Sequel[:excluded][:type],
             goods_nomenclature_sid: Sequel[:excluded][:goods_nomenclature_sid],
+            goods_nomenclature_class: Sequel[:excluded][:goods_nomenclature_class],
             priority: Sequel[:excluded][:priority],
             updated_at: Sequel[:excluded][:updated_at],
           },
