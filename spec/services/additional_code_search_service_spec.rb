@@ -1,4 +1,4 @@
-RSpec.describe AdditionalCodeSearchService, flaky: true do
+RSpec.describe AdditionalCodeSearchService do
   describe '#call' do
     subject(:result) { described_class.new(search_attributes, current_page, per_page).call }
 
