@@ -5,7 +5,7 @@ RSpec.describe ReindexModelsWorker, type: :worker do
     let(:perform) { described_class.new.perform }
 
     before do
-      create :heading
+      create :commodity
 
       allow(BuildIndexPageWorker).to receive(:perform_async).and_call_original
       allow(TradeTariffBackend).to receive(:reindex).and_call_original

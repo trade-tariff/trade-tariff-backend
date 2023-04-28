@@ -2,18 +2,18 @@ module Search
   class GoodsNomenclatureIndex < ::SearchIndex
     def dataset
       TimeMachine.now do
-        GoodsNomenclature.actual.exclude(
-          "goods_nomenclatures.goods_nomenclature_item_id LIKE '____000000' AND producline_suffix != '80'",
-        )
+        Commodity # Filter out headings and chapters
+          .actual
+          .declarable # Avoid the majority of subheadings
+          .non_hidden
       end
     end
 
     def eager_load_graph
       %i[
-        goods_nomenclature_indents
         chapter
         heading
-        path_ancestors
+        ns_ancestors
       ]
     end
 

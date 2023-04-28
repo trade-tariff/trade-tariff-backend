@@ -3,33 +3,35 @@ module Search
     MAX_ANCESTORS = 13
 
     def serializable_hash(_opts = {})
-      serializable = {
-        id:,
-        goods_nomenclature_item_id:,
-        heading_id: heading_short_code,
-        chapter_id: chapter_short_code,
-        producline_suffix:,
-        goods_nomenclature_class: ns_goods_nomenclature_class,
-        description:,
-        description_indexed:,
-        description_indexed_shingled: description_indexed,
-        formatted_description:,
-        search_references:,
-        search_intercept_terms:,
-        ancestors:,
-        validity_start_date:,
-        validity_end_date:,
-        guides:,
-        guide_ids:,
-        declarable: path_declarable?,
-      }
+      TimeMachine.now do
+        serializable = {
+          id:,
+          goods_nomenclature_item_id:,
+          heading_id: heading_short_code,
+          chapter_id: chapter_short_code,
+          producline_suffix:,
+          goods_nomenclature_class: ns_goods_nomenclature_class,
+          description:,
+          description_indexed:,
+          description_indexed_shingled: description_indexed,
+          formatted_description:,
+          search_references:,
+          search_intercept_terms:,
+          ancestors:,
+          validity_start_date:,
+          validity_end_date:,
+          guides:,
+          guide_ids:,
+          declarable: ns_declarable?,
+        }
 
-      1.upto(MAX_ANCESTORS) do |i|
-        serializable["ancestor_#{i}_description_indexed"] = send("ancestor_#{i}_description_indexed")
-        serializable["ancestor_#{i}_description_indexed_shingled"] = send("ancestor_#{i}_description_indexed_shingled")
+        1.upto(MAX_ANCESTORS) do |i|
+          serializable["ancestor_#{i}_description_indexed"] = send("ancestor_#{i}_description_indexed")
+          serializable["ancestor_#{i}_description_indexed_shingled"] = send("ancestor_#{i}_description_indexed_shingled")
+        end
+
+        serializable.merge(serializable_classifications)
       end
-
-      serializable.merge(serializable_classifications)
     end
 
     private
@@ -57,7 +59,7 @@ module Search
     end
 
     def ancestors
-      @ancestors ||= path_ancestors.map do |ancestor|
+      @ancestors ||= ns_ancestors.map do |ancestor|
         {
           id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
@@ -124,7 +126,7 @@ module Search
     end
 
     def facet_classification
-      @facet_classification ||= if path_declarable?
+      @facet_classification ||= if ns_declarable?
                                   Beta::Search::FacetClassification::Declarable.build(self)
                                 else
                                   Beta::Search::FacetClassification::NonDeclarable.build(self)
