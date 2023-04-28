@@ -17,15 +17,11 @@ class SearchSuggestion < Sequel::Model
                                    end
 
   def custom_sti_goods_nomenclature
-    return goods_nomenclature unless goods_nomenclature_class
-
-    goods_nomenclature_class
-     .constantize
-     .actual
-     .non_hidden
-     .where(goods_nomenclature_sid:)
-     .limit(1)
-     .first
+    if goods_nomenclature_class == 'Subheading' && goods_nomenclature.instance_of?(::Commodity)
+      goods_nomenclature.cast_to_subheading
+    else
+      goods_nomenclature
+    end
   end
 
   dataset_module do
