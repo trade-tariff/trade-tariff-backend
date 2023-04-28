@@ -10,7 +10,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::QuotaOrderNumberOriginExclusionSerial
           id: "#{serializable.quota_order_number_origin_sid}-#{serializable.excluded_geographical_area_sid}",
           type: :quota_order_number_origin_exclusion,
           relationships: {
-            geographical_area: { data: {id: serializable.geographical_area.id, type: :geographical_area }},
+            geographical_area: { data: { id: serializable.geographical_area.id, type: :geographical_area } },
           },
         },
       }

@@ -70,7 +70,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 },
                 quota_balance_events: {},
                 incoming_quota_closed_and_transferred_event: { data: nil },
-                quota_order_number_origins: { data: [{ id: String, type: 'quota_order_number_origin'}] },
+                quota_order_number_origins: { data: [{ id: String, type: 'quota_order_number_origin' }] },
               },
             },
           ],
@@ -152,7 +152,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
               type: 'quota_order_number_origin_exclusion',
               relationships: {
                 geographical_area: {
-                  data: { id: String, type: 'geographical_area'},
+                  data: { id: String, type: 'geographical_area' },
                 },
               },
             },
@@ -164,7 +164,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 validity_end_date: nil,
               },
               relationships: {
-                quota_order_number_origin_exclusions: { data: [{ id: String, type: 'quota_order_number_origin_exclusion'}] },
+                quota_order_number_origin_exclusions: { data: [{ id: String, type: 'quota_order_number_origin_exclusion' }] },
                 geographical_area: {
                   data: {
                     id: String,
@@ -237,7 +237,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 order_number: {},
                 measures: {},
                 incoming_quota_closed_and_transferred_event: { data: nil },
-                quota_order_number_origins: { data: [{ id: String, type: 'quota_order_number_origin'}] },
+                quota_order_number_origins: { data: [{ id: String, type: 'quota_order_number_origin' }] },
               },
             },
           ],
