@@ -14,6 +14,7 @@ module Search
         chapter
         heading
         ns_ancestors
+        ns_children
       ]
     end
 
