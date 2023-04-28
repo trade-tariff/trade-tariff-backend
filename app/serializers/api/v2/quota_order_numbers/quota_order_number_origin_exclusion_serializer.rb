@@ -8,7 +8,7 @@ module Api
 
         set_id :id
 
-        attributes :excluded_geographical_area_sid, :quota_order_number_origin_sid
+        has_one :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
       end
     end
   end

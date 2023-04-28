@@ -20,7 +20,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
              critical_state: 'Y',
              validity_start_date:)
 
-      quota_order_number_origin = create(:quota_order_number_origin, :with_geographical_area,
+      quota_order_number_origin = create(:quota_order_number_origin, :with_geographical_area, :with_quota_order_number_origin_exclusion,
                                          quota_order_number_sid: quota_order_number.quota_order_number_sid)
 
       measure.update(geographical_area: quota_order_number_origin.geographical_area)
@@ -99,6 +99,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 id: String,
                 description: String,
                 geographical_area_id: String,
+                geographical_area_sid: Integer,
               },
             },
             {
@@ -138,13 +139,32 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
             },
             {
               id: String,
+              type: 'geographical_area',
+              attributes: {
+                id: String,
+                description: String,
+                geographical_area_id: String,
+                geographical_area_sid: Integer,
+              },
+            },
+            {
+              id: String,
+              type: 'quota_order_number_origin_exclusion',
+              relationships: {
+                geographical_area: {
+                  data: { id: String, type: 'geographical_area'},
+                },
+              },
+            },
+            {
+              id: String,
               type: 'quota_order_number_origin',
               attributes: {
                 validity_start_date: String,
                 validity_end_date: nil,
               },
               relationships: {
-                quota_order_number_origin_exclusions: { data: [] },
+                quota_order_number_origin_exclusions: { data: [{ id: String, type: 'quota_order_number_origin_exclusion'}] },
                 geographical_area: {
                   data: {
                     id: String,

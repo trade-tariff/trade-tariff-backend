@@ -9,9 +9,8 @@ RSpec.describe Api::V2::QuotaOrderNumbers::QuotaOrderNumberOriginExclusionSerial
         data: {
           id: "#{serializable.quota_order_number_origin_sid}-#{serializable.excluded_geographical_area_sid}",
           type: :quota_order_number_origin_exclusion,
-          attributes: {
-            excluded_geographical_area_sid: serializable.excluded_geographical_area_sid,
-            quota_order_number_origin_sid: serializable.quota_order_number_origin_sid,
+          relationships: {
+            geographical_area: { data: {id: serializable.geographical_area.id, type: :geographical_area }},
           },
         },
       }
