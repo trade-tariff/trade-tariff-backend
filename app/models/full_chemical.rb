@@ -8,6 +8,14 @@ class FullChemical < Sequel::Model
                                      ds.with_actual(GoodsNomenclature)
                                    end
 
+  def custom_sti_goods_nomenclature
+    if goods_nomenclature.ns_goods_nomenclature_class == 'Subheading' && goods_nomenclature.instance_of?(::Commodity)
+      goods_nomenclature.cast_to_subheading
+    else
+      goods_nomenclature
+    end
+  end
+
   def validate
     super
 

@@ -19,6 +19,7 @@ class SuggestionsService
   def build_goods_nomenclatures_search_suggestions
     GoodsNomenclature
       .actual
+      .eager(:ns_children)
       .non_hidden
       .map { |goods_nomenclature| build_goods_nomenclature_record(goods_nomenclature) }
   end
@@ -26,6 +27,7 @@ class SuggestionsService
   def build_search_references_search_suggestions
     SearchReference
       .select(:id, :title, :goods_nomenclature_sid, :referenced_class)
+      .eager(:referenced)
       .distinct(:title)
       .order(Sequel.desc(:title))
       .map { |search_reference| build_search_reference_record(search_reference) }
@@ -44,18 +46,18 @@ class SuggestionsService
   end
 
   def full_chemicals
-    @full_chemicals ||= FullChemical.eager(:goods_nomenclature).all
+    @full_chemicals ||= FullChemical.eager(
+      goods_nomenclature: :ns_children,
+    ).all
   end
 
   def build_search_reference_record(search_reference)
-    goods_nomenclature = search_reference.referenced
-
     SearchSuggestion.build(
       id: search_reference.id,
       value: search_reference.title.downcase,
       type: SearchSuggestion::TYPE_SEARCH_REFERENCE,
-      goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-      goods_nomenclature_class: goods_nomenclature.ns_goods_nomenclature_class,
+      goods_nomenclature_sid: search_reference.goods_nomenclature_sid,
+      goods_nomenclature_class: search_reference.custom_sti_goods_nomenclature.class.name,
       created_at: now,
       updated_at: now,
     )
@@ -81,7 +83,7 @@ class SuggestionsService
       value: full_chemical.name.downcase,
       type: SearchSuggestion::TYPE_FULL_CHEMICAL_NAME,
       goods_nomenclature_sid: full_chemical.goods_nomenclature_sid,
-      goods_nomenclature_class: full_chemical.goods_nomenclature.ns_goods_nomenclature_class,
+      goods_nomenclature_class: full_chemical.custom_sti_goods_nomenclature.class.name,
       created_at: now,
       updated_at: now,
     )
@@ -93,7 +95,7 @@ class SuggestionsService
       value: full_chemical.cus,
       type: SearchSuggestion::TYPE_FULL_CHEMICAL_CUS,
       goods_nomenclature_sid: full_chemical.goods_nomenclature_sid,
-      goods_nomenclature_class: full_chemical.goods_nomenclature.ns_goods_nomenclature_class,
+      goods_nomenclature_class: full_chemical.custom_sti_goods_nomenclature.class.name,
       created_at: now,
       updated_at: now,
     )
@@ -107,7 +109,7 @@ class SuggestionsService
       value: full_chemical.cas_rn,
       type: SearchSuggestion::TYPE_FULL_CHEMICAL_CAS,
       goods_nomenclature_sid: full_chemical.goods_nomenclature_sid,
-      goods_nomenclature_class: full_chemical.goods_nomenclature.ns_goods_nomenclature_class,
+      goods_nomenclature_class: full_chemical.custom_sti_goods_nomenclature.class.name,
       created_at: now,
       updated_at: now,
     )

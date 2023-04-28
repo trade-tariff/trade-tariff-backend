@@ -23,10 +23,22 @@ class SearchReference < Sequel::Model
     end
   end
 
-  many_to_one :referenced, key: :goods_nomenclature_sid, reciprocal: :search_references, reciprocal_type: :many_to_one, setter: referenced_setter, dataset: proc {
-    klass = referenced_class.constantize
-    klass.actual.where(goods_nomenclature_sid:)
-  }
+  many_to_one :referenced,
+              key: :goods_nomenclature_sid,
+              class: 'GoodsNomenclature',
+              reciprocal: :search_references,
+              reciprocal_type: :many_to_one,
+              setter: referenced_setter do |ds|
+    ds.with_actual(GoodsNomenclature)
+  end
+
+  def custom_sti_goods_nomenclature
+    if referenced_class == 'Subheading' && referenced.instance_of?(::Commodity)
+      referenced.cast_to_subheading
+    else
+      referenced
+    end
+  end
 
   self.raise_on_save_failure = false
 
