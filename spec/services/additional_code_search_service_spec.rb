@@ -13,9 +13,8 @@ RSpec.describe AdditionalCodeSearchService do
       create(
         :measure,
         :with_base_regulation,
-        additional_code_sid: additional_code.additional_code_sid,
-        goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
-        goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
+        additional_code:,
+        goods_nomenclature: current_goods_nomenclature,
       )
       create(
         :goods_nomenclature_description,

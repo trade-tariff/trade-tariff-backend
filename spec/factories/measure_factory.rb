@@ -20,6 +20,7 @@ FactoryBot.define do
       base_regulation_effective_end_date { nil }
       generating_regulation { nil }
       default_start_date { 3.years.ago.beginning_of_day }
+      additional_code { nil }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
@@ -28,7 +29,9 @@ FactoryBot.define do
     measure_type_id { generate(:measure_type_id) }
     measure_generating_regulation_id { generating_regulation&.regulation_id || generate(:base_regulation_sid) }
     measure_generating_regulation_role { generating_regulation&.role || Measure::BASE_REGULATION_ROLE }
-    additional_code_type_id { generate(:additional_code_type_id) }
+    additional_code_id { additional_code&.additional_code }
+    additional_code_sid { additional_code&.additional_code_sid }
+    additional_code_type_id { additional_code&.additional_code_type_id || '1' }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || 10.times.map { Random.rand(9) }.join }
     geographical_area_sid { generate(:geographical_area_sid) }
@@ -424,7 +427,6 @@ FactoryBot.define do
 
     trait :with_additional_code do
       transient do
-        additional_code { Forgery(:basic).text(exactly: 3) }
         additional_code_description { Forgery(:basic).text }
       end
 
@@ -433,18 +435,17 @@ FactoryBot.define do
           :additional_code,
           :with_description,
           additional_code_type_id: measure.additional_code_type_id,
-          additional_code: evaluator.additional_code,
+          additional_code: evaluator.additional_code_id,
           additional_code_description: evaluator.additional_code_description,
         )
         measure.additional_code_sid = adco.additional_code_sid
-        measure.additional_code_id = adco.additional_code
         measure.additional_code_type_id = adco.additional_code_type_id
         measure.save
       end
     end
 
     trait :with_additional_code_type do
-      after(:build) do |measure, _evaluator|
+      before(:build) do |measure, _evaluator|
         create(:additional_code_type, additional_code_type_id: measure.additional_code_type_id)
       end
     end
