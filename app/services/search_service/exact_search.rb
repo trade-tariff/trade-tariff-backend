@@ -86,18 +86,7 @@ class SearchService
 
       suggestion = SearchSuggestion.find(filter)
 
-      if suggestion.present? && suggestion.goods_nomenclature_class.present?
-        suggestion
-          .goods_nomenclature_class
-          .constantize
-          .actual
-          .non_hidden
-          .where(goods_nomenclature_sid: suggestion.goods_nomenclature_sid)
-          .limit(1)
-          .first
-      elsif suggestion.present?
-        suggestion.goods_nomenclature
-      end
+      suggestion&.custom_sti_goods_nomenclature
     end
 
     def find_by_chemical(query)

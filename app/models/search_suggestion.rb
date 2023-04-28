@@ -16,6 +16,18 @@ class SearchSuggestion < Sequel::Model
                                      ds.with_actual(GoodsNomenclature)
                                    end
 
+  def custom_sti_goods_nomenclature
+    return goods_nomenclature unless goods_nomenclature_class
+
+    goods_nomenclature_class
+     .constantize
+     .actual
+     .non_hidden
+     .where(goods_nomenclature_sid:)
+     .limit(1)
+     .first
+  end
+
   dataset_module do
     def fuzzy_search(query)
       case query
