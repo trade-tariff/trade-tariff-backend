@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Cache::AdditionalCodeIndex, flaky: true do
+RSpec.describe Cache::AdditionalCodeIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 
   describe '#dataset' do

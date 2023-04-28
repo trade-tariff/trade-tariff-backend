@@ -5,7 +5,7 @@ FactoryBot.define do
 
   factory :additional_code do
     additional_code_sid     { generate(:additional_code_sid) }
-    additional_code_type_id { generate(:additional_code_type_id) }
+    additional_code_type_id { '1' }
     additional_code         { Forgery(:basic).text(exactly: 3) }
     validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }

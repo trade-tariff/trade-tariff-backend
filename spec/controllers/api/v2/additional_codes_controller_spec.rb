@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::AdditionalCodesController, type: :controller, flaky: true do
+RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
   describe 'GET #search' do
     let!(:additional_code) { create(:additional_code, :with_description) }
 
@@ -33,7 +33,7 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller, flaky: tru
             type: 'measure',
             attributes: {
               validity_start_date: String,
-              validity_end_date: String,
+              validity_end_date: nil,
               goods_nomenclature_item_id: String,
             },
             relationships: {

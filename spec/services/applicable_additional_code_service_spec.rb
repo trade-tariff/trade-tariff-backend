@@ -10,7 +10,7 @@ RSpec.describe ApplicableAdditionalCodeService do
           :with_measure_type,
           measure_type_id: '105',
           additional_code_type_id: '2',
-          additional_code: '550',
+          additional_code_id: '550',
         )
         duplicate_measure = create(
           :measure,
@@ -18,7 +18,7 @@ RSpec.describe ApplicableAdditionalCodeService do
           :with_measure_type,
           measure_type_id: '105',
           additional_code_type_id: '2',
-          additional_code: '550',
+          additional_code_id: '550',
           measure_sid: measure.measure_sid,
         )
         measure_with_same_measure_and_code_type = create(
@@ -27,7 +27,7 @@ RSpec.describe ApplicableAdditionalCodeService do
           :with_measure_type,
           measure_type_id: '105',
           additional_code_type_id: '2',
-          additional_code: '551',
+          additional_code_id: '551',
         )
         measure_with_different_measure_and_code_type = create(
           :measure,

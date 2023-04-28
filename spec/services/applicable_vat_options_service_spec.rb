@@ -37,7 +37,7 @@ RSpec.describe ApplicableVatOptionsService do
           measure_type_id: '305',
           additional_code_description: 'VAT zero rate',
           additional_code_type_id: 'V',
-          additional_code: 'ATZ',
+          additional_code_id: 'ATZ',
           duty_amount: 0,
         )
       end
