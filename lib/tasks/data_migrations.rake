@@ -14,8 +14,6 @@ namespace :data do
         Rake::Task['data:rollback'].invoke
         Rake::Task['data:migrate'].invoke
       end
-
-      GoodsNomenclatures::TreeNode.refresh!
     end
 
     desc 'Runs the "up" for a given data migration VERSION.'
@@ -41,9 +39,11 @@ namespace :data do
 
   desc 'Migrate data to the latest version - IMPORTANT ensure migrations are idempotent'
   task migrate: 'migrate:load' do
+    refresh_tree_nodes = ::DataMigrator.pending_migrations? || ENV['VERSION'].present?
+
     ::DataMigrator.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
 
-    GoodsNomenclatures::TreeNode.refresh!
+    GoodsNomenclatures::TreeNode.refresh! if refresh_tree_nodes
   end
 
   desc 'Rollback the latest data migration file or down to specified VERSION=x'
