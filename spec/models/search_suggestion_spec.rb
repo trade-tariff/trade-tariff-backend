@@ -5,6 +5,34 @@ RSpec.describe SearchSuggestion do
     it { is_expected.to be_a(Heading) }
   end
 
+  describe '#custom_sti_goods_nomenclature' do
+    subject(:custom_sti_goods_nomenclature) { create(:search_suggestion, goods_nomenclature:).custom_sti_goods_nomenclature }
+
+    context 'when the search suggestion points to a chapter' do
+      let(:goods_nomenclature) { create(:chapter) }
+
+      it { is_expected.to be_a(Chapter) }
+    end
+
+    context 'when the search suggestion points to a heading' do
+      let(:goods_nomenclature) { create(:heading) }
+
+      it { is_expected.to be_a(Heading) }
+    end
+
+    context 'when the search suggestion points to a subheading' do
+      let(:goods_nomenclature) { create(:commodity, :grouping) }
+
+      it { is_expected.to be_a(Subheading) }
+    end
+
+    context 'when the search suggestion points to a commodity' do
+      let(:goods_nomenclature) { create(:commodity) }
+
+      it { is_expected.to be_a(Commodity) }
+    end
+  end
+
   describe '.fuzzy_search' do
     subject(:fuzzy_search) { described_class.fuzzy_search(query) }
 
@@ -131,7 +159,9 @@ RSpec.describe SearchSuggestion do
     context 'when the search suggestion exists and we only pass the value' do
       subject(:by_value) { described_class.by_value('gold ore') }
 
-      let!(:search_suggestion) { create(:search_suggestion, :search_reference, value: 'gold ore') }
+      before do
+        create(:search_suggestion, :search_reference, value: 'gold ore')
+      end
 
       it { is_expected.to be_one }
     end
@@ -139,7 +169,9 @@ RSpec.describe SearchSuggestion do
     context 'when the search suggestion exists and we only pass the id and value' do
       subject(:by_value) { described_class.by_value('gold ore', 'abc') }
 
-      let!(:search_suggestion) { create(:search_suggestion, :search_reference, id: 'abc', value: 'gold ore') }
+      before do
+        create(:search_suggestion, :search_reference, id: 'abc', value: 'gold ore')
+      end
 
       it { is_expected.to be_one }
     end

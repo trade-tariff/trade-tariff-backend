@@ -75,20 +75,7 @@ module Api
       end
 
       def goods_nomenclature
-        custom_sti_goods_nomenclature || search_suggestion&.goods_nomenclature
-      end
-
-      def custom_sti_goods_nomenclature
-        return unless search_suggestion
-
-        search_suggestion
-          .goods_nomenclature_class
-          .constantize
-          .actual
-          .non_hidden
-          .where(goods_nomenclature_sid: search_suggestion.goods_nomenclature_sid)
-          .limit(1)
-          .first
+        search_suggestion&.custom_sti_goods_nomenclature
       end
 
       def search_suggestion

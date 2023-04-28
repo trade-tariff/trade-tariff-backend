@@ -20,18 +20,16 @@ RSpec.describe Search::GoodsNomenclatureIndex do
     subject(:dataset) { described_class.new('testnamespace').dataset }
 
     before do
-      create(:chapter, goods_nomenclature_item_id: '0100000000')                # chapter          -> included
+      create(:chapter, goods_nomenclature_item_id: '0100000000')                # chapter          -> not included
       create(:heading, :grouping, goods_nomenclature_item_id: '0101000000')     # grouping heading -> not included
-      create(:heading, :non_grouping, goods_nomenclature_item_id: '0101000000') # heading          -> included
+      create(:heading, :non_grouping, goods_nomenclature_item_id: '0101000000') # heading          -> not included
       create(:commodity, goods_nomenclature_item_id: '0101210000')              # commodity        -> included
-      create(:commodity, :grouping, goods_nomenclature_item_id: '0101210000')   # commodity        -> included
+      create(:commodity, :hidden, goods_nomenclature_item_id: '0101210001')     # commodity        -> not included
+      create(:commodity, :grouping, goods_nomenclature_item_id: '0101210000')   # subheading       -> not included
     end
 
     let(:expected_goods_nomenclatures) do
       [
-        %w[0100000000 80],
-        %w[0101000000 80],
-        %w[0101210000 10],
         %w[0101210000 80],
       ]
     end
