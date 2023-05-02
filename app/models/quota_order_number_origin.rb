@@ -16,6 +16,6 @@ class QuotaOrderNumberOrigin < Sequel::Model
               key: :quota_order_number_origin_sid
 
   def quota_order_number_origin_exclusion_ids
-    quota_order_number_origin_exclusions&.map(&:id)
+    quota_order_number_origin_exclusions.pluck(:id)
   end
 end
