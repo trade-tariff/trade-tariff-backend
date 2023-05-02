@@ -1,11 +1,11 @@
 Sequel.migration do
-  BALANCE_EVENTS = [
+  balance_events = [
     {
       quota_definition_sid: 22_046,
       occurrence_timestamp: '2023-01-06T16:01:00.000Z',
       last_import_date_in_allocation: nil,
-      old_balance: 0.998e6,
-      new_balance: 0.1471e7,
+      old_balance: 998_000.0,
+      new_balance: 1_471_000.0,
       imported_amount: 0.0,
       operation: 'C',
       operation_date: Date.parse('2023-01-09'),
@@ -15,8 +15,8 @@ Sequel.migration do
       quota_definition_sid: 22_052,
       occurrence_timestamp: '2023-01-06T16:01:00.000Z',
       last_import_date_in_allocation: nil,
-      old_balance: 0.998e6,
-      new_balance: 0.1471e7,
+      old_balance: 998_000.0,
+      new_balance: 1_471_000.0,
       imported_amount: 0.0,
       operation: 'C',
       operation_date: Date.parse('2023-01-09'),
@@ -28,7 +28,7 @@ Sequel.migration do
   # they may get re-run as part of data rollbacks but the rollback (down) function of the data migration will not get invoked
   up do
     if TradeTariffBackend.uk?
-      BALANCE_EVENTS.each do |event_data|
+      balance_events.each do |event_data|
         QuotaBalanceEvent.where(event_data).destroy
       end
     end
@@ -36,7 +36,7 @@ Sequel.migration do
 
   down do
     if TradeTariffBackend.uk?
-      BALANCE_EVENTS.each do |event_data|
+      balance_events.each do |event_data|
         QuotaBalanceEvent.unrestrict_primary_key
         QuotaBalanceEvent.new(event_data).save
         QuotaBalanceEvent.restrict_primary_key
