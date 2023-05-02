@@ -90,7 +90,7 @@ module Cache
           goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
           validity_start_date: commodity.validity_start_date&.strftime('%FT%T.%LZ'),
           validity_end_date: commodity.validity_end_date,
-          declarable: commodity.fast_declarable?,
+          declarable: commodity.path_declarable?,
         }
 
         commodity_attributes[:goods_nomenclature_indents] = commodity.goods_nomenclature_indents.map do |goods_nomenclature_indent|

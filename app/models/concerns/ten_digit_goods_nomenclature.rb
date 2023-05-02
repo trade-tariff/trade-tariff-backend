@@ -89,18 +89,6 @@ module TenDigitGoodsNomenclature
       end
     end
 
-    def fast_declarable?
-      non_grouping? && path_descendants_dataset.count.zero?
-    end
-
-    def non_grouping?
-      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
-    end
-
-    def grouping?
-      !non_grouping?
-    end
-
     def uptree
       @uptree ||= [ancestors, heading, chapter, self].flatten.compact
     end
@@ -126,7 +114,7 @@ module TenDigitGoodsNomenclature
     end
 
     def short_code
-      if ns_declarable?
+      if path_declarable?
         goods_nomenclature_item_id
       else
         case goods_nomenclature_item_id

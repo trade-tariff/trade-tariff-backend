@@ -19,7 +19,6 @@ class SuggestionsService
   def build_goods_nomenclatures_search_suggestions
     GoodsNomenclature
       .actual
-      .eager(:ns_children)
       .non_hidden
       .map { |goods_nomenclature| build_goods_nomenclature_record(goods_nomenclature) }
   end
@@ -46,9 +45,7 @@ class SuggestionsService
   end
 
   def full_chemicals
-    @full_chemicals ||= FullChemical.eager(
-      goods_nomenclature: :ns_children,
-    ).all
+    @full_chemicals ||= FullChemical.eager(:goods_nomenclature).all
   end
 
   def build_search_reference_record(search_reference)
@@ -64,12 +61,14 @@ class SuggestionsService
   end
 
   def build_goods_nomenclature_record(goods_nomenclature)
+    return nil if goods_nomenclature.heading? && goods_nomenclature.grouping?
+
     SearchSuggestion.build(
       id: goods_nomenclature.goods_nomenclature_sid,
       value: goods_nomenclature.short_code,
       type: SearchSuggestion::TYPE_GOODS_NOMENCLATURE,
       goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-      goods_nomenclature_class: goods_nomenclature.ns_goods_nomenclature_class,
+      goods_nomenclature_class: goods_nomenclature.path_goods_nomenclature_class,
       created_at: now,
       updated_at: now,
     )

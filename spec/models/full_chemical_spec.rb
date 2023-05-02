@@ -21,7 +21,7 @@ RSpec.describe FullChemical do
     end
 
     context 'when the goods_nomenclature is a Subheading' do
-      let(:goods_nomenclature) { create(:subheading, goods_nomenclature_item_id: '0101110000', producline_suffix: '10') }
+      let(:goods_nomenclature) { create(:subheading, goods_nomenclature_item_id: '0101110000') }
 
       it { is_expected.to be_a(Subheading) }
     end

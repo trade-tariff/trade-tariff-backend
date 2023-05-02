@@ -225,12 +225,28 @@ class GoodsNomenclature < Sequel::Model
     !!goods_nomenclature_item_id.match(/\A\d{2}00000000\z/)
   end
 
+  def non_grouping?
+    producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+  end
+
+  def grouping?
+    !non_grouping?
+  end
+
   def path_declarable?
-    path_children.none? && producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+    non_grouping? && path_children_dataset.limit(1).none?
+  end
+
+  def path_goods_nomenclature_class
+    if instance_of?(::Commodity) && !path_declarable?
+      'Subheading'
+    else
+      self.class.name
+    end
   end
 
   def classifiable_goods_nomenclatures
-    ns_ancestors.dup.push(self).reverse
+    path_ancestors.dup.push(self).reverse
   end
 
   def has_chemicals
