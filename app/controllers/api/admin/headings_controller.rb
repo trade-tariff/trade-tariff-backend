@@ -18,12 +18,13 @@ module Api
 
       def heading
         @heading ||= Heading.actual
-                          .non_grouping
-                          .non_hidden
-                          .by_code(params[:id])
-                          .eager(path_descendants: %i[goods_nomenclature_descriptions path_descendants])
-                          .limit(1)
-                          .take
+                            .non_grouping
+                            .non_hidden
+                            .by_code(params[:id])
+                            .eager(ns_descendants: %i[goods_nomenclature_descriptions])
+                            .limit(1)
+                            .all
+                            .first || (raise Sequel::RecordNotFound)
       end
 
       def search_reference_counts
@@ -35,7 +36,8 @@ module Api
       end
 
       def applicable_goods_nomenclature_sids
-        heading.path_descendants.pluck(:goods_nomenclature_sid).tap { |sids| sids << heading.goods_nomenclature_sid }
+        heading.ns_descendants.pluck(:goods_nomenclature_sid) +
+          [heading.goods_nomenclature_sid]
       end
     end
   end
