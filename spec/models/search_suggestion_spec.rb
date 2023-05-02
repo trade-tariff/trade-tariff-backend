@@ -6,7 +6,9 @@ RSpec.describe SearchSuggestion do
   end
 
   describe '#custom_sti_goods_nomenclature' do
-    subject(:custom_sti_goods_nomenclature) { create(:search_suggestion, goods_nomenclature:).custom_sti_goods_nomenclature }
+    subject(:custom_sti_goods_nomenclature) do
+      create(:search_suggestion, goods_nomenclature:).custom_sti_goods_nomenclature
+    end
 
     context 'when the search suggestion points to a chapter' do
       let(:goods_nomenclature) { create(:chapter) }
@@ -21,9 +23,20 @@ RSpec.describe SearchSuggestion do
     end
 
     context 'when the search suggestion points to a subheading' do
-      let(:goods_nomenclature) { create(:commodity, :grouping) }
+      let(:goods_nomenclature) { create(:subheading) }
 
       it { is_expected.to be_a(Subheading) }
+    end
+
+    context 'when the search suggestion points to a subheading but the goods_nomenclature_class is nil' do
+      subject(:custom_sti_goods_nomenclature) do
+        search_suggestion.goods_nomenclature_class = nil
+        search_suggestion.custom_sti_goods_nomenclature
+      end
+
+      let(:search_suggestion) { create(:search_suggestion, goods_nomenclature: create(:subheading)) }
+
+      it { is_expected.to be_a(Commodity) }
     end
 
     context 'when the search suggestion points to a commodity' do
