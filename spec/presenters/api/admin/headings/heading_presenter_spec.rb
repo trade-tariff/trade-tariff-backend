@@ -27,7 +27,7 @@ RSpec.describe Api::Admin::Headings::HeadingPresenter do
     it { is_expected.to have_attributes values: heading.values }
     it { is_expected.to have_attributes search_references_count: 1 }
     it { expect(presented.commodities).to have_attributes length: 2 }
-    it { expect(presented.commodities.first).to have_attributes values: heading.path_descendants.first.values }
+    it { expect(presented.commodities.first).to have_attributes pk: heading.path_descendants.first.pk }
     it { expect(presented.commodities.first).to have_attributes search_references_count: 3 }
   end
 end
