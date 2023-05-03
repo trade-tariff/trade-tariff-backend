@@ -5,6 +5,34 @@ RSpec.describe FullChemical do
     it { is_expected.to be_a(GoodsNomenclature) }
   end
 
+  describe '#custom_sti_goods_nomenclature' do
+    subject(:custom_sti_goods_nomenclature) { build(:full_chemical, goods_nomenclature:).custom_sti_goods_nomenclature }
+
+    context 'when the goods_nomenclature is a Chapter' do
+      let(:goods_nomenclature) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+
+      it { is_expected.to be_a(Chapter) }
+    end
+
+    context 'when the goods_nomenclature is a Heading' do
+      let(:goods_nomenclature) { create(:heading, goods_nomenclature_item_id: '0101000000') }
+
+      it { is_expected.to be_a(Heading) }
+    end
+
+    context 'when the goods_nomenclature is a Subheading' do
+      let(:goods_nomenclature) { create(:subheading, goods_nomenclature_item_id: '0101110000') }
+
+      it { is_expected.to be_a(Subheading) }
+    end
+
+    context 'when the goods_nomenclature is a Commodity' do
+      let(:goods_nomenclature) { create(:commodity, goods_nomenclature_item_id: '0101110000', producline_suffix: '80') }
+
+      it { is_expected.to be_a(Commodity) }
+    end
+  end
+
   describe 'validations' do
     subject(:errors) { described_class.new.tap(&:valid?).errors }
 

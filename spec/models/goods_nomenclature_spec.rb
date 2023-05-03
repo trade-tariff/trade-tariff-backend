@@ -662,4 +662,64 @@ RSpec.describe GoodsNomenclature do
       it { is_expected.to be(true) }
     end
   end
+
+  describe '#non_grouping?' do
+    context 'when the commodity has a non-grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :non_grouping) }
+
+      it { is_expected.to be_non_grouping }
+    end
+
+    context 'when the commodity has a grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :grouping) }
+
+      it { is_expected.not_to be_non_grouping }
+    end
+  end
+
+  describe '#grouping?' do
+    context 'when the commodity has a grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :grouping) }
+
+      it { is_expected.to be_grouping }
+    end
+
+    context 'when the commodity has a non-grouping producline_suffix' do
+      subject(:commodity) { create(:commodity, :non_grouping) }
+
+      it { is_expected.not_to be_grouping }
+    end
+  end
+
+  describe '#path_goods_nomenclature_class' do
+    shared_examples 'a goods nomenclature class' do |goods_nomenclature_item_id, expected_class|
+      subject(:goods_nomenclature_class) { described_class.find(goods_nomenclature_item_id:).path_goods_nomenclature_class }
+
+      it { is_expected.to eq(expected_class) }
+    end
+
+    it_behaves_like 'a goods nomenclature class', '0100000000', 'Chapter' do
+      before do
+        create(:chapter, goods_nomenclature_item_id: '0100000000')
+      end
+    end
+
+    it_behaves_like 'a goods nomenclature class', '0101000000', 'Heading' do
+      before do
+        create(:heading, goods_nomenclature_item_id: '0101000000')
+      end
+    end
+
+    it_behaves_like 'a goods nomenclature class', '0101210001', 'Subheading' do
+      before do
+        create(:subheading, goods_nomenclature_item_id: '0101210001')
+      end
+    end
+
+    it_behaves_like 'a goods nomenclature class', '0101210000', 'Commodity' do
+      before do
+        create(:commodity, goods_nomenclature_item_id: '0101210000')
+      end
+    end
+  end
 end

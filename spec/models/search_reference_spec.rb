@@ -51,7 +51,35 @@ RSpec.describe SearchReference do
         Subheading.find(goods_nomenclature_item_id: '0101110000', producline_suffix: '30')
       end
 
-      it { expect(search_reference.referenced).to be_a(Subheading) }
+      it { expect(search_reference.referenced).to be_a(Commodity) }
+    end
+  end
+
+  describe '#custom_sti_goods_nomenclature' do
+    subject(:custom_sti_goods_nomenclature) { described_class.new(referenced:).custom_sti_goods_nomenclature }
+
+    context 'when the referenced is a Chapter' do
+      let(:referenced) { create(:chapter, goods_nomenclature_item_id: '0100000000') }
+
+      it { is_expected.to be_a(Chapter) }
+    end
+
+    context 'when the referenced is a Heading' do
+      let(:referenced) { create(:heading, goods_nomenclature_item_id: '0101000000') }
+
+      it { is_expected.to be_a(Heading) }
+    end
+
+    context 'when the referenced is a Subheading' do
+      let(:referenced) { create(:subheading, goods_nomenclature_item_id: '0101110000', producline_suffix: '10') }
+
+      it { is_expected.to be_a(Subheading) }
+    end
+
+    context 'when the referenced is a Commodity' do
+      let(:referenced) { create(:commodity, goods_nomenclature_item_id: '0101110000', producline_suffix: '80') }
+
+      it { is_expected.to be_a(Commodity) }
     end
   end
 

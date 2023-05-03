@@ -720,34 +720,6 @@ RSpec.describe Commodity do
     end
   end
 
-  describe '#non_grouping?' do
-    context 'when the commodity has a non-grouping producline_suffix' do
-      subject(:commodity) { create(:commodity, :non_grouping) }
-
-      it { is_expected.to be_non_grouping }
-    end
-
-    context 'when the commodity has a grouping producline_suffix' do
-      subject(:commodity) { create(:commodity, :grouping) }
-
-      it { is_expected.not_to be_non_grouping }
-    end
-  end
-
-  describe '#grouping?' do
-    context 'when the commodity has a grouping producline_suffix' do
-      subject(:commodity) { create(:commodity, :grouping) }
-
-      it { is_expected.to be_grouping }
-    end
-
-    context 'when the commodity has a non-grouping producline_suffix' do
-      subject(:commodity) { create(:commodity, :non_grouping) }
-
-      it { is_expected.not_to be_grouping }
-    end
-  end
-
   describe '.declarable' do
     let(:commodity_80) { create(:commodity, producline_suffix: '80') }
     let(:commodity_10) { create(:commodity, producline_suffix: '10') }
@@ -795,32 +767,6 @@ RSpec.describe Commodity do
       subject(:goods_nomenclature_class) { create(:commodity, :non_declarable, :with_heading).goods_nomenclature_class }
 
       it { is_expected.to eq('Subheading') }
-    end
-  end
-
-  describe '#fast_declarable?' do
-    context 'when the goods nomenclature has children and a non grouping suffix' do
-      subject(:commodity) { create(:commodity, :with_children, :non_grouping) }
-
-      it { is_expected.not_to be_fast_declarable }
-    end
-
-    context 'when the goods nomenclature has children and a grouping suffix' do
-      subject(:commodity) { create(:commodity, :with_children, :grouping) }
-
-      it { is_expected.not_to be_fast_declarable }
-    end
-
-    context 'when the goods nomenclature has no children and a non grouping suffix' do
-      subject(:commodity) { create(:commodity, :without_children, :non_grouping) }
-
-      it { is_expected.to be_fast_declarable }
-    end
-
-    context 'when the goods nomenclature has no children and a grouping suffix' do
-      subject(:commodity) { create(:commodity, :without_children, :grouping) }
-
-      it { is_expected.not_to be_fast_declarable }
     end
   end
 
