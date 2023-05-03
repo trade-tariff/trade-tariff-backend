@@ -140,7 +140,7 @@ class QuotaDefinition < Sequel::Model
   end
 
   def quota_order_number_origin_ids
-    quota_order_number_origins&.map(&:quota_order_number_origin_sid)
+    quota_order_number_origins&.pluck(:id)
   end
 
   delegate :quota_order_number_origins, to: :quota_order_number, allow_nil: true

@@ -6,7 +6,7 @@ module Api
 
         set_type :quota_order_number_origin
 
-        set_id :quota_order_number_origin_sid
+        set_id :id
 
         attributes :validity_start_date,
                    :validity_end_date

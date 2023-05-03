@@ -237,7 +237,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                 order_number: {},
                 measures: {},
                 incoming_quota_closed_and_transferred_event: { data: nil },
-                quota_order_number_origins: { data: [{ id: String, type: 'quota_order_number_origin' }] },
+                quota_order_number_origins: {},
               },
             },
           ],

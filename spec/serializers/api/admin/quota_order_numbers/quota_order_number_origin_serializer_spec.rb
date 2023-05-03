@@ -7,7 +7,7 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer d
     let(:expected) do
       {
         data: {
-          id: serializable.quota_order_number_origin_sid.to_s,
+          id: serializable.id,
           type: :quota_order_number_origin,
           attributes: {
             geographical_area_id: serializable.geographical_area_id,

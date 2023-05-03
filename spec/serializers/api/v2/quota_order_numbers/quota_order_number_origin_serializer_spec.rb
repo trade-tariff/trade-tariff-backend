@@ -7,7 +7,7 @@ RSpec.describe Api::V2::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer do
     let(:expected) do
       {
         data: {
-          id: serializable.quota_order_number_origin_sid.to_s,
+          id: serializable.id,
           type: :quota_order_number_origin,
           attributes: {
             validity_start_date: serializable.validity_start_date,
