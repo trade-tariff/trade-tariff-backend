@@ -5,7 +5,7 @@ module Sequel
     module Take
       module DatasetMethods
         def take
-          first.presence || (raise Sequel::RecordNotFound)
+          limit(1).all.first.presence || (raise Sequel::RecordNotFound)
         end
       end
     end
