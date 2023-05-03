@@ -12,6 +12,8 @@ module GoodsNomenclatures
                                     reciprocal: :tree_node,
                                     read_only: true
 
+    def_column_accessor :leaf
+
     class << self
       # Defaults to concurrent refresh to avoid blocking other queries
       # If the Materialized View has never been populated, eg after a
@@ -54,6 +56,10 @@ module GoodsNomenclatures
           end
       end
 
+      def next_sibling_or_end(...)
+        Sequel.function(:coalesce, next_sibling(...), END_OF_TREE)
+      end
+
       def ancestor_node_constraints(origin, ancestors)
         (ancestors.position < origin.position) &
           (ancestors.position >= start_of_chapter(origin.position)) &
@@ -64,10 +70,34 @@ module GoodsNomenclatures
       def descendant_node_constraints(origin, descendants)
         (descendants.position > origin.position) &
           validity_dates_filter(origin.table) &
-          (descendants.position <
-            Sequel.function(:coalesce,
-                            next_sibling(origin.position, origin.depth),
-                            END_OF_TREE))
+          (descendants.position < next_sibling_or_end(origin.position, origin.depth))
+      end
+    end
+
+    dataset_module do
+      def with_leaf_column
+        origin   = GoodsNomenclatures::TreeNodeAlias.new(model.table_name)
+        children = GoodsNomenclatures::TreeNodeAlias.new(:child_nodes)
+
+        actual
+          .select_all(model.table_name)
+          .select_append(
+            (
+              Sequel.function(:count, :child_nodes__goods_nomenclature_indent_sid) =~ 0
+            ).as(:leaf),
+          )
+          .group(columns.map { |col| Sequel.qualify(model.table_name, col) })
+          .left_join(
+            model.table_name,
+            (
+              (children.depth =~ (origin.depth + 1)) &
+              (children.position > origin.position) &
+              model.validity_dates_filter(children.table) &
+              (children.position <
+                model.next_sibling_or_end(origin.position, origin.depth))
+            ),
+            table_alias: :child_nodes,
+          )
       end
     end
   end

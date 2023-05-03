@@ -57,78 +57,84 @@ RSpec.describe GoodsNomenclatures::TreeNode do
   end
 
   describe '.previous_sibling' do
+    subject do
+      described_class.previous_sibling(origin.tree_node.position, origin.tree_node.depth)
+                     .first
+                     .values[:previous_sibling]
+    end
+
     let(:subheading) { create :commodity, :with_chapter_and_heading }
     let(:siblings) { create_list :commodity, 3, parent: subheading }
 
     context 'with first sibling' do
-      subject do
-        described_class.previous_sibling(siblings.first.tree_node.position,
-                                         siblings.first.tree_node.depth)
-                       .first
-                       .values[:previous_sibling]
-      end
+      let(:origin) { siblings.first }
 
       it { is_expected.to be_nil }
     end
 
     context 'with second sibling' do
-      subject do
-        described_class.previous_sibling(siblings.second.tree_node.position,
-                                         siblings.second.tree_node.depth)
-                       .first
-                       .values[:previous_sibling]
-      end
+      let(:origin) { siblings.second }
 
       it { is_expected.to eq siblings.first.tree_node.position }
     end
 
     context 'with third sibling' do
-      subject do
-        described_class.previous_sibling(siblings.third.tree_node.position,
-                                         siblings.third.tree_node.depth)
-                       .first
-                       .values[:previous_sibling]
-      end
+      let(:origin) { siblings.third }
 
       it { is_expected.to eq siblings.second.tree_node.position }
     end
   end
 
   describe '.next_sibling' do
+    subject do
+      described_class.next_sibling(origin.tree_node.position, origin.tree_node.depth)
+                     .first
+                     .values[:next_sibling]
+    end
+
     let(:subheading) { create :commodity, :with_chapter_and_heading }
     let(:siblings) { create_list :commodity, 3, parent: subheading }
 
     context 'with first sibling' do
-      subject do
-        described_class.next_sibling(siblings.first.tree_node.position,
-                                     siblings.first.tree_node.depth)
-                       .first
-                       .values[:next_sibling]
-      end
+      let(:origin) { siblings.first }
 
       it { is_expected.to eq siblings.second.tree_node.position }
     end
 
     context 'with second sibling' do
-      subject do
-        described_class.next_sibling(siblings.second.tree_node.position,
-                                     siblings.second.tree_node.depth)
-                       .first
-                       .values[:next_sibling]
-      end
+      let(:origin) { siblings.second }
 
       it { is_expected.to eq siblings.third.tree_node.position }
     end
 
     context 'with third sibling' do
-      subject do
-        described_class.next_sibling(siblings.third.tree_node.position,
-                                     siblings.third.tree_node.depth)
-                       .first
-                       .values[:next_sibling]
-      end
+      let(:origin) { siblings.third }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '.next_sibling_or_end' do
+    subject do
+      described_class.db.select(
+        described_class.next_sibling_or_end(origin.tree_node.position,
+                                            origin.tree_node.depth),
+      ).first[:coalesce]
+    end
+
+    let(:subheading) { create :commodity, :with_chapter_and_heading }
+    let(:siblings) { create_list :commodity, 3, parent: subheading }
+
+    context 'with first sibling' do
+      let(:origin) { siblings.first }
+
+      it { is_expected.to eq siblings.second.tree_node.position }
+    end
+
+    context 'with third sibling' do
+      let(:origin) { siblings.third }
+
+      it { is_expected.to eq described_class::END_OF_TREE }
     end
   end
 
@@ -148,6 +154,24 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     let(:table2) { GoodsNomenclatures::TreeNodeAlias.new(:table2) }
 
     it { is_expected.to be_instance_of Sequel::SQL::BooleanExpression }
+  end
+
+  describe '.with_leaf_column' do
+    subject do
+      described_class.with_leaf_column
+                     .all
+                     .index_by(&:goods_nomenclature_sid)
+                     .transform_values(&:leaf)
+    end
+
+    before { commodity }
+
+    let(:subheading) { create :subheading, :with_chapter_and_heading }
+    let(:commodity) { create :commodity, parent: subheading }
+
+    it { is_expected.to include subheading.chapter.pk => false }
+    it { is_expected.to include subheading.pk => false }
+    it { is_expected.to include commodity.pk => true }
   end
 
   describe '#goods_nomenclature relationship' do
