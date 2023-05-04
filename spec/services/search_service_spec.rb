@@ -37,7 +37,7 @@ RSpec.describe SearchService do
     end
   end
 
-  # Searching in search suggestions
+  # Searching in search suggestions or find historic goods nomenclature
   describe 'exact search' do
     subject(:result) do
       described_class.new(data_serializer, q: query, as_of: Time.zone.today).to_json
@@ -90,7 +90,6 @@ RSpec.describe SearchService do
     end
 
     context 'when subheadings' do
-      let(:query) { '010121' }
       let(:pattern) do
         {
           type: 'exact_match',
@@ -107,7 +106,17 @@ RSpec.describe SearchService do
         create :search_suggestion, goods_nomenclature:
       end
 
-      it { expect(result).to match_json_expression pattern }
+      context 'when subheading with suffix' do
+        let(:query) { '0101210000-10' }
+
+        it { expect(result).to match_json_expression pattern }
+      end
+
+      context 'when subheading with short code' do
+        let(:query) { '010121' }
+
+        it { expect(result).to match_json_expression pattern }
+      end
     end
 
     context 'when commodities' do
@@ -183,6 +192,27 @@ RSpec.describe SearchService do
       it { expect(result).to match_json_expression pattern }
     end
 
+    context 'when chemicals by name' do
+      let(:query) { 'insulin, human' }
+      let(:pattern) do
+        {
+          type: 'exact_match',
+          entry: {
+            endpoint: 'commodities',
+            id: '0101210000',
+          },
+        }
+      end
+
+      before do
+        goods_nomenclature = create :commodity, goods_nomenclature_item_id: '0101210000'
+
+        create :search_suggestion, goods_nomenclature:, value: 'insulin, human'
+      end
+
+      it { expect(result).to match_json_expression pattern }
+    end
+
     context 'when search references' do
       subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 'foo').to_json }
 
@@ -208,6 +238,42 @@ RSpec.describe SearchService do
 
       it { is_expected.to match_json_expression(expected_pattern) }
     end
+
+    shared_examples_for 'an historic goods nomenclature exact search' do |goods_nomenclature_type, query|
+      subject(:result) do
+        described_class.new(
+          data_serializer,
+          q: query,
+          as_of: Time.zone.today,
+        ).to_json
+      end
+
+      let(:pattern) do
+        {
+          type: 'exact_match',
+          entry: {
+            endpoint: goods_nomenclature_type.to_s.pluralize,
+            id: goods_nomenclature.to_param,
+          },
+        }
+      end
+
+      let!(:goods_nomenclature) do
+        create(
+          goods_nomenclature_type,
+          :expired,
+          :with_heading,
+          goods_nomenclature_item_id: query.ljust(10, '0'),
+        )
+      end
+
+      it { is_expected.to match_json_expression pattern }
+    end
+
+    it_behaves_like 'an historic goods nomenclature exact search', :chapter, '01'
+    it_behaves_like 'an historic goods nomenclature exact search', :heading, '0101'
+    it_behaves_like 'an historic goods nomenclature exact search', :subheading, '010121'
+    it_behaves_like 'an historic goods nomenclature exact search', :commodity, '0101210000'
   end
 
   # Searching in ElasticSearch index

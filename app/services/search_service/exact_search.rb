@@ -8,7 +8,7 @@ class SearchService
                    q = matchdata ? matchdata[2] : query_string.gsub(/\Acas\s+/i, '')
                    find_search_suggestion(q)
                  else
-                   find_search_suggestion(query_string)
+                   find_search_suggestion(query_string) || find_historic_goods_nomenclature(query_string)
                  end
 
       self
@@ -39,6 +39,32 @@ class SearchService
       suggestion = SearchSuggestion.find(filter)
 
       suggestion&.custom_sti_goods_nomenclature
+    end
+
+    def find_historic_goods_nomenclature(query)
+      return nil unless query.match(/\A\d+\z/)
+
+      short_code = query.first(10)
+      producline_suffix = query.length > 10 ? query.last(2) : nil
+      goods_nomenclature_item_id = short_code.ljust(10, '0')
+      filter = { goods_nomenclature_item_id: }
+      filter[:producline_suffix] = producline_suffix if producline_suffix.present?
+
+      goods_nomenclature = GoodsNomenclature
+        .non_hidden
+        .where(filter)
+        .limit(1)
+        .first
+
+      # TimeMachine is implicitly used when fetching declarability with the GoodsNomenclatureMapper
+      # and we're interested in historical data here to show the validity periods
+      TimeMachine.no_time_machine do
+        if goods_nomenclature && goods_nomenclature.instance_of?(::Commodity) && !goods_nomenclature.declarable?
+          goods_nomenclature.cast_to_subheading
+        else
+          goods_nomenclature
+        end
+      end
     end
 
     # Example:
