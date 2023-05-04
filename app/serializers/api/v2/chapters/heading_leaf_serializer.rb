@@ -5,7 +5,10 @@ class Api::V2::Chapters::HeadingLeafSerializer
 
   set_id :goods_nomenclature_sid
 
-  attributes :goods_nomenclature_sid, :goods_nomenclature_item_id,
-             :declarable, :description, :producline_suffix, :leaf,
-             :description_plain, :formatted_description
+  attribute :goods_nomenclature_sid, :goods_nomenclature_item_id
+
+  attribute :declarable, &:ns_declarable?
+
+  attributes :description, :producline_suffix, :leaf
+  attributes :description_plain, :formatted_description
 end

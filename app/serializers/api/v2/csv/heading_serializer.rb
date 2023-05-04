@@ -5,14 +5,16 @@ module Api
         include Api::Shared::CsvSerializer
 
         columns :goods_nomenclature_item_id,
-                :goods_nomenclature_sid,
-                :declarable,
-                :description,
+                :goods_nomenclature_sid
+
+        column  :declarable, &:ns_declarable?
+
+        columns :description,
                 :description_plain,
                 :formatted_description,
                 :producline_suffix
 
-        column(:leaf) { |heading| heading.commodities_dataset.empty? }
+        column  :leaf, &:ns_leaf?
       end
     end
   end
