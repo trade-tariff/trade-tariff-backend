@@ -4,8 +4,8 @@ FactoryBot.define do
       goods_nomenclature { nil }
     end
 
-    id { 'test' }
-    value { 'test' }
+    id { goods_nomenclature&.goods_nomenclature_sid || 'test' }
+    value { goods_nomenclature&.short_code || 'test' }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || 124_456_789 }
     goods_nomenclature_class { goods_nomenclature&.ns_goods_nomenclature_class || 'Heading' }
     type { nil }

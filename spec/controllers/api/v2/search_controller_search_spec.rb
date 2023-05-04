@@ -10,10 +10,13 @@ RSpec.describe Api::V2::SearchController do
   describe 'POST /search' do
     context 'when an exact match' do
       before do
-        post :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date }
+        goods_nomenclature = create :chapter, goods_nomenclature_item_id: '0100000000'
+
+        create(:search_suggestion, goods_nomenclature:)
+
+        post :search, params: { q: '01', as_of: Time.zone.today.iso8601 }
       end
 
-      let(:chapter) { create :chapter }
       let(:pattern) do
         {
           data: {
@@ -23,7 +26,7 @@ RSpec.describe Api::V2::SearchController do
               type: 'exact_match',
               entry: {
                 endpoint: 'chapters',
-                id: chapter.to_param,
+                id: '01',
               },
             },
           },
