@@ -124,6 +124,15 @@ module GoodsNomenclatures
           .without_excluded_types
           .overview
       end
+
+      def_column_accessor :leaf
+
+      dataset_module do
+        def with_leaf_column
+          association_join(tree_node: proc { |ds| ds.with_leaf_column })
+            .select_append(:number_indents, :depth, :leaf)
+        end
+      end
     end
 
     def recursive_ancestor_populator(ancestors)
