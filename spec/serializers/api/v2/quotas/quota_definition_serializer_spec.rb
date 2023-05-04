@@ -30,6 +30,7 @@ RSpec.describe Api::V2::Quotas::QuotaDefinitionSerializer do
           measures: {},
           quota_balance_events: {},
           incoming_quota_closed_and_transferred_event: {},
+          quota_order_number_origins: {},
         },
       },
     }

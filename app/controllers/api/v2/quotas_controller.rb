@@ -8,6 +8,10 @@ module Api
         measures.goods_nomenclature
         measures.geographical_area
         incoming_quota_closed_and_transferred_event
+        quota_order_number_origins
+        quota_order_number_origins.geographical_area
+        quota_order_number_origins.quota_order_number_origin_exclusions
+        quota_order_number_origins.quota_order_number_origin_exclusions.geographical_area
       ].freeze
 
       ALLOWED_INCLUDES = %w[quota_balance_events].freeze

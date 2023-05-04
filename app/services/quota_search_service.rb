@@ -1,12 +1,28 @@
 class QuotaSearchService
   STATUS_VALUES = %w[blocked exhausted not_blocked not_exhausted].freeze
   DEFAULT_EAGER_LOAD_GRAPH = {
+    quota_order_number: [
+      { quota_order_number_origins: [{ geographical_area: :geographical_area_descriptions }] },
+    ],
     quota_definition: [
-      :measures,
+      { measures: [{ geographical_area: :geographical_area_description }] },
       :quota_suspension_periods,
       :quota_blocking_periods,
       :quota_balance_events,
-      { quota_order_number: [quota_order_number_origins: :geographical_area] },
+      {
+        quota_order_number: [
+          {
+            quota_order_number_origins: [
+              { geographical_area: :geographical_area_descriptions },
+              {
+                quota_order_number_origin_exclusions: [
+                  { geographical_area: :geographical_area_descriptions },
+                ],
+              },
+            ],
+          },
+        ],
+      },
     ],
   }.freeze
 

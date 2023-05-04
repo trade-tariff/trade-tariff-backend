@@ -61,7 +61,7 @@ class QuotaOrderNumber < Sequel::Model
               end
 
   def geographical_areas
-    quota_order_number_origins.map(&:geographical_area)
+    quota_order_number_origins&.map(&:geographical_area) || []
   end
 
   def geographical_area_ids

@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer do
+RSpec.describe Api::V2::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer do
   describe '#serializable_hash' do
     subject(:serialized) { described_class.new(serializable).serializable_hash }
 
@@ -10,10 +10,12 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaOrderNumberOriginSerializer d
           id: serializable.id,
           type: :quota_order_number_origin,
           attributes: {
-            geographical_area_id: serializable.geographical_area_id,
-            geographical_area_description: serializable.geographical_area_description,
             validity_start_date: serializable.validity_start_date,
             validity_end_date: serializable.validity_end_date,
+          },
+          relationships: {
+            geographical_area: { data: { id: serializable.geographical_area.id.to_s, type: :geographical_area } },
+            quota_order_number_origin_exclusions: { data: [] },
           },
         },
       }

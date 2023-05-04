@@ -243,7 +243,7 @@ FactoryBot.define do
 
     after(:build) do |exclusion|
       if exclusion.excluded_geographical_area_sid.blank?
-        geographical_area = create(:geographical_area)
+        geographical_area = create(:geographical_area, :with_description)
         exclusion.excluded_geographical_area_sid = geographical_area.geographical_area_sid
       end
     end
