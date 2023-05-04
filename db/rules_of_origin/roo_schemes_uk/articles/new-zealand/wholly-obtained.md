@@ -28,11 +28,11 @@ For the purposes of Article 2 (Origin Criteria) the following goods shall be con
 
 Where Annex II (Product Specific Rules of Origin) specifies a regional value content test to determine whether a good is originating, the regional value content shall be calculated using one of the following methods:
 
-![Determining Regional Value Content (RVC) using the Build-Down Method](/public/images/roo/rvc/rvc_build_down.png)
+![Determining Regional Value Content (RVC) using the Build-Down Method](/images/roo/rvc/rvc_build_down.png)
 
 **Build-Up Method**: based on the value of originating materials
 
-![Determining Regional Value Content (RVC) using the Build-Up Method](/public/images/roo/rvc/rvc_build_up.png)
+![Determining Regional Value Content (RVC) using the Build-Up Method](/images/roo/rvc/rvc_build_up.png)
 
 in each case where:
 
