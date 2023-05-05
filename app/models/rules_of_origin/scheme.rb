@@ -6,7 +6,7 @@ module RulesOfOrigin
                   :fta_intro_file, :countries, :footnote, :adopted_by_uk, :country_code, :notes,
                   :unilateral
 
-    attr_reader :cumulation_methods
+    attr_reader :cumulation_methods, :validity_start_date, :validity_end_date
 
     attr_writer :rule_sets
 
@@ -56,6 +56,14 @@ module RulesOfOrigin
       @proofs || []
     end
 
+    def validity_start_date=(value)
+      @validity_start_date = parse_date(value, :beginning_of_day)
+    end
+
+    def validity_end_date=(value)
+      @validity_end_date = parse_date(value, :end_of_day)
+    end
+
     def articles
       @articles ||= RulesOfOrigin::Article.for_scheme(self)
     end
@@ -94,6 +102,10 @@ module RulesOfOrigin
               &.content.present?
     end
 
+    def valid_for_today?
+      !(validity_start_date&.>(Time.zone.now) || validity_end_date&.<(Time.zone.now))
+    end
+
     private
 
     def new_proof(proof_attrs)
@@ -104,6 +116,19 @@ module RulesOfOrigin
       JSON.parse(read_referenced_file('rule_sets', "#{scheme_code}.json"))
     rescue Errno::ENOENT
       { 'rule_sets' => [] }
+    end
+
+    def parse_date(value, date_cast)
+      case value
+      when ::String
+        Time.zone.parse(value)&.public_send(date_cast)
+      when ::Time, ::ActiveSupport::TimeWithZone, ::DateTime
+        value
+      when ::Date
+        value.to_time.public_send(date_cast)
+      when nil
+        nil
+      end
     end
   end
 end

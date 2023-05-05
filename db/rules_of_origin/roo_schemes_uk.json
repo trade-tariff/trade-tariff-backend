@@ -9,6 +9,8 @@
     "schemes": [
         {
             "scheme_code": "eu",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK / EU Trade and Co-operation Agreement",
             "proofs": [
                 {
@@ -148,6 +150,8 @@
         },
         {
             "scheme_code": "albania",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Albania Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
@@ -254,6 +258,8 @@
         },
         {
             "scheme_code": "andean",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Andean Countries Trade Agreement",
             "proofs": [
                 {
@@ -366,7 +372,76 @@
             ]
         },
         {
+            "scheme_code": "australia",
+            "validity_start_date": "2023-05-31",
+            "validity_end_date": null,
+            "title": "Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and Australia",
+            "proofs": [
+                {
+                    "summary": "Declaration of origin",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": ""
+                },
+                {
+                    "summary": "Importer's knowledge",
+                    "subtext": "",
+                    "proof_class": "importers-knowledge",
+                    "detail": ""
+                }
+            ],
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "AU"
+                    ]
+                }
+            },
+            "ord": {
+                "ord_title": "The Australia Origin Reference Document",
+                "ord_version": "1.1",
+                "ord_date": "20 February 2023",
+                "ord_original": "tbc"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "tolerances",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "packing materials - shipment",
+                "article 10": "accounting segregation",
+                "article 11": "accessories",
+                "article 12": "sets",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true,
+                "drawback": false
+            },
+            "introductory_notes_file": "australia_intro.md",
+            "fta_intro_file": "australia.md",
+            "links": [
+                {
+                    "text": "UK-Australia Free Trade Agreement",
+                    "url": "https://www.gov.uk/government/collections/uk-australia-free-trade-agreement"
+                }
+            ],
+            "countries": [
+                "AU"
+            ]
+        },
+        {
             "scheme_code": "canada",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Canada Trade Continuity Agreement",
             "proofs": [
                 {
@@ -454,6 +529,8 @@
         },
         {
             "scheme_code": "cameroon",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Cameroon Economic Partnership Agreement",
             "proofs": [
                 {
@@ -580,6 +657,8 @@
         },
         {
             "scheme_code": "cariforum",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "CARIFORUM-UK Economic Partnership Agreement",
             "proofs": [
                 {
@@ -770,6 +849,8 @@
         },
         {
             "scheme_code": "central-america",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Central America Association Agreement",
             "proofs": [
                 {
@@ -887,6 +968,8 @@
         },
         {
             "scheme_code": "chile",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Chile Association Agreement",
             "proofs": [
                 {
@@ -965,6 +1048,8 @@
         },
         {
             "scheme_code": "cotedivoire",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Côte d'Ivoire Stepping Stone Economic Partnership Agreement",
             "proofs": [
                 {
@@ -1111,6 +1196,8 @@
         },
         {
             "scheme_code": "egypt",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Egypt Association Agreement",
             "proofs": [
                 {
@@ -1217,6 +1304,8 @@
         },
         {
             "scheme_code": "esa",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "ESA-UK Economic Partnership Agreement (EPA)",
             "proofs": [
                 {
@@ -1398,6 +1487,8 @@
         },
         {
             "scheme_code": "faroe-islands",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Faroe Islands Free Trade Agreement (FTA)",
             "proofs": [
                 {
@@ -1505,6 +1596,8 @@
         },
         {
             "scheme_code": "georgia",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Georgia Strategic Partnership and Cooperation Agreement",
             "proofs": [
                 {
@@ -1685,6 +1778,8 @@
         },
         {
             "scheme_code": "ghana",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Ghana Interim Trade Partnership Agreement",
             "proofs": [
                 {
@@ -1829,6 +1924,8 @@
         },
         {
             "scheme_code": "iceland-norway",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "Agreement on Trade in Goods between Iceland, Norway and the UK",
             "proofs": [
                 {
@@ -1934,6 +2031,8 @@
         },
         {
             "scheme_code": "israel",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Israel Trade and Partnership Agreement",
             "proofs": [
                 {
@@ -2040,6 +2139,8 @@
         },
         {
             "scheme_code": "japan",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Japan Comprehensive Economic Partnership Agreement",
             "proofs": [
                 {
@@ -2050,7 +2151,7 @@
                 },
                 {
                     "summary": "Importer's knowledge",
-                    "subtext": "",
+                    "subtext": "The importer's knowledge that a product is originating in the exporting Party shall be based on information demonstrating that the product is originating and satisfies the requirements provided for in this Origin Reference Document.",
                     "proof_class": "importers-knowledge",
                     "detail": ""
                 }
@@ -2193,6 +2294,8 @@
         },
         {
             "scheme_code": "jordan",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Jordan Association Agreement",
             "proofs": [
                 {
@@ -2299,6 +2402,8 @@
         },
         {
             "scheme_code": "kenya",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "Comprehensive Economic Partnership Agreement UK Kenya",
             "proofs": [
                 {
@@ -2489,6 +2594,8 @@
         },
         {
             "scheme_code": "kosovo",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Kosovo Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
@@ -2595,6 +2702,8 @@
         },
         {
             "scheme_code": "lebanon",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Lebanon Association Agreement",
             "proofs": [
                 {
@@ -2680,6 +2789,8 @@
         },
         {
             "scheme_code": "mexico",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Mexico Trade Continuity Agreement",
             "proofs": [
                 {
@@ -2758,6 +2869,8 @@
         },
         {
             "scheme_code": "moldova",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Moldova Strategic Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
@@ -2864,6 +2977,8 @@
         },
         {
             "scheme_code": "morocco",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Morocco Association Agreement",
             "proofs": [
                 {
@@ -2964,7 +3079,80 @@
             ]
         },
         {
+            "scheme_code": "new-zealand",
+            "validity_start_date": "2023-05-31",
+            "validity_end_date": null,
+            "title": "Free Trade Agreement between the United Kingdom of Great Britain and Northern Ireland and New Zealand",
+            "proofs": [
+                {
+                    "summary": "Declaration of origin",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": ""
+                },
+                {
+                    "summary": "Importer's knowledge",
+                    "subtext": "",
+                    "proof_class": "importers-knowledge",
+                    "detail": ""
+                }
+            ],
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "GB",
+                        "NZ"
+                    ]
+                }
+            },
+            "ord": {
+                "ord_title": "The New Zealand Origin Reference Document",
+                "ord_version": "1.1",
+                "ord_date": "20 February 2023",
+                "ord_original": "tbc"
+            },
+            "articles": {
+                "article 1": "definitions",
+                "article 2": "general requirements",
+                "article 3": "cumulation",
+                "article 4": "wholly obtained",
+                "article 5": "sufficient working",
+                "article 6": "tolerances",
+                "article 7": "insufficient working",
+                "article 8": "unit of qualification",
+                "article 9": "packing materials - shipment",
+                "article 10": "accounting segregation",
+                "article 11": "accessories",
+                "article 12": "sets",
+                "Annex II": "sufficient working"
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true,
+                "drawback": false
+            },
+            "introductory_notes_file": "new-zealand_intro.md",
+            "fta_intro_file": "new-zealand.md",
+            "links": [
+                {
+                    "text": "Trade with New Zealand",
+                    "url": "https://www.gov.uk/guidance/summary-of-the-uk-new-zealand-trade-continuity-agreement"
+                },
+                {
+                    "text": "UK-New Zealand Trade Continuity Agreement (TCA)",
+                    "url": "https://www.gov.uk/guidance/uk-new-zealand-trade-continuity-agreement-tca"
+                }
+            ],
+            "countries": [
+                "NZ"
+            ]
+        },
+        {
             "scheme_code": "north-macedonia",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-North Macedonia Partnership, Trade and Cooperation Agreement",
             "proofs": [
                 {
@@ -3072,6 +3260,8 @@
         },
         {
             "scheme_code": "pacific",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Pacific Economic Partnership Agreement (EPA)",
             "proofs": [
                 {
@@ -3251,6 +3441,8 @@
         },
         {
             "scheme_code": "palestinian-authority",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Palestinian Authority Political, Trade and Partnership Agreement",
             "proofs": [
                 {
@@ -3340,6 +3532,8 @@
         },
         {
             "scheme_code": "sacum",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "SACUM-UK Economic Partnership Agreement (EPA)",
             "proofs": [
                 {
@@ -3487,6 +3681,8 @@
         },
         {
             "scheme_code": "serbia",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Serbia Partnership, Trade and Cooperation Agreement ",
             "proofs": [
                 {
@@ -3593,6 +3789,8 @@
         },
         {
             "scheme_code": "singapore",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Singapore Trade Agreement",
             "proofs": [
                 {
@@ -3674,6 +3872,8 @@
         },
         {
             "scheme_code": "south-korea",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-South Korea Trade Agreement",
             "proofs": [
                 {
@@ -3749,6 +3949,8 @@
         },
         {
             "scheme_code": "switzerland-liechtenstein",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Switzerland-Liechtenstein Trade Agreement",
             "proofs": [
                 {
@@ -3850,6 +4052,8 @@
         },
         {
             "scheme_code": "tunisia",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Tunisia Association Agreement",
             "proofs": [
                 {
@@ -4030,6 +4234,8 @@
         },
         {
             "scheme_code": "turkey",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Turkey Trade Agreement",
             "proofs": [
                 {
@@ -4103,6 +4309,8 @@
         },
         {
             "scheme_code": "ukraine",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Ukraine Political, Free Trade and Strategic Partnership Agreement",
             "proofs": [
                 {
@@ -4123,7 +4331,6 @@
                     "proof_class": "origin-declaration",
                     "detail": ""
                 }
-
             ],
             "cumulation_methods": {
                 "bilateral": {
@@ -4284,6 +4491,8 @@
         },
         {
             "scheme_code": "vietnam",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "UK-Vietnam Free Trade Agreement",
             "proofs": [
                 {
@@ -4371,6 +4580,8 @@
         },
         {
             "scheme_code": "oct",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "Arrangement for import duty on trade in goods from certain British Overseas Territories",
             "proofs": [
                 {
@@ -4570,6 +4781,8 @@
         },
         {
             "scheme_code": "gsp",
+            "validity_start_date": "2021-01-01",
+            "validity_end_date": null,
             "title": "Generalised Scheme of Preferences (GSP)",
             "proofs": [
                 {

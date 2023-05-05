@@ -98,7 +98,9 @@ module RulesOfOrigin
     end
 
     def build_schemes(schemes_data)
-      schemes_data.map(&method(:build_scheme)).index_by(&:scheme_code)
+      schemes_data.map(&method(:build_scheme))
+                  .select(&:valid_for_today?)
+                  .index_by(&:scheme_code)
     end
 
     def build_scheme(scheme_data)
