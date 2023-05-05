@@ -31,7 +31,7 @@ module Api
         cache_key = "_chapter-#{chapter_id}-#{actual_date}/v#{CACHE_VERSION}"
 
         serialized_result = Rails.cache.fetch(cache_key, expires_at: actual_date.end_of_day) do
-          presenter = Api::V2::Chapters::ChapterPresenter.new(chapter)
+          presenter = Api::V2::Chapters::ChapterPresenter.new(chapter, chapter_headings)
 
           options = { is_collection: false }
           options[:include] = %i[section guides headings headings.children]
@@ -74,16 +74,15 @@ module Api
 
       def chapter
         Chapter
-          .by_code(chapter_id)
+          .actual
           .non_hidden
-          .eager(ns_children: %i[ns_children goods_nomenclature_descriptions])
-          .limit(1)
-          .all
-          .first || (raise Sequel::RecordNotFound)
+          .by_code(chapter_id)
+          .take
       end
 
       def chapters
         Chapter
+          .actual
           .non_hidden
           .eager(:chapter_note, :goods_nomenclature_descriptions)
           .all
@@ -94,11 +93,10 @@ module Api
       end
 
       def chapter_headings
-        Heading.actual
-               .non_hidden
-               .by_code("#{chapter_id}00")
-               .eager(:ns_children)
-               .all
+        chapter
+          .headings_dataset
+          .eager(:goods_nomenclature_descriptions, :ns_children)
+          .all
       end
     end
   end
