@@ -97,9 +97,7 @@ class CachedSubheadingService
         .non_hidden
         .where(goods_nomenclature_sid: @subheading.goods_nomenclature_sid)
         .eager(*HeadingService::Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
-        .limit(1)
-        .all
-        .first || (raise Sequel::RecordNotFound)
+        .take
   end
 
   def use_nested_set?

@@ -31,9 +31,7 @@ module HeadingService
         Chapter.actual
                .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
                .eager(*Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
-               .limit(1)
-               .all
-               .first
+               .take
                .ns_children
                .each do |heading|
           next if heading.ns_declarable?

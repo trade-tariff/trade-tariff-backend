@@ -83,9 +83,7 @@ module HeadingService
                .non_hidden
                .where(goods_nomenclature_sid: heading.goods_nomenclature_sid)
                .eager(*HEADING_EAGER_LOAD)
-               .limit(1)
-               .all
-               .first
+               .take
       end
     end
   end

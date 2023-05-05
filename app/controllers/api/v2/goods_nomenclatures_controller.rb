@@ -36,10 +36,7 @@ module Api
                          .by_code(params[:chapter_id])
                          .eager(:ns_ancestors,
                                 ns_descendants: :goods_nomenclature_descriptions)
-                         .limit(1)
-                         .all
-                         .first
-                         .presence || (raise Sequel::RecordNotFound)
+                         .take
 
         @goods_nomenclatures = [chapter] + chapter.ns_descendants
 

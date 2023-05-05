@@ -22,9 +22,7 @@ module Api
                             .non_hidden
                             .by_code(params[:id])
                             .eager(ns_descendants: %i[goods_nomenclature_descriptions])
-                            .limit(1)
-                            .all
-                            .first || (raise Sequel::RecordNotFound)
+                            .take
       end
 
       def search_reference_counts
