@@ -236,6 +236,10 @@ FactoryBot.define do
       validity_end_date   { 1.year.ago.beginning_of_day  }
     end
 
+    trait :with_heading do
+      # NOOP: Only subheadings and commodities have headings
+    end
+
     trait :with_description do
       before(:create) do |goods_nomenclature, evaluator|
         create(:goods_nomenclature_description, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
