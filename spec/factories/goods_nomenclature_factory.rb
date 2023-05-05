@@ -237,7 +237,7 @@ FactoryBot.define do
     end
 
     trait :with_heading do
-      # NOOP: Creates a duck type for the heading association which only applies for commodities/subheadings
+      # NOOP: Only subheadings and commodities have headings
     end
 
     trait :with_description do
