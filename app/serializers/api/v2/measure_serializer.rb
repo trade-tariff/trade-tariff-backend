@@ -14,7 +14,7 @@ module Api
       end
 
       has_one :goods_nomenclature,
-              serializer: proc { |record, _params| "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize }
+              serializer: Api::V2::Shared::GoodsNomenclatureSerializer.serializer_proc
 
       has_many :excluded_geographical_areas, serializer: Api::V2::GeographicalAreaSerializer
       has_one :additional_code, serializer: Api::V2::AdditionalCodeSerializer

@@ -3,6 +3,18 @@ module Api
     class GoodsNomenclatureSerializer
       include JSONAPI::Serializer
 
+      class << self
+        def serializer_proc
+          proc do |record, _params|
+            if record.try(:goods_nomenclature_class)
+              "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize
+            else
+              Api::Beta::GoodsNomenclatureSerializer
+            end
+          end
+        end
+      end
+
       set_type :goods_nomenclature
 
       attributes :goods_nomenclature_item_id,
@@ -19,13 +31,7 @@ module Api
 
       attribute :search_intercept_terms, if: ->(_) { TradeTariffBackend.beta_search_debug? }
 
-      has_many :ancestors, lazy_load: true, serializer: proc { |record, _params|
-        if record && record.respond_to?(:goods_nomenclature_class)
-          "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize
-        else
-          Api::Beta::GoodsNomenclatureSerializer
-        end
-      }
+      has_many :ancestors, lazy_load: true, serializer: serializer_proc
     end
   end
 end
