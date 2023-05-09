@@ -770,31 +770,42 @@ RSpec.describe Commodity do
     end
   end
 
-  describe '#cast_to_subheading' do
-    subject { commodity.cast_to_subheading }
+  describe '#cast_to' do
+    subject(:casted) { commodity.cast_to Subheading }
 
     let(:commodity) { create(:commodity) }
 
     it { is_expected.to be_instance_of Subheading }
     it { is_expected.to have_attributes values: commodity.values }
+    it { is_expected.not_to have_attributes object_id: commodity.object_id }
+
+    context 'with loaded relationships' do
+      subject { casted.associations }
+
+      before { commodity.tree_node }
+
+      it { is_expected.to include tree_node: be_present }
+    end
+
+    context 'when already matching type' do
+      subject { commodity.cast_to described_class }
+
+      it { is_expected.to have_attributes object_id: commodity.object_id }
+    end
   end
 
   describe '#cast_according_to_declarable' do
     subject { commodity.cast_according_to_declarable }
 
-    before { allow(commodity).to receive(:declarable?).and_return declarable? }
-
     let(:commodity) { create(:commodity) }
 
     context 'with declarable' do
-      let(:declarable?) { true }
-
       it { is_expected.to be_instance_of described_class }
       it { is_expected.to have_attributes values: commodity.values }
     end
 
     context 'with non declarable' do
-      let(:declarable?) { false }
+      before { create :commodity, parent: commodity }
 
       it { is_expected.to be_instance_of Subheading }
       it { is_expected.to have_attributes values: commodity.values }

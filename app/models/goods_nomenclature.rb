@@ -164,13 +164,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def goods_nomenclature_class
-    @goods_nomenclature_class ||= begin
-      class_name = self.class.sti_load(goods_nomenclature_item_id:).class.name
-
-      return class_name unless class_name == 'Commodity'
-
-      Commodity.find(goods_nomenclature_sid:).goods_nomenclature_class
-    end
+    self.class.name
   end
 
   def goods_nomenclature_indent

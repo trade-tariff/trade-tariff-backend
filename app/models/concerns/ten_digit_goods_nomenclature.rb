@@ -170,15 +170,25 @@ module TenDigitGoodsNomenclature
     end
 
     def goods_nomenclature_class
-      declarable? ? 'Commodity' : 'Subheading'
+      ns_declarable? ? 'Commodity' : 'Subheading'
     end
 
-    def cast_to_subheading
-      Subheading.call(values)
+    def cast_to(klass)
+      return self if is_a?(klass)
+
+      klass.call(values).tap do |casted|
+        associations.each do |association, cached_values|
+          casted.associations[association] = cached_values
+        end
+      end
     end
 
     def cast_according_to_declarable
-      declarable? ? self : cast_to_subheading
+      case goods_nomenclature_class
+      when 'Subheading' then cast_to(Subheading)
+      when 'Commodity' then cast_to(Commodity)
+      else self
+      end
     end
 
     def to_admin_param
