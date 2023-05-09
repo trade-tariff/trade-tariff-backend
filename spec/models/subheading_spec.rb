@@ -112,8 +112,11 @@ RSpec.describe Subheading do
     end
   end
 
-  describe '#ns_goods_nomenclature_class' do
-    subject(:ns_goods_nomenclature_class) { described_class.find(goods_nomenclature_item_id: '0101210000', producline_suffix: '10').ns_goods_nomenclature_class }
+  describe '#goods_nomenclature_class' do
+    subject do
+      described_class.find(goods_nomenclature_item_id: '0101210000', producline_suffix: '10')
+                     .goods_nomenclature_class
+    end
 
     before { create(:commodity, producline_suffix: '10', goods_nomenclature_item_id: '0101210000') }
 

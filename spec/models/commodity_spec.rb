@@ -824,8 +824,8 @@ RSpec.describe Commodity do
     it { is_expected.to eq('0101210000') }
   end
 
-  describe '#ns_goods_nomenclature_class' do
-    subject(:ns_goods_nomenclature_class) { create(:commodity).ns_goods_nomenclature_class }
+  describe '#goods_nomenclature_class' do
+    subject { create(:commodity).goods_nomenclature_class }
 
     it { is_expected.to eq('Commodity') }
   end
