@@ -54,20 +54,44 @@ module GoodsNomenclatures
           end
       end
 
-      def ancestor_node_constraints(origin, ancestors)
+      def next_sibling_or_end(...)
+        Sequel.function(:coalesce, next_sibling(...), END_OF_TREE)
+      end
+
+      def ancestor_node_constraints(origin, ancestors, date_constraints = origin)
         (ancestors.position < origin.position) &
           (ancestors.position >= start_of_chapter(origin.position)) &
-          validity_dates_filter(origin.table) &
+          validity_dates_filter(date_constraints.table) &
           (ancestors.position =~ previous_sibling(origin.position, ancestors.depth))
       end
 
-      def descendant_node_constraints(origin, descendants)
+      def descendant_node_constraints(origin, descendants, date_constraints = origin)
         (descendants.position > origin.position) &
-          validity_dates_filter(origin.table) &
-          (descendants.position <
-            Sequel.function(:coalesce,
-                            next_sibling(origin.position, origin.depth),
-                            END_OF_TREE))
+          validity_dates_filter(date_constraints.table) &
+          (descendants.position < next_sibling_or_end(origin.position, origin.depth))
+      end
+    end
+
+    dataset_module do
+      def join_child_sids
+        join_child_nodes
+          .select_all(:goods_nomenclature_tree_nodes)
+          .select_append \
+            Sequel.qualify(:child_nodes, :goods_nomenclature_sid)
+                  .as(:child_sid)
+      end
+
+    private
+
+      def join_child_nodes
+        origin   = GoodsNomenclatures::TreeNodeAlias.new(model.table_name)
+        children = GoodsNomenclatures::TreeNodeAlias.new(:child_nodes)
+
+        actual.left_join \
+          model.table_name,
+          (children.depth =~ (origin.depth + 1)) &
+            model.descendant_node_constraints(origin, children, children),
+          table_alias: :child_nodes
       end
     end
   end

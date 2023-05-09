@@ -475,6 +475,24 @@ RSpec.describe GoodsNomenclatures::NestedSet do
     end
   end
 
+  describe '.with_leaf_column' do
+    subject do
+      GoodsNomenclature.with_leaf_column
+                       .all
+                       .index_by(&:goods_nomenclature_sid)
+                       .transform_values(&:leaf)
+    end
+
+    before { commodity }
+
+    let(:subheading) { create :subheading, :with_chapter_and_heading }
+    let(:commodity) { create :commodity, parent: subheading }
+
+    it { is_expected.to include subheading.chapter.pk => false }
+    it { is_expected.to include subheading.pk => false }
+    it { is_expected.to include commodity.pk => true }
+  end
+
   describe '#ns_declarable?' do
     context 'with descendants' do
       subject { create :commodity, :non_grouping, :with_children }
