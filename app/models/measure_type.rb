@@ -81,6 +81,10 @@ class MeasureType < Sequel::Model
     measure_type_id.in?(THIRD_COUNTRY)
   end
 
+  def supplementary?
+    measure_type_id.in?(SUPPLEMENTARY_TYPES)
+  end
+
   def trade_remedy?
     measure_type_id.in?(DEFENSE_MEASURES)
   end

@@ -1632,4 +1632,10 @@ RSpec.describe Measure do
       it { is_expected.to eq [third, second, first] }
     end
   end
+
+  describe '#supplementary_unit_duty_expression' do
+    subject(:supplementary_unit_duty_expression) { create(:measure, :supplementary, :with_measure_components).supplementary_unit_duty_expression }
+
+    it { is_expected.to match(/\.* \(.*\)/) }
+  end
 end

@@ -383,6 +383,10 @@ FactoryBot.define do
     end
   end
 
+  trait :classified do
+    goods_nomenclature_item_id { '9800121221' }
+  end
+
   trait :with_full_chemicals do
     after(:create) do |goods_nomenclature, _evaluator|
       create(:full_chemical, goods_nomenclature:)

@@ -229,6 +229,10 @@ FactoryBot.define do
 
     trait :supplementary do
       measure_type_id { MeasureType::SUPPLEMENTARY_TYPES.sample }
+
+      after(:create)  do |measure, _evaluator|
+        create(:measure_component, :with_measure_unit, measure_sid: measure.measure_sid)
+      end
     end
 
     trait :trade_remedy do
