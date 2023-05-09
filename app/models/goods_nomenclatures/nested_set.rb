@@ -8,6 +8,7 @@ module GoodsNomenclatures
       one_to_one :tree_node, key: :goods_nomenclature_sid,
                              class_name: 'GoodsNomenclatures::TreeNode',
                              reciprocal: :goods_nomenclature,
+                             graph_use_association_block: true,
                              read_only: true do |ds|
         ds.with_actual(GoodsNomenclatures::TreeNode)
       end
@@ -129,8 +130,17 @@ module GoodsNomenclatures
 
       dataset_module do
         def with_leaf_column
-          association_join(tree_node: proc { |ds| ds.with_leaf_column })
-            .select_append(:number_indents, :depth, :leaf)
+          association_join(tree_node: proc { |ds| ds.join_child_sids })
+            .select_all(:goods_nomenclatures)
+            .select_append(:tree_node__number_indents, :tree_node__depth)
+            .select_append((Sequel.function(:count, :tree_node__child_sid) =~ 0).as(:leaf))
+            .group(qualified_columns + %i[tree_node__number_indents tree_node__depth])
+        end
+
+      private
+
+        def qualified_columns(qualifier = model.table_name)
+          columns.map { |col| Sequel.qualify(qualifier, col) }
         end
       end
     end

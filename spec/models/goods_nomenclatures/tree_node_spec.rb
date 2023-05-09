@@ -156,22 +156,24 @@ RSpec.describe GoodsNomenclatures::TreeNode do
     it { is_expected.to be_instance_of Sequel::SQL::BooleanExpression }
   end
 
-  describe '.with_leaf_column' do
+  describe '.join_child_sids' do
     subject do
-      described_class.with_leaf_column
+      described_class.join_child_sids
                      .all
-                     .index_by(&:goods_nomenclature_sid)
-                     .transform_values(&:leaf)
+                     .group_by(&:goods_nomenclature_sid)
+                     .transform_values do |nodes|
+                       nodes.map { |node| node.values[:child_sid] }
+                     end
     end
 
-    before { commodity }
+    before { commodities }
 
     let(:subheading) { create :subheading, :with_chapter_and_heading }
-    let(:commodity) { create :commodity, parent: subheading }
+    let(:commodities) { create_list :commodity, 2, parent: subheading }
 
-    it { is_expected.to include subheading.chapter.pk => false }
-    it { is_expected.to include subheading.pk => false }
-    it { is_expected.to include commodity.pk => true }
+    it { is_expected.to include subheading.chapter.pk => [subheading.ns_parent.pk] }
+    it { is_expected.to include subheading.pk => commodities.map(&:pk) }
+    it { is_expected.to include commodities.first.pk => [nil] }
   end
 
   describe '#goods_nomenclature relationship' do

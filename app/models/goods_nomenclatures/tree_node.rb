@@ -12,8 +12,6 @@ module GoodsNomenclatures
                                     reciprocal: :tree_node,
                                     read_only: true
 
-    def_column_accessor :leaf
-
     class << self
       # Defaults to concurrent refresh to avoid blocking other queries
       # If the Materialized View has never been populated, eg after a
@@ -60,44 +58,40 @@ module GoodsNomenclatures
         Sequel.function(:coalesce, next_sibling(...), END_OF_TREE)
       end
 
-      def ancestor_node_constraints(origin, ancestors)
+      def ancestor_node_constraints(origin, ancestors, date_constraints = origin)
         (ancestors.position < origin.position) &
           (ancestors.position >= start_of_chapter(origin.position)) &
-          validity_dates_filter(origin.table) &
+          validity_dates_filter(date_constraints.table) &
           (ancestors.position =~ previous_sibling(origin.position, ancestors.depth))
       end
 
-      def descendant_node_constraints(origin, descendants)
+      def descendant_node_constraints(origin, descendants, date_constraints = origin)
         (descendants.position > origin.position) &
-          validity_dates_filter(origin.table) &
+          validity_dates_filter(date_constraints.table) &
           (descendants.position < next_sibling_or_end(origin.position, origin.depth))
       end
     end
 
     dataset_module do
-      def with_leaf_column
+      def join_child_sids
+        join_child_nodes
+          .select_all(:goods_nomenclature_tree_nodes)
+          .select_append \
+            Sequel.qualify(:child_nodes, :goods_nomenclature_sid)
+                  .as(:child_sid)
+      end
+
+    private
+
+      def join_child_nodes
         origin   = GoodsNomenclatures::TreeNodeAlias.new(model.table_name)
         children = GoodsNomenclatures::TreeNodeAlias.new(:child_nodes)
 
-        actual
-          .select_all(model.table_name)
-          .select_append(
-            (
-              Sequel.function(:count, :child_nodes__goods_nomenclature_indent_sid) =~ 0
-            ).as(:leaf),
-          )
-          .group(columns.map { |col| Sequel.qualify(model.table_name, col) })
-          .left_join(
-            model.table_name,
-            (
-              (children.depth =~ (origin.depth + 1)) &
-              (children.position > origin.position) &
-              model.validity_dates_filter(children.table) &
-              (children.position <
-                model.next_sibling_or_end(origin.position, origin.depth))
-            ),
-            table_alias: :child_nodes,
-          )
+        actual.left_join \
+          model.table_name,
+          (children.depth =~ (origin.depth + 1)) &
+            model.descendant_node_constraints(origin, children, children),
+          table_alias: :child_nodes
       end
     end
   end
