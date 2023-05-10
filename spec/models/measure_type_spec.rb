@@ -190,4 +190,24 @@ RSpec.describe MeasureType do
       it { is_expected.not_to be_authorised_use_provisions_submission }
     end
   end
+
+  describe '#supplementary?' do
+    subject(:measure_type) { build :measure_type, measure_type_id: }
+
+    shared_examples_for 'a supplementary measure' do |measure_type_id|
+      subject(:measure_type) { build :measure_type, measure_type_id: }
+
+      it { is_expected.to be_supplementary }
+    end
+
+    it_behaves_like 'a supplementary measure', '109'
+    it_behaves_like 'a supplementary measure', '110'
+    it_behaves_like 'a supplementary measure', '111'
+
+    context 'when measure_type_id is not a supplementary measure type id' do
+      let(:measure_type_id) { '103' }
+
+      it { is_expected.not_to be_supplementary }
+    end
+  end
 end

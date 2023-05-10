@@ -15,6 +15,11 @@ FactoryBot.define do
 
   trait :with_measure_unit do
     measurement_unit_code { 'DTN' }
+
+    after(:create) do |measure_component, _evaluator|
+      create(:measurement_unit, :with_description, measurement_unit_code: measure_component.measurement_unit_code)
+      create(:measurement_unit_abbreviation, measurement_unit_code: measure_component.measurement_unit_code)
+    end
   end
 
   trait :with_duty_expression do

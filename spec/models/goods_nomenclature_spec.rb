@@ -722,4 +722,15 @@ RSpec.describe GoodsNomenclature do
       end
     end
   end
+
+  describe '.non_classifieds' do
+    subject(:non_classifieds) { described_class.non_classifieds.pluck(:goods_nomenclature_item_id) }
+
+    before do
+      create(:goods_nomenclature, :classified)
+      create(:goods_nomenclature, goods_nomenclature_item_id: '0111110000')
+    end
+
+    it { is_expected.to eq(%w[0111110000]) }
+  end
 end

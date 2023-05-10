@@ -154,6 +154,10 @@ class GoodsNomenclature < Sequel::Model
       filter(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
     end
 
+    def non_classifieds
+      exclude(chapter_short_code: '98')
+    end
+
     def indexable
       where(Sequel.~(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
     end

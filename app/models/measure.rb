@@ -121,6 +121,7 @@ class Measure < Sequel::Model
            :vat?,
            :preferential_quota?,
            :tariff_preference?,
+           :supplementary?,
            :trade_remedy?, to: :measure_type, allow_nil: true
 
   delegate :gsp?, to: :geographical_area, allow_nil: true
@@ -481,6 +482,11 @@ class Measure < Sequel::Model
 
   def duty_expression
     measure_components.map(&:duty_expression_str).join(' ')
+  end
+
+  def supplementary_unit_duty_expression
+    measurement_unit = measure_components.first.measurement_unit
+    "#{measurement_unit.description} (#{measurement_unit.abbreviation})"
   end
 
   def formatted_duty_expression
