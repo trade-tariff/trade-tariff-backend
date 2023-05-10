@@ -14,19 +14,25 @@ module RulesOfOrigin
                     :prefix,
                     :min,
                     :max,
-                    :valid
+                    :valid,
+                    :footnote_definitions
 
       attr_reader :rules, :subdivision
 
       class << self
         def build_for_scheme(scheme, rule_sets_data)
+          footnote_definitions = rule_sets_data['footnote_definitions'] || {}
+
           rule_sets_data['rule_sets']
-            .map { |rs| new rs.merge(scheme:) }
+            .map { |rs| new rs.merge(scheme:, footnote_definitions:) }
             .select(&:valid?)
         end
       end
 
       def initialize(attributes = {})
+        attributes = attributes.stringify_keys
+        self.footnote_definitions = attributes.delete(:footnote_definitions) || {}
+
         attributes.each do |attribute_name, attribute_value|
           if respond_to?("#{attribute_name}=")
             public_send "#{attribute_name}=", attribute_value
@@ -59,7 +65,7 @@ module RulesOfOrigin
       end
 
       def rules=(rules)
-        @rules = rules.map(&Rule.method(:new))
+        @rules = rules.map { |data| Rule.new data.merge(rule_set: self) }
       end
 
       def for_subheading?(code)
