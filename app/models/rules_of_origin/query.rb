@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RulesOfOrigin
   class Query
     HEADING_CHECKER = /\A\d{6}\z/

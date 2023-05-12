@@ -65,10 +65,6 @@ Rails/UniqueValidationWithoutIndex:
 Style/Documentation:
   Enabled: false
 
-Style/FrozenStringLiteralComment:
-  Enabled: true
-  EnforcedStyle: never
-
 Style/GuardClause:
   MinBodyLength: 2
 
