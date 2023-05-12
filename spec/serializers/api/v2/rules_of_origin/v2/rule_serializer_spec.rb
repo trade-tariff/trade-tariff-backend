@@ -13,6 +13,7 @@ RSpec.describe Api::V2::RulesOfOrigin::V2::RuleSerializer do
           rule: rule.rule,
           rule_class: rule.rule_class,
           operator: rule.operator,
+          footnotes: [],
         },
       },
     }
