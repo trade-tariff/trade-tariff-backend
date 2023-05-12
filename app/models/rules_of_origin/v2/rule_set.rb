@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module RulesOfOrigin
   module V2
     class RuleSet
