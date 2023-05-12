@@ -2,8 +2,6 @@ module HeadingService
   class HeadingSerializationService
     CACHE_VERSION = 'v1'.freeze
 
-    delegate :nested_set_headings?, to: TradeTariffBackend
-
     class << self
       def cache_key(heading, actual_date, is_declarable, filters)
         cache_key = [
@@ -13,9 +11,8 @@ module HeadingService
           date_string(actual_date),
           is_declarable,
           filters_hash(filters),
+          CACHE_VERSION,
         ]
-
-        cache_key << CACHE_VERSION if TradeTariffBackend.nested_set_headings?
 
         "_#{cache_key.map(&:to_s).join('-')}"
       end
@@ -48,15 +45,12 @@ module HeadingService
     attr_reader :heading, :actual_date, :filters
 
     def serialization_service
-      if heading.declarable?
+      if heading.ns_declarable?
         HeadingService::Serialization::DeclarableService
           .new(heading, filters)
-      elsif nested_set_headings?
+      else
         HeadingService::Serialization::NsNondeclarableService
           .new(heading)
-      else
-        HeadingService::Serialization::NondeclarableService
-          .new(heading, actual_date)
       end
     end
 

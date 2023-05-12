@@ -11,8 +11,8 @@ RSpec.describe ClearCacheWorker, type: :worker do
   end
 
   it { expect(Rails.cache).to have_received(:clear) }
+  it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrecacheHeadingsWorker, Time.zone.today.to_s) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmQuotaOrderNumbersWorker) }
-  it { expect(Sidekiq::Client).to have_received(:enqueue).with(PrewarmSubheadingsWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(RecacheModelsWorker) }
   it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReindexModelsWorker) }
 end

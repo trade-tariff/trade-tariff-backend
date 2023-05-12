@@ -3,10 +3,8 @@ require 'goods_nomenclature_mapper'
 module Api
   module V2
     class HeadingsController < ApiController
-      before_action :find_heading
-
       def show
-        service = ::HeadingService::HeadingSerializationService.new(@heading, actual_date, filter_params)
+        service = ::HeadingService::HeadingSerializationService.new(heading, actual_date, filter_params)
         render json: service.serializable_hash
       end
 
@@ -14,23 +12,23 @@ module Api
         respond_to do |format|
           format.csv do
             send_data(
-              Api::V2::Csv::CommoditySerializer.new(cached_commodities).serialized_csv,
+              Api::V2::Csv::CommoditySerializer.new(heading_commodities).serialized_csv,
               type: 'text/csv; charset=utf-8; header=present',
               disposition: "attachment; filename=#{TradeTariffBackend.service}-headings-#{params[:id]}-commodities-#{actual_date.iso8601}.csv",
             )
           end
 
           format.all do
-            service = ::HeadingService::HeadingSerializationService.new(@heading, actual_date)
+            service = ::HeadingService::HeadingSerializationService.new(heading, actual_date)
             render json: service.serializable_hash
           end
         end
       end
 
       def changes
-        key = "heading-#{@heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}/changes"
+        key = "heading-#{heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}/changes"
         @changes = Rails.cache.fetch(key, expires_at: actual_date.end_of_day) do
-          ChangeLog.new(@heading.changes.where do |o|
+          ChangeLog.new(heading.changes.where do |o|
             o.operation_date <= actual_date
           end)
         end
@@ -40,27 +38,23 @@ module Api
         render json: Api::V2::Changes::ChangeSerializer.new(@changes.changes, options).serializable_hash
       end
 
-      private
+    private
 
-      def find_heading
-        @heading = Heading.actual
-                          .non_grouping
-                          .where(goods_nomenclatures__goods_nomenclature_item_id: heading_id)
-                          .take
-
-        raise Sequel::RecordNotFound if @heading.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
+      def heading_scope
+        Heading.actual.non_grouping.non_hidden.by_code(params[:id])
       end
 
-      def heading_id
-        "#{params[:id]}000000"
+      def heading
+        @heading ||= heading_scope.take
       end
 
-      def cached_commodities
-        cached_heading.commodities
-      end
-
-      def cached_heading
-        HeadingService::CachedHeadingService.new(@heading, actual_date).serializable_hash
+      def heading_commodities
+        heading_scope
+          .eager(ns_descendants: :goods_nomenclature_descriptions)
+          .all
+          .first
+          .tap { |heading| heading || (raise Sequel::RecordNotFound) }
+          .ns_descendants
       end
 
       def filter_params
