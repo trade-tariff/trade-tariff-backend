@@ -102,8 +102,8 @@ class Measure < Sequel::Model
     ds.with_actual(QuotaOrderNumber).order(Sequel.desc(:validity_start_date))
   end
 
-  one_to_one :quota_definition, key: [:quota_order_number_id],
-                                primary_key: [:ordernumber] do |ds|
+  one_to_one :quota_definition, key: :quota_order_number_id,
+                                primary_key: :ordernumber do |ds|
     ds.with_actual(QuotaDefinition).order(Sequel.desc(:validity_start_date))
   end
 
