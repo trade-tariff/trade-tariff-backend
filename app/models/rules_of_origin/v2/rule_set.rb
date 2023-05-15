@@ -23,7 +23,7 @@ module RulesOfOrigin
 
       class << self
         def build_for_scheme(scheme, rule_sets_data)
-          footnote_definitions = rule_sets_data['footnote_definitions'] || {}
+          footnote_definitions = rule_sets_data['footnotes'] || {}
 
           rule_sets_data['rule_sets']
             .map { |rs| new rs.merge(scheme:, footnote_definitions:) }
@@ -33,7 +33,7 @@ module RulesOfOrigin
 
       def initialize(attributes = {})
         attributes = attributes.stringify_keys
-        self.footnote_definitions = attributes.delete(:footnote_definitions) || {}
+        self.footnote_definitions = attributes.delete('footnote_definitions') || {}
 
         attributes.each do |attribute_name, attribute_value|
           if respond_to?("#{attribute_name}=")

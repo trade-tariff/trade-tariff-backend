@@ -24,6 +24,17 @@ RSpec.describe RulesOfOrigin::V2::RuleSet do
 
     it { is_expected.to have_attributes length: 2 }
     it { is_expected.to all be_instance_of described_class }
+
+    context 'with footnote_definitions' do
+      let :rule_set_data do
+        {
+          'rule_sets' => attributes_for_list(:rules_of_origin_v2_rule_set, 2),
+          'footnotes' => { 'first footnote' => 'This is a footnote' },
+        }
+      end
+
+      it { is_expected.to all have_attributes footnote_definitions: include('first footnote') }
+    end
   end
 
   describe '#id' do
