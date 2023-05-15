@@ -34,7 +34,7 @@ class SearchReference < Sequel::Model
 
   def custom_sti_goods_nomenclature
     if referenced_class == 'Subheading' && referenced.instance_of?(::Commodity)
-      referenced.cast_to_subheading
+      referenced.cast_to(Subheading)
     else
       referenced
     end

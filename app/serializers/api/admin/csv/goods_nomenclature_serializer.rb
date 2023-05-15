@@ -12,17 +12,7 @@ module Api
         column :validity_end_date, column_name: 'End date'
         column :number_indents, column_name: 'Indentation'
         column :end_line, column_name: 'End line', &:ns_declarable?
-
-        # Uses materialized path to determine declarability of goods nomenclature to avoid slow csv generation
-        column :goods_nomenclature_class, column_name: 'Class' do |goods_nomenclature|
-          class_name = goods_nomenclature.class.name
-
-          if class_name == 'Commodity'
-            goods_nomenclature.ns_declarable? ? 'Commodity' : 'Subheading'
-          else
-            class_name
-          end
-        end
+        column :goods_nomenclature_class, column_name: 'Class'
 
         column :item_id_plus_pls, column_name: 'ItemIDPlusPLS' do |goods_nomenclature|
           "#{goods_nomenclature.goods_nomenclature_item_id}_#{goods_nomenclature.producline_suffix}"

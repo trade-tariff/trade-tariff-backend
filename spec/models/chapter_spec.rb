@@ -236,8 +236,8 @@ RSpec.describe Chapter do
     end
   end
 
-  describe '#ns_goods_nomenclature_class' do
-    subject(:ns_goods_nomenclature_class) { build(:chapter).ns_goods_nomenclature_class }
+  describe '#goods_nomenclature_class' do
+    subject { build(:chapter).goods_nomenclature_class }
 
     it { is_expected.to eq('Chapter') }
   end

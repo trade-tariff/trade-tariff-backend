@@ -60,7 +60,7 @@ class SearchService
       # and we're interested in historical data here to show the validity periods
       TimeMachine.no_time_machine do
         if goods_nomenclature && goods_nomenclature.instance_of?(::Commodity) && !goods_nomenclature.declarable?
-          goods_nomenclature.cast_to_subheading
+          goods_nomenclature.cast_to(Subheading)
         else
           goods_nomenclature
         end

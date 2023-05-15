@@ -10,7 +10,7 @@ class FullChemical < Sequel::Model
 
   def custom_sti_goods_nomenclature
     if goods_nomenclature.path_goods_nomenclature_class == 'Subheading' && goods_nomenclature.instance_of?(::Commodity)
-      goods_nomenclature.cast_to_subheading
+      goods_nomenclature.cast_to(Subheading)
     else
       goods_nomenclature
     end

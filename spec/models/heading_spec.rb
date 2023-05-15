@@ -328,8 +328,8 @@ RSpec.describe Heading do
     end
   end
 
-  describe '#ns_goods_nomenclature_class' do
-    subject(:ns_goods_nomenclature_class) { build(:heading).ns_goods_nomenclature_class }
+  describe '#goods_nomenclature_class' do
+    subject { build(:heading).goods_nomenclature_class }
 
     it { is_expected.to eq('Heading') }
   end

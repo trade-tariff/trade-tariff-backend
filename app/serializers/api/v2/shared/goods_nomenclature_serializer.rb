@@ -12,6 +12,18 @@ module Api
                    :formatted_description,
                    :validity_start_date,
                    :validity_end_date
+
+        class << self
+          def serializer_proc
+            proc do |record, _params|
+              if record.try(:goods_nomenclature_class)
+                "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize
+              else
+                Api::V2::Shared::GoodsNomenclatureSerializer
+              end
+            end
+          end
+        end
       end
     end
   end

@@ -17,21 +17,11 @@ module Api
         has_one :goods_nomenclature_query, serializer: Api::Beta::GoodsNomenclatureQuerySerializer
       end
 
-      has_many :hits, serializer: proc { |record, _params|
-        if record && record.respond_to?(:goods_nomenclature_class)
-          "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize
-        else
-          Api::Beta::GoodsNomenclatureSerializer
-        end
-      }
-
-      has_one :direct_hit, serializer: proc { |record, _params|
-        "Api::Beta::#{record.goods_nomenclature_class}Serializer".constantize
-      }
-
+      has_many :hits, serializer: Api::Beta::GoodsNomenclatureSerializer.serializer_proc
+      has_one  :direct_hit, serializer: Api::Beta::GoodsNomenclatureSerializer.serializer_proc
       has_many :heading_statistics, serializer: Api::Beta::HeadingStatisticsSerializer
       has_many :chapter_statistics, serializer: Api::Beta::ChapterStatisticsSerializer
-      has_one :guide, serializer: Api::Beta::GuideSerializer
+      has_one  :guide, serializer: Api::Beta::GuideSerializer
       has_many :facet_filter_statistics, serializer: Api::Beta::FacetFilterStatisticSerializer
     end
   end

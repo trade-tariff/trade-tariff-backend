@@ -34,7 +34,7 @@ module Beta
           direct_hit.producline_suffix = search_result.hits.first.producline_suffix
           direct_hit
         elsif search_result.goods_nomenclature.present?
-          direct_hit.goods_nomenclature_class = search_result.goods_nomenclature.ns_goods_nomenclature_class
+          direct_hit.goods_nomenclature_class = search_result.goods_nomenclature.goods_nomenclature_class
           direct_hit.goods_nomenclature_item_id = search_result.goods_nomenclature.goods_nomenclature_item_id
           direct_hit.producline_suffix = search_result.goods_nomenclature.producline_suffix
           direct_hit
