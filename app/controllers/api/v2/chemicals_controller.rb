@@ -2,7 +2,7 @@ module Api
   module V2
     class ChemicalsController < ApiController
       def index
-        @chemicals = Chemical.all
+        @chemicals = Chemical.eager(:chemical_names).all
 
         render json: Api::V2::Chemicals::ChemicalSimpleListSerializer.new(@chemicals).serializable_hash
       end
