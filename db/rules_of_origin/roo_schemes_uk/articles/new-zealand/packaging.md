@@ -14,11 +14,11 @@
 
 For the purposes of this Origin Reference Document: 
 
-    (a)  a recovered material which is recovered in the territory of one or more of the Parties shall be treated as originating when it is used in the production of, and incorporated into, a remanufactured good in a Party; 
+  (a) a recovered material which is recovered in the territory of one or more of the Parties shall be treated as originating when it is used in the production of, and incorporated into, a remanufactured good in a Party;
 
-    (b) a remanufactured good shall only be treated as originating if it meets the relevant rule of origin for an equivalent good when new; and 
+  (b) a remanufactured good shall only be treated as originating if it meets the relevant rule of origin for an equivalent good when new; and
 
-    (c) a recovered material not incorporated into a remanufactured good in one of the Parties shall be treated as originating only if it meets the relevant rule of origin for an equivalent good when new. 
+  (c) a recovered material not incorporated into a remanufactured good in one of the Parties shall be treated as originating only if it meets the relevant rule of origin for an equivalent good when new.
 
 ### Fungible Goods and Materials
 
