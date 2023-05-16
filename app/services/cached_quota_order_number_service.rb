@@ -1,5 +1,12 @@
 class CachedQuotaOrderNumberService
-  DEFAULT_INCLUDES = [:quota_definition, 'quota_definition.measures'].freeze
+  DEFAULT_INCLUDES = %w[quota_definition quota_definition.measures].freeze
+  EAGER_LOAD = {
+    quota_definition: {
+      measurement_unit: %i[measurement_unit_description
+                           measurement_unit_abbreviations],
+      measures: [],
+    },
+  }.freeze
 
   TTL = 1.day
 
@@ -15,7 +22,7 @@ class CachedQuotaOrderNumberService
   private
 
   def quota_order_numbers
-    QuotaOrderNumber.with_quota_definitions
+    QuotaOrderNumber.with_quota_definitions.eager(EAGER_LOAD).all
   end
 
   def cache_key
