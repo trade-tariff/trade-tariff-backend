@@ -1,4 +1,5 @@
-# See docs/goods-nomenclature-nested-set.md for an explanation of this
+# Full explanation in docs/goods-nomenclature-nested-set.md
+# For usage - see the 'Querying in Ruby` section in the above document
 
 module GoodsNomenclatures
   module NestedSet

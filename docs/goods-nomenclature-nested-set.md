@@ -67,7 +67,7 @@ There are also 2 other indexes
 * `goods_nomenclature_sid` - this allows for efficient JOINs to the goods_nomenclatures table
 * `oid` (unique) - this is the `oid` from the indents table. Refreshing a materialized view concurrently (ie without blocking reads from the view) requires the materialized view to have a unique index.
 
-## Querying
+## Querying in SQL
 
 **Note:** `origin` record references the `tree_nodes` record you are fetching relatives for, eg ancestors of `origin`, or children of `origin`
 
@@ -116,3 +116,119 @@ The above describes how `tree_nodes` can be related to each other. To find relat
           +----------+    +-----------+    +---------+
 ```
 
+## Querying in Ruby
+
+There are abstractions for all for the above encapsulated in the Sequel relationships on the `GoodsNomenclatures` model
+
+_Note: These are all eager loadable_
+
+### Tree relationships
+
+* `ns_parent` - returns the parent
+* `ns_ancestors` - returns a list of ancestors - starting at root of tree
+* `ns_children` - all immediate children
+* `ns_descendants` - all descendants of a goods nomenclature, at any depth
+
+### Populators
+
+GoodsNomenclature records loaded for one relationship are often relevant to others, so where possible the fetching a relationship will also populate related relationships on the data model. Eg, fetching `#ns_ancestors` will also populate the `#ns_parent` relationship since that is the closest of the ancestors.
+
+* `ns_ancestors` also populates `ns_parent` on self and all ancestors
+* `ns_descendants` also populates
+    * `ns_parent` for all descendants
+    * `ns_children` for self plus all descendants
+    * `ns_ancestors` for all descendants _if_ self already has ancestors loaded
+
+The above means you can get a nice recursive tree of children, so in the following example the first line will generate 2 queries and the second line will generate 0 queries.
+
+```
+chapter = Chapter.actual.by_code('01').eager(:ns_descendants).take
+chapter.ns_children.first.ns_children.first.ns_children.first.ns_parent.ns_children.second
+```
+
+And if you eager load `#ns_ancestors` before `#ns_descendants` then that too will be populated, so the following example triggers 3 queries for line 1, and 0 for line 2 or any subsequent movement around the eager loaded hierarchy.
+
+```
+chapter = Chapter.actual.by_code('01').eager(ns_ancestors, :ns_descendants).take
+chapter.ns_children.first.ns_children.first.ns_children.map(&ns_ancestors)
+```
+
+### Useful methods
+
+* `#ns_leaf?` - tells you whether a Goods Nomenclature is branch or leaf (ie, no children). This benefits from eager loading (ns_children) and the Populators (see above)
+* `#ns_declarable?` - replacement for `#declarable` but eager loadable, internally relies upon `#ns_leaf?`
+* `#number_indents` - if data is loaded via the nested set relationships then this is populated automatically without needing to eager load `goods_nomenclature_indents`
+* `#depth` - internal reference for the depth of a goods nomenclature, normally `number_indents` + 2 except for chapters which are `number_indents` + 1
+* `#goods_nomenclature_class` - this now utilises ns_leaf? internally so benefits from eager loading `#ns_children` or `#ns_descendants` the same
+
+### Measures
+
+There are two new eager loadable measures relationships
+
+* `ns_measures` - all measures directly on a goods nomenclature
+* `ns_overview_measures` - the overview measures directly on a goods nomenclature
+
+These are different from the existing `#measures` and `#overview_measures` because they only load measures directly referencing the goods nomenclature.
+
+`#measures` and `#overview_measures` would also include the measures against the goods nomenclatures ancestors. This was changed because it allows for eager loading and avoids repeat loads of the same measures for all descendants of the goods nomenclature they apply to.
+
+There are two model methods which replicate the old behaviour -;
+
+* `#applicable_measures` - concatenation of measures against both self and ancestors
+* `#applicable_overview_measures` - concatenation of overview measures against both self and ancestors
+
+#### Eager loading measures
+
+The measures will need eager loading for both self and ancestors, eg
+
+```
+Chapter.actual
+       .by_code('01')
+       .eager(:ns_measures, ns_ancestors: :ns_measures)
+       .take
+```
+
+This makes it possible to eager load measures for all descendants as well -;
+
+```
+Chapter.actual
+       .by_code('01')
+       .eager(:ns_measures,
+              ns_ancestors: :ns_measures,
+              ns_descendants: :ns_measures)
+       .take
+```
+
+If you need to eager load relationships below measures, you'll need to duplicate parts of the eager load block with variables/constants, eg
+
+```
+MEASURE_EAGER = {
+	ns_measures: [:measure_type,
+                 { measure_conditions: :measure_condition_code }]
+}
+Chapter.actual
+       .by_code('01')
+       .eager(MEASURE_EAGER,
+              ns_ancestors: MEASURE_EAGER,
+              ns_descendants: MEASURE_EAGER)
+       .take
+```
+
+### Virtual leaf column
+
+This not the easiest method to consume but solves a specific scenario, and is relatively quick - ~0.5 seconds for all goods nomenclatures. If you need to find the 'leaf' status of a goods nomenclature at the SQL level, eg you want to fetch all non declarable commodities without needing to load every commodity back to Ruby.
+
+```
+GoodsNomenclature.with_leaf_column
+                 .where(leaf: false)
+                 .exclude(producline_suffix: '80')
+                 .all
+```
+
+Because this uses a join and group you may need `Sequel.dataset.from_self` to nest the query depending upon what your using it for.
+
+### Some examples
+
+* `HeadingsService::PrecacheService.rb`
+* `HeadingsService::Serialization::NsNondeclarableService`
+* `Api::V2::ChaptersController`
