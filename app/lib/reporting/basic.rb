@@ -1,5 +1,7 @@
 module Reporting
   class Basic
+    extend Reporting::Reportable
+
     MEASURE_EAGER = [
       { measure_type: :measure_type_description },
       {
@@ -109,34 +111,8 @@ module Reporting
           .all
       end
 
-      def object
-        bucket.object(object_key)
-      end
-
       def object_key
         "#{service}/reporting/#{year}/#{month}/#{day}/tariff_data_basic_#{service}_#{now.strftime('%Y_%m_%d')}.csv"
-      end
-
-      def bucket
-        Rails.application.config.reporting_bucket
-      end
-
-      delegate :service, to: TradeTariffBackend
-
-      def day
-        now.day.to_s.rjust(2, '0')
-      end
-
-      def month
-        now.month.to_s.rjust(2, '0')
-      end
-
-      def year
-        now.year
-      end
-
-      def now
-        Time.zone.today
       end
     end
   end
