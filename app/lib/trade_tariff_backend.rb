@@ -283,6 +283,10 @@ module TradeTariffBackend
       ENV.fetch('FULL_CHEMICAL_SEARCH_ENABLED', 'false') == 'true'
     end
 
+    def reporting_enabled?
+      ENV.fetch('REPORTING_ENABLED', 'false') == 'true'
+    end
+
     def opensearch_client
       @opensearch_client ||= OpenSearch::Client.new(opensearch_configuration)
     end

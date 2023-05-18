@@ -4,7 +4,9 @@ class ReportWorker
   sidekiq_options retry: false
 
   def perform
-    Reporting::Basic.generate
-    Reporting::DeclarableDuties.generate
+    if TradeTariffBackend.reporting_enabled?
+      Reporting::Basic.generate
+      Reporting::DeclarableDuties.generate
+    end
   end
 end

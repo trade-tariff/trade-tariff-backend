@@ -2,10 +2,6 @@ module Reporting
   module Reportable
     extend ActiveSupport::Concern
 
-    def object_key
-      "#{service}/reporting/#{year}/#{month}/#{day}/#{report_name}_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
-    end
-
     def object
       bucket.object(object_key)
     end
