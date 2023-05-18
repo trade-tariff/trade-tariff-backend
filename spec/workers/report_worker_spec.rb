@@ -6,6 +6,7 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::Basic).to receive(:generate)
       allow(Reporting::DeclarableDuties).to receive(:generate)
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
+      allow(Reporting::Prohibitions).to receive(:generate)
 
       worker.perform
     end
@@ -13,5 +14,6 @@ RSpec.describe ReportWorker, type: :worker do
     it { expect(Reporting::Basic).to have_received(:generate) }
     it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
     it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
+    it { expect(Reporting::Prohibitions).to have_received(:generate) }
   end
 end
