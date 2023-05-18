@@ -38,7 +38,7 @@ FactoryBot.define do
     geographical_area_id { generate(:geographical_area_id) }
     validity_start_date { default_start_date }
     validity_end_date   { nil }
-    reduction_indicator { [nil, 1, 2, 3].sample }
+    reduction_indicator { 1 }
 
     measure_type do
       create :measure_type, measure_type_id:,
@@ -326,6 +326,7 @@ FactoryBot.define do
           condition_code: evaluator.condition_code,
           certificate_type_code: evaluator.certificate_type_code,
           certificate_code: evaluator.certificate_code,
+          action_code: '01',
         )
 
         if evaluator.certificate_type_code.present? || evaluator.certificate_code.present?
@@ -462,8 +463,26 @@ FactoryBot.define do
     end
 
     trait :with_quota_order_number do
+      ordernumber { generate(:quota_order_number_id) }
+
       after(:build) do |measure, _evaluator|
         create(:quota_order_number, quota_order_number_id: measure.ordernumber)
+      end
+    end
+
+    trait :with_quota_definition do
+      with_quota_order_number
+
+      transient do
+        initial_volume { 1000 }
+      end
+
+      after(:build) do |measure, evaluator|
+        create(
+          :quota_definition,
+          quota_order_number_id: measure.ordernumber,
+          initial_volume: evaluator.initial_volume,
+        )
       end
     end
   end

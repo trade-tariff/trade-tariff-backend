@@ -48,6 +48,7 @@ FactoryBot.define do
         create(
           :geographical_area,
           :country,
+          :with_description,
           geographical_area_id: measure_excluded_geographical_area.excluded_geographical_area,
           geographical_area_sid: measure_excluded_geographical_area.geographical_area_sid,
         )
