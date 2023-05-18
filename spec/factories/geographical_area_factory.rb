@@ -52,7 +52,12 @@ FactoryBot.define do
 
     trait :with_members do
       after(:create) do |geographical_area, _evaluator|
-        member = create(:geographical_area, :country, geographical_area_id: 'RO')
+        member = create(
+          :geographical_area,
+          :with_description,
+          :country,
+          geographical_area_id: 'RO',
+        )
 
         create(
           :geographical_area_membership,

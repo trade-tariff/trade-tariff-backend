@@ -185,5 +185,40 @@ RSpec.describe GeographicalArea do
 
       it { is_expected.not_to be_gsp }
     end
+
+    describe '.countries' do
+      subject(:countries) { described_class.countries }
+
+      before do
+        create(:geographical_area, :country, geographical_area_id: 'RO')
+        create(:geographical_area, :group, geographical_area_id: '1011')
+      end
+
+      it { is_expected.to have_attributes(count: 1) }
+      it { is_expected.to all(have_attributes(geographical_area_id: 'RO')) }
+    end
+
+    describe '.groups' do
+      subject(:groups) { described_class.groups }
+
+      before do
+        create(:geographical_area, :country, geographical_area_id: 'RO')
+        create(:geographical_area, :group, geographical_area_id: '1011')
+      end
+
+      it { is_expected.to have_attributes(count: 1) }
+      it { is_expected.to all(have_attributes(geographical_area_id: '1011')) }
+    end
+
+    describe '.areas' do
+      subject(:areas) { described_class.areas }
+
+      before do
+        create(:geographical_area, :country, geographical_area_id: 'RO')
+        create(:geographical_area, :group, geographical_area_id: '1011')
+      end
+
+      it { is_expected.to have_attributes(count: 2) }
+    end
   end
 end

@@ -1,5 +1,6 @@
 class GeographicalArea < Sequel::Model
   COUNTRIES_CODES = %w[0 2].freeze
+  GROUPS_CODE = '1'.freeze
   AREAS_CODES = %w[0 1 2].freeze
   ERGA_OMNES_ID = '1011'.freeze
   REFERENCED_GEOGRAPHICAL_AREAS = { 'EU' => '1013' }.freeze
@@ -78,6 +79,10 @@ class GeographicalArea < Sequel::Model
 
     def countries
       where(geographical_code: COUNTRIES_CODES).order(:geographical_area_id)
+    end
+
+    def groups
+      where(geographical_code: GROUPS_CODE).order(:geographical_area_id)
     end
 
     def areas
