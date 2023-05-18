@@ -1,5 +1,3 @@
-require 'reporting/concerns/reportable'
-
 module Reporting
   class Basic
     extend Reporting::Reportable
@@ -113,8 +111,8 @@ module Reporting
           .all
       end
 
-      def report_name
-        'tariff_data_basic'
+      def object_key
+        "#{service}/reporting/#{year}/#{month}/#{day}/tariff_data_basic_#{service}_#{now.strftime('%Y_%m_%d')}.csv"
       end
     end
   end

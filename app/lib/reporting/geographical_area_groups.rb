@@ -1,5 +1,3 @@
-require 'reporting/concerns/reportable'
-
 module Reporting
   class GeographicalAreaGroups
     extend Reporting::Reportable
@@ -108,8 +106,8 @@ module Reporting
         end
       end
 
-      def report_name
-        'geographical_area_groups'
+      def object_key
+        "#{service}/reporting/#{year}/#{month}/#{day}/geographical_area_groups_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
       end
     end
   end

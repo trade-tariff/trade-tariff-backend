@@ -1,5 +1,3 @@
-require 'reporting/concerns/reportable'
-
 module Reporting
   class DeclarableDuties
     extend Reporting::Reportable
@@ -210,8 +208,8 @@ module Reporting
         end
       end
 
-      def report_name
-        'declarable_commodities_with_duty_measures'
+      def object_key
+        "#{service}/reporting/#{year}/#{month}/#{day}/declarable_commodities_with_duty_measures_#{service}_#{now.strftime('%Y_%m_%d')}.xlsx"
       end
     end
   end
