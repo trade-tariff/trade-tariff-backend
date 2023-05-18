@@ -21,10 +21,11 @@ module Reporting
     ].freeze
 
     GOODS_NOMENCLATURE_EAGER = [
-      { ns_ancestors: [{ ns_measures: MEASURE_EAGER }] },
-      { ns_measures: MEASURE_EAGER },
-      :ns_children,
-      :goods_nomenclature_indents,
+      {
+        ns_ancestors: [{ ns_measures: MEASURE_EAGER }],
+        ns_descendants: [{ ns_measures: MEASURE_EAGER }, :goods_nomenclature_descriptions],
+        ns_measures: MEASURE_EAGER,
+      },
       :goods_nomenclature_descriptions,
     ].freeze
 
@@ -160,12 +161,8 @@ module Reporting
       def each_declarable_and_measure
         index = 1
         TimeMachine.now do
-          goods_nomenclatures.each do |goods_nomenclature|
-            next unless goods_nomenclature.ns_declarable?
-
-            goods_nomenclature = PresentedDeclarable.new(goods_nomenclature)
-
-            measures = goods_nomenclature.applicable_measures.select do |measure|
+          each_declarable do |declarable|
+            measures = declarable.applicable_measures.select do |measure|
               measure.measure_type_id.in?(RELEVANT_MEASURE_TYPE_IDS)
             end
 
@@ -175,7 +172,7 @@ module Reporting
             measures.each do |measure|
               measure.trackedmodel_ptr_id = index
 
-              yield goods_nomenclature, measure
+              yield declarable, measure
 
               index += 1
             end
@@ -183,14 +180,30 @@ module Reporting
         end
       end
 
-      def goods_nomenclatures
-        GoodsNomenclature
+      def each_declarable
+        each_chapter do |eager_chapter|
+          eager_chapter.ns_descendants.each do |chapter_descendant|
+            next unless chapter_descendant.ns_declarable?
+
+            yield PresentedDeclarable.new(chapter_descendant)
+          end
+        end
+      end
+
+      def each_chapter
+        Chapter
           .actual
-          .declarable
-          .eager(GOODS_NOMENCLATURE_EAGER)
           .non_hidden
           .non_classifieds
           .all
+          .each do |chapter|
+          eager_chapter = Chapter.actual
+            .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
+            .eager(GOODS_NOMENCLATURE_EAGER)
+            .take
+
+          yield eager_chapter
+        end
       end
 
       def object
