@@ -1,3 +1,13 @@
+class SchemaQueryFilterLogger < SimpleDelegator
+  SCHEMA_QUERY_PATTERN = /pg_attribute|current_setting/
+
+  def debug(progname = nil, &block)
+    return if progname =~ SCHEMA_QUERY_PATTERN
+
+    super(progname, &block)
+  end
+end
+
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -48,6 +58,5 @@ Rails.application.configure do
 
   # Raises error for missing translations
   # config.action_view.raise_on_missing_translations = true
-
-  config.logger = ActiveSupport::Logger.new($stdout)
+  config.logger = SchemaQueryFilterLogger.new(ActiveSupport::Logger.new($stdout))
 end
