@@ -7,6 +7,7 @@ class ReportWorker
     if TradeTariffBackend.reporting_enabled?
       Reporting::Basic.generate
       Reporting::DeclarableDuties.generate
+      Reporting::Prohibitions.generate
       Reporting::GeographicalAreaGroups.generate
     end
   end
