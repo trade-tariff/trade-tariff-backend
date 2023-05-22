@@ -218,6 +218,7 @@ FactoryBot.define do
 
       transient do
         simplified_procedural_code { '123' }
+        goods_nomenclature_label { Forgery(:basic).text }
       end
 
       measure_type_id { '488' }
@@ -225,11 +226,14 @@ FactoryBot.define do
       validity_end_date { Time.zone.today + 2.weeks }
 
       after(:build) do |measure, evaluator|
-        create(
-          :simplified_procedural_code,
-          goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
-          simplified_procedural_code: evaluator.simplified_procedural_code,
-        )
+        if SimplifiedProceduralCode.where(simplified_procedural_code: evaluator.simplified_procedural_code).none?
+          create(
+            :simplified_procedural_code,
+            goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+            goods_nomenclature_label: evaluator.goods_nomenclature_label,
+            simplified_procedural_code: evaluator.simplified_procedural_code,
+          )
+        end
       end
     end
 
