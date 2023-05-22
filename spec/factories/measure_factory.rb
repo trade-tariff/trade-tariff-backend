@@ -213,6 +213,26 @@ FactoryBot.define do
       geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
     end
 
+    trait :simplified_procedural_code do
+      with_measure_components
+
+      transient do
+        simplified_procedural_code { '123' }
+      end
+
+      measure_type_id { '488' }
+      validity_start_date { Time.zone.today }
+      validity_end_date { Time.zone.today + 2.weeks }
+
+      after(:build) do |measure, evaluator|
+        create(
+          :simplified_procedural_code,
+          goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+          simplified_procedural_code: evaluator.simplified_procedural_code,
+        )
+      end
+    end
+
     trait :third_country_overview do
       erga_omnes
       third_country

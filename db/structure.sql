@@ -7093,6 +7093,37 @@ ALTER SEQUENCE uk.sections_id_seq OWNED BY uk.sections.id;
 
 
 --
+-- Name: simplified_procedural_codes; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.simplified_procedural_codes (
+    simplified_procedural_code text NOT NULL,
+    goods_nomenclature_item_id text NOT NULL,
+    goods_nomenclature_label text,
+    created_at timestamp without time zone,
+    updated_at timestamp without time zone
+);
+
+
+--
+-- Name: simplified_procedural_code_measures; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.simplified_procedural_code_measures AS
+ SELECT simplified_procedural_codes.simplified_procedural_code,
+    measures.validity_start_date,
+    measures.validity_end_date,
+    string_agg(DISTINCT simplified_procedural_codes.goods_nomenclature_item_id, ', '::text) AS goods_nomenclature_item_ids,
+    max(measure_components.duty_amount) AS duty_amount,
+    max((measure_components.monetary_unit_code)::text) AS monetary_unit_code,
+    max(simplified_procedural_codes.goods_nomenclature_label) AS goods_nomenclature_label
+   FROM ((uk.measures
+     JOIN uk.measure_components ON ((measures.measure_sid = measure_components.measure_sid)))
+     RIGHT JOIN uk.simplified_procedural_codes ON ((((measures.goods_nomenclature_item_id)::text = simplified_procedural_codes.goods_nomenclature_item_id) AND ((measures.measure_type_id)::text = '488'::text) AND (measures.validity_end_date > '2021-01-01'::date))))
+  GROUP BY simplified_procedural_codes.simplified_procedural_code, measures.validity_start_date, measures.validity_end_date;
+
+
+--
 -- Name: tariff_update_cds_errors; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -9140,6 +9171,14 @@ ALTER TABLE ONLY uk.section_notes
 
 ALTER TABLE ONLY uk.sections
     ADD CONSTRAINT sections_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: simplified_procedural_codes simplified_procedural_codes_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.simplified_procedural_codes
+    ADD CONSTRAINT simplified_procedural_codes_pkey PRIMARY KEY (simplified_procedural_code, goods_nomenclature_item_id);
 
 
 --
@@ -11594,3 +11633,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230411105850_create_tabl
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230411140112_adds_type_and_priority_to_search_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230419084212_add_tree_nodes_overrides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230425151153_adds_goods_nomenclature_class_to_search_suggestions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230519133544_adds_simplfied_procedural_codes.rb');
