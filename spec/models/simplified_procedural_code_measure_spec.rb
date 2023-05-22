@@ -64,30 +64,28 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
 
     before do
       create :measure, :simplified_procedural_code, validity_end_date: Date.new(2022, 1, 1)
-      create :measure, :simplified_procedural_code, validity_end_date: Date.new(2022, 1, 2)
     end
 
     context 'when the to date is before the validity end date' do
+      let(:date) { Date.new(2021, 12, 31) }
+
+      it { is_expected.to be_empty }
+    end
+
+    context 'when the to date is the same as the validity end date' do
       let(:date) { Date.new(2022, 1, 1) }
 
       it { is_expected.to have_attributes(count: 1) }
       it { is_expected.to all(be_a(described_class)) }
-      it { is_expected.to all(have_attributes(validity_end_date: Date.new(2022, 1, 1))) }
-    end
-
-    context 'when the to date is the same as the validity end date' do
-      let(:date) { Date.new(2022, 1, 2) }
-
-      it { is_expected.to have_attributes(count: 2) }
-      it { is_expected.to all(be_a(described_class)) }
-      it { expect(to_date.map(&:validity_end_date)).to all(be <= date) }
+      it { expect(to_date.map(&:validity_end_date)).to all(eq Date.new(2022, 1, 1)) }
     end
 
     context 'when the to date is after the validity end date' do
       let(:date) { Date.new(2022, 1, 3) }
 
-      it { is_expected.to have_attributes(count: 2) }
+      it { is_expected.to have_attributes(count: 1) }
       it { is_expected.to all(be_a(described_class)) }
+      it { expect(to_date.map(&:validity_end_date)).to all(eq Date.new(2022, 1, 1)) }
     end
   end
 end
