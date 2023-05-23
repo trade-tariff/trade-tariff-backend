@@ -213,6 +213,31 @@ FactoryBot.define do
       geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
     end
 
+    trait :simplified_procedural_code do
+      erga_omnes
+      with_measure_components
+
+      transient do
+        simplified_procedural_code { '123' }
+        goods_nomenclature_label { Forgery(:basic).text }
+      end
+
+      measure_type_id { '488' }
+      validity_start_date { Time.zone.today }
+      validity_end_date { Time.zone.today + 2.weeks }
+
+      after(:build) do |measure, evaluator|
+        if SimplifiedProceduralCode.where(simplified_procedural_code: evaluator.simplified_procedural_code).none?
+          create(
+            :simplified_procedural_code,
+            goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
+            goods_nomenclature_label: evaluator.goods_nomenclature_label,
+            simplified_procedural_code: evaluator.simplified_procedural_code,
+          )
+        end
+      end
+    end
+
     trait :third_country_overview do
       erga_omnes
       third_country

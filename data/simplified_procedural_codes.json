@@ -1,0 +1,244 @@
+{
+    "spvs": {
+        "2.120.1": {
+            "label": "Amarillo, cuper, honeydew, (including cantalene), (onteniente, piel de sapo (including verde liso), rochet, tendral, futuro",
+            "commodities": [
+                "0807190050"
+            ]
+        },
+        "2.130.0": {
+            "label": "Apples",
+            "commodities": [
+                "0808108010",
+                "0808108020",
+                "0808108090"
+            ]
+        },
+        "2.150": {
+            "label": "Apricots",
+            "commodities": [
+                "0809100000"
+            ]
+        },
+        "1.200.1": {
+            "label": "Asparagus - green",
+            "commodities": [
+                "0709200010"
+            ]
+        },
+        "1.200.2": {
+            "label": "Asparagus - other",
+            "commodities": [
+                "0709200090"
+            ]
+        },
+        "2.40": {
+            "label": "Avocados",
+            "commodities": [
+                "0804400000"
+            ]
+        },
+        "1.170": {
+            "label": "Beans",
+            "commodities": [
+                "0708200000"
+            ]
+        },
+        "2.160.0": {
+            "label": "Cherries",
+            "commodities": [
+                "0809290000"
+            ]
+        },
+        "2.70.1": {
+            "label": "Clementines (including monreales)",
+            "commodities": [
+                "0805220020"
+            ]
+        },
+        "1.50.0": {
+            "label": "Courgettes",
+            "commodities": [
+                "0709931000"
+            ]
+        },
+        "1.50.1": {
+            "label": "Cucumber (including those intended for processing)",
+            "commodities": [
+                "0707000500"
+            ]
+        },
+        "2.120.3": {
+            "label": "Galia melons",
+            "commodities": [
+                "0807190060"
+            ]
+        },
+        "1.40": {
+            "label": "Garlic",
+            "commodities": [
+                "0703200000"
+            ]
+        },
+        "1.250.0": {
+            "label": "Globe artichokes",
+            "commodities": [
+                "0709910000"
+            ]
+        },
+        "2.22.0": {
+            "label": "Kiwi Fruit",
+            "commodities": [
+                "0810500000"
+            ]
+        },
+        "2.80": {
+            "label": "Lemons",
+            "commodities": [
+                "0805501010",
+                "0805501090"
+            ]
+        },
+        "2.85": {
+            "label": "Limes",
+            "commodities": [
+                "0805509010",
+                "0805509090"
+            ]
+        },
+        "2.70.2": {
+            "label": "Mandarins (including tangerines and satsumas), fresh",
+            "commodities": [
+                "0805219011",
+                "0805219091",
+                "0805211010"
+            ]
+        },
+        "2.180": {
+            "label": "Nectarines",
+            "commodities": [
+                "0809303000"
+            ]
+        },
+        "1.10": {
+            "label": "New potatoes",
+            "commodities": [
+                "0701905000"
+            ]
+        },
+        "1.30": {
+            "label": "Onions",
+            "commodities": [
+                "0703101900"
+            ]
+        },
+        "2.120.2": {
+            "label": "Other melons",
+            "commodities": [
+                "0807190090"
+            ]
+        },
+        "2.170": {
+            "label": "Peaches",
+            "commodities": [
+                "0809308000"
+            ]
+        },
+        "2.140.2": {
+            "label": "Pears",
+            "commodities": [
+                "0808309090"
+            ]
+        },
+        "2.140.1": {
+            "label": "Pears nashi",
+            "commodities": [
+                "0808309010"
+            ]
+        },
+        "2.30": {
+            "label": "Pineapples",
+            "commodities": [
+                "0804300090"
+            ]
+        },
+        "2.90.2": {
+            "label": "Pink grapefruit and pomelos",
+            "commodities": [
+                "0805400019",
+                "0805400039"
+            ]
+        },
+        "2.190": {
+            "label": "Plums",
+            "commodities": [
+                "0809400500"
+            ]
+        },
+        "2.205": {
+            "label": "Raspberries",
+            "commodities": [
+                "0810201000"
+            ]
+        },
+        "2.200": {
+            "label": "Strawberries",
+            "commodities": [
+                "0810100000"
+            ]
+        },
+        "2.60, 2.60.1, 2.60.2, 2.60.3": {
+            "label": "Sweet oranges, navels, etc.",
+            "commodities": [
+                "0805102200"
+            ]
+        },
+        "1.240": {
+            "label": "Sweet peppers",
+            "commodities": [
+                "0709601000"
+            ]
+        },
+        "1.270": {
+            "label": "Sweet potatoes",
+            "commodities": [
+                "0714201000"
+            ]
+        },
+        "2.100": {
+            "label": "Table grapes",
+            "commodities": [
+                "0806101005",
+                "0806101090"
+            ]
+        },
+        "1.280": {
+            "label": "Tomatoes",
+            "commodities": [
+                "0702000007",
+                "0702000099"
+            ]
+        },
+        "2.110": {
+            "label": "Watermelons",
+            "commodities": [
+                "0807110000"
+            ]
+        },
+        "2.90.1": {
+            "label": "White grapefruit and pomelos",
+            "commodities": [
+                "0805400011",
+                "0805400031"
+            ]
+        },
+        "2.70.4": {
+            "label": "Wilkings and similar citrus hybrids, fresh",
+            "commodities": [
+                "0805290011",
+                "0805290021",
+                "0805290091"
+            ]
+        }
+    }
+}
