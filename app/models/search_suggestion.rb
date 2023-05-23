@@ -85,46 +85,22 @@ class SearchSuggestion < Sequel::Model
     end
 
     def text_type
-      if TradeTariffBackend.full_chemical_search_enabled?
-        where(
-          type: [
-            TYPE_SEARCH_REFERENCE,
-            TYPE_FULL_CHEMICAL_NAME,
-          ],
-        )
-      else
-        where(
-          type: [
-            TYPE_SEARCH_REFERENCE,
-          ],
-        )
-        # TODO: remove this when we have populated all types
-        .or(
-          type: nil,
-        )
-      end
+      where(
+        type: [
+          TYPE_SEARCH_REFERENCE,
+          TYPE_FULL_CHEMICAL_NAME,
+        ],
+      )
     end
 
     def numeric_type
-      if TradeTariffBackend.full_chemical_search_enabled?
-        where(
-          type: [
-            TYPE_FULL_CHEMICAL_CAS,
-            TYPE_FULL_CHEMICAL_CUS,
-            TYPE_GOODS_NOMENCLATURE,
-          ],
-        )
-      else
-        where(
-          type: [
-            TYPE_GOODS_NOMENCLATURE,
-          ],
-        )
-        # TODO: remove this when we have populated all types
-        .or(
-          type: nil,
-        )
-      end
+      where(
+        type: [
+          TYPE_FULL_CHEMICAL_CAS,
+          TYPE_FULL_CHEMICAL_CUS,
+          TYPE_GOODS_NOMENCLATURE,
+        ],
+      )
     end
 
     def with_query(query)

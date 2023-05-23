@@ -209,21 +209,9 @@ RSpec.describe SearchSuggestion do
       create(:search_suggestion, :search_reference, value: 'gold ore')
       create(:search_suggestion, :full_chemical_name, value: 'ore')
       create(:search_suggestion, value: 'null type')
-
-      allow(TradeTariffBackend).to receive(:full_chemical_search_enabled?).and_return(full_chemical_search_enabled)
     end
 
-    context 'when full chemical search is enabled' do
-      let(:full_chemical_search_enabled) { true }
-
-      it { is_expected.to eq(['gold ore', 'ore']) }
-    end
-
-    context 'when full chemical search is disabled' do
-      let(:full_chemical_search_enabled) { false }
-
-      it { is_expected.to eq(['gold ore', 'null type']) }
-    end
+    it { is_expected.to eq(['gold ore', 'ore']) }
   end
 
   describe '.numeric_type' do
@@ -234,21 +222,9 @@ RSpec.describe SearchSuggestion do
       create(:search_suggestion, :full_chemical_cus, value: '0154438-3')
       create(:search_suggestion, :full_chemical_cas, value: '8028-66-8')
       create(:search_suggestion, value: '1235')
-
-      allow(TradeTariffBackend).to receive(:full_chemical_search_enabled?).and_return(full_chemical_search_enabled)
     end
 
-    context 'when full chemical search is enabled' do
-      let(:full_chemical_search_enabled) { true }
-
-      it { is_expected.to eq(%w[1234 0154438-3 8028-66-8]) }
-    end
-
-    context 'when full chemical search is disabled' do
-      let(:full_chemical_search_enabled) { false }
-
-      it { is_expected.to eq(%w[1234 1235]) }
-    end
+    it { is_expected.to eq(%w[1234 0154438-3 8028-66-8]) }
   end
 
   describe '.build' do
