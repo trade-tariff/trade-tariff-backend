@@ -7116,10 +7116,12 @@ CREATE VIEW uk.simplified_procedural_code_measures AS
     string_agg(DISTINCT simplified_procedural_codes.goods_nomenclature_item_id, ', '::text) AS goods_nomenclature_item_ids,
     max(measure_components.duty_amount) AS duty_amount,
     max((measure_components.monetary_unit_code)::text) AS monetary_unit_code,
+    max((measure_components.measurement_unit_code)::text) AS measurement_unit_code,
+    max((measure_components.measurement_unit_qualifier_code)::text) AS measurement_unit_qualifier_code,
     max(simplified_procedural_codes.goods_nomenclature_label) AS goods_nomenclature_label
    FROM ((uk.measures
      JOIN uk.measure_components ON ((measures.measure_sid = measure_components.measure_sid)))
-     RIGHT JOIN uk.simplified_procedural_codes ON ((((measures.goods_nomenclature_item_id)::text = simplified_procedural_codes.goods_nomenclature_item_id) AND ((measures.measure_type_id)::text = '488'::text) AND (measures.validity_end_date > '2021-01-01'::date))))
+     RIGHT JOIN uk.simplified_procedural_codes ON ((((measures.goods_nomenclature_item_id)::text = simplified_procedural_codes.goods_nomenclature_item_id) AND ((measures.measure_type_id)::text = '488'::text) AND (measures.validity_end_date > '2021-01-01'::date) AND ((measures.geographical_area_id)::text = '1011'::text))))
   GROUP BY simplified_procedural_codes.simplified_procedural_code, measures.validity_start_date, measures.validity_end_date;
 
 

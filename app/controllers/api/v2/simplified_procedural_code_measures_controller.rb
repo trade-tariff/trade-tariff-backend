@@ -23,15 +23,11 @@ module Api
 
       def simplified_procedural_code_measures
         @simplified_procedural_code_measures ||= SimplifiedProceduralCodeMeasure
-            .by_spv(simplified_procedural_code)
-            .from_date(from_date)
-            .to_date(to_date)
-            .order(Sequel.desc(:validity_start_date))
-            .all
-            .each_with_object({}) do |measure, acc|
-              acc[measure.simplified_procedural_code] ||= []
-              acc[measure.simplified_procedural_code] << measure
-            end
+          .with_filter(simplified_procedural_code_params)
+          .each_with_object({}) do |measure, acc|
+            acc[measure.simplified_procedural_code] ||= []
+            acc[measure.simplified_procedural_code] << measure
+          end
       end
 
       def simplified_procedural_code_params
@@ -42,24 +38,8 @@ module Api
         )
       end
 
-      def from_date
-        simplified_procedural_code_params[:from_date]
-      end
-
-      def to_date
-        simplified_procedural_code_params[:to_date]
-      end
-
-      def simplified_procedural_code
-        simplified_procedural_code_params[:simplified_procedural_code]
-      end
-
       def filtering_by_code?
-        simplified_procedural_code.present?
-      end
-
-      def filtering_by_date?
-        from_date.present? || to_date.present?
+        simplified_procedural_code_params[:simplified_procedural_code].present?
       end
     end
   end

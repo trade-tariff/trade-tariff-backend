@@ -12,7 +12,9 @@ module Api
                  :duty_amount,
                  :goods_nomenclature_label,
                  :goods_nomenclature_item_ids,
-                 :monetary_unit_code
+                 :monetary_unit_code,
+                 :measurement_unit_code,
+                 :measurement_unit_qualifier_code
     end
   end
 end

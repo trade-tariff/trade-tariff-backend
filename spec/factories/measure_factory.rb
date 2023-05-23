@@ -214,6 +214,7 @@ FactoryBot.define do
     end
 
     trait :simplified_procedural_code do
+      erga_omnes
       with_measure_components
 
       transient do

@@ -8,6 +8,20 @@ class SimplifiedProceduralCodeMeasure < Sequel::Model
   end
 
   dataset_module do
+    def with_filter(filters)
+      return self if filters.empty?
+
+      from_date = filters[:from_date]
+      to_date = filters[:to_date]
+      simplified_procedural_code = filters[:simplified_procedural_code]
+
+      by_spv(simplified_procedural_code)
+        .from_date(from_date)
+        .to_date(to_date)
+        .order(Sequel.desc(:validity_start_date))
+        .all
+    end
+
     def by_spv(simplified_procedural_code)
       return self if simplified_procedural_code.blank?
 

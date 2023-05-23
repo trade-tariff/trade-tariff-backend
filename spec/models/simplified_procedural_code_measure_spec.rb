@@ -1,4 +1,42 @@
 RSpec.describe SimplifiedProceduralCodeMeasure do
+  describe '.with_filter' do
+    subject(:with_filter) { described_class.with_filter(filters) }
+
+    before do
+      create :measure, :simplified_procedural_code, simplified_procedural_code: '123', validity_start_date: Date.new(2022, 1, 1), validity_end_date: Date.new(2022, 1, 2)
+    end
+
+    context 'when there are no filters' do
+      let(:filters) { {} }
+
+      it { is_expected.to have_attributes(count: 1) }
+    end
+
+    context 'when there is a from date' do
+      let(:filters) { { from_date: Date.new(2021, 12, 31) } }
+
+      it { is_expected.to have_attributes(count: 1) }
+    end
+
+    context 'when there is a to date' do
+      let(:filters) { { to_date: Date.new(2022, 1, 2) } }
+
+      it { is_expected.to have_attributes(count: 1) }
+    end
+
+    context 'when there is a simplified procedural code' do
+      let(:filters) { { simplified_procedural_code: '123' } }
+
+      it { is_expected.to have_attributes(count: 1) }
+    end
+
+    context 'when there is a from date and a to date' do
+      let(:filters) { { from_date: Date.new(2021, 12, 31), to_date: Date.new(2022, 1, 2) } }
+
+      it { is_expected.to have_attributes(count: 1) }
+    end
+  end
+
   describe '.by_spv' do
     subject(:by_spv) { described_class.by_spv(simplified_procedural_code) }
 
