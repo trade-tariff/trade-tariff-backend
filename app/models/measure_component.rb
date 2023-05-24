@@ -36,6 +36,7 @@ class MeasureComponent < Sequel::Model
   end
 
   alias_method :measurement_unit_id, :measurement_unit_code
+  alias_method :measurement_unit_qualifier_id, :measurement_unit_qualifier_code
 
   def formatted_duty_expression
     DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))

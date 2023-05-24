@@ -16,6 +16,7 @@ module Api
                    :duty_expression_abbreviation
 
         has_one :measurement_unit, serializer: Api::V2::Measures::MeasurementUnitSerializer, if: proc { |measure_component| measure_component.measurement_unit_code.present? }
+        has_one :measurement_unit_qualifier, serializer: Api::V2::Measures::MeasurementUnitQualifierSerializer, if: proc { |measure_component| measure_component.measurement_unit_code.present? }
       end
     end
   end

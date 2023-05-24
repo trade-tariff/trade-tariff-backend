@@ -47,8 +47,8 @@ module HeadingService
             measure_components: [
               { duty_expression: :duty_expression_description },
               { measurement_unit: :measurement_unit_description },
+              { measurement_unit_qualifier: :measurement_unit_qualifier_description },
               :monetary_unit,
-              :measurement_unit_qualifier,
             ],
           },
           {

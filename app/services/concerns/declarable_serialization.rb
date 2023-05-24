@@ -16,6 +16,8 @@ module DeclarableSerialization
     import_measures.measure_condition_permutation_groups.permutations
     import_measures.measure_conditions.measure_condition_components
     import_measures.measure_components
+    import_measures.measure_components.measurement_unit
+    import_measures.measure_components.measurement_unit_qualifier
     import_measures.geographical_area
     import_measures.geographical_area.contained_geographical_areas
     import_measures.excluded_geographical_areas
@@ -36,6 +38,8 @@ module DeclarableSerialization
     export_measures.measure_condition_permutation_groups.permutations
     export_measures.measure_conditions.measure_condition_components
     export_measures.measure_components
+    import_measures.measure_components.measurement_unit
+    import_measures.measure_components.measurement_unit_qualifier
     export_measures.geographical_area
     export_measures.geographical_area.contained_geographical_areas
     export_measures.excluded_geographical_areas

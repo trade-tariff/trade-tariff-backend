@@ -7,6 +7,12 @@ FactoryBot.define do
     trait :xml do
       validity_end_date { 1.year.ago.beginning_of_day }
     end
+
+    trait :with_description do
+      after(:create) do |measurement_unit_qualifier|
+        create(:measurement_unit_qualifier_description, measurement_unit_qualifier_code: measurement_unit_qualifier.measurement_unit_qualifier_code)
+      end
+    end
   end
 
   factory :measurement_unit_qualifier_description do

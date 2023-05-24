@@ -23,7 +23,7 @@ class CachedCommodityService
         { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
         { measure: { measure_type: :measure_type_description } },
         :monetary_unit,
-        :measurement_unit_qualifier,
+        { measurement_unit_qualifier: :measurement_unit_qualifier_description },
       ],
     },
     {
