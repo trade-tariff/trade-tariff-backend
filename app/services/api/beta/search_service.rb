@@ -83,7 +83,15 @@ module Api
       end
 
       def search_suggestion_match
-        SearchSuggestion.by_value(search_query.downcase, resource_id)
+        exact_search_suggestion_match.presence || padded_search_suggestion_match
+      end
+
+      def exact_search_suggestion_match
+        @exact_search_suggestion_match ||= SearchSuggestion.by_value(search_query.downcase, resource_id)
+      end
+
+      def padded_search_suggestion_match
+        @padded_search_suggestion_match ||= SearchSuggestion.by_value(search_query.downcase.ljust(10, '0'), resource_id)
       end
 
       def resource_id

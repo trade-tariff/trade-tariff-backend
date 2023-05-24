@@ -8,7 +8,9 @@ class SearchService
                    q = matchdata ? matchdata[2] : query_string.gsub(/\Acas\s+/i, '')
                    find_search_suggestion(q)
                  else
-                   find_search_suggestion(query_string) || find_historic_goods_nomenclature(query_string)
+                   find_search_suggestion(query_string) ||
+                     find_search_suggestion(query_string.ljust(10, '0')) ||
+                     find_historic_goods_nomenclature(query_string)
                  end
 
       self

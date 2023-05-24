@@ -120,8 +120,6 @@ RSpec.describe SearchService do
     end
 
     context 'when commodities' do
-      let(:query) { '0101210000' }
-
       let(:pattern) do
         {
           type: 'exact_match',
@@ -138,7 +136,17 @@ RSpec.describe SearchService do
         create :search_suggestion, goods_nomenclature:
       end
 
-      it { expect(result).to match_json_expression pattern }
+      context 'when searching by full code' do
+        let(:query) { '0101210000' }
+
+        it { expect(result).to match_json_expression pattern }
+      end
+
+      context 'when searching by a shorter version of the code' do
+        let(:query) { '0101210' }
+
+        it { expect(result).to match_json_expression pattern }
+      end
     end
 
     context 'when chemicals by cas rn' do
