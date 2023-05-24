@@ -10,7 +10,8 @@ module Api
                  :goods_nomenclature_item_id,
                  :producline_suffix,
                  :name,
-                 :cas_rn
+                 :cas_rn,
+                 :nomen
     end
   end
 end

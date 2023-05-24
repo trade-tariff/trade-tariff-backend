@@ -16,6 +16,7 @@ RSpec.describe Api::V2::FullChemicalSerializer do
             producline_suffix: serializable.producline_suffix,
             name: serializable.name,
             cas_rn: serializable.cas_rn,
+            nomen: serializable.nomen,
           },
         },
       }
