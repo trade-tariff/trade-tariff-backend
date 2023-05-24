@@ -31,6 +31,9 @@ RSpec.describe Api::V2::Measures::MeasureComponentSerializer do
           measurement_unit: {
             data: { id: 'bar', type: :measurement_unit },
           },
+          measurement_unit_qualifier: {
+            data: { id: 'a', type: :measurement_unit_qualifier },
+          },
         },
       },
     }
