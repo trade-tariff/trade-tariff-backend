@@ -166,6 +166,12 @@ RSpec.describe DescriptionFormatter do
       ).to eq ' <li> '
     end
 
+    it 'removes br before li with whitespace characters' do
+      expect(
+        described_class.format(description: ' <br>   <li> '),
+      ).to eq ' <li> '
+    end
+
     it 'removes br before ul' do
       expect(
         described_class.format(description: ' <br><br><ul> '),
@@ -175,6 +181,18 @@ RSpec.describe DescriptionFormatter do
     it 'removes br surrounding ul' do
       expect(
         described_class.format(description: ' <br></ul><br> '),
+      ).to eq ' </ul> '
+    end
+
+    it 'removes br before closing ul' do
+      expect(
+        described_class.format(description: ' <br></ul> '),
+      ).to eq ' </ul> '
+    end
+
+    it 'removes br before closing ul with spaces' do
+      expect(
+        described_class.format(description: ' <br> </ul> '),
       ).to eq ' </ul> '
     end
 

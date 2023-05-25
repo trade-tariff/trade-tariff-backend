@@ -33,9 +33,10 @@ class DescriptionFormatter
       "<sup>#{::Regexp.last_match(1)}</sup>"
     end
     str.gsub!(/<sub>([a-z])<\/sub>/i, '@\1')
-    str.gsub!(/<br><li>/, '<li>')
+    str.gsub!(/<br>(\s+)?<li>/, '<li>')
     str.gsub!(/<br><br><ul>/, '<ul>')
     str.gsub!(/<br><\/ul><br>/, '</ul>')
+    str.gsub!(/<br>(\s+)?<\/ul>/, '</ul>')
     str.gsub!(/(<br>){3,}/, '<br><br>')
 
     str.strip
