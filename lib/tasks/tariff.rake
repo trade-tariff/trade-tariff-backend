@@ -94,4 +94,20 @@ namespace :tariff do
       puts 'Please provide TARGET environment variable pointing to Tariff file to import'
     end
   end
+
+  desc 'Check tree integrity - optionally for DATE'
+  task check_integrity: %w[environment] do
+    date = ENV['DATE'].presence ? Time.zone.parse(ENV['DATE']).to_day : Time.zone.today
+
+    TimeMachine.at(date) do
+      puts "Checking tree for #{date.to_formatted_s(:db)}"
+
+      service = TreeIntegrityCheckingService.new
+      if service.check!
+        puts '-> VALID'
+      else
+        puts "-> INVALID: #{service.failures.inspect}"
+      end
+    end
+  end
 end
