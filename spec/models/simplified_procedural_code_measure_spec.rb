@@ -126,4 +126,29 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
       it { expect(to_date.map(&:validity_end_date)).to all(eq Date.new(2022, 1, 1)) }
     end
   end
+
+  describe '#null_measure?' do
+    subject(:measure) { SimplifiedProceduralCodeMeasure.first }
+
+    before do
+      create(
+        :measure,
+        :simplified_procedural_code,
+        simplified_procedural_code: '123',
+        duty_amount:,
+      )
+    end
+
+    context 'when duty_amount is blank' do
+      let(:duty_amount) { nil }
+
+      it { is_expected.to be_null_measure }
+    end
+
+    context 'when duty_amount is not blank' do
+      let(:duty_amount) { '0.0' }
+
+      it { is_expected.not_to be_null_measure }
+    end
+  end
 end

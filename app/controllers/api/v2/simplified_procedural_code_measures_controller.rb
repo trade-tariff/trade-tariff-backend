@@ -12,8 +12,26 @@ module Api
       end
 
       def all_simplified_procedural_code_measures
-        return simplified_procedural_code_measures.values.flatten if filtering_by_code?
+        if filtering_by_code?
+          simplified_procedural_code_measures_by_code
+        elsif filtering_by_date?
+          simplified_procedural_code_measures_by_date
+        else
+          SimplifiedProceduralCodeMeasure.all
+        end
+      end
 
+      def simplified_procedural_code_measures_by_code
+        all_measures = simplified_procedural_code_measures.values.flatten
+
+        if all_measures.all?(&:null_measure?)
+          []
+        else
+          all_measures
+        end
+      end
+
+      def simplified_procedural_code_measures_by_date
         SimplifiedProceduralCode.all_null_measures.each_with_object([]) do |null_measure, acc|
           measures = simplified_procedural_code_measures[null_measure.simplified_procedural_code].presence || null_measure
 
@@ -40,6 +58,10 @@ module Api
 
       def filtering_by_code?
         simplified_procedural_code_params[:simplified_procedural_code].present?
+      end
+
+      def filtering_by_date?
+        simplified_procedural_code_params[:from_date].present? && simplified_procedural_code_params[:to_date].present?
       end
     end
   end

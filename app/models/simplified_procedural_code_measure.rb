@@ -7,6 +7,10 @@ class SimplifiedProceduralCodeMeasure < Sequel::Model
     super&.to_date
   end
 
+  def null_measure?
+    duty_amount.blank?
+  end
+
   dataset_module do
     def with_filter(filters)
       return self if filters.empty?
