@@ -177,11 +177,12 @@ module GoodsNomenclatures
 
       # group descendants by the immediate child they belong to
       childrens_depth = descendants.first.depth
-      grouped_by_child = descendants.each.with_object([]) do |descendant, child_groups|
+      grouped_by_child = descendants.each.with_object({}) do |descendant, all_children|
         if childrens_depth == descendant.depth
-          child_groups << [descendant, []]
+          all_children[descendant] = []
         else
-          child_groups.last.last << descendant
+          last_child = all_children.keys.last
+          all_children[last_child] << descendant
         end
       end
 
