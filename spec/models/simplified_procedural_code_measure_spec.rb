@@ -128,7 +128,7 @@ RSpec.describe SimplifiedProceduralCodeMeasure do
   end
 
   describe '#null_measure?' do
-    subject(:measure) { SimplifiedProceduralCodeMeasure.first }
+    subject(:measure) { described_class.first }
 
     before do
       create(
