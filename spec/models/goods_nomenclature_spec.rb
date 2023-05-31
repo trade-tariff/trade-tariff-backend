@@ -332,17 +332,6 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '.declarable' do
-    subject(:declarable) { described_class.declarable }
-
-    before do
-      create(:goods_nomenclature, producline_suffix: '80')
-      create(:goods_nomenclature, producline_suffix: '10')
-    end
-
-    it { is_expected.to all(have_attributes(producline_suffix: '80')) }
-  end
-
   describe '#code' do
     let(:gono) { create(:goods_nomenclature, goods_nomenclature_item_id: '8056116321') }
 

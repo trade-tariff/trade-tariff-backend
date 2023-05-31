@@ -146,10 +146,6 @@ class GoodsNomenclature < Sequel::Model
                           order: Sequel.desc(:created_at)
 
   dataset_module do
-    def declarable
-      filter(producline_suffix: '80')
-    end
-
     def non_hidden
       filter(Sequel.~(goods_nomenclatures__goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
     end
