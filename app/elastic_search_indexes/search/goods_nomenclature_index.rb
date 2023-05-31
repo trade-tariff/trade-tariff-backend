@@ -4,7 +4,7 @@ module Search
       TimeMachine.now do
         Commodity # Filter out headings and chapters
           .actual
-          .declarable # Avoid the majority of subheadings
+          .ns_declarable # Avoid all subheadings
           .non_hidden
       end
     end
