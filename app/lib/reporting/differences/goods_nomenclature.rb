@@ -57,6 +57,7 @@ module Reporting
 
     class GoodsNomenclature
       delegate :workbook,
+               :regular_style,
                :bold_style,
                :centered_style,
                :uk_goods_nomenclatures,
