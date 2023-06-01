@@ -1,6 +1,6 @@
 module Reporting
   class Differences
-    class Indentation
+    class GoodsNomenclatureEndDate
       delegate :workbook,
                :regular_style,
                :bold_style,
@@ -11,8 +11,8 @@ module Reporting
 
       HEADER_ROW = [
         'Commodity code (PLS)',
-        'UK indentation',
-        'EU indentation',
+        'UK end date',
+        'EU end date',
       ].freeze
 
       TAB_COLOR = 'cc0000'.freeze
@@ -21,8 +21,8 @@ module Reporting
 
       COLUMN_WIDTHS = [
         20, # Commodity code (PLS)
-        20, # UK indentation
-        20, # EU indentation
+        20, # UK start date
+        20, # EU start date
       ].freeze
 
       AUTOFILTER_CELL_RANGE = 'A1:C1'.freeze
@@ -47,8 +47,8 @@ module Reporting
           rows.compact.each do |row|
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             sheet.rows.last.tap do |last_row|
-              last_row.cells[1].style = centered_style # UK indentation
-              last_row.cells[2].style = centered_style # EU indentation
+              last_row.cells[1].style = centered_style # UK start date
+              last_row.cells[2].style = centered_style # EU start date
             end
           end
 
@@ -73,13 +73,17 @@ module Reporting
         matching_uk_goods_nomenclature = uk_goods_nomenclature_ids[matching]
         matching_xi_goods_nomenclature = xi_goods_nomenclature_ids[matching]
 
-        return nil if matching_uk_goods_nomenclature['Indentation'] == matching_xi_goods_nomenclature['Indentation']
+        uk_start_date = matching_uk_goods_nomenclature['End date']&.to_date&.strftime('%d/%m/%Y')
+        eu_start_date = matching_xi_goods_nomenclature['End date']&.to_date&.strftime('%d/%m/%Y')
+
+        return nil if uk_start_date == eu_start_date
 
         item_id, pls = matching_uk_goods_nomenclature['ItemIDPlusPLS'].split('_')
+
         [
           "#{item_id} (#{pls})",
-          matching_uk_goods_nomenclature['Indentation'],
-          matching_xi_goods_nomenclature['Indentation'],
+          uk_start_date,
+          eu_start_date,
         ]
       end
 

@@ -1,60 +1,5 @@
 module Reporting
   class Differences
-    class PresentedGoodsNomenclature
-      def initialize(goods_nomenclature)
-        @goods_nomenclature = goods_nomenclature
-      end
-
-      def to_row
-        [
-          sid,
-          commodity_code,
-          product_line_suffix,
-          start_date,
-          end_date,
-          indentation,
-          end_line,
-          description,
-        ]
-      end
-
-      private
-
-      attr_reader :goods_nomenclature
-
-      def sid
-        goods_nomenclature['SID']
-      end
-
-      def commodity_code
-        goods_nomenclature['Commodity code']
-      end
-
-      def product_line_suffix
-        goods_nomenclature['Product line suffix']
-      end
-
-      def start_date
-        goods_nomenclature['Start date']&.to_date&.strftime('%d/%m/%Y')
-      end
-
-      def end_date
-        goods_nomenclature['End date']&.to_date&.strftime('%d/%m/%Y')
-      end
-
-      def indentation
-        goods_nomenclature['Indentation']
-      end
-
-      def end_line
-        goods_nomenclature['End line'] == 'true' ? '1' : '0'
-      end
-
-      def description
-        goods_nomenclature['Description']
-      end
-    end
-
     class GoodsNomenclature
       delegate :workbook,
                :regular_style,
@@ -112,7 +57,7 @@ module Reporting
           end
 
           rows.each do |row|
-            sheet.add_row(row, types: CELL_TYPES)
+            sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             sheet.rows.last.tap do |last_row|
               last_row.cells[5].style = centered_style # Indentation
               last_row.cells[6].style = centered_style # End line
@@ -162,6 +107,61 @@ module Reporting
 
       def handle_csv(csv)
         CSV.parse(csv, headers: true).map(&:to_h)
+      end
+    end
+
+    class PresentedGoodsNomenclature
+      def initialize(goods_nomenclature)
+        @goods_nomenclature = goods_nomenclature
+      end
+
+      def to_row
+        [
+          sid,
+          commodity_code,
+          product_line_suffix,
+          start_date,
+          end_date,
+          indentation,
+          end_line,
+          description,
+        ]
+      end
+
+      private
+
+      attr_reader :goods_nomenclature
+
+      def sid
+        goods_nomenclature['SID']
+      end
+
+      def commodity_code
+        goods_nomenclature['Commodity code']
+      end
+
+      def product_line_suffix
+        goods_nomenclature['Product line suffix']
+      end
+
+      def start_date
+        goods_nomenclature['Start date']&.to_date&.strftime('%d/%m/%Y')
+      end
+
+      def end_date
+        goods_nomenclature['End date']&.to_date&.strftime('%d/%m/%Y')
+      end
+
+      def indentation
+        goods_nomenclature['Indentation']
+      end
+
+      def end_line
+        goods_nomenclature['End line'] == 'true' ? '1' : '0'
+      end
+
+      def description
+        goods_nomenclature['Description']
       end
     end
   end

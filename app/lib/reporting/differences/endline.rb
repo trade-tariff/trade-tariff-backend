@@ -45,7 +45,7 @@ module Reporting
           end
 
           rows.compact.each do |row|
-            sheet.add_row(row, types: CELL_TYPES)
+            sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             sheet.rows.last.tap do |last_row|
               last_row.cells[1].style = centered_style # UK endline status
               last_row.cells[2].style = centered_style # EU endline status

@@ -41,6 +41,9 @@ module Reporting
       add_missing_from_xi_worksheet
       add_indentation_worksheet
       add_endline_worksheet
+      add_start_date_worksheet
+      add_end_date_worksheet
+
       package
     end
 
@@ -72,6 +75,20 @@ module Reporting
     def add_endline_worksheet
       Reporting::Differences::Endline.new(
         'End line differences',
+        self,
+      ).add_worksheet
+    end
+
+    def add_start_date_worksheet
+      Reporting::Differences::GoodsNomenclatureStartDate.new(
+        'Start date differences',
+        self,
+      ).add_worksheet
+    end
+
+    def add_end_date_worksheet
+      Reporting::Differences::GoodsNomenclatureEndDate.new(
+        'End date differences',
         self,
       ).add_worksheet
     end
