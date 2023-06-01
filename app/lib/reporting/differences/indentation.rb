@@ -82,14 +82,14 @@ module Reporting
       end
 
       def uk_goods_nomenclature_ids
-        @uk_goods_nomenclature_ids ||= uk_goods_nomenclatures.each_with_object({}) do |goods_nomenclature, acc|
-          acc[goods_nomenclature['ItemIDPlusPLS']] = goods_nomenclature
+        @uk_goods_nomenclature_ids ||= uk_goods_nomenclatures.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
         end
       end
 
       def xi_goods_nomenclature_ids
-        @xi_goods_nomenclature_ids ||= xi_goods_nomenclatures.each_with_object({}) do |goods_nomenclature, acc|
-          acc[goods_nomenclature['ItemIDPlusPLS']] = goods_nomenclature
+        @xi_goods_nomenclature_ids ||= xi_goods_nomenclatures.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
         end
       end
     end

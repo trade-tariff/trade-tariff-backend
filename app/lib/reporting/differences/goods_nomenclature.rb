@@ -140,14 +140,14 @@ module Reporting
       end
 
       def target_goods_nomenclatures
-        @target_goods_nomenclatures ||= read_target.each_with_object({}) do |goods_nomenclature, acc|
-          acc[goods_nomenclature['ItemIDPlusPLS']] = goods_nomenclature
+        @target_goods_nomenclatures ||= read_target.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
         end
       end
 
       def source_goods_nomenclatures
-        @source_goods_nomenclatures ||= read_source.each_with_object({}) do |goods_nomenclature, acc|
-          acc[goods_nomenclature['ItemIDPlusPLS']] = goods_nomenclature
+        @source_goods_nomenclatures ||= read_source.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
         end
       end
 
