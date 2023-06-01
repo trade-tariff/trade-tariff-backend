@@ -4,20 +4,43 @@ module Reporting
 
     delegate :get, to: TariffSynchronizer::FileService
 
-    attr_reader :package, :workbook, :bold_style, :centered_style
+    attr_reader :package,
+                :workbook,
+                :regular_style,
+                :bold_style,
+                :centered_style
 
     def initialize
       @package = Axlsx::Package.new
       @package.use_shared_strings = true
       @workbook = package.workbook
-      @bold_style = workbook.styles.add_style(b: true)
-      @centered_style = workbook.styles.add_style(alignment: { horizontal: :center })
+      @bold_style = workbook.styles.add_style(
+        b: true,
+        font_name: 'Calibri',
+        sz: 11,
+      )
+      @regular_style = workbook.styles.add_style(
+        alignment: {
+          wrap_text: true,
+        },
+        font_name: 'Calibri',
+        sz: 11,
+      )
+      @centered_style = workbook.styles.add_style(
+        alignment: {
+          horizontal: :center,
+          wrap_text: true,
+        },
+        font_name: 'Calibri',
+        sz: 11,
+      )
     end
 
     def generate
       add_missing_from_uk_worksheet
       add_missing_from_xi_worksheet
       add_indentation_worksheet
+      add_endline_worksheet
       package
     end
 
@@ -25,7 +48,7 @@ module Reporting
       Reporting::Differences::GoodsNomenclature.new(
         'xi',
         'uk',
-        'Missing from UK',
+        'Commodities in EU, not in UK',
         self,
       ).add_worksheet
     end
@@ -34,7 +57,7 @@ module Reporting
       Reporting::Differences::GoodsNomenclature.new(
         'uk',
         'xi',
-        'In UK data, not in EU',
+        'Commodities in UK, not in EU',
         self,
       ).add_worksheet
     end
@@ -42,6 +65,13 @@ module Reporting
     def add_indentation_worksheet
       Reporting::Differences::Indentation.new(
         'Indentation differences',
+        self,
+      ).add_worksheet
+    end
+
+    def add_endline_worksheet
+      Reporting::Differences::Endline.new(
+        'End line differences',
         self,
       ).add_worksheet
     end
