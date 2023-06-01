@@ -56,8 +56,12 @@ module Reporting
     end
 
     class GoodsNomenclature
-      delegate :get, to: TariffSynchronizer::FileService
-      delegate :workbook, :bold_style, :centered_style, to: :report
+      delegate :workbook,
+               :bold_style,
+               :centered_style,
+               :uk_goods_nomenclatures,
+               :xi_goods_nomenclatures,
+               to: :report
 
       HEADER_ROW = [
         'SID',
@@ -123,34 +127,36 @@ module Reporting
       attr_reader :source, :target, :name, :report
 
       def rows
-        all_missing = source_goods_nomenclatures - target_goods_nomenclatures
+        all_missing = source_goods_nomenclatures.keys - target_goods_nomenclatures.keys
         all_missing.map do |missing|
           build_row_for(missing)
         end
       end
 
       def build_row_for(missing)
-        missing_goods_nomenclature = read_source.find do |source_goods_nomenclature|
-          source_goods_nomenclature['ItemIDPlusPLS'] == missing
-        end
+        missing_goods_nomenclature = source_goods_nomenclatures[missing]
 
         PresentedGoodsNomenclature.new(missing_goods_nomenclature).to_row
       end
 
       def target_goods_nomenclatures
-        read_target.pluck('ItemIDPlusPLS')
+        @target_goods_nomenclatures ||= read_target.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
       end
 
       def source_goods_nomenclatures
-        read_source.pluck('ItemIDPlusPLS')
+        @source_goods_nomenclatures ||= read_source.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
       end
 
       def read_source
-        @read_source ||= handle_csv(get("#{source}/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+        public_send("#{source}_goods_nomenclatures")
       end
 
       def read_target
-        @read_target ||= handle_csv(get("#{target}/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+        public_send("#{target}_goods_nomenclatures")
       end
 
       def handle_csv(csv)
