@@ -2,6 +2,8 @@ module Reporting
   class Differences
     extend Reporting::Reportable
 
+    delegate :get, to: TariffSynchronizer::FileService
+
     attr_reader :package, :workbook, :bold_style, :centered_style
 
     def initialize
@@ -42,6 +44,18 @@ module Reporting
         'Indentation differences',
         self,
       ).add_worksheet
+    end
+
+    def uk_goods_nomenclatures
+      @uk_goods_nomenclatures ||= handle_csv(get("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+    end
+
+    def xi_goods_nomenclatures
+      @xi_goods_nomenclatures ||= handle_csv(get("xi/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+    end
+
+    def handle_csv(csv)
+      CSV.parse(csv, headers: true).map(&:to_h)
     end
 
     class << self

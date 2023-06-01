@@ -1,8 +1,12 @@
 module Reporting
   class Differences
     class Indentation
-      delegate :get, to: TariffSynchronizer::FileService
-      delegate :workbook, :bold_style, :centered_style, to: :report
+      delegate :workbook,
+               :bold_style,
+               :centered_style,
+               :uk_goods_nomenclatures,
+               :xi_goods_nomenclatures,
+               to: :report
 
       HEADER_ROW = [
         'Commodity code (PLS)',
@@ -56,45 +60,37 @@ module Reporting
       attr_reader :name, :report
 
       def rows
-        matching_goods_nomenclature = uk_goods_nomenclatures & xi_goods_nomenclatures
-        matching_goods_nomenclature.map do |matching|
-          row = build_row_for(matching)
-          next if row[1] == row[2]
+        matching_goods_nomenclature = uk_goods_nomenclature_ids.keys & xi_goods_nomenclature_ids.keys
 
-          row
+        matching_goods_nomenclature.each_with_object([]) do |matching, acc|
+          row = build_row_for(matching)
+          acc << row unless row.nil?
         end
       end
 
       def build_row_for(matching)
-        matching_uk_goods_nomenclature = read_uk.find do |uk_goods_nomenclature|
-          uk_goods_nomenclature['ItemIDPlusPLS'] == matching
+        matching_uk_goods_nomenclature = uk_goods_nomenclature_ids[matching]
+        matching_xi_goods_nomenclature = xi_goods_nomenclature_ids[matching]
+
+        return nil if matching_uk_goods_nomenclature['Indentation'] == matching_xi_goods_nomenclature['Indentation']
+
+        [
+          matching_uk_goods_nomenclature['ItemIDPlusPLS'],
+          matching_uk_goods_nomenclature['Indentation'],
+          matching_xi_goods_nomenclature['Indentation'],
+        ]
+      end
+
+      def uk_goods_nomenclature_ids
+        @uk_goods_nomenclature_ids ||= uk_goods_nomenclatures.each_with_object({}) do |goods_nomenclature, acc|
+          acc[goods_nomenclature['ItemIDPlusPLS']] = goods_nomenclature
         end
+      end
 
-        matching_xi_goods_nomenclature = read_xi.find do |xi_goods_nomenclature|
-          xi_goods_nomenclature['ItemIDPlusPLS'] == matching
+      def xi_goods_nomenclature_ids
+        @xi_goods_nomenclature_ids ||= xi_goods_nomenclatures.each_with_object({}) do |goods_nomenclature, acc|
+          acc[goods_nomenclature['ItemIDPlusPLS']] = goods_nomenclature
         end
-
-        [matching_uk_goods_nomenclature['ItemIDPlusPLS'], matching_uk_goods_nomenclature['Indentation'], matching_xi_goods_nomenclature['Indentation']]
-      end
-
-      def xi_goods_nomenclatures
-        read_xi.pluck('ItemIDPlusPLS')
-      end
-
-      def uk_goods_nomenclatures
-        read_uk.pluck('ItemIDPlusPLS')
-      end
-
-      def read_uk
-        @read_uk ||= handle_csv(get("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
-      end
-
-      def read_xi
-        @read_xi ||= handle_csv(get("xi/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
-      end
-
-      def handle_csv(csv)
-        CSV.parse(csv, headers: true).map(&:to_h)
       end
     end
   end
