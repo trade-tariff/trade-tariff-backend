@@ -15,6 +15,7 @@ module Reporting
     def generate
       add_missing_from_uk_worksheet
       add_missing_from_xi_worksheet
+      add_indentation_worksheet
       package
     end
 
@@ -32,6 +33,13 @@ module Reporting
         'uk',
         'xi',
         'In UK data, not in EU',
+        self,
+      ).add_worksheet
+    end
+
+    def add_indentation_worksheet
+      Reporting::Differences::Indentation.new(
+        'Indentation differences',
         self,
       ).add_worksheet
     end
