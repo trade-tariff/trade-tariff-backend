@@ -493,6 +493,17 @@ RSpec.describe GoodsNomenclatures::NestedSet do
     it { is_expected.to include commodity.pk => true }
   end
 
+  describe '.ns_declarable' do
+    subject { GoodsNomenclature.actual.ns_declarable.all }
+
+    before { commodity }
+
+    let(:commodity) { create :commodity, :non_grouping, :with_children }
+
+    it { is_expected.not_to include commodity }
+    it { is_expected.to include commodity.ns_children.first.ns_children.first }
+  end
+
   describe '#ns_declarable?' do
     context 'with descendants' do
       subject { create :commodity, :non_grouping, :with_children }

@@ -31,7 +31,7 @@ module Api
             :additional_code,
             :full_temporary_stop_regulations,
             :measure_partial_temporary_stops,
-          ).all
+          ).all,
         ).filter
 
         @commodity_cache_key = "commodity-#{@commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}"
@@ -53,12 +53,10 @@ module Api
 
       def find_commodity
         @commodity = Commodity.actual
-                              .declarable
+                              .non_hidden
+                              .ns_declarable
                               .by_code(params[:id])
                               .take
-
-        raise Sequel::RecordNotFound if @commodity.children.any?
-        raise Sequel::RecordNotFound if @commodity.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
       end
     end
   end

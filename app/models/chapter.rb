@@ -42,7 +42,7 @@ class Chapter < GoodsNomenclature
 
   dataset_module do
     def by_code(code = '')
-      filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', "#{code.to_s.first(2)}00000000")
+      filter(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(2)}00000000")
     end
   end
 

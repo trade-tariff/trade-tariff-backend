@@ -55,8 +55,6 @@ module Reporting
 
         TimeMachine.now do
           goods_nomenclatures.each do |goods_nomenclature|
-            next unless goods_nomenclature.ns_declarable?
-
             rows << build_row_for(goods_nomenclature)
           end
 
@@ -104,7 +102,7 @@ module Reporting
       def goods_nomenclatures
         GoodsNomenclature
           .actual
-          .declarable
+          .ns_declarable
           .eager(GOODS_NOMENCLATURE_EAGER)
           .non_hidden
           .non_classifieds

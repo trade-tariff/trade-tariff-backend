@@ -160,6 +160,7 @@ chapter.ns_children.first.ns_children.first.ns_children.map(&ns_ancestors)
 * `#number_indents` - if data is loaded via the nested set relationships then this is populated automatically without needing to eager load `goods_nomenclature_indents`
 * `#depth` - internal reference for the depth of a goods nomenclature, normally `number_indents` + 2 except for chapters which are `number_indents` + 1
 * `#goods_nomenclature_class` - this now utilises ns_leaf? internally so benefits from eager loading `#ns_children` or `#ns_descendants` the same
+* `.ns_declarable` - Dataset method to filter by only declarable goods nomenclatures - this does do a left join to check for child_nodes _but_ it skips any rows which have children so shouldn't impact results
 
 ### Measures
 

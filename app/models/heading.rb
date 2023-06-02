@@ -39,7 +39,7 @@ class Heading < GoodsNomenclature
 
   dataset_module do
     def by_code(code = '')
-      filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', "#{code.to_s.first(4)}000000")
+      filter(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}000000")
     end
 
     def by_declarable_code(code = '')

@@ -22,13 +22,11 @@ module Api
 
       def find_commodity
         @commodity = Commodity.actual
-                              .declarable
+                              .non_hidden
+                              .ns_declarable
                               .by_code(params[:id])
                               .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions, :footnotes)
                               .take
-
-        raise Sequel::RecordNotFound if commodity_has_children?
-        raise Sequel::RecordNotFound if @commodity.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
       end
 
       def cached_commodity
