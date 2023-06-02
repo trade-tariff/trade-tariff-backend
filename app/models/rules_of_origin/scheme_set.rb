@@ -34,11 +34,11 @@ module RulesOfOrigin
     end
 
     def schemes
-      @_schemes.keys
+      todays_schemes.keys
     end
 
     def scheme(scheme_code)
-      @_schemes[scheme_code] || raise(SchemeNotFound, "Unknown scheme: #{scheme_code}")
+      todays_schemes[scheme_code] || raise(SchemeNotFound, "Unknown scheme: #{scheme_code}")
     end
 
     def countries
@@ -46,11 +46,11 @@ module RulesOfOrigin
     end
 
     def schemes_for_country(country_code)
-      @_schemes.values_at(*(@_countries[country_code] || []))
+      todays_schemes.values_at(*(@_countries[country_code] || [])).compact
     end
 
     def all_schemes
-      @_schemes.values
+      todays_schemes.values
     end
 
     def schemes_for_filter(has_article: nil)
@@ -101,7 +101,6 @@ module RulesOfOrigin
 
     def build_schemes(schemes_data)
       schemes_data.map(&method(:build_scheme))
-                  .select(&:valid_for_today?)
                   .index_by(&:scheme_code)
     end
 
@@ -113,6 +112,10 @@ module RulesOfOrigin
       return false if filename.match?(/\.\.+/)
 
       filename.match?(/\A[a-zA-Z0-9\-_.]+\z/)
+    end
+
+    def todays_schemes
+      @_schemes.select { |_code, scheme| scheme.valid_for_today? }
     end
   end
 end
