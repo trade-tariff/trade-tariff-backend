@@ -1,5 +1,14 @@
 module Reporting
   class Differences
+    GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER = [
+      :ns_overview_measures,
+      :goods_nomenclature_descriptions,
+      {
+        ns_ancestors: :ns_overview_measures,
+        ns_descendants: %i[ns_overview_measures goods_nomenclature_descriptions],
+      },
+    ].freeze
+
     extend Reporting::Reportable
 
     delegate :get, to: TariffSynchronizer::FileService
@@ -43,6 +52,7 @@ module Reporting
       add_endline_worksheet
       add_start_date_worksheet
       add_end_date_worksheet
+      add_mfn_missing_worksheet
 
       package
     end
@@ -93,12 +103,52 @@ module Reporting
       ).add_worksheet
     end
 
+    def add_mfn_missing_worksheet
+      Reporting::Differences::MfnMissing.new(
+        'MFN missing',
+        self,
+      ).add_worksheet
+    end
+
     def uk_goods_nomenclatures
       @uk_goods_nomenclatures ||= handle_csv(get("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
     end
 
     def xi_goods_nomenclatures
       @xi_goods_nomenclatures ||= handle_csv(get("xi/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+    end
+
+    def each_declarable
+      each_chapter do |eager_chapter|
+        eager_chapter.ns_descendants.each do |chapter_descendant|
+          next unless chapter_descendant.ns_declarable?
+
+          mfns = chapter_descendant.applicable_overview_measures.select do |measure|
+            measure.measure_type_id.in?(MeasureType::THIRD_COUNTRY)
+          end
+
+          if mfns.none?
+            yield chapter_descendant
+          end
+        end
+      end
+    end
+
+    def each_chapter
+      TimeMachine.now do
+        Chapter
+          .actual
+          .non_hidden
+          .all
+          .each do |chapter|
+            eager_chapter = Chapter.actual
+              .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
+              .eager(GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER)
+              .take
+
+            yield eager_chapter
+          end
+      end
     end
 
     def handle_csv(csv)
@@ -112,11 +162,12 @@ module Reporting
         package = new.generate
         package.serialize('differences.xlsx') if Rails.env.development?
 
-        # TODO: When all of the worksheets are produced, we should persist them to S3
-        # object.put(
-        #   body: package.to_stream.read,
-        #   content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        # )
+        if Rails.env.production?
+          object.put(
+            body: package.to_stream.read,
+            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          )
+        end
 
         Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
       end

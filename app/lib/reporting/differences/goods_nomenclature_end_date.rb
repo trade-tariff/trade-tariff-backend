@@ -46,10 +46,6 @@ module Reporting
 
           rows.compact.each do |row|
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
-            sheet.rows.last.tap do |last_row|
-              last_row.cells[1].style = centered_style # UK start date
-              last_row.cells[2].style = centered_style # EU start date
-            end
           end
 
           sheet.column_widths(*COLUMN_WIDTHS)
