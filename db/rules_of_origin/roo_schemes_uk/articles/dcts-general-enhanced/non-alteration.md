@@ -1,4 +1,4 @@
-## 24. Non-manipulation requirements in relation to goods
+### 24. Non-manipulation requirements in relation to goods
 
 1. The requirements mentioned in regulation 4(e) are that the goods must, at the declaration acceptance date—
 

@@ -1,4 +1,4 @@
-## 17. Bilateral cumulation with the British Islands, a British overseas territory, the European Union, Norway and Switzerland
+### 17. Bilateral cumulation with the British Islands, a British overseas territory, the European Union, Norway and Switzerland
 
 1. An exporter may regard goods originating from the British Islands, a British overseas territory, the European Union, Norway or Switzerland as goods originating from a qualifying DCTS country if the conditions set out in paragraph (2) are met.
 
@@ -14,7 +14,7 @@
 
     “bilateral cumulation” refers to the treatment of goods originating from the British Islands, a British overseas territory, the European Union, Norway or Switzerland as goods originating from a qualifying DCTS country in the circumstances described in paragraph (1) ;“British overseas territory” does not include Gibraltar or the Sovereign Base Areas of Akrotiri and Dhekelia.
 
-## 18. Intra-regional cumulation: countries in the same regional group
+### 18. Intra-regional cumulation: countries in the same regional group
 
 1. An exporter may regard the goods in paragraph (2) as goods originating from a qualifying DCTS country (in this regulation, “the cumulating DCTS country”) if the conditions set out in paragraph (3) are met.
 
@@ -64,7 +64,7 @@
 
     “intra-regional cumulation” refers to the treatment of goods originating from a qualifying DCTS country or an FTA partner country in the same regional group as another qualifying DCTS country (“C”) as goods originating from C in the circumstances described in this regulation;“DCTS rate” has the meaning given in regulation 2(1) of the DCTS Regulations.
 
-## 19. Inter-regional cumulation: qualifying DCTS countries in different regional groups
+### 19. Inter-regional cumulation: qualifying DCTS countries in different regional groups
 
 1. An exporter may regard the goods in paragraph (2) as goods originating from a qualifying DCTS country (in this regulation, “the cumulating DCTS country”) if—
 
@@ -150,7 +150,7 @@
 
 5. In this regulation, “extended cumulation” refers to the treatment of goods originating from a country or territory, in accordance with a trade arrangement between that country or territory and the United Kingdom and implemented under section 9 of the Act, as goods originating from a qualifying DCTS country in the circumstances described in paragraph (1) .
 
-## 21. Extended cumulation for least developed countries
+### 21. Extended cumulation for least developed countries
 
 1. An exporter may regard the goods in paragraph (2) as goods originating from an LDC (in this regulation, “the cumulating LDC”) if the conditions in paragraph (3) are met.
 

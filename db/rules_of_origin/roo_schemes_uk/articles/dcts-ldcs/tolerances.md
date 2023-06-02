@@ -1,4 +1,4 @@
-## Note 4 - Tolerances applicable to goods made of a mixture of textile materials
+### Note 4 - Tolerances applicable to goods made of a mixture of textile materials
 
 4.1.  Where, in relation to a good in the table in Part 2 or 3, reference is made to this Note, the conditions set out in Column 3 are not required to be applied to any basic textile materials used in the manufacture of the good and which, taken together, represent 10% or less of the total weight of all the basic textile materials used (see also Notes 4.3 and 4.4).
 
@@ -80,7 +80,7 @@ A woollen fabric, of heading 5112, made from woollen yarn of heading 5107 and sy
 
 4.4.  In the case of goods incorporating “strip consisting of a core of aluminium foil or of a core of plastic film whether or not coated with aluminium powder, of a width not exceeding 5 mm, sandwiched by means of a transparent or coloured adhesive between two layers of plastic film”, the tolerance is 30% in respect of this strip.
 
-## Note 5 — Other tolerances applicable to certain textile goods
+### Note 5 — Other tolerances applicable to certain textile goods
 
 5.1.  Where, in the table in Part 2 or 3, reference is made to this Note, textile materials which do not satisfy the condition set out in Column 3 for the made-up good concerned, may be used, provided that they are classified in a heading other than that of the good and that their value does not exceed 8% of the ex-works price of the good.
 

@@ -1,4 +1,4 @@
-## Processing: important stage of manufacture condition
+### Processing: important stage of manufacture condition
 
 1. Subject to the derogation in regulation 11(1) , the processing of goods constitutes an important stage of manufacture if the processing meets the conditions specified—
 

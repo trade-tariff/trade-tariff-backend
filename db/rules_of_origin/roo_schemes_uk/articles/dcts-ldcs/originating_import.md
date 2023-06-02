@@ -1,4 +1,4 @@
-## Conditions that must be met for goods to be regarded as originating from a qualifying DCTS country
+### Conditions that must be met for goods to be regarded as originating from a qualifying DCTS country
 
 Qualifying DCTS goods listed in Columns 1 and 2 of the tables in Part 2 and Part 3 of Schedule 1 are to be regarded as originating from a qualifying DCTS country if:
 

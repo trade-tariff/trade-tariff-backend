@@ -1,4 +1,4 @@
-## Claims for preferential tariff treatment
+### Claims for preferential tariff treatment
 
 Unless otherwise specified, a claim for the preferential tariff treatment of goods meeting the requirements of the Origin Regulations must be made on the basis of a proof of origin made out by the exporter and must take the form of either:
 
@@ -18,7 +18,7 @@ By way of derogation, if an importer did not make a claim for preferential tarif
 
 - the goods would have been regarded as originating from the beneficiary country under the Origin Regulations and would have satisfied all the requirements of this notice had the claim been made by the importer at the time of importation.
 
-## Conditions for making out a proof of origin
+### Conditions for making out a proof of origin
 
 A proof of origin must be made out by any exporter operating in a beneficiary country for any consignment provided that the exporter making out the proof of origin:
 

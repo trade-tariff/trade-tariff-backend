@@ -1,4 +1,4 @@
-## 9. Valuation
+### 9. Valuation
 
 1. “Value”, in relation to a material, means—
 
@@ -10,7 +10,7 @@
 
     (3) In paragraph (1) (a) , “GATT” means the General Agreement on Tariffs and Trade 1994 (GATT) (being part of Annex 1A to the Agreement establishing the World Trade Organization (WTO) signed in Marrakesh on 15th April 1994(7) ).
 
-## 10. Averages
+### 10. Averages
 
 1. Where the conditions specified in the tables in Part 2 and Part 3 of Schedule 1 refer to a maximum content of non-originating materials, this may be determined by reference to —
 
@@ -28,7 +28,7 @@
 
     “reference period” means the preceding fiscal year or, where figures for a complete preceding fiscal year are not available, a shorter period of at least three months in the preceding fiscal year.
 
-## 11. Derogation in respect of use of non-originating materials
+### 11. Derogation in respect of use of non-originating materials
 
 1. Non-originating materials which, according to the conditions set out in the tables in Part 2 and Part 3 of Schedule 1, are not to be used in the manufacture of the goods, may nevertheless be used provided that—
 
@@ -42,7 +42,7 @@
 
 3. The allowance under the derogation in paragraph (1) applies to the sum of all the materials used in the manufacture of the goods where the condition in respect of those goods as set out in the tables in Part 2 and Part 3 of Schedule 1 is that such materials be wholly obtained in the qualifying DCTS country, but this does not affect the application of regulations 8(2) and 12(1) .
 
-## 12. Consignments of identical goods and packaging
+### 12. Consignments of identical goods and packaging
 
 1. For the purposes of these Regulations, if a consignment consists of several goods, the origin of each good must be individually determined, including where the consignment consists of substantively identical goods classified under the same sub-heading.
 
@@ -50,7 +50,7 @@
 
 3. In this regulation, “the Tariff of the United Kingdom” has the meaning given in regulation 1(2) of the Tariff Regulations.
 
-## 13. Accessories, spare parts and tools dispatched with a piece of equipment, machine, apparatus or vehicle which are part of the normal equipment and included in its price or which are not separately invoiced:
+### 13. Accessories, spare parts and tools dispatched with a piece of equipment, machine, apparatus or vehicle which are part of the normal equipment and included in its price or which are not separately invoiced:
 
 - (a) are to be regarded as having the same origin as the piece of equipment, machine, apparatus or vehicle;
 
