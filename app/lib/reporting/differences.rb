@@ -72,6 +72,7 @@ module Reporting
       add_missing_from_uk_worksheet
       add_missing_from_xi_worksheet
       add_indentation_worksheet
+      add_hierarchy_worksheet
       add_endline_worksheet
       add_start_date_worksheet
       add_end_date_worksheet
@@ -102,6 +103,13 @@ module Reporting
     def add_indentation_worksheet
       Reporting::Differences::Indentation.new(
         'Indentation differences',
+        self,
+      ).add_worksheet
+    end
+
+    def add_hierarchy_worksheet
+      Reporting::Differences::Hierarchy.new(
+        'Hierarchy differences',
         self,
       ).add_worksheet
     end
