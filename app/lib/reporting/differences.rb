@@ -1,11 +1,34 @@
 module Reporting
   class Differences
+    MEASURE_EAGER = [
+      {
+        measure_components: [
+          { duty_expression: %i[duty_expression_description] },
+          { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
+          { measurement_unit_qualifier: :measurement_unit_qualifier_description },
+          { monetary_unit: :monetary_unit_description },
+        ],
+      },
+    ].freeze
+
     GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER = [
       :ns_overview_measures,
       :goods_nomenclature_descriptions,
       {
         ns_ancestors: :ns_overview_measures,
         ns_descendants: %i[ns_overview_measures goods_nomenclature_descriptions],
+      },
+    ].freeze
+
+    GOODS_NOMENCLATURE_OVERVIEW_MEASURE_WITH_COMPONENTS_EAGER = [
+      :ns_overview_measures,
+      :goods_nomenclature_descriptions,
+      {
+        ns_ancestors: [{ ns_overview_measures: MEASURE_EAGER }],
+        ns_descendants: [
+          { ns_overview_measures: MEASURE_EAGER },
+          :goods_nomenclature_descriptions,
+        ],
       },
     ].freeze
 
@@ -53,6 +76,7 @@ module Reporting
       add_start_date_worksheet
       add_end_date_worksheet
       add_mfn_missing_worksheet
+      add_mfn_duplicated_worksheet
 
       package
     end
@@ -110,6 +134,13 @@ module Reporting
       ).add_worksheet
     end
 
+    def add_mfn_duplicated_worksheet
+      Reporting::Differences::MfnDuplicated.new(
+        'Duplicate MFNs',
+        self,
+      ).add_worksheet
+    end
+
     def uk_goods_nomenclatures
       @uk_goods_nomenclatures ||= handle_csv(get("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
     end
@@ -118,21 +149,7 @@ module Reporting
       @xi_goods_nomenclatures ||= handle_csv(get("xi/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
     end
 
-    def each_declarable
-      each_chapter do |eager_chapter|
-        eager_chapter.ns_descendants.each do |chapter_descendant|
-          next unless chapter_descendant.ns_declarable?
-
-          next if chapter_descendant.applicable_overview_measures.any? do |measure|
-            measure.measure_type_id.in?(MeasureType::THIRD_COUNTRY)
-          end
-
-          yield chapter_descendant
-        end
-      end
-    end
-
-    def each_chapter
+    def each_chapter(eager:)
       TimeMachine.now do
         Chapter
           .actual
@@ -141,7 +158,7 @@ module Reporting
           .each do |chapter|
             eager_chapter = Chapter.actual
               .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
-              .eager(GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER)
+              .eager(eager)
               .take
 
             yield eager_chapter
