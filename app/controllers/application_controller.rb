@@ -1,10 +1,7 @@
-require 'clearable'
-
 class ApplicationController < ActionController::Base
   respond_to :json, :html
 
   before_action :maintenance_mode_if_active
-  before_action :clear_association_queries
   around_action :configure_time_machine
   after_action  :check_query_count, if: -> { TradeTariffBackend.check_query_count? }
 
@@ -34,10 +31,6 @@ class ApplicationController < ActionController::Base
 
   def skip_time_machine(&block)
     TimeMachine.no_time_machine(&block)
-  end
-
-  def clear_association_queries
-    TradeTariffBackend.clearable_models.map(&:clear_association_cache)
   end
 
   def check_query_count

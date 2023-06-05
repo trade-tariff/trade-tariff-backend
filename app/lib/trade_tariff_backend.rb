@@ -159,58 +159,6 @@ module TradeTariffBackend
       ].map(&:new)
     end
 
-    def clearable_models
-      [
-        AdditionalCode,
-        AdditionalCodeDescription,
-        AdditionalCodeDescriptionPeriod,
-        BaseRegulation,
-        Certificate,
-        CertificateDescription,
-        CertificateDescriptionPeriod,
-        CertificateType,
-        Change,
-        DutyExpression,
-        ExportRefundNomenclature,
-        ExportRefundNomenclatureDescription,
-        ExportRefundNomenclatureDescriptionPeriod,
-        ExportRefundNomenclatureIndent,
-        Footnote,
-        FootnoteAssociationGoodsNomenclature,
-        FootnoteDescription,
-        FootnoteDescriptionPeriod,
-        FullTemporaryStopRegulation,
-        GeographicalArea,
-        GeographicalAreaDescription,
-        GeographicalAreaDescriptionPeriod,
-        GeographicalAreaMembership,
-        GoodsNomenclature,
-        GoodsNomenclatureDescription,
-        GoodsNomenclatureDescriptionPeriod,
-        GoodsNomenclatureIndent,
-        Measure,
-        MeasureAction,
-        MeasureComponent,
-        MeasureCondition,
-        MeasureConditionCode,
-        MeasureConditionComponent,
-        MeasurePartialTemporaryStop,
-        MeasureType,
-        MeasurementUnit,
-        MeasurementUnitQualifier,
-        MeursingAdditionalCode,
-        ModificationRegulation,
-        MonetaryExchangePeriod,
-        MonetaryUnit,
-        PublicationSigle,
-        QuotaBlockingPeriod,
-        QuotaDefinition,
-        QuotaOrderNumber,
-        QuotaOrderNumberOrigin,
-        QuotaSuspensionPeriod,
-      ]
-    end
-
     def check_query_count?
       excess_query_threshold.positive?
     end
