@@ -18,9 +18,6 @@ require 'sidekiq/testing'
 
 Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
-# require models and serializers
-require 'clearable'
-
 RSpec.configure do |config|
   config.use_transactional_fixtures = false
   config.file_fixture_path = 'spec/fixtures'
@@ -70,8 +67,6 @@ RSpec.configure do |config|
 
     # things like nomenclature item id's risk wrapping otherwise
     FactoryBot.rewind_sequences
-
-    TradeTariffBackend.clearable_models.map(&:clear_association_cache)
   end
 end
 
