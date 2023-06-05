@@ -22,10 +22,15 @@ class GenerateGoodsNomenclaturesCsvReportWorker
   def goods_nomenclatures
     Chapter
       .non_hidden
-      .eager(:goods_nomenclature_descriptions,
-             ns_ancestors: :goods_nomenclature_descriptions,
-             ns_descendants: :goods_nomenclature_descriptions)
+      .eager(
+        :goods_nomenclature_descriptions,
+        ns_ancestors: :goods_nomenclature_descriptions,
+        ns_descendants: :goods_nomenclature_descriptions,
+      )
       .all
-      .flat_map(&:ns_descendants)
+      .each_with_object([]) do |chapter, acc|
+        acc << chapter
+        acc.concat chapter.ns_descendants
+      end
   end
 end
