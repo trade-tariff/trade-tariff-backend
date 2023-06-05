@@ -59,4 +59,20 @@ RSpec.describe TimeMachine do
       it { is_expected.to be false }
     end
   end
+
+  describe '.point_in_time' do
+    subject { described_class.point_in_time }
+
+    context 'when date is set' do
+      around { |example| described_class.now { example.run } }
+
+      it { is_expected.not_to be_nil }
+    end
+
+    context 'when date is not set' do
+      around { |example| described_class.no_time_machine { example.run } }
+
+      it { is_expected.to be_nil }
+    end
+  end
 end

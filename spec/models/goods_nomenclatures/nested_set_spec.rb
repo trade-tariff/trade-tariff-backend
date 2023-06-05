@@ -1,8 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::NestedSet do
-  around { |example| TimeMachine.now { example.run } }
-
   describe 'relationships' do
     describe '#tree_node' do
       subject(:tree_node) { commodity.reload.tree_node }

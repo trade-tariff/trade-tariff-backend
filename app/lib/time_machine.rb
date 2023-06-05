@@ -48,6 +48,10 @@ module TimeMachine
   end
 
   def self.date_is_set?
-    !Thread.current[THREAD_DATETIME_KEY].nil?
+    !point_in_time.nil?
+  end
+
+  def self.point_in_time
+    Thread.current[THREAD_DATETIME_KEY]
   end
 end

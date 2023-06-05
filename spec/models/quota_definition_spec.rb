@@ -1,7 +1,5 @@
 RSpec.describe QuotaDefinition do
   describe '#status' do
-    around { |example| TimeMachine.now { example.run } }
-
     context 'when not in a critical state with no events' do
       subject(:status) { build(:quota_definition, critical_state: 'N').status }
 
@@ -180,8 +178,6 @@ RSpec.describe QuotaDefinition do
   end
 
   describe '#quota_critical_event_ids' do
-    around { |example| TimeMachine.now { example.run } }
-
     context 'when there are quota critical events' do
       let(:quota_definition) { create(:quota_definition, :with_quota_critical_events) }
 
@@ -269,6 +265,8 @@ RSpec.describe QuotaDefinition do
     end
 
     context 'when the time machine is not set' do
+      around { |example| TimeMachine.no_time_machine { example.run } }
+
       it { is_expected.to be_present }
     end
 
