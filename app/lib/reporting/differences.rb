@@ -123,13 +123,11 @@ module Reporting
         eager_chapter.ns_descendants.each do |chapter_descendant|
           next unless chapter_descendant.ns_declarable?
 
-          mfns = chapter_descendant.applicable_overview_measures.select do |measure|
+          next if chapter_descendant.applicable_overview_measures.any? do |measure|
             measure.measure_type_id.in?(MeasureType::THIRD_COUNTRY)
           end
 
-          if mfns.none?
-            yield chapter_descendant
-          end
+          yield chapter_descendant
         end
       end
     end
