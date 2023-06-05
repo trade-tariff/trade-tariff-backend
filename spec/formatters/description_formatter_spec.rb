@@ -40,10 +40,10 @@ RSpec.describe DescriptionFormatter do
       ).to eq description
     end
 
-    it 'replaces | with non breaking space html entity' do
+    it 'replaces | with space' do
       expect(
         described_class.format(description: ' | '),
-      ).to eq ' &nbsp; '
+      ).to eq '   '
     end
 
     it 'replaces !1! with breaking space tags' do
