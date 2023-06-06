@@ -1,22 +1,20 @@
 module Reporting
   class Differences
-    class MisappliedActionCode
+    class IncompleteMeasureCondition
       delegate :workbook,
                :regular_style,
                :bold_style,
                to: :report
 
       HEADER_ROW = [
-        'Measure sid',
-        'Commodity code',
-        'Measure type id',
-        'Measure type description',
-        'Geographical area id',
-        'Measure condition sid',
+        'Measure SID',
+        'Measure type ID',
+        'Start date',
+        'Commodity',
+        'Geographical area',
+        'Condition duty amount',
         'Action code',
-        'Measure action description',
-        'Certificate code',
-        'Component sequence number',
+        'Action',
       ].freeze
 
       TAB_COLOR = '00ff00'.freeze
@@ -24,7 +22,7 @@ module Reporting
       CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
       COLUMN_WIDTHS = Array.new(HEADER_ROW.size, 20).freeze
 
-      AUTOFILTER_CELL_RANGE = 'A1:J1'.freeze
+      AUTOFILTER_CELL_RANGE = 'A1:H1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(name, report)
@@ -60,7 +58,7 @@ module Reporting
       def rows
         acc = []
 
-        each_missapplied_measure do |measure|
+        each_incomplete_measure do |measure|
           measure.measure_conditions.each do |measure_condition|
             row = build_row_for(measure, measure_condition)
 
@@ -71,7 +69,7 @@ module Reporting
         acc
       end
 
-      def each_missapplied_measure(&block)
+      def each_incomplete_measure(&block)
         TimeMachine.now do
           Measure
             .actual
@@ -79,15 +77,20 @@ module Reporting
             .with_regulation_dates_query
             .without_excluded_types
             .eager(
-              measure_conditions: { measure_action: :measure_action_description },
-              measure_type: :measure_type_description,
+              [
+                :measure_type,
+                { measure_conditions: { measure_action: :measure_action_description } },
+              ],
             )
             .association_join(:measure_conditions)
             .where(
               Sequel.lit(
                 <<~SQL,
-                  measure_conditions.action_code IN ('05', '06', '08', '09')
-                    AND measure_conditions.certificate_type_code IS NOT NULL
+                  measure_conditions.action_code > '10'
+                    AND measure_conditions.certificate_type_code IS NULL
+                    AND measure_conditions.condition_measurement_unit_code IS NULL
+                    AND measure_conditions.condition_monetary_unit_code IS NULL
+                    AND measure_conditions.condition_duty_amount IS NOT NULL
                 SQL
               ),
             )
@@ -99,15 +102,13 @@ module Reporting
       def build_row_for(measure, measure_condition)
         [
           measure.measure_sid,
-          measure.goods_nomenclature_item_id,
           measure.measure_type_id,
-          measure.measure_type.description,
+          measure.effective_start_date.to_date.strftime('%d/%m/%Y'),
+          measure.goods_nomenclature_item_id,
           measure.geographical_area_id,
-          measure_condition.measure_condition_sid,
+          measure_condition.condition_duty_amount,
           measure_condition.action_code,
           measure_condition.measure_action.description,
-          "#{measure_condition.certificate_type_code}#{measure_condition.certificate_code}",
-          measure_condition.component_sequence_number,
         ]
       end
     end
