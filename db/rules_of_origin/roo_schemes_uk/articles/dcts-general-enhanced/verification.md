@@ -63,4 +63,3 @@ An exporter may make out a proof of origin after exportation of the goods to whi
 - it was issued but was not accepted at importation for technical reasons
 
 - the final destination of the goods concerned was determined during their transportation or storage and after splitting of a consignment, in accordance with the Origin Regulations.
-- 
