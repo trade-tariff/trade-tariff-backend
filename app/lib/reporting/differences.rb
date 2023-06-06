@@ -78,6 +78,7 @@ module Reporting
       add_end_date_worksheet
       add_mfn_missing_worksheet
       add_mfn_duplicated_worksheet
+      add_misapplied_action_code_worksheet
 
       package
     end
@@ -145,6 +146,13 @@ module Reporting
     def add_mfn_duplicated_worksheet
       Reporting::Differences::MfnDuplicated.new(
         'Duplicate MFNs',
+        self,
+      ).add_worksheet
+    end
+
+    def add_misapplied_action_code_worksheet
+      Reporting::Differences::MisappliedActionCode.new(
+        'Misapplied action codes',
         self,
       ).add_worksheet
     end
