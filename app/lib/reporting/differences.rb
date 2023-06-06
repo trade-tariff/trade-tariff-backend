@@ -79,6 +79,7 @@ module Reporting
       add_mfn_missing_worksheet
       add_mfn_duplicated_worksheet
       add_misapplied_action_code_worksheet
+      add_incomplete_measure_condition_worksheet
 
       package
     end
@@ -153,6 +154,13 @@ module Reporting
     def add_misapplied_action_code_worksheet
       Reporting::Differences::MisappliedActionCode.new(
         'Misapplied action codes',
+        self,
+      ).add_worksheet
+    end
+
+    def add_incomplete_measure_condition_worksheet
+      Reporting::Differences::IncompleteMeasureCondition.new(
+        'Incomplete conditions',
         self,
       ).add_worksheet
     end
