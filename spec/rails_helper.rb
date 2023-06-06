@@ -37,6 +37,16 @@ RSpec.configure do |config|
 
   config.include_context 'with fake global rules of origin data'
 
+  config.around do |example|
+    # Workers are known to operate outside of TimeMachine so make them
+    # responsible for setting the date
+    if example.metadata[:type].in? %i[worker]
+      TimeMachine.no_time_machine { example.run }
+    else
+      TimeMachine.now { example.run }
+    end
+  end
+
   config.before(:all) do
     FileUtils.rm_rf('tmp/data/cds')
     FileUtils.mkpath('tmp/data/cds')
