@@ -102,7 +102,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
       let(:country_code) { 'VN' }
 
       it { is_expected.to include have_attributes(scheme_code: 'vietnam') }
-      it { is_expected.to include have_attributes(scheme_code: 'gsp') }
+      it { is_expected.to include have_attributes(scheme_code: /gsp|dcts/) }
     end
   end
 
