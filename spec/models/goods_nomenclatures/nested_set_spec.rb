@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::NestedSet do
+  around { |example| TimeMachine.now { example.run } }
+
   describe 'relationships' do
     describe '#tree_node' do
       subject(:tree_node) { commodity.reload.tree_node }
@@ -395,28 +397,6 @@ RSpec.describe GoodsNomenclatures::NestedSet do
             it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
             it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
             it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
-          end
-        end
-
-        context 'when outside of TimeMachine' do
-          around { |example| TimeMachine.no_time_machine { example.run } }
-
-          let(:commodity) { create :commodity }
-
-          describe '#ns_ancestors' do
-            it { expect { commodity.ns_ancestors }.to raise_exception described_class::DateNotSet }
-          end
-
-          describe '#ns_parent' do
-            it { expect { commodity.ns_parent }.to raise_exception described_class::DateNotSet }
-          end
-
-          describe '#ns_children' do
-            it { expect { commodity.ns_children }.to raise_exception described_class::DateNotSet }
-          end
-
-          describe '#ns_descendants' do
-            it { expect { commodity.ns_descendants }.to raise_exception described_class::DateNotSet }
           end
         end
       end

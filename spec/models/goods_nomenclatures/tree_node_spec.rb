@@ -1,6 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::TreeNode do
+  around { |example| TimeMachine.now { example.run } }
+
   describe 'Sequel::Model config' do
     subject { described_class }
 

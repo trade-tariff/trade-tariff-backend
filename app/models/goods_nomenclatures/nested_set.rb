@@ -5,12 +5,6 @@ module GoodsNomenclatures
   module NestedSet
     extend ActiveSupport::Concern
 
-    class DateNotSet < RuntimeError
-      def initialize
-        super 'TimeMachine date is not set, code should be inside TimeMachine.now {}'
-      end
-    end
-
     included do
       one_to_one :tree_node, key: :goods_nomenclature_sid,
                              class_name: 'GoodsNomenclatures::TreeNode',
@@ -29,8 +23,6 @@ module GoodsNomenclatures
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :ancestor_nodes),
                    after_load: :recursive_ancestor_populator,
                    read_only: true do |ds|
-        raise DateNotSet unless TimeMachine.date_is_set?
-
         ds.order(:ancestor_nodes__position)
           .with_validity_dates(:ancestor_nodes)
           .select_append(:ancestor_nodes__depth)
@@ -53,8 +45,6 @@ module GoodsNomenclatures
                       class_name: '::GoodsNomenclature',
                       join_table: Sequel.as(:goods_nomenclature_tree_nodes, :parent_nodes),
                       read_only: true do |ds|
-        raise DateNotSet unless TimeMachine.date_is_set?
-
         ds.order(:parent_nodes__position)
           .with_validity_dates(:parent_nodes)
           .select_append(:parent_nodes__depth)
@@ -78,8 +68,6 @@ module GoodsNomenclatures
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :descendant_nodes),
                    after_load: :recursive_descendant_populator,
                    read_only: true do |ds|
-        raise DateNotSet unless TimeMachine.date_is_set?
-
         ds.non_hidden
           .order(:descendant_nodes__position)
           .with_validity_dates(:descendant_nodes)
@@ -102,8 +90,6 @@ module GoodsNomenclatures
                    class_name: '::GoodsNomenclature',
                    join_table: Sequel.as(:goods_nomenclature_tree_nodes, :child_nodes),
                    read_only: true do |ds|
-        raise DateNotSet unless TimeMachine.date_is_set?
-
         ds.non_hidden
           .order(:child_nodes__position)
           .with_validity_dates(:child_nodes)

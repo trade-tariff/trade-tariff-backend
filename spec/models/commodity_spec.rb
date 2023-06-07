@@ -693,7 +693,7 @@ RSpec.describe Commodity do
       it 'caches the result' do
         commodity.declarable?
 
-        expect(Rails.cache).to have_received(:fetch).with("commodity-#{commodity.goods_nomenclature_sid}-#{TimeMachine.point_in_time.to_date}-is-declarable?")
+        expect(Rails.cache).to have_received(:fetch).with("commodity-#{commodity.goods_nomenclature_sid}--is-declarable?")
       end
     end
 
@@ -703,7 +703,7 @@ RSpec.describe Commodity do
       it 'caches the result' do
         commodity.declarable?
 
-        expect(Rails.cache).to have_received(:fetch).with("commodity-#{commodity.goods_nomenclature_sid}-#{TimeMachine.point_in_time.to_date}-is-declarable?")
+        expect(Rails.cache).to have_received(:fetch).with("commodity-#{commodity.goods_nomenclature_sid}--is-declarable?")
       end
     end
 
