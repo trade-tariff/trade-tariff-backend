@@ -11,6 +11,14 @@ module Reporting
       },
     ].freeze
 
+    GOODS_NOMENCLATURE_MEASURE_EAGER = [
+      :ns_measures,
+      {
+        ns_ancestors: :ns_measures,
+        ns_descendants: :ns_measures,
+      },
+    ].freeze
+
     GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER = [
       :ns_overview_measures,
       :goods_nomenclature_descriptions,
@@ -80,6 +88,7 @@ module Reporting
       add_mfn_duplicated_worksheet
       add_misapplied_action_code_worksheet
       add_incomplete_measure_condition_worksheet
+      add_me32_worksheet
 
       package
     end
@@ -161,6 +170,13 @@ module Reporting
     def add_incomplete_measure_condition_worksheet
       Reporting::Differences::IncompleteMeasureCondition.new(
         'Incomplete conditions',
+        self,
+      ).add_worksheet
+    end
+
+    def add_me32_worksheet
+      Reporting::Differences::Me32.new(
+        'ME32 candidates',
         self,
       ).add_worksheet
     end
