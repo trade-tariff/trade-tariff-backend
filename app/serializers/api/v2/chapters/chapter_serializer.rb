@@ -13,7 +13,8 @@ module Api
                    :description,
                    :formatted_description,
                    :validity_start_date,
-                   :validity_end_date
+                   :validity_end_date,
+                   :description_plain
 
         attribute :chapter_note, if: proc { |chapter| chapter.chapter_note.present? } do |chapter|
           chapter.chapter_note.content

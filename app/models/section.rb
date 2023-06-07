@@ -1,5 +1,6 @@
 class Section < Sequel::Model
   extend ActiveModel::Naming
+  include Formatter
 
   set_dataset order(Sequel.asc(:position))
 
@@ -33,6 +34,9 @@ class Section < Sequel::Model
       end
     end
   end)
+
+  custom_format :description_plain, with: DescriptionTrimFormatter,
+                                    using: :title
 
   def chapter_ids
     chapters.pluck(:goods_nomenclature_sid)

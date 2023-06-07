@@ -15,7 +15,8 @@ module Api
                    :description,
                    :formatted_description,
                    :validity_start_date,
-                   :validity_end_date
+                   :validity_end_date,
+                   :description_plain
 
         attribute :declarable do
           false

@@ -1,6 +1,7 @@
 class Chapter < GoodsNomenclature
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
+  include Formatter
 
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000')
               .order(
@@ -27,6 +28,9 @@ class Chapter < GoodsNomenclature
   end
 
   one_to_one :chapter_note, primary_key: :to_param
+
+  custom_format :description_plain, with: DescriptionTrimFormatter,
+                                    using: :description
 
   def guide_ids
     guides.pluck(:id)
