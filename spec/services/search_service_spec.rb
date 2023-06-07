@@ -310,20 +310,18 @@ RSpec.describe SearchService do
           }.ignore_extra_keys!
         end
 
-        context 'with search date within goods code validity period' do
-          subject { described_class.new(data_serializer, q: 'water', as_of: '2005-01-01').to_json }
+        it 'returns goods code if search date falls within validity period' do
+          result = described_class.new(data_serializer, q: 'water',
+                                                        as_of: '2005-01-01').to_json
 
-          around { |example| TimeMachine.at('2005-01-01') { example.run } }
-
-          it { is_expected.to match_json_expression heading_pattern }
+          expect(result).to match_json_expression heading_pattern
         end
 
-        context 'with search date outside goods code validity period' do
-          subject { described_class.new(data_serializer, q: 'water', as_of: '2007-01-01').to_json }
+        it 'does not return goods code if search date does not fall within validity period' do
+          result = described_class.new(data_serializer, q: 'water',
+                                                        as_of: '2007-01-01').to_json
 
-          around { |example| TimeMachine.at('2007-01-01') { example.run } }
-
-          it { is_expected.not_to match_json_expression heading_pattern }
+          expect(result).not_to match_json_expression heading_pattern
         end
       end
 

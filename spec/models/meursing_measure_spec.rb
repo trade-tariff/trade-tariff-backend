@@ -46,6 +46,8 @@ RSpec.describe MeursingMeasure do
       )
     end
 
+    around { |example| TimeMachine.now { example.run } }
+
     context 'when the validity end date is null' do
       let(:validity_end_date) { nil }
 
