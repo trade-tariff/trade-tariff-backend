@@ -89,6 +89,7 @@ module Reporting
       add_misapplied_action_code_worksheet
       add_incomplete_measure_condition_worksheet
       add_me32_worksheet
+      add_omitted_duty_measures_worksheet
 
       package
     end
@@ -181,6 +182,13 @@ module Reporting
       ).add_worksheet
     end
 
+    def add_omitted_duty_measures_worksheet
+      Reporting::Differences::OmittedDutyMeasures.new(
+        'Omitted duties',
+        self,
+      ).add_worksheet
+    end
+
     def uk_goods_nomenclatures
       @uk_goods_nomenclatures ||= handle_csv(get("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
     end
@@ -189,8 +197,8 @@ module Reporting
       @xi_goods_nomenclatures ||= handle_csv(get("xi/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
     end
 
-    def each_chapter(eager:)
-      TimeMachine.now do
+    def each_chapter(eager:, as_of: Time.zone.today.iso8601)
+      TimeMachine.at(as_of) do
         Chapter
           .actual
           .non_hidden
