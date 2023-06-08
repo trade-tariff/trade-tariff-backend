@@ -390,6 +390,11 @@
                     "detail": ""
                 }
             ],
+            "proof_codes": {
+                "DE 2/3": "You must include one of the following document codes, as appropriate:\n\n- **U110** - if the claim is based on a 'declaration of origin' for a single shipment\n\n- **U111** - if the claim is based on a 'declaration of origin' for multiple shipments of identical products to cover a 12-month period\n\n- **U112** - if the claim is based on importers knowledge, using status code JP\n\nCodes **U110** and **U111** must be declared with one of the following [document status codes (opens in new window)](https://www.gov.uk/guidance/data-element-23-document-status-codes-of-the-customs-declaration-service-cds): AE, AF, AG, AP, AS, AT, GE, GP, HP, JE, JP, LE, LP, UA, UE, UP, US, XB.",
+                "DE 4/17": "The data element must include a preference code in the 300 series.",
+                "DE 5/16": "The data element must be completed with the country of preferential origin."
+            },
             "cumulation_methods": {
                 "bilateral": {
                     "countries": [
@@ -3097,6 +3102,11 @@
                     "detail": ""
                 }
             ],
+            "proof_codes": {
+                "DE 2/3": "You must include one of the following document codes, as appropriate:\n\n- **U110** - if the claim is based on a 'declaration of origin' for a single shipment\n\n- **U111** - if the claim is based on a 'declaration of origin' for multiple shipments of identical products to cover a 12-month period\n\n- **U112** - if the claim is based on importers knowledge, using status code JP\n\nCodes **U110** and **U111** must be declared with one of the following [document status codes (opens in new window)](https://www.gov.uk/guidance/data-element-23-document-status-codes-of-the-customs-declaration-service-cds): AE, AF, AG, AP, AS, AT, GE, GP, HP, JE, JP, LE, LP, UA, UE, UP, US, XB.",
+                "DE 4/17": "The data element must include a preference code in the 300 series.",
+                "DE 5/16": "The data element must be completed with the country of preferential origin."
+            },
             "cumulation_methods": {
                 "bilateral": {
                     "countries": [
