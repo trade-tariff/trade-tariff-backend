@@ -77,19 +77,35 @@ module Reporting
     end
 
     def generate
-      add_missing_from_uk_worksheet
-      add_missing_from_xi_worksheet
-      add_indentation_worksheet
-      add_hierarchy_worksheet
-      add_endline_worksheet
-      add_start_date_worksheet
-      add_end_date_worksheet
-      add_mfn_missing_worksheet
-      add_mfn_duplicated_worksheet
-      add_misapplied_action_code_worksheet
-      add_incomplete_measure_condition_worksheet
-      add_me32_worksheet
-      add_omitted_duty_measures_worksheet
+      total_start = Time.zone.now
+
+      methods = %i[
+        add_missing_from_uk_worksheet
+        add_missing_from_xi_worksheet
+        add_indentation_worksheet
+        add_hierarchy_worksheet
+        add_endline_worksheet
+        add_start_date_worksheet
+        add_end_date_worksheet
+        add_mfn_missing_worksheet
+        add_mfn_duplicated_worksheet
+        add_misapplied_action_code_worksheet
+        add_incomplete_measure_condition_worksheet
+        add_me32_worksheet
+        add_omitted_duty_measures_worksheet
+      ]
+
+      methods.each do |method|
+        start = Time.zone.now
+
+        send(method)
+
+        finish = Time.zone.now
+        Rails.logger.info("Finished method '#{method}' (Duration: #{finish - start} seconds)")
+      end
+
+      total_finish = Time.zone.now
+      Rails.logger.info("Finished generating worksheets (Total Duration: #{total_finish - total_start} seconds)")
 
       package
     end
