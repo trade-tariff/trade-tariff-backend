@@ -48,7 +48,8 @@ module Reporting
                 :workbook,
                 :regular_style,
                 :bold_style,
-                :centered_style
+                :centered_style,
+                :as_of
 
     def initialize
       @package = Axlsx::Package.new
@@ -74,6 +75,7 @@ module Reporting
         font_name: 'Calibri',
         sz: 11,
       )
+      @as_of = Time.zone.today.iso8601
     end
 
     def generate
@@ -94,6 +96,7 @@ module Reporting
         add_me32_worksheet
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
+        add_missing_quota_origins_worksheet
       ]
 
       methods.each do |method|
@@ -209,6 +212,13 @@ module Reporting
     def add_missing_vat_measure_worksheet
       Reporting::Differences::MissingVatMeasure.new(
         'VAT missing',
+        self,
+      ).add_worksheet
+    end
+
+    def add_missing_quota_origins_worksheet
+      Reporting::Differences::QuotaMissingOrigin.new(
+        'Quota with no origins',
         self,
       ).add_worksheet
     end
