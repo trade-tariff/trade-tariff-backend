@@ -93,6 +93,7 @@ module Reporting
         add_incomplete_measure_condition_worksheet
         add_me32_worksheet
         add_omitted_duty_measures_worksheet
+        add_missing_vat_measure_worksheet
       ]
 
       methods.each do |method|
@@ -201,6 +202,13 @@ module Reporting
     def add_omitted_duty_measures_worksheet
       Reporting::Differences::OmittedDutyMeasures.new(
         'Omitted duties',
+        self,
+      ).add_worksheet
+    end
+
+    def add_missing_vat_measure_worksheet
+      Reporting::Differences::MissingVatMeasure.new(
+        'VAT missing',
         self,
       ).add_worksheet
     end
