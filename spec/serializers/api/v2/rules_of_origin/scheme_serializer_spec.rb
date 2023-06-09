@@ -27,6 +27,8 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           title: scheme.title,
           countries: scheme.countries,
           unilateral: true,
+          proof_intro: nil,
+          proof_codes: {},
         },
         relationships: {
           links: {
