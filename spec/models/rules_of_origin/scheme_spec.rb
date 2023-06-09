@@ -15,6 +15,8 @@ RSpec.describe RulesOfOrigin::Scheme do
     it { is_expected.to respond_to :country_code }
     it { is_expected.to respond_to :notes }
     it { is_expected.to respond_to :proofs }
+    it { is_expected.to respond_to :proof_intro }
+    it { is_expected.to respond_to :proof_codes }
     it { is_expected.to respond_to :ord }
     it { is_expected.to respond_to :cumulation_methods }
     it { is_expected.to respond_to :validity_start_date }
@@ -177,6 +179,22 @@ RSpec.describe RulesOfOrigin::Scheme do
       let(:scheme) { build :rules_of_origin_scheme }
 
       it { is_expected.to have_attributes length: 0 }
+    end
+  end
+
+  describe '#proof_codes' do
+    context 'with defined codes' do
+      subject { described_class.new(proof_codes: codes).proof_codes }
+
+      let(:codes) { { 'ABC' => 'Hey', 'DEF' => 'there' } }
+
+      it { is_expected.to eq codes }
+    end
+
+    context 'without defined codes' do
+      subject { described_class.new.proof_codes }
+
+      it { is_expected.to eq({}) }
     end
   end
 

@@ -36,6 +36,8 @@ RSpec.describe Api::V2::RulesOfOrigin::FullSchemeSerializer do
           unilateral: true,
           fta_intro: scheme.fta_intro,
           introductory_notes: scheme.introductory_notes,
+          proof_intro: nil,
+          proof_codes: {},
         },
         relationships: {
           links: {
