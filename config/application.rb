@@ -11,6 +11,9 @@ Bundler.require(*Rails.groups)
 
 module TradeTariffBackend
   class Application < Rails::Application
+    config.api_only = true
+    config.debug_exception_response_format = :default
+
     config.load_defaults 6.1
 
     config.generators do |g|
