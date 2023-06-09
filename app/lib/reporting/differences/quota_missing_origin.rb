@@ -55,6 +55,7 @@ module Reporting
           QuotaOrderNumber
             .actual
             .association_left_join(:quota_order_number_origins)
+            .where(quota_order_numbers__quota_order_number_id: /^05/)
             .where(quota_order_number_origins__quota_order_number_origin_sid: nil)
             .select_map(
               %i[
