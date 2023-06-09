@@ -39,6 +39,8 @@ private
       .new('test')
       .call
       .is_a?(::Beta::Search::SearchQueryParserResult)
+  rescue Faraday::Error
+    false
   end
 
   def opensearch_healthy?
