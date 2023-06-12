@@ -15,5 +15,13 @@ module Cache
     def page_size
       5
     end
+
+    def hidden_codes
+      @hidden_codes ||= HiddenGoodsNomenclature.codes
+    end
+
+    def serialize_record(record)
+      serializer.new(record, hidden_codes).as_json
+    end
   end
 end

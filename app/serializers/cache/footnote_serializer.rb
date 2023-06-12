@@ -6,8 +6,9 @@ module Cache
 
     attr_reader :footnote
 
-    def initialize(footnote)
+    def initialize(footnote, hidden_codes)
       @footnote = footnote
+      @hidden_codes = hidden_codes
     end
 
     def as_json
@@ -50,7 +51,7 @@ module Cache
 
     def goods_nomenclatures
       @goods_nomenclatures ||= footnote.goods_nomenclatures.compact.select do |goods_nomenclature|
-        HiddenGoodsNomenclature.codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
+        @hidden_codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
       end
     end
 
@@ -63,7 +64,7 @@ module Cache
         .all
         .select do |measure|
           measure.goods_nomenclature.present? &&
-            HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
+            @hidden_codes.exclude?(measure.goods_nomenclature_item_id)
         end
     end
 

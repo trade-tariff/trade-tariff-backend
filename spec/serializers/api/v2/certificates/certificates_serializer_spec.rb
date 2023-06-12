@@ -3,7 +3,7 @@ RSpec.describe Api::V2::Certificates::CertificatesSerializer do
 
   let(:serializable) do
     Hashie::TariffMash.new(
-      Cache::CertificateSerializer.new(certificate).as_json,
+      Cache::CertificateSerializer.new(certificate, []).as_json,
     )
   end
 

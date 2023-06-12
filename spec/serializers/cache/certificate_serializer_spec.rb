@@ -1,5 +1,5 @@
 RSpec.describe Cache::CertificateSerializer do
-  subject(:serialized) { described_class.new(certificate).as_json }
+  subject(:serialized) { described_class.new(certificate, []).as_json }
 
   let(:certificate) do
     create(

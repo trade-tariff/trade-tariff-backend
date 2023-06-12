@@ -1,5 +1,5 @@
 RSpec.describe Cache::AdditionalCodeSerializer do
-  subject(:serialized) { described_class.new(additional_code.reload).as_json }
+  subject(:serialized) { described_class.new(additional_code.reload, []).as_json }
 
   let(:additional_code) do
     code = create(:additional_code)

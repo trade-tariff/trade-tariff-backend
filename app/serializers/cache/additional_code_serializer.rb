@@ -4,7 +4,7 @@ module Cache
 
     attr_reader :additional_code, :as_of
 
-    def initialize(additional_code)
+    def initialize(additional_code, _hidden_codes)
       @additional_code = additional_code
       @as_of = Time.zone.today.midnight
     end

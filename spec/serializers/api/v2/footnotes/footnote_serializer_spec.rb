@@ -2,7 +2,7 @@ RSpec.describe Api::V2::Footnotes::FootnoteSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) do
-    cache_serialized_footnote = Cache::FootnoteSerializer.new(footnote).as_json
+    cache_serialized_footnote = Cache::FootnoteSerializer.new(footnote, []).as_json
 
     Hashie::TariffMash.new(cache_serialized_footnote)
   end

@@ -2,8 +2,9 @@ module Cache
   class CertificateSerializer
     include ::Cache::SearchCacheMethods
 
-    def initialize(certificate)
+    def initialize(certificate, hidden_codes)
       @certificate = certificate
+      @hidden_codes = hidden_codes
     end
 
     def as_json
@@ -42,7 +43,7 @@ module Cache
     def measures
       @measures ||= certificate.measures.select do |measure|
         measure.generating_regulation && measure.goods_nomenclature &&
-          !HiddenGoodsNomenclature.codes.include?(measure.goods_nomenclature_item_id)
+          !@hidden_codes.include?(measure.goods_nomenclature_item_id)
       end
     end
   end
