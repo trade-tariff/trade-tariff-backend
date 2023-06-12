@@ -1,10 +1,5 @@
 module Cache
   module SearchCacheMethods
-    def has_valid_dates(hash)
-      hash[:validity_start_date].to_date <= as_of &&
-        (hash[:validity_end_date].nil? || hash[:validity_end_date].to_date >= as_of)
-    end
-
     def goods_nomenclature_attributes(goods_nomenclature)
       return nil if goods_nomenclature.blank?
 

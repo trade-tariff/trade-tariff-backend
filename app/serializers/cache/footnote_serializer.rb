@@ -4,11 +4,10 @@ module Cache
 
     MAX_MEASURE_THRESHOLD = 1000
 
-    attr_reader :footnote, :as_of
+    attr_reader :footnote
 
     def initialize(footnote)
       @footnote = footnote
-      @as_of = Time.zone.today.midnight
     end
 
     def as_json
@@ -51,8 +50,7 @@ module Cache
 
     def goods_nomenclatures
       @goods_nomenclatures ||= footnote.goods_nomenclatures.compact.select do |goods_nomenclature|
-        has_valid_dates(goods_nomenclature) &&
-          HiddenGoodsNomenclature.codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
+        HiddenGoodsNomenclature.codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
       end
     end
 
@@ -64,8 +62,7 @@ module Cache
         .exclude(goods_nomenclature_item_id: nil)
         .all
         .select do |measure|
-          has_valid_dates(measure) &&
-            measure.goods_nomenclature.present? &&
+          measure.goods_nomenclature.present? &&
             HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
         end
     end

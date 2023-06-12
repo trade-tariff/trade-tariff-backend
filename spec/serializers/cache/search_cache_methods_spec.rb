@@ -1,51 +1,11 @@
-class TestSearchCacheSerializer
-  include Cache::SearchCacheMethods
-
-  attr_reader :as_of
-
-  def initialize(as_of)
-    @as_of = as_of
-  end
-end
-
 RSpec.describe Cache::SearchCacheMethods do
-  let(:serializer) { TestSearchCacheSerializer.new(Date.parse(as_of)) }
-  let(:as_of) { '2021-01-01' }
-
-  describe '#has_valid_dates' do
-    subject(:has_valid_dates) { serializer.has_valid_dates(record_hash) }
-
-    let(:record_hash) do
-      {
-        validity_start_date: '2021-01-01',
-        validity_end_date: '2021-01-03',
-      }
-    end
-
-    context 'when the as of date is before the range' do
-      let(:as_of) { '2020-12-31' }
-
-      it { is_expected.to be(false) }
-    end
-
-    context 'when the as of date is on the start of the range' do
-      let(:as_of) { '2021-01-01' }
-
-      it { is_expected.to be(true) }
-    end
-
-    context 'when the as of date is on the end of the range' do
-      let(:as_of) { '2021-01-03' }
-
-      it { is_expected.to be(true) }
-    end
-
-    context 'when the as of date is after the range' do
-      let(:as_of) { '2021-01-04' }
-
-      it { is_expected.to be(false) }
+  let :serializer_class do
+    Class.new do
+      include Cache::SearchCacheMethods
     end
   end
+
+  let(:serializer) { serializer_class.new }
 
   describe '#goods_nomenclature_attributes' do
     subject(:goods_nomenclature_attributes) { serializer.goods_nomenclature_attributes(goods_nomenclature) }

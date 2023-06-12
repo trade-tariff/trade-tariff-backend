@@ -4,7 +4,6 @@ module Cache
 
     def initialize(certificate)
       @certificate = certificate
-      @as_of = Time.zone.today.midnight
     end
 
     def as_json
@@ -38,7 +37,7 @@ module Cache
 
     private
 
-    attr_reader :certificate, :as_of
+    attr_reader :certificate
 
     def measures
       @measures ||= certificate
@@ -48,8 +47,7 @@ module Cache
         .exclude(goods_nomenclature_item_id: nil)
         .all
         .select do |measure|
-          has_valid_dates(measure) &&
-            measure.goods_nomenclature.present? &&
+          measure.goods_nomenclature.present? &&
             HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
         end
     end
