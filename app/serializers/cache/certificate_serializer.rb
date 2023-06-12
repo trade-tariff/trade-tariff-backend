@@ -40,16 +40,10 @@ module Cache
     attr_reader :certificate
 
     def measures
-      @measures ||= certificate
-        .measures_dataset
-        .with_generating_regulation
-        .eager(:goods_nomenclature)
-        .exclude(goods_nomenclature_item_id: nil)
-        .all
-        .select do |measure|
-          measure.goods_nomenclature.present? &&
-            HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
-        end
+      @measures ||= certificate.measures.select do |measure|
+        measure.generating_regulation && measure.goods_nomenclature &&
+          !HiddenGoodsNomenclature.codes.include?(measure.goods_nomenclature_item_id)
+      end
     end
   end
 end

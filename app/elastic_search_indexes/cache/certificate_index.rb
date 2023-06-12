@@ -16,5 +16,22 @@ module Cache
         },
       }
     end
+
+    def eager_load
+      {
+        certificate_descriptions: {},
+        appendix_5a: {},
+        measures: [
+          :base_regulation,
+          :modification_regulation,
+          {
+            goods_nomenclature: %i[goods_nomenclature_descriptions
+                                   ns_children
+                                   goods_nomenclature_indents],
+            geographical_area: %i[geographical_area_descriptions],
+          },
+        ],
+      }
+    end
   end
 end
