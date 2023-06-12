@@ -19,6 +19,10 @@ module Search
       ]
     end
 
+    def page_size
+      2000
+    end
+
     def definition
       if TradeTariffBackend.stemming_exclusion_reference_analyzer.present?
         # Stemming exclusions _must_ come before other filters
