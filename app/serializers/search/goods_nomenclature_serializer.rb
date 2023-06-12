@@ -10,7 +10,7 @@ module Search
           heading_id: heading_short_code,
           chapter_id: chapter_short_code,
           producline_suffix:,
-          goods_nomenclature_class: goods_nomenclature_class,
+          goods_nomenclature_class:,
           description:,
           description_indexed:,
           description_indexed_shingled: description_indexed,
@@ -27,25 +27,16 @@ module Search
 
         1.upto(MAX_ANCESTORS) do |i|
           serializable["ancestor_#{i}_description_indexed"] = send("ancestor_#{i}_description_indexed")
-          serializable["ancestor_#{i}_description_indexed_shingled"] = send("ancestor_#{i}_description_indexed_shingled")
+          serializable["ancestor_#{i}_description_indexed_shingled"] = send("ancestor_#{i}_description_indexed")
         end
-
         serializable.merge(serializable_classifications)
       end
     end
 
     private
 
-    def chapter_description
-      chapter&.description unless chapter?
-    end
-
-    def heading_description
-      heading&.description unless heading?
-    end
-
     def search_references
-      ancestors.reverse.each_with_object([search_references_for(goods_nomenclature_sid)]) { |serialized_ancestor, acc|
+      ancestors.reverse.each_with_object([search_references_for(self)]) { |serialized_ancestor, acc|
         acc.prepend(serialized_ancestor[:search_references])
       }.join(' ')
     end
@@ -67,16 +58,16 @@ module Search
           goods_nomenclature_class: ancestor.goods_nomenclature_class,
           description: ancestor.description,
           description_indexed: ancestor.description_indexed,
+          formatted_description: ancestor.formatted_description,
           validity_start_date: ancestor.validity_start_date,
           validity_end_date: ancestor.validity_end_date,
           declarable: false,
           score: nil,
           chapter_id: ancestor.chapter_short_code,
           heading_id: ancestor.heading_short_code,
-          formatted_description: ancestor.formatted_description,
           ancestor_ids: [], # We are not interested in ancestor ancestors
           ancestors: [], # We are not interested in ancestor ancestors
-          search_references: search_references_for(ancestor.goods_nomenclature_sid),
+          search_references: search_references_for(ancestor),
           intercept_terms: ancestor.intercept_terms,
         }
       end
@@ -91,10 +82,7 @@ module Search
     end
 
     def guides
-      # NB: We're not currently interested in chapter guides and prefer more specific guidance currently
-      return [] if chapter?
-
-      heading.guides.map do |guide|
+      @guides ||= heading.guides.map do |guide|
         {
           id: guide.id,
           title: guide.title,
@@ -113,10 +101,6 @@ module Search
       define_method("ancestor_#{ancestor_number}_description_indexed") do
         ancestors[ancestor_number - 1].try(:[], :description_indexed)
       end
-
-      define_method("ancestor_#{ancestor_number}_description_indexed_shingled") do
-        ancestors[ancestor_number - 1].try(:[], :description_indexed)
-      end
     end
 
     def serializable_classifications
@@ -133,12 +117,8 @@ module Search
                                 end
     end
 
-    def search_references_for(goods_nomenclature_sid)
-      SearchReference
-        .where(goods_nomenclature_sid:)
-        .map(&:title_indexed)
-        .compact
-        .join(' ')
+    def search_references_for(goods_nomenclature)
+      goods_nomenclature.search_references.map(&:title_indexed).compact.join(' ')
     end
   end
 end

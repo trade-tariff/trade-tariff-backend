@@ -30,7 +30,8 @@ RSpec.describe Search::GoodsNomenclatureIndex do
 
     let(:expected_goods_nomenclatures) do
       [
-        %w[0101210000 80],
+        %w[0101210000 10], # subheading
+        %w[0101210000 80], # commodity
       ]
     end
 

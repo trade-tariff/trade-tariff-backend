@@ -2,19 +2,20 @@ module Search
   class GoodsNomenclatureIndex < ::SearchIndex
     def dataset
       TimeMachine.now do
-        Commodity # Filter out headings and chapters
+        Commodity
           .actual
-          .ns_declarable # Avoid all subheadings
           .non_hidden
       end
     end
 
     def eager_load_graph
-      %i[
-        chapter
-        heading
-        ns_ancestors
-        ns_children
+      [
+        :goods_nomenclature_descriptions,
+        :search_references,
+        :ns_children,
+        :chapter,
+        { heading: :guides },
+        { ns_ancestors: %i[search_references goods_nomenclature_descriptions] },
       ]
     end
 
