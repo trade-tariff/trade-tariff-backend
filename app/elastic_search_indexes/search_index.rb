@@ -33,7 +33,7 @@ class SearchIndex
     false
   end
 
-  def eager_load_graph
+  def eager_load
     []
   end
 
@@ -42,7 +42,7 @@ class SearchIndex
   end
 
   def dataset_page(page_number)
-    dataset.eager(eager_load_graph).paginate(page_number, page_size).all
+    dataset.eager(eager_load).paginate(page_number, page_size).all
   end
 
   def total_pages

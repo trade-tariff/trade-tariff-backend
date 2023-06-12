@@ -8,7 +8,7 @@ module Search
       end
     end
 
-    def eager_load_graph
+    def eager_load
       [
         :goods_nomenclature_descriptions,
         :search_references,
