@@ -13,9 +13,11 @@ class BuildIndexPageWorker
       body: serialize_for(
         :index,
         index,
-        index.dataset.eager(index.eager_load_graph).paginate(page_number, page_size),
+        index.dataset.eager(index.eager_load_graph).paginate(page_number, page_size).all,
       ),
     )
+
+    Rails.logger.info("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
   end
 
   private
