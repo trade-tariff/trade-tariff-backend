@@ -22,14 +22,12 @@ FactoryBot.define do
 
     trait :with_chapter do
       before(:create) do |heading, _evaluator|
-        chapter = create(:chapter,
-                         :with_section,
-                         :with_note,
-                         :with_description,
-                         :with_guide,
-                         goods_nomenclature_item_id: heading.chapter_id)
-
-        heading.path = Sequel.pg_array([chapter.goods_nomenclature_sid])
+        create(:chapter,
+               :with_section,
+               :with_note,
+               :with_description,
+               :with_guide,
+               goods_nomenclature_item_id: heading.chapter_id)
       end
     end
 

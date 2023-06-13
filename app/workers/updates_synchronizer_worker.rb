@@ -31,7 +31,6 @@ class UpdatesSynchronizerWorker
     refresh_materialized_view
 
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
-    Sidekiq::Client.enqueue(GenerateMaterializedPathsWorker)
     # Repopulation of the goods nomenclature index depends on the materialised paths being present
     Sidekiq::Client.enqueue(ClearCacheWorker)
     Sidekiq::Client.enqueue(GenerateGoodsNomenclaturesCsvReportWorker)

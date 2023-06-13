@@ -114,7 +114,7 @@ module TenDigitGoodsNomenclature
     end
 
     def short_code
-      if path_declarable?
+      if ns_declarable?
         goods_nomenclature_item_id
       else
         case goods_nomenclature_item_id
