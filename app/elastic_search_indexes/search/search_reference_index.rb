@@ -55,5 +55,11 @@ module Search
         },
       }
     end
+
+    def eager_load
+      {
+        referenced: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
+      }
+    end
   end
 end

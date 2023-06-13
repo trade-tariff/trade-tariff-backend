@@ -18,12 +18,16 @@ module Search
               properties: {
                 position: { type: 'long' },
                 title: { type: 'text' },
-                numeral: { type: 'keyword' }
-              }
-            }
-          }
-        }
+                numeral: { type: 'keyword' },
+              },
+            },
+          },
+        },
       }
+    end
+
+    def eager_load
+      %i[sections goods_nomenclature_descriptions guides]
     end
   end
 end
