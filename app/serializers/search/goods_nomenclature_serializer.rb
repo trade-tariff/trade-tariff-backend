@@ -22,7 +22,7 @@ module Search
           validity_end_date:,
           guides:,
           guide_ids:,
-          declarable: ns_declarable?,
+          declarable: true,
         }
 
         1.upto(MAX_ANCESTORS) do |i|

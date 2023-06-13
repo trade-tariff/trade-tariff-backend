@@ -13,7 +13,6 @@ module Search
       [
         :goods_nomenclature_descriptions,
         :search_references,
-        :ns_children,
         :chapter,
         { heading: :guides },
         { ns_ancestors: %i[search_references goods_nomenclature_descriptions] },
