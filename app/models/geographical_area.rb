@@ -5,6 +5,7 @@ class GeographicalArea < Sequel::Model
   ERGA_OMNES_ID = '1011'.freeze
   REFERENCED_GEOGRAPHICAL_AREAS = { 'EU' => '1013' }.freeze
   GSP = %w[2005 2020 2027].freeze
+  DCTS = %w[1060 1061 1062].freeze
 
   plugin :time_machine
   plugin :oplog, primary_key: :geographical_area_sid
@@ -96,8 +97,8 @@ class GeographicalArea < Sequel::Model
     geographical_area_id
   end
 
-  def gsp?
-    GSP.include?(geographical_area_id)
+  def gsp_or_dcts?
+    GSP.include?(geographical_area_id) || DCTS.include?(geographical_area_id)
   end
 
   private

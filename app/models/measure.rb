@@ -124,7 +124,7 @@ class Measure < Sequel::Model
            :supplementary?,
            :trade_remedy?, to: :measure_type, allow_nil: true
 
-  delegate :gsp?, to: :geographical_area, allow_nil: true
+  delegate :gsp_or_dcts?, to: :geographical_area, allow_nil: true
 
   def universal_waiver_applies?
     measure_conditions.any?(&:universal_waiver_applies?)

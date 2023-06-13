@@ -41,14 +41,14 @@ class PreferenceCode
       measure.authorised_use? ? '315' : '310'
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['142'] = lambda do |_presented_declarable, measure|
-      if measure.gsp?
+      if measure.gsp_or_dcts?
         measure.authorised_use? ? '240' : '200'
       else
         measure.authorised_use? ? '340' : '300'
       end
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['143'] = lambda do |presented_declarable, measure|
-      if measure.gsp?
+      if measure.gsp_or_dcts?
         if presented_declarable.special_nature?
           '255'
         elsif measure.authorised_use?
@@ -65,10 +65,10 @@ class PreferenceCode
       end
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['145'] = lambda do |_presented_declarable, measure|
-      measure.gsp? ? '240' : '340'
+      measure.gsp_or_dcts? ? '240' : '340'
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['146'] = lambda do |_presented_declarable, measure|
-      measure.gsp? ? '223' : '323'
+      measure.gsp_or_dcts? ? '223' : '323'
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING.freeze
 

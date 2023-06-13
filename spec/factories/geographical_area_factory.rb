@@ -38,16 +38,16 @@ FactoryBot.define do
       geographical_area_id { '2027' }
     end
 
-    trait :with_gsp_least_developed_countries do
-      geographical_area_id { '2005' }
+    trait :with_dcts_standard_preferences do
+      geographical_area_id { '1060' }
     end
 
-    trait :with_gsp_general_framework do
-      geographical_area_id { '2020' }
+    trait :with_dcts_enhanced_preferences do
+      geographical_area_id { '1061' }
     end
 
-    trait :with_gsp_enhanced_framework do
-      geographical_area_id { '2027' }
+    trait :with_dcts_comprehensive_preferences do
+      geographical_area_id { '1062' }
     end
 
     trait :with_members do
