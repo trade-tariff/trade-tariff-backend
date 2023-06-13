@@ -13,7 +13,7 @@ module Cache
     end
 
     def page_size
-      5
+      50
     end
 
     def hidden_codes
