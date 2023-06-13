@@ -114,7 +114,6 @@ module TradeTariffBackend
       @search_client ||= SearchClient.new(
         opensearch_client,
         indexes: search_indexes,
-        index_page_size: 500,
       )
     end
 
@@ -122,7 +121,6 @@ module TradeTariffBackend
       @v2_search_client ||= SearchClient.new(
         opensearch_client,
         indexes: v2_search_indexes,
-        index_page_size: 2000,
       )
     end
 
@@ -131,7 +129,6 @@ module TradeTariffBackend
         opensearch_client,
         namespace: 'cache',
         indexes: cache_indexes,
-        index_page_size: 5,
       )
     end
 

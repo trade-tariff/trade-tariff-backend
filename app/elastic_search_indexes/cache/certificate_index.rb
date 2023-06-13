@@ -16,5 +16,9 @@ module Cache
         },
       }
     end
+
+    def eager_load
+      eager_load_measures.merge(certificate_descriptions: {})
+    end
   end
 end

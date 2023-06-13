@@ -16,4 +16,20 @@ RSpec.describe Search::SectionIndex do
 
     it { is_expected.to include 'id' => record.id }
   end
+
+  describe 'dataset_page' do
+    subject { instance.dataset_page(page).map(&:position) }
+
+    before { create_list :section, 5 }
+
+    let(:page) { 1 }
+
+    it { is_expected.to eql (1..5).to_a }
+
+    context 'with higher page number' do
+      let(:page) { 2 }
+
+      it { is_expected.to be_empty }
+    end
+  end
 end

@@ -4,11 +4,11 @@ module Cache
 
     MAX_MEASURE_THRESHOLD = 1000
 
-    attr_reader :footnote, :as_of
+    attr_reader :footnote
 
-    def initialize(footnote)
+    def initialize(footnote, hidden_codes)
       @footnote = footnote
-      @as_of = Time.zone.today.midnight
+      @hidden_codes = hidden_codes
     end
 
     def as_json
@@ -51,23 +51,12 @@ module Cache
 
     def goods_nomenclatures
       @goods_nomenclatures ||= footnote.goods_nomenclatures.compact.select do |goods_nomenclature|
-        has_valid_dates(goods_nomenclature) &&
-          HiddenGoodsNomenclature.codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
+        @hidden_codes.exclude?(goods_nomenclature.goods_nomenclature_item_id)
       end
     end
 
     def measures
-      @measures ||= footnote
-        .measures_dataset
-        .with_generating_regulation
-        .eager(:goods_nomenclature)
-        .exclude(goods_nomenclature_item_id: nil)
-        .all
-        .select do |measure|
-          has_valid_dates(measure) &&
-            measure.goods_nomenclature.present? &&
-            HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
-        end
+      @measures ||= valid_measures(footnote)
     end
 
     def extra_large_measures?

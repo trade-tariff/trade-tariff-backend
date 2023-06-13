@@ -2,11 +2,11 @@ module Cache
   class AdditionalCodeSerializer
     include ::Cache::SearchCacheMethods
 
-    attr_reader :additional_code, :as_of
+    attr_reader :additional_code
 
-    def initialize(additional_code)
+    def initialize(additional_code, hidden_codes)
       @additional_code = additional_code
-      @as_of = Time.zone.today.midnight
+      @hidden_codes = hidden_codes
     end
 
     def as_json
@@ -44,16 +44,7 @@ module Cache
     end
 
     def measures
-      TimeMachine.now do
-        additional_code
-          .measures_dataset
-          .with_actual(Measure)
-          .with_generating_regulation
-          .eager(:goods_nomenclature)
-          .exclude(goods_nomenclature_item_id: nil)
-          .all
-          .select(&:goods_nomenclature)
-      end
+      @measures ||= valid_measures(additional_code)
     end
   end
 end

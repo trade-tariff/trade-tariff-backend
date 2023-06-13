@@ -3,22 +3,18 @@ module Cache
     EXCLUDED_TYPES = %w[6 7 9 D F P].freeze
 
     def dataset
-      TimeMachine.now do
-        current_sids = Measure
-          .actual
-          .with_generating_regulation
-          .distinct(:additional_code_id, :additional_code_type_id)
-          .select(:additional_code_sid, :additional_code_id, :additional_code_type_id)
-          .exclude(additional_code_sid: nil)
-          .exclude(additional_code_type_id: EXCLUDED_TYPES)
-          .exclude(goods_nomenclature_sid: nil)
-          .exclude(goods_nomenclature_item_id: nil)
-          .pluck(:additional_code_sid)
+      current_sids = Measure
+        .actual
+        .with_generating_regulation
+        .distinct(:additional_code_id, :additional_code_type_id)
+        .select(:additional_code_sid, :additional_code_id, :additional_code_type_id)
+        .exclude(additional_code_sid: nil)
+        .exclude(additional_code_type_id: EXCLUDED_TYPES)
+        .exclude(goods_nomenclature_sid: nil)
+        .exclude(goods_nomenclature_item_id: nil)
+        .pluck(:additional_code_sid)
 
-        AdditionalCode
-          .actual
-          .where(additional_code_sid: current_sids)
-      end
+      super.where(additional_code_sid: current_sids)
     end
 
     def definition
@@ -34,6 +30,10 @@ module Cache
           },
         },
       }
+    end
+
+    def eager_load
+      eager_load_measures.merge(additional_code_descriptions: {})
     end
   end
 end

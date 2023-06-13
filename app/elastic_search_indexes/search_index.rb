@@ -33,11 +33,23 @@ class SearchIndex
     false
   end
 
-  def eager_load_graph
+  def eager_load
     []
   end
 
   def exclude_from_search_results?
     !goods_nomenclature?
+  end
+
+  def dataset_page(page_number)
+    dataset.eager(eager_load).paginate(page_number, page_size).all
+  end
+
+  def total_pages
+    (dataset.count / page_size.to_f).ceil
+  end
+
+  def page_size
+    500
   end
 end

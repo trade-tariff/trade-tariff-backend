@@ -2,9 +2,9 @@ module Cache
   class CertificateSerializer
     include ::Cache::SearchCacheMethods
 
-    def initialize(certificate)
+    def initialize(certificate, hidden_codes)
       @certificate = certificate
-      @as_of = Time.zone.today.midnight
+      @hidden_codes = hidden_codes
     end
 
     def as_json
@@ -38,20 +38,10 @@ module Cache
 
     private
 
-    attr_reader :certificate, :as_of
+    attr_reader :certificate
 
     def measures
-      @measures ||= certificate
-        .measures_dataset
-        .with_generating_regulation
-        .eager(:goods_nomenclature)
-        .exclude(goods_nomenclature_item_id: nil)
-        .all
-        .select do |measure|
-          has_valid_dates(measure) &&
-            measure.goods_nomenclature.present? &&
-            HiddenGoodsNomenclature.codes.exclude?(measure.goods_nomenclature_item_id)
-        end
+      @measures ||= valid_measures(certificate)
     end
   end
 end

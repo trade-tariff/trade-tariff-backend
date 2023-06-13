@@ -6,6 +6,8 @@ RSpec.describe Cache::AdditionalCodeIndex do
   describe '#dataset' do
     subject(:dataset) { instance.dataset }
 
+    around { |example| TimeMachine.now { example.run } }
+
     let(:additional_code) { create(:additional_code) }
 
     before do

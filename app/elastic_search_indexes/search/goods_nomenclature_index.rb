@@ -8,7 +8,7 @@ module Search
       end
     end
 
-    def eager_load_graph
+    def eager_load
       [
         :goods_nomenclature_descriptions,
         :search_references,
@@ -17,6 +17,10 @@ module Search
         { heading: :guides },
         { ns_ancestors: %i[search_references goods_nomenclature_descriptions] },
       ]
+    end
+
+    def page_size
+      2000
     end
 
     def definition

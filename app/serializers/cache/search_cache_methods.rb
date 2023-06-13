@@ -1,10 +1,5 @@
 module Cache
   module SearchCacheMethods
-    def has_valid_dates(hash)
-      hash[:validity_start_date].to_date <= as_of &&
-        (hash[:validity_end_date].nil? || hash[:validity_end_date].to_date >= as_of)
-    end
-
     def goods_nomenclature_attributes(goods_nomenclature)
       return nil if goods_nomenclature.blank?
 
@@ -30,6 +25,13 @@ module Cache
         geographical_area_id: geographical_area.geographical_area_id,
         description: geographical_area.description,
       }
+    end
+
+    def valid_measures(source)
+      source.measures.select do |measure|
+        measure.generating_regulation && measure.goods_nomenclature &&
+          @hidden_codes.exclude?(measure.goods_nomenclature_item_id)
+      end
     end
   end
 end

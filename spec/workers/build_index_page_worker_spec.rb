@@ -14,7 +14,7 @@ RSpec.describe BuildIndexPageWorker, type: :worker do
         TradeTariffBackend.search_client.create_index(search_index)
         commodities # trigger creation of commodity
 
-        described_class.new.perform 'search', search_index.name_without_namespace, 1, 10
+        described_class.new.perform 'search', search_index.name_without_namespace, 1
       end
 
       let(:commodities) do
@@ -39,7 +39,7 @@ RSpec.describe BuildIndexPageWorker, type: :worker do
         TradeTariffBackend.search_client.drop_index(search_index)
         TradeTariffBackend.search_client.create_index(search_index)
 
-        described_class.new.perform 'search', commodity.class.name, 1, 10
+        described_class.new.perform 'search', commodity.class.name, 1
       end
 
       let(:commodity) do
