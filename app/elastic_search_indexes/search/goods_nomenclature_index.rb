@@ -4,6 +4,7 @@ module Search
       TimeMachine.now do
         Commodity
           .actual
+          .ns_declarable
           .non_hidden
       end
     end
@@ -12,7 +13,6 @@ module Search
       [
         :goods_nomenclature_descriptions,
         :search_references,
-        :ns_children,
         :chapter,
         { heading: :guides },
         { ns_ancestors: %i[search_references goods_nomenclature_descriptions] },
