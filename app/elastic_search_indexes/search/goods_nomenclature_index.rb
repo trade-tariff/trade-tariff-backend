@@ -4,6 +4,7 @@ module Search
       TimeMachine.now do
         Commodity
           .actual
+          .ns_declarable
           .non_hidden
       end
     end
