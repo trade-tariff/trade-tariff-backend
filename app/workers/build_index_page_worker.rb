@@ -6,15 +6,16 @@ class BuildIndexPageWorker
   delegate :opensearch_client, to: TradeTariffBackend
 
   def perform(index_namespace, index_name, page_number, _page_size = nil)
+    ::SequelRails::Railties::LogSubscriber.reset_count
+
     index_name = "#{index_name}Index" unless index_name.ends_with?('Index')
     index = "#{index_namespace.camelize}::#{index_name}".constantize.new
+    entries = index.dataset_page(page_number)
+
+    return true if entries.empty?
 
     opensearch_client.bulk(
-      body: serialize_for(
-        :index,
-        index,
-        index.dataset_page(page_number),
-      ),
+      body: serialize_for(:index, index, entries),
     )
 
     Rails.logger.info("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
