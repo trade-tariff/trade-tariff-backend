@@ -23,5 +23,22 @@ module Cache
     def serialize_record(record)
       serializer.new(record, hidden_codes).as_json
     end
+
+  private
+
+    def eager_load_measures
+      {
+        measures: [
+          :base_regulation,
+          :modification_regulation,
+          {
+            goods_nomenclature: %i[goods_nomenclature_descriptions
+                                   ns_children
+                                   goods_nomenclature_indents],
+            geographical_area: %i[geographical_area_descriptions],
+          },
+        ],
+      }
+    end
   end
 end

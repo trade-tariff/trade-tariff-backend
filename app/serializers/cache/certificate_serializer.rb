@@ -41,10 +41,7 @@ module Cache
     attr_reader :certificate
 
     def measures
-      @measures ||= certificate.measures.select do |measure|
-        measure.generating_regulation && measure.goods_nomenclature &&
-          @hidden_codes.exclude?(measure.goods_nomenclature_item_id)
-      end
+      @measures ||= valid_measures(certificate)
     end
   end
 end

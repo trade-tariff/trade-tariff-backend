@@ -16,22 +16,12 @@ module Cache
     end
 
     def eager_load
-      {
+      eager_load_measures.merge(
         footnote_descriptions: {},
         goods_nomenclatures: %i[goods_nomenclature_descriptions
                                 ns_children
                                 goods_nomenclature_indents],
-        measures: [
-          :base_regulation,
-          :modification_regulation,
-          {
-            goods_nomenclature: %i[goods_nomenclature_descriptions
-                                   ns_children
-                                   goods_nomenclature_indents],
-            geographical_area: %i[geographical_area_descriptions],
-          },
-        ],
-      }
+      )
     end
   end
 end

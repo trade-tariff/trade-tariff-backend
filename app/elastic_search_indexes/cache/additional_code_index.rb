@@ -33,19 +33,7 @@ module Cache
     end
 
     def eager_load
-      {
-        additional_code_descriptions: {},
-        measures: [
-          :base_regulation,
-          :modification_regulation,
-          {
-            goods_nomenclature: %i[goods_nomenclature_descriptions
-                                   ns_children
-                                   goods_nomenclature_indents],
-            geographical_area: %i[geographical_area_descriptions],
-          },
-        ],
-      }
+      eager_load_measures.merge(additional_code_descriptions: {})
     end
   end
 end

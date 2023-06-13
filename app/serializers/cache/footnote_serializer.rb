@@ -56,10 +56,7 @@ module Cache
     end
 
     def measures
-      @measures ||= footnote.measures.select do |measure|
-        measure.generating_regulation && measure.goods_nomenclature &&
-          @hidden_codes.exclude?(measure.goods_nomenclature_item_id)
-      end
+      @measures ||= valid_measures(footnote)
     end
 
     def extra_large_measures?

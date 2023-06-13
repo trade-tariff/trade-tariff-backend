@@ -26,5 +26,12 @@ module Cache
         description: geographical_area.description,
       }
     end
+
+    def valid_measures(source)
+      source.measures.select do |measure|
+        measure.generating_regulation && measure.goods_nomenclature &&
+          @hidden_codes.exclude?(measure.goods_nomenclature_item_id)
+      end
+    end
   end
 end
