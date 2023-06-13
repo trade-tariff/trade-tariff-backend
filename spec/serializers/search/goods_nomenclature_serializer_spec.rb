@@ -23,6 +23,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
             {
               id: be_a(Integer),
               goods_nomenclature_item_id: '0100000000',
+              short_code: '01',
               producline_suffix: '80',
               goods_nomenclature_class: 'Chapter',
               description: 'Live horses, asses, mules and hinnies',
@@ -42,6 +43,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
             {
               id: be_a(Integer),
               goods_nomenclature_item_id: '0101000000',
+              short_code: '0101',
               producline_suffix: '80',
               goods_nomenclature_class: 'Heading',
               description: 'Live animals',

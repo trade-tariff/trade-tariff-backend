@@ -55,6 +55,7 @@ module Search
           id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
           producline_suffix: ancestor.producline_suffix,
+          short_code: ancestor.short_code,
           goods_nomenclature_class: ancestor.goods_nomenclature_class,
           description: ancestor.description,
           description_indexed: ancestor.description_indexed,
