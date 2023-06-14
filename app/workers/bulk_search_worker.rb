@@ -28,5 +28,3 @@ class BulkSearchWorker
     )
   end
 end
-
-

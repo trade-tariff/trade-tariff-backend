@@ -62,7 +62,7 @@ class Heading < GoodsNomenclature
     self[:operation] = operation.to_s.first.upcase
   end
 
-  def short_code
+  def short_code(_ = {})
     goods_nomenclature_item_id.first(4)
   end
 
