@@ -722,4 +722,58 @@ RSpec.describe GoodsNomenclature do
 
     it { is_expected.to eq(%w[0111110000]) }
   end
+
+  describe '#cast_to' do
+    subject(:casted) { commodity.cast_to Subheading }
+
+    let(:commodity) { create(:commodity) }
+
+    it { is_expected.to be_instance_of Subheading }
+    it { is_expected.to have_attributes values: commodity.values }
+    it { is_expected.not_to have_attributes object_id: commodity.object_id }
+
+    context 'with loaded relationships' do
+      subject { casted.associations }
+
+      before { commodity.tree_node }
+
+      it { is_expected.to include tree_node: be_present }
+    end
+
+    context 'when already matching type' do
+      subject { commodity.cast_to described_class }
+
+      it { is_expected.to have_attributes object_id: commodity.object_id }
+    end
+  end
+
+  describe '#sti_cast' do
+    subject { goods_nomenclature.sti_cast }
+
+    let(:goods_nomenclature) { create(:commodity) }
+
+    context 'with declarable' do
+      it { is_expected.to be_instance_of Commodity }
+      it { is_expected.to have_attributes values: goods_nomenclature.values }
+    end
+
+    context 'with non declarable' do
+      before { create :commodity, parent: goods_nomenclature }
+
+      it { is_expected.to be_instance_of Subheading }
+      it { is_expected.to have_attributes values: goods_nomenclature.values }
+    end
+
+    context 'with heading' do
+      let(:goods_nomenclature) { create :heading }
+
+      it { is_expected.to have_attributes object_id: goods_nomenclature.object_id }
+    end
+
+    context 'with chapter' do
+      let(:goods_nomenclature) { create :chapter }
+
+      it { is_expected.to have_attributes object_id: goods_nomenclature.object_id }
+    end
+  end
 end
