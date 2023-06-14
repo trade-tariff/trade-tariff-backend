@@ -3,8 +3,10 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
 
   context 'when the are search references to clear' do
     before do
-      create(:search_reference, :with_non_current_commodity, title: 'foo')
-      create(:search_reference, :with_current_commodity, title: 'bar')
+      TimeMachine.now do
+        create(:search_reference, :with_non_current_commodity, title: 'foo')
+        create(:search_reference, :with_current_commodity, title: 'bar')
+      end
     end
 
     it { expect { do_perform }.to change(SearchReference, :count).by(-1) }
@@ -24,8 +26,10 @@ RSpec.describe ClearInvalidSearchReferences, type: :worker do
 
   context 'when there are no search references to clear' do
     before do
-      create(:search_reference, :with_current_commodity, title: 'foo')
-      create(:search_reference, :with_current_commodity, title: 'bar')
+      TimeMachine.now do
+        create(:search_reference, :with_current_commodity, title: 'foo')
+        create(:search_reference, :with_current_commodity, title: 'bar')
+      end
     end
 
     it { expect { do_perform }.not_to change(SearchReference, :count) }

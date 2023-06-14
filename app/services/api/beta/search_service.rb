@@ -75,7 +75,7 @@ module Api
       end
 
       def goods_nomenclature
-        search_suggestion&.custom_sti_goods_nomenclature
+        @goods_nomenclature ||= search_suggestion&.goods_nomenclature&.sti_cast
       end
 
       def search_suggestion
