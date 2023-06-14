@@ -6,7 +6,7 @@ module Api
 
         set_type :search
 
-        attributes :input_description
+        attributes :input_description, :ancestor_digits
 
         has_many :search_result_ancestors, serializer: Api::V2::BulkSearch::SearchAncestorSerializer
       end

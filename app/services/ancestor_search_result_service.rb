@@ -1,4 +1,6 @@
 class AncestorSearchResultService
+  MAX_ANCESTORS = 5
+
   def initialize(search, hits, ancestor_digits: 6)
     @search = search
     @hits = hits
@@ -56,6 +58,10 @@ class AncestorSearchResultService
     end
 
     if search_result_ancestors.present?
+      search_result_ancestors = search_result_ancestors.sort_by { |_short_code, ancestor|
+        ancestor[:accumulated_score]
+      }.reverse.first(MAX_ANCESTORS)
+
       search_result_ancestors.each do |_short_code, ancestor|
         ancestor[:ancestor].score = ancestor[:accumulated_score]
         ancestor[:ancestor].reason = ancestor[:reason]

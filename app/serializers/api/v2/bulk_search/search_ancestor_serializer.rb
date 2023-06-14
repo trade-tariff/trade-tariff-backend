@@ -12,8 +12,9 @@ module Api
                    :producline_suffix,
                    :goods_nomenclature_class,
                    :declarable,
-                   :score,
                    :reason
+
+        attributes :score, &:presented_score
       end
     end
   end

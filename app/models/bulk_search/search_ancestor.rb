@@ -2,10 +2,6 @@ class BulkSearch
   class SearchAncestor
     include ContentAddressableId
 
-    content_addressable_fields :goods_nomenclature_item_id,
-                               :producline_suffix,
-                               :score
-
     attr_accessor :short_code,
                   :goods_nomenclature_item_id,
                   :description,
@@ -14,6 +10,14 @@ class BulkSearch
                   :declarable,
                   :score,
                   :reason
+
+    def id
+      @id ||= "#{short_code}-#{producline_suffix}-#{presented_score}"
+    end
+
+    def presented_score
+      (score.presence || 0).to_f.round(2)
+    end
 
     def self.build(attributes)
       result = new

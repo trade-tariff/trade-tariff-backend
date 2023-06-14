@@ -19,7 +19,7 @@ module Api
 
       def bulk_search_params
         params.require(:data).map do |json|
-          json.permit(:type, attributes: [:input_description])
+          json.permit(:type, attributes: %i[input_description ancestor_digits])
         end
       end
     end
