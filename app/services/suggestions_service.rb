@@ -20,6 +20,7 @@ class SuggestionsService
     GoodsNomenclature
       .actual
       .non_hidden
+      .with_leaf_column
       .map { |goods_nomenclature| build_goods_nomenclature_record(goods_nomenclature) }
   end
 
@@ -68,7 +69,7 @@ class SuggestionsService
       value: goods_nomenclature.short_code,
       type: SearchSuggestion::TYPE_GOODS_NOMENCLATURE,
       goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
-      goods_nomenclature_class: goods_nomenclature.path_goods_nomenclature_class,
+      goods_nomenclature_class: goods_nomenclature.goods_nomenclature_class,
       created_at: now,
       updated_at: now,
     )
