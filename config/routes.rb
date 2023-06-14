@@ -197,6 +197,10 @@ Rails.application.routes.draw do
       post 'search' => 'search#search'
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
+
+      post '/bulk_search' => 'bulk_searches#create'
+      get '/bulk_search/:id' => 'bulk_searches#show'
+
       get '/headings/:id/tree' => 'headings#tree'
 
       get 'goods_nomenclatures/section/:position', to: 'goods_nomenclatures#show_by_section', constraints: { position: /\d+/ }

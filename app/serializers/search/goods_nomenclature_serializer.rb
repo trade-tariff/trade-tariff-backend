@@ -7,6 +7,7 @@ module Search
         serializable = {
           id:,
           goods_nomenclature_item_id:,
+          short_code: short_code(fetch_commodity_short_code: true),
           heading_id: heading_short_code,
           chapter_id: chapter_short_code,
           producline_suffix:,
