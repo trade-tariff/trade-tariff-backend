@@ -1,5 +1,6 @@
 class GoodsNomenclature < Sequel::Model
   extend ActiveModel::Naming
+  include Formatter
 
   set_dataset order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id), Sequel.asc(:goods_nomenclatures__producline_suffix))
   set_primary_key [:goods_nomenclature_sid]
@@ -25,6 +26,9 @@ class GoodsNomenclature < Sequel::Model
   }
 
   include GoodsNomenclatures::NestedSet
+
+  custom_format :description_plain, with: DescriptionTrimFormatter,
+                                    using: :description
 
   one_to_one :chapter, class_name: name, class: self do |_ds|
     Chapter

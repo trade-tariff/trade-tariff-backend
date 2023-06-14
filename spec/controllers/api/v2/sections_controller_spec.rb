@@ -19,6 +19,7 @@ RSpec.describe Api::V2::SectionsController do
             numeral: section.numeral,
             chapter_from: section.chapter_from,
             chapter_to: section.chapter_to,
+            description_plain: section.description_plain,
             section_note: section_note.content,
           },
           relationships: {

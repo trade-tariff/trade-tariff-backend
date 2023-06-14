@@ -47,8 +47,6 @@ module Declarable
       MeasureComponent.where(measure: import_measures_dataset.where(measures__measure_type_id: MeasureType::THIRD_COUNTRY).all)
     }
 
-    custom_format :description_plain, with: DescriptionTrimFormatter,
-                                      using: :description
     custom_format :formatted_description, with: DescriptionFormatter,
                                           using: :description
   end

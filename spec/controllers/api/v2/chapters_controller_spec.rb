@@ -21,6 +21,7 @@ RSpec.describe Api::V2::ChaptersController, 'GET #show' do
           section_id: section.id,
           validity_start_date: chapter.validity_start_date,
           validity_end_date: chapter.validity_end_date,
+          description_plain: chapter.description_plain,
         },
         relationships: {
           section: {
