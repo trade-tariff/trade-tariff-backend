@@ -2,14 +2,14 @@ module Api
   module V2
     class BulkSearchesController < ApiController
       def create
-        @result = ::BulkSearch.enqueue(bulk_search_params)
+        @result = ::BulkSearch::ResultCollection.enqueue(bulk_search_params)
         @serialized_result = Api::V2::BulkSearch::ResultCollectionSerializer.new(@result).serializable_hash
 
         render json: @serialized_result, status: @result.http_code
       end
 
       def show
-        @result = ::BulkSearch.find(params[:id])
+        @result = ::BulkSearch::ResultCollection.find(params[:id])
         @serialized_result = Api::V2::BulkSearch::ResultCollectionSerializer.new(
           @result,
           include: ['searches.search_result_ancestors'],

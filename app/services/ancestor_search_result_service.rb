@@ -1,4 +1,5 @@
 class AncestorSearchResultService
+  HEADING_DIGITS = 4
   MAX_ANCESTORS = 5
 
   def initialize(search, hits, ancestor_digits: 6)
@@ -10,17 +11,19 @@ class AncestorSearchResultService
   def call
     search_result_ancestors = hits.each_with_object({}) do |hit, acc|
       reason = :no_matching_digit_ancestor
-      # Try the 6 digit ancestor
+
+      # Find the ancestor with the same number of digits as the ancestor digits
       candidate_ancestor = hit._source.ancestors.find do |ancestor|
         ancestor.short_code.length == ancestor_digits
       end
 
       reason = :matching_digit_ancestor if candidate_ancestor.present?
 
-      # Otherwise check if the hit is a 6 digit code or a declarable heading
+      # Check if the hit is already the ancestor we're targeting or a declarable
+      # heading
       candidate_ancestor ||= begin
         hit_digits = hit._source.short_code.length
-        found = hit_digits == ancestor_digits || hit_digits == 4 ? hit._source : nil
+        found = [ancestor_digits, HEADING_DIGITS].include?(hit_digits) ? hit._source : nil
 
         if found.present?
           reason = :matching_declarable_heading if found.goods_nomenclature_class == 'Heading'
