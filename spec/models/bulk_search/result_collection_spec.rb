@@ -122,17 +122,6 @@ RSpec.describe BulkSearch::ResultCollection do
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::NOT_FOUND_STATE, 404
   end
 
-  # def processing!
-  #   update_status(PROCESSING_STATE)
-  # end
-
-  # def complete!
-  #   update_status(COMPLETE_STATE)
-  # end
-
-  # def failed!
-  #   update_status(FAILED_STATE)
-  # end
   describe '#processing!' do
     it 'updates the status to processing' do
       expect { result_collection.processing! }

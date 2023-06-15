@@ -6,7 +6,7 @@ class BulkSearchService
   end
 
   def call
-    @result = BulkSearch.find(id)
+    @result = BulkSearch::ResultCollection.find(id)
 
     return unless @result.status.queued?
 
