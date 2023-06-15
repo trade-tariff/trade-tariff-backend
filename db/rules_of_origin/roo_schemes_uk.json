@@ -5025,6 +5025,10 @@
                     "detail": ""
                 }
             ],
+            "proof_codes": {
+                "DE 2/3": "You must include one of the following document codes, as appropriate:\n\n- **9001** (origin declaration)\n\n- **N865** (Form A)",
+                "DE 4/17": "The data element must include a preference code in the 200 series."
+            },
             "cumulation_methods": {
                 "bilateral": {
                     "countries": [
@@ -5139,22 +5143,18 @@
                 "cumulation": true,
                 "drawback": true
             },
-            "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
-            "introductory_notes_file": "gsp_intro.md",
-            "fta_intro_file": "gsp.md",
+            "footnote": "",
+            "introductory_notes_file": "dcts-ldcs_intro.md",
+            "fta_intro_file": "dcts-ldcs.md",
             "unilateral": true,
             "links": [
                 {
-                    "text": "GSP - Least Developed Countries Framework",
-                    "url": "https://www.gov.uk/government/publications/trading-with-developing-nations"
+                    "text": "What is DCTS and why is it important for international trade?",
+                    "url": "/news/stories/what-is-dcts-and-why-is-it-important-for-international-trade"
                 },
                 {
-                    "text": "Use the UK Generalised Scheme of Preference to import goods",
-                    "url": "https://www.gov.uk/guidance/use-the-generalised-scheme-of-preferences-to-import-and-export-goods"
-                },
-                {
-                    "text": "Using an origin declaration for the UK Generalised Scheme of Preference",
-                    "url": "https://www.gov.uk/guidance/using-an-origin-declaration-for-the-uk-generalised-scheme-of-preference"
+                    "text": "Developing Countries Trading Scheme (DCTS) - policy report",
+                    "url": "https://www.gov.uk/government/publications/developing-countries-trading-scheme-dcts-new-policy-report"
                 }
             ],
             "countries": [
@@ -5225,6 +5225,10 @@
                     "detail": ""
                 }
             ],
+            "proof_codes": {
+                "DE 2/3": "You must include one of the following document codes, as appropriate:\n\n- **9001** (origin declaration)\n\n- **N865** (Form A)",
+                "DE 4/17": "The data element must include a preference code in the 200 series."
+            },
             "cumulation_methods": {
                 "bilateral": {
                     "countries": [
@@ -5340,21 +5344,17 @@
                 "drawback": true
             },
             "footnote": "Scheme incorporates:</p><ul class='govuk-list govuk-list--bullet govuk-body-s'><li>the GSP Least Developed Countries Framework</li><li>the GSP General Framework</li><li>the GSP Enhanced Framework</li></ul>",
-            "introductory_notes_file": "gsp_intro.md",
-            "fta_intro_file": "gsp.md",
+            "introductory_notes_file": "dcts-general-enhanced_intro.md",
+            "fta_intro_file": "dcts-general-enhanced.md",
             "unilateral": true,
             "links": [
                 {
-                    "text": "GSP - Least Developed Countries Framework",
-                    "url": "https://www.gov.uk/government/publications/trading-with-developing-nations"
+                    "text": "What is DCTS and why is it important for international trade?",
+                    "url": "/news/stories/what-is-dcts-and-why-is-it-important-for-international-trade"
                 },
                 {
-                    "text": "Use the UK Generalised Scheme of Preference to import goods",
-                    "url": "https://www.gov.uk/guidance/use-the-generalised-scheme-of-preferences-to-import-and-export-goods"
-                },
-                {
-                    "text": "Using an origin declaration for the UK Generalised Scheme of Preference",
-                    "url": "https://www.gov.uk/guidance/using-an-origin-declaration-for-the-uk-generalised-scheme-of-preference"
+                    "text": "Developing Countries Trading Scheme (DCTS) - policy report",
+                    "url": "https://www.gov.uk/government/publications/developing-countries-trading-scheme-dcts-new-policy-report"
                 }
             ],
             "countries": [
