@@ -1,7 +1,73 @@
-class BulkSearch
+module BulkSearch
   class ResultCollection
     attr_accessor :status
     attr_reader :id, :searches
+
+    INITIAL_STATE = :queued
+    COMPLETE_STATE = :completed
+    FAILED_STATE = :failed
+    NOT_FOUND_STATE = :not_found
+    PROCESSING_STATE = :processing
+
+    STATE_MESSAGES = {
+      INITIAL_STATE => 'Your bulk search request has been accepted and is now on a queue waiting to be processed',
+      COMPLETE_STATE => 'Completed',
+      FAILED_STATE => 'Failed',
+      NOT_FOUND_STATE => 'Not found. Do you need to submit a bulk search request again? They expire in 2 hours',
+      PROCESSING_STATE => 'Processing',
+    }.freeze
+
+    HTTP_CODES = {
+      INITIAL_STATE => 202, # Accepted
+      PROCESSING_STATE => 202, # Accepted
+      COMPLETE_STATE => 200, # OK
+      FAILED_STATE => 500, # Internal Server Error
+      NOT_FOUND_STATE => 404, # Not Found
+    }.freeze
+    TWO_HOURS = 60 * 60 * 2
+
+    class << self
+      delegate :redis, to: TradeTariffBackend
+
+      def enqueue(searches)
+        build(searches).tap do |result|
+          redis.set(
+            result.id,
+            Zlib::Deflate.deflate(result.to_json),
+            ex: TWO_HOURS,
+          )
+
+          BulkSearchWorker.perform_async(result.id)
+        end
+      end
+
+      def find(id)
+        json_blob = redis.get(id)
+
+        result = if json_blob.blank?
+                   {
+                     id:,
+                     status: NOT_FOUND_STATE,
+                   }
+                 else
+                   JSON.parse(Zlib::Inflate.inflate(json_blob)).deep_symbolize_keys
+                 end
+
+        new(result)
+      end
+
+      def build(searches = [])
+        attributes = {
+          id: SecureRandom.uuid,
+          status: INITIAL_STATE,
+          searches: searches.map do |search|
+            search[:attributes]
+          end,
+        }
+
+        new(attributes)
+      end
+    end
 
     def initialize(data = {})
       @id = data.delete(:id)
@@ -13,20 +79,6 @@ class BulkSearch
 
         BulkSearch::Search.build(attributes)
       end
-    end
-
-    def self.build(searches = [])
-      data = {}
-      id = SecureRandom.uuid
-      searches = searches.map do |search|
-        search[:attributes]
-      end
-
-      data[:id] = id
-      data[:status] = BulkSearch::INITIAL_STATE
-      data[:searches] = searches
-
-      new(data)
     end
 
     def as_json(_options = {})
@@ -63,6 +115,32 @@ class BulkSearch
 
     def http_code
       HTTP_CODES[status.to_sym]
+    end
+
+    def processing!
+      update_status(PROCESSING_STATE)
+    end
+
+    def complete!
+      update_status(COMPLETE_STATE)
+    end
+
+    def failed!
+      update_status(FAILED_STATE)
+    end
+
+    private
+
+    delegate :redis, to: TradeTariffBackend
+
+    def update_status(status)
+      self.status = status
+
+      redis.set(
+        id,
+        Zlib::Deflate.deflate(to_json),
+        ex: BulkSearch::TWO_HOURS,
+      )
     end
   end
 end

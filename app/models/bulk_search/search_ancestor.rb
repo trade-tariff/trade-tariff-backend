@@ -1,4 +1,4 @@
-class BulkSearch
+module BulkSearch
   class SearchAncestor
     include ContentAddressableId
 

@@ -1,5 +1,5 @@
 class BulkSearchService
-  delegate :redis, :v2_search_client, to: TradeTariffBackend
+  delegate :v2_search_client, to: TradeTariffBackend
 
   def initialize(id)
     @id = id
@@ -10,7 +10,7 @@ class BulkSearchService
 
     return unless @result.status.queued?
 
-    update_status(BulkSearch::PROCESSING_STATE)
+    @result.processing!
 
     actions = @result.searches.each_with_object([]) do |search, acc|
       acc << {}
@@ -22,8 +22,7 @@ class BulkSearchService
       opensearch_results = response.dig('responses', i, 'hits', 'hits')
       AncestorSearchResultService.new(search, opensearch_results).call
     end
-
-    update_status(BulkSearch::COMPLETE_STATE)
+    @result.complete!
     @result
   end
 
@@ -45,16 +44,6 @@ class BulkSearchService
       },
       size:,
     }
-  end
-
-  def update_status(status)
-    @result.status = status
-
-    redis.set(
-      @result.id,
-      Zlib::Deflate.deflate(@result.to_json),
-      ex: BulkSearch::TWO_HOURS,
-    )
   end
 
   def index_name
