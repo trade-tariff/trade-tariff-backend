@@ -5,7 +5,7 @@ class BulkSearch
 
     def initialize(data = {})
       @id = data.delete(:id)
-      @status = data.delete(:status)
+      @status = ActiveSupport::StringInquirer.new(data.delete(:status).to_s)
       @searches = (data.delete(:searches) || []).map do |search|
         attributes = search.to_h.try(:deep_symbolize_keys!) || search.to_h
         attributes[:search_result_ancestors] = attributes[:search_result_ancestors].presence || []
@@ -63,10 +63,6 @@ class BulkSearch
 
     def http_code
       HTTP_CODES[status.to_sym]
-    end
-
-    def cannot_proceed?
-      status == NOT_FOUND_STATE || status == FAILED_STATE
     end
   end
 end

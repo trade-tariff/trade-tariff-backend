@@ -8,7 +8,7 @@ class BulkSearchService
   def call
     @result = BulkSearch.find(id)
 
-    return if @result.cannot_proceed?
+    return unless @result.status.queued?
 
     update_status(BulkSearch::PROCESSING_STATE)
 
