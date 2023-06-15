@@ -134,12 +134,12 @@ module BulkSearch
     delegate :redis, to: TradeTariffBackend
 
     def update_status(status)
-      self.status = status
+      self.status = ActiveSupport::StringInquirer.new(status.to_s)
 
       redis.set(
         id,
         Zlib::Deflate.deflate(to_json),
-        ex: BulkSearch::TWO_HOURS,
+        ex: TWO_HOURS,
       )
     end
   end

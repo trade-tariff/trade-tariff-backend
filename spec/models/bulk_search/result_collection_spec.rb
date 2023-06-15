@@ -8,22 +8,7 @@ RSpec.describe BulkSearch::ResultCollection do
     ]
   end
   let(:id) { SecureRandom.uuid }
-  let(:status) { BulkSearch::ResultCollection::COMPLETE_STATE }
-
-  describe '.build' do
-    subject(:result_collection) { described_class.build(searches) }
-
-    let(:searches) do
-      [
-        { attributes: { input_description: 'red herring' } },
-        { attributes: { input_description: 'white bait' } },
-      ]
-    end
-
-    it { expect(result_collection).to be_a(described_class) }
-    it { expect(result_collection.id).to match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/) }
-    it { expect(result_collection.status).to eq(BulkSearch::ResultCollection::INITIAL_STATE.to_s) }
-  end
+  let(:status) { BulkSearch::ResultCollection::INITIAL_STATE }
 
   describe '#as_json' do
     subject(:result_collection) { described_class.new(id:, status:, searches:) }
@@ -68,7 +53,7 @@ RSpec.describe BulkSearch::ResultCollection do
     it 'returns a hash representation of the result collection' do
       expected_result = {
         id:,
-        status: 'completed',
+        status: 'queued',
         searches: [
           {
             input_description: 'red herring',
@@ -135,6 +120,77 @@ RSpec.describe BulkSearch::ResultCollection do
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::INITIAL_STATE, 202
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::FAILED_STATE, 500
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::NOT_FOUND_STATE, 404
+  end
+
+  # def processing!
+  #   update_status(PROCESSING_STATE)
+  # end
+
+  # def complete!
+  #   update_status(COMPLETE_STATE)
+  # end
+
+  # def failed!
+  #   update_status(FAILED_STATE)
+  # end
+  describe '#processing!' do
+    it 'updates the status to processing' do
+      expect { result_collection.processing! }
+        .to change { result_collection.status }
+        .from('queued')
+        .to('processing')
+    end
+
+    it 'stores the updated status in redis' do
+      result_collection.processing!
+      updated_result_collection = JSON.parse(
+        Zlib::Inflate.inflate(
+          TradeTariffBackend.redis.get(result_collection.id)
+        )
+      )
+
+      expect(updated_result_collection['status']).to eq('processing')
+    end
+  end
+
+  describe '#complete!' do
+    it 'updates the status to complete' do
+      expect { result_collection.complete! }
+        .to change { result_collection.status }
+        .from('queued')
+        .to('completed')
+    end
+
+    it 'stores the updated status in redis' do
+      result_collection.complete!
+      updated_result_collection = JSON.parse(
+        Zlib::Inflate.inflate(
+          TradeTariffBackend.redis.get(result_collection.id)
+        )
+      )
+
+      expect(updated_result_collection['status']).to eq('completed')
+    end
+  end
+
+  describe '#failed!' do
+    it 'updates the status to failed' do
+      expect { result_collection.failed! }
+        .to change { result_collection.status }
+        .from('queued')
+        .to('failed')
+    end
+
+    it 'stores the updated status in redis' do
+      result_collection.failed!
+      updated_result_collection = JSON.parse(
+        Zlib::Inflate.inflate(
+          TradeTariffBackend.redis.get(result_collection.id)
+        )
+      )
+
+      expect(updated_result_collection['status']).to eq('failed')
+    end
   end
 
   describe '#status' do
@@ -213,5 +269,20 @@ RSpec.describe BulkSearch::ResultCollection do
         expect(described_class.find(id).status).to eq(BulkSearch::ResultCollection::NOT_FOUND_STATE.to_s)
       end
     end
+  end
+
+  describe '.build' do
+    subject(:result_collection) { described_class.build(searches) }
+
+    let(:searches) do
+      [
+        { attributes: { input_description: 'red herring' } },
+        { attributes: { input_description: 'white bait' } },
+      ]
+    end
+
+    it { expect(result_collection).to be_a(described_class) }
+    it { expect(result_collection.id).to match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/) }
+    it { expect(result_collection.status).to eq(BulkSearch::ResultCollection::INITIAL_STATE.to_s) }
   end
 end
