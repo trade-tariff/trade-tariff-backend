@@ -1,5 +1,10 @@
-class ApplicationController < ActionController::Base
-  respond_to :json, :html
+class ApplicationController < ActionController::API
+  include ::ActionController::MimeResponds
+  # SequelRails incorrectly includes this into ActionController::Base but our
+  # ApplicationController derives from ActionController::API
+  include ::SequelRails::Railties::ControllerRuntime
+
+  respond_to :json
 
   before_action :maintenance_mode_if_active
   around_action :configure_time_machine
