@@ -12,17 +12,22 @@ class BulkSearchService
 
     @result.processing!
 
-    actions = @result.searches.each_with_object([]) do |search, acc|
-      acc << {}
-      acc << build_query_for(search)
+    actions = @result.searches.flat_map do |search|
+      [
+        {},
+        build_query_for(search),
+      ]
     end
 
     response = v2_search_client.msearch(index: index_name, body: actions)
+
     @result.searches.each_with_index do |search, i|
       opensearch_results = response.dig('responses', i, 'hits', 'hits')
-      AncestorSearchResultService.new(search, opensearch_results).call
+      BulkSearchResultAnswerService.new(search, opensearch_results).call
     end
+
     @result.complete!
+
     @result
   end
 
@@ -51,6 +56,6 @@ class BulkSearchService
   end
 
   def size
-    200
+    100
   end
 end

@@ -198,8 +198,7 @@ Rails.application.routes.draw do
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
 
-      post '/bulk_search' => 'bulk_searches#create'
-      get '/bulk_search/:id' => 'bulk_searches#show'
+      resources :bulk_searches, only: %i[create show]
 
       get '/headings/:id/tree' => 'headings#tree'
 

@@ -1,11 +1,11 @@
 RSpec.describe Api::V2::BulkSearchesController, type: :request do
-  describe 'POST /bulk_search' do
+  describe 'POST /bulk_searches' do
     subject(:do_post) { make_request && response }
 
     let(:make_request) do
       params = { data: [{ type: 'searches', attributes: { input_description: '1234' } }] }
 
-      post '/bulk_search', params:
+      post '/bulk_searches', params:
     end
 
     let(:pattern) do
@@ -15,7 +15,7 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
           type: 'result_collection',
           attributes: {
             status: 'queued',
-            message: 'Your bulk search request has been accepted',
+            message: 'Your bulk search request has been accepted and is now on a queue waiting to be processed',
           },
           relationships: {
             searches: { data: [{ id: String, type: 'search' }] },
@@ -25,21 +25,21 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
     end
 
     before do
-      allow(BulkSearch).to receive(:enqueue).and_call_original
+      allow(BulkSearch::ResultCollection).to receive(:enqueue).and_call_original
 
       do_post
     end
 
-    it { expect(BulkSearch).to have_received(:enqueue) }
+    it { expect(BulkSearch::ResultCollection).to have_received(:enqueue) }
     it { expect(response).to have_http_status(:accepted) }
     it { expect(response.body).to match_json_expression(pattern) }
   end
 
-  describe 'GET /bulk_search/:id' do
+  describe 'GET /bulk_searches/:id' do
     subject(:do_get) { make_request && response }
 
     let(:make_request) do
-      get "/bulk_search/#{uuid}"
+      get "/bulk_searches/#{uuid}"
     end
 
     let(:uuid) { SecureRandom.uuid }

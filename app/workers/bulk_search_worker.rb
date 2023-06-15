@@ -9,9 +9,9 @@ class BulkSearchWorker
     Rails.logger.info("BulkSearchWorker: #{id} - #{BulkSearch::ResultCollection.find(id)}")
     BulkSearchService.new(id).call
     Rails.logger.info("BulkSearchWorker: #{id} - #{BulkSearch::ResultCollection.find(id)}")
-  rescue StandardError => e
+  rescue StandardError
     BulkSearch::ResultCollection.find(id).failed!
 
-    Rails.logger.error(e)
+    raise
   end
 end

@@ -1,4 +1,4 @@
-RSpec.describe AncestorSearchResultService do
+RSpec.describe BulkSearchResultAnswerService do
   subject(:service) { described_class.new(search, hits) }
 
   let(:search) do

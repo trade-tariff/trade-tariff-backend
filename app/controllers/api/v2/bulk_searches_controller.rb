@@ -5,7 +5,7 @@ module Api
         @result = ::BulkSearch::ResultCollection.enqueue(bulk_search_params)
         @serialized_result = Api::V2::BulkSearch::ResultCollectionSerializer.new(@result).serializable_hash
 
-        render json: @serialized_result, status: @result.http_code
+        render json: @serialized_result, status: :accepted
       end
 
       def show
