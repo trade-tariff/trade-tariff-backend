@@ -21,12 +21,5 @@ class BulkSearch
     def search_result_ancestor_ids
       search_result_ancestors.map(&:id)
     end
-
-    def as_json(_options = {})
-      {
-        input_description:,
-        search_result_ancestors:,
-      }
-    end
   end
 end
