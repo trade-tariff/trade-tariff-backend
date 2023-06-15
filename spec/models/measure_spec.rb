@@ -328,8 +328,8 @@ RSpec.describe Measure do
                              })
       end
 
-      it { expect(described_class.with_modification_regulations.all.count).to eq 3 }
-      it { expect(Commodity.by_code('0805201000').first.measures.count).to eq 3 }
+      it { expect(TimeMachine.no_time_machine { described_class.with_modification_regulations.all.count }).to eq 3 }
+      it { expect(TimeMachine.no_time_machine { Commodity.by_code('0805201000').first.measures.count }).to eq 3 }
       it { expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { described_class.with_modification_regulations.with_actual(ModificationRegulation).all.first.measure_sid }).to eq 3_445_396 }
       it { expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.count }).to eq 1 }
       it { expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.first.measure_sid }).to eq 3_445_396 }
