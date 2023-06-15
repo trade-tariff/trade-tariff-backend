@@ -6,10 +6,10 @@ class BulkSearch
   PROCESSING_STATE = :processing
 
   STATE_MESSAGES = {
-    INITIAL_STATE => 'Queued',
+    INITIAL_STATE => 'Your bulk search request has been accepted and is now on a queue waiting to be processed',
     COMPLETE_STATE => 'Completed',
     FAILED_STATE => 'Failed',
-    NOT_FOUND_STATE => 'Not found',
+    NOT_FOUND_STATE => 'Not found. Do you need to submit a bulk search request again? They expire in 2 hours',
     PROCESSING_STATE => 'Processing',
   }.freeze
 
@@ -38,15 +38,15 @@ class BulkSearch
     end
 
     def find(id)
-      decompressed = Zlib::Inflate.inflate(redis.get(id))
+      json_blob = redis.get(id)
 
-      result = if decompressed.blank?
+      result = if json_blob.blank?
                  {
                    id:,
                    status: NOT_FOUND_STATE,
                  }
                else
-                 JSON.parse(decompressed).deep_symbolize_keys
+                 JSON.parse(Zlib::Inflate.inflate(json_blob)).deep_symbolize_keys
                end
 
       ResultCollection.new(result)
