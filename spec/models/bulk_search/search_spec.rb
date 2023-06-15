@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe BulkSearch::Search do
   subject(:search) do
-    described_class.new(
+    described_class.build(
       input_description:,
       ancestor_digits:,
       search_result_ancestors:,

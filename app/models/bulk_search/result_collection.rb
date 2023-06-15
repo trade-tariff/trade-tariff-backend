@@ -11,7 +11,7 @@ class BulkSearch
         attributes[:search_result_ancestors] = attributes[:search_result_ancestors].presence || []
         attributes[:ancestor_digits] = attributes[:ancestor_digits].presence || 8
 
-        BulkSearch::Search.new(attributes)
+        BulkSearch::Search.build(attributes)
       end
     end
 
