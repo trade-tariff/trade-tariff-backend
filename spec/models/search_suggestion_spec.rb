@@ -5,47 +5,6 @@ RSpec.describe SearchSuggestion do
     it { is_expected.to be_a(Heading) }
   end
 
-  describe '#custom_sti_goods_nomenclature' do
-    subject(:custom_sti_goods_nomenclature) do
-      create(:search_suggestion, goods_nomenclature:).custom_sti_goods_nomenclature
-    end
-
-    context 'when the search suggestion points to a chapter' do
-      let(:goods_nomenclature) { create(:chapter) }
-
-      it { is_expected.to be_a(Chapter) }
-    end
-
-    context 'when the search suggestion points to a heading' do
-      let(:goods_nomenclature) { create(:heading) }
-
-      it { is_expected.to be_a(Heading) }
-    end
-
-    context 'when the search suggestion points to a subheading' do
-      let(:goods_nomenclature) { create(:subheading) }
-
-      it { is_expected.to be_a(Subheading) }
-    end
-
-    context 'when the search suggestion points to a subheading but the goods_nomenclature_class is nil' do
-      subject(:custom_sti_goods_nomenclature) do
-        search_suggestion.goods_nomenclature_class = nil
-        search_suggestion.custom_sti_goods_nomenclature
-      end
-
-      let(:search_suggestion) { create(:search_suggestion, goods_nomenclature: create(:subheading)) }
-
-      it { is_expected.to be_a(Commodity) }
-    end
-
-    context 'when the search suggestion points to a commodity' do
-      let(:goods_nomenclature) { create(:commodity) }
-
-      it { is_expected.to be_a(Commodity) }
-    end
-  end
-
   describe '.fuzzy_search' do
     subject(:fuzzy_search) { described_class.fuzzy_search(query) }
 

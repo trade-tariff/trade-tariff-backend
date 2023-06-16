@@ -167,6 +167,24 @@ class GoodsNomenclature < Sequel::Model
     self.class.name
   end
 
+  def cast_to(klass)
+    return self if is_a?(klass)
+
+    klass.call(values).tap do |casted|
+      associations.each do |association, cached_values|
+        casted.associations[association] = cached_values
+      end
+    end
+  end
+
+  def sti_cast
+    case goods_nomenclature_class
+    when 'Subheading' then cast_to(Subheading)
+    when 'Commodity' then cast_to(Commodity)
+    else self
+    end
+  end
+
   def goods_nomenclature_indent
     goods_nomenclature_indents.first
   end

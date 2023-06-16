@@ -15,7 +15,7 @@ class SearchReference < Sequel::Model
   referenced_setter = proc do |referenced|
     if referenced.present?
       set(
-        referenced_class: referenced.class.name,
+        referenced_class: referenced.goods_nomenclature_class,
         productline_suffix: referenced.producline_suffix,
         goods_nomenclature_item_id: referenced.goods_nomenclature_item_id,
         goods_nomenclature_sid: referenced.goods_nomenclature_sid,
@@ -30,14 +30,6 @@ class SearchReference < Sequel::Model
               reciprocal_type: :many_to_one,
               setter: referenced_setter do |ds|
     ds.with_actual(GoodsNomenclature)
-  end
-
-  def custom_sti_goods_nomenclature
-    if referenced_class == 'Subheading' && referenced.instance_of?(::Commodity)
-      referenced.cast_to(Subheading)
-    else
-      referenced
-    end
   end
 
   self.raise_on_save_failure = false
