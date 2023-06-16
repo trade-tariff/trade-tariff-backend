@@ -161,6 +161,7 @@ chapter.ns_children.first.ns_children.first.ns_children.map(&ns_ancestors)
 * `#depth` - internal reference for the depth of a goods nomenclature, normally `number_indents` + 2 except for chapters which are `number_indents` + 1
 * `#goods_nomenclature_class` - this now utilises ns_leaf? internally so benefits from eager loading `#ns_children` or `#ns_descendants` the same
 * `.ns_declarable` - Dataset method to filter by only declarable goods nomenclatures - this does do a left join to check for child_nodes _but_ it skips any rows which have children so shouldn't impact results
+* `.with_leaf_column` - Dataset method which includes a virtual `leaf` column showing whether an record has any children. This can be utilised by `ns_declarable?` to determining declarability without requiring additional queries. Carries a performance cost but can provide `leaf` for 24k commodities in ~0.5 seconds
 
 ### Measures
 
@@ -214,19 +215,6 @@ Chapter.actual
               ns_descendants: MEASURE_EAGER)
        .take
 ```
-
-### Virtual leaf column
-
-This not the easiest method to consume but solves a specific scenario, and is relatively quick - ~0.5 seconds for all goods nomenclatures. If you need to find the 'leaf' status of a goods nomenclature at the SQL level, eg you want to fetch all non declarable commodities without needing to load every commodity back to Ruby.
-
-```
-GoodsNomenclature.with_leaf_column
-                 .where(leaf: false)
-                 .exclude(producline_suffix: '80')
-                 .all
-```
-
-Because this uses a join and group you may need `Sequel.dataset.from_self` to nest the query depending upon what your using it for.
 
 ### Some examples
 

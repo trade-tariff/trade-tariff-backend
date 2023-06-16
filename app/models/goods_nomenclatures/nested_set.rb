@@ -148,25 +148,15 @@ module GoodsNomenclatures
           association_join(tree_node: proc { |ds| ds.join_child_sids })
             .select_all(:goods_nomenclatures)
             .select_append(:tree_node__number_indents, :tree_node__depth)
-            .select_append((Sequel.function(:count, :tree_node__child_sid) =~ 0).as(:leaf))
-            .group(qualified_columns + %i[tree_node__number_indents tree_node__depth])
+            .select_append(Sequel.as({ tree_node__child_sid: nil }, :leaf))
+            .distinct
         end
 
         def ns_declarable
-          association_join(tree_node: proc { |ds| ds.join_child_sids })
-            .select_all(:goods_nomenclatures)
-            .select_append(:tree_node__number_indents, :tree_node__depth)
-            .select_append(Sequel.as(true, :leaf))
-            .where(
-              tree_node__child_sid: nil,
-              goods_nomenclatures__producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX,
-            )
-        end
-
-      private
-
-        def qualified_columns(qualifier = model.table_name)
-          columns.map { |col| Sequel.qualify(qualifier, col) }
+          with_leaf_column
+            .where(tree_node__child_sid: nil,
+                   goods_nomenclatures__producline_suffix:
+                     GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
         end
       end
     end
