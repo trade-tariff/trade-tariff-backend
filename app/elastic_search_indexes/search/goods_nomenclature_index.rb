@@ -1,5 +1,7 @@
 module Search
   class GoodsNomenclatureIndex < ::SearchIndex
+    include PointInTimeIndex
+
     def dataset
       TimeMachine.now do
         Commodity

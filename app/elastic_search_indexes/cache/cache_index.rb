@@ -1,15 +1,9 @@
 module Cache
   class CacheIndex < ::SearchIndex
+    include PointInTimeIndex
+
     def name
       "#{super}-cache"
-    end
-
-    def dataset
-      TimeMachine.now { super.actual }
-    end
-
-    def dataset_page(...)
-      TimeMachine.now { super }
     end
 
     def page_size
