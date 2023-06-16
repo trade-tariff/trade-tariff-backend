@@ -1,19 +1,19 @@
 module BulkSearch
   class ResultCollection
+    class RecordNotFound < StandardError; end
+
     attr_accessor :status
     attr_reader :id, :searches
 
     INITIAL_STATE = :queued
     COMPLETE_STATE = :completed
     FAILED_STATE = :failed
-    NOT_FOUND_STATE = :not_found
     PROCESSING_STATE = :processing
 
     STATE_MESSAGES = {
       INITIAL_STATE => 'Your bulk search request has been accepted and is now on a queue waiting to be processed',
       COMPLETE_STATE => 'Completed',
       FAILED_STATE => 'Failed',
-      NOT_FOUND_STATE => 'Not found. Do you need to submit a bulk search request again? They expire in 2 hours',
       PROCESSING_STATE => 'Processing',
     }.freeze
 
@@ -22,9 +22,8 @@ module BulkSearch
       PROCESSING_STATE => 202, # Accepted
       COMPLETE_STATE => 200, # OK
       FAILED_STATE => 500, # Internal Server Error
-      NOT_FOUND_STATE => 404, # Not Found
     }.freeze
-    TWO_HOURS = 60 * 60 * 2
+    EXPIRES_IN = 2.hours
 
     class << self
       delegate :redis, to: TradeTariffBackend
@@ -34,7 +33,7 @@ module BulkSearch
           redis.set(
             result.id,
             Zlib::Deflate.deflate(result.to_json),
-            ex: TWO_HOURS,
+            ex: EXPIRES_IN,
           )
 
           BulkSearchWorker.perform_async(result.id)
@@ -45,10 +44,7 @@ module BulkSearch
         json_blob = redis.get(id)
 
         result = if json_blob.blank?
-                   {
-                     id:,
-                     status: NOT_FOUND_STATE,
-                   }
+                   raise RecordNotFound
                  else
                    JSON.parse(Zlib::Inflate.inflate(json_blob)).deep_symbolize_keys
                  end
@@ -139,7 +135,7 @@ module BulkSearch
       redis.set(
         id,
         Zlib::Deflate.deflate(to_json),
-        ex: TWO_HOURS,
+        ex: EXPIRES_IN,
       )
     end
   end

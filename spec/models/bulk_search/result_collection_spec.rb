@@ -105,7 +105,6 @@ RSpec.describe BulkSearch::ResultCollection do
     it_behaves_like 'a bulk search result collection message', BulkSearch::ResultCollection::PROCESSING_STATE, 'Processing'
     it_behaves_like 'a bulk search result collection message', BulkSearch::ResultCollection::INITIAL_STATE, 'Your bulk search request has been accepted and is now on a queue waiting to be processed'
     it_behaves_like 'a bulk search result collection message', BulkSearch::ResultCollection::FAILED_STATE, 'Failed'
-    it_behaves_like 'a bulk search result collection message', BulkSearch::ResultCollection::NOT_FOUND_STATE, 'Not found. Do you need to submit a bulk search request again? They expire in 2 hours'
   end
 
   describe '#http_code' do
@@ -119,13 +118,12 @@ RSpec.describe BulkSearch::ResultCollection do
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::PROCESSING_STATE, 202
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::INITIAL_STATE, 202
     it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::FAILED_STATE, 500
-    it_behaves_like 'a bulk search result collection http code', BulkSearch::ResultCollection::NOT_FOUND_STATE, 404
   end
 
   describe '#processing!' do
     it 'updates the status to processing' do
       expect { result_collection.processing! }
-        .to change { result_collection.status }
+        .to change(result_collection, :status)
         .from('queued')
         .to('processing')
     end
@@ -134,8 +132,8 @@ RSpec.describe BulkSearch::ResultCollection do
       result_collection.processing!
       updated_result_collection = JSON.parse(
         Zlib::Inflate.inflate(
-          TradeTariffBackend.redis.get(result_collection.id)
-        )
+          TradeTariffBackend.redis.get(result_collection.id),
+        ),
       )
 
       expect(updated_result_collection['status']).to eq('processing')
@@ -145,7 +143,7 @@ RSpec.describe BulkSearch::ResultCollection do
   describe '#complete!' do
     it 'updates the status to complete' do
       expect { result_collection.complete! }
-        .to change { result_collection.status }
+        .to change(result_collection, :status)
         .from('queued')
         .to('completed')
     end
@@ -154,8 +152,8 @@ RSpec.describe BulkSearch::ResultCollection do
       result_collection.complete!
       updated_result_collection = JSON.parse(
         Zlib::Inflate.inflate(
-          TradeTariffBackend.redis.get(result_collection.id)
-        )
+          TradeTariffBackend.redis.get(result_collection.id),
+        ),
       )
 
       expect(updated_result_collection['status']).to eq('completed')
@@ -165,7 +163,7 @@ RSpec.describe BulkSearch::ResultCollection do
   describe '#failed!' do
     it 'updates the status to failed' do
       expect { result_collection.failed! }
-        .to change { result_collection.status }
+        .to change(result_collection, :status)
         .from('queued')
         .to('failed')
     end
@@ -174,8 +172,8 @@ RSpec.describe BulkSearch::ResultCollection do
       result_collection.failed!
       updated_result_collection = JSON.parse(
         Zlib::Inflate.inflate(
-          TradeTariffBackend.redis.get(result_collection.id)
-        )
+          TradeTariffBackend.redis.get(result_collection.id),
+        ),
       )
 
       expect(updated_result_collection['status']).to eq('failed')
@@ -214,7 +212,7 @@ RSpec.describe BulkSearch::ResultCollection do
     end
 
     it 'returns a bulk search result collection' do
-      expect(described_class.enqueue(searches)).to be_a(BulkSearch::ResultCollection)
+      expect(described_class.enqueue(searches)).to be_a(described_class)
     end
   end
 
@@ -238,7 +236,7 @@ RSpec.describe BulkSearch::ResultCollection do
       let(:status) { BulkSearch::ResultCollection::COMPLETE_STATE }
 
       it 'returns a bulk search result collection' do
-        expect(described_class.find(id)).to be_a(BulkSearch::ResultCollection)
+        expect(described_class.find(id)).to be_a(described_class)
       end
 
       it 'fetches the compressed result collection' do
@@ -250,13 +248,7 @@ RSpec.describe BulkSearch::ResultCollection do
     context 'when the bulk search job does not exist' do
       let(:json_blob) { nil }
 
-      it 'returns a bulk search result collection' do
-        expect(described_class.find(id)).to be_a(BulkSearch::ResultCollection)
-      end
-
-      it 'sets the status to not found' do
-        expect(described_class.find(id).status).to eq(BulkSearch::ResultCollection::NOT_FOUND_STATE.to_s)
-      end
+      it { expect { described_class.find(id) }.to raise_error(described_class::RecordNotFound) }
     end
   end
 

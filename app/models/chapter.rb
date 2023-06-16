@@ -51,7 +51,7 @@ class Chapter < GoodsNomenclature
     self[:operation] = operation.to_s.first.upcase
   end
 
-  def short_code(_ = {})
+  def short_code
     goods_nomenclature_item_id.first(2)
   end
 

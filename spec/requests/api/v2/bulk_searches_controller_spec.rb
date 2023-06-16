@@ -52,27 +52,7 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
     end
 
     context 'when there is no corresponding bulk search job' do
-      before { do_get }
-
-      let(:pattern) do
-        {
-          data: {
-            id: uuid,
-            type: 'result_collection',
-            attributes: {
-              status: 'not_found',
-              message: 'Not found. Do you need to submit a bulk search request again? They expire in 2 hours',
-            },
-            relationships: {
-              searches: { data: [] },
-            },
-          },
-          included: [],
-        }
-      end
-
-      it { expect(response).to have_http_status(:not_found) }
-      it { expect(response.body).to match_json_expression(pattern) }
+      it { expect { do_get }.to raise_error(BulkSearch::ResultCollection::RecordNotFound) }
     end
 
     context 'when the bulk search job is still queued' do

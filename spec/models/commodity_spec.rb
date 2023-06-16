@@ -781,4 +781,28 @@ RSpec.describe Commodity do
 
     it { is_expected.to eq('0101210000') }
   end
+
+  describe '#specific_system_short_code' do
+    subject(:specific_system_short_code) { described_class.find(goods_nomenclature_item_id:).specific_system_short_code }
+
+    before { create(:commodity, goods_nomenclature_item_id:) }
+
+    context 'when the commodity is a harmonised system code' do
+      let(:goods_nomenclature_item_id) { '0101210000' }
+
+      it { is_expected.to eq('010121') }
+    end
+
+    context 'when the commodity is a combined nomenclature code' do
+      let(:goods_nomenclature_item_id) { '0101210900' }
+
+      it { is_expected.to eq('01012109') }
+    end
+
+    context 'when the commodity is a taric code' do
+      let(:goods_nomenclature_item_id) { '0101210901' }
+
+      it { is_expected.to eq('0101210901') }
+    end
+  end
 end
