@@ -1,4 +1,6 @@
 class BuildIndexPageWorker
+  class IndexingError < StandardError; end
+
   include Sidekiq::Worker
 
   sidekiq_options queue: :default, retry: false
@@ -15,6 +17,8 @@ class BuildIndexPageWorker
     opensearch_client.bulk(
       body: serialize_for(:index, index, entries),
     )
+  rescue StandardError
+    raise IndexingError, "Failed building index: #{index_namespace}:#{index_name} - page #{page_number}"
   end
 
   private
