@@ -8,6 +8,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
       let(:pattern) do
         {
           id: be_a(Integer),
+          short_code: '010190',
           goods_nomenclature_item_id: '0101900000',
           heading_id: '0101',
           chapter_id: '01',

@@ -117,11 +117,15 @@ module TenDigitGoodsNomenclature
       if ns_declarable?
         goods_nomenclature_item_id
       else
-        case goods_nomenclature_item_id
-        when /^\d+0000$/ then harmonised_system_code
-        when /^\d+00$/ then combined_nomenclature_code
-        else taric_code
-        end
+        specific_system_short_code
+      end
+    end
+
+    def specific_system_short_code
+      case goods_nomenclature_item_id
+      when /^\d+0000$/ then harmonised_system_code
+      when /^\d+00$/ then combined_nomenclature_code
+      else taric_code
       end
     end
 

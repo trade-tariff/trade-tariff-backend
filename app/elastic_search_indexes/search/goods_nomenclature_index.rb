@@ -225,6 +225,7 @@ module Search
             validity_end_date: { enabled: false },
             guides: { enabled: false },
             guide_ids: { enabled: false },
+            short_code: { enabled: false },
           },
         },
       }
