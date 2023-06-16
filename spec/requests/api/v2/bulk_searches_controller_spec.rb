@@ -24,6 +24,8 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
       }
     end
 
+    let(:id) { JSON.parse(response.body).dig('data', 'id') }
+
     before do
       allow(BulkSearch::ResultCollection).to receive(:enqueue).and_call_original
 
@@ -33,6 +35,7 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
     it { expect(BulkSearch::ResultCollection).to have_received(:enqueue) }
     it { expect(response).to have_http_status(:accepted) }
     it { expect(response.body).to match_json_expression(pattern) }
+    it { expect(response.location).to eq(api_bulk_search_path(id)) }
   end
 
   describe 'GET /bulk_searches/:id' do

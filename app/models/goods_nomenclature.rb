@@ -188,6 +188,10 @@ class GoodsNomenclature < Sequel::Model
     goods_nomenclature_item_id
   end
 
+  def specific_system_short_code
+    short_code
+  end
+
   def bti_url
     'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
   end

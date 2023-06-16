@@ -198,7 +198,9 @@ Rails.application.routes.draw do
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
 
-      resources :bulk_searches, only: %i[create show]
+      if TradeTariffBackend.bulk_search_api_enabled?
+        resources :bulk_searches, only: %i[create show]
+      end
 
       get '/headings/:id/tree' => 'headings#tree'
 

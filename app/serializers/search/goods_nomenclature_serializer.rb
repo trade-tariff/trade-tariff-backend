@@ -7,7 +7,7 @@ module Search
         serializable = {
           id:,
           goods_nomenclature_item_id:,
-          short_code: respond_to?(:specific_system_short_code) ? specific_system_short_code : short_code,
+          short_code: specific_system_short_code,
           heading_id: heading_short_code,
           chapter_id: chapter_short_code,
           producline_suffix:,

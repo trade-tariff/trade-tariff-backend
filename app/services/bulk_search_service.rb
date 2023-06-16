@@ -8,7 +8,7 @@ class BulkSearchService
   def call
     @result = BulkSearch::ResultCollection.find(id)
 
-    return unless @result.status.queued?
+    return unless @result.queued?
 
     @result.processing!
 

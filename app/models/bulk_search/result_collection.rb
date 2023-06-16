@@ -2,6 +2,9 @@ module BulkSearch
   class ResultCollection
     class RecordNotFound < StandardError; end
 
+    delegate :processing?, :complete?, :failed?, :queued?, to: :status
+    delegate :to_param, to: :id
+
     attr_accessor :status
     attr_reader :id, :searches
 
@@ -23,6 +26,7 @@ module BulkSearch
       COMPLETE_STATE => 200, # OK
       FAILED_STATE => 500, # Internal Server Error
     }.freeze
+
     EXPIRES_IN = 2.hours
 
     class << self
@@ -77,7 +81,7 @@ module BulkSearch
       end
     end
 
-    def as_json(_options = {})
+    def as_json(...)
       {
         id:,
         status:,
