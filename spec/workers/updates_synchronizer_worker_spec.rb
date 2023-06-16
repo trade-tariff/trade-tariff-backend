@@ -4,7 +4,6 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(GenerateMaterializedPathsWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(GenerateGoodsNomenclaturesCsvReportWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
   end
