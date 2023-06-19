@@ -419,7 +419,7 @@ jobs:
       - image: cimg/redis:6.2
         environment:
           REDIS_URL: "redis://localhost:6379/"
-      - image: opensearchproject/opensearch:1.2.4
+      - image: opensearchproject/opensearch:2
         environment:
           cluster.name: elasticsearch
           transport.host: localhost
