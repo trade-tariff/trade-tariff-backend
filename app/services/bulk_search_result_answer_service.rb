@@ -4,7 +4,7 @@ class BulkSearchResultAnswerService
 
   def initialize(search, hits, ancestor_digits: 6)
     @search = search
-    @hits = hits
+    @hits = hits || []
     @ancestor_digits = ancestor_digits
   end
 
