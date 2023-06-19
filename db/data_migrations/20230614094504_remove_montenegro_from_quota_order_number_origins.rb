@@ -4,7 +4,7 @@ Sequel.migration do
 
   up do
     if TradeTariffBackend.uk?
-      Sequel::Model.db[:quota_order_number_origins_oplog].where(quota_order_number_sid: 20919, quota_order_number_origin_sid: 20988, geographical_area_id: "ME", operation_date: nil, oid: 8674, operation: "C", geographical_area_sid: 348).delete
+      Sequel::Model.db[:quota_order_number_origins_oplog].where(quota_order_number_sid: 20_919, quota_order_number_origin_sid: 20_988, geographical_area_id: 'ME', operation_date: nil, oid: 8674, operation: 'C', geographical_area_sid: 348).delete
     end
   end
 
