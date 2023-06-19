@@ -61,7 +61,7 @@ class CachedCommodityService
   TTL = 24.hours
 
   def initialize(commodity, actual_date, filters = {})
-    @commodity = commodity
+    @commodity_sid = commodity.goods_nomenclature_sid
     @actual_date = actual_date
     @filters = filters
   end
@@ -74,7 +74,7 @@ class CachedCommodityService
 
   private
 
-  attr_reader :commodity, :actual_date, :filters
+  attr_reader :actual_date, :filters
 
   def presented_commodity
     Api::V2::Commodities::CommodityPresenter.new(commodity, filtered_measures)
@@ -91,8 +91,18 @@ class CachedCommodityService
     end
   end
 
+  def commodity
+    @commodity ||= Commodity
+      .actual
+      .where(goods_nomenclature_sid: @commodity_sid)
+      .eager(ns_ancestors: { ns_measures: MEASURES_EAGER_LOAD_GRAPH,
+                             goods_nomenclature_descriptions: {} },
+             ns_measures: MEASURES_EAGER_LOAD_GRAPH)
+      .take
+  end
+
   def measures
-    commodity.measures_dataset.eager(*MEASURES_EAGER_LOAD_GRAPH).all
+    commodity.applicable_measures
   end
 
   def geographical_area_id
@@ -104,6 +114,6 @@ class CachedCommodityService
   end
 
   def cache_key
-    "_commodity-v#{CACHE_VERSION}-#{commodity.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
+    "_commodity-v#{CACHE_VERSION}-#{@commodity_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{geographical_area_id}-#{meursing_additional_code_id}"
   end
 end
