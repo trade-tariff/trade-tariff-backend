@@ -4,11 +4,34 @@ Sequel.migration do
 
   up do
     if TradeTariffBackend.uk?
-      Sequel::Model.db[:quota_order_number_origins_oplog].where(quota_order_number_sid: 20_919, quota_order_number_origin_sid: 20_988, geographical_area_id: 'ME', operation_date: nil, oid: 8674, operation: 'C', geographical_area_sid: 348).delete
+      QuotaOrderNumberOrigin::Operation.where(
+        quota_order_number_sid: 20_919,
+        quota_order_number_origin_sid: 20_988,
+        geographical_area_id: 'ME',
+        operation_date: nil,
+        operation: 'C',
+        geographical_area_sid: 348,
+        filename: nil,
+      ).delete
     end
   end
 
   down do
-    # deletion, cannot be reversed
+    if TradeTariffBackend.uk?
+      QuotaOrderNumberOrigin.unrestrict_primary_key
+
+      QuotaOrderNumberOrigin.create(
+        quota_order_number_sid: 20_919,
+        quota_order_number_origin_sid: 20_988,
+        geographical_area_id: 'ME',
+        operation_date: nil,
+        operation: 'C',
+        geographical_area_sid: 348,
+        filename: nil,
+        validity_start_date: Date.parse('2021-01-01T00:00:00.000Z'),
+      )
+
+      QuotaOrderNumberOrigin.restrict_primary_key
+    end
   end
 end
