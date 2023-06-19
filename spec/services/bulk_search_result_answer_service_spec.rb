@@ -9,6 +9,17 @@ RSpec.describe BulkSearchResultAnswerService do
     )
   end
 
+  context 'when nil is passed as the hits' do
+    let(:hits) { nil }
+
+    it 'sets the fallback search result ancestor short code' do
+      expect { service.call }
+        .to change { search.search_result_ancestors.first&.short_code }
+        .from(nil)
+        .to('999999')
+    end
+  end
+
   context 'when there are no hits' do
     let(:hits) { [] }
 
