@@ -53,6 +53,10 @@ RSpec.configure do |config|
     FileUtils.cp_r('spec/fixtures/cds_samples/.', 'tmp/data/cds')
   end
 
+  config.after do
+    TradeTariffBackend.redis.flushdb
+  end
+
   config.before(:suite) do
     # Materialized Views need populating after a schema load before concurrent
     # refresh can be used. Doing a blocking refresh to ensure the View is in a
