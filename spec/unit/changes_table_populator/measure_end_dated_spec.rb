@@ -1,4 +1,4 @@
-RSpec.describe ChangesTablePopulator::MeasureEndDated, flaky: true do
+RSpec.describe ChangesTablePopulator::MeasureEndDated do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
@@ -22,10 +22,34 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated, flaky: true do
       end
     end
 
-    context 'when there are measures that ended on the previous day' do
+    context 'when there are measures that ended on the previous day in Taric' do
       before do
-        create :measure, :with_goods_nomenclature, validity_end_date: Time.zone.today - 1.day
+        create :measure, :with_goods_nomenclature, validity_end_date: taric_end_date
       end
+
+      let(:taric_end_date) { 1.day.ago.beginning_of_day }
+
+      it 'extracts changes' do
+        expect { described_class.populate }.to change(Change, :count).by(1)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.populate
+        expect(db[:changes].first[:productline_suffix]).to eq('80')
+      end
+
+      it 'will flag it as end line' do
+        described_class.populate
+        expect(db[:changes].first[:end_line]).to be true
+      end
+    end
+
+    context 'when there are measures that ended on the previous day in CDS' do
+      before do
+        create :measure, :with_goods_nomenclature, validity_end_date: cds_end_date
+      end
+
+      let(:cds_end_date) { 1.day.ago.end_of_day }
 
       it 'extracts changes' do
         expect { described_class.populate }.to change(Change, :count).by(1)
@@ -80,6 +104,28 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated, flaky: true do
 
       it 'extracts the commodity and the child commodity as change' do
         expect { described_class.populate }.to change(Change, :count).by(5)
+      end
+
+      it 'will extract the correct productline suffix' do
+        described_class.populate
+        expect(db[:changes].first[:productline_suffix]).to eq('80')
+      end
+
+      it 'will flag it as not end line' do
+        described_class.populate
+        expect(db[:changes].first[:end_line]).to be false
+      end
+    end
+
+    context 'when the measure is associated to a goods_nomenclature which is end dated on the same day' do
+      before { measure }
+
+      let(:yesterday) { Time.zone.today - 1.day }
+      let(:commodity) { create :commodity, :with_heading, :with_children, validity_end_date: yesterday }
+      let(:measure) { create :measure, goods_nomenclature: commodity, validity_end_date: yesterday }
+
+      it 'extracts the commodity and the child commodity as change' do
+        expect { described_class.populate }.to change(Change, :count).by(4)
       end
 
       it 'will extract the correct productline suffix' do

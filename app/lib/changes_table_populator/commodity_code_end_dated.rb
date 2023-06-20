@@ -10,11 +10,18 @@ module ChangesTablePopulator
       end
 
       def where_condition(day: Time.zone.today)
-        { validity_end_date: day - 1.day }
+        previous_day = (day - 1.day)
+
+        { validity_end_date: (previous_day.beginning_of_day..previous_day.end_of_day) }
       end
 
       def import_records(elements:, day: Time.zone.today)
-        elements.map { |element| integrate_element(row: element, day:) }
+        elements.map do |element|
+          last_valid_day = (day - 1.day).beginning_of_day
+          declarable_on_last_day = end_line?(row: element, day: last_valid_day)
+
+          build_change_record(row: element, day:, is_end_line: declarable_on_last_day)
+        end
       end
 
       def change_type

@@ -1,4 +1,4 @@
-RSpec.describe ChangesTablePopulator::CommodityCodeStarted, flaky: true do
+RSpec.describe ChangesTablePopulator::CommodityCodeStarted do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
