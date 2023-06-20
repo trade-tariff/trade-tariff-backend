@@ -60,6 +60,16 @@ module ChangesTablePopulator
       raise NotImplementedError, 'Implement this method in the subclasses'
     end
 
+    def descendants_date(goods_nomenclature, day)
+      if goods_nomenclature.validity_end_date && day > goods_nomenclature.validity_end_date
+        goods_nomenclature.validity_end_date
+      elsif day < goods_nomenclature.validity_start_date
+        goods_nomenclature.validity_start_date
+      else
+        day
+      end
+    end
+
     def build_change_record(row:, is_end_line:, day: Time.zone.today)
       [
         row[:goods_nomenclature_item_id],
@@ -71,33 +81,30 @@ module ChangesTablePopulator
       ]
     end
 
-    def end_line?(row:, day: Time.zone.today)
-      TimeMachine.at(day) do
-        GoodsNomenclature.actual
-                         .where(goods_nomenclature_sid: row[:goods_nomenclature_sid])
-                         .first
-                         .ns_declarable?
+    def build_all_change_records(source_changes)
+      source_changes.map do |source_change|
+        build_change_record(row: source_change,
+                            day:,
+                            is_end_line: end_line?(source_change, day))
       end
     end
 
-    def build_descendant_change_records(row:, day: Time.zone.today)
-      find_source_and_children(row:, day:).map do |child|
-        build_change_record(row: child, day:, is_end_line: child.ns_declarable?)
-      end
-    end
-
-    def find_source_and_children(row:, day: Time.zone.today)
+    def end_line?(row, day)
       gn = GoodsNomenclature
              .where(goods_nomenclature_sid: row[:goods_nomenclature_sid])
              .first
 
-      last_valid_day = if gn.validity_end_date && gn.validity_end_date < day
-                         gn.validity_end_date
-                       else
-                         day
-                       end
+      TimeMachine.at(descendants_date(gn, day)) do
+        gn.ns_declarable?
+      end
+    end
 
-      TimeMachine.at(last_valid_day) do
+    def find_source_and_descendants(row:, day:)
+      gn = GoodsNomenclature
+             .where(goods_nomenclature_sid: row[:goods_nomenclature_sid])
+             .first
+
+      TimeMachine.at(descendants_date(gn, day)) do
         [gn] + gn.ns_descendants
       end
     end

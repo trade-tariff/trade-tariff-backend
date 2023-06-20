@@ -1,5 +1,7 @@
 module ChangesTablePopulator
   class MeasureStarted < Importer
+    include DescendantPopulator
+
     def source_table
       :measures
     end
@@ -10,14 +12,6 @@ module ChangesTablePopulator
 
     def where_condition
       { validity_start_date: day }
-    end
-
-    def build_all_change_records(source_changes)
-      source_changes
-        .uniq { |element| element[:goods_nomenclature_sid] }
-        .collect_concat do |source_change|
-          build_descendant_change_records(row: source_change, day:)
-        end
     end
 
     def change_type
