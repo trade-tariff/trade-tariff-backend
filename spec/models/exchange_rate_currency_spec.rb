@@ -1,17 +1,14 @@
+require 'csv'
+
 RSpec.describe ExchangeRateCurrency do
-  let(:worksheet) { double('worksheet') }
-  let(:workbook) { double('workbook', sheet: worksheet) }
-  let(:exchange_rate_currency1) { build(:exchange_rate_currency) }
-  let(:exchange_rate_currency2) { build(:exchange_rate_currency, currency_code: 'CAD', currency_description: 'Dollar', spot_rate_required: true) }
+  let(:csv_file) { 'spec/fixtures/currency.csv' }
 
   before do
-    allow(Roo::Spreadsheet).to receive(:open).with('data/exchange_rates/currency-master-data-set.xlsx').and_return(workbook)
+    stub_const('ExchangeRateCurrency::CURRENCY_FILE', Rails.root.join('spec/fixtures/currency.csv'))
   end
 
   describe '.populate' do
-    it 'populates ExchangeRateCurrency records from the spreadsheet' do
-      allow(worksheet).to receive(:each_row_streaming).and_yield(exchange_rate_currency1.instance_variable_get(:@values).values).and_yield(exchange_rate_currency2.instance_variable_get(:@values).values)
-
+    it 'populates ExchangeRateCurrency records from the CSV file' do
       expect(described_class).to receive(:unrestrict_primary_key)
 
       expect(described_class).to receive(:create).with(
@@ -20,7 +17,12 @@ RSpec.describe ExchangeRateCurrency do
         spot_rate_required: false,
       )
 
-      expect(described_class).to receive(:create).with(exchange_rate_currency2.instance_variable_get(:@values))
+      expect(described_class).to receive(:create).with(
+        currency_code: 'AUD',
+        currency_description: 'Dollar',
+        spot_rate_required: true,
+      )
+
       expect(described_class).to receive(:restrict_primary_key)
 
       described_class.populate
