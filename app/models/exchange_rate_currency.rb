@@ -19,7 +19,7 @@ class ExchangeRateCurrency < Sequel::Model
     private
 
     def workbook
-      Roo::Spreadsheet.open(CURRENCY_FILE)
+      @workbook ||= Roo::Spreadsheet.open(CURRENCY_FILE)
     end
 
     def worksheet
