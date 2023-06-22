@@ -2,8 +2,8 @@
 -- PostgreSQL database dump
 --
 
--- Dumped from database version 10.21 (Debian 10.21-1.pgdg90+1)
--- Dumped by pg_dump version 14.4
+-- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
+-- Dumped by pg_dump version 15.2
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -295,6 +295,8 @@ $$;
 
 
 SET default_tablespace = '';
+
+SET default_table_access_method = heap;
 
 --
 -- Name: additional_code_description_periods_oplog; Type: TABLE; Schema: uk; Owner: -
