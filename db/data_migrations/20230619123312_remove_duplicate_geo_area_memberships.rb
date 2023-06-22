@@ -10,7 +10,7 @@ Sequel.migration do
 	      filename IN ('tariff_dailyExtract_v1_20220622T235959.gzip', 'tariff_dailyExtract_v1_20220721T235959.gzip')
 	      AND oid NOT IN (
 		      SELECT max(latest.oid) AS max
-          FROM uk.geographical_area_memberships_oplog latest
+          FROM geographical_area_memberships_oplog latest
           WHERE
             gamo.geographical_area_sid = latest.geographical_area_sid AND
             gamo.geographical_area_group_sid = latest.geographical_area_group_sid AND
