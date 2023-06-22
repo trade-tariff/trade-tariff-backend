@@ -13,7 +13,7 @@ Sequel.migration do
       index :currency_code
       index :validity_start_date
       index :validity_end_date
-      index [:currency_code, :validity_start_date, :validity_end_date], unique: true
+      index %i[currency_code validity_start_date validity_end_date], unique: true
     end
   end
 end
