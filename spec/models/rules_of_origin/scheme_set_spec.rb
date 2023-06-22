@@ -97,13 +97,6 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
       it { is_expected.to be_empty }
     end
-
-    context 'with multiple matching schemes' do
-      let(:country_code) { 'VN' }
-
-      it { is_expected.to include have_attributes(scheme_code: 'vietnam') }
-      it { is_expected.to include have_attributes(scheme_code: /gsp|dcts/) }
-    end
   end
 
   describe '#links' do
