@@ -7,7 +7,7 @@ RSpec.describe ExchangeRateCountry do
   let(:lc) { described_class.where(country_code: 'LC').take }
 
   before do
-    stub_const('ExchangeRateCountry::COUNTRY_FILE', Rails.root.join('spec/fixtures/exchange_rates/territory.csv'))
+    stub_const('ExchangeRateCountry::COUNTRY_FILE', Rails.root.join(csv_file))
     described_class.populate
   end
 
