@@ -110,4 +110,12 @@ namespace :tariff do
       end
     end
   end
+
+  desc 'Recreate changes'
+  task recreate_changes_data: %w[environment] do
+    Change.db.transaction do
+      Change.dataset.delete
+      ChangesTablePopulator.populate_backlog
+    end
+  end
 end
