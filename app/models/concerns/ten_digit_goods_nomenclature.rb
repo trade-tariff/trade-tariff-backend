@@ -114,14 +114,18 @@ module TenDigitGoodsNomenclature
     end
 
     def short_code
-      if path_declarable?
+      if ns_declarable?
         goods_nomenclature_item_id
       else
-        case goods_nomenclature_item_id
-        when /^\d+0000$/ then harmonised_system_code
-        when /^\d+00$/ then combined_nomenclature_code
-        else taric_code
-        end
+        specific_system_short_code
+      end
+    end
+
+    def specific_system_short_code
+      case goods_nomenclature_item_id
+      when /^\d+0000$/ then harmonised_system_code
+      when /^\d+00$/ then combined_nomenclature_code
+      else taric_code
       end
     end
 
@@ -171,24 +175,6 @@ module TenDigitGoodsNomenclature
 
     def goods_nomenclature_class
       ns_declarable? ? 'Commodity' : 'Subheading'
-    end
-
-    def cast_to(klass)
-      return self if is_a?(klass)
-
-      klass.call(values).tap do |casted|
-        associations.each do |association, cached_values|
-          casted.associations[association] = cached_values
-        end
-      end
-    end
-
-    def cast_according_to_declarable
-      case goods_nomenclature_class
-      when 'Subheading' then cast_to(Subheading)
-      when 'Commodity' then cast_to(Commodity)
-      else self
-      end
     end
 
     def to_admin_param

@@ -770,48 +770,6 @@ RSpec.describe Commodity do
     end
   end
 
-  describe '#cast_to' do
-    subject(:casted) { commodity.cast_to Subheading }
-
-    let(:commodity) { create(:commodity) }
-
-    it { is_expected.to be_instance_of Subheading }
-    it { is_expected.to have_attributes values: commodity.values }
-    it { is_expected.not_to have_attributes object_id: commodity.object_id }
-
-    context 'with loaded relationships' do
-      subject { casted.associations }
-
-      before { commodity.tree_node }
-
-      it { is_expected.to include tree_node: be_present }
-    end
-
-    context 'when already matching type' do
-      subject { commodity.cast_to described_class }
-
-      it { is_expected.to have_attributes object_id: commodity.object_id }
-    end
-  end
-
-  describe '#cast_according_to_declarable' do
-    subject { commodity.cast_according_to_declarable }
-
-    let(:commodity) { create(:commodity) }
-
-    context 'with declarable' do
-      it { is_expected.to be_instance_of described_class }
-      it { is_expected.to have_attributes values: commodity.values }
-    end
-
-    context 'with non declarable' do
-      before { create :commodity, parent: commodity }
-
-      it { is_expected.to be_instance_of Subheading }
-      it { is_expected.to have_attributes values: commodity.values }
-    end
-  end
-
   describe '#consigned_from' do
     subject(:commodity) { create(:commodity, :with_description, description: 'Consigned from Türkiye') }
 
@@ -824,9 +782,27 @@ RSpec.describe Commodity do
     it { is_expected.to eq('0101210000') }
   end
 
-  describe '#goods_nomenclature_class' do
-    subject { create(:commodity).goods_nomenclature_class }
+  describe '#specific_system_short_code' do
+    subject(:specific_system_short_code) { described_class.find(goods_nomenclature_item_id:).specific_system_short_code }
 
-    it { is_expected.to eq('Commodity') }
+    before { create(:commodity, goods_nomenclature_item_id:) }
+
+    context 'when the commodity is a harmonised system code' do
+      let(:goods_nomenclature_item_id) { '0101210000' }
+
+      it { is_expected.to eq('010121') }
+    end
+
+    context 'when the commodity is a combined nomenclature code' do
+      let(:goods_nomenclature_item_id) { '0101210900' }
+
+      it { is_expected.to eq('01012109') }
+    end
+
+    context 'when the commodity is a taric code' do
+      let(:goods_nomenclature_item_id) { '0101210901' }
+
+      it { is_expected.to eq('0101210901') }
+    end
   end
 end

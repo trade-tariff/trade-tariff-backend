@@ -197,6 +197,11 @@ Rails.application.routes.draw do
       post 'search' => 'search#search'
       get 'search' => 'search#search'
       get 'search_suggestions' => 'search#suggestions'
+
+      if TradeTariffBackend.bulk_search_api_enabled?
+        resources :bulk_searches, only: %i[create show]
+      end
+
       get '/headings/:id/tree' => 'headings#tree'
 
       get 'goods_nomenclatures/section/:position', to: 'goods_nomenclatures#show_by_section', constraints: { position: /\d+/ }

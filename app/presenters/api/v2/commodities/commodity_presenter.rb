@@ -48,8 +48,12 @@ module Api
           commodity.chapter.goods_nomenclature_sid
         end
 
+        def ancestors
+          @ancestors ||= ns_ancestors.select { |ancestor| ancestor.is_a?(Commodity) }
+        end
+
         def ancestor_ids
-          commodity.ancestors.pluck(:goods_nomenclature_sid)
+          ancestors.map(&:goods_nomenclature_sid)
         end
 
         def meursing_code?

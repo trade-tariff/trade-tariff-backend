@@ -438,77 +438,6 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#path_ancestors' do
-    context 'when the goods nomenclature has ancestors' do
-      subject(:ancestors) { create(:goods_nomenclature, :with_ancestors).path_ancestors }
-
-      it { expect(ancestors).to include(an_instance_of(Chapter)) }
-      it { expect(ancestors).to include(an_instance_of(Heading)) }
-    end
-
-    context 'when the goods nomenclature has no ancestors' do
-      subject(:ancestors) { create(:goods_nomenclature, :without_ancestors).path_ancestors }
-
-      it { expect(ancestors).to be_empty }
-    end
-  end
-
-  describe '#path_parent' do
-    context 'when the goods nomenclature has an immediate parent' do
-      subject(:parent) { create(:goods_nomenclature, :with_parent).path_parent }
-
-      it { expect(parent).to be_a(described_class) }
-    end
-
-    context 'when the goods nomenclature has no parent' do
-      subject(:parent) { create(:goods_nomenclature, :without_parent).path_parent }
-
-      it { expect(parent).to be_nil }
-    end
-  end
-
-  describe '#path_siblings' do
-    context 'when the goods nomenclature has siblings' do
-      subject(:siblings) { create(:goods_nomenclature, :with_siblings).path_siblings }
-
-      it { expect(siblings).to include(an_instance_of(Commodity)) }
-    end
-
-    context 'when the goods nomenclature has no siblings' do
-      subject(:siblings) { create(:goods_nomenclature, :without_siblings).path_siblings }
-
-      it { expect(siblings).to be_empty }
-    end
-  end
-
-  describe '#path_children' do
-    context 'when the goods nomenclature has children' do
-      subject(:child_sids) { create(:goods_nomenclature, :with_children).path_children.count }
-
-      it { is_expected.to eq(1) }
-    end
-
-    context 'when the goods nomenclature has no children' do
-      subject(:child_sids) { create(:goods_nomenclature, :without_children).path_children.map(&:goods_nomenclature_sid) }
-
-      it { is_expected.to be_empty }
-    end
-  end
-
-  describe '#path_descendants' do
-    context 'when the goods nomenclature has descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :with_descendants).path_descendants.length }
-
-      it { is_expected.to eq(2) }
-    end
-
-    context 'when the goods nomenclature has no descendants' do
-      subject(:descendant_sids) { create(:goods_nomenclature, :without_descendants).path_descendants.length }
-
-      it { is_expected.to be_zero }
-    end
-  end
-
   describe '#heading?' do
     context 'when the goods nomenclature has a heading goods nomenclature item id' do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :heading) }
@@ -534,32 +463,6 @@ RSpec.describe GoodsNomenclature do
       subject(:goods_nomenclature) { create(:goods_nomenclature, :commodity) }
 
       it { is_expected.not_to be_chapter }
-    end
-  end
-
-  describe '#path_declarable?' do
-    context 'when the goods nomenclature has children and a non grouping suffix' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :with_children, :non_grouping) }
-
-      it { is_expected.not_to be_path_declarable }
-    end
-
-    context 'when the goods nomenclature has children and a grouping suffix' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :with_children, :grouping) }
-
-      it { is_expected.not_to be_path_declarable }
-    end
-
-    context 'when the goods nomenclature has no children and a non grouping suffix' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :without_children, :non_grouping) }
-
-      it { is_expected.to be_path_declarable }
-    end
-
-    context 'when the goods nomenclature has no children and a grouping suffix' do
-      subject(:goods_nomenclature) { create(:goods_nomenclature, :without_children, :grouping) }
-
-      it { is_expected.not_to be_path_declarable }
     end
   end
 
@@ -680,38 +583,6 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#path_goods_nomenclature_class' do
-    shared_examples 'a goods nomenclature class' do |goods_nomenclature_item_id, expected_class|
-      subject(:goods_nomenclature_class) { described_class.find(goods_nomenclature_item_id:).path_goods_nomenclature_class }
-
-      it { is_expected.to eq(expected_class) }
-    end
-
-    it_behaves_like 'a goods nomenclature class', '0100000000', 'Chapter' do
-      before do
-        create(:chapter, goods_nomenclature_item_id: '0100000000')
-      end
-    end
-
-    it_behaves_like 'a goods nomenclature class', '0101000000', 'Heading' do
-      before do
-        create(:heading, goods_nomenclature_item_id: '0101000000')
-      end
-    end
-
-    it_behaves_like 'a goods nomenclature class', '0101210001', 'Subheading' do
-      before do
-        create(:subheading, goods_nomenclature_item_id: '0101210001')
-      end
-    end
-
-    it_behaves_like 'a goods nomenclature class', '0101210000', 'Commodity' do
-      before do
-        create(:commodity, goods_nomenclature_item_id: '0101210000')
-      end
-    end
-  end
-
   describe '.non_classifieds' do
     subject(:non_classifieds) { described_class.non_classifieds.pluck(:goods_nomenclature_item_id) }
 
@@ -721,5 +592,59 @@ RSpec.describe GoodsNomenclature do
     end
 
     it { is_expected.to eq(%w[0111110000]) }
+  end
+
+  describe '#cast_to' do
+    subject(:casted) { commodity.cast_to Subheading }
+
+    let(:commodity) { create(:commodity) }
+
+    it { is_expected.to be_instance_of Subheading }
+    it { is_expected.to have_attributes values: commodity.values }
+    it { is_expected.not_to have_attributes object_id: commodity.object_id }
+
+    context 'with loaded relationships' do
+      subject { casted.associations }
+
+      before { commodity.tree_node }
+
+      it { is_expected.to include tree_node: be_present }
+    end
+
+    context 'when already matching type' do
+      subject { commodity.cast_to described_class }
+
+      it { is_expected.to have_attributes object_id: commodity.object_id }
+    end
+  end
+
+  describe '#sti_cast' do
+    subject { goods_nomenclature.sti_cast }
+
+    let(:goods_nomenclature) { create(:commodity) }
+
+    context 'with declarable' do
+      it { is_expected.to be_instance_of Commodity }
+      it { is_expected.to have_attributes values: goods_nomenclature.values }
+    end
+
+    context 'with non declarable' do
+      before { create :commodity, parent: goods_nomenclature }
+
+      it { is_expected.to be_instance_of Subheading }
+      it { is_expected.to have_attributes values: goods_nomenclature.values }
+    end
+
+    context 'with heading' do
+      let(:goods_nomenclature) { create :heading }
+
+      it { is_expected.to have_attributes object_id: goods_nomenclature.object_id }
+    end
+
+    context 'with chapter' do
+      let(:goods_nomenclature) { create :chapter }
+
+      it { is_expected.to have_attributes object_id: goods_nomenclature.object_id }
+    end
   end
 end

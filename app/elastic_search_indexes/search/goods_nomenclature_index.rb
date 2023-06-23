@@ -1,5 +1,7 @@
 module Search
   class GoodsNomenclatureIndex < ::SearchIndex
+    include PointInTimeIndex
+
     def dataset
       TimeMachine.now do
         Commodity
@@ -223,6 +225,7 @@ module Search
             validity_end_date: { enabled: false },
             guides: { enabled: false },
             guide_ids: { enabled: false },
+            short_code: { enabled: false },
           },
         },
       }

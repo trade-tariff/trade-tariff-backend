@@ -47,47 +47,6 @@ class GoodsNomenclature < Sequel::Model
   many_to_many :guides, left_key: :goods_nomenclature_sid,
                         join_table: :guides_goods_nomenclatures
 
-  one_to_many :path_ancestors, class_name: name, class: self do |_ds|
-    if path.present?
-      GoodsNomenclature
-        .actual
-        .where('goods_nomenclature_sid = ANY(?)', Sequel.pg_array(path, :integer))
-    else
-      GoodsNomenclature.dataset.nullify
-    end
-  end
-
-  one_to_one :path_parent, class_name: name, class: self do |_ds|
-    parent_sid = !heading? ? path.last : chapter.goods_nomenclature_sid
-
-    if parent_sid.present?
-      GoodsNomenclature.actual.where(goods_nomenclature_sid: parent_sid)
-    else
-      GoodsNomenclature.dataset.nullify
-    end
-  end
-
-  one_to_many :path_siblings, class_name: name, class: self do |_ds|
-    GoodsNomenclature
-      .actual
-      .exclude(goods_nomenclature_sid:)
-      .where(path:)
-  end
-
-  one_to_many :path_children, class_name: name, class: self do |_ds|
-    child_path = Sequel.pg_array(path + [goods_nomenclature_sid], :integer)
-
-    GoodsNomenclature
-      .actual
-      .where(path: child_path)
-  end
-
-  one_to_many :path_descendants, class_name: name, class: self do |_ds|
-    GoodsNomenclature
-      .actual
-      .where('? = ANY(path)', goods_nomenclature_sid)
-  end
-
   one_to_many :goods_nomenclature_indents, key: :goods_nomenclature_sid,
                                            primary_key: :goods_nomenclature_sid do |ds|
     ds.with_actual(GoodsNomenclatureIndent, self)
@@ -167,6 +126,24 @@ class GoodsNomenclature < Sequel::Model
     self.class.name
   end
 
+  def cast_to(klass)
+    return self if is_a?(klass)
+
+    klass.call(values).tap do |casted|
+      associations.each do |association, cached_values|
+        casted.associations[association] = cached_values
+      end
+    end
+  end
+
+  def sti_cast
+    case goods_nomenclature_class
+    when 'Subheading' then cast_to(Subheading)
+    when 'Commodity' then cast_to(Commodity)
+    else self
+    end
+  end
+
   def goods_nomenclature_indent
     goods_nomenclature_indents.first
   end
@@ -211,6 +188,10 @@ class GoodsNomenclature < Sequel::Model
     goods_nomenclature_item_id
   end
 
+  def specific_system_short_code
+    short_code
+  end
+
   def bti_url
     'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code'
   end
@@ -229,18 +210,6 @@ class GoodsNomenclature < Sequel::Model
 
   def grouping?
     !non_grouping?
-  end
-
-  def path_declarable?
-    non_grouping? && path_children_dataset.limit(1).none?
-  end
-
-  def path_goods_nomenclature_class
-    if instance_of?(::Commodity) && !path_declarable?
-      'Subheading'
-    else
-      self.class.name
-    end
   end
 
   def classifiable_goods_nomenclatures

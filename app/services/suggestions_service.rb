@@ -55,7 +55,7 @@ class SuggestionsService
       value: search_reference.title.downcase,
       type: SearchSuggestion::TYPE_SEARCH_REFERENCE,
       goods_nomenclature_sid: search_reference.goods_nomenclature_sid,
-      goods_nomenclature_class: search_reference.custom_sti_goods_nomenclature.class.name,
+      goods_nomenclature_class: search_reference.referenced.goods_nomenclature_class,
       created_at: now,
       updated_at: now,
     )
@@ -83,7 +83,7 @@ class SuggestionsService
       value: full_chemical.name.downcase,
       type: SearchSuggestion::TYPE_FULL_CHEMICAL_NAME,
       goods_nomenclature_sid: full_chemical.goods_nomenclature_sid,
-      goods_nomenclature_class: full_chemical.custom_sti_goods_nomenclature.class.name,
+      goods_nomenclature_class: full_chemical.goods_nomenclature.goods_nomenclature_class,
       created_at: now,
       updated_at: now,
     )
@@ -95,7 +95,7 @@ class SuggestionsService
       value: full_chemical.cus,
       type: SearchSuggestion::TYPE_FULL_CHEMICAL_CUS,
       goods_nomenclature_sid: full_chemical.goods_nomenclature_sid,
-      goods_nomenclature_class: full_chemical.custom_sti_goods_nomenclature.class.name,
+      goods_nomenclature_class: full_chemical.goods_nomenclature.goods_nomenclature_class,
       created_at: now,
       updated_at: now,
     )
@@ -109,7 +109,7 @@ class SuggestionsService
       value: full_chemical.cas_rn,
       type: SearchSuggestion::TYPE_FULL_CHEMICAL_CAS,
       goods_nomenclature_sid: full_chemical.goods_nomenclature_sid,
-      goods_nomenclature_class: full_chemical.custom_sti_goods_nomenclature.class.name,
+      goods_nomenclature_class: full_chemical.goods_nomenclature.goods_nomenclature_class,
       created_at: now,
       updated_at: now,
     )

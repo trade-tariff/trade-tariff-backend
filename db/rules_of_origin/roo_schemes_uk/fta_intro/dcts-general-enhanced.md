@@ -16,3 +16,7 @@ This includes:
 - 18 additional countries or territories classified by the World Bank as low income (LIC) and lower middle-income (LMIC)
 
 It does not apply to countries classified by the World Bank as upper-middle income for 3 consecutive years, or to LICs and LMICs with a free trade agreement (FTA) with the UK.
+
+### More information
+
+[What is DCTS and why is it important for international trade?](/news/stories/what-is-dcts-and-why-is-it-important-for-international-trade)

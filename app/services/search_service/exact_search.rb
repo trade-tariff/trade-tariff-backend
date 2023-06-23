@@ -40,7 +40,7 @@ class SearchService
 
       suggestion = SearchSuggestion.find(filter)
 
-      suggestion&.custom_sti_goods_nomenclature
+      suggestion&.goods_nomenclature&.sti_cast
     end
 
     def find_historic_goods_nomenclature(query)

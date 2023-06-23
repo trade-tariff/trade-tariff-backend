@@ -52,10 +52,6 @@ FactoryBot.define do
           )
         end
 
-        # populate materialized path copy of hierarchy
-        ancestor_sids = [chapter, heading].map(&:goods_nomenclature_sid)
-        commodity.path = Sequel.pg_array(ancestor_sids, :integer)
-
         guide = create(:guide, :aircraft_parts)
         create(:guides_goods_nomenclature, guide:, goods_nomenclature: heading)
       end
@@ -63,28 +59,22 @@ FactoryBot.define do
 
     trait :with_chapter do
       before(:create) do |commodity, _evaluator|
-        chapter = create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
-
-        commodity.path = Sequel.pg_array([chapter.goods_nomenclature_sid])
+        create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
       end
     end
 
     trait :with_chapter_and_heading do
       before(:create) do |commodity, _evaluator|
         chapter = create(:chapter, :with_section, :with_note, goods_nomenclature_item_id: commodity.chapter_id.to_s)
-        heading = create(:heading,
-                         goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
-                         parent: chapter)
-
-        commodity.path = Sequel.pg_array(heading.path + [heading.goods_nomenclature_sid])
+        create(:heading,
+               goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000",
+               parent: chapter)
       end
     end
 
     trait :with_heading do
       before(:create) do |commodity, _evaluator|
-        heading = create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
-
-        commodity.path = Sequel.pg_array([heading.goods_nomenclature_sid])
+        create(:heading, goods_nomenclature_item_id: "#{commodity.goods_nomenclature_item_id.first(4)}000000")
       end
     end
 

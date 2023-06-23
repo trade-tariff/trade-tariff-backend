@@ -5010,7 +5010,7 @@
             "scheme_code": "dcts-ldcs",
             "validity_start_date": "2023-06-19",
             "validity_end_date": null,
-            "title": "Developing Countries Trading Scheme (DCTS)",
+            "title": "Developing Countries Trading Scheme (DCTS) - Comprehensive Preferences",
             "proofs": [
                 {
                     "summary": "Generalised Scheme of Preferences Form A",
@@ -5095,7 +5095,6 @@
                         "TZ",
                         "UG",
                         "UZ",
-                        "VN",
                         "VU",
                         "YE",
                         "ZM"
@@ -5210,7 +5209,7 @@
             "scheme_code": "dcts-general-enhanced",
             "validity_start_date": "2023-06-19",
             "validity_end_date": null,
-            "title": "Developing Countries Trading Scheme (DCTS)",
+            "title": "Developing Countries Trading Scheme (DCTS) - Standard and Enhanced Preferences",
             "proofs": [
                 {
                     "summary": "Generalised Scheme of Preferences Form A",
@@ -5369,7 +5368,6 @@
                 "WS",
                 "SY",
                 "TJ",
-                "VN",
                 "BO",
                 "CV",
                 "KG",

@@ -25,7 +25,6 @@ module Api
                               .non_hidden
                               .ns_declarable
                               .by_code(params[:id])
-                              .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions, :footnotes)
                               .take
       end
 
@@ -38,14 +37,6 @@ module Api
           :geographical_area_id,
           :meursing_additional_code_id,
         )
-      end
-
-      def commodity_has_children?
-        cache_key = "commodity-#{@commodity.goods_nomenclature_sid}-#{actual_date}-has-children?"
-
-        Rails.cache.fetch(cache_key, expires_in: CachedCommodityService::TTL) do
-          @commodity.children.any?
-        end
       end
 
       def configure_meursing_additional_code

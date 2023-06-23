@@ -21,11 +21,6 @@ FactoryBot.define do
       [heading_code, generate(:commodity_short_code)].join
     end
 
-    path do
-      ancestor_sids = parent ? (parent.path + [parent.goods_nomenclature_sid]) : []
-      Sequel.pg_array(ancestor_sids, :integer)
-    end
-
     # TODO: Put this in a trait. This forces indents on all nomenclature regardless of
     #       what is passed to the individual factory and adds non-fun surprises for developers.
     after(:build) do |gono, evaluator|
