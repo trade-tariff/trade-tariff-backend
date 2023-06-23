@@ -1,4 +1,4 @@
-RSpec.describe ChangesTablePopulator::MeasureStarted, flaky: true do
+RSpec.describe ChangesTablePopulator::MeasureStarted do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
@@ -68,14 +68,13 @@ RSpec.describe ChangesTablePopulator::MeasureStarted, flaky: true do
     end
 
     context 'when the measure is associated to a heading with children' do
-      before do
-        commodity = create :commodity, :with_heading, :with_children
-        heading = commodity.heading
-        create :measure,
-               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-               goods_nomenclature_sid: heading.goods_nomenclature_sid,
-               goods_nomenclature: heading,
-               validity_start_date: Time.zone.today
+      before { measure }
+
+      let(:commodity) { create :commodity, :with_heading, :with_children }
+
+      let :measure do
+        create :measure, goods_nomenclature: commodity.heading,
+                         validity_start_date: Time.zone.today
       end
 
       it 'extracts the commodity and the child commodity as change' do
@@ -90,6 +89,28 @@ RSpec.describe ChangesTablePopulator::MeasureStarted, flaky: true do
       it 'will flag it as not end line' do
         described_class.populate
         expect(db[:changes].first[:end_line]).to be false
+      end
+
+      context 'when childs gn item id has been reused' do
+        subject(:changed_gn_sids) { Change.all.map(&:goods_nomenclature_sid) }
+
+        before do
+          historic
+
+          described_class.populate
+        end
+
+        let :historic do
+          create :commodity,
+                 parent: commodity.heading,
+                 goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+                 validity_start_date: 10.years.ago.beginning_of_day,
+                 validity_end_date: 9.years.ago.beginning_of_day
+        end
+
+        it 'does not include the historic child' do
+          expect(changed_gn_sids).not_to include historic.goods_nomenclature_sid
+        end
       end
     end
   end

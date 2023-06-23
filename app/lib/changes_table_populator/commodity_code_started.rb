@@ -1,25 +1,19 @@
 module ChangesTablePopulator
   class CommodityCodeStarted < Importer
-    class << self
-      def source_table
-        :goods_nomenclatures
-      end
+    def source_table
+      :goods_nomenclatures
+    end
 
-      def select_condition
-        -> { [goods_nomenclature_item_id, goods_nomenclature_sid, producline_suffix] }
-      end
+    def select_condition
+      -> { [goods_nomenclature_item_id, goods_nomenclature_sid, producline_suffix] }
+    end
 
-      def where_condition(day: Time.zone.today)
-        { validity_start_date: day }
-      end
+    def where_condition
+      { validity_start_date: day }
+    end
 
-      def import_records(elements:, day: Time.zone.today)
-        elements.map { |element| integrate_element(row: element, day:) }
-      end
-
-      def change_type
-        'commodity'
-      end
+    def change_type
+      'commodity'
     end
   end
 end
