@@ -10,15 +10,18 @@ class BuildIndexPageWorker
   def perform(index_namespace, index_name, page_number, _page_size = nil)
     index_name = "#{index_name}Index" unless index_name.ends_with?('Index')
     index = "#{index_namespace.camelize}::#{index_name}".constantize.new
-    entries = index.dataset_page(page_number)
 
-    return true if entries.empty?
+    index.apply_constraints do
+      entries = index.dataset_page(page_number)
 
-    opensearch_client.bulk(
-      body: serialize_for(:index, index, entries),
-    )
+      return true if entries.empty?
+
+      opensearch_client.bulk(
+        body: serialize_for(:index, index, entries),
+      )
+    end
   rescue StandardError
-    raise IndexingError, "Failed building index: #{index_namespace}:#{index_name} - page #{page_number}"
+    raise IndexingError, "Failed building index: #{index_namespace}/#{index_name} - page #{page_number}"
   end
 
   private
