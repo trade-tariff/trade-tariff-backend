@@ -11760,6 +11760,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230411140112_adds_type_a
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230419084212_add_tree_nodes_overrides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230425151153_adds_goods_nomenclature_class_to_search_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230519133544_adds_simplfied_procedural_codes.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20230619124026_create_exchange_rate_currencies.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20230619133359_create_exchange_rate_currency_rates.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20230619135111_create_exchange_rate_countries.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230619124026_create_exchange_rates.rb');

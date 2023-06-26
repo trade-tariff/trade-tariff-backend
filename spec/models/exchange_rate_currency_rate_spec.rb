@@ -7,8 +7,7 @@ RSpec.describe ExchangeRateCurrencyRate do
   let(:aed) { january.where(currency_code: 'AED').take }
 
   before do
-    stub_const('ExchangeRateCurrencyRate::RATES_FILE', Rails.root.join(csv_file))
-    described_class.populate
+    described_class.populate Rails.root.join(csv_file)
   end
 
   describe '.populate' do

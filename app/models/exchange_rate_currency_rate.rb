@@ -4,10 +4,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
 
   class << self
-    def populate
+    def populate(src = RATES_FILE)
       unrestrict_primary_key
 
-      CSV.foreach(RATES_FILE) do |row|
+      CSV.foreach(src) do |row|
         currency_code = row[0]
         validity_start_date = row[1]
         validity_end_date = row[2]
