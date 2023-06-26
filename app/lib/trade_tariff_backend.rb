@@ -1,5 +1,6 @@
 module TradeTariffBackend
   MAX_LOCK_LIFETIME = 600_000
+  REVISION_FILE = Rails.root.join('REVISION').to_s.freeze
 
   class << self
     SERVICE_CURRENCIES = {
@@ -245,6 +246,14 @@ module TradeTariffBackend
 
     def opensearch_debug
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
+    end
+
+    def revision
+      @revision ||= begin
+        File.read(REVISION_FILE).chomp if File.file?(REVISION_FILE)
+      rescue Errno::EACCES
+        nil
+      end
     end
   end
 end

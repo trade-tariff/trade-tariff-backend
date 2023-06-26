@@ -52,4 +52,49 @@ RSpec.describe TradeTariffBackend do
       end
     end
   end
+
+  describe '#revision' do
+    subject { described_class.revision }
+
+    before do
+      described_class.instance_variable_set(:@revision, nil)
+      allow(File).to receive(:read).and_call_original
+      allow(File).to receive(:file?).and_call_original
+    end
+
+    after { described_class.instance_variable_set(:@revision, nil) }
+
+    context 'with revision file' do
+      before do
+        allow(File).to receive(:file?).with(described_class::REVISION_FILE)
+                                      .and_return true
+
+        allow(File).to receive(:read).with(described_class::REVISION_FILE)
+                                     .and_return "ABCDEF01\n"
+      end
+
+      it { is_expected.to eql 'ABCDEF01' }
+    end
+
+    context 'with unreadable revision file' do
+      before do
+        allow(File).to receive(:file?).with(described_class::REVISION_FILE)
+                                      .and_return true
+
+        allow(File).to receive(:read).with(described_class::REVISION_FILE)
+                                     .and_raise Errno::EACCES
+      end
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'without revision file' do
+      before do
+        allow(File).to receive(:file?).with(described_class::REVISION_FILE)
+                                      .and_return false
+      end
+
+      it { is_expected.to be_nil }
+    end
+  end
 end
