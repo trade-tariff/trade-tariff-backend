@@ -17,7 +17,7 @@ Sequel.migration do
       Date :validity_end_date
       Float :rate
       String :rate_type, size: 10
-  
+
       index :currency_code
       index :validity_start_date
       index :validity_end_date
