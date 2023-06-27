@@ -1,9 +1,7 @@
 module Api
   module Admin
     class AdminController < ApiController
-      def set_cache_headers
-        no_store
-      end
+      include NoCaching
     end
   end
 end

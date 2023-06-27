@@ -1,6 +1,8 @@
 module Api
   module V2
     class SearchReferencesController < ApiController
+      include SimpleCaching
+
       def index
         search_references = SearchReference.for_letter(letter).all
 
