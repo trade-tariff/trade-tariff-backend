@@ -23,11 +23,21 @@ Rails.application.configure do
   config.whiny_nils = true
 
   # Show full error reports and disable caching
-  config.consider_all_requests_local       = true
-  config.action_controller.perform_caching = false
+  config.consider_all_requests_local = true
 
-  # config.cache_store = :memory_store, { size: 20.megabytes }
-  config.cache_store = [:null_store]
+  if Rails.root.join('tmp/caching-dev.txt').exist?
+    config.action_controller.perform_caching = true
+    config.action_controller.enable_fragment_cache_logging = true
+
+    config.cache_store = :memory_store
+    config.public_file_server.headers = {
+      'Cache-Control' => "public, max-age=#{2.days.to_i}",
+    }
+  else
+    config.action_controller.perform_caching = false
+
+    config.cache_store = :null_store
+  end
 
   # enable sequel transaction logs by setting RAILS_LOG_LEVEL=debug
   config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'debug').to_sym

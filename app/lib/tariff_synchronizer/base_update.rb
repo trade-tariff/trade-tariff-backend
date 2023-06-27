@@ -155,6 +155,16 @@ module TariffSynchronizer
       raise NotImplementedError
     end
 
+    def cache_key_with_version
+      [
+        'tariff-update',
+        filename,
+        update_type,
+        state,
+        applied_at.iso8601,
+      ].map(&:to_s).join('-')
+    end
+
     class << self
       delegate :instrument, to: ActiveSupport::Notifications
 
