@@ -5,7 +5,7 @@ module Api
     # We use ETags so this can be low, if the data hasn't changed and we've not
     # deployed then CloudFront will just receive a empty 304 response and there
     # will only be a single fast db query to check tariff_updates table
-    CDN_CACHE_LIFETIME = 30.seconds
+    CDN_CACHE_LIFETIME = 2.minutes
 
     etag { TradeTariffBackend.revision || Rails.env }
     before_action :set_cache_headers, if: :http_caching_enabled?

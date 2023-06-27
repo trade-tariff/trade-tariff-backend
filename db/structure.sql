@@ -11127,6 +11127,13 @@ CREATE INDEX news_items_slug_index ON uk.news_items USING btree (slug);
 
 
 --
+-- Name: news_items_updated_at_start_date_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX news_items_updated_at_start_date_end_date_index ON uk.news_items USING btree (updated_at, start_date, end_date);
+
+
+--
 -- Name: ngmo_nomgromemopl_ureoupipslog_operation_date; Type: INDEX; Schema: uk; Owner: -
 --
 
