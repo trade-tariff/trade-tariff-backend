@@ -1,7 +1,7 @@
 module Api
   module Admin
     module Sections
-      class SectionNotesController < ApiController
+      class SectionNotesController < AdminController
         before_action :authenticate_user!
         # TODO: Why on earth would we do this for an admin endpoint?
         skip_before_action :authenticate_user!, only: [:show]

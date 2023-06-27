@@ -1,7 +1,7 @@
 module Api
   module Admin
     module News
-      class ItemsController < ApiController
+      class ItemsController < AdminController
         before_action :authenticate_user!
 
         def index

@@ -2,7 +2,7 @@ require 'goods_nomenclature_mapper'
 
 module Api
   module Admin
-    class HeadingsController < ApiController
+    class HeadingsController < AdminController
       def show
         options = { is_collection: false }
         options[:include] = %i[commodities chapter]

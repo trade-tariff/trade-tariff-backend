@@ -1,6 +1,6 @@
 module Api
   module Admin
-    class CommoditiesController < ApiController
+    class CommoditiesController < AdminController
       before_action :find_commodity, only: [:show]
       before_action :authenticate_user!
 

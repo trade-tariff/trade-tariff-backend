@@ -1,6 +1,6 @@
 module Api
   module Admin
-    class UpdatesController < ApiController
+    class UpdatesController < AdminController
       before_action :collection, only: :index
 
       def index

@@ -1,6 +1,6 @@
 module Api
   module Admin
-    class SearchReferencesController < ApiController
+    class SearchReferencesController < AdminController
       def index
         search_references = SearchReference.for_letter(letter).all
 

@@ -1,6 +1,6 @@
 module Api
   module Admin
-    class FootnotesController < ApiController
+    class FootnotesController < AdminController
       before_action :authenticate_user!
 
       def index

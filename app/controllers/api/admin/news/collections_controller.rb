@@ -1,7 +1,7 @@
 module Api
   module Admin
     module News
-      class CollectionsController < ApiController
+      class CollectionsController < AdminController
         before_action :authenticate_user!
 
         def index
