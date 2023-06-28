@@ -178,4 +178,29 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
       it { expect(response.body).to match_json_expression(pattern) }
     end
   end
+
+  describe 'GET /bulk_searches/:id.csv' do
+    subject(:do_get) { make_request && response }
+
+    let(:path) { "/bulk_searches/#{uuid}" }
+    let(:status) { 'completed' }
+    let(:uuid) { SecureRandom.uuid }
+    let(:expected_filename) { "uk-bulk-searches-#{uuid}-#{Time.zone.today.iso8601}.csv" }
+
+    let(:json_blob) do
+      {
+        id: uuid,
+        status:,
+        searches: [build(:bulk_search)],
+      }.to_json
+    end
+
+    before do
+      TradeTariffBackend.redis.set(uuid, Zlib::Deflate.deflate(json_blob))
+
+      do_get
+    end
+
+    it_behaves_like 'a successful csv response'
+  end
 end

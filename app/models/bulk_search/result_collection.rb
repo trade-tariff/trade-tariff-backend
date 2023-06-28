@@ -2,7 +2,7 @@ module BulkSearch
   class ResultCollection
     class RecordNotFound < StandardError; end
 
-    delegate :processing?, :complete?, :failed?, :queued?, to: :status
+    delegate :processing?, :completed?, :failed?, :queued?, to: :status
     delegate :to_param, to: :id
 
     attr_accessor :status
