@@ -23,7 +23,7 @@ class BulkSearchService
 
     @result.searches.each_with_index do |search, i|
       opensearch_results = response.dig('responses', i, 'hits', 'hits')
-      BulkSearchResultAnswerService.new(search, opensearch_results).call
+      BulkSearch::ResultAnswerService.new(search, opensearch_results).call
     end
 
     @result.complete!
