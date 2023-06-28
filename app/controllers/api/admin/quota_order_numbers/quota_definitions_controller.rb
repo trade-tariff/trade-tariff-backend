@@ -1,7 +1,7 @@
 module Api
   module Admin
     module QuotaOrderNumbers
-      class QuotaDefinitionsController < ApiController
+      class QuotaDefinitionsController < AdminController
         before_action :authenticate_user!
         around_action :skip_time_machine
 

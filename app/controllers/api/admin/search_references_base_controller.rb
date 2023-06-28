@@ -7,7 +7,7 @@
 
 module Api
   module Admin
-    class SearchReferencesBaseController < ApiController
+    class SearchReferencesBaseController < AdminController
       before_action :authenticate_user!
 
       after_action :set_pagination_headers, only: [:index]

@@ -6,6 +6,8 @@ module Api
         DEFAULT_PAGE_SIZE = 20
 
         def index
+          return unless stale? ::News::Item.latest_change
+
           news_items_page = ::News::Item.for_service(params[:service])
                                    .for_target(params[:target])
                                    .for_year(params[:year])
@@ -42,6 +44,8 @@ module Api
                         scope.with_pk!(slug_or_id)
                       end
 
+          return unless stale?(news_item)
+
           presented_news_item = Api::V2::News::ItemPresenter.new(news_item)
 
           serializer = Api::V2::News::ItemSerializer.new(presented_news_item, include: %i[collections])
@@ -70,6 +74,8 @@ module Api
             },
           }
         end
+
+        def set_cache_etag; end
       end
     end
   end

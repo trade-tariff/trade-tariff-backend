@@ -11127,6 +11127,13 @@ CREATE INDEX news_items_slug_index ON uk.news_items USING btree (slug);
 
 
 --
+-- Name: news_items_updated_at_start_date_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX news_items_updated_at_start_date_end_date_index ON uk.news_items USING btree (updated_at, start_date, end_date);
+
+
+--
 -- Name: ngmo_nomgromemopl_ureoupipslog_operation_date; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11505,6 +11512,13 @@ CREATE INDEX tariff_update_presence_errors_tariff_update_filename_index ON uk.ta
 
 
 --
+-- Name: tariff_updates_issue_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tariff_updates_issue_date_index ON uk.tariff_updates USING btree (issue_date);
+
+
+--
 -- Name: tbl_code_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11761,3 +11775,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230419084212_add_tree_no
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230425151153_adds_goods_nomenclature_class_to_search_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230519133544_adds_simplfied_procedural_codes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230619124026_create_exchange_rates.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230627083227_add_indexes_for_cache_lookups.rb');

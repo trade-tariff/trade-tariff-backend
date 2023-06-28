@@ -1,6 +1,6 @@
 module News
   class Collection < Sequel::Model(:news_collections)
-    plugin :timestamps
+    plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
 
     many_to_many :items, join_table: :news_collections_news_items,

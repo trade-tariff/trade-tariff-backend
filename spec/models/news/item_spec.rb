@@ -386,6 +386,41 @@ RSpec.describe News::Item do
     end
   end
 
+  describe '.latest_change' do
+    subject { described_class.latest_change }
+
+    before do
+      older
+      newer
+      described_class.dataset.update(updated_at: :created_at)
+    end
+
+    let(:older) { create :news_item, created_at: 5.minutes.ago }
+    let(:newer) { create :news_item, created_at: 3.minutes.ago }
+
+    it { is_expected.to eq_pk newer }
+
+    context 'when updating' do
+      before do
+        older.title = 'changed'
+        older.save
+      end
+
+      it { is_expected.to eq_pk older }
+    end
+
+    context 'with unpublished' do
+      before do
+        create :news_item, start_date: 3.days.from_now,
+                           created_at: 1.minute.ago
+
+        described_class.dataset.update(updated_at: :created_at)
+      end
+
+      it { is_expected.to eq_pk newer }
+    end
+  end
+
   describe '#slug' do
     subject { instance.save.reload.slug }
 

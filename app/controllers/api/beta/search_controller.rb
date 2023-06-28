@@ -1,6 +1,8 @@
 module Api
   module Beta
     class SearchController < ApiController
+      include NoCaching
+
       DEFAULT_INCLUDES = [
         'hits.ancestors',
         :search_query_parser_result,

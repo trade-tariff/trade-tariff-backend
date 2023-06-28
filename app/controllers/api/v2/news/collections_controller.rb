@@ -8,6 +8,12 @@ module Api
 
           render json: serializer.serializable_hash
         end
+
+      protected
+
+        def set_cache_etag
+          fresh_when ::News::Item.latest_change
+        end
       end
     end
   end

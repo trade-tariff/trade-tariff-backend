@@ -1,6 +1,6 @@
 module Api
   module Admin
-    class RollbacksController < ApiController
+    class RollbacksController < AdminController
       before_action :authenticate_user!
       before_action :collection, only: :index
 

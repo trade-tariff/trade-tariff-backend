@@ -1,6 +1,8 @@
 module Api
   module V2
     class BulkSearchesController < ApiController
+      include NoCaching
+
       def create
         @result = ::BulkSearch::ResultCollection.enqueue(bulk_search_params)
         @serialized_result = Api::V2::BulkSearch::ResultCollectionSerializer.new(@result).serializable_hash

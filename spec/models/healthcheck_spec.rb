@@ -2,6 +2,8 @@ RSpec.describe Healthcheck do
   subject(:instance) { described_class.instance }
 
   before do
+    allow(TradeTariffBackend).to receive(:revision).and_return nil
+
     search_result = Beta::Search::SearchQueryParserResult.new
     service_double = instance_double('Api::Beta::SearchQueryParserService', call: search_result)
 
@@ -11,36 +13,10 @@ RSpec.describe Healthcheck do
   describe '#current_revision' do
     subject { instance.current_revision }
 
-    before do
-      instance.instance_variable_set(:@current_revision, nil)
-      allow(File).to receive(:read).and_call_original
-      allow(File).to receive(:file?).and_call_original
-    end
-
-    after { instance.instance_variable_set(:@current_revision, nil) }
-
     context 'with revision file' do
-      before do
-        allow(File).to receive(:file?).with(described_class::REVISION_FILE)
-                                      .and_return true
-
-        allow(File).to receive(:read).with(described_class::REVISION_FILE)
-                                     .and_return "ABCDEF01\n"
-      end
+      before { allow(TradeTariffBackend).to receive(:revision).and_return 'ABCDEF01' }
 
       it { is_expected.to eql 'ABCDEF01' }
-    end
-
-    context 'with unreadable revision file' do
-      before do
-        allow(File).to receive(:file?).with(described_class::REVISION_FILE)
-                                      .and_return true
-
-        allow(File).to receive(:read).with(described_class::REVISION_FILE)
-                                     .and_raise Errno::EACCES
-      end
-
-      it { is_expected.to eql 'test' }
     end
 
     context 'without revision file' do
@@ -92,6 +68,8 @@ RSpec.describe Healthcheck do
     subject { described_class.check }
 
     before do
+      allow(TradeTariffBackend).to receive(:revision).and_return nil
+
       TradeTariffBackend.redis.set \
         described_class::SIDEKIQ_KEY,
         (described_class::SIDEKIQ_THRESHOLD - 1.minute).ago.utc.iso8601

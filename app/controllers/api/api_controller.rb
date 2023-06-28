@@ -2,6 +2,14 @@ module Api
   class ApiController < ApplicationController
     include GDS::SSO::ControllerMethods
 
+    # We use ETags so this can be low, if the data hasn't changed and we've not
+    # deployed then CloudFront will just receive a empty 304 response and there
+    # will only be a single fast db query to check tariff_updates table
+    CDN_CACHE_LIFETIME = 2.minutes
+
+    etag { TradeTariffBackend.revision || Rails.env }
+    before_action :set_cache_headers, if: :http_caching_enabled?
+
     respond_to :json
 
     rescue_from Sequel::NoMatchingRow, Sequel::RecordNotFound do |_exception|
@@ -43,6 +51,28 @@ module Api
       return [] if params[:include].blank?
 
       params[:include].split(',')
+    end
+
+    def set_cache_headers
+      if request.get? || request.head?
+        set_cache_lifetime
+        set_cache_etag
+      else
+        no_store
+      end
+    end
+
+    def set_cache_lifetime
+      expires_in CDN_CACHE_LIFETIME, public: true
+    end
+
+    def set_cache_etag
+      update = TariffSynchronizer::BaseUpdate.most_recent_applied
+      fresh_when last_modified: update.applied_at, etag: update
+    end
+
+    def http_caching_enabled?
+      Rails.configuration.action_controller.perform_caching
     end
   end
 end

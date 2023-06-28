@@ -1,6 +1,6 @@
 module News
   class Item < Sequel::Model(:news_items)
-    plugin :timestamps
+    plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
 
     DISPLAY_REGULAR = 0
@@ -49,6 +49,10 @@ module News
       validates_presence :slug
       validates_presence :precis if show_on_updates_page
       validates_presence :collection_ids, message: 'must include at least one collection'
+    end
+
+    def cache_key_with_version
+      "News::Item/#{id}-#{updated_at}"
     end
 
     dataset_module do
@@ -104,6 +108,10 @@ module News
         distinct.select { date_part('year', :start_date).cast(:integer).as(:year) }
                 .order(Sequel.desc(:year))
                 .pluck(:year)
+      end
+
+      def latest_change
+        for_today.order(Sequel.desc(:updated_at)).first
       end
     end
 
