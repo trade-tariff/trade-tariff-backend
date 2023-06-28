@@ -4,21 +4,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
-  def before_save
-    self.rate_type = determine_rate_type if validity_start_date
-    super
-  end
-
-  private
-
-  def determine_rate_type
-    if scheduled_rate?
-      'scheduled'
-    elsif spot_rate?
-      'spot'
-    end
-  end
-
   def scheduled_rate?
     validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
   end
@@ -37,10 +22,20 @@ class ExchangeRateCurrencyRate < Sequel::Model
         validity_end_date = row[2]
         rate = row[3]
 
-        ExchangeRateCurrencyRate.create(currency_code:, validity_start_date:, validity_end_date:, rate:)
+        exchange_rate_currency_rate = new(currency_code:, validity_start_date:, validity_end_date:, rate:)
+        exchange_rate_currency_rate.rate_type = determine_rate_type(exchange_rate_currency_rate)
+        exchange_rate_currency_rate.save
       end
 
       restrict_primary_key
+    end
+
+    private
+
+    def determine_rate_type(rate)
+      return if rate.validity_start_date.blank?
+      return 'scheduled' if rate.scheduled_rate?
+      return 'spot' if rate.spot_rate?
     end
   end
 end
