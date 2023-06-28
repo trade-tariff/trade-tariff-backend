@@ -331,8 +331,8 @@ GEM
       redis-client (>= 0.9.0)
     redis-client (0.14.1)
       connection_pool
-    redlock (2.0.1)
-      redis-client
+    redlock (2.0.2)
+      redis-client (~> 0.14.1)
     regexp_parser (2.6.2)
     request_store (1.5.1)
       rack (>= 1.4)
