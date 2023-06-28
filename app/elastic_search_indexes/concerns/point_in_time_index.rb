@@ -3,10 +3,14 @@
 
 module PointInTimeIndex
   def dataset
-    TimeMachine.now { super.actual }
+    apply_constraints { super.actual }
   end
 
   def dataset_page(...)
-    TimeMachine.now { super }
+    apply_constraints { super }
+  end
+
+  def apply_constraints(&block)
+    TimeMachine.now(&block)
   end
 end

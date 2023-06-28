@@ -52,4 +52,9 @@ class SearchIndex
   def page_size
     500
   end
+
+  # Allows descendants to override and apply timemachine if applicable
+  def apply_constraints(&_block)
+    yield
+  end
 end
