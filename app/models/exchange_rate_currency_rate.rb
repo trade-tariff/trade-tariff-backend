@@ -12,6 +12,27 @@ class ExchangeRateCurrencyRate < Sequel::Model
     [3, 12].include?(validity_start_date.month) && validity_start_date.day == 31 && validity_end_date.nil?
   end
 
+  dataset_module do
+    def scheduled
+      where(rate_type: 'scheduled')
+    end
+
+    def spot
+      where(rate_type: 'spot')
+    end
+
+    def by_year(year)
+      return if year.blank?
+
+      start_of_year = Time.zone.parse("#{year}-01-01").beginning_of_year
+      end_of_year = start_of_year.end_of_year
+
+      where { (validity_start_date >= start_of_year) & (validity_start_date <= end_of_year) }
+        .order(Sequel.desc(:validity_start_date))
+        .distinct(:validity_start_date)
+    end
+  end
+
   class << self
     def populate(src = RATES_FILE)
       unrestrict_primary_key
@@ -28,6 +49,31 @@ class ExchangeRateCurrencyRate < Sequel::Model
       end
 
       restrict_primary_key
+    end
+
+    def all_years
+      distinct
+        .select { date_part('year', :validity_start_date).cast(:integer).as(:year) }
+        .scheduled
+        .order(Sequel.desc(:year))
+        .pluck(:year)
+    end
+
+    def max_year
+      order(Sequel.desc(:validity_start_date))
+        .scheduled
+        .limit(1)
+        .select_map(:validity_start_date)
+        .first
+        &.year.presence || Time.zone.today.year
+    end
+
+    def months_for_year(year)
+      by_year(year)
+        .scheduled
+        .select_map(:validity_start_date)
+        .map(&:month)
+        .uniq
     end
 
     private
