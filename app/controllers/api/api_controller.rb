@@ -54,10 +54,12 @@ module Api
     end
 
     def set_cache_headers
-      return unless request.get? || request.head?
-
-      set_cache_lifetime
-      set_cache_etag
+      if request.get? || request.head?
+        set_cache_lifetime
+        set_cache_etag
+      else
+        no_store
+      end
     end
 
     def set_cache_lifetime
