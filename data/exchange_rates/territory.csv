@@ -1,0 +1,175 @@
+﻿territory,country_code,currency,currency,notes,lookup
+Abu Dhabi,DH,AED,1,"This is not an official code - it has been invented by HMRC as a pseudo-code, as this is not in the geographical_areas table: ",#N/A
+Afghanistan,AF,AFN,1,,Afghanistan
+Albania,AL,ALL,1,,Albania
+Algeria,DZ,DZD,1,,Algeria
+Angola,AO,AOA,1,,Angola
+Anguilla,AI,XCD,1,,Anguilla
+Antigua and Barbuda,AG,XCD,1,,Antigua and Barbuda
+Argentina,AR,ARS,1,,Argentina
+Armenia,AM,AMD,1,,Armenia
+Aruba,AW,AWG,1,,Aruba
+Australia,AU,AUD,1,,Australia
+Azerbaijan,AZ,AZN,1,,Azerbaijan
+Bahamas,BS,BSD,1,,The Bahamas
+Bahrain,BH,BHD,1,,Bahrain
+Bangladesh,BD,BDT,1,,Bangladesh
+Barbados,BB,BBD,1,,Barbados
+Belarus,BY,BYN,1,,Belarus
+Belize,BZ,BZD,1,,Belize
+Benin,BJ,XOF,1,,Benin
+Bermuda,BM,BMD,1,,Bermuda
+Bhutan,BT,BTN,1,,Bhutan
+Bolivia,BO,BOB,1,,Bolivia
+Bosnia and Herzegovina,BA,BAM,1,,Bosnia and Herzegovina
+Botswana,BW,BWP,1,,Botswana
+Brazil,BR,BRL,1,,Brazil
+Brunei Darussalam,BN,BND,1,,Brunei
+Bulgaria,BG,BGN,1,,Bulgaria
+Burkina Faso,BF,XOF,1,,Burkina Faso
+Burundi,BI,BIF,1,,Burundi
+Cabo Verde,CV,CVE,1,,Cabo Verde
+Cambodia,KH,KHR,1,,Cambodia
+Cameroon,CM,XAF,1,,Cameroon
+Canada,CA,CAD,1,,Canada
+Cayman Islands,KY,KYD,1,,Cayman Islands
+Central African Republic,CF,XAF,1,,Central African Republic
+Chad,TD,XAF,1,,Chad
+Chile,CL,CLP,1,,Chile
+China,CN,CNY,1,,China
+Colombia,CO,COP,1,,Colombia
+Comoros,KM,KMF,1,,Comoros
+Congo,CG,XAF,1,,Congo
+Congo (Democratic Republic),CD,CDF,1,,Congo (Democratic Republic)
+Costa Rica,CR,CRC,1,,Costa Rica
+Côte d'Ivoire,CI,XOF,1,,Ivory Coast
+Cuba,CU,CUP,1,,Cuba
+Czechia,CZ,CZK,1,,Czechia
+Denmark,DK,DKK,1,,Denmark
+Djibouti,DJ,DJF,1,,Djibouti
+Dominica,DM,XCD,1,,Dominica
+Dominican Republic,DO,DOP,1,,Dominican Republic
+Dubai,DU,AED,1,"This is not an official code - it has been invented by HMRC as a pseudo-code, as this is not in the geographical_areas table: ",#N/A
+Ecuador,EC,ECS,0,,Ecuador
+Egypt,EG,EGP,1,,Egypt
+El Salvador,SV,SVC,1,,El Salvador
+Equatorial Guinea,GQ,XAF,1,,Equatorial Guinea
+Eritrea,ER,ERN,1,,Eritrea
+Eswatini,SZ,SZL,1,,Eswatini
+Ethiopia,ET,ETB,1,,Ethiopia
+Eurozone,EU,EUR,1,,European Union
+Fiji,FJ,FJD,1,,Fiji
+French Polynesia,PF,XPF,1,,French Polynesia
+Gabon,GA,XAF,1,,Gabon
+Gambia,GM,GMD,1,,The Gambia
+Georgia,GE,GEL,1,,Georgia
+Ghana,GH,GHS,1,,Ghana
+Grenada,GD,XCD,1,,Grenada
+Guatemala,GT,GTQ,1,,Guatemala
+Guinea,GN,GNF,1,,Guinea
+Guinea-Bissau,GW,XOF,1,,Guinea-Bissau
+Guyana,GY,GYD,1,,Guyana
+Haiti,HT,HTG,1,,Haiti
+Honduras,HN,HNL,1,,Honduras
+Hong Kong,HK,HKD,1,,Hong Kong
+Hungary,HU,HUF,1,,Hungary
+Iceland,IS,ISK,1,,Iceland
+India,IN,INR,1,,India
+Indonesia,ID,IDR,1,,Indonesia
+Iran,IR,IRR,0,,Iran
+Iraq,IQ,IQD,1,,Iraq
+Israel,IL,ILS,1,,Israel
+Jamaica,JM,JMD,1,,Jamaica
+Japan,JP,JPY,1,,Japan
+Jordan,JO,JOD,1,,Jordan
+Kazakhstan,KZ,KZT,1,,Kazakhstan
+Kenya,KE,KES,1,,Kenya
+Kuwait,KW,KWD,1,,Kuwait
+Kyrgyzstan,KG,KGS,1,,Kyrgyzstan
+Lao People's Democratic Republic,LA,LAK,1,,Laos
+Lebanon,LB,LBP,1,,Lebanon
+Lesotho,LS,LSL,1,,Lesotho
+Liberia,LR,LRD,1,,Liberia
+Libya,LY,LYD,1,,Libya
+Macao,MO,MOP,1,,Macao
+Madagascar,MG,MGA,1,,Madagascar
+Malawi,MW,MWK,1,,Malawi
+Malaysia,MY,MYR,1,,Malaysia
+Maldives,MV,MVR,1,,Maldives
+Mali,ML,XOF,1,,Mali
+Mauritania,MR,MRU,1,,Mauritania
+Mauritius,MU,MUR,1,,Mauritius
+Mexico,MX,MXN,1,,Mexico
+Moldova,MD,MDL,1,,Moldova
+Mongolia,MN,MNT,1,,Mongolia
+Montserrat,MS,XCD,1,,Montserrat
+Morocco,MA,MAD,1,,Morocco
+Mozambique,MZ,MZN,1,,Mozambique
+Myanmar,MM,MMK,1,,Myanmar (Burma)
+Namibia,NA,NAD,1,,Namibia
+Nepal,NP,NPR,1,,Nepal
+Netherland Antilles (Curacao and Saint Maarten),AN,ANG,1,,Netherlands Antilles
+New Caledonia,NC,XPF,1,,New Caledonia
+New Zealand,NZ,NZD,1,,New Zealand
+Nicaragua,NI,NIO,1,,Nicaragua
+Niger,NE,XOF,1,,Niger
+Nigeria,NG,NGN,1,,Nigeria
+North Korea,KP,KPW,0,,North Korea
+North Macedonia,MK,MKD,1,,North Macedonia
+Norway,NO,NOK,1,,Norway
+Oman,OM,OMR,1,,Oman
+Pakistan,PK,PKR,1,,Pakistan
+Panama,PA,PAB,1,,Panama
+Papua New Guinea,PG,PGK,1,,Papua New Guinea
+Paraguay,PY,PYG,1,,Paraguay
+Peru,PE,PEN,1,,Peru
+Philippines,PH,PHP,1,,Philippines
+Poland,PL,PLN,1,,Poland
+Qatar,QA,QAR,1,,Qatar
+Romania,RO,RON,1,,Romania
+Russian Federation,RU,RUB,1,,Russia
+Rwanda,RW,RWF,1,,Rwanda
+Saint Kitts and Nevis,KN,XCD,1,,St Kitts and Nevis
+Saint Lucia,LC,XCD,1,,St Lucia
+Saint Vincent and the Grenadines,VC,XCD,1,,Saint Vincent and the Grenadines
+Samoa,WS,WST,1,,Samoa
+Sao Tome and Principe,ST,STN,1,,Sao Tome and Principe
+Saudi Arabia,SA,SAR,1,,Saudi Arabia
+Senegal,SN,XOF,1,,Senegal
+Serbia,XS,RSD,1,,Serbia
+Seychelles,SC,SCR,1,,Seychelles
+Sierra Leone,SL,SLE,1,,Sierra Leone
+Singapore,SG,SGD,1,,Singapore
+Solomon Islands,SB,SBD,1,,Solomon Islands
+Somalia,SO,SOS,1,,Somalia
+South Africa,ZA,ZAR,1,,South Africa
+South Korea,KR,KRW,1,,South Korea
+Sri Lanka,LK,LKR,1,,Sri Lanka
+Sudan,SD,SDG,1,,Sudan
+Suriname,SR,SRD,1,,Suriname
+Sweden,SE,SEK,1,,Sweden
+Switzerland,CH,CHF,1,,Switzerland
+Syria,SY,SYP,1,,Syria
+Taiwan,TW,TWD,1,,Taiwan
+Tajikistan,TJ,TJS,1,,Tajikistan
+Tanzania,TZ,TZS,1,,Tanzania
+Thailand,TH,THB,1,,Thailand
+Togo,TG,XOF,1,,Togo
+Tonga,TO,TOP,1,,Tonga
+Trinidad and Tobago,TT,TTD,1,,Trinidad and Tobago
+Tunisia,TN,TND,1,,Tunisia
+Turkey,TR,TRY,1,,Turkey
+Turkmenistan,TM,TMT,1,,Turkmenistan
+Uganda,UG,UGX,1,,Uganda
+Ukraine,UA,UAH,1,,Ukraine
+United Arab Emirates,AE,AED,1,,United Arab Emirates
+United States,US,USD,1,,United States
+Uruguay,UY,UYU,1,,Uruguay
+Uzbekistan,UZ,UZS,1,,Uzbekistan
+Vanuatu,VU,VUV,1,,Vanuatu
+Venezuela,VE,VEF,1,,Venezuela
+Vietnam,VN,VND,1,,Vietnam
+Wallis and Futuna,WF,XPF,1,,Wallis and Futuna
+Yemen,YE,YER,1,,Yemen
+Zambia,ZM,ZMW,1,,Zambia
+Zimbabwe,ZW,ZWD,1,,Zimbabwe
