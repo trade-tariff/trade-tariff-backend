@@ -111,7 +111,7 @@ module News
       end
 
       def latest_change
-        for_today.order(Sequel.desc(:updated_at)).first
+        order(Sequel.desc(:updated_at)).first
       end
     end
 

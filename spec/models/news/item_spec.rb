@@ -411,13 +411,17 @@ RSpec.describe News::Item do
 
     context 'with unpublished' do
       before do
-        create :news_item, start_date: 3.days.from_now,
-                           created_at: 1.minute.ago
+        unpublished
 
         described_class.dataset.update(updated_at: :created_at)
       end
 
-      it { is_expected.to eq_pk newer }
+      let :unpublished do
+        create :news_item, start_date: 3.days.from_now,
+                           created_at: 1.minute.ago
+      end
+
+      it { is_expected.to eq_pk unpublished }
     end
   end
 
