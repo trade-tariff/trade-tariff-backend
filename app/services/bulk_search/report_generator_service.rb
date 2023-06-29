@@ -35,26 +35,23 @@ module BulkSearch
       all_input_descriptions = process_file
       expected_subheadings = find_expected_subheadings_for(all_input_descriptions)
 
-      rows = CSV.read(ALL_RESULTS_FILE, headers: true)
-      highest_scoring_results = rows.each_with_object({}) do |row, acc|
-        acc[row['input_description']] ||= {
-          'score' => 0,
-          'short_code' => '999999',
-        }
+      sampled_rows = CSV.read(ALL_RESULTS_FILE, headers: true)
+      highest_scoring_results = highest_scoring_results_for(sampled_rows)
 
-        if row['score'].to_i > acc[row['input_description']]['score']
-          acc[row['input_description']]['score'] = row['score'].to_i
-          acc[row['input_description']]['short_code'] = row['short_code']
-        end
-      end
-      highest_scoring_results = highest_scoring_results.map do |input_description, result|
-        {
-          input_description:,
-          short_code: result['short_code'],
-          score: result['score'],
-        }
-      end
+      elapsed_time = Time.zone.at(Time.zone.now - start).utc.strftime('%H:%M:%S')
+      report_data = generate_input_data_for(highest_scoring_results, expected_subheadings)
+      report_data[:elapsed_time] = elapsed_time
 
+      Reporting::BulkSearch.generate(report_data)
+
+      Rails.logger.debug("Elapsed time: #{elapsed_time}")
+    end
+
+    private
+
+    attr_reader :file_path, :url, :max_samples, :batch_size, :sample_file_path
+
+    def generate_input_data_for(highest_scoring_results, expected_subheadings)
       number_of_results = highest_scoring_results.count
 
       with_result = highest_scoring_results.reject do |result|
@@ -70,15 +67,13 @@ module BulkSearch
         result[:short_code].match?(/999999/)
       end
 
-      elapsed_time = Time.zone.at(Time.zone.now - start).utc.strftime('%H:%M:%S')
       number_of_matches = matches.count
       number_of_misses = misses.count
       number_of_no_result = no_result.count
 
       percentage_of_matches = ((number_of_matches.to_f / number_of_results) * 100).round(2)
 
-      Reporting::BulkSearch.generate(
-        elapsed_time:,
+      {
         number_of_results:,
         number_of_matches:,
         number_of_misses:,
@@ -87,14 +82,23 @@ module BulkSearch
         matches:,
         misses:,
         no_result:,
-      )
-
-      Rails.logger.debug("Elapsed time: #{elapsed_time}")
+      }
     end
 
-    private
+    def highest_scoring_results_for(sampled_rows)
+      sampled_rows
+        .group_by { |row| row['input_description'] }
+        .transform_values { |grouped_results|
+          highest_scoring = grouped_results.max_by { |result| result['score'].to_i }
 
-    attr_reader :file_path, :url, :max_samples, :batch_size, :sample_file_path
+          {
+            input_description: highest_scoring['input_description'],
+            short_code: highest_scoring['short_code'],
+            score: highest_scoring['score'],
+          }
+        }
+        .values
+    end
 
     def encoding
       @encoding ||= ENCODINGS.find do |encoding|
