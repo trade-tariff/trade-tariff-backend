@@ -1,4 +1,4 @@
-RSpec.describe BulkSearchResultAnswerService do
+RSpec.describe BulkSearch::ResultAnswerService do
   subject(:service) { described_class.new(search, hits) }
 
   let(:search) do
