@@ -20,6 +20,10 @@ FactoryBot.define do
       end
     end
 
+    trait :classified do
+      goods_nomenclature_item_id { '9801000000' }
+    end
+
     trait :with_chapter do
       before(:create) do |heading, _evaluator|
         create(:chapter,
