@@ -403,7 +403,7 @@ jobs:
             docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
             docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
 
-              # new aws env
+  # new aws env
   build_and_push:
     environment:
       IMAGE_NAME: tariff-backend
@@ -421,7 +421,7 @@ jobs:
       - run:
           name: Build and push image
           command: ./.circleci/ecr.sh << parameters.environment >>
-
+  
   flaky_tests:
     docker:
       - image: cimg/ruby:3.2.2
@@ -872,7 +872,7 @@ workflows:
               only:
                 - main
                 - /^hotfix\/.+/
-       # new aws env
+      # new aws env
       - build_and_push:
           name: build_and_push_dev
           context: trade-tariff-terraform-aws-development
@@ -883,6 +883,7 @@ workflows:
                 - main
                 - /^hotfix\/.+/
                 - /^dependabot/(?!docker/).*/
+
 
       - deploy_main_to_staging:
           matrix:
