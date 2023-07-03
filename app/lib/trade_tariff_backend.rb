@@ -125,6 +125,14 @@ module TradeTariffBackend
       )
     end
 
+    def by_heading_search_client
+      @by_heading_search_client ||= SearchClient.new(
+        opensearch_client,
+        indexes: by_heading_search_indexes,
+        by_heading: true,
+      )
+    end
+
     def cache_client
       @cache_client ||= SearchClient.new(
         opensearch_client,
@@ -146,6 +154,12 @@ module TradeTariffBackend
     def v2_search_indexes
       [
         Search::GoodsNomenclatureIndex,
+      ].map(&:new)
+    end
+
+    def by_heading_search_indexes
+      [
+        Search::BulkSearchIndex,
       ].map(&:new)
     end
 

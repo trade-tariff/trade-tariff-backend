@@ -2,9 +2,9 @@ module BulkSearch
   class HitAncestorFinderService
     HEADING_DIGITS = 4
 
-    def initialize(hit, ancestor_digits)
+    def initialize(hit, number_of_digits)
       @hit = hit
-      @ancestor_digits = ancestor_digits
+      @number_of_digits = number_of_digits
     end
 
     def call
@@ -23,11 +23,11 @@ module BulkSearch
 
     private
 
-    attr_reader :hit, :ancestor_digits
+    attr_reader :hit, :number_of_digits
 
     def find_result_in_ancestor
       result = hit._source.ancestors.find do |ancestor|
-        ancestor.short_code.length == ancestor_digits
+        ancestor.short_code.length == number_of_digits
       end
 
       reason = :matching_digit_ancestor if result
@@ -38,7 +38,7 @@ module BulkSearch
     def find_result_in_hit
       hit_digits = hit._source.short_code.length
 
-      result = [ancestor_digits, HEADING_DIGITS].include?(hit_digits) ? hit._source : nil
+      result = [number_of_digits, HEADING_DIGITS].include?(hit_digits) ? hit._source : nil
 
       reason = if result.present?
                  result.goods_nomenclature_class == 'Heading' ? :matching_declarable_heading : :matching_digit_commodity

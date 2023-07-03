@@ -2,15 +2,15 @@ module BulkSearch
   class ResultAnswerService
     MAX_ANCESTORS = 5
 
-    def initialize(search, hits, ancestor_digits: 6)
+    def initialize(search, hits, number_of_digits: 6)
       @search = search
       @hits = hits || []
-      @ancestor_digits = ancestor_digits
+      @number_of_digits = number_of_digits
     end
 
     def call
       search_result_ancestors = hits.each_with_object({}) do |hit, acc|
-        candidate_ancestor, reason = HitAncestorFinderService.new(hit, ancestor_digits).call
+        candidate_ancestor, reason = HitAncestorFinderService.new(hit, number_of_digits).call
 
         next if candidate_ancestor.blank?
 
@@ -27,7 +27,7 @@ module BulkSearch
 
     private
 
-    attr_reader :search, :hits, :ancestor_digits
+    attr_reader :search, :hits, :number_of_digits
 
     def sort_and_accumulate_search_result_ancestors(search_result_ancestors)
       return search.search_result_ancestors.concat(fallback_ancestors) if search_result_ancestors.blank?

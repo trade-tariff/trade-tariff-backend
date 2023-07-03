@@ -75,7 +75,7 @@ module BulkSearch
       @searches = (data.delete(:searches) || []).map do |search|
         attributes = search.to_h.try(:deep_symbolize_keys!) || search.to_h
         attributes[:search_result_ancestors] = attributes[:search_result_ancestors].presence || []
-        attributes[:ancestor_digits] = attributes[:ancestor_digits].presence || 8
+        attributes[:number_of_digits] = attributes[:number_of_digits].presence || 8
 
         BulkSearch::Search.build(attributes)
       end
