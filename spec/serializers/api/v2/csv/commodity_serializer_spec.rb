@@ -3,7 +3,7 @@ RSpec.describe Api::V2::Csv::CommoditySerializer do
     subject(:serializable) { described_class.new([commodity]).serializable_array }
 
     let(:parent) { create :commodity, :with_description, :with_heading }
-    let(:commodity) { create :commodity, parent: }
+    let(:commodity) { create :commodity, :with_description, parent: }
 
     it 'includes header row' do
       expect(serializable[0]).to eq %i[
@@ -28,8 +28,8 @@ RSpec.describe Api::V2::Csv::CommoditySerializer do
         true,
         true,
         commodity.goods_nomenclature_sid,
-        commodity.description,
-        commodity.description,
+        commodity.formatted_description,
+        commodity.description_plain,
         commodity.producline_suffix,
         parent.goods_nomenclature_sid,
       ]

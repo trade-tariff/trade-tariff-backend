@@ -12,6 +12,7 @@ module Api
                    :description,
                    :bti_url,
                    :formatted_description,
+                   :description_plain,
                    :validity_start_date,
                    :validity_end_date
 
