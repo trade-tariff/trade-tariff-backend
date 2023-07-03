@@ -10,7 +10,7 @@ container="${IMAGE_NAME}-$environment:${docker_tag}"
 
 function fetch_ecr_url {
   json=$(aws ssm get-parameter     \
-  --name "/${environment}/FRONTEND_ECR_URL" \
+  --name "/${environment}/BACKEND_ECR_URL" \
   --with-decryption                \
   --output json                    \
   --color off)
