@@ -117,8 +117,8 @@ class GoodsNomenclature < Sequel::Model
       exclude(chapter_short_code: '98')
     end
 
-    def indexable
-      where(Sequel.~(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes))
+    def non_grouping
+      where(producline_suffix: '80')
     end
   end
 

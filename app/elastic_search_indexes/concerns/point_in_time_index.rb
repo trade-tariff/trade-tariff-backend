@@ -6,6 +6,10 @@ module PointInTimeIndex
     apply_constraints { super.actual }
   end
 
+  def dataset_heading(...)
+    apply_constraints { super.actual }
+  end
+
   def dataset_page(...)
     apply_constraints { super }
   end

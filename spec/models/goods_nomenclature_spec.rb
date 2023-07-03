@@ -594,6 +594,17 @@ RSpec.describe GoodsNomenclature do
     it { is_expected.to eq(%w[0111110000]) }
   end
 
+  describe '.non_grouping' do
+    subject(:non_grouping) { described_class.non_grouping.pluck(:goods_nomenclature_item_id) }
+
+    before do
+      create(:goods_nomenclature, :non_grouping, goods_nomenclature_item_id: '0111110000')
+      create(:goods_nomenclature, :grouping)
+    end
+
+    it { is_expected.to eq(%w[0111110000]) }
+  end
+
   describe '#cast_to' do
     subject(:casted) { commodity.cast_to Subheading }
 
