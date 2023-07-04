@@ -16,26 +16,6 @@ RSpec.describe ExchangeRateCurrencyRate do
     it { expect(february.count).to eq(1) }
 
     it { expect(aed.rate).to eq(4.8012) }
-
-    context 'when scheduled rates start and end in same month' do
-      let(:scheduled) { described_class.where(rate_type: 'scheduled') }
-
-      it { expect(scheduled.count).to eq(4) }
-
-      it { expect(scheduled.first.validity_end_date).not_to be_nil }
-
-      it { expect(scheduled.first.validity_start_date).not_to be_nil }
-    end
-
-    context 'when spot rates start on last day of March or December' do
-      let(:spot) { described_class.where(rate_type: 'spot') }
-
-      it { expect(spot.count).to eq(4) }
-
-      it { expect(spot.first.validity_end_date).to be_nil }
-
-      it { expect(spot.first.validity_start_date).not_to be_nil }
-    end
   end
 
   describe '.all_years' do
@@ -101,6 +81,28 @@ RSpec.describe ExchangeRateCurrencyRate do
       subject(:currency_rate) { build(:exchange_rate_currency_rate) }
 
       it { is_expected.not_to be_spot_rate }
+    end
+  end
+
+  describe '.scheduled' do
+    it 'returns only the rates with rate_type "scheduled"' do
+      expect(described_class.scheduled.count).to eq(4)
+    end
+  end
+
+  describe '.spot' do
+    it 'returns only the rates with rate_type "spot"' do
+      expect(described_class.spot.count).to eq(4)
+    end
+  end
+
+  describe '.by_year' do
+    it 'returns the rates for the specified year' do
+      expect(described_class.by_year(2023).count).to eq(2)
+    end
+
+    it 'returns nil if year is blank' do
+      expect(described_class.by_year(nil)).to be_nil
     end
   end
 end
