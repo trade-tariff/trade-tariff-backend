@@ -1,6 +1,5 @@
 class SuggestionsService
   def call
-    ::SequelRails::Railties::LogSubscriber.reset_count
     SearchSuggestion.unrestrict_primary_key
     suggestions = TimeMachine.now do
       [
@@ -12,7 +11,7 @@ class SuggestionsService
       ].flatten.compact
     end
     SearchSuggestion.restrict_primary_key
-    Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+
     suggestions
   end
 
