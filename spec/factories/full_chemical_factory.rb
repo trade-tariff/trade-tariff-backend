@@ -11,12 +11,18 @@ FactoryBot.define do
     un_number { nil }
     nomen { 'INCI' }
     name { 'mel powder' }
-    goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || '0409000000' }
-    producline_suffix { goods_nomenclature&.producline_suffix || '80' }
-    goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
+    goods_nomenclature_item_id do
+      (goods_nomenclature && goods_nomenclature.goods_nomenclature_item_id) || '0409000000'
+    end
+    producline_suffix do
+      (goods_nomenclature && goods_nomenclature&.producline_suffix) || '80'
+    end
+    goods_nomenclature_sid do
+      (goods_nomenclature && goods_nomenclature&.goods_nomenclature_sid) || generate(:goods_nomenclature_sid)
+    end
 
     before(:create) do |full_chemical, evaluator|
-      unless evaluator.goods_nomenclature
+      if evaluator.goods_nomenclature.nil?
         if full_chemical.goods_nomenclature_sid
           create(
             :goods_nomenclature,
