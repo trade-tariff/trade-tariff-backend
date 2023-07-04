@@ -22,7 +22,22 @@ RSpec.describe TreeIntegrityCheckingService do
         instance.check!
 
         expect(instance.failures).to eq \
-          [commodity.heading, commodity].map(&:goods_nomenclature_sid)
+          Set.new([commodity.heading, commodity].map(&:goods_nomenclature_sid))
+      end
+    end
+
+    context 'with missing indents' do
+      before do
+        commodity.goods_nomenclature_indent.destroy
+        GoodsNomenclatures::TreeNode.refresh!
+      end
+
+      it { is_expected.to be false }
+
+      it 'tracks sid with missing indent' do
+        instance.check!
+
+        expect(instance.failures).to eq Set.new([commodity.goods_nomenclature_sid])
       end
     end
   end
