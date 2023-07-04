@@ -96,6 +96,12 @@ module TradeTariffBackend
       Mailer.reindex_exception(e).deliver_now
     end
 
+    def by_heading_reindex(indexer = by_heading_search_client)
+      indexer.update_all
+    rescue StandardError => e
+      Mailer.reindex_exception(e).deliver_now
+    end
+
     def recache(indexer = cache_client)
       indexer.update_all
     rescue StandardError => e

@@ -7,6 +7,7 @@ class ReindexModelsWorker
     logger.info 'Reindexing models in Elastic Search...'
     TradeTariffBackend.reindex
     TradeTariffBackend.v2_reindex
+    TradeTariffBackend.by_heading_reindex
     logger.info 'Reindexing of models completed'
   end
 end
