@@ -51,9 +51,6 @@
     PrecacheHeadingsWorker:
       cron: "00 22 * * *"
       description: Precaches all headings and subheadings ready for tomorrow
-    TreeIntegrityCheckWorker:
-      cron: '0 8 * * 1'
-      description: Check current integrity of Goods Nomenclature hierarchy
     OneWeekTreeIntegrityCheck:
       cron: '05 8 * * 1'
       class: TreeIntegrityCheckWorker
