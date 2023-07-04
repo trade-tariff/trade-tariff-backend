@@ -3,7 +3,7 @@ RSpec.describe Api::V2::BulkSearch::SearchSerializer do
 
   let(:search) do
     BulkSearch::Search.build(
-      ancestor_digits: 8,
+      number_of_digits: 8,
       input_description: 'red herring',
       search_result_ancestors: [
         {
@@ -29,7 +29,7 @@ RSpec.describe Api::V2::BulkSearch::SearchSerializer do
           id: '28092073ed1b2c9697e79ac868175964',
           type: eq(:search),
           attributes: {
-            ancestor_digits: 8,
+            number_of_digits: 8,
             input_description: 'red herring',
           },
           relationships: {

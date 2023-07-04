@@ -16,7 +16,7 @@ RSpec.describe BulkSearch::ResultCollection do
     let(:searches) do
       [
         {
-          ancestor_digits: 8,
+          number_of_digits: 8,
           input_description: 'red herring',
           search_result_ancestors: [
             {
@@ -32,7 +32,7 @@ RSpec.describe BulkSearch::ResultCollection do
           ],
         },
         {
-          ancestor_digits: 8,
+          number_of_digits: 8,
           input_description: 'white bait',
           search_result_ancestors: [
             {

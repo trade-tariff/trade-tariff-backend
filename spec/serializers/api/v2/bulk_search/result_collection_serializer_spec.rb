@@ -7,7 +7,7 @@ RSpec.describe Api::V2::BulkSearch::ResultCollectionSerializer do
       status: 'complete',
       searches: [
         {
-          ancestor_digits: 8,
+          number_of_digits: 8,
           input_description: 'red herring',
           search_result_ancestors: [
             {
@@ -23,7 +23,7 @@ RSpec.describe Api::V2::BulkSearch::ResultCollectionSerializer do
           ],
         },
         {
-          ancestor_digits: 8,
+          number_of_digits: 8,
           input_description: 'white bait',
           search_result_ancestors: [
             {

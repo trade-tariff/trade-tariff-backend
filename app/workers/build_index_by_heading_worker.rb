@@ -18,8 +18,8 @@ class BuildIndexByHeadingWorker
         body: serialize_for(:index, index, entries),
       )
     end
-  rescue StandardError
-    raise IndexingError, "Failed building index: #{index_name} - heading #{heading_short_code}"
+  rescue StandardError => e
+    raise IndexingError "Failed building index: #{index_name} - heading #{heading_short_code}\n#{e.class}\n#{e.message}\n#{e.backtrace}"
   end
 
   private
