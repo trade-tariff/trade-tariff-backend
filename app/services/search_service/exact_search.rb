@@ -58,15 +58,19 @@ class SearchService
         .limit(1)
         .first
 
-      # TimeMachine is implicitly used when fetching declarability with the GoodsNomenclatureMapper
-      # and we're interested in historical data here to show the validity periods
-      TimeMachine.no_time_machine do
-        if goods_nomenclature && goods_nomenclature.instance_of?(::Commodity) && !goods_nomenclature.declarable?
-          goods_nomenclature.cast_to(Subheading)
+      return unless goods_nomenclature
+
+      check_for_children_on =
+        if goods_nomenclature.validity_end_date && goods_nomenclature.validity_end_date < @date
+          goods_nomenclature.validity_end_date
+        elsif goods_nomenclature.validity_start_date && goods_nomenclature.validity_start_date > @date
+          goods_nomenclature.validity_start_date
         else
-          goods_nomenclature
+          @date
         end
-      end
+
+      # Check whether Subheading or Commodity at the appropriate point in time
+      TimeMachine.at(check_for_children_on) { goods_nomenclature.sti_cast }
     end
 
     # Example:
