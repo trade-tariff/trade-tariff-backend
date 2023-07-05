@@ -7,18 +7,17 @@ module ExchangeRates
     end
 
     class << self
-      def build(months, year)
+      def wrap(months, year)
         months.map do |month|
-          period = new
-          period.month = month
-          period.year = year
-          period.files = files_for(month, year)
-          period
+          build(month, year)
         end
       end
 
-      def files_for(_month, _year)
-        []
+      def build(month, year)
+        period = new
+        period.month = month
+        period.year = year
+        period
       end
     end
   end

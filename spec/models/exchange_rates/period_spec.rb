@@ -14,8 +14,26 @@ RSpec.describe ExchangeRates::Period do
 
   describe '.build' do
     let(:year) { 2022 }
+    let(:month) { 3 }
+    let(:period) { described_class.build(month, year) }
+
+    it 'builds a period' do
+      expect(period).to be_a(described_class)
+    end
+
+    it 'builds a period with correct month' do
+      expect(period.month).to eq(month)
+    end
+
+    it 'builds a period with correct year' do
+      expect(period.year).to eq(year)
+    end
+  end
+
+  describe '.wrap' do
+    let(:year) { 2022 }
     let(:months) { [1, 2, 3] }
-    let(:periods) { described_class.build(months, year) }
+    let(:periods) { described_class.wrap(months, year) }
 
     it 'builds an array of periods' do
       expect(periods).to be_an(Array)

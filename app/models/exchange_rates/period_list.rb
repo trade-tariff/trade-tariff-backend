@@ -26,13 +26,13 @@ module ExchangeRates
       def exchange_rate_periods_for(year)
         months = ExchangeRateCurrencyRate.months_for_year(year)
 
-        ExchangeRates::Period.build(months, year)
+        ExchangeRates::Period.wrap(months, year)
       end
 
       def exchange_rate_years
         years = ExchangeRateCurrencyRate.all_years
 
-        ExchangeRates::PeriodYear.build(years)
+        ExchangeRates::PeriodYear.wrap(years)
       end
     end
   end

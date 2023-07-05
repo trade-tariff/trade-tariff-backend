@@ -1,5 +1,5 @@
 RSpec.describe Api::V2::ExchangeRates::ExchangeRatePeriodListSerializer do
-  subject(:serializable) { described_class.new(exchange_rate_period_list, include: %i[exchange_rate_periods exchange_rate_years]).serializable_hash }
+  subject(:serializable) { described_class.new(exchange_rate_period_list).serializable_hash }
 
   let(:exchange_rate_period_list) { build(:period_list, :with_periods, :with_period_years) }
   let(:exchange_rate_period) { exchange_rate_period_list.exchange_rate_periods.first }
@@ -32,23 +32,6 @@ RSpec.describe Api::V2::ExchangeRates::ExchangeRatePeriodListSerializer do
           },
         },
       },
-      included: [
-        {
-          id: exchange_rate_period.id,
-          type: :exchange_rate_period,
-          attributes: {
-            month: exchange_rate_period.month,
-            year: exchange_rate_period.year,
-          },
-        },
-        {
-          id: exchange_rate_year.id,
-          type: :exchange_rate_year,
-          attributes: {
-            year: exchange_rate_year.year,
-          },
-        },
-      ],
     }
   end
 

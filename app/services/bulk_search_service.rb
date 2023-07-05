@@ -23,7 +23,7 @@ class BulkSearchService
 
     @result.searches.each_with_index do |search, i|
       opensearch_results = response.dig('responses', i, 'hits', 'hits')
-      search.search_results = opensearch_results.map do |result|
+      search.search_results = (opensearch_results || []).map do |result|
         BulkSearch::SearchResult.build(
           number_of_digits: result['_source']['number_of_digits'],
           short_code: result['_source']['short_code'],

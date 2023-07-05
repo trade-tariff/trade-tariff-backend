@@ -1,6 +1,6 @@
 RSpec.describe ExchangeRates::PeriodYear do
-  describe '.build' do
-    subject(:period_years) { described_class.build(years) }
+  describe '.wrap' do
+    subject(:period_years) { described_class.wrap(years) }
 
     let(:years) { [2020, 2021, 2022] }
 
@@ -16,6 +16,20 @@ RSpec.describe ExchangeRates::PeriodYear do
       years.each_with_index do |year, index|
         expect(period_years[index].year).to eq(year)
       end
+    end
+  end
+
+  describe '.build' do
+    subject(:period_year) { described_class.build(year) }
+
+    let(:year) { 2020 }
+
+    it 'builds a period year' do
+      expect(period_year).to be_an_instance_of(described_class)
+    end
+
+    it 'sets the year correctly' do
+      expect(period_year.year).to eq(year)
     end
   end
 

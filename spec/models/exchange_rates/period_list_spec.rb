@@ -54,7 +54,7 @@ RSpec.describe ExchangeRates::PeriodList do
     end
 
     it 'calls ExchangeRates::Period.build with the correct arguments' do
-      allow(ExchangeRates::Period).to receive(:build).with(months, year).and_return([])
+      allow(ExchangeRates::Period).to receive(:wrap).with(months, year).and_return([])
       exchange_rate_periods
     end
 
@@ -77,7 +77,7 @@ RSpec.describe ExchangeRates::PeriodList do
     end
 
     it 'calls ExchangeRates::PeriodYear.build with the correct arguments' do
-      allow(ExchangeRates::PeriodYear).to receive(:build).with(years).and_return([])
+      allow(ExchangeRates::PeriodYear).to receive(:wrap).with(years).and_return([])
       exchange_rate_years
     end
 

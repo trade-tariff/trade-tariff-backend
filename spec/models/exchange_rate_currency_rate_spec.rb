@@ -86,13 +86,13 @@ RSpec.describe ExchangeRateCurrencyRate do
 
   describe '.scheduled' do
     it 'returns only the rates with rate_type "scheduled"' do
-      expect(described_class.scheduled.count).to eq(4)
+      expect(described_class.scheduled).to all(be_scheduled_rate)
     end
   end
 
   describe '.spot' do
     it 'returns only the rates with rate_type "spot"' do
-      expect(described_class.spot.count).to eq(4)
+      expect(described_class.spot).to all(be_spot_rate)
     end
   end
 
