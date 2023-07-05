@@ -20,7 +20,7 @@ RSpec.describe ExchangeRates::PeriodYear do
   end
 
   describe '#id' do
-    subject(:period_year) { build(:period_year, year: year) }
+    subject(:period_year) { build(:period_year, year:) }
 
     let(:year) { 2020 }
 
