@@ -4,7 +4,7 @@ RSpec.describe BulkSearch::Search do
   subject(:search) do
     described_class.build(
       input_description:,
-      ancestor_digits:,
+      number_of_digits:,
       search_result_ancestors:,
     )
   end
@@ -25,7 +25,7 @@ RSpec.describe BulkSearch::Search do
   end
 
   let(:input_description) { 'red herring' }
-  let(:ancestor_digits) { 8 }
+  let(:number_of_digits) { 8 }
 
   describe '#search_result_ancestors' do
     it { expect(search.search_result_ancestors).to all(be_a(BulkSearch::SearchAncestor)) }

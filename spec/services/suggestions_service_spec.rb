@@ -12,6 +12,8 @@ RSpec.describe SuggestionsService do
     create(:search_reference, referenced: chapter, title: 'gold Ore')
     create(:full_chemical, goods_nomenclature: heading)
 
+    create(:full_chemical, goods_nomenclature: false) # We do not create chemical suggestions without goods nomenclature
+
     create(:chapter, :hidden, goods_nomenclature_item_id: '0200000000')
     create(:heading, :hidden, goods_nomenclature_item_id: '0202000000')
     create(:commodity, :hidden, goods_nomenclature_item_id: '0202090000')

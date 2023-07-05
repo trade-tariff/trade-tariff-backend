@@ -4,7 +4,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
   let(:search) do
     BulkSearch::Search.build(
       input_description: 'red herring',
-      ancestor_digits: 8,
+      number_of_digits: 8,
       search_result_ancestors: [],
     )
   end

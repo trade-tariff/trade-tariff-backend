@@ -11,6 +11,7 @@ class SuggestionsService
       ].flatten.compact
     end
     SearchSuggestion.restrict_primary_key
+
     suggestions
   end
 
@@ -27,9 +28,10 @@ class SuggestionsService
   def build_search_references_search_suggestions
     SearchReference
       .select(:id, :title, :goods_nomenclature_sid, :referenced_class)
-      .eager(:referenced)
+      .eager(referenced: :ns_children)
       .distinct(:title)
       .order(Sequel.desc(:title))
+      .all
       .map { |search_reference| build_search_reference_record(search_reference) }
   end
 
@@ -46,7 +48,7 @@ class SuggestionsService
   end
 
   def full_chemicals
-    @full_chemicals ||= FullChemical.eager(:goods_nomenclature).all
+    @full_chemicals ||= FullChemical.eager(goods_nomenclature: :ns_children).all
   end
 
   def build_search_reference_record(search_reference)
@@ -76,6 +78,7 @@ class SuggestionsService
   end
 
   def build_name_chemical_record(full_chemical)
+    return nil if full_chemical.goods_nomenclature.blank?
     return nil if full_chemical.name.blank?
 
     SearchSuggestion.build(
@@ -90,6 +93,8 @@ class SuggestionsService
   end
 
   def build_cus_chemical_record(full_chemical)
+    return nil if full_chemical.goods_nomenclature.blank?
+
     SearchSuggestion.build(
       id: full_chemical.cus,
       value: full_chemical.cus,
@@ -102,6 +107,7 @@ class SuggestionsService
   end
 
   def build_cas_chemical_record(full_chemical)
+    return nil if full_chemical.goods_nomenclature.blank?
     return nil if full_chemical.cas_rn.blank?
 
     SearchSuggestion.build(

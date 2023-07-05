@@ -13,6 +13,10 @@ class SearchIndex
     self.class.name.split('::').last
   end
 
+  def name_with_namespace
+    self.class.name
+  end
+
   def type
     model_class.to_s.underscore
   end
