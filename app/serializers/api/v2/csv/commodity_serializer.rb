@@ -17,7 +17,7 @@ module Api
                 :producline_suffix
 
         column :parent_sid do |commodity|
-          if commodity.ns_parent.is_a?(Commodity)
+          if commodity.ns_parent.is_a?(TenDigitGoodsNomenclature)
             commodity.ns_parent.goods_nomenclature_sid
           end
         end
