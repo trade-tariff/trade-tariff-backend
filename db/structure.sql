@@ -9734,6 +9734,13 @@ CREATE UNIQUE INDEX exchange_rate_currency_rates_currency_code_validity_start_da
 
 
 --
+-- Name: exchange_rate_currency_rates_rate_type_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX exchange_rate_currency_rates_rate_type_index ON uk.exchange_rate_currency_rates USING btree (rate_type);
+
+
+--
 -- Name: exchange_rate_currency_rates_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11776,3 +11783,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230425151153_adds_goods_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230519133544_adds_simplfied_procedural_codes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230619124026_create_exchange_rates.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230627083227_add_indexes_for_cache_lookups.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230628141140_adds_index_to_rate_type.rb');

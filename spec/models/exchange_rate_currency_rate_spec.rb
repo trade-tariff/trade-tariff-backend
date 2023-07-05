@@ -16,25 +16,93 @@ RSpec.describe ExchangeRateCurrencyRate do
     it { expect(february.count).to eq(1) }
 
     it { expect(aed.rate).to eq(4.8012) }
+  end
 
-    context 'when scheduled rates start and end in same month' do
-      let(:scheduled) { described_class.where(rate_type: 'scheduled') }
+  describe '.all_years' do
+    it 'returns the distinct years in descending order' do
+      expect(described_class.all_years).to eq([2023, 2020])
+    end
+  end
 
-      it { expect(scheduled.count).to eq(3) }
+  describe '.max_year' do
+    it 'returns the maximum year from the validity start dates' do
+      expect(described_class.max_year).to eq(2023)
+    end
+  end
 
-      it { expect(scheduled.first.validity_end_date).not_to be_nil }
+  describe '.months_for_year' do
+    it 'returns the distinct months for the given year in descending order' do
+      expect(described_class.months_for_year(2020)).to eq([2, 1])
+    end
+  end
 
-      it { expect(scheduled.first.validity_start_date).not_to be_nil }
+  describe '#scheduled_rate?' do
+    subject(:currency_rate) { build(:exchange_rate_currency_rate) }
+
+    it { is_expected.to be_scheduled_rate }
+
+    context 'when validity_end_date is nil' do
+      before { currency_rate.validity_end_date = nil }
+
+      it { is_expected.not_to be_scheduled_rate }
     end
 
-    context 'when spot rates start on last day of March or December' do
-      let(:spot) { described_class.where(rate_type: 'spot') }
+    context 'when validity_start_date is not the first day of the month' do
+      before { currency_rate.validity_start_date = Date.new(2020, 1, 15) }
 
-      it { expect(spot.count).to eq(4) }
+      it { is_expected.not_to be_scheduled_rate }
+    end
 
-      it { expect(spot.first.validity_end_date).to be_nil }
+    context 'when validity_end_date is not the last day of the month' do
+      before { currency_rate.validity_end_date = Date.new(2020, 1, 15) }
 
-      it { expect(spot.first.validity_start_date).not_to be_nil }
+      it { is_expected.not_to be_scheduled_rate }
+    end
+  end
+
+  describe '#spot_rate?' do
+    subject(:currency_rate) { build(:exchange_rate_currency_rate, :spot_rate) }
+
+    it { is_expected.to be_spot_rate }
+
+    context 'when validity_end_date is present' do
+      before { currency_rate.validity_end_date = Date.new(2022, 12, 31) }
+
+      it { is_expected.not_to be_spot_rate }
+    end
+
+    context 'when validity_start_date is not the last day of the month' do
+      before { currency_rate.validity_start_date = Date.new(2022, 12, 15) }
+
+      it { is_expected.not_to be_spot_rate }
+    end
+
+    context 'when rate_type is not "spot"' do
+      subject(:currency_rate) { build(:exchange_rate_currency_rate) }
+
+      it { is_expected.not_to be_spot_rate }
+    end
+  end
+
+  describe '.scheduled' do
+    it 'returns only the rates with rate_type "scheduled"' do
+      expect(described_class.scheduled).to all(be_scheduled_rate)
+    end
+  end
+
+  describe '.spot' do
+    it 'returns only the rates with rate_type "spot"' do
+      expect(described_class.spot).to all(be_spot_rate)
+    end
+  end
+
+  describe '.by_year' do
+    it 'returns the rates for the specified year' do
+      expect(described_class.by_year(2023).count).to eq(2)
+    end
+
+    it 'returns nil if year is blank' do
+      expect(described_class.by_year(nil)).to be_nil
     end
   end
 end
