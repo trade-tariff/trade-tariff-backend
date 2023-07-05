@@ -37,7 +37,7 @@ module TariffSynchronizer
     # downloadURL contains gzip file with an xml file inside.
     def response
       @response = Rails.cache.fetch('cds-updates-list', expires_in: 2.hours) do
-        uri = URI::join(ENV['HMRC_API_HOST'], '/bulk-data-download/list/TARIFF-DAILY')
+        uri = URI.join(ENV['HMRC_API_HOST'], '/bulk-data-download/list/TARIFF-DAILY')
         https = Net::HTTP.new(uri.host, uri.port)
         https.use_ssl = true
         request = Net::HTTP::Get.new(uri.request_uri)
@@ -59,7 +59,7 @@ module TariffSynchronizer
     end
 
     def access_token
-      uri = URI::join(ENV['HMRC_API_HOST'], '/oauth/token')
+      uri = URI.join(ENV['HMRC_API_HOST'], '/oauth/token')
       https = Net::HTTP.new(uri.host, uri.port)
       https.use_ssl = true
       request = Net::HTTP::Post.new(uri.request_uri)
@@ -74,7 +74,7 @@ module TariffSynchronizer
       if response.code == '200'
         JSON.parse(response.body)['access_token']
       else
-        raise AuthorisationError.new(response.body)
+        raise AuthorisationError, response.body
       end
     end
   end

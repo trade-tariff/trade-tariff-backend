@@ -74,8 +74,8 @@ module BulkSearch
       @status = ActiveSupport::StringInquirer.new(data.delete(:status).to_s)
       @searches = (data.delete(:searches) || []).map do |search|
         attributes = search.to_h.try(:deep_symbolize_keys!) || search.to_h
-        attributes[:search_result_ancestors] = attributes[:search_result_ancestors].presence || []
-        attributes[:number_of_digits] = attributes[:number_of_digits].presence || 8
+        attributes[:search_results] = attributes[:search_results].presence || []
+        attributes[:number_of_digits] = attributes[:number_of_digits].presence || 6
 
         BulkSearch::Search.build(attributes)
       end
@@ -88,16 +88,11 @@ module BulkSearch
         searches: searches.map do |search|
           {
             input_description: search.input_description,
-            search_result_ancestors: search.search_result_ancestors.map do |search_result_ancestor|
+            search_results: search.search_results.map do |search_result|
               {
-                short_code: search_result_ancestor.short_code,
-                goods_nomenclature_item_id: search_result_ancestor.goods_nomenclature_item_id,
-                description: search_result_ancestor.description,
-                producline_suffix: search_result_ancestor.producline_suffix,
-                goods_nomenclature_class: search_result_ancestor.goods_nomenclature_class,
-                declarable: search_result_ancestor.declarable,
-                score: search_result_ancestor.score,
-                reason: search_result_ancestor.reason,
+                number_of_digits: search_result.number_of_digits,
+                short_code: search_result.short_code,
+                score: search_result.score,
               }
             end,
           }

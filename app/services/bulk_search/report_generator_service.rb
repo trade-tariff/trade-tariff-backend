@@ -168,7 +168,7 @@ module BulkSearch
       index = 0
 
       CSV.open(ALL_RESULTS_FILE, 'w') do |csv|
-        csv << %w[input_description goods_nomenclature_item_id producline_suffix goods_nomenclature_class short_code score]
+        csv << %w[input_description number_of_digits short_code score]
       end
 
       CSV.foreach(sample_file_path, encoding:) do |row|
@@ -217,20 +217,10 @@ module BulkSearch
         commodities_with_ancestors = Commodity
           .where(goods_nomenclature_item_id: subheadings_by_commodity_code.keys, producline_suffix: '80')
           .actual
-          .eager(:ns_ancestors)
           .all
 
-        commodities_with_ancestors = PresentedCommodity.wrap(commodities_with_ancestors)
-
         commodities_with_ancestors.map do |commodity|
-          six_digit_goods_nomenclature, _reason = BulkSearch::HitAncestorFinderService.new(commodity, 6).call
-          eight_digit_goods_nomenclature, _reason = BulkSearch::HitAncestorFinderService.new(commodity, 8).call
-
-          if six_digit_goods_nomenclature
-            subheadings_by_commodity_code[commodity.goods_nomenclature_item_id] = six_digit_goods_nomenclature.short_code
-          elsif eight_digit_goods_nomenclature
-            subheadings_by_commodity_code[commodity.goods_nomenclature_item_id] = eight_digit_goods_nomenclature.short_code
-          end
+          subheadings_by_commodity_code[commodity.goods_nomenclature_item_id] = commodity.goods_nomenclature_item_id.first(6)
         end
 
         input_descriptions.each do |commodity_code, input_description, _original_description|
@@ -242,40 +232,6 @@ module BulkSearch
       end
 
       subheadings_by_input_description
-    end
-
-    class PresentedCommodity < WrapDelegator
-      def ancestors
-        PresentedAncestor.wrap(ns_ancestors)
-      end
-
-      def short_code
-        specific_system_short_code
-      end
-
-      def _score
-        0
-      end
-
-      def _source
-        self
-      end
-
-      def declarable?
-        ns_declarable?
-      end
-    end
-
-    class PresentedAncestor < WrapDelegator
-      def short_code
-        specific_system_short_code
-      end
-
-      def _score; end
-
-      def declarable?
-        ns_declarable?
-      end
     end
   end
 end

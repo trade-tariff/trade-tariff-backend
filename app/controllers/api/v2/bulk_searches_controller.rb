@@ -38,14 +38,14 @@ module Api
 
       def bulk_search_params
         params.require(:data).map do |json|
-          json.permit(:type, attributes: %i[input_description ancestor_digits])
+          json.permit(:type, attributes: %i[input_description number_of_digits])
         end
       end
 
       def serialized_json_result
         Api::V2::BulkSearch::ResultCollectionSerializer.new(
           @result,
-          include: ['searches.search_result_ancestors'],
+          include: ['searches.search_results'],
         ).serializable_hash
       end
 

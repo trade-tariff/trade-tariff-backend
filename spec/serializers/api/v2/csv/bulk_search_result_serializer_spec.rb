@@ -5,24 +5,22 @@ RSpec.describe Api::V2::Csv::BulkSearchResultSerializer do
     let(:serializable) do
       Api::V2::BulkSearchResultPresenter.new(
         search,
-        search_result_ancestor,
+        search_result,
       )
     end
 
     let(:search) { build(:bulk_search) }
-    let(:search_result_ancestor) { search.search_result_ancestors.first }
+    let(:search_result) { search.search_results.first }
 
     it 'serializes correctly' do
       expect(serializable_array).to eq(
         [
-          %i[input_description goods_nomenclature_item_id producline_suffix goods_nomenclature_class short_code score],
+          %i[input_description number_of_digits short_code score],
           [
             search.input_description,
-            search_result_ancestor.goods_nomenclature_item_id,
-            search_result_ancestor.producline_suffix,
-            search_result_ancestor.goods_nomenclature_class,
-            search_result_ancestor.short_code,
-            search_result_ancestor.score,
+            search_result.number_of_digits,
+            search_result.short_code,
+            search_result.score,
           ],
         ],
       )

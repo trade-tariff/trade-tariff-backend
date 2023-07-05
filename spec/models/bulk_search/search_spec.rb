@@ -5,11 +5,11 @@ RSpec.describe BulkSearch::Search do
     described_class.build(
       input_description:,
       number_of_digits:,
-      search_result_ancestors:,
+      search_results:,
     )
   end
 
-  let(:search_result_ancestors) do
+  let(:search_results) do
     [
       {
         short_code: '950720',
@@ -27,11 +27,11 @@ RSpec.describe BulkSearch::Search do
   let(:input_description) { 'red herring' }
   let(:number_of_digits) { 8 }
 
-  describe '#search_result_ancestors' do
-    it { expect(search.search_result_ancestors).to all(be_a(BulkSearch::SearchAncestor)) }
+  describe '#search_results' do
+    it { expect(search.search_results).to all(be_a(BulkSearch::SearchResult)) }
   end
 
-  describe '#search_result_ancestor_ids' do
-    it { expect(search.search_result_ancestor_ids).to be_present }
+  describe '#search_result_ids' do
+    it { expect(search.search_result_ids).to be_present }
   end
 end

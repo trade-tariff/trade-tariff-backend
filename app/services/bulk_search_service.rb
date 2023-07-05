@@ -1,5 +1,5 @@
 class BulkSearchService
-  delegate :v2_search_client, to: TradeTariffBackend
+  delegate :by_heading_search_client, to: TradeTariffBackend
 
   def initialize(id)
     @id = id
@@ -19,11 +19,19 @@ class BulkSearchService
       ]
     end
 
-    response = v2_search_client.msearch(index: index_name, body: actions)
+    response = by_heading_search_client.msearch(index: index_name, body: actions)
 
     @result.searches.each_with_index do |search, i|
       opensearch_results = response.dig('responses', i, 'hits', 'hits')
-      BulkSearch::ResultAnswerService.new(search, opensearch_results).call
+      search.search_results = opensearch_results.map do |result|
+        BulkSearch::SearchResult.build(
+          number_of_digits: result['_source']['number_of_digits'],
+          short_code: result['_source']['short_code'],
+          score: result['_score'],
+        )
+      end
+
+      search.no_results! if search.search_results.blank?
     end
 
     @result.complete!
@@ -45,6 +53,11 @@ class BulkSearchService
               escape: true,
             },
           },
+          filter: {
+            term: {
+              number_of_digits: search.number_of_digits,
+            },
+          },
         },
       },
       size:,
@@ -52,7 +65,7 @@ class BulkSearchService
   end
 
   def index_name
-    Search::GoodsNomenclatureIndex.new.name
+    Search::BulkSearchIndex.new.name
   end
 
   def size
