@@ -30,6 +30,8 @@ class BulkSearchService
           score: result['_score'],
         )
       end
+
+      search.no_results! if search.search_results.blank?
     end
 
     @result.complete!
@@ -49,6 +51,11 @@ class BulkSearchService
             query_string: {
               query: search.input_description,
               escape: true,
+            },
+          },
+          filter: {
+            term: {
+              number_of_digits: search.number_of_digits,
             },
           },
         },

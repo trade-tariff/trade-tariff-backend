@@ -20,6 +20,16 @@ module BulkSearch
       search
     end
 
+    def no_results!
+      self.search_results = [
+        SearchResult.build(
+          number_of_digits:,
+          short_code: '9' * number_of_digits,
+          score: 0,
+        ),
+      ]
+    end
+
     def search_result_ids
       search_results.map(&:id)
     end
