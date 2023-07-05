@@ -33,6 +33,10 @@ class GoodsNomenclatureDescription < Sequel::Model
     SearchNegationService.new(description).call
   end
 
+  def description_plain
+    super.capitalize
+  end
+
   def formatted_description
     super.mb_chars.downcase.to_s.gsub(/^(.)/) { Regexp.last_match(1).capitalize }
   end

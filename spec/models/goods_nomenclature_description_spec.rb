@@ -51,6 +51,17 @@ RSpec.describe GoodsNomenclatureDescription do
     end
   end
 
+  describe '#description_plain' do
+    it 'returns a plain description capitalized' do
+      goods_nomenclature_description = build(
+        :goods_nomenclature_description,
+        description: 'LIVE ANIMALS',
+      )
+
+      expect(goods_nomenclature_description.description_plain).to eq('Live animals')
+    end
+  end
+
   describe '#to_s' do
     let(:gono_description) { build :goods_nomenclature_description }
 

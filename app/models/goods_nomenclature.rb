@@ -27,9 +27,6 @@ class GoodsNomenclature < Sequel::Model
 
   include GoodsNomenclatures::NestedSet
 
-  custom_format :description_plain, with: DescriptionTrimFormatter,
-                                    using: :description
-
   one_to_one :chapter, class_name: name, class: self do |_ds|
     Chapter
       .actual
@@ -82,7 +79,12 @@ class GoodsNomenclature < Sequel::Model
     end
   end
 
-  delegate :description, :description_indexed, :formatted_description, to: :goods_nomenclature_description, allow_nil: true
+  delegate :description,
+           :description_indexed,
+           :description_plain,
+           :formatted_description,
+           to: :goods_nomenclature_description,
+           allow_nil: true
 
   # Find goods nomenclature where I am the origin (e.g. who succeed me)
   one_to_many :deriving_goods_nomenclature_origins, key: %i[derived_goods_nomenclature_item_id derived_productline_suffix],

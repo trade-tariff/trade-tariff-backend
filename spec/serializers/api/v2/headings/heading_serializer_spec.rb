@@ -33,6 +33,7 @@ RSpec.describe Api::V2::Headings::HeadingSerializer do
           description: heading.description,
           bti_url: 'https://www.gov.uk/guidance/check-what-youll-need-to-get-a-legally-binding-decision-on-a-commodity-code',
           formatted_description: heading.formatted_description,
+          description_plain: heading.description_plain,
           declarable: false,
           validity_start_date: heading.validity_start_date.strftime('%FT%T.%LZ'),
           validity_end_date: heading.validity_end_date,
