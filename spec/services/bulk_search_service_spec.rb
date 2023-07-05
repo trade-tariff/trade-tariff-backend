@@ -23,9 +23,25 @@ RSpec.describe BulkSearchService do
       index: 'tariff-test-bulk_searches-uk',
       body: [
         {},
-        { query: { bool: { must: { query_string: { query: 'red herring', escape: true } } } }, size: 100 },
+        {
+          query: {
+            bool: {
+              must: { query_string: { query: 'red herring', escape: true } },
+              filter: { term: { number_of_digits: 6 } },
+            },
+          },
+          size: 100,
+        },
         {},
-        { query: { bool: { must: { query_string: { query: 'white bait', escape: true } } } }, size: 100 },
+        {
+          query: {
+            bool: {
+              must: { query_string: { query: 'white bait', escape: true } },
+              filter: { term: { number_of_digits: 6 } },
+            },
+          },
+          size: 100,
+        },
       ],
     )
   end
