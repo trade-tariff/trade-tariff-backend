@@ -1,15 +1,10 @@
 RSpec.describe Api::V2::BulkSearch::SearchResultSerializer do
-  subject(:serializer) { described_class.new(search_ancestor) }
+  subject(:serializer) { described_class.new(search_result) }
 
-  let(:search_ancestor) do
+  let(:search_result) do
     BulkSearch::SearchResult.build(
+      number_of_digits: 6,
       short_code: '950720',
-      goods_nomenclature_item_id: '9507200000',
-      description: 'Fish-hooks, whether or not snelled',
-      producline_suffix: '80',
-      goods_nomenclature_class: 'Subheading',
-      declarable: false,
-      reason: 'matching_digit_ancestor',
       score: 32.99,
     )
   end
@@ -20,16 +15,11 @@ RSpec.describe Api::V2::BulkSearch::SearchResultSerializer do
     let(:pattern) do
       {
         data: {
-          id: '950720-80-32.99',
-          type: eq(:search_result_ancestor),
+          id: '950720-32.99',
+          type: eq(:search_result),
           attributes: {
+            number_of_digits: 6,
             short_code: '950720',
-            goods_nomenclature_item_id: '9507200000',
-            description: 'Fish-hooks, whether or not snelled',
-            producline_suffix: '80',
-            goods_nomenclature_class: 'Subheading',
-            declarable: false,
-            reason: 'matching_digit_ancestor',
             score: 32.99,
           },
         },

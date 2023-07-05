@@ -88,16 +88,11 @@ module BulkSearch
         searches: searches.map do |search|
           {
             input_description: search.input_description,
-            search_results: search.search_results.map do |search_result_ancestor|
+            search_results: search.search_results.map do |search_result|
               {
-                short_code: search_result_ancestor.short_code,
-                goods_nomenclature_item_id: search_result_ancestor.goods_nomenclature_item_id,
-                description: search_result_ancestor.description,
-                producline_suffix: search_result_ancestor.producline_suffix,
-                goods_nomenclature_class: search_result_ancestor.goods_nomenclature_class,
-                declarable: search_result_ancestor.declarable,
-                score: search_result_ancestor.score,
-                reason: search_result_ancestor.reason,
+                number_of_digits: search_result.number_of_digits,
+                short_code: search_result.short_code,
+                score: search_result.score,
               }
             end,
           }

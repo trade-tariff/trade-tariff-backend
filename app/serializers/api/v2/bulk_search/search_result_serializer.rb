@@ -4,15 +4,9 @@ module Api
       class SearchResultSerializer
         include JSONAPI::Serializer
 
-        set_type :search_result_ancestor
+        set_type :search_result
 
-        attributes :short_code,
-                   :goods_nomenclature_item_id,
-                   :description,
-                   :producline_suffix,
-                   :goods_nomenclature_class,
-                   :declarable,
-                   :reason
+        attributes :number_of_digits, :short_code
 
         attributes :score, &:presented_score
       end

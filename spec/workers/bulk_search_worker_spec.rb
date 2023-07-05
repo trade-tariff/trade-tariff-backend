@@ -24,8 +24,8 @@ RSpec.describe BulkSearchWorker, type: :worker do
 
     let(:searches) do
       [
-        { attributes: { input_description: 'red herring' } },
-        { attributes: { input_description: 'white bait' } },
+        { attributes: { input_description: 'red herring', number_of_digits: 6 } },
+        { attributes: { input_description: 'white bait', number_of_digits: 6 } },
       ]
     end
 

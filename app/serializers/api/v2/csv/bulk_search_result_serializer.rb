@@ -5,9 +5,7 @@ module Api
         include Api::Shared::CsvSerializer
 
         columns :input_description,
-                :goods_nomenclature_item_id,
-                :producline_suffix,
-                :goods_nomenclature_class,
+                :number_of_digits,
                 :short_code,
                 :score
       end

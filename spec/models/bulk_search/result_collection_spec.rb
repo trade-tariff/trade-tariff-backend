@@ -20,13 +20,8 @@ RSpec.describe BulkSearch::ResultCollection do
           input_description: 'red herring',
           search_results: [
             {
+              number_of_digits: 6,
               short_code: '950720',
-              goods_nomenclature_item_id: '9507200000',
-              description: 'Fish-hooks, whether or not snelled',
-              producline_suffix: '80',
-              goods_nomenclature_class: 'Subheading',
-              declarable: false,
-              reason: 'matching_digit_ancestor',
               score: 32.99,
             },
           ],
@@ -36,13 +31,8 @@ RSpec.describe BulkSearch::ResultCollection do
           input_description: 'white bait',
           search_results: [
             {
+              number_of_digits: 6,
               short_code: '160420',
-              goods_nomenclature_item_id: '1604200000',
-              description: 'Other prepared or preserved fish',
-              producline_suffix: '80',
-              goods_nomenclature_class: 'Subheading',
-              declarable: false,
-              reason: 'matching_digit_ancestor',
               score: 25.97,
             },
           ],
@@ -58,28 +48,20 @@ RSpec.describe BulkSearch::ResultCollection do
           {
             input_description: 'red herring',
             search_results: [
-              { short_code: '950720',
-                goods_nomenclature_item_id: '9507200000',
-                description: 'Fish-hooks, whether or not snelled',
-                producline_suffix: '80',
-                goods_nomenclature_class: 'Subheading',
-                declarable: false,
+              {
+                number_of_digits: 6,
+                short_code: '950720',
                 score: 32.99,
-                reason: 'matching_digit_ancestor' },
+              },
             ],
           },
           {
             input_description: 'white bait',
             search_results: [
               {
+                number_of_digits: 6,
                 short_code: '160420',
-                goods_nomenclature_item_id: '1604200000',
-                description: 'Other prepared or preserved fish',
-                producline_suffix: '80',
-                goods_nomenclature_class: 'Subheading',
-                declarable: false,
                 score: 25.97,
-                reason: 'matching_digit_ancestor',
               },
             ],
           },

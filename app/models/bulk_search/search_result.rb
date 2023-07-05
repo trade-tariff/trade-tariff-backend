@@ -2,17 +2,12 @@ module BulkSearch
   class SearchResult
     include ContentAddressableId
 
-    attr_accessor :short_code,
-                  :goods_nomenclature_item_id,
-                  :description,
-                  :producline_suffix,
-                  :goods_nomenclature_class,
-                  :declarable,
-                  :score,
-                  :reason
+    attr_accessor :number_of_digits,
+                  :short_code,
+                  :score
 
     def id
-      @id ||= "#{short_code}-#{producline_suffix}-#{presented_score}"
+      @id ||= "#{short_code}-#{presented_score}"
     end
 
     def presented_score
@@ -22,14 +17,9 @@ module BulkSearch
     def self.build(attributes)
       result = new
 
+      result.number_of_digits = attributes[:number_of_digits]
       result.short_code = attributes[:short_code]
-      result.goods_nomenclature_item_id = attributes[:goods_nomenclature_item_id]
-      result.description = attributes[:description]
-      result.producline_suffix = attributes[:producline_suffix]
-      result.goods_nomenclature_class = attributes[:goods_nomenclature_class]
-      result.declarable = attributes[:declarable]
       result.score = attributes[:score]
-      result.reason = attributes[:reason]
 
       result
     end
