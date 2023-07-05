@@ -31,6 +31,16 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .order(Sequel.desc(:validity_start_date))
         .distinct(:validity_start_date)
     end
+
+    def by_year_and_month(month, year = Time.zone.today.year)
+      return if month.blank? || year.blank?
+
+      start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
+      end_of_month = start_of_month.end_of_month
+
+      where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
+        .order(Sequel.desc(:validity_start_date))
+    end
   end
 
   class << self
@@ -76,6 +86,17 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .uniq
     end
 
+<<<<<<< HEAD
+=======
+    def for_month(month, year = Time.zone.today.year)
+      by_year_and_month(month, year)
+        .scheduled
+        .order(Sequel.asc(:validity_start_date))
+        .order(Sequel.asc(:currency_code))
+        .all
+    end
+
+>>>>>>> b791ea81 (Sort out tests and query for exchange_rate_currency_rate)
     private
 
     def determine_rate_type(rate)
