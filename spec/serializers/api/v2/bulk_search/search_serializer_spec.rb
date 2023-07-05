@@ -5,7 +5,7 @@ RSpec.describe Api::V2::BulkSearch::SearchSerializer do
     BulkSearch::Search.build(
       number_of_digits: 8,
       input_description: 'red herring',
-      search_result_ancestors: [
+      search_results: [
         {
           short_code: '950720',
           goods_nomenclature_item_id: '9507200000',
@@ -33,7 +33,7 @@ RSpec.describe Api::V2::BulkSearch::SearchSerializer do
             input_description: 'red herring',
           },
           relationships: {
-            search_result_ancestors: {
+            search_results: {
               data: [
                 { id: '950720-80-32.99', type: eq(:search_result_ancestor) },
               ],

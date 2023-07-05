@@ -18,7 +18,7 @@ RSpec.describe BulkSearch::ResultCollection do
         {
           number_of_digits: 8,
           input_description: 'red herring',
-          search_result_ancestors: [
+          search_results: [
             {
               short_code: '950720',
               goods_nomenclature_item_id: '9507200000',
@@ -34,7 +34,7 @@ RSpec.describe BulkSearch::ResultCollection do
         {
           number_of_digits: 8,
           input_description: 'white bait',
-          search_result_ancestors: [
+          search_results: [
             {
               short_code: '160420',
               goods_nomenclature_item_id: '1604200000',
@@ -57,7 +57,7 @@ RSpec.describe BulkSearch::ResultCollection do
         searches: [
           {
             input_description: 'red herring',
-            search_result_ancestors: [
+            search_results: [
               { short_code: '950720',
                 goods_nomenclature_item_id: '9507200000',
                 description: 'Fish-hooks, whether or not snelled',
@@ -70,7 +70,7 @@ RSpec.describe BulkSearch::ResultCollection do
           },
           {
             input_description: 'white bait',
-            search_result_ancestors: [
+            search_results: [
               {
                 short_code: '160420',
                 goods_nomenclature_item_id: '1604200000',

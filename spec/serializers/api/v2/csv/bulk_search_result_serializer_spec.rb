@@ -10,7 +10,7 @@ RSpec.describe Api::V2::Csv::BulkSearchResultSerializer do
     end
 
     let(:search) { build(:bulk_search) }
-    let(:search_result_ancestor) { search.search_result_ancestors.first }
+    let(:search_result_ancestor) { search.search_results.first }
 
     it 'serializes correctly' do
       expect(serializable_array).to eq(

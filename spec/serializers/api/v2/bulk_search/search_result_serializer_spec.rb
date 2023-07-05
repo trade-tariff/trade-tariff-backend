@@ -1,8 +1,8 @@
-RSpec.describe Api::V2::BulkSearch::SearchAncestorSerializer do
+RSpec.describe Api::V2::BulkSearch::SearchResultSerializer do
   subject(:serializer) { described_class.new(search_ancestor) }
 
   let(:search_ancestor) do
-    BulkSearch::SearchAncestor.build(
+    BulkSearch::SearchResult.build(
       short_code: '950720',
       goods_nomenclature_item_id: '9507200000',
       description: 'Fish-hooks, whether or not snelled',

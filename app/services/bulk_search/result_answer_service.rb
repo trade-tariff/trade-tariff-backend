@@ -9,30 +9,30 @@ module BulkSearch
     end
 
     def call
-      search_result_ancestors = hits.each_with_object({}) do |hit, acc|
+      search_results = hits.each_with_object({}) do |hit, acc|
         candidate_ancestor, reason = HitAncestorFinderService.new(hit, number_of_digits).call
 
         next if candidate_ancestor.blank?
 
         acc[candidate_ancestor.short_code] ||= {
-          ancestor: BulkSearch::SearchAncestor.build(candidate_ancestor),
+          ancestor: BulkSearch::SearchResult.build(candidate_ancestor),
           accumulated_score: 0,
           reason:,
         }
         acc[candidate_ancestor.short_code][:accumulated_score] += hit._score
       end
 
-      sort_and_accumulate_search_result_ancestors(search_result_ancestors)
+      sort_and_accumulate_search_results(search_results)
     end
 
     private
 
     attr_reader :search, :hits, :number_of_digits
 
-    def sort_and_accumulate_search_result_ancestors(search_result_ancestors)
-      return search.search_result_ancestors.concat(fallback_ancestors) if search_result_ancestors.blank?
+    def sort_and_accumulate_search_results(search_results)
+      return search.search_results.concat(fallback_ancestors) if search_results.blank?
 
-      sorted = search_result_ancestors.sort_by { |_short_code, ancestor|
+      sorted = search_results.sort_by { |_short_code, ancestor|
         ancestor[:accumulated_score]
       }.reverse.first(MAX_ANCESTORS)
 
@@ -40,13 +40,13 @@ module BulkSearch
         ancestor[:ancestor].score = ancestor[:accumulated_score]
         ancestor[:ancestor].reason = ancestor[:reason]
 
-        search.search_result_ancestors << ancestor[:ancestor]
+        search.search_results << ancestor[:ancestor]
       end
     end
 
     def fallback_ancestors
       [
-        BulkSearch::SearchAncestor.build(
+        BulkSearch::SearchResult.build(
           short_code: '999999',
           reason: :no_search_result,
         ),

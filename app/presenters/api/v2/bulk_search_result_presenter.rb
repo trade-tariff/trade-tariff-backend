@@ -3,7 +3,7 @@ module Api
     class BulkSearchResultPresenter < WrapDelegator
       def self.wrap(result_collection)
         result_collection.searches.each_with_object([]) do |search, acc|
-          search.search_result_ancestors.each do |search_result|
+          search.search_results.each do |search_result|
             acc << new(search, search_result)
           end
         end

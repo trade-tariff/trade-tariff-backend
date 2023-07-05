@@ -1,7 +1,7 @@
 module Api
   module V2
     module BulkSearch
-      class SearchAncestorSerializer
+      class SearchResultSerializer
         include JSONAPI::Serializer
 
         set_type :search_result_ancestor

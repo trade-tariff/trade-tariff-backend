@@ -74,7 +74,7 @@ module BulkSearch
       @status = ActiveSupport::StringInquirer.new(data.delete(:status).to_s)
       @searches = (data.delete(:searches) || []).map do |search|
         attributes = search.to_h.try(:deep_symbolize_keys!) || search.to_h
-        attributes[:search_result_ancestors] = attributes[:search_result_ancestors].presence || []
+        attributes[:search_results] = attributes[:search_results].presence || []
         attributes[:number_of_digits] = attributes[:number_of_digits].presence || 8
 
         BulkSearch::Search.build(attributes)
@@ -88,7 +88,7 @@ module BulkSearch
         searches: searches.map do |search|
           {
             input_description: search.input_description,
-            search_result_ancestors: search.search_result_ancestors.map do |search_result_ancestor|
+            search_results: search.search_results.map do |search_result_ancestor|
               {
                 short_code: search_result_ancestor.short_code,
                 goods_nomenclature_item_id: search_result_ancestor.goods_nomenclature_item_id,

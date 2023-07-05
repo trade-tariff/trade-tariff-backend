@@ -8,7 +8,7 @@ module Api
 
         attributes :input_description, :number_of_digits
 
-        has_many :search_result_ancestors, serializer: Api::V2::BulkSearch::SearchAncestorSerializer
+        has_many :search_results, serializer: Api::V2::BulkSearch::SearchResultSerializer
       end
     end
   end

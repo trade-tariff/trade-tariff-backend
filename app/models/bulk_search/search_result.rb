@@ -1,5 +1,5 @@
 module BulkSearch
-  class SearchAncestor
+  class SearchResult
     include ContentAddressableId
 
     attr_accessor :short_code,

@@ -45,7 +45,7 @@ module Api
       def serialized_json_result
         Api::V2::BulkSearch::ResultCollectionSerializer.new(
           @result,
-          include: ['searches.search_result_ancestors'],
+          include: ['searches.search_results'],
         ).serializable_hash
       end
 

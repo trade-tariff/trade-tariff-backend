@@ -11,7 +11,7 @@ RSpec.describe Api::V2::BulkSearchResultPresenter do
     subject(:input_description) { described_class.new(search, search_result).input_description }
 
     let(:search) { build(:bulk_search) }
-    let(:search_result) { search.search_result_ancestors.first }
+    let(:search_result) { search.search_results.first }
 
     it { is_expected.to eq(search.input_description) }
   end

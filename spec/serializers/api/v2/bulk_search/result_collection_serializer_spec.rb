@@ -9,7 +9,7 @@ RSpec.describe Api::V2::BulkSearch::ResultCollectionSerializer do
         {
           number_of_digits: 8,
           input_description: 'red herring',
-          search_result_ancestors: [
+          search_results: [
             {
               short_code: '950720',
               goods_nomenclature_item_id: '9507200000',
@@ -25,7 +25,7 @@ RSpec.describe Api::V2::BulkSearch::ResultCollectionSerializer do
         {
           number_of_digits: 8,
           input_description: 'white bait',
-          search_result_ancestors: [
+          search_results: [
             {
               short_code: '160420',
               goods_nomenclature_item_id: '1604200000',

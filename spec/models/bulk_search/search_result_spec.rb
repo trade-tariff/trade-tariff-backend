@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe BulkSearch::SearchAncestor do
+RSpec.describe BulkSearch::SearchResult do
   subject(:search_ancestor) do
     described_class.build(
       short_code: '950720',

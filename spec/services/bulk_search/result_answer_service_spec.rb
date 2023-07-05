@@ -5,7 +5,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
     BulkSearch::Search.build(
       input_description: 'red herring',
       number_of_digits: 8,
-      search_result_ancestors: [],
+      search_results: [],
     )
   end
 
@@ -14,7 +14,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
 
     it 'sets the fallback search result ancestor short code' do
       expect { service.call }
-        .to change { search.search_result_ancestors.first&.short_code }
+        .to change { search.search_results.first&.short_code }
         .from(nil)
         .to('999999')
     end
@@ -25,7 +25,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
 
     it 'sets the fallback search result ancestor short code' do
       expect { service.call }
-        .to change { search.search_result_ancestors.first&.short_code }
+        .to change { search.search_results.first&.short_code }
         .from(nil)
         .to('999999')
     end
@@ -77,7 +77,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
     it 'sets the search result ancestor attributes' do
       service.call
 
-      search_result_ancestor = search.search_result_ancestors.first
+      search_result_ancestor = search.search_results.first
 
       expect(search_result_ancestor).to have_attributes(
         short_code: '160420',
@@ -121,7 +121,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
     it 'sets the search result ancestor attributes' do
       service.call
 
-      search_result_ancestor = search.search_result_ancestors.first
+      search_result_ancestor = search.search_results.first
 
       expect(search_result_ancestor).to have_attributes(
         short_code: '9507',
@@ -174,7 +174,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
     it 'sets the search result ancestor attributes' do
       service.call
 
-      search_result_ancestor = search.search_result_ancestors.first
+      search_result_ancestor = search.search_results.first
 
       expect(search_result_ancestor).to have_attributes(
         short_code: '9507',
@@ -227,7 +227,7 @@ RSpec.describe BulkSearch::ResultAnswerService do
     it 'sets the search result ancestor attributes' do
       service.call
 
-      search_result_ancestor = search.search_result_ancestors.first
+      search_result_ancestor = search.search_results.first
 
       expect(search_result_ancestor).to have_attributes(
         short_code: '950710',
