@@ -47,12 +47,12 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       let :tree do
         chapter = create(:chapter)
         heading = create(:heading, parent: chapter)
-        subheading = create(:subheading, parent: heading)
-        subsubheading = create(:subheading, parent: subheading)
+        subheading = create(:commodity, parent: heading)
+        subsubheading = create(:commodity, parent: subheading)
         commodity1 = create(:commodity, parent: subsubheading)
         commodity2 = create(:commodity, parent: subsubheading)
         commodity3 = create(:commodity, parent: subheading)
-        second_tree = create(:subheading, :with_chapter_and_heading, :with_children)
+        second_tree = create(:commodity, :with_chapter_and_heading, :with_children)
 
         {
           chapter:,
