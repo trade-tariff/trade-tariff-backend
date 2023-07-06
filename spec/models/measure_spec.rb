@@ -81,17 +81,13 @@ RSpec.describe Measure do
     context 'for UK service' do
       let(:service) { 'uk' }
 
-      it_behaves_like 'excludes measure type', 'DEFAULT_EXCLUDED_TYPES'
-      it_behaves_like 'includes measure type', 'QUOTA_TYPES'
-      it_behaves_like 'includes measure type', 'NATIONAL_PR_TYPES'
+      it_behaves_like 'excludes measure type', 'UK_EXCLUDED_TYPES'
     end
 
     context 'for XI service' do
       let(:service) { 'xi' }
 
-      it_behaves_like 'excludes measure type', 'DEFAULT_EXCLUDED_TYPES'
-      it_behaves_like 'excludes measure type', 'QUOTA_TYPES'
-      it_behaves_like 'excludes measure type', 'NATIONAL_PR_TYPES'
+      it_behaves_like 'excludes measure type', 'XI_EXCLUDED_TYPES'
     end
   end
 

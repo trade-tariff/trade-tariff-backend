@@ -429,12 +429,12 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
       end
 
-      let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
+      let(:measure_type_id) { '306' }
 
       it { is_expected.to include measure.measure_sid }
 
       context 'with measures that are excluded' do
-        let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
+        let(:measure_type_id) { MeasureType::UK_EXCLUDED_TYPES.first }
 
         it { is_expected.not_to include measure.measure_sid }
       end
@@ -467,13 +467,13 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       it { is_expected.to include measure.measure_sid }
 
       context 'with non overview measure types' do
-        let(:measure_type_id) { MeasureType::QUOTA_TYPES.first }
+        let(:measure_type_id) { '306' }
 
         it { is_expected.not_to include measure.measure_sid }
       end
 
       context 'with measures that are excluded' do
-        let(:measure_type_id) { MeasureType::DEFAULT_EXCLUDED_TYPES.first }
+        let(:measure_type_id) { MeasureType::UK_EXCLUDED_TYPES.first }
 
         it { is_expected.not_to include measure.measure_sid }
       end

@@ -1,18 +1,110 @@
-# National Measure Type ID mapping
-# A B C D E F G H I J
-# 1 2 3 4 5 6 7 8 9 0
-
 class MeasureType < Sequel::Model
   IMPORT_MOVEMENT_CODES = [0, 2].freeze
   EXPORT_MOVEMENT_CODES = [1, 2].freeze
-  THIRD_COUNTRY = %w[103 105].freeze # 105 measure types are for end use Third Country duties. 103 are for everything else
+  THIRD_COUNTRY = %w[103 105].freeze
   VAT_TYPES = %w[305].freeze
   SUPPLEMENTARY_TYPES = %w[109 110 111].freeze
-  QUOTA_TYPES = %w[046 122 123 143 146 147 653 654].freeze
-  NATIONAL_PR_TYPES = %w[AHC AIL ATT CEX CHM COE COI CVD DPO ECM EHC EQC EWP HOP HSE IWP PHC PRE PRT QRC SFS].freeze
-  DEFAULT_EXCLUDED_TYPES = %w[442 447 SPL].freeze
-  XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
-  UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
+
+  XI_EXCLUDED_TYPES = %w[
+    046
+    122
+    123
+    143
+    146
+    147
+    305
+    306
+    442
+    447
+    653
+    654
+    AHC
+    AIL
+    ATT
+    CEX
+    CHM
+    COE
+    COI
+    CVD
+    DAA
+    DAB
+    DAC
+    DAE
+    DAI
+    DBA
+    DBB
+    DBC
+    DBE
+    DBI
+    DCA
+    DCC
+    DCE
+    DCH
+    DDA
+    DDB
+    DDC
+    DDD
+    DDE
+    DDF
+    DDG
+    DDJ
+    DEA
+    DFA
+    DFB
+    DFC
+    DGC
+    DHA
+    DHC
+    DHE
+    DHG
+    DPO
+    EBA
+    EBB
+    EBJ
+    ECM
+    EDA
+    EDB
+    EDJ
+    EEA
+    EEF
+    EFA
+    EGA
+    EGB
+    EGJ
+    EHC
+    EHI
+    EQC
+    EWP
+    EXA
+    EXB
+    EXC
+    EXD
+    FAA
+    FAE
+    FAI
+    FBC
+    FBG
+    FCC
+    HOP
+    HSE
+    IWP
+    LBJ
+    LDA
+    LEA
+    LEF
+    LFA
+    PHC
+    PRE
+    PRT
+    QRC
+    SFS
+    SPL
+    VTA
+    VTE
+    VTS
+    VTZ
+  ].freeze
+  UK_EXCLUDED_TYPES = %w[442 447 SPL].freeze
 
   AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
   TARIFF_PREFERENCE = %w[142 145].freeze

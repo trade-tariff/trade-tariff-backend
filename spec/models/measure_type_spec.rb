@@ -18,9 +18,18 @@ RSpec.describe MeasureType do
 
       let(:excluded_types) do
         %w[
+          046
+          122
+          123
+          143
+          146
+          147
+          305
+          306
           442
           447
-          SPL
+          653
+          654
           AHC
           AIL
           ATT
@@ -29,27 +38,83 @@ RSpec.describe MeasureType do
           COE
           COI
           CVD
+          DAA
+          DAB
+          DAC
+          DAE
+          DAI
+          DBA
+          DBB
+          DBC
+          DBE
+          DBI
+          DCA
+          DCC
+          DCE
+          DCH
+          DDA
+          DDB
+          DDC
+          DDD
+          DDE
+          DDF
+          DDG
+          DDJ
+          DEA
+          DFA
+          DFB
+          DFC
+          DGC
+          DHA
+          DHC
+          DHE
+          DHG
           DPO
+          EBA
+          EBB
+          EBJ
           ECM
+          EDA
+          EDB
+          EDJ
+          EEA
+          EEF
+          EFA
+          EGA
+          EGB
+          EGJ
           EHC
+          EHI
           EQC
           EWP
+          EXA
+          EXB
+          EXC
+          EXD
+          FAA
+          FAE
+          FAI
+          FBC
+          FBG
+          FCC
           HOP
           HSE
           IWP
+          LBJ
+          LDA
+          LEA
+          LEF
+          LFA
           PHC
           PRE
           PRT
           QRC
           SFS
-          046
-          122
-          123
-          143
-          146
-          147
-          653
-          654
+          SPL
+          VTA
+          VTE
+          VTS
+          VTZ
         ]
       end
 
