@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 15.2
+-- Dumped by pg_dump version 15.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -7289,6 +7289,22 @@ CREATE TABLE uk.tariff_updates (
 
 
 --
+-- Name: tradeset_descriptions; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.tradeset_descriptions (
+    filename text NOT NULL,
+    classification_date date NOT NULL,
+    description text NOT NULL,
+    goods_nomenclature_item_id text NOT NULL,
+    created_at timestamp without time zone NOT NULL,
+    updated_at timestamp without time zone NOT NULL,
+    validity_start_date timestamp without time zone NOT NULL,
+    validity_end_date timestamp without time zone
+);
+
+
+--
 -- Name: transmission_comments_oplog; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -9288,6 +9304,14 @@ ALTER TABLE ONLY uk.tariff_update_presence_errors
 
 ALTER TABLE ONLY uk.tariff_updates
     ADD CONSTRAINT tariff_updates_pkey PRIMARY KEY (filename);
+
+
+--
+-- Name: tradeset_descriptions tradeset_descriptions_filename_description_goods_nomenclatu_key; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.tradeset_descriptions
+    ADD CONSTRAINT tradeset_descriptions_filename_description_goods_nomenclatu_key UNIQUE (filename, description, goods_nomenclature_item_id);
 
 
 --
@@ -11547,6 +11571,13 @@ CREATE INDEX tco_tracomopl_ionntslog_operation_date ON uk.transmission_comments_
 
 
 --
+-- Name: tradeset_descriptions_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX tradeset_descriptions_goods_nomenclature_item_id_index ON uk.tradeset_descriptions USING btree (goods_nomenclature_item_id);
+
+
+--
 -- Name: trans_comm_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11784,3 +11815,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230519133544_adds_simplf
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230619124026_create_exchange_rates.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230627083227_add_indexes_for_cache_lookups.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230628141140_adds_index_to_rate_type.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230706092636_adds_tradesets_descriptions.rb');
