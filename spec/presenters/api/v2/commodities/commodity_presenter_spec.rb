@@ -91,14 +91,12 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
   describe '#special_nature?' do
     context 'when commodity has at least one measure condition containing special nature certificate' do
       let(:measures) do
-        [
-          create(
-            :measure,
-            :with_measure_conditions,
-            :with_special_nature,
-            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-          ),
-        ]
+        create_list(
+          :measure, 1,
+          :with_measure_conditions,
+          :with_special_nature,
+          goods_nomenclature_sid: commodity.goods_nomenclature_sid
+        )
       end
 
       it { is_expected.to be_special_nature }
@@ -106,9 +104,7 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
 
     context 'when commodity does not have any measure conditions containing special nature certificate' do
       let(:measures) do
-        [
-          create(:measure, goods_nomenclature_sid: commodity.goods_nomenclature_sid),
-        ]
+        create_list(:measure, 1, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
       end
 
       it { is_expected.not_to be_special_nature }
@@ -122,13 +118,13 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
       let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: 'CN' }
 
       context 'when commodity has at least one measure with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
+        let(:measures) { create_list(:measure, 1, :with_authorised_use_provisions_submission) }
 
         it { is_expected.to be_authorised_use_provisions_submission }
       end
 
       context 'when commodity does not have any measures with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure)] }
+        let(:measures) { create_list(:measure, 1) }
 
         it { is_expected.not_to be_authorised_use_provisions_submission }
       end
@@ -136,13 +132,13 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
 
     context 'when not filtering by country' do
       context 'when commodity has at least one measure with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
+        let(:measures) { create_list(:measure, 1, :with_authorised_use_provisions_submission) }
 
         it { is_expected.not_to be_authorised_use_provisions_submission }
       end
 
       context 'when commodity does not have any measures with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure)] }
+        let(:measures) { create_list(:measure, 1) }
 
         it { is_expected.not_to be_authorised_use_provisions_submission }
       end
@@ -165,5 +161,14 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
 
       it { is_expected.not_to be_filtering_by_country }
     end
+  end
+
+  describe '#ancestors' do
+    subject { described_class.new(commodity, MeasureCollection.new([])).ancestors }
+
+    let(:commodity) { subheading.ns_children.first }
+    let(:subheading) { create :subheading, :with_chapter_and_heading, :with_children }
+
+    it { is_expected.to eq_pk [subheading] }
   end
 end
