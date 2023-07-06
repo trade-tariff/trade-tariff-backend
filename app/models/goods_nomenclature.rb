@@ -19,7 +19,11 @@ class GoodsNomenclature < Sequel::Model
     elsif gono_id.ends_with?('000000') && gono_id.slice(2, 2) != '00'
       'Heading'
     elsif !gono_id.ends_with?('000000')
-      'Commodity'
+      # checking its a False class because if :leaf is not assigned, we should
+      # continue to assume Commodity as previously done
+      #
+      # :leaf can be included by the use of `GoodsNomenclature.with_leaf_column`
+      record[:producline_suffix] != '80' || record[:leaf].is_a?(FalseClass) ? 'Subheading' : 'Commodity'
     else
       'GoodsNomenclature'
     end
