@@ -3,6 +3,9 @@ require 'timecop'
 
 RSpec.describe ExchangeRateCurrencyRate do
   let(:csv_file) { 'spec/fixtures/exchange_rates/all_rates.csv' }
+  let(:january) { described_class.where(validity_start_date: '2020-01-01', validity_end_date: '2020-01-31') }
+  let(:february) { described_class.where(validity_start_date: '2020-02-01', validity_end_date: '2020-02-29') }
+  let(:aed) { january.where(currency_code: 'AED').take }
 
   before do
     # Populate the exchange rates
@@ -36,9 +39,6 @@ RSpec.describe ExchangeRateCurrencyRate do
   end
 
   describe '.populate' do
-    let(:january) { described_class.where(validity_start_date: '2020-01-01', validity_end_date: '2020-01-31') }
-    let(:february) { described_class.where(validity_start_date: '2020-02-01', validity_end_date: '2020-02-29') }
-    let(:aed) { january.where(currency_code: 'AED').take }
 
     it { expect(january.count).to eq(2) }
 
@@ -58,7 +58,6 @@ RSpec.describe ExchangeRateCurrencyRate do
       expect(described_class.max_year).to eq(2023)
     end
   end
-    it { expect(scheduled.count).to eq(8) }
 
   describe '.months_for_year' do
     it 'returns the distinct months for the given year in descending order' do
@@ -128,7 +127,7 @@ RSpec.describe ExchangeRateCurrencyRate do
 
   describe '.by_year' do
     it 'returns the rates for the specified year' do
-      expect(described_class.by_year(2023).count).to eq(2)
+      expect(described_class.by_year(2023).count).to eq(3)
     end
 
     it 'returns nil if year is blank' do

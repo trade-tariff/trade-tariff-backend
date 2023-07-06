@@ -10,19 +10,19 @@ RSpec.describe ExchangeRates::CreateCsv do
       ExchangeRateCurrencyRate.for_month(2, 2020)
     end
 
-    let(:csv_result) do
+    let(:parsed_csv) do
       [
         ['Country/Territories', 'Currency', 'Currency Code', 'Currency Units per £1', 'Start date', 'End date'],
-        ['[DU, DH]', 'Dirham', 'AED', '4.82', '2020-02-01', '2020-02-29'],
-        ['[AU]', 'Australian Dollar', 'AUD', '1.98', '2020-02-01', '2020-02-29'],
-        ['[CA]', 'Candian Dollar', 'CAD', '1.894', '2020-02-01', '2020-02-29'],
-        ['[EU]', 'Euro', 'EUR', '1.18', '2020-02-01', '2020-02-29'],
-        ['[US]', 'US Dollar', 'USD', '1.35', '2020-02-01', '2020-02-29'],
+        ['DU-DH', 'Dirham', 'AED', '4.82', '2020-02-01', '2020-02-29'],
+        ['AU', 'Australian Dollar', 'AUD', '1.98', '2020-02-01', '2020-02-29'],
+        ['CA', 'Candian Dollar', 'CAD', '1.894', '2020-02-01', '2020-02-29'],
+        ['EU', 'Euro', 'EUR', '1.18', '2020-02-01', '2020-02-29'],
+        ['US', 'US Dollar', 'USD', '1.35', '2020-02-01', '2020-02-29'],
       ]
     end
 
     it 'generates the csv' do
-      expect(create_csv).to eq(csv_result)
+      expect(CSV.parse(create_csv)).to eq(parsed_csv)
     end
   end
 

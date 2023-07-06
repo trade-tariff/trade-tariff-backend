@@ -9,7 +9,7 @@
 #
 
 every :thursday, at: '12pm' do
-  runner "ExchangeRates::UploadMonthlyCsv.call(#{date})"
+  runner "ExchangeRates::UploadMonthlyCsv.call"
 end
 
 

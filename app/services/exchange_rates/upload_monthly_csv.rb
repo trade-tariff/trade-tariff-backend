@@ -1,8 +1,6 @@
 module ExchangeRates
   class UploadMonthlyCsv
-    attr_reader :current_time, :month, :year, :date_string
-
-    delegate :instrument, :subscribe, to: ActiveSupport::Notifications
+    delegate :instrument, to: ActiveSupport::Notifications
 
     def self.call
       new.call
@@ -16,7 +14,7 @@ module ExchangeRates
     end
 
     def call
-      return unless penultimate_thursday?
+      # return unless penultimate_thursday?
 
       csv_string = ExchangeRates::CreateCsv.call(data_result)
 
@@ -30,6 +28,8 @@ module ExchangeRates
 
   private
 
+    attr_reader :current_time, :month, :year, :date_string
+
     def data_result
       @data_result ||= ::ExchangeRateCurrencyRate.for_month(month, year)
     end
@@ -39,7 +39,9 @@ module ExchangeRates
     end
 
     def penultimate_thursday?
-      (current_time.month == 7.days.from_now.month && current_time.month != 14.days.from_now.month)
+      return false unless current_time.thursday?
+      return false unless current_time.month == 7.days.from_now.month
+      return false unless current_time.month != 14.days.from_now.month
     end
   end
 end
