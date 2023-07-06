@@ -1,3 +1,6 @@
 currency,currency_description,spot_rate_required
 AED,Dirham,
-AUD,Dollar,TRUE
+AUD,Australian Dollar,TRUE
+CAD,Candian Dollar,TRUE
+USD,US Dollar,TRUE
+EUR,Euro,TRUE
