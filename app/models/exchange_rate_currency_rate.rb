@@ -86,8 +86,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .uniq
     end
 
-<<<<<<< HEAD
-=======
     def for_month(month, year = Time.zone.today.year)
       by_year_and_month(month, year)
         .scheduled
@@ -96,7 +94,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .all
     end
 
->>>>>>> b791ea81 (Sort out tests and query for exchange_rate_currency_rate)
     private
 
     def determine_rate_type(rate)

@@ -31,7 +31,7 @@ module ExchangeRates
 
     def create_csv
       CSV.generate do |csv|
-        csv << [headings]
+        csv << headings
         data.each do |currency_rate|
           csv << build_row(currency_rate)
         end
@@ -42,11 +42,11 @@ module ExchangeRates
       currency_code = currency_rate.currency_code
 
       exchange_rate_currency = ExchangeRateCurrency.find(currency_code: currency_rate.currency_code)
-      territories = ExchangeRateCountry.where(currency_code: currency_rate.currency_code).pluck(:country_code)
+      territories = ExchangeRateCountry.where(currency_code: currency_rate.currency_code)&.pluck(:country_code)
 
       [
-        territories,
-        exchange_rate_currency.currency_description,
+        territories.join('-'),
+        exchange_rate_currency.try(:currency_description),
         currency_code,
         currency_rate.rate,
         currency_rate.validity_start_date.to_s,
