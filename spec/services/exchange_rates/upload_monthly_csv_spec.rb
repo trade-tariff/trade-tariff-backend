@@ -1,11 +1,12 @@
 RSpec.describe ExchangeRates::UploadMonthlyCsv do
   subject(:upload_csv) { described_class.call(date) }
 
+  # rubocop:disable RSpec/MultipleMemoizedHelpers
   context 'with valid date' do
-    let(:date) { DateTime.new(2023, 2, 1) }
+    let(:date) { Time.zone.local(2023, 2, 1) }
     let(:month) { date.month }
     let(:year) { date.year }
-    let(:data_result) { [double('ExchangeRateCurrecyRate')] }
+    let(:data_result) { [instance_double('ExchangeRateCurrecyRate')] }
     let(:current_date) { Date.current.to_s }
     let(:csv_string) { 'csv_string' }
     let(:file_path) { "data/exchange_rates/monthly_csv_#{current_date}.csv" }
@@ -23,7 +24,7 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
         .and_return(true)
     end
 
-    it 'uploads the csv' do
+    it 'uploads the csv', :aggregate_failures do
       upload_csv
 
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year)
@@ -36,7 +37,6 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
               path: "data/exchange_rates/monthly_csv_#{current_date}.csv",
               size: csv_string.size)
     end
-
   end
-
+  # rubocop:enable RSpec/MultipleMemoizedHelpers
 end
