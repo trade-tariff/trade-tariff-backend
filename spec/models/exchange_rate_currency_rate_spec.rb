@@ -9,33 +9,31 @@ RSpec.describe ExchangeRateCurrencyRate do
     described_class.populate Rails.root.join(csv_file)
   end
 
-
   describe '.for_month' do
-    context 'given a month and year' do
+    context 'when a month and year is provided' do
       let(:month) { 2 }
       let(:year) { 2020 }
 
       it 'returns the valid rates for that month for the given year in descending order', :aggregate_failures do
-        expect(described_class.for_month(month, year).pluck(:currency_code)).to eq(["AED", "AUD", "CAD", "EUR", "USD"])
-        expect(described_class.for_month(month, year).pluck(:validity_start_date).uniq.first.to_s).to eq("2020-02-01")
-        expect(described_class.for_month(month, year).pluck(:validity_end_date).uniq.first.to_s).to eq("2020-02-29")
+        expect(described_class.for_month(month, year).pluck(:currency_code)).to eq(%w[AED AUD CAD EUR USD])
+        expect(described_class.for_month(month, year).pluck(:validity_start_date).uniq.first.to_s).to eq('2020-02-01')
+        expect(described_class.for_month(month, year).pluck(:validity_end_date).uniq.first.to_s).to eq('2020-02-29')
         expect(described_class.for_month(month, year).pluck(:rate)).to eq([4.82, 1.98, 1.894, 1.18, 1.35])
 
-        expect(described_class.for_month(1, 2020).pluck(:currency_code)).to eq(["AED", "AUD"])
+        expect(described_class.for_month(1, 2020).pluck(:currency_code)).to eq(%w[AED AUD])
         expect(described_class.for_month(1, 2020).pluck(:rate)).to eq([4.8012, 1.905])
       end
     end
 
-    context 'given only a month' do
+    context 'when only a month is provided' do
       Timecop.freeze(2023, 7, 1) do
-        it 'returns the month for the year you are currently in' do
-          expect(described_class.for_month(5).pluck(:currency_code)).to eq(['AUD'])
+        it 'returns the month for the year you are currently in', :aggregate_failures do
+          expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
           expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
         end
       end
     end
   end
-
 
   describe '.populate' do
     let(:january) { described_class.where(validity_start_date: '2020-01-01', validity_end_date: '2020-01-31') }
