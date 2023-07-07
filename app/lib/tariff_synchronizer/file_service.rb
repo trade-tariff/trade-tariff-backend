@@ -48,6 +48,56 @@ module TariffSynchronizer
       def bucket
         Aws::S3::Resource.new.bucket(ENV['AWS_BUCKET_NAME'])
       end
+
+      def download_and_unzip(source:, destination:)
+        Dir.glob("#{File.dirname(destination)}/*").each do |file|
+          FileUtils.rm(file)
+        end
+
+        download(source:, destination:)
+        unzip(source: destination, destination: File.dirname(destination))
+
+        Dir.glob("#{File.dirname(destination)}/*").reject { |file| file.end_with?('.zip') }
+      end
+
+      def download(source:, destination:)
+        if Rails.env.production?
+          s3_object = bucket.object(source)
+          File.open(destination, 'wb') do |file|
+            s3_object.get(response_target: file)
+          end
+        else
+          FileUtils.cp(source, destination)
+        end
+      end
+
+      def unzip(source:, destination:)
+        Zip::File.open(source) do |zip_file|
+          zip_file.each do |entry|
+            entry.extract(File.join(destination, entry.name))
+          end
+        end
+      end
+
+      def list_by(prefix:)
+        if Rails.env.production?
+          bucket.objects(prefix:).map do |object|
+            {
+              path: object.key,
+              last_modified: object.last_modified,
+              size: object.size,
+            }
+          end
+        else
+          Dir.glob("#{prefix}*").map do |file_path|
+            {
+              path: file_path,
+              last_modified: File.mtime(file_path),
+              size: File.size(file_path),
+            }
+          end
+        end
+      end
     end
   end
 end
