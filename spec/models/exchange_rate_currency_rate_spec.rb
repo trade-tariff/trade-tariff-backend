@@ -14,14 +14,11 @@ RSpec.describe ExchangeRateCurrencyRate do
 
   describe '.for_month' do
     context 'when a month and year is provided' do
-      let(:month) { 2 }
-      let(:year) { 2020 }
-
       it 'returns the valid rates for that month for the given year in descending order', :aggregate_failures do
-        expect(described_class.for_month(month, year).pluck(:currency_code)).to eq(%w[AED AUD CAD EUR USD])
-        expect(described_class.for_month(month, year).pluck(:validity_start_date).uniq.first.to_s).to eq('2020-02-01')
-        expect(described_class.for_month(month, year).pluck(:validity_end_date).uniq.first.to_s).to eq('2020-02-29')
-        expect(described_class.for_month(month, year).pluck(:rate)).to eq([4.82, 1.98, 1.894, 1.18, 1.35])
+        expect(described_class.for_month(2, 2020).pluck(:currency_code)).to eq(%w[AED AUD CAD EUR USD])
+        expect(described_class.for_month(2, 2020).pluck(:validity_start_date).uniq.first.to_s).to eq('2020-02-01')
+        expect(described_class.for_month(2, 2020).pluck(:validity_end_date).uniq.first.to_s).to eq('2020-02-29')
+        expect(described_class.for_month(2, 2020).pluck(:rate)).to eq([4.82, 1.98, 1.894, 1.18, 1.35])
 
         expect(described_class.for_month(1, 2020).pluck(:currency_code)).to eq(%w[AED AUD])
         expect(described_class.for_month(1, 2020).pluck(:rate)).to eq([4.8012, 1.905])
@@ -39,7 +36,6 @@ RSpec.describe ExchangeRateCurrencyRate do
   end
 
   describe '.populate' do
-
     it { expect(january.count).to eq(2) }
 
     it { expect(february.count).to eq(5) }
