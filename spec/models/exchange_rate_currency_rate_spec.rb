@@ -37,6 +37,17 @@ RSpec.describe ExchangeRateCurrencyRate do
         expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
         expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
       end
+
+      after do
+        travel_back
+      end
+
+      # Timecop.freeze(2023, 7, 1) do
+      it 'returns the month for the year you are currently in', :aggregate_failures do
+        expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
+        expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
+      end
+      # end
     end
   end
 

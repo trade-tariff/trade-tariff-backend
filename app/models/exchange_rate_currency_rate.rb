@@ -18,6 +18,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
     [3, 12].include?(validity_start_date.month) && validity_start_date.day == 31 && validity_end_date.nil?
   end
 
+  def countries
+    ExchangeRateCountry.where(currency_code:)
+  end
+
   dataset_module do
     def scheduled
       where(rate_type: SCHEDULED_RATE_TYPE)
