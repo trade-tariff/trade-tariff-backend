@@ -1,5 +1,5 @@
 module ExchangeRates
-  class UploadMonthlyCsv
+  class UploadMonthlyCsvService
     delegate :instrument, to: ActiveSupport::Notifications
 
     def self.call
@@ -16,7 +16,7 @@ module ExchangeRates
     def call
       return unless penultimate_thursday?
 
-      csv_string = ExchangeRates::CreateCsv.call(data_result)
+      csv_string = ExchangeRates::CreateCsvService.call(data_result)
 
       TariffSynchronizer::FileService.write_file(file_path, csv_string)
 
@@ -42,6 +42,8 @@ module ExchangeRates
       return false unless current_time.thursday?
       return false unless current_time.month == 7.days.from_now.month
       return false unless current_time.month != 14.days.from_now.month
+
+      true
     end
   end
 end

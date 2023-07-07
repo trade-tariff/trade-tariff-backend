@@ -1,5 +1,5 @@
 module ExchangeRates
-  class CreateCsv
+  class CreateCsvService
     attr_reader :data
 
     def self.call(data)
@@ -45,7 +45,7 @@ module ExchangeRates
       territories = ExchangeRateCountry.where(currency_code: currency_rate.currency_code)&.pluck(:country_code)
 
       [
-        territories.join('-'),
+        territories.join(','),
         exchange_rate_currency.try(:currency_description),
         currency_code,
         currency_rate.rate,
