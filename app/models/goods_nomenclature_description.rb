@@ -1,7 +1,5 @@
 class GoodsNomenclatureDescription < Sequel::Model
-  DESCRIPTION_NEGATION_REGEX = /(?<keep>\A.*)(?<remove>, (?<excluded-term>neither|other than|excluding|not).*\z)/
   CONSIGNED_FROM_REGEX = /consigned from(?: or originating in)?([\p{L},'\s]+)(?:\W|$)/i
-  NO_BREAKING_SPACE = "\u00A0".freeze
 
   include Formatter
 
@@ -30,7 +28,7 @@ class GoodsNomenclatureDescription < Sequel::Model
   end
 
   def description_indexed
-    SearchNegationService.new(description).call
+    SearchNegationService.new(description.downcase).call
   end
 
   def description_plain

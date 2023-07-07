@@ -13,6 +13,7 @@ RSpec.describe Search::BulkSearchIndex do
         number_of_digits: 8,
         short_code: '03028910',
         indexed_descriptions: ['FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES', 'Fish, fresh or chilled', 'Other fish', 'Other'],
+        indexed_tradeset_descriptions: ['fish', 'fish - fresh or chilled', 'fish - livers', 'fish - roes'],
         search_references: ['fish', 'fish - fresh or chilled', 'fish - livers', 'fish - roes'],
         intercept_terms: ['red mullet'],
       )
@@ -23,6 +24,7 @@ RSpec.describe Search::BulkSearchIndex do
         'number_of_digits' => 8,
         'short_code' => '03028910',
         'indexed_descriptions' => 'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES|Fish, fresh or chilled|Other fish|Other',
+        'indexed_tradeset_descriptions' => 'fish|fish - fresh or chilled|fish - livers|fish - roes',
         'search_references' => 'fish|fish - fresh or chilled|fish - livers|fish - roes',
         'intercept_terms' => 'red mullet',
       )

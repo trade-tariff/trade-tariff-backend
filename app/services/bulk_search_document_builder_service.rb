@@ -22,8 +22,10 @@ class BulkSearchDocumentBuilderService
   def call
     result = goods_nomenclatures.each_with_object({}) do |goods_nomenclature, acc|
       short_code = goods_nomenclature.goods_nomenclature_item_id.first(number_of_digits)
+      indexed_tradeset_descriptions = goods_nomenclature.tradeset_descriptions.map(&:description_indexed)
       acc[short_code] ||= Hashie::TariffMash.new(
         id: short_code,
+        indexed_tradeset_descriptions:,
         observed: Set.new,
         number_of_digits:,
         short_code:,
