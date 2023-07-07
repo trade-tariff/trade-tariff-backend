@@ -1,7 +1,7 @@
 require 'tariff_synchronizer/file_service'
 
 class TradesetDescriptionPopulatorService
-  FILENAME_REGEX = /\A(?<month>\w+)(?<year>\d+).*\z/
+  FILENAME_REGEX = /\A(?<month>[a-zA-Z]+)(?<year>\d+).*\z/
   CHUNK_SIZE = 5000
   ENCODINGS = [
     'Windows-1252:UTF-8',
@@ -11,13 +11,13 @@ class TradesetDescriptionPopulatorService
 
   def call
     each_tradeset_descriptions_chunk do |chunk|
-      find_or_create_chunk(chunk)
+      upsert_chunk(chunk)
     end
   end
 
   private
 
-  def find_or_create_chunk(chunk)
+  def upsert_chunk(chunk)
     TradesetDescription.dataset.insert_conflict(
       constraint: :tradeset_descriptions_filename_description_goods_nomenclatu_key,
       update: { updated_at: Sequel::CURRENT_TIMESTAMP },
