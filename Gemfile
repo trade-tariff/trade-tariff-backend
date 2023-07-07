@@ -25,7 +25,6 @@ gem 'redis-client', '>= 0.11.2'
 gem 'redlock'
 gem 'sidekiq', '< 8'
 gem 'sidekiq-scheduler'
-gem 'whenever', require: false
 
 # Elasticsearch
 gem 'opensearch-ruby'

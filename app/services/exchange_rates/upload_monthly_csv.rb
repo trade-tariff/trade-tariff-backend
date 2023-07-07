@@ -14,7 +14,7 @@ module ExchangeRates
     end
 
     def call
-      # return unless penultimate_thursday?
+      return unless penultimate_thursday?
 
       csv_string = ExchangeRates::CreateCsv.call(data_result)
 
