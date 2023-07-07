@@ -79,7 +79,6 @@ group :test do
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
   gem 'simplecov', require: false
-  gem 'timecop'
   gem 'webmock'
 end
 

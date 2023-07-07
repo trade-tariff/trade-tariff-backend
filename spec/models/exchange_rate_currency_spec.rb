@@ -10,13 +10,13 @@ RSpec.describe ExchangeRateCurrency do
   end
 
   describe '.populate' do
-    it { expect(described_class.count).to eq(2) }
+    it { expect(described_class.count).to eq(5) }
 
     it { expect(aed.currency_description).to eq('Dirham') }
 
     it { expect(aed.spot_rate_required).to eq(false) }
 
-    it { expect(aud.currency_description).to eq('Dollar') }
+    it { expect(aud.currency_description).to eq('Australian Dollar') }
 
     it { expect(aud.spot_rate_required).to eq(true) }
   end

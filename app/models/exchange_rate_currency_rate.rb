@@ -4,12 +4,18 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
+  many_to_one :currency, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCurrency
+
   def scheduled_rate?
     validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
   end
 
   def spot_rate?
     [3, 12].include?(validity_start_date.month) && validity_start_date.day == 31 && validity_end_date.nil?
+  end
+
+  def countries
+    ExchangeRateCountry.where(currency_code:)
   end
 
   dataset_module do

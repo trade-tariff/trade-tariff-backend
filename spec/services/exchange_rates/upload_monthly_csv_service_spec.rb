@@ -1,5 +1,5 @@
 # rubocop:disable RSpec/MultipleMemoizedHelpers
-RSpec.describe ExchangeRates::UploadMonthlyCsv do
+RSpec.describe ExchangeRates::UploadMonthlyCsvService do
   subject(:upload_csv) { described_class.call }
 
   let(:current_time) { Time.zone.now }
@@ -12,9 +12,10 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
 
   context 'when its a penultimate thursday' do
     before do
-      Timecop.freeze(Time.zone.local(2023, 7, 20))
+      travel_to Time.zone.local(2023, 7, 20)
+
       allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
-      allow(ExchangeRates::CreateCsv).to receive(:call).with(data_result).and_return(csv_string)
+      allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return(csv_string)
       allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, csv_string).and_return(true)
       allow(ActiveSupport::Notifications)
         .to receive(:instrument)
@@ -25,11 +26,15 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
         .and_return(true)
     end
 
+    after do
+      travel_back
+    end
+
     it 'uploads the csv', :aggregate_failures do
       upload_csv
 
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year)
-      expect(ExchangeRates::CreateCsv).to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvService).to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with(file_path, csv_string)
       expect(ActiveSupport::Notifications)
         .to have_received(:instrument)
@@ -42,9 +47,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
 
   context 'when its not a penultimate thursday' do
     before do
-      Timecop.freeze(Time.zone.local(2023, 7, 6))
+      travel_to Time.zone.local(2023, 7, 6)
       allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
-      allow(ExchangeRates::CreateCsv).to receive(:call).with(data_result).and_return(csv_string)
+      allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return(csv_string)
       allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, csv_string).and_return(true)
       allow(ActiveSupport::Notifications)
         .to receive(:instrument)
@@ -55,11 +60,15 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
         .and_return(true)
     end
 
+    after do
+      travel_back
+    end
+
     it 'does not upload the csv', :aggregate_failures do
       upload_csv
 
       expect(::ExchangeRateCurrencyRate).not_to have_received(:for_month).with(month, year)
-      expect(ExchangeRates::CreateCsv).not_to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).not_to have_received(:write_file).with(file_path, csv_string)
       expect(ActiveSupport::Notifications)
         .not_to have_received(:instrument)
@@ -72,9 +81,10 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
 
   context 'when its not a thursday' do
     before do
-      Timecop.freeze(Time.zone.local(2023, 7, 19))
+      travel_to Time.zone.local(2023, 7, 19)
+
       allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
-      allow(ExchangeRates::CreateCsv).to receive(:call).with(data_result).and_return(csv_string)
+      allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return(csv_string)
       allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, csv_string).and_return(true)
       allow(ActiveSupport::Notifications)
         .to receive(:instrument)
@@ -85,11 +95,15 @@ RSpec.describe ExchangeRates::UploadMonthlyCsv do
         .and_return(true)
     end
 
+    after do
+      travel_back
+    end
+
     it 'does not upload the csv', :aggregate_failures do
       upload_csv
 
       expect(::ExchangeRateCurrencyRate).not_to have_received(:for_month).with(month, year)
-      expect(ExchangeRates::CreateCsv).not_to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).not_to have_received(:write_file).with(file_path, csv_string)
       expect(ActiveSupport::Notifications)
         .not_to have_received(:instrument)

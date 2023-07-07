@@ -12,7 +12,7 @@ RSpec.describe ExchangeRateCountry do
 
   describe '.populate' do
     it 'saves countrys with duplicate currency codes' do
-      expect(described_class.count).to eq(3)
+      expect(described_class.count).to eq(8)
     end
 
     it { expect(dh.country).to eq('Abu Dhabi') }

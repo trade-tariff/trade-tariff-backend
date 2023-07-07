@@ -1,5 +1,4 @@
 require 'csv'
-require 'timecop'
 
 RSpec.describe ExchangeRateCurrencyRate do
   let(:csv_file) { 'spec/fixtures/exchange_rates/all_rates.csv' }
@@ -26,12 +25,20 @@ RSpec.describe ExchangeRateCurrencyRate do
     end
 
     context 'when only a month is provided' do
-      Timecop.freeze(2023, 7, 1) do
-        it 'returns the month for the year you are currently in', :aggregate_failures do
-          expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
-          expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
-        end
+      before do
+        travel_to Time.zone.local(2023, 7, 1)
       end
+
+      after do
+        travel_back
+      end
+
+      # Timecop.freeze(2023, 7, 1) do
+      it 'returns the month for the year you are currently in', :aggregate_failures do
+        expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
+        expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
+      end
+      # end
     end
   end
 

@@ -1,5 +1,5 @@
 module ExchangeRates
-  class CreateCsv
+  class CreateCsvService
     attr_reader :data
 
     def self.call(data)
@@ -32,26 +32,46 @@ module ExchangeRates
     def create_csv
       CSV.generate do |csv|
         csv << headings
-        data.each do |currency_rate|
-          csv << build_row(currency_rate)
+
+        ordered_data = order_data
+
+        ordered_data.each do |currency_country_data|
+          csv << build_row(currency_country_data)
         end
       end
     end
 
-    def build_row(currency_rate)
-      currency_code = currency_rate.currency_code
+    def build_row(currency_country_data)
+      # currency_country_data is an array with 2 elements
+      # ['country_name', ExchangeRateCurrencyRate]
 
-      exchange_rate_currency = ExchangeRateCurrency.find(currency_code: currency_rate.currency_code)
-      territories = ExchangeRateCountry.where(currency_code: currency_rate.currency_code)&.pluck(:country_code)
+      country_name = currency_country_data.first
+      currency_rate = currency_country_data.last
 
       [
-        territories.join('-'),
-        exchange_rate_currency.try(:currency_description),
-        currency_code,
+        country_name,
+        currency_rate.currency.try(:currency_description),
+        currency_rate.currency_code,
         currency_rate.rate,
-        currency_rate.validity_start_date.to_s,
-        currency_rate.validity_end_date.to_s,
+        format_date(currency_rate.validity_start_date),
+        format_date(currency_rate.validity_end_date),
       ]
+    end
+
+    def order_data
+      result = {}
+
+      data.each do |currency_rate|
+        currency_rate.countries.each do |country_data|
+          result[country_data.country] = currency_rate
+        end
+      end
+
+      result.sort
+    end
+
+    def format_date(date)
+      date.strftime('%d/%m/%Y')
     end
 
     def valid_data?
@@ -63,6 +83,7 @@ module ExchangeRates
 
     def argument_error
       error_message = 'Argument error, invalid data, exchange rate monthly CSV'
+
       Rails.logger.error(error_message)
 
       raise ArgumentError, error_message
