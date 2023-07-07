@@ -25,7 +25,7 @@ module Api
         end
 
         def ancestors
-          @ancestors ||= ns_ancestors.select { |ancestor| ancestor.is_a?(Commodity) }
+          @ancestors ||= ns_ancestors.select { |ancestor| ancestor.is_a? TenDigitGoodsNomenclature }
         end
 
         def ancestor_ids

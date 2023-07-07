@@ -46,12 +46,10 @@ RSpec.describe SearchReference do
 
     context 'when getting a Subheading reference' do
       let(:referenced) do
-        create(:commodity, goods_nomenclature_item_id: '0101110000', producline_suffix: '30')
-
-        Subheading.find(goods_nomenclature_item_id: '0101110000', producline_suffix: '30')
+        create(:subheading, goods_nomenclature_item_id: '0101110000', producline_suffix: '30')
       end
 
-      it { expect(search_reference.referenced).to be_a(Commodity) }
+      it { expect(search_reference.referenced).to be_a(Subheading) }
     end
   end
 

@@ -3,7 +3,7 @@ module Api
     module Headings
       class CommodityPresenter < WrapDelegator
         def parent_sid
-          if ns_parent.is_a?(Commodity) || ns_parent.is_a?(Subheading)
+          if ns_parent.is_a?(TenDigitGoodsNomenclature)
             ns_parent.goods_nomenclature_sid
           end
         end
