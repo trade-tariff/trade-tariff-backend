@@ -40,7 +40,7 @@ class TradesetDescriptionPopulatorService
 
       tradeset_description = TradesetDescription.build(attributes)
 
-      unless chunk.size >= CHUNK_SIZE
+      if chunk.size < CHUNK_SIZE
         chunk << tradeset_description if tradeset_description.valid?
 
         next
@@ -51,7 +51,7 @@ class TradesetDescriptionPopulatorService
       chunk = []
     end
 
-    yield chunk unless chunk.empty?
+    yield chunk if chunk.present?
   ensure
     csv&.close
   end
@@ -83,7 +83,7 @@ class TradesetDescriptionPopulatorService
     source = latest_csv_file_path
     destination = Rails.root.join('data/tradeset_descriptions/', File.basename(source))
 
-    TariffSynchronizer::FileService.download_and_unzip(source:, destination:)
+    TariffSynchronizer::FileService.download_and_gunzip(source:, destination:)
   end
 
   def latest_csv_file_path

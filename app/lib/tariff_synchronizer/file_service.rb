@@ -1,5 +1,6 @@
 module TariffSynchronizer
   class FileService
+    BYTE_SIZE = 16 * 1024 # 16KB
     class << self
       def get(file_path)
         if Rails.env.production?
@@ -49,15 +50,16 @@ module TariffSynchronizer
         Aws::S3::Resource.new.bucket(ENV['AWS_BUCKET_NAME'])
       end
 
-      def download_and_unzip(source:, destination:)
-        Dir.glob("#{File.dirname(destination)}/*").each do |file|
-          FileUtils.rm(file)
-        end
+      def download_and_gunzip(source:, destination:)
+        directory = File.dirname(destination)
+
+        FileUtils.rm_rf(directory) if File.exist?(directory)
+        FileUtils.mkdir_p(directory)
 
         download(source:, destination:)
-        unzip(source: destination, destination: File.dirname(destination))
+        gunzip(source: destination, destination: destination.to_s.gsub('.gz', ''))
 
-        Dir.glob("#{File.dirname(destination)}/*").reject { |file| file.end_with?('.zip') }
+        Dir.glob("#{directory}/*").reject { |file| file.end_with?('.gz') }
       end
 
       def download(source:, destination:)
@@ -71,10 +73,15 @@ module TariffSynchronizer
         end
       end
 
-      def unzip(source:, destination:)
-        Zip::File.open(source) do |zip_file|
-          zip_file.each do |entry|
-            entry.extract(File.join(destination, entry.name))
+      def gunzip(source:, destination:)
+        File.open(destination, 'wb') do |output|
+          Zlib::GzipReader.open(source) do |input|
+            bytes = input.read(BYTE_SIZE)
+
+            while bytes
+              output.write(bytes)
+              bytes = input.read(BYTE_SIZE)
+            end
           end
         end
       end

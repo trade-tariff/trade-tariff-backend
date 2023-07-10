@@ -6,7 +6,7 @@ RSpec.describe TradesetDescriptionPopulatorService do
 
     before do
       allow(TariffSynchronizer::FileService).to receive(:list_by).and_return([{ path: file_path }])
-      allow(TariffSynchronizer::FileService).to receive(:download_and_unzip).and_return([file_path])
+      allow(TariffSynchronizer::FileService).to receive(:download_and_gunzip).and_return([file_path])
     end
 
     it 'creates tradeset descriptions' do

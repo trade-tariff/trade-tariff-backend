@@ -5,7 +5,7 @@ class TradesetDescription < Sequel::Model
   many_to_one :goods_nomenclature,
               key: :goods_nomenclature_item_id,
               primary_key: :goods_nomenclature_item_id,
-              condition: ->(ds) { ds.producline_suffix == '80' } do |ds|
+              condition: ->(ds) { ds.producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX } do |ds|
     ds.with_actual(GoodsNomenclature)
   end
 
@@ -26,12 +26,12 @@ class TradesetDescription < Sequel::Model
     private
 
     def normalise_goods_nomenclature_item_id(goods_nomenclature_item_id)
-      goods_nomenclature_item_id = goods_nomenclature_item_id.to_s.gsub(' ', '').first(10)
+      goods_nomenclature_item_id = goods_nomenclature_item_id.to_s.gsub(' ', '').first(GoodsNomenclature::VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH)
 
-      return goods_nomenclature_item_id if goods_nomenclature_item_id.length == 10
+      return goods_nomenclature_item_id if goods_nomenclature_item_id.length == GoodsNomenclature::VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH
       return '' if goods_nomenclature_item_id.blank?
 
-      goods_nomenclature_item_id.ljust(10, '0')
+      goods_nomenclature_item_id.ljust(GoodsNomenclature::VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH, '0')
     end
   end
 

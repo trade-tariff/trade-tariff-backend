@@ -1,4 +1,6 @@
 class GoodsNomenclature < Sequel::Model
+  VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
+
   extend ActiveModel::Naming
   include Formatter
 
