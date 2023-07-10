@@ -1,9 +1,3 @@
-variable "tariff_backend_secret_key_base" {
-  description = "Backend secret key base."
-  type        = string
-  sensitive   = true
-}
-
 variable "tariff_backend_sentry_dsn" {
   description = "Backend Sentry DSN."
   type        = string
@@ -85,8 +79,7 @@ variable "max_capacity" {
   default     = 5
 }
 
-variable "sentry_project" {
-  description = "Sentry project"
+variable "base_domain" {
+  description = "URL of the service."
   type        = string
-  default     = "tariff-backend"
 }

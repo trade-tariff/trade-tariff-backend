@@ -20,24 +20,35 @@ module "backend_xi" {
   # backend_xi_vars
   service_environment_config = [
     {
-      name  = "/${var.environment}/backend/xi/CDS"
+      name  = "CDS"
       value = "false"
     },
     {
-      name  = "/${var.environment}/backend/xi/GOVUK_APP_DOMAIN"
+      name  = "GOVUK_APP_DOMAIN"
       value = "tariff-xi-backend-${local.environment_key}.apps.internal"
     },
     {
-      name  = "/${var.environment}/backend/xi/NEW_RELIC_APP_NAME"
+      name  = "NEW_RELIC_APP_NAME"
       value = "tariff-xi-backend-${var.environment}"
     },
     {
-      name  = "/${var.environment}/backend/xi/SERVICE"
+      name  = "SERVICE"
       value = "xi"
     },
     {
-      name  = "/${var.environment}/backend/xi/TARIFF_FROM_EMAIL"
+      name  = "TARIFF_FROM_EMAIL"
       value = "Tariff XI [${upper(var.environment)}] <${local.no_reply}>"
+    },
+    {
+      name  = "backend_common_vars"
+      value = local.backend_common_vars
+    }
+  ]
+
+  service_secrets_config = [
+    {
+      name      = "REDIS_URL"
+      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn
     }
   ]
 }
