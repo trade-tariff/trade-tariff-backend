@@ -1,5 +1,5 @@
 module "backend_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.2.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.5.0"
 
   service_name  = var.service_name
   service_count = var.service_count
@@ -16,6 +16,8 @@ module "backend_xi" {
   docker_image = data.aws_ssm_parameter.ecr_url.value
   docker_tag   = var.docker_tag
   skip_destroy = true
+
+  cloudwatch_log_group_name = data.aws_cloudwatch_log_groups.log_group.log_group_names
 
   # backend_xi_vars
   service_environment_config = [

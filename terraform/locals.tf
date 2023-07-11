@@ -3,6 +3,9 @@ locals {
   no_reply        = "no-reply@${local.base_url}"
   base_url        = "${local.project}.service.gov.uk"
   environment_key = var.environment == "development" ? "development" : var.environment
+}
+
+locals {
 
   backend_common_vars = [
     {
