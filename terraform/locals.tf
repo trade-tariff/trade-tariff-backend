@@ -95,7 +95,7 @@ locals {
     },
     {
       name  = "TARIFF_QUERY_SEARCH_PARSER_URL"
-      value = "https://${var.base_domain}/api/search-${local.environment_key}.apps.internal:8080/api/search/"
+      value = "https://${var.base_domain}/api/search/"
     },
     {
       name  = "TARIFF_SYNC_EMAIL"

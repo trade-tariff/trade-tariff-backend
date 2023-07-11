@@ -1,7 +1,7 @@
 module "backend_uk" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.5.0"
 
-  service_name  = var.service_name
+  service_name  = "${var.service_name}-uk"
   service_count = var.service_count
   environment   = var.environment
   region        = var.region
@@ -19,7 +19,10 @@ module "backend_uk" {
 
   cloudwatch_log_group_name = data.aws_cloudwatch_log_groups.log_group.log_group_names
 
-  service_environment_config = [
+
+  service_environment_config = flatten(local.backend_common_vars,
+  
+  [
     {
       name  = "CDS"
       value = "true"
@@ -41,15 +44,20 @@ module "backend_uk" {
       value = "Tariff UK [${upper(var.environment)}] <${local.no_reply}>"
     },
     {
-      name  = "backend_common_vars"
-      value = local.backend_common_vars
-    },
+      name  = "VCAP_APPLICATION"
+      value = "{}"
+    }
   ]
-
+)
   service_secrets_config = [
     {
       name      = "REDIS_URL"
       valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn
+    },
+    {
+      name      = "trade_tariff_oauth_secret"
+      value     = var.trade_tariff_oauth_secret
     }
   ]
+  
 }

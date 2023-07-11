@@ -83,3 +83,8 @@ variable "base_domain" {
   description = "URL of the service."
   type        = string
 }
+
+variable "trade_tariff_oauth_secret" {
+  description = "trade tarrif oauth secrets."
+  type        = "map"
+}
