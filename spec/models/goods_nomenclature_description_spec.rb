@@ -44,10 +44,10 @@ RSpec.describe GoodsNomenclatureDescription do
     it 'removes negation' do
       goods_nomenclature_description = build(
         :goods_nomenclature_description,
-        description: 'some text, not other text',
+        description: 'some Thing text, not other text',
       )
 
-      expect(goods_nomenclature_description.description_indexed).to eq('some text')
+      expect(goods_nomenclature_description.description_indexed).to eq('some thing text')
     end
   end
 

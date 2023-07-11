@@ -20,6 +20,7 @@ module Search
       [
         :goods_nomenclature_descriptions,
         :search_references,
+        :tradeset_descriptions,
         :ns_children,
         { ns_ancestors: %i[search_references goods_nomenclature_descriptions] },
       ]
@@ -99,6 +100,10 @@ module Search
               type: 'keyword',
             },
             indexed_descriptions: {
+              type: 'text',
+              analyzer: 'english',
+            },
+            indexed_tradeset_descriptions: {
               type: 'text',
               analyzer: 'english',
             },

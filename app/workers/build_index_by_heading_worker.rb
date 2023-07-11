@@ -19,7 +19,7 @@ class BuildIndexByHeadingWorker
       )
     end
   rescue StandardError => e
-    raise IndexingError "Failed building index: #{index_name} - heading #{heading_short_code}\n#{e.class}\n#{e.message}\n#{e.backtrace}"
+    raise IndexingError, "Failed building index: #{index_name} - heading #{heading_short_code}\n#{e.class}\n#{e.message}\n#{e.backtrace}"
   end
 
   private

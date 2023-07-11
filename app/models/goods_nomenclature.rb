@@ -1,4 +1,6 @@
 class GoodsNomenclature < Sequel::Model
+  VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
+
   extend ActiveModel::Naming
   include Formatter
 
@@ -71,6 +73,10 @@ class GoodsNomenclature < Sequel::Model
                            right_primary_key: %i[footnote_type_id footnote_id],
                            order: %i[footnote_type_id footnote_id] do |ds|
     ds.with_actual(FootnoteAssociationGoodsNomenclature)
+  end
+
+  one_to_many :tradeset_descriptions, key: :goods_nomenclature_item_id, primary_key: :goods_nomenclature_item_id do |ds|
+    ds.with_actual(TradesetDescription)
   end
 
   def number_indents
