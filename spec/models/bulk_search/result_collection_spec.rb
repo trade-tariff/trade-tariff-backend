@@ -168,33 +168,60 @@ RSpec.describe BulkSearch::ResultCollection do
   end
 
   describe '.enqueue' do
-    let(:searches) do
-      [
-        { input_description: 'red herring' },
-        { input_description: 'white bait' },
-      ]
+    context 'when the bulk searches are valid' do
+      let(:searches) do
+        [
+          { attributes: { input_description: 'red herring' } },
+          { attributes: { input_description: 'white bait' } },
+        ]
+      end
+
+      it 'enqueues a bulk search job' do
+        allow(BulkSearchWorker).to receive(:perform_async)
+        described_class.enqueue(searches)
+        expect(BulkSearchWorker).to have_received(:perform_async).with(match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/))
+      end
+
+      it 'compresses the result collection' do
+        allow(Zlib::Deflate).to receive(:deflate).and_call_original
+        described_class.enqueue(searches)
+        expect(Zlib::Deflate).to have_received(:deflate).with(anything)
+      end
+
+      it 'stores the compressed result collection' do
+        allow(TradeTariffBackend.redis).to receive(:set)
+        described_class.enqueue(searches)
+        expect(TradeTariffBackend.redis).to have_received(:set).with(match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/), anything, ex: 7200)
+      end
+
+      it 'returns a bulk search result collection' do
+        expect(described_class.enqueue(searches)).to be_a(described_class)
+      end
     end
 
-    it 'enqueues a bulk search job' do
-      allow(BulkSearchWorker).to receive(:perform_async)
-      described_class.enqueue(searches)
-      expect(BulkSearchWorker).to have_received(:perform_async).with(match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/))
-    end
+    context 'when the bulk searches are invalid' do
+      let(:searches) do
+        [
+          {
+            attributes: {
+              input_description: 'red herring',
+              number_of_digits: 1,
+            },
+          },
+        ]
+      end
 
-    it 'compresses the result collection' do
-      allow(Zlib::Deflate).to receive(:deflate).and_call_original
-      described_class.enqueue(searches)
-      expect(Zlib::Deflate).to have_received(:deflate).with(anything)
-    end
+      it 'does not queue the bulk search job' do
+        allow(BulkSearchWorker).to receive(:perform_async)
+        described_class.enqueue(searches)
+        expect(BulkSearchWorker).not_to have_received(:perform_async)
+      end
 
-    it 'stores the compressed result collection' do
-      allow(TradeTariffBackend.redis).to receive(:set)
-      described_class.enqueue(searches)
-      expect(TradeTariffBackend.redis).to have_received(:set).with(match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/), anything, ex: 7200)
-    end
-
-    it 'returns a bulk search result collection' do
-      expect(described_class.enqueue(searches)).to be_a(described_class)
+      it 'does not store the compressed result collection' do
+        allow(TradeTariffBackend.redis).to receive(:set)
+        described_class.enqueue(searches)
+        expect(TradeTariffBackend.redis).not_to have_received(:set).with(match(/^[a-f0-9]{8}-([a-f0-9]{4}-){3}[a-f0-9]{12}$/), anything, ex: 7200)
+      end
     end
   end
 

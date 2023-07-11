@@ -1,12 +1,14 @@
 module BulkSearch
   class Search
+    include ActiveModel::Model
     include ContentAddressableId
 
     content_addressable_fields :input_description
 
-    attr_accessor :input_description,
-                  :number_of_digits,
-                  :search_results
+    attr_accessor :input_description, :search_results, :number_of_digits
+
+    validates :number_of_digits, inclusion: { in: [6, 8], message: '%{value} is not a valid number of digits' }
+    validates :input_description, presence: true
 
     def self.build(attributes)
       search = new
