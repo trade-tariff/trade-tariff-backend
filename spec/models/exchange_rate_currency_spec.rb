@@ -1,5 +1,3 @@
-require 'csv'
-
 RSpec.describe ExchangeRateCurrency do
   let(:csv_file) { 'spec/fixtures/exchange_rates/currency.csv' }
   let(:aed) { described_class.where(currency_code: 'AED').take }

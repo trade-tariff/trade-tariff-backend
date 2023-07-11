@@ -1,6 +1,3 @@
-require 'csv'
-require 'timecop'
-
 RSpec.describe ExchangeRateCurrencyRate do
   let(:csv_file) { 'spec/fixtures/exchange_rates/all_rates.csv' }
   let(:january) { described_class.where(validity_start_date: '2020-01-01', validity_end_date: '2020-01-31') }

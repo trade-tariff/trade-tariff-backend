@@ -13,7 +13,7 @@ RSpec.describe ExchangeRates::CreateCsvService do
     let(:parsed_csv) do
       [
         ['Country/Territories', 'Currency', 'Currency Code', 'Currency Units per £1', 'Start date', 'End date'],
-        ['DU,DH', 'Dirham', 'AED', '4.82', '2020-02-01', '2020-02-29'],
+        ['DH,DU', 'Dirham', 'AED', '4.82', '2020-02-01', '2020-02-29'],
         ['AU', 'Australian Dollar', 'AUD', '1.98', '2020-02-01', '2020-02-29'],
         ['CA', 'Candian Dollar', 'CAD', '1.894', '2020-02-01', '2020-02-29'],
         ['EU', 'Euro', 'EUR', '1.18', '2020-02-01', '2020-02-29'],
