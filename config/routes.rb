@@ -2,6 +2,7 @@ require 'routing_filter/service_path_prefix'
 
 Rails.application.routes.draw do
   get 'healthcheck' => 'healthcheck#index'
+  get 'healthcheckz' => 'healthcheck#checkz'
 
   scope :api, module: :api do
     filter :service_path_prefix

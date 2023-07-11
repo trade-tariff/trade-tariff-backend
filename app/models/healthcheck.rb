@@ -5,10 +5,16 @@ class Healthcheck
   SIDEKIQ_THRESHOLD = 90.minutes
 
   class << self
-    delegate :check, to: :instance
+    delegate :check, :checkz, to: :instance
   end
 
   delegate :revision, to: TradeTariffBackend
+
+  def checkz
+    {
+      git_sha1: current_revision,
+    }
+  end
 
   def check
     checks = {
