@@ -28,14 +28,42 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
 
     before do
       allow(BulkSearch::ResultCollection).to receive(:enqueue).and_call_original
+      allow(BulkSearchWorker).to receive(:perform_async).and_call_original
 
       do_post
     end
 
     it { expect(BulkSearch::ResultCollection).to have_received(:enqueue) }
+    it { expect(BulkSearchWorker).to have_received(:perform_async) }
     it { expect(response).to have_http_status(:accepted) }
     it { expect(response.body).to match_json_expression(pattern) }
     it { expect(response.location).to eq(api_bulk_search_path(id)) }
+
+    context 'when the request is invalid' do
+      let(:make_request) do
+        params = { data: [{ type: 'searches', attributes: { input_description: '1234', number_of_digits: 900 } }] }
+
+        post('/bulk_searches', params:)
+      end
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => '900 is not a valid number of digits',
+              'detail' => 'Number of digits 900 is not a valid number of digits',
+              'source' => { 'pointer' => '/data/attributes/number_of_digits' },
+            },
+          ],
+        }
+      end
+
+      it { expect(BulkSearch::ResultCollection).to have_received(:enqueue) }
+      it { expect(BulkSearchWorker).not_to have_received(:perform_async) }
+      it { expect(response).to have_http_status(:unprocessable_entity) }
+      it { expect(response.body).to match_json_expression(pattern) }
+    end
   end
 
   describe 'GET /bulk_searches/:id' do

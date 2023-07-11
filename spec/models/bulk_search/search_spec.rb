@@ -43,6 +43,12 @@ RSpec.describe BulkSearch::Search do
 
       it { expect(search).to be_valid }
     end
+
+    context 'when input_description is blank' do
+      let(:input_description) { '' }
+
+      it { expect(search).not_to be_valid }
+    end
   end
 
   describe '#search_results' do

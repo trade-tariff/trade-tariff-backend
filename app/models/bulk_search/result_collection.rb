@@ -34,13 +34,15 @@ module BulkSearch
 
       def enqueue(searches)
         build(searches).tap do |result|
-          redis.set(
-            result.id,
-            Zlib::Deflate.deflate(result.to_json),
-            ex: EXPIRES_IN,
-          )
+          if result.valid?
+            redis.set(
+              result.id,
+              Zlib::Deflate.deflate(result.to_json),
+              ex: EXPIRES_IN,
+            )
 
-          BulkSearchWorker.perform_async(result.id)
+            BulkSearchWorker.perform_async(result.id)
+          end
         end
       end
 
@@ -98,6 +100,10 @@ module BulkSearch
           }
         end,
       }
+    end
+
+    def valid?
+      searches.all?(&:valid?)
     end
 
     def search_ids

@@ -8,6 +8,7 @@ module BulkSearch
     attr_accessor :input_description, :search_results, :number_of_digits
 
     validates :number_of_digits, inclusion: { in: [6, 8], message: '%{value} is not a valid number of digits' }
+    validates :input_description, presence: true
 
     def self.build(attributes)
       search = new
@@ -24,8 +25,8 @@ module BulkSearch
     def no_results!
       self.search_results = [
         SearchResult.build(
-          number_of_digits: @number_of_digits,
-          short_code: '9' * @number_of_digits.to_i,
+          number_of_digits:,
+          short_code: '9' * number_of_digits,
           score: 0,
         ),
       ]
