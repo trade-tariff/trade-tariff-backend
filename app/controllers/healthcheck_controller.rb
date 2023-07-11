@@ -9,9 +9,17 @@ class HealthcheckController < ApplicationController
     end
   end
 
+  def checkz
+    render json: resultz
+  end
+
   private
 
   def result
     @result ||= Healthcheck.check
+  end
+
+  def resultz
+    @resultz ||= Healthcheck.checkz
   end
 end
