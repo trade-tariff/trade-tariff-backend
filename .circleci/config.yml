@@ -671,13 +671,15 @@ jobs:
     parameters:
       space:
         type: string
+      bucket:
+        type: string
     steps:
       - aws-cli/install
       - checkout
       - run:
           name: "Synchronise opensearch packages"
           command: |
-            bin/sync_opensearch_packages << parameters.space >>
+            bin/sync_opensearch_packages << parameters.space >> << parameters.bucket >>
 
   notify_production_deployment:
     docker:
@@ -836,6 +838,7 @@ workflows:
       - sync_opensearch_packages:
           name: sync_packages_dev
           space: development
+          bucket: trade-tariff-opensearch-packages-development
           context: trade-tariff
           filters:
             branches:
@@ -858,6 +861,7 @@ workflows:
       - sync_opensearch_packages:
           name: sync_packages_staging
           space: staging
+          bucket: trade-tariff-opensearch-packages-staging
           context: trade-tariff
           filters:
             branches:
@@ -956,6 +960,7 @@ workflows:
       - sync_opensearch_packages:
           name: sync_packages_production
           space: production
+          bucket: trade-tariff-opensearch-packages-production
           context: trade-tariff
           filters:
             tags:
