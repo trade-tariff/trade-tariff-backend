@@ -3,9 +3,10 @@
 set -e
 
 SPACE=$1
+BUCKET=$2
 
 function check_changed_packages {
-  aws s3 sync --exclude ".*" --dryrun --size-only config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
+  aws s3 sync --exclude ".*" --dryrun --size-only config/opensearch "s3://${BUCKET}/config/opensearch/"
 }
 
 function package_id_for {
@@ -15,7 +16,7 @@ function package_id_for {
 }
 
 function sync_package_files_with_s3 {
-  aws s3 sync --exclude ".*" config/opensearch s3://trade-tariff-opensearch-packages-$SPACE/config/opensearch/
+  aws s3 sync --exclude ".*" config/opensearch "s3://${BUCKET}/config/opensearch/"
 }
 
 function package_status {
@@ -59,7 +60,7 @@ function update_and_associate_package {
   domain_name=tariff-search-$SPACE
 
   aws opensearch update-package --package-id $package_id \
-    --package-source "S3BucketName=trade-tariff-opensearch-packages-$SPACE,S3Key=config/opensearch/$s3_key_suffix" \
+    --package-source "S3BucketName=${BUCKET},S3Key=config/opensearch/$s3_key_suffix" \
     --package-description "$package_description_prefix for the $SPACE environment search" \
     --commit-message "Commit: $(git rev-parse --short HEAD), branch: $CIRCLE_BRANCH"
 
