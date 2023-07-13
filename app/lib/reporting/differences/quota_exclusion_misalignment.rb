@@ -1,0 +1,137 @@
+module Reporting
+  class Differences
+    # Find UK measures and quotas which both have geographical area exclusions
+    #
+    # Checks to see if their exclusions are not aligned/the same
+    class QuotaExclusionMisalignment
+      delegate :workbook, :bold_style, :centered_style, to: :report
+
+      HEADER_ROW = [
+        'Measure SID',
+        'Order number',
+        'Commodity',
+        'Exclusions (quota, then measure)',
+      ].freeze
+
+      TAB_COLOR = 'cc0000'.freeze
+
+      CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
+
+      COLUMN_WIDTHS = [
+        20,  # "Measure SID"
+        20,  # Order number
+        20,  # UK Commodity
+        150, # Exclusions (quota, then measure)
+      ].freeze
+
+      AUTOFILTER_CELL_RANGE = 'A1:D1'.freeze
+      FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
+
+      def initialize(name, report)
+        @name = name
+        @report = report
+      end
+
+      def add_worksheet
+        workbook.add_worksheet(name:) do |sheet|
+          sheet.sheet_pr.tab_color = TAB_COLOR
+          sheet.add_row(HEADER_ROW, style: bold_style)
+          sheet.auto_filter = AUTOFILTER_CELL_RANGE
+          sheet.sheet_view.pane do |pane|
+            pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
+            pane.state = :frozen
+            pane.y_split = 1
+          end
+
+          misaligned_rows do |row|
+            sheet.add_row(row, types: CELL_TYPES)
+
+            sheet.rows.last.tap do |last_row|
+              last_row.cells[1].style = centered_style
+              last_row.cells[2].style = centered_style
+            end
+          end
+
+          sheet.column_widths(*COLUMN_WIDTHS)
+        end
+      end
+
+      private
+
+      attr_reader :name, :report
+
+      def build_row_for(measure, quota_order_number)
+        [
+          measure[:measure_sid],
+          quota_order_number[:quota_order_number],
+          measure[:geographical_area_id],
+          [quota_order_number[:excluded_geographical_areas].join(','), measure[:excluded_geographical_areas].join(',')].join("\n"),
+        ]
+      end
+
+      def misaligned_rows
+        quota_order_numbers_grouped_by_key.each do |key, q|
+          qm = measures_grouped_by_key[key]
+
+          yield build_row_for(qm, q) if qm && (qm[:excluded_geographical_areas] != q[:excluded_geographical_areas])
+        end
+      end
+
+      def quota_order_numbers_grouped_by_key
+        quotas_with_excluded_geographical_areas.each_with_object({}) do |quota_order_number, acc|
+          key = "#{quota_order_number.quota_order_number_id}-#{quota_order_number.quota_order_number_origin.geographical_area_id}"
+
+          acc[key] ||= {
+            measure_sid: quota_order_number.measure.measure_sid,
+            quota_order_number: quota_order_number.quota_order_number_id,
+            geographical_area_id: quota_order_number.quota_order_number_origin.geographical_area_id,
+            excluded_geographical_areas: quota_order_number.quota_order_number_origin.quota_order_number_origin_exclusions.map(&:geographical_area_id).sort,
+          }
+        end
+      end
+
+      def measures_grouped_by_key
+        @measures_grouped_by_key ||= quota_measures_with_excluded_geographical_areas
+            .each_with_object({}) do |measure, acc|
+              key = "#{measure.ordernumber}-#{measure.geographical_area_id}"
+              acc[key] ||= {
+                measure_sid: measure.measure_sid,
+                quota_order_number: measure.ordernumber,
+                geographical_area_id: measure.geographical_area_id,
+                excluded_geographical_areas: measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort,
+              }
+            end
+      end
+
+      def quotas_with_excluded_geographical_areas
+        @quotas_with_excluded_geographical_areas ||=
+          QuotaOrderNumber
+            .actual
+            .exclude(quota_order_number_id: /^054/)
+            .eager(
+              :measure,
+              quota_order_number_origin: [{ quota_order_number_origin_exclusions: :geographical_area }],
+            )
+            .all
+            .select do |quota_order_number|
+              quota_order_number.quota_order_number_origin &&
+                quota_order_number.quota_order_number_origin.quota_order_number_origin_exclusions.any? &&
+                quota_order_number.measure
+            end
+      end
+
+      def quota_measures_with_excluded_geographical_areas
+        @quota_measures_with_excluded_geographical_areas ||=
+          Measure
+            .actual                                                 # Return only current (as of today) measures
+            .with_regulation_dates_query
+            .exclude(ordernumber: nil)
+            .exclude(ordernumber: /^054/)
+            .association_join(:measure_excluded_geographical_areas) # inner join to filter in measures with excluded geographical areas
+            .association_join(:quota_order_number)                  # inner join to filter in measures with quota order number
+            .eager(:measure_excluded_geographical_areas)
+            .all
+      end
+    end
+  end
+end

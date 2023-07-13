@@ -12,6 +12,21 @@ class QuotaOrderNumber < Sequel::Model
     ds.order(Sequel.desc(:validity_start_date))
   end
 
+  one_to_one :measure, primary_key: :quota_order_number_id,
+                       key: :ordernumber do |ds|
+    ds
+      .with_actual(Measure)
+      .with_regulation_dates_query
+  end
+
+  one_to_many :quota_order_number_origins,
+              primary_key: :quota_order_number_sid,
+              key: :quota_order_number_sid do |ds|
+                ds.with_actual(QuotaOrderNumberOrigin)
+              end
+
+  one_to_many :quota_order_number_origin_exclusions, key: :quota_order_number_id, primary_key: :quota_order_number_id
+
   dataset_module do
     def by_order_number(order_number)
       where(quota_order_number_id: order_number)

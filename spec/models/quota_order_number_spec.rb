@@ -84,4 +84,7 @@ RSpec.describe QuotaOrderNumber do
 
     it { is_expected.to include(quota_order_number) }
   end
+
+  it { is_expected.to respond_to :measure }
+  it { is_expected.to respond_to :quota_order_number_origins }
 end

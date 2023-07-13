@@ -78,7 +78,7 @@ module Reporting
       @as_of = Time.zone.today.iso8601
     end
 
-    def generate
+    def generate(only: [])
       total_start = Time.zone.now
 
       methods = %i[
@@ -97,7 +97,10 @@ module Reporting
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
         add_missing_quota_origins_worksheet
+        add_quota_exclusion_misalignment_worksheet
       ]
+
+      methods = (methods & only) if only.any?
 
       methods.each do |method|
         start = Time.zone.now
@@ -135,6 +138,13 @@ module Reporting
     def add_indentation_worksheet
       Reporting::Differences::Indentation.new(
         'Indentation differences',
+        self,
+      ).add_worksheet
+    end
+
+    def add_quota_exclusion_misalignment_worksheet
+      Reporting::Differences::QuotaExclusionMisalignment.new(
+        'Quota exclusion misalignment',
         self,
       ).add_worksheet
     end
@@ -253,10 +263,10 @@ module Reporting
     end
 
     class << self
-      def generate
+      def generate(only: [])
         return if TradeTariffBackend.xi?
 
-        package = new.generate
+        package = new.generate(only:)
         package.serialize('differences.xlsx') if Rails.env.development?
 
         if Rails.env.production?
