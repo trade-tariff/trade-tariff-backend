@@ -22,7 +22,7 @@ executors:
 commands:
   cf_deploy_docker:
     parameters:
-      docker_tag:
+      docker_image_tag:
         type: string
       space:
         type: string
