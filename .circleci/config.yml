@@ -105,7 +105,7 @@ commands:
             fi
       - tariff/pivot-dark-app:
           app_domain_prefix: << parameters.app_domain_prefix >>
-          cf_app: tariff-frontend
+          cf_app: tariff-backend
           environment_key: << parameters.environment_key >>
           space: << parameters.space >>
       - run:
@@ -435,8 +435,8 @@ jobs:
           name: build_and_push_dev
           context: trade-tariff-terraform-aws-development
           environment: development
-          image_name: tariff-frontend
-          ssm_parameter: "/development/FRONTEND_ECR_URL"
+          image_name: tariff-backend
+          ssm_parameter: "/development/BACKEND_ECR_URL"
           filters:
             branches:
               ignore:
@@ -896,7 +896,7 @@ workflows:
             branches:
               ignore:
                 - main
-      - fmt_validate_terraform:
+      - terraform_fmt_validate:
           context: trade-tariff-terraform-aws-development
           environment: development
           filters:
