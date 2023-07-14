@@ -173,36 +173,6 @@ RSpec.describe MeasureCondition do
     end
   end
 
-  describe '#units' do
-    context 'when the measure condition has measure condition components' do
-      subject(:measure_condition) do
-        create(
-          :measure_condition,
-          :with_measure_condition_components,
-          measurement_unit_code: 'TNE',
-          measurement_unit_qualifier_code: 'R',
-        )
-      end
-
-      it 'returns the properly formatted unit' do
-        expect(measure_condition.units).to eq(
-          [
-            {
-              measurement_unit_code: 'TNE',
-              measurement_unit_qualifier_code: 'R',
-            },
-          ],
-        )
-      end
-    end
-
-    context 'when the measure condition has no components' do
-      subject(:measure_condition) { create(:measure_condition) }
-
-      it { expect(measure_condition.units).to eq([]) }
-    end
-  end
-
   describe '#universal_waiver_applies?' do
     context 'when the measure condition has a cds waiver document_code' do
       subject(:measure_condition) { create(:measure_condition, certificate_type_code: '9', certificate_code: '99L') }

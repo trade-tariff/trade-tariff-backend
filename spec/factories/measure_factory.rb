@@ -238,6 +238,24 @@ FactoryBot.define do
       end
     end
 
+    trait :with_liters_of_pure_alcohol_measure_component do
+      with_measure_components
+
+      transient do
+        measurement_unit_code { 'LPA' }
+        measurement_unit_qualifier_code {}
+      end
+    end
+
+    trait :with_percentage_alcohol_and_volume_per_hl_component do
+      with_measure_components
+
+      transient do
+        measurement_unit_code { 'ASV' }
+        measurement_unit_qualifier_code { 'X' }
+      end
+    end
+
     trait :third_country_overview do
       erga_omnes
       third_country

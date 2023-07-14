@@ -1,6 +1,11 @@
 FactoryBot.define do
   sequence(:measure_condition_component) { |n| n }
 
+  trait :small_producers_quotient do
+    measurement_unit_code { 'SPQ' }
+    measurement_unit_qualifier_code {}
+  end
+
   factory :measure_condition_component do
     measure_condition_sid           { generate(:measure_condition_component) }
     duty_expression_id              { Forgery(:basic).text(exactly: 2) }

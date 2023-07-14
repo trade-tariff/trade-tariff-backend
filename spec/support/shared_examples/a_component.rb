@@ -31,20 +31,31 @@ RSpec.shared_examples_for 'a component' do |type|
     end
   end
 
-  describe '#unit' do
-    subject(:component) do
-      build(
-        type,
-        measurement_unit_code: 'TNE',
-        measurement_unit_qualifier_code: 'I',
-      )
+  describe '#unit_for' do
+    subject(:unit_for) { component.unit_for(measure) }
+
+    shared_examples_for 'a component with a measurement unit' do |measurement_unit_code, measurement_unit_qualifier_code|
+      it { is_expected.to include(measurement_unit_code:, measurement_unit_qualifier_code:) }
     end
 
-    it 'returns the properly formatted unit' do
-      expect(component.unit).to eq(
-        measurement_unit_code: 'TNE',
-        measurement_unit_qualifier_code: 'I',
-      )
+    it_behaves_like 'a component with a measurement unit', 'TNE', 'I' do
+      let(:component) { build(type, measurement_unit_code: 'TNE', measurement_unit_qualifier_code: 'I') }
+      let(:measure) { build(:measure) }
+    end
+
+    it_behaves_like 'a component with a measurement unit', 'SPQ', 'LTR' do
+      let(:component) { create(type, :small_producers_quotient) }
+      let(:measure) { build(:measure, :excise, :with_percentage_alcohol_and_volume_per_hl_component) }
+    end
+
+    it_behaves_like 'a component with a measurement unit', 'SPQ', 'LPA' do
+      let(:component) { create(type, :small_producers_quotient) }
+      let(:measure) { build(:measure, :excise, :with_liters_of_pure_alcohol_measure_component) }
+    end
+
+    it_behaves_like 'a component with a measurement unit', 'SPQ', nil do
+      let(:component) { create(type, :small_producers_quotient) }
+      let(:measure) { build(:measure) } # not an excise measure
     end
   end
 
