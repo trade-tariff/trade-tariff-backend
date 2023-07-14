@@ -431,18 +431,18 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $ECR_REPO
             docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
             docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
-      - tariff/build-and-push:
-          name: build_and_push_dev
-          context: trade-tariff-terraform-aws-development
-          environment: development
-          image_name: tariff-backend
-          ssm_parameter: "/development/BACKEND_ECR_URL"
-          filters:
-            branches:
-              ignore:
-                - main
-                - /^dependabot/(?!docker/).*/
-                - /^hotfix\/.+/
+      # - tariff/build-and-push:
+      #     name: build_and_push_dev
+      #     context: trade-tariff-terraform-aws-development
+      #     environment: development
+      #     image_name: tariff-backend
+      #     ssm_parameter: "/development/BACKEND_ECR_URL"
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - main
+      #           - /^dependabot/(?!docker/).*/
+      #           - /^hotfix\/.+/
 
   docker_tag:
     parameters:
