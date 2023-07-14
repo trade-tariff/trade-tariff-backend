@@ -1,35 +1,12 @@
 class MeasureComponent < Sequel::Model
-  plugin :time_machine
   plugin :oplog, primary_key: %i[measure_sid duty_expression_id]
 
   set_primary_key %i[measure_sid duty_expression_id]
 
-  one_to_one :duty_expression, key: :duty_expression_id,
-                               primary_key: :duty_expression_id do |ds|
-    ds.with_actual(DutyExpression)
-  end
-
-  one_to_one :measurement_unit, key: :measurement_unit_code,
-                                primary_key: :measurement_unit_code do |ds|
-    ds.with_actual(MeasurementUnit)
-  end
-
-  one_to_one :monetary_unit, key: :monetary_unit_code,
-                             primary_key: :monetary_unit_code do |ds|
-    ds.with_actual(MonetaryUnit)
-  end
-
-  one_to_one :measurement_unit_qualifier, key: :measurement_unit_qualifier_code,
-                                          primary_key: :measurement_unit_qualifier_code do |ds|
-    ds.with_actual(MeasurementUnitQualifier)
-  end
+  include Componentable
 
   one_to_one :measure, key: :measure_sid,
                        primary_key: :measure_sid
-
-  delegate :description, :abbreviation, to: :duty_expression, prefix: true
-  delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
-  delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
   def id
     pk.join('-')
@@ -48,29 +25,6 @@ class MeasureComponent < Sequel::Model
 
   def duty_expression_str
     DutyExpressionFormatter.format(duty_expression_formatter_options)
-  end
-
-  def meursing?
-    duty_expression_id.in?(DutyExpression::MEURSING_DUTY_EXPRESSION_IDS)
-  end
-
-  def zero_duty?
-    duty_amount&.zero?
-  end
-
-  def ad_valorem?
-    measurement_unit_code.blank?
-  end
-
-  def expresses_unit?
-    measurement_unit_code.present?
-  end
-
-  def unit
-    {
-      measurement_unit_code:,
-      measurement_unit_qualifier_code:,
-    }
   end
 
   def duty_expression_formatter_options
