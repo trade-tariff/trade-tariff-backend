@@ -22,7 +22,10 @@
     "multiplier": null,
     "coerced_measurement_unit_code": null,
     "original_unit": null,
-    "compound_units": ["ASV", "HLT"]
+    "compound_units": [
+      "ASV",
+      "HLT"
+    ]
   },
   "BRX": {
     "measurement_unit_code": "BRX",
@@ -199,7 +202,10 @@
     "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
     "unit_hint": "Enter the value in decitonnes (100kg)",
     "unit": "x 100 kg",
-    "compound_units": ["DTN", "BRX"]
+    "compound_units": [
+      "DTN",
+      "BRX"
+    ]
   },
   "EUR": {
     "measurement_unit_code": "EUR",
@@ -704,6 +710,52 @@
     "coerced_measurement_unit_code": null,
     "original_unit": null,
     "measurement_unit_type": "weight"
+  },
+  "SPQLPA": {
+    "measurement_unit_code": "SPQ",
+    "measurement_unit_qualifier_code": "LPA",
+    "abbreviation": "for each litre of pure alcohol, multiplied by the SPR discount",
+    "expansion": "for each litre of pure alcohol, multiplied by the SPR discount",
+    "unit_question": "",
+    "unit_hint": "",
+    "unit": "SPQ",
+    "multiplier": null,
+    "coerced_measurement_unit_code": null,
+    "original_unit": null,
+    "compound_units": [
+      "SPR",
+      "LPA"
+    ]
+  },
+  "SPQLTR": {
+    "measurement_unit_code": "SPQ",
+    "measurement_unit_qualifier_code": "LTR",
+    "abbreviation": "for each litre of pure alcohol, multiplied by the SPR discount",
+    "expansion": "for each litre of pure alcohol, multiplied by the SPR discount",
+    "unit_question": "",
+    "unit_hint": "",
+    "unit": "SPQ",
+    "multiplier": null,
+    "coerced_measurement_unit_code": null,
+    "original_unit": null,
+    "compound_units": [
+      "SPR",
+      "ASV",
+      "HLT"
+    ]
+  },
+  "SPR": {
+    "measurement_unit_code": "SPR",
+    "measurement_unit_qualifier_code": null,
+    "abbreviation": "SPR discount",
+    "expansion": "SPR discount (£)",
+    "unit_question": "What discount are you entitled to as a result of Small Producer Relief?",
+    "unit_hint": "Enter the SPR discount against the full rate, not the chargeable SPR rate. For example, if the full rate, before application of SPR is £10.00 / litre of pure alcohol, and you are entitled to pay £7.00, enter 3.00 as your SPR discount.",
+    "unit": "SPR discount (£)",
+    "multiplier": null,
+    "coerced_measurement_unit_code": null,
+    "original_unit": null,
+    "measurement_unit_type": "other"
   },
   "TJO": {
     "measurement_unit_code": "TJO",
