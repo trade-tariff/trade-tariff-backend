@@ -34,6 +34,7 @@ commands:
         type: string
     steps:
       - checkout
+      # new aws env
       - tariff/cf-install:
           space: << parameters.space >>
           version: "7.6.0"
@@ -46,43 +47,47 @@ commands:
           ecr_repo: "$ECR_REPO"
           environment_key: << parameters.environment_key >>
           space: << parameters.space >>
-      # - run:
-      #     name: "Fetch existing manifest"
-      #     command: |
-      #       cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
-      # - run:
-      #     name: "Push new app in dark mode"
-      #     command: |
-      #       export DOCKER_IMAGE=tariff-backend
-      #       export DOCKER_TAG="<< parameters.docker_image_tag >>"
+      
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
+      - run:
+          name: "Push new app in dark mode"
+          command: |
+            export DOCKER_IMAGE=tariff-backend
+            export DOCKER_TAG="<< parameters.docker_image_tag >>"
 
-      #       # Push as "dark" instance
-      #       CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
+            # Push as "dark" instance
+            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
 
-      #       # Map dark route
-      #       cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            # Map dark route
+            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
-      #       # Attach precreated autoscaling policy
-      #       cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" config/autoscaling/<< parameters.space >>-policy.json
+            # Attach precreated autoscaling policy
+            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" config/autoscaling/<< parameters.space >>-policy.json
 
-      #       # Enable routing from this frontend to backend applications which are private
-      #       cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-      #       cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-      #       cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-      #       cf add-network-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
+            # Enable routing from this frontend to backend applications which are private
+            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
+            cf add-network-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
 
-      # - when:
-      #     condition:
-      #       equal: ["development", << parameters.space >>]
-      #     steps:
-      #       - run:
-      #           name: "Recreate review app network policies"
-      #           command: |
-      #             for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
-      #             do
-      #               cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
-      #             done
-
+      - when:
+          condition:
+            equal: ["development", << parameters.space >>]
+          steps:
+            - run:
+                name: "Recreate review app network policies"
+                command: |
+                  for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
+                  do
+                    cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
+                  done
+      - tariff/test-dark-app:
+          cf_app: tariff-backend
+          environment_key: << parameters.environment_key >>
+          healthcheck_path: "find_commodity"
       - run:
           name: "Verify new version is working on dark URL."
           command: |
@@ -98,7 +103,11 @@ commands:
               cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
               exit 1
             fi
-
+      - tariff/pivot-dark-app:
+          app_domain_prefix: << parameters.app_domain_prefix >>
+          cf_app: tariff-frontend
+          environment_key: << parameters.environment_key >>
+          space: << parameters.space >>
       - run:
           name: "Switch dark app to live"
           command: |
@@ -155,10 +164,10 @@ commands:
       - tariff/cf-install:
           space: << parameters.space >>
           version: "7.6.0"
-      # - run:
-      #     name: "Fetch existing manifest"
-      #     command: |
-      #       cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p deploy_manifest.yml
+      - run:
+          name: "Fetch existing manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p deploy_manifest.yml
       - run:
           name: "Push Worker"
           command: |
@@ -181,25 +190,25 @@ commands:
       - tariff/cf-install:
           space: << parameters.space >>
           version: "7.6.0"
-      # - run:
-      #     name: "Create tasks app manifest"
-      #     command: |
-      #       cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p tasks_deploy_manifest.yml
-      # - run:
-      #     name: "Push Tasks app"
-      #     command: |
-      #       export DOCKER_IMAGE=tariff-backend
-      #       export DOCKER_TAG="<< parameters.docker_image_tag >>"
-      #       CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
-      #                                                          -f tasks_deploy_manifest.yml \
-      #                                                          --no-route \
-      #                                                          --task \
-      #                                                          --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
-      #                                                          --docker-username "$AWS_ACCESS_KEY_ID"
-      # - run_migrations:
-      #     service: << parameters.service >>
-      #     environment_key: << parameters.environment_key >>
-      #     space: << parameters.space >>
+      - run:
+          name: "Create tasks app manifest"
+          command: |
+            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p tasks_deploy_manifest.yml
+      - run:
+          name: "Push Tasks app"
+          command: |
+            export DOCKER_IMAGE=tariff-backend
+            export DOCKER_TAG="<< parameters.docker_image_tag >>"
+            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
+                                                               -f tasks_deploy_manifest.yml \
+                                                               --no-route \
+                                                               --task \
+                                                               --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
+                                                               --docker-username "$AWS_ACCESS_KEY_ID"
+      - run_migrations:
+          service: << parameters.service >>
+          environment_key: << parameters.environment_key >>
+          space: << parameters.space >>
 
   smoketest:
     parameters:
@@ -422,26 +431,19 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $ECR_REPO
             docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
             docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
+      - tariff/build-and-push:
+          name: build_and_push_dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          image_name: tariff-frontend
+          ssm_parameter: "/development/FRONTEND_ECR_URL"
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
 
-  # new aws env
-  build_and_push:
-    environment:
-      IMAGE_NAME: tariff-backend
-    parameters:
-      environment:
-        type: string
-    docker:
-      - image: cimg/ruby:3.2.2-node
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.11
-          docker_layer_caching: false
-      - aws-cli/install
-      - run:
-          name: Build and push image
-          command: ./.circleci/ecr.sh << parameters.environment >>
-  
   docker_tag:
     parameters:
       environment:
@@ -894,6 +896,27 @@ workflows:
             branches:
               ignore:
                 - main
+      - fmt_validate_terraform:
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
+      - plan_terraform:
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          requires:
+            - write_docker_tag
+            - fmt_validate_terraform
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
       - build:
           name: build_dev
           context: trade-tariff
@@ -903,6 +926,29 @@ workflows:
               ignore:
                 - main
                 - /^dependabot\/(?!docker\/).*/
+                - /^hotfix\/.+/
+      - tariff/build-and-push:
+          name: build_and_push_dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          image_name: tariff-backend
+          ssm_parameter: "/development/BACKEND_ECR_URL"
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
+      - apply_terraform:
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          requires:
+            - plan_terraform
+            - build_and_push_dev
+          filters:
+            branches:
+              ignore:
+                - /^dependabot/(?!docker/).*/
                 - /^hotfix\/.+/
       - deploy_dev:
           matrix:
@@ -961,7 +1007,6 @@ workflows:
               only:
                 - main
                 - /^hotfix\/.+/
-      # new aws env
       - build_and_push:
           name: build_and_push_dev
           context: trade-tariff-terraform-aws-development
@@ -972,7 +1017,7 @@ workflows:
                 - main
                 - /^hotfix\/.+/
                 - /^dependabot/(?!docker/).*/
-      - terraform_fmt_validate
+      - terraform_fmt_validate:
           context: trade-tariff-terraform-aws-development
           environment: development
           filters:
