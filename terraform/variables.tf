@@ -86,5 +86,5 @@ variable "base_domain" {
 
 variable "trade_tariff_oauth_secret" {
   description = "trade tarrif oauth secrets."
-  type        = "map"
+  type        = string
 }
