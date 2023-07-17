@@ -32,6 +32,9 @@ module Componentable
     delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
     delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
+    alias_method :measurement_unit_id, :measurement_unit_code
+    alias_method :measurement_unit_qualifier_id, :measurement_unit_qualifier_code
+
     def unit_for(measure)
       # The excise SPQ type has two variants that determine what units need
       # to be surfaced for the duty calculator.
@@ -68,6 +71,10 @@ module Componentable
       end
     end
 
+    def id
+      pk.join('-')
+    end
+
     def expresses_unit?
       measurement_unit_code
     end
@@ -95,6 +102,32 @@ module Componentable
 
     def meursing?
       duty_expression_id.in?(DutyExpression::MEURSING_DUTY_EXPRESSION_IDS)
+    end
+
+    def duty_expression_formatter_options
+      {
+        duty_expression_id:,
+        duty_expression_description:,
+        duty_expression_abbreviation:,
+        duty_amount:,
+        monetary_unit: monetary_unit_code,
+        monetary_unit_abbreviation:,
+        measurement_unit:,
+        measurement_unit_qualifier:,
+        currency: TradeTariffBackend.currency,
+      }
+    end
+
+    def formatted_duty_expression
+      DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
+    end
+
+    def verbose_duty_expression
+      DutyExpressionFormatter.format(duty_expression_formatter_options.merge(verbose: true))
+    end
+
+    def duty_expression_str
+      DutyExpressionFormatter.format(duty_expression_formatter_options)
     end
   end
 end

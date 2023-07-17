@@ -711,6 +711,19 @@
     "original_unit": null,
     "measurement_unit_type": "weight"
   },
+  "SPQ": {
+    "measurement_unit_code": "SPQ",
+    "measurement_unit_qualifier_code": "",
+    "abbreviation": "for each litre of pure alcohol, multiplied by the SPR discount",
+    "expansion": "for each litre of pure alcohol, multiplied by the SPR discount",
+    "unit_question": "",
+    "unit_hint": "",
+    "unit": "SPQ",
+    "multiplier": null,
+    "coerced_measurement_unit_code": null,
+    "original_unit": null,
+    "compound_units": []
+  },
   "SPQLPA": {
     "measurement_unit_code": "SPQ",
     "measurement_unit_qualifier_code": "LPA",
