@@ -32,11 +32,40 @@ module Componentable
     delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
     delegate :description, to: :monetary_unit, prefix: true, allow_nil: true
 
-    def unit
-      {
-        measurement_unit_code:,
-        measurement_unit_qualifier_code:,
-      }
+    def unit_for(measure)
+      # The excise SPQ type has two variants that determine what units need
+      # to be surfaced for the duty calculator.
+      #
+      # When the SPQ is based on litres of pure alcohol, the duty
+      # calculator needs to surface the SPR and LPA compound units.
+      #
+      # When the SPQ is based on percentage alcohol and volume per hectolitre,
+      # the duty calculator needs to surface the SPR, ASV and LTR compound units.
+      #
+      # This enables proper calculation of the duty and is essentially the result of a broken understanding of SPQ between CDS and other stakeholders.
+      if measure.excise? && small_producers_quotient?
+        if measure.all_components.find(&:liters_of_pure_alcohol?)
+          {
+            measurement_unit_code: SMALL_PRODUCERS_QUOTIENT,
+            measurement_unit_qualifier_code: LITERS_OF_PURE_ALCOHOL_QUALIFIER,
+          }
+        elsif measure.all_components.find(&:percentage_alcohol_and_volume_per_hl?)
+          {
+            measurement_unit_code: SMALL_PRODUCERS_QUOTIENT,
+            measurement_unit_qualifier_code: LITERS_QUALIFIER,
+          }
+        else
+          {
+            measurement_unit_code:,
+            measurement_unit_qualifier_code:,
+          }
+        end
+      else
+        {
+          measurement_unit_code:,
+          measurement_unit_qualifier_code:,
+        }
+      end
     end
 
     def expresses_unit?

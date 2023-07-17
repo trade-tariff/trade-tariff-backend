@@ -566,7 +566,7 @@ class Measure < Sequel::Model
     all_components.each_with_object([]) do |component, acc|
       next unless component.expresses_unit?
 
-      acc << component.unit
+      acc << component.unit_for(self)
     end
   end
 
@@ -625,6 +625,10 @@ class Measure < Sequel::Model
     0
   end
 
+  def all_components
+    all_condition_components + measure_components + resolved_measure_components
+  end
+
   private
 
   def excluded_country?(country_id)
@@ -655,8 +659,8 @@ class Measure < Sequel::Model
     Thread.current[:meursing_additional_code_id]
   end
 
-  def all_components
-    measure_conditions.flat_map(&:measure_condition_components) + measure_components + resolved_measure_components
+  def all_condition_components
+    measure_conditions.flat_map(&:measure_condition_components)
   end
 
   def ad_valorem_resource?(resource)

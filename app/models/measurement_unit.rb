@@ -1,4 +1,5 @@
 class MeasurementUnit < Sequel::Model
+  STANDARD_MEASUREMENT_UNIT_CODE_LENGTH = 3
   MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units_20220825.json'.freeze
 
   plugin :oplog, primary_key: :measurement_unit_code
@@ -50,7 +51,11 @@ class MeasurementUnit < Sequel::Model
     def build_missing_measurement_unit(unit_code, unit_key)
       unit = find(measurement_unit_code: unit_code)
 
-      qualifier_code = unit_key.length == 4 ? unit_key[3..] : ''
+      qualifier_code = if unit_key.length > STANDARD_MEASUREMENT_UNIT_CODE_LENGTH
+                         unit_key[STANDARD_MEASUREMENT_UNIT_CODE_LENGTH..]
+                       else
+                         ''
+                       end
 
       if unit.present?
         Sentry.capture_message("Missing measurement unit in database for measurement unit key: #{unit_key}")

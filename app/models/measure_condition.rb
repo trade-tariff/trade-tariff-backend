@@ -152,10 +152,6 @@ class MeasureCondition < Sequel::Model
     document_code.present? && document_code == CDS_WAIVER_DOCUMENT_CODE
   end
 
-  def units
-    measure_condition_components.map(&:unit)
-  end
-
   def permutation_key
     if certificate_type_code || certificate_code || condition_duty_amount
       "#{certificate_type_code}-#{certificate_code}-#{condition_duty_amount}"
