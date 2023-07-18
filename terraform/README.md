@@ -27,7 +27,10 @@ Terraform to deploy the service into AWS.
 | Name | Type |
 |------|------|
 | [aws_cloudwatch_log_groups.log_group](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/cloudwatch_log_groups) | data source |
+| [aws_kms_key.secretsmanager_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/kms_key) | data source |
 | [aws_lb_target_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/lb_target_group) | data source |
+| [aws_secretsmanager_secret.backend_secret_key_base](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
+| [aws_secretsmanager_secret.newrelic_license_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.redis_connection_string](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_security_group.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/security_group) | data source |
 | [aws_ssm_parameter.ecr_url](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/ssm_parameter) | data source |
@@ -53,6 +56,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_tariff_backend_sync_host"></a> [tariff\_backend\_sync\_host](#input\_tariff\_backend\_sync\_host) | Tariff Sync host. | `string` | n/a | yes |
 | <a name="input_tariff_backend_sync_password"></a> [tariff\_backend\_sync\_password](#input\_tariff\_backend\_sync\_password) | Tariff Sync password. | `string` | n/a | yes |
 | <a name="input_tariff_backend_sync_username"></a> [tariff\_backend\_sync\_username](#input\_tariff\_backend\_sync\_username) | Tariff Sync username. | `string` | n/a | yes |
+| <a name="input_trade_tariff_oauth_secret"></a> [trade\_tariff\_oauth\_secret](#input\_trade\_tariff\_oauth\_secret) | trade tarrif oauth secrets. | `map(string)` | n/a | yes |
 
 ## Outputs
 
