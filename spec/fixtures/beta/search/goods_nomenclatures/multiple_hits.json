@@ -36,7 +36,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
-              "description_indexed": "LIVE ANIMALS"
+              "description_indexed": "LIVE ANIMALS",
+              "formatted_description": "Live animals"
             },
             {
               "id": 27624,
@@ -44,7 +45,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
-              "description_indexed": "Live horses, asses, mules and hinnies"
+              "description_indexed": "Live horses, asses, mules and hinnies",
+              "formatted_description": "Live horses, asses, mules and hinnies"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
@@ -376,7 +378,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "MEAT AND EDIBLE MEAT OFFAL",
-              "description_indexed": "MEAT AND EDIBLE MEAT OFFAL"
+              "description_indexed": "MEAT AND EDIBLE MEAT OFFAL",
+              "formatted_description": "Meat and edible meat offal"
             },
             {
               "id": 28044,
@@ -384,7 +387,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
-              "description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen"
+              "description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
+              "formatted_description": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen"
             },
             {
               "id": 28097,
@@ -392,7 +396,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Other, fresh or chilled",
-              "description_indexed": "Other, fresh or chilled"
+              "description_indexed": "Other, fresh or chilled",
+              "formatted_description": "Other, fresh or chilled"
             },
             {
               "id": 28099,
@@ -400,7 +405,8 @@
               "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
-              "description_indexed": "Other"
+              "description_indexed": "Other",
+              "formatted_description": "Other"
             }
           ],
           "validity_start_date": "1972-01-01T00:00:00Z",
@@ -450,7 +456,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "MEAT AND EDIBLE MEAT OFFAL",
-              "description_indexed": "MEAT AND EDIBLE MEAT OFFAL"
+              "description_indexed": "MEAT AND EDIBLE MEAT OFFAL",
+              "description_indexed": "Meat and edible meat offal"
             },
             {
               "id": 28044,
@@ -458,7 +465,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
-              "description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen"
+              "description_indexed": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen",
+              "formatted_description": "Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen"
             },
             {
               "id": 28102,
@@ -466,7 +474,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Other, frozen",
-              "description_indexed": "Other, frozen"
+              "description_indexed": "Other, frozen",
+              "formatted_description": "Other, frozen"
             },
             {
               "id": 28104,
@@ -474,7 +483,8 @@
               "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Other",
-              "description_indexed": "Other"
+              "description_indexed": "Other",
+              "formatted_description": "Other"
             }
           ],
           "validity_start_date": "1972-01-01T00:00:00Z",
@@ -524,7 +534,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
-              "description_indexed": "LIVE ANIMALS"
+              "description_indexed": "LIVE ANIMALS",
+              "formatted_description": "Live animals"
             },
             {
               "id": 27624,
@@ -532,7 +543,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
-              "description_indexed": "Live horses, asses, mules and hinnies"
+              "description_indexed": "Live horses, asses, mules and hinnies",
+              "formatted_description": "Live horses, asses, mules and hinnies"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",
@@ -582,7 +594,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "LIVE ANIMALS",
-              "description_indexed": "LIVE ANIMALS"
+              "description_indexed": "LIVE ANIMALS",
+              "formatted_description": "Live animals"
             },
             {
               "id": 27624,
@@ -590,7 +603,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Live horses, asses, mules and hinnies",
-              "description_indexed": "Live horses, asses, mules and hinnies"
+              "description_indexed": "Live horses, asses, mules and hinnies",
+              "formatted_description": "Live horses, asses, mules and hinnies"
             }
           ],
           "validity_start_date": "2002-01-01T00:00:00Z",
@@ -640,7 +654,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Chapter",
               "description": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
-              "description_indexed": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES"
+              "description_indexed": "FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES",
+              "formatted_description": "Fish and crustaceans, molluscs and other aquatic invertebrates"
             },
             {
               "id": 28402,
@@ -648,7 +663,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Heading",
               "description": "Fish, fresh or chilled, excluding fish fillets and other fish meat of heading 0304",
-              "description_indexed": "Fish, fresh or chilled"
+              "description_indexed": "Fish, fresh or chilled",
+              "formatted_description": "Fish, fresh or chilled"
             },
             {
               "id": 93985,
@@ -656,7 +672,8 @@
               "producline_suffix": "10",
               "goods_nomenclature_class": "Subheading",
               "description": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae), excluding edible fish offal of subheadings 0302 91 to 0302 99",
-              "description_indexed": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae)"
+              "description_indexed": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae)",
+              "formatted_description": "Herrings (Clupea harengus, Clupea pallasii), anchovies (Engraulis spp.), sardines (Sardina pilchardus, Sardinops spp.), sardinella (Sardinella spp.), brisling or sprats (Sprattus sprattus), mackerel (Scomber scombrus, Scomber australasicus, Scomber japonicus), Indian mackerels (Rastrelliger spp.), seerfishes (Scomberomorus spp.), jack and horse mackerel (Trachurus spp.), jacks, crevalles (Caranx spp.), cobia (Rachycentron canadum), silver pomfrets (Pampus spp.), Pacific saury (Cololabis saira), scads (Decapterus spp.), capelin (Mallotus villosus), swordfish (Xiphias gladius), Kawakawa (Euthynnus affinis), bonitos (Sarda spp.), marlins, sailfishes, spearfish (Istiophoridae)"
             },
             {
               "id": 93993,
@@ -664,7 +681,8 @@
               "producline_suffix": "80",
               "goods_nomenclature_class": "Subheading",
               "description": "Jack and horse mackerel (Trachurus spp.)",
-              "description_indexed": "Jack and horse mackerel (Trachurus spp.)"
+              "description_indexed": "Jack and horse mackerel (Trachurus spp.)",
+              "formatted_description": "Jack and horse mackerel (Trachurus spp.)"
             }
           ],
           "validity_start_date": "2012-01-01T00:00:00Z",

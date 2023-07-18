@@ -13,7 +13,7 @@ RSpec.describe Api::Beta::HeadingStatisticsSerializer do
             attributes: {
               description: 'Cheese and curd',
               chapter_id: '04',
-              chapter_description: "DAIRY PRODUCE; BIRDS' EGGS; NATURAL HONEY; EDIBLE PRODUCTS OF ANIMAL ORIGIN, NOT ELSEWHERE SPECIFIED OR INCLUDED",
+              chapter_description: "Dairy produce; birds' eggs; natural honey; edible products of animal origin, not elsewhere specified or included",
               score: 79.16452,
               cnt: 1,
               avg: 79.16452,

@@ -19,20 +19,20 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
   describe '#chapter_statistics' do
     context 'when statistics have been generated' do
-      subject(:chapter_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).chapter_statistics }
+      subject(:chapter_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).chapter_statistics.map(&:to_hash) }
 
       let(:expected_chapter_statistics) do
         [
           {
             'id' => '01',
-            'description' => 'LIVE ANIMALS',
+            'description' => 'Live animals',
             'score' => 485.68718800000005,
             'cnt' => 7,
             'avg' => 69.38388400000001,
           },
           {
             'id' => '02',
-            'description' => 'MEAT AND EDIBLE MEAT OFFAL',
+            'description' => 'Meat and edible meat offal',
             'score' => 126.686088,
             'cnt' => 2,
             'avg' => 63.343044,
@@ -40,7 +40,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
           {
             'id' => '03',
             'description' =>
-            'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES',
+            'Fish and crustaceans, molluscs and other aquatic invertebrates',
             'score' => 53.984024,
             'cnt' => 1,
             'avg' => 53.984024,
@@ -60,7 +60,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
 
   describe '#heading_statistics' do
     context 'when statistics have been generated' do
-      subject(:heading_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).heading_statistics }
+      subject(:heading_statistics) { build(:search_result, :generate_heading_and_chapter_statistics).heading_statistics.map(&:to_hash) }
 
       let(:expected_heading_statistics) do
         [
@@ -68,7 +68,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
             'id' => '0101',
             'description' => 'Live horses, asses, mules and hinnies',
             'chapter_id' => '01',
-            'chapter_description' => 'LIVE ANIMALS',
+            'chapter_description' => 'Live animals',
             'score' => 485.68718800000005,
             'cnt' => 7,
             'avg' => 69.38388400000001,
@@ -78,7 +78,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
             'id' => '0206',
             'description' => 'Edible offal of bovine animals, swine, sheep, goats, horses, asses, mules or hinnies, fresh, chilled or frozen',
             'chapter_id' => '02',
-            'chapter_description' => 'MEAT AND EDIBLE MEAT OFFAL',
+            'chapter_description' => 'Meat and edible meat offal',
             'score' => 126.686088,
             'cnt' => 2,
             'avg' => 63.343044,
@@ -88,7 +88,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
             'id' => '0302',
             'description' => 'Fish, fresh or chilled',
             'chapter_id' => '03',
-            'chapter_description' => 'FISH AND CRUSTACEANS, MOLLUSCS AND OTHER AQUATIC INVERTEBRATES',
+            'chapter_description' => 'Fish and crustaceans, molluscs and other aquatic invertebrates',
             'score' => 53.984024,
             'cnt' => 1,
             'avg' => 53.984024,
