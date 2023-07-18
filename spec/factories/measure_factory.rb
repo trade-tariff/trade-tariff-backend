@@ -296,6 +296,7 @@ FactoryBot.define do
 
     trait :excise do
       measure_type { create(:measure_type, measure_type_series_id: 'Q', measure_type_id: '306') }
+      measure_type_id { '306' }
     end
 
     trait :mfn do

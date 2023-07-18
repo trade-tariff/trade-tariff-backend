@@ -1,6 +1,5 @@
 module Api
   module V2
-    # Serializer used in MeasuresController#show
     class MeasureSerializer < Api::V2::BaseMeasureSerializer
       attribute :excise, &:excise?
       attribute :vat, &:vat?

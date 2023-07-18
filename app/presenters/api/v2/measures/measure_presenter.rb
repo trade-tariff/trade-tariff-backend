@@ -41,7 +41,7 @@ module Api
             def verbose_duty
               verbose_duty_expression
             end
-          }.new(@measure)
+          }.new(measure)
         end
 
         def national_measurement_units
@@ -58,6 +58,10 @@ module Api
 
         def additional_code_id
           export_refund_nomenclature_sid || additional_code_sid
+        end
+
+        def measure_conditions
+          MeasureConditionPresenter.wrap(measure, super)
         end
 
         def measure_condition_ids
@@ -110,7 +114,7 @@ module Api
 
         def measure_condition_permutation_groups
           @measure_condition_permutation_groups = \
-            MeasureConditionPermutations::Calculator.new(@measure)
+            MeasureConditionPermutations::Calculator.new(measure)
                                                     .permutation_groups
         end
 
@@ -159,6 +163,8 @@ module Api
         end
 
       private
+
+        attr_reader :measure, :declarable
 
         def measure_type_exclusions
           @measure_type_exclusions ||= MeasureTypeExclusion.find_geographical_areas(
