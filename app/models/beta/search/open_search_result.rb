@@ -55,16 +55,19 @@ module Beta
           hit.description_indexed = hit_result._source.description_indexed
           hit.declarable = hit_result._source.declarable
 
-          chapter_description = hit_result._source.ancestors[CHAPTER_ANCESTOR_POSITION].formatted_description
-          heading_description = hit_result._source.ancestors[HEADING_ANCESTOR_POSITION].formatted_description
+          chapter_ancestor = hit_result._source.ancestors[CHAPTER_ANCESTOR_POSITION]
+          heading_ancestor = hit_result._source.ancestors[HEADING_ANCESTOR_POSITION]
 
           case hit.goods_nomenclature_class
           when 'Chapter'
-            hit.chapter_description = chapter_description
+            hit.chapter_description = hit_result._source.formatted_description
             hit.heading_description = nil
+          when 'Heading'
+            hit.chapter_description = chapter_ancestor.presence&.formatted_description || hit_result._source.ancestor_1_description_indexed
+            hit.heading_description = hit_result._source.formatted_description
           else
-            hit.chapter_description = chapter_description
-            hit.heading_description = heading_description
+            hit.chapter_description = chapter_ancestor.presence&.formatted_description || hit_result._source.ancestor_1_description_indexed
+            hit.heading_description = heading_ancestor.presence&.formatted_description || hit_result._source.ancestor_2_description_indexed
           end
 
           hit.search_references = hit_result._source.search_references
