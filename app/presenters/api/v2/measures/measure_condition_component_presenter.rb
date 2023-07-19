@@ -2,6 +2,8 @@ module Api
   module V2
     module Measures
       class MeasureConditionComponentPresenter < WrapDelegator
+        delegate :excise_alcohol_coercian_starts_from, to: TradeTariffBackend
+
         # Sadly, rather than just creating a new measurement unit,
         # CDS have opted to multiply the duty amount by 100 to balance
         # the difference between the measurement units of hectoliters and liters.
@@ -53,6 +55,9 @@ module Api
         attr_reader :measure, :measure_condition_component, :index
 
         def apply_coerced_duty_amount_conversion_factor?
+          return false if Time.zone.today < excise_alcohol_coercian_starts_from
+          return false if MeasureCondition.point_in_time.present? && MeasureCondition.point_in_time < excise_alcohol_coercian_starts_from
+
           index.zero? && measure.excise? && measure.has_alcohol_measurement_units?
         end
 
