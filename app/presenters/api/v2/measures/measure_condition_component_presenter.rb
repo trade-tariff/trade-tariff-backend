@@ -13,7 +13,7 @@ module Api
         #
         # The coercian only happened for excise duties, on the first measure component
         # of alcohol measures.
-        COERCED_DUTY_AMOUNT_CONVERSION_FACTOR = 0.01
+        COERCED_ASVX_DUTY_AMOUNT_CONVERSION_FACTOR = 0.01
 
         def initialize(measure, measure_condition_component, index)
           super(measure_condition_component)
@@ -27,7 +27,7 @@ module Api
           return super unless apply_coerced_duty_amount_conversion_factor?
           return super if super.blank?
 
-          super * COERCED_DUTY_AMOUNT_CONVERSION_FACTOR
+          super * COERCED_ASVX_DUTY_AMOUNT_CONVERSION_FACTOR
         end
 
         def formatted_duty_expression
