@@ -4,6 +4,9 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
+  many_to_one :country, key: :currency_code, primary_key: :currency_code, class: ExchangeRateCountry
+  many_to_one :currency, key: :currency_code, primary_key: :currency_code, class: ExchangeRateCurrency
+
   def scheduled_rate?
     validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
   end
