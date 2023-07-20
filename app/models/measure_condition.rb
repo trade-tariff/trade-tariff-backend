@@ -50,7 +50,8 @@ class MeasureCondition < Sequel::Model
   end
 
   one_to_many :measure_condition_components, key: :measure_condition_sid,
-                                             primary_key: :measure_condition_sid
+                                             primary_key: :measure_condition_sid,
+                                             order: Sequel.asc(:duty_expression_id)
 
   delegate :abbreviation, to: :monetary_unit, prefix: true, allow_nil: true
   delegate :description, to: :measurement_unit, prefix: true, allow_nil: true

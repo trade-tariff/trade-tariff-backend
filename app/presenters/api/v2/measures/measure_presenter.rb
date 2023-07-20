@@ -61,7 +61,7 @@ module Api
         end
 
         def measure_conditions
-          MeasureConditionPresenter.wrap(measure, super)
+          MeasureConditionPresenter.wrap(super, measure)
         end
 
         def measure_condition_ids

@@ -269,7 +269,12 @@ module TradeTariffBackend
     end
 
     def excise_alcohol_coercian_starts_from
-      Date.parse(ENV.fetch('ALCOHOL_COERCIAN_STARTS_FROM', '2023-08-01'))
+      @excise_alcohol_coercian_starts_from ||= Date.parse(
+        ENV.fetch(
+          'ALCOHOL_COERCIAN_STARTS_FROM',
+          '2023-08-01',
+        ),
+      )
     end
 
     def revision
