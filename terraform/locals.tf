@@ -37,6 +37,10 @@ locals {
       value = "6"
     },
     {
+      name  = "MERGED_XI_UK_DATABASES"
+      value = "true"
+    },
+    {
       name  = "NEW_RELIC_AGENT_ENABLED"
       value = "false"
     },
@@ -131,6 +135,30 @@ locals {
     {
       name      = "DATABASE_URL"
       valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
-    }
+    },
+    {
+      name      = "NEW_RELIC_LICENSE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.newrelic_license_key.arn
+    },
+    {
+      name      = "SENTRY_DSN"
+      valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
+    },
+    {
+      name      = "SECRET_KEY_BASE"
+      valueFrom = data.aws_secretsmanager_secret.secret_key_base.arn
+    },
+    {
+      name      = "TARIFF_SYNC_PASSWORD"
+      valueFrom = data.aws_secretsmanager_secret.sync_password.arn
+    },
+    {
+      name      = "TRADE_TARIFF_OAUTH_ID"
+      valueFrom = data.aws_secretsmanager_secret.oauth_id.arn
+    },
+    {
+      name      = "TRADE_TARIFF_OAUTH_SECRET"
+      valueFrom = data.aws_secretsmanager_secret.oauth_secret.arn
+    },
   ]
 }
