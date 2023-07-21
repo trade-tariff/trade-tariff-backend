@@ -3,6 +3,10 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
 
   let(:measure) { create(:measure, :with_base_regulation, :with_measure_conditions) }
 
+  describe '#measure_conditions' do
+    it { expect(presenter.measure_conditions).to all(be_a(Api::V2::Measures::MeasureConditionPresenter)) }
+  end
+
   describe '#legal_acts' do
     it 'will be mapped through the MeasureLegalActPresenter' do
       expect(presenter.legal_acts.first).to \
