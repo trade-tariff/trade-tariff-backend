@@ -1,21 +1,3 @@
-variable "tariff_backend_sync_email" {
-  description = "Tariff Sync email."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_sync_host" {
-  description = "Tariff Sync host."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_sync_username" {
-  description = "Tariff Sync username."
-  type        = string
-  sensitive   = true
-}
-
 variable "environment" {
   description = "Deployment environment."
   type        = string
@@ -58,4 +40,10 @@ variable "max_capacity" {
 variable "base_domain" {
   description = "URL of the service."
   type        = string
+}
+
+variable "alcohol_coercian_starts_from" {
+  description = "When alcohol measurement unit coercian starts from for excise measurement units"
+  type        = string
+  default     = "2023-01-01"
 }

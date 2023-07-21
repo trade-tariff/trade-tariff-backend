@@ -34,7 +34,7 @@ module "backend_uk" {
       },
       {
         name  = "GOVUK_APP_DOMAIN"
-        value = "tariff-uk-backend-${local.environment_key}.apps.internal"
+        value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
         name  = "NEW_RELIC_APP_NAME"
@@ -46,7 +46,7 @@ module "backend_uk" {
       },
       {
         name  = "TARIFF_FROM_EMAIL"
-        value = "Tariff UK [${upper(var.environment)}] <${local.no_reply}>"
+        value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
       },
       {
         name  = "VCAP_APPLICATION"
@@ -55,5 +55,7 @@ module "backend_uk" {
     ]
   ])
 
-  service_secrets_config = local.backend_common_secrets
+  service_secrets_config = flatten(
+    [local.backend_common_secrets, local.backend_uk_common_secrets]
+  )
 }
