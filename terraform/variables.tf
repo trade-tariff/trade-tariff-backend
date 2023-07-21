@@ -1,9 +1,3 @@
-variable "tariff_backend_sentry_dsn" {
-  description = "Backend Sentry DSN."
-  type        = string
-  sensitive   = true
-}
-
 variable "tariff_backend_sync_email" {
   description = "Tariff Sync email."
   type        = string
@@ -16,26 +10,8 @@ variable "tariff_backend_sync_host" {
   sensitive   = true
 }
 
-variable "tariff_backend_sync_password" {
-  description = "Tariff Sync password."
-  type        = string
-  sensitive   = true
-}
-
 variable "tariff_backend_sync_username" {
   description = "Tariff Sync username."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_oauth_id" {
-  description = "Tariff Backend OAuth ID."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_oauth_secret" {
-  description = "Tariff Backend OAuth secret."
   type        = string
   sensitive   = true
 }
@@ -81,10 +57,5 @@ variable "max_capacity" {
 
 variable "base_domain" {
   description = "URL of the service."
-  type        = string
-}
-
-variable "trade_tariff_oauth_secret" {
-  description = "trade tarrif oauth secrets."
   type        = string
 }

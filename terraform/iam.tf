@@ -11,6 +11,7 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.redis_connection_string.arn,
       data.aws_secretsmanager_secret.newrelic_license_key.arn,
       data.aws_secretsmanager_secret.backend_secret_key_base.arn,
+      data.aws_secretsmanager_secret.database_connection_string.arn
     ]
   }
 

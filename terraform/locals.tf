@@ -66,10 +66,6 @@ locals {
       value = "100"
     },
     {
-      name  = "SENTRY_DSN"
-      value = var.tariff_backend_sentry_dsn
-    },
-    {
       name  = "SENTRY_PROJECT"
       value = "tariff-backend"
     },
@@ -106,24 +102,35 @@ locals {
       value = var.tariff_backend_sync_host
     },
     {
-      name  = "TARIFF_SYNC_PASSWORD"
-      value = var.tariff_backend_sync_password
-    },
-    {
       name  = "TARIFF_SYNC_USERNAME"
       value = var.tariff_backend_sync_username
-    },
-    {
-      name  = "TRADE_TARIFF_OAUTH_ID"
-      value = var.tariff_backend_oauth_id
-    },
-    {
-      name  = "TRADE_TARIFF_OAUTH_SECRET"
-      value = var.tariff_backend_oauth_secret
     },
     {
       name  = "WEB_CONCURRENCY"
       value = "4"
     }
+  ]
+
+  backend_common_secrets = [
+    {
+      name      = "REDIS_URL"
+      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn
+    },
+    {
+      name      = "DATABASE_URL"
+      valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+    }
+    # {
+    #   name  = "TRADE_TARIFF_OAUTH_ID"
+    #   value = var.tariff_backend_oauth_id
+    # },
+    # {
+    #   name  = "TRADE_TARIFF_OAUTH_SECRET"
+    #   value = var.tariff_backend_oauth_secret
+    # },
+    # {
+    #   name  = "SENTRY_DSN"
+    #   value = var.tariff_backend_sentry_dsn
+    # },
   ]
 }
