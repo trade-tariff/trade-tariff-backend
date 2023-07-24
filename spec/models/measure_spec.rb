@@ -1211,67 +1211,37 @@ RSpec.describe Measure do
   end
 
   describe '#units' do
-    context 'when there are measure components and measure components' do
+    let(:expected_units) do
+      [
+        {
+          measurement_unit_code: 'DTN',
+          measurement_unit_qualifier_code: 'R',
+        },
+      ]
+    end
+
+    context 'when there are measure conditions and measure components' do
       subject(:measure) { create(:measure, :with_measure_components, :with_measure_conditions) }
 
-      let(:expected_units) do
-        [
-          {
-            measurement_unit_code: 'DTN',
-            measurement_unit_qualifier_code: 'R',
-          },
-          {
-            measurement_unit_code: 'DTN',
-            measurement_unit_qualifier_code: 'R',
-          },
-        ]
-      end
-
-      it 'returns the units' do
-        expect(measure.units).to eq(expected_units)
-      end
+      it { expect(measure.units).to eq(expected_units) }
     end
 
-    context 'when there are measure components' do
+    context 'when there are just measure components' do
       subject(:measure) { create(:measure, :with_measure_components) }
 
-      let(:expected_units) do
-        [
-          {
-            measurement_unit_code: 'DTN',
-            measurement_unit_qualifier_code: 'R',
-          },
-        ]
-      end
-
-      it 'returns the units' do
-        expect(measure.units).to eq(expected_units)
-      end
+      it { expect(measure.units).to eq(expected_units) }
     end
 
-    context 'when there are measure conditions' do
+    context 'when there are just measure conditions' do
       subject(:measure) { create(:measure, :with_measure_conditions) }
 
-      let(:expected_units) do
-        [
-          {
-            measurement_unit_code: 'DTN',
-            measurement_unit_qualifier_code: 'R',
-          },
-        ]
-      end
-
-      it 'returns the units' do
-        expect(measure.units).to eq(expected_units)
-      end
+      it { expect(measure.units).to eq(expected_units) }
     end
 
     context 'when there are no measure conditions or components' do
       subject(:measure) { create(:measure) }
 
-      it 'returns the units' do
-        expect(measure.units).to eq([])
-      end
+      it { expect(measure.units).to eq([]) }
     end
   end
 
@@ -1637,25 +1607,5 @@ RSpec.describe Measure do
     subject(:supplementary_unit_duty_expression) { create(:measure, :supplementary, :with_measure_components).supplementary_unit_duty_expression }
 
     it { is_expected.to match(/\.* \(.*\)/) }
-  end
-
-  describe '#has_alcohol_measurement_units?' do
-    subject(:measure) { create(:measure) }
-
-    context 'when measure has no components' do
-      it { is_expected.not_to be_has_alcohol_measurement_units }
-    end
-
-    context 'when measure has components but no alcohol measurement units' do
-      before { create(:measure_component, measure:) }
-
-      it { is_expected.not_to be_has_alcohol_measurement_units }
-    end
-
-    context 'when measure has components with alcohol measurement units' do
-      before { create(:measure_component, :asvx, measure:) }
-
-      it { is_expected.to be_has_alcohol_measurement_units }
-    end
   end
 end

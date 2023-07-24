@@ -160,16 +160,41 @@ RSpec.describe MeasureCondition do
   end
 
   describe '#expresses_unit?' do
-    context 'when the measure condition has measure condition components that express units' do
-      subject(:measure_condition) { create(:measure_condition, :with_measure_condition_components, measurement_unit_code: 'TNE') }
+    context 'when the measure condition has condition units' do
+      subject(:measure_condition) { create(:measure_condition, condition_measurement_unit_code: 'TNE') }
 
       it { is_expected.to be_expresses_unit }
     end
 
-    context 'when the measure condition has measure condition components that do not express units' do
-      subject(:measure_condition) { create(:measure_condition, :with_measure_condition_components) }
+    context 'when the measure condition has no condition units' do
+      subject(:measure_condition) { create(:measure_condition, condition_measurement_unit_code: nil) }
 
       it { is_expected.not_to be_expresses_unit }
+    end
+  end
+
+  describe '#unit_for' do
+    subject(:measure_condition) { create(:measure_condition, condition_measurement_unit_code:) }
+
+    context 'when the measure condition has condition units and the measure is an excise measure' do
+      let(:condition_measurement_unit_code) { 'TNE' }
+      let(:measure) { create(:measure, :excise) }
+
+      it { expect(measure_condition.unit_for(measure)).to include(measurement_unit_code: 'TNE') }
+    end
+
+    context 'when the measure condition no condition units and the measure is an excise measure' do
+      let(:condition_measurement_unit_code) { nil }
+      let(:measure) { create(:measure, :excise) }
+
+      it { expect(measure_condition.unit_for(measure)).to be_nil }
+    end
+
+    context 'when the measure condition has condition units and the measure is not an excise measure' do
+      let(:condition_measurement_unit_code) { 'TNE' }
+      let(:measure) { create(:measure) }
+
+      it { expect(measure_condition.unit_for(measure)).to be_nil }
     end
   end
 

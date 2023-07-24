@@ -146,7 +146,7 @@ class MeasureCondition < Sequel::Model
   end
 
   def expresses_unit?
-    measure_condition_components.any?(&:expresses_unit?)
+    condition_measurement_unit_code.present?
   end
 
   def universal_waiver_applies?
@@ -158,6 +158,15 @@ class MeasureCondition < Sequel::Model
       "#{certificate_type_code}-#{certificate_code}-#{condition_duty_amount}"
     else
       measure_condition_sid # ensure always unique
+    end
+  end
+
+  def unit_for(measure)
+    if measure.excise? && expresses_unit?
+      {
+        measurement_unit_code: condition_measurement_unit_code,
+        measurement_unit_qualifier_code: condition_measurement_unit_qualifier_code,
+      }
     end
   end
 
