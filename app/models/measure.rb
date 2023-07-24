@@ -629,10 +629,6 @@ class Measure < Sequel::Model
     all_condition_components + measure_components + resolved_measure_components
   end
 
-  def has_alcohol_measurement_units?
-    all_components.any?(&:percentage_alcohol_and_volume_per_hl?)
-  end
-
   private
 
   def excluded_country?(country_id)

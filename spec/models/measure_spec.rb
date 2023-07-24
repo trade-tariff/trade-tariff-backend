@@ -1638,24 +1638,4 @@ RSpec.describe Measure do
 
     it { is_expected.to match(/\.* \(.*\)/) }
   end
-
-  describe '#has_alcohol_measurement_units?' do
-    subject(:measure) { create(:measure) }
-
-    context 'when measure has no components' do
-      it { is_expected.not_to be_has_alcohol_measurement_units }
-    end
-
-    context 'when measure has components but no alcohol measurement units' do
-      before { create(:measure_component, measure:) }
-
-      it { is_expected.not_to be_has_alcohol_measurement_units }
-    end
-
-    context 'when measure has components with alcohol measurement units' do
-      before { create(:measure_component, :asvx, measure:) }
-
-      it { is_expected.to be_has_alcohol_measurement_units }
-    end
-  end
 end
