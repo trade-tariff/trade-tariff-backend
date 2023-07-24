@@ -563,11 +563,12 @@ class Measure < Sequel::Model
   end
 
   def units
-    all_components.each_with_object([]) do |component, acc|
+    all_unit_components.each_with_object(Set.new) { |component, acc|
       next unless component.expresses_unit?
 
-      acc << component.unit_for(self)
-    end
+      unit = component.unit_for(self)
+      acc << unit if unit.present?
+    }.to_a
   end
 
   def entry_price_system?
@@ -631,6 +632,10 @@ class Measure < Sequel::Model
 
   private
 
+  def all_unit_components
+    all_components + measure_conditions
+  end
+
   def excluded_country?(country_id)
     country_id.in?(measure_excluded_geographical_area_ids)
   end
@@ -652,7 +657,7 @@ class Measure < Sequel::Model
   end
 
   def components_express_unit?
-    measure_components.any?(&:expresses_unit?) || measure_conditions.any?(&:expresses_unit?) || resolved_measure_components.any?(&:expresses_unit?)
+    measure_components.any?(&:expresses_unit?) || measure_conditions.any?(&:expresses_unit?) || measure_conditions.flat_map(&:measure_condition_components).any?(&:expresses_unit) || resolved_measure_components.any?(&:expresses_unit?)
   end
 
   def meursing_additional_code_id

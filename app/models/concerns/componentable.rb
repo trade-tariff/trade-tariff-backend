@@ -76,7 +76,7 @@ module Componentable
     end
 
     def expresses_unit?
-      measurement_unit_code
+      measurement_unit_code.present?
     end
 
     def small_producers_quotient?
