@@ -11,7 +11,7 @@ module Api
         def serialized_period_list
           ExchangeRates::ExchangeRatePeriodListSerializer.new(
             period_list,
-            include: %i[exchange_rate_periods exchange_rate_years],
+            include: %i[exchange_rate_periods exchange_rate_years exchange_rate_periods.files],
           ).serializable_hash
         end
 

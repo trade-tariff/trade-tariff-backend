@@ -6,6 +6,10 @@ module ExchangeRates
       "#{year}-#{month}-exchange_rate_period"
     end
 
+    def file_ids
+      files.map(&:id)
+    end
+
     class << self
       def wrap(months, year)
         months.map do |month|
@@ -17,7 +21,12 @@ module ExchangeRates
         period = new
         period.month = month
         period.year = year
+        period.files = exchange_rate_files_for(month, year)
         period
+      end
+
+      def exchange_rate_files_for(month, year)
+        ExchangeRateFile.where(period_year: year, period_month: month)
       end
     end
   end
