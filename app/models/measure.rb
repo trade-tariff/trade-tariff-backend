@@ -657,7 +657,7 @@ class Measure < Sequel::Model
   end
 
   def components_express_unit?
-    measure_components.any?(&:expresses_unit?) || measure_conditions.any?(&:expresses_unit?) || measure_conditions.flat_map(&:measure_condition_components).any?(&:expresses_unit) || resolved_measure_components.any?(&:expresses_unit?)
+    measure_components.any?(&:expresses_unit?) || measure_conditions.any?(&:expresses_unit?) || measure_conditions.flat_map(&:measure_condition_components).any?(&:expresses_unit?) || resolved_measure_components.any?(&:expresses_unit?)
   end
 
   def meursing_additional_code_id
