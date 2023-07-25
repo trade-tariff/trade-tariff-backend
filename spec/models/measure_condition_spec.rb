@@ -287,6 +287,12 @@ RSpec.describe MeasureCondition do
       it { expect(measure_condition.threshold_unit_type).to eq :volume }
     end
 
+    context 'when the condition is percentage_abv condition' do
+      subject(:measure_condition) { build :measure_condition, :percentage_abv }
+
+      it { expect(measure_condition.threshold_unit_type).to eq :percentage_abv }
+    end
+
     context 'when the condition is not threshold condition' do
       subject(:measure_condition) { build :measure_condition, :without_threshold }
 

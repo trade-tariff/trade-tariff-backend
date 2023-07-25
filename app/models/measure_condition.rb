@@ -142,6 +142,8 @@ class MeasureCondition < Sequel::Model
       :weight
     elsif is_volume_condition?
       :volume
+    elsif is_percentage_abv_condition?
+      :percentage_abv
     end
   end
 
@@ -186,6 +188,10 @@ private
 
   def is_volume_condition?
     MeasurementUnit.volume_units.include? condition_measurement_unit_code
+  end
+
+  def is_percentage_abv_condition?
+    MeasurementUnit.percentage_abv_units.include? condition_measurement_unit_code
   end
 
   def is_eps_condition?

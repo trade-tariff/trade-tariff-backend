@@ -118,17 +118,21 @@ RSpec.describe MeasurementUnit do
     end
   end
 
-  describe 'weight_units' do
+  describe '.weight_units' do
     subject { described_class.weight_units }
 
-    it { is_expected.to include 'DAP' }
-    it { is_expected.not_to include 'HLT' }
+    it { is_expected.to eq(%w[DAP DHS DTN GFI GRM GRT KGM KMA RET TNE]) }
   end
 
-  describe 'volume_units' do
+  describe '.volume_units' do
     subject { described_class.volume_units }
 
-    it { is_expected.to include 'HLT' }
-    it { is_expected.not_to include 'DAP' }
+    it { is_expected.to eq(%w[HLT KLT LPA LTR MIL MTQ]) }
+  end
+
+  describe '.percentage_abv_units' do
+    subject { described_class.percentage_abv_units }
+
+    it { is_expected.to eq(%w[ASV]) }
   end
 end
