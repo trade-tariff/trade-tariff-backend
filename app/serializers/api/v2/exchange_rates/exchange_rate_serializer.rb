@@ -12,7 +12,7 @@ module Api
                    :currency_code,
                    :rate,
                    :validity_start_date,
-                   :validity_start_end,
+                   :validity_end_date
       end
     end
   end

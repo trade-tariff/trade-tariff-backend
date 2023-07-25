@@ -19,6 +19,10 @@ module Api
           @exchange_rates ||= ::ExchangeRates::RatesList.build(month, year)
         end
 
+        def month
+          (params[:month].presence || ExchangeRateCurrencyRate.max_month).to_i
+        end
+
         def year
           (params[:year].presence || ExchangeRateCurrencyRate.max_year).to_i
         end

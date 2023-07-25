@@ -1,11 +1,7 @@
 RSpec.describe Api::V2::ExchangeRates::ExchangeRateFileSerializer do
   subject(:serializable) { described_class.new(exchange_rate_file).serializable_hash }
 
-  let(:exchange_rate_file) do
-    build(
-      :exchange_rate_file,
-    )
-  end
+  let(:exchange_rate_file) { build(:exchange_rate_file) }
 
   let :expected do
     {
@@ -14,8 +10,8 @@ RSpec.describe Api::V2::ExchangeRates::ExchangeRateFileSerializer do
         type: :exchange_rate_file,
         attributes: {
           file_path: exchange_rate_file.file_path,
-          format: exchange_rate_file.format,
           file_size: exchange_rate_file.file_size,
+          format: exchange_rate_file.format,
           publication_date: exchange_rate_file.publication_date,
         },
       },

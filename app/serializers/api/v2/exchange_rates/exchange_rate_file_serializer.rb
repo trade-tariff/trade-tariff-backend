@@ -6,7 +6,10 @@ module Api
 
         set_type :exchange_rate_file
 
-        attributes :file_path, :format, :file_size, :publication_date
+        attributes :file_path,
+                   :file_size,
+                   :format,
+                   :publication_date
       end
     end
   end

@@ -51,6 +51,16 @@ class ExchangeRateCurrencyRate < Sequel::Model
       where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
         .order(Sequel.desc(:validity_start_date))
     end
+
+    def files_for_year_and_month(month, year = Time.zone.today.year)
+      return if month.blank? || year.blank?
+
+      start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
+      end_of_month = start_of_month.end_of_month
+
+      where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
+        .order(Sequel.desc(:validity_start_date))
+    end
   end
 
   class << self
@@ -86,6 +96,15 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .select_map(:validity_start_date)
         .first
         &.year.presence || Time.zone.today.year
+    end
+
+    def max_month
+      order(Sequel.desc(:validity_start_date))
+        .scheduled
+        .limit(1)
+        .select_map(:validity_start_date)
+        .first
+        &.month.presence || Time.zone.today.month
     end
 
     def months_for_year(year)

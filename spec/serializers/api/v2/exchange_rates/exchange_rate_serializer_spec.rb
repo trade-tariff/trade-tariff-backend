@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::ExchangeRates::ExchangeRateSerializer do
   subject(:serializable) { described_class.new(exchange_rate).serializable_hash }
 
-  let(:exchange_rate) { build(:exchange_rate, month: 1, year: 2022) }
+  let(:exchange_rate) { build(:exchange_rate) }
 
   let :expected do
     {
@@ -26,5 +26,4 @@ RSpec.describe Api::V2::ExchangeRates::ExchangeRateSerializer do
       expect(serializable).to eql(expected)
     end
   end
-
 end
