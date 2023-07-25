@@ -17,12 +17,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsvService do
       allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
       allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return(csv_string)
       allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, csv_string).and_return(true)
-      allow(ActiveSupport::Notifications)
-        .to receive(:instrument)
-        .with('exchange_rates.monthly_csv',
-              date: date_string,
-              path: "data/exchange_rates/monthly_csv_#{date_string}.csv",
-              size: csv_string.size)
+      allow(Rails.logger)
+        .to receive(:info)
+        .with("exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}")
         .and_return(true)
     end
 
@@ -36,12 +33,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsvService do
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year)
       expect(ExchangeRates::CreateCsvService).to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with(file_path, csv_string)
-      expect(ActiveSupport::Notifications)
-        .to have_received(:instrument)
-        .with('exchange_rates.monthly_csv',
-              date: date_string,
-              path: "data/exchange_rates/monthly_csv_#{date_string}.csv",
-              size: csv_string.size)
+      expect(Rails.logger)
+        .to have_received(:info)
+        .with("exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}")
     end
   end
 
@@ -51,12 +45,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsvService do
       allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
       allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return(csv_string)
       allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, csv_string).and_return(true)
-      allow(ActiveSupport::Notifications)
-        .to receive(:instrument)
-        .with('exchange_rates.monthly_csv',
-              date: date_string,
-              path: "data/exchange_rates/monthly_csv_#{date_string}.csv",
-              size: csv_string.size)
+      allow(Rails.logger)
+        .to receive(:info)
+        .with("exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}")
         .and_return(true)
     end
 
@@ -70,12 +61,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsvService do
       expect(::ExchangeRateCurrencyRate).not_to have_received(:for_month).with(month, year)
       expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).not_to have_received(:write_file).with(file_path, csv_string)
-      expect(ActiveSupport::Notifications)
-        .not_to have_received(:instrument)
-        .with('exchange_rates.monthly_csv',
-              date: date_string,
-              path: "data/exchange_rates/monthly_csv_#{date_string}.csv",
-              size: csv_string.size)
+      expect(Rails.logger)
+        .not_to have_received(:info)
+        .with("exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}")
     end
   end
 
@@ -86,12 +74,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsvService do
       allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
       allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return(csv_string)
       allow(TariffSynchronizer::FileService).to receive(:write_file).with(file_path, csv_string).and_return(true)
-      allow(ActiveSupport::Notifications)
-        .to receive(:instrument)
-        .with('exchange_rates.monthly_csv',
-              date: date_string,
-              path: "data/exchange_rates/monthly_csv_#{date_string}.csv",
-              size: csv_string.size)
+      allow(Rails.logger)
+        .to receive(:info)
+        .with("exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}")
         .and_return(true)
     end
 
@@ -105,12 +90,9 @@ RSpec.describe ExchangeRates::UploadMonthlyCsvService do
       expect(::ExchangeRateCurrencyRate).not_to have_received(:for_month).with(month, year)
       expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).not_to have_received(:write_file).with(file_path, csv_string)
-      expect(ActiveSupport::Notifications)
-        .not_to have_received(:instrument)
-        .with('exchange_rates.monthly_csv',
-              date: date_string,
-              path: "data/exchange_rates/monthly_csv_#{date_string}.csv",
-              size: csv_string.size)
+      expect(Rails.logger)
+        .not_to have_received(:info)
+        .with("exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}")
     end
   end
 end

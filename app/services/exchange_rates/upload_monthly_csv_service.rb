@@ -1,7 +1,5 @@
 module ExchangeRates
   class UploadMonthlyCsvService
-    delegate :instrument, to: ActiveSupport::Notifications
-
     def self.call
       new.call
     end
@@ -20,10 +18,9 @@ module ExchangeRates
 
       TariffSynchronizer::FileService.write_file(file_path, csv_string)
 
-      instrument('exchange_rates.monthly_csv',
-                 date: date_string,
-                 path: file_path,
-                 size: csv_string.size)
+      info_message = "exchange_rates.monthly_csv-#{file_path}-size: #{csv_string.size}"
+
+      Rails.logger.info(info_message)
     end
 
   private
