@@ -2,6 +2,9 @@ module ExchangeRates
   class CreateCsvService
     attr_reader :data
 
+    COUNTRY_NAME_INDEX = 0
+    CURRENCY_RATE_INDEX = 1
+
     def self.call(data)
       new(data).call
     end
@@ -42,15 +45,12 @@ module ExchangeRates
     end
 
     def build_row(currency_country_data)
-      # currency_country_data is an array with 2 elements
-      # ['country_name', ExchangeRateCurrencyRate]
-
-      country_name = currency_country_data.first
-      currency_rate = currency_country_data.last
+      country_name = currency_country_data[COUNTRY_NAME_INDEX]
+      currency_rate = currency_country_data[CURRENCY_RATE_INDEX]
 
       [
         country_name,
-        currency_rate.currency.try(:currency_description),
+        currency_rate.exchange_rate_currency.try(:currency_description),
         currency_rate.currency_code,
         currency_rate.rate,
         format_date(currency_rate.validity_start_date),
@@ -62,7 +62,7 @@ module ExchangeRates
       result = {}
 
       data.each do |currency_rate|
-        currency_rate.countries.each do |country_data|
+        currency_rate.exchange_rate_countries.each do |country_data|
           result[country_data.country] = currency_rate
         end
       end
