@@ -13,7 +13,8 @@ module Api
                    :measurement_unit_code,
                    :measurement_unit_qualifier_code,
                    :duty_expression_description,
-                   :duty_expression_abbreviation
+                   :duty_expression_abbreviation,
+                   :measure_condition_sid
       end
     end
   end
