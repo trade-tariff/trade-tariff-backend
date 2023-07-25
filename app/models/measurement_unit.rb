@@ -1,6 +1,6 @@
 class MeasurementUnit < Sequel::Model
   STANDARD_MEASUREMENT_UNIT_CODE_LENGTH = 3
-  MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units_20220825.json'.freeze
+  MEASUREMENT_UNIT_OVERLAY_FILE = 'db/measurement_units.json'.freeze
 
   plugin :oplog, primary_key: :measurement_unit_code
   plugin :time_machine
@@ -34,6 +34,10 @@ class MeasurementUnit < Sequel::Model
 
     def volume_units
       measurement_units.select { |_k, v| v['measurement_unit_type'] == 'volume' }.keys
+    end
+
+    def percentage_abv_units
+      measurement_units.select { |_k, v| v['measurement_unit_type'] == 'percentage_abv' }.keys
     end
 
     def measurement_units

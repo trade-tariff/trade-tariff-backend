@@ -3,7 +3,7 @@ RSpec.describe MeasureUnitService do
 
   describe '#call' do
     context 'when the measures do not express units' do
-      let(:measures) { [create(:measure, :no_expresses_units)] }
+      let(:measures) { create_list(:measure, 1, :no_expresses_units) }
 
       it 'returns an empty Hash of units' do
         expect(service.call).to eq({})
@@ -66,6 +66,7 @@ RSpec.describe MeasureUnitService do
             'multiplier' => nil,
             'coerced_measurement_unit_code' => nil,
             'original_unit' => nil,
+            'measurement_unit_type' => 'percentage_abv',
           },
           'HLT' => {
             'abbreviation' => 'hl',

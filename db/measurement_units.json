@@ -9,7 +9,8 @@
     "unit": "percent",
     "multiplier": null,
     "coerced_measurement_unit_code": null,
-    "original_unit": null
+    "original_unit": null,
+    "measurement_unit_type": "percentage_abv"
   },
   "ASVX": {
     "measurement_unit_code": "ASV",

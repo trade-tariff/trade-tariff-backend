@@ -49,6 +49,15 @@ FactoryBot.define do
     certificate_type_code {}
   end
 
+  trait :percentage_abv do
+    condition_duty_amount { 3.50 }
+    condition_monetary_unit_code {}
+    condition_measurement_unit_code { 'ASV' }
+    condition_measurement_unit_qualifier_code {}
+    certificate_code {}
+    certificate_type_code {}
+  end
+
   trait :without_threshold do
     condition_duty_amount {}
     condition_monetary_unit_code {}
