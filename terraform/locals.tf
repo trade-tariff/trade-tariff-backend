@@ -5,6 +5,10 @@ locals {
 locals {
   backend_common_vars = [
     {
+      name  = "PORT"
+      value = "8080"
+    },
+    {
       name  = "ALCOHOL_COERCIAN_STARTS_FROM"
       value = var.alcohol_coercian_starts_from
     },
