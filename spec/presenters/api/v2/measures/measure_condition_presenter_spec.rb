@@ -40,7 +40,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
       it { expect(presenter.duty_expression).to match(expected_duty_expression) }
     end
 
-    it_behaves_like 'a measure condition presented duty expression', /^<span>5.00<\/span>.*<span>100.00<\/span>.*$/ do
+    it_behaves_like 'a measure condition presented duty expression', /<span>5.00<\/span> GBP - £1.00  \/ for each litre of pure alcohol, multiplied by the SPR discount/ do
       before do
         create(
           :measure_condition_component,
@@ -48,14 +48,18 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
           :with_duty_expression,
           measure_condition:,
           duty_expression_id: '01',
+          monetary_unit_code: 'GBP',
           duty_amount: 500.0,
         )
         create(
           :measure_condition_component,
           :with_duty_expression,
-          duty_expression_id: '04',
+          :with_measurement_unit,
+          duty_expression_id: '02',
           measure_condition:,
-          duty_amount: 100.0,
+          measurement_unit_code: 'SPQ',
+          monetary_unit_code: 'GBP',
+          duty_amount: 1.0,
         )
       end
 
