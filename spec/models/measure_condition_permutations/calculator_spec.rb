@@ -1,5 +1,5 @@
 RSpec.describe MeasureConditionPermutations::Calculator do
-  subject(:calculator) { described_class.new measure_with_conditions }
+  subject(:calculator) { described_class.new(measure) }
 
   let(:measure) do
     create(:measure)
@@ -7,56 +7,88 @@ RSpec.describe MeasureConditionPermutations::Calculator do
   end
 
   describe 'filtering measure_conditions' do
+    # rubocop:disable RSpec/LetSetup
     subject :measure_conditions do
       calculator.permutation_groups
                 .flat_map(&:permutations)
                 .flat_map(&:measure_conditions)
     end
 
-    let(:regular_condition) { measure.measure_conditions.first }
-
-    let :waiver_condition do
-      create :measure_condition, :cds_waiver, measure_sid: measure.measure_sid
+    shared_examples 'an included measure condition' do
+      it { expect(measure_conditions).to include(measure_condition) }
     end
 
-    let :negative_condition do
-      create :measure_condition, :negative, measure_sid: measure.measure_sid
+    shared_examples_for 'an excluded measure condition' do
+      it { expect(measure_conditions).not_to include(measure_condition) }
     end
 
-    let :measure_with_conditions do
-      regular_condition && waiver_condition && negative_condition
-
-      measure.reload
+    it_behaves_like 'an included measure condition' do
+      let!(:measure_condition) { measure.measure_conditions.first }
     end
 
-    it 'includes a regular condition' do
-      expect(measure_conditions).to include(regular_condition)
-    end
-
-    it 'excludes universal waiver conditions' do
-      expect(measure_conditions).not_to include(waiver_condition)
-    end
-
-    it 'excludes negative action conditions' do
-      expect(measure_conditions).not_to include(negative_condition)
-    end
-
-    context 'with action_code=08 negative condition' do
-      let :negative_condition do
-        create :measure_condition, :negative, measure_sid: measure.measure_sid,
-                                              action_code: '08'
+    it_behaves_like 'an included measure condition' do
+      let!(:measure_condition) do
+        create(
+          :measure_condition,
+          :negative,
+          measure_sid: measure.measure_sid,
+          action_code: '08',
+        )
       end
-
-      it { is_expected.to include negative_condition }
     end
 
-    context 'with negative condition with document code' do
-      let :negative_condition do
-        create :measure_condition, :negative, :document, measure_sid: measure.measure_sid
+    it_behaves_like 'an included measure condition' do
+      let!(:measure_condition) do
+        create(
+          :measure_condition,
+          :negative,
+          :threshold,
+          measure_sid: measure.measure_sid,
+        )
       end
-
-      it { is_expected.to include negative_condition }
     end
+
+    it_behaves_like 'an included measure condition' do
+      let!(:measure_condition) do
+        create(
+          :measure_condition,
+          :negative,
+          :document,
+          measure_sid: measure.measure_sid,
+        )
+      end
+    end
+
+    it_behaves_like 'an excluded measure condition' do
+      let!(:measure_condition) do
+        create(
+          :measure_condition,
+          :negative,
+          measure_sid: measure.measure_sid,
+        )
+      end
+    end
+
+    it_behaves_like 'an excluded measure condition' do
+      let!(:measure_condition) do
+        create(
+          :measure_condition,
+          :cds_waiver,
+          measure_sid: measure.measure_sid,
+        )
+      end
+    end
+
+    it_behaves_like 'an excluded measure condition' do
+      let!(:measure_condition) do
+        create(
+          :measure_condition,
+          :negative,
+          measure_sid: measure.measure_sid,
+        )
+      end
+    end
+    # rubocop:enable RSpec/LetSetup
   end
 
   describe '#permutation_groups' do

@@ -1,16 +1,13 @@
 module MeasureConditionPermutations
+  # There are 2 rules for calculating permutations
+  #
+  # When there are conditions with matching permutation_keys, then a single
+  # permutation group is provided with all permutations
+  #
+  # If there are no conditions with matching permutation key, then generate
+  # one group per condition code, with a separate permutation per condition
+  # within it
   class Calculator
-    # There are 2 rules for calculating permutations
-    #
-    # When there are conditions with matching permutation_keys, then a single
-    # permutation group is provided with all permutations
-    #
-    # If there are no conditions with matching permutation key, then generate
-    # one group per condition code, with a separate permutation per condition
-    # within it
-
-    INCLUDED_NEGATIVE_ACTIONS = %w[08].freeze
-
     delegate :measure_sid, to: :@measure
 
     def initialize(measure)
@@ -27,12 +24,10 @@ module MeasureConditionPermutations
       end
     end
 
-  private
+    private
 
     def measure_conditions
-      @measure_conditions ||= @measure.measure_conditions
-                                      .reject(&:universal_waiver_applies?)
-                                      .reject(&method(:excluded_condition?))
+      @measure_conditions ||= @measure.measure_conditions.reject(&:is_excluded_condition?)
     end
 
     def matched_measure_conditions?
@@ -40,13 +35,6 @@ module MeasureConditionPermutations
         .group_by(&:permutation_key)
         .values
         .any?(&:many?) # multiple conditions with same key
-    end
-
-    def excluded_condition?(condition)
-      condition.negative_class? &&
-        condition.measure_action.present? &&
-        condition.document_code.blank? &&
-        INCLUDED_NEGATIVE_ACTIONS.exclude?(condition.measure_action.action_code)
     end
   end
 end

@@ -1,5 +1,6 @@
 class MeasureCondition < Sequel::Model
   CDS_WAIVER_DOCUMENT_CODE = '999L'.freeze
+  INCLUDED_NEGATIVE_ACTIONS = %w[08].freeze
 
   plugin :time_machine
   plugin :national
@@ -68,6 +69,7 @@ class MeasureCondition < Sequel::Model
   delegate :requirement_operator, to: :measure_condition_code, allow_nil: true
 
   delegate :guidance_chief, :guidance_cds, to: :appendix_5a, allow_nil: true
+  delegate :positive_action?, to: :measure_action, allow_nil: true
 
   def before_create
     self.measure_condition_sid ||= self.class.next_national_sid
@@ -172,7 +174,25 @@ class MeasureCondition < Sequel::Model
     end
   end
 
-private
+  def is_excluded_condition?
+    # Globally exclude the universal waiver conditions
+    return true if universal_waiver_applies?
+    # Globally exclude all positive conditions
+    return false if positive_action?
+    # Include conditions that are negative threshold conditions
+    return false if is_threshold?
+    # Include conditions that are negative with an action code of 08
+    return false if action_code.in?(INCLUDED_NEGATIVE_ACTIONS)
+
+    # Exclude conditions that are negative and have no document or threshold
+    document_code.blank?
+  end
+
+  private
+
+  def is_threshold?
+    condition_duty_amount.present?
+  end
 
   def classification
     @classification ||= MeasureConditionClassification.new(self)
