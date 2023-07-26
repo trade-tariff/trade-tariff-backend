@@ -198,6 +198,38 @@ RSpec.describe MeasureCondition do
     end
   end
 
+  describe '#is_excluded_condition?' do
+    context 'when the measure condition has a cds waiver document_code' do
+      subject(:measure_condition) { create(:measure_condition, certificate_type_code: '9', certificate_code: '99L') }
+
+      it { is_expected.to be_is_excluded_condition }
+    end
+
+    context 'when the measure condition has a negative action' do
+      subject(:measure_condition) { create(:measure_condition, :negative) }
+
+      it { is_expected.to be_is_excluded_condition }
+    end
+
+    context 'when the measure condition has a negative action and is an included explicitly negative action' do
+      subject(:measure_condition) { create(:measure_condition, :negative, action_code: '08') }
+
+      it { is_expected.not_to be_is_excluded_condition }
+    end
+
+    context 'when the measure condition has a negative action and has a document_code' do
+      subject(:measure_condition) { create(:measure_condition, :negative, certificate_code: '999') }
+
+      it { is_expected.not_to be_is_excluded_condition }
+    end
+
+    context 'when the measure condition has a negative action and is a threshold' do
+      subject(:measure_condition) { create(:measure_condition, :negative, :threshold) }
+
+      it { is_expected.not_to be_is_excluded_condition }
+    end
+  end
+
   describe '#universal_waiver_applies?' do
     context 'when the measure condition has a cds waiver document_code' do
       subject(:measure_condition) { create(:measure_condition, certificate_type_code: '9', certificate_code: '99L') }
