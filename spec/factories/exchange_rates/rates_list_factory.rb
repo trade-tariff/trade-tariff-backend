@@ -1,7 +1,8 @@
 FactoryBot.define do
-  factory :rates_list, class: 'ExchangeRates::RatesList' do
-    year { 2020 }
+  factory :exchange_rates_list, class: 'ExchangeRates::RatesList' do
+    year { 2023 }
     month { 6 }
+    publication_date { '2023-06-22T00:00:00.000Z' }
     exchange_rate_files { [] }
     exchange_rates { [] }
   end
