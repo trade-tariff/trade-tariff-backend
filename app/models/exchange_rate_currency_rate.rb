@@ -4,6 +4,9 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
+  many_to_one :exchange_rate_currency, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCurrency
+  one_to_many :exchange_rate_countries, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountry
+
   def scheduled_rate?
     validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
   end
@@ -30,6 +33,16 @@ class ExchangeRateCurrencyRate < Sequel::Model
       where { (validity_start_date >= start_of_year) & (validity_start_date <= end_of_year) }
         .order(Sequel.desc(:validity_start_date))
         .distinct(:validity_start_date)
+    end
+
+    def by_year_and_month(month, year = Time.zone.today.year)
+      return if month.blank? || year.blank?
+
+      start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
+      end_of_month = start_of_month.end_of_month
+
+      where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
+        .order(Sequel.desc(:validity_start_date))
     end
   end
 
@@ -74,6 +87,14 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .select_map(:validity_start_date)
         .map(&:month)
         .uniq
+    end
+
+    def for_month(month, year = Time.zone.today.year)
+      by_year_and_month(month, year)
+        .scheduled
+        .order(Sequel.asc(:validity_start_date))
+        .order(Sequel.asc(:currency_code))
+        .all
     end
 
     private

@@ -71,3 +71,7 @@
       class: TreeIntegrityCheckWorker
       description: Check integrity of Goods Nomenclature hierarchy 4 weeks in future
       args: [ 28 ]
+    ExchangeRatesMonthlyUpload:
+      cron: '0 12 * * THU'
+      class: MonthlyExchangeRatesWorker
+      description: Upload CSV every penultimate thursday of the month at 12pm

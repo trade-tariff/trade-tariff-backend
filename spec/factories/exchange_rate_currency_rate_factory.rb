@@ -4,6 +4,7 @@ FactoryBot.define do
     validity_start_date { Date.new(2020, 1, 1) }
     validity_end_date { Date.new(2020, 1, 31) }
     rate { 4.8012 }
+    rate_type { 'scheduled' }
 
     trait :spot_rate do
       validity_start_date { Date.new(2022, 12, 31) }
