@@ -8,7 +8,7 @@ FactoryBot.define do
   end
 
   trait :with_rates_file do
-    exchange_rate_files { build_list :exchange_rate_file, 1 }
+    exchange_rate_files { build_list :exchange_rate_exchange_rate_file, 1 }
   end
 
   trait :with_exchange_rates do

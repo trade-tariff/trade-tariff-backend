@@ -1,94 +1,105 @@
 RSpec.describe ExchangeRates::RatesList do
-  let(:year) { 2020 }
-  let(:month) { 2 }
+  let(:year) { 2023 }
+  let(:month) { 6 }
+  let(:publication_date) { '2023-06-22T00:00:00.000Z' }
 
   describe '#id' do
-    subject(:period_list) { build(:period_list) }
-
-    let(:rate_list) { build(:rate_list) }
+    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
 
     it 'returns the correct id' do
-      expect(rate_list.id).to eq("#{year}-#{month}-exchange_rate_period")
+      expect(rates_list.id).to eq("#{year}-#{month}-exchange_rate_period")
     end
   end
 
-  describe '#exchange_rate_year_ids' do
-    subject(:rate_list) { build(:rate_list) }
+  describe '#exchange_rate_file_ids' do
+    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
 
     it 'returns the ids of exchange rate years' do
-      expect(period_list.exchange_rate_year_ids).to be_empty
+      expect(rates_list.exchange_rate_file_ids).to eq(['2023-6-csv_file'])
     end
   end
 
-  describe '#exchange_rate_period_ids' do
-    subject(:rate_list) { build(:rate_list) }
+  describe '#exchange_rate_ids' do
+    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
 
     it 'returns the ids of exchange rate periods' do
-      expect(period_list.exchange_rate_period_ids).to be_empty
+      expect(rates_list.exchange_rate_ids).to be_empty
     end
   end
 
   describe '.build' do
-    subject(:period_list) { described_class.build(year) }
+    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file, year:, month:) }
 
-    it 'builds a period list with exchange rate periods and years' do
-      expect(period_list).to be_an_instance_of(described_class)
+    it 'builds a rates list with exchange rates and exchange rate files' do
+      expect(rates_list).to be_an_instance_of(described_class)
     end
 
     it 'sets the year correctly' do
-      expect(period_list.year).to eq(year)
+      expect(rates_list.year).to eq(year)
     end
 
-    it 'initializes exchange rate periods to an empty array' do
-      expect(period_list.exchange_rate_periods).to be_empty
+    it 'sets the month correctly' do
+      expect(rates_list.month).to eq(month)
     end
 
-    it 'initializes exchange rate years to an empty array' do
-      expect(period_list.exchange_rate_years).to be_empty
+    it 'sets the publication_date correctly' do
+      expect(rates_list.publication_date).to eq(publication_date)
+    end
+
+    it 'initializes exchange rate files to include an instance of a file' do
+      expect(rates_list.exchange_rate_files.first).to be_an_instance_of(ExchangeRates::ExchangeRateFile)
+    end
+
+    it 'initializes exchange rates to an empty array' do
+      expect(rates_list.exchange_rates).to be_empty
     end
   end
 
-  # describe '.exchange_rate_periods_for' do
-  #   subject(:exchange_rate_periods) { described_class.exchange_rate_periods_for(year) }
+  describe '.exchange_rate_files' do
+    subject(:exchange_rate_files) { described_class.exchange_rate_files(month, year) }
 
-  #   before do
-  #     allow(ExchangeRateCurrencyRate).to receive(:months_for_year).with(year).and_return(months)
-  #   end
+    let(:files) { build_list(:exchange_rate_exchange_rate_file, 1) }
 
-  #   it 'calls ExchangeRates::Period.build with the correct arguments' do
-  #     allow(ExchangeRates::Period).to receive(:wrap).with(months, year).and_return([])
-  #     exchange_rate_periods
-  #   end
+    before do
+      allow(ExchangeRateCurrencyRate).to receive(:files_for_year_and_month).with(month, year).and_return(files)
+    end
 
-  #   it 'returns an array' do
-  #     expect(exchange_rate_periods).to be_an(Array)
-  #   end
+    it 'calls ExchangeRates::RatesList.build with the correct arguments' do
+      allow(ExchangeRates::ExchangeRateFile).to receive(:wrap).with(exchange_rate_files).and_return([])
 
-  #   it 'returns an array of ExchangeRates::Period instances' do
-  #     expect(exchange_rate_periods).to all(be_an_instance_of(ExchangeRates::Period))
-  #   end
-  # end
+      exchange_rate_files
+    end
 
-  # describe '.exchange_rate_years' do
-  #   subject(:exchange_rate_years) { described_class.exchange_rate_years }
+    it 'returns an array' do
+      expect(exchange_rate_files).to be_an(Array)
+    end
 
-  #   let(:years) { [2020, 2021, 2022] }
+    it 'returns an array of ExchangeRates::ExchangeRateFile instances' do
+      expect(exchange_rate_files).to all(be_an_instance_of(ExchangeRates::ExchangeRateFile))
+    end
+  end
 
-  #   before do
-  #     allow(ExchangeRateCurrencyRate).to receive(:all_years).and_return(years)
-  #   end
+  describe '.exchange_rates' do
+    subject(:exchange_rates) { described_class.exchange_rates(month, year) }
 
-  #   it 'calls ExchangeRates::PeriodYear.build with the correct arguments' do
-  #     allow(ExchangeRates::PeriodYear).to receive(:wrap).with(years).and_return([])
-  #     exchange_rate_years
-  #   end
+    let(:rates) { build_list(:exchange_rate, 1) }
 
-  #   it 'returns an array' do
-  #     expect(exchange_rate_years).to be_an(Array)
-  #   end
+    before do
+      allow(ExchangeRateCurrencyRate).to receive(:by_year_and_month).with(month, year).and_return(rates)
+    end
 
-  #   it 'returns an array of ExchangeRates::PeriodYear instances' do
-  #     expect(exchange_rate_years).to all(be_an_instance_of(ExchangeRates::PeriodYear))
-  #   end
-  # end
+    it 'calls ExchangeRates::ExchangeRate.build with the correct arguments' do
+      allow(ExchangeRates::ExchangeRate).to receive(:wrap).with(rates).and_return([])
+
+      exchange_rates
+    end
+
+    it 'returns an array' do
+      expect(exchange_rates).to be_an(Array)
+    end
+
+    it 'returns an array of ExchangeRates::ExchangeRate instances' do
+      expect(exchange_rates).to all(be_an_instance_of(ExchangeRates::ExchangeRate))
+    end
+  end
 end

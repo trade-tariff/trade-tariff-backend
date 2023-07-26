@@ -14,8 +14,6 @@ module ExchangeRates
       "#{year}-#{month}-#{country_code}"
     end
 
-    attr_reader :country_code
-
     class << self
       def wrap(rates)
         rates.map do |exchange_rate|
@@ -23,15 +21,15 @@ module ExchangeRates
         end
       end
 
-      def build(exchange_rate)
+      def build(rate)
         exchange_rate = new
-        exchange_rate.country = country
-        exchange_rate.country_code = country_code
-        exchange_rate.currency_description = currency_description
-        exchange_rate.currency_code = currency_code
-        exchange_rate.rate = rate
-        exchange_rate.validity_start_date = validity_start_date
-        exchange_rate.validity_end_date = validity_end_date
+        exchange_rate.country = rate.country
+        exchange_rate.country_code = rate.country_code
+        exchange_rate.currency_description = rate.currency_description
+        exchange_rate.currency_code = rate.currency_code
+        exchange_rate.rate = rate.rate
+        exchange_rate.validity_start_date = rate.validity_start_date
+        exchange_rate.validity_end_date = rate.validity_end_date
         exchange_rate
       end
     end

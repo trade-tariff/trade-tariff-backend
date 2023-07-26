@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::ExchangeRates::ExchangeRateFileSerializer do
   subject(:serializable) { described_class.new(exchange_rate_file).serializable_hash }
 
-  let(:exchange_rate_file) { build(:exchange_rate_file) }
+  let(:exchange_rate_file) { build(:exchange_rate_exchange_rate_file) }
 
   let :expected do
     {

@@ -21,7 +21,7 @@ module ExchangeRates
         period = new
         period.month = month
         period.year = year
-        period.files = ExchangeRateFile.where(period_year: year, period_month: month)
+        period.files = ::ExchangeRateFile.where(period_year: year, period_month: month)
         period
       end
     end

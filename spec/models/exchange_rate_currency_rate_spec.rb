@@ -37,15 +37,6 @@ RSpec.describe ExchangeRateCurrencyRate do
         expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
         expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
       end
-
-      after do
-        travel_back
-      end
-
-      it 'returns the month for the year you are currently in', :aggregate_failures do
-        expect(described_class.for_month(5).pluck(:currency_code)).to eq(%w[AUD])
-        expect(described_class.for_month(5).pluck(:rate)).to eq([1.78])
-      end
     end
   end
 
@@ -66,12 +57,6 @@ RSpec.describe ExchangeRateCurrencyRate do
   describe '.max_year' do
     it 'returns the maximum year from the validity start dates' do
       expect(described_class.max_year).to eq(2023)
-    end
-  end
-
-  describe '.max_month' do
-    it 'returns the maximum month from the validity start dates' do
-      expect(described_class.max_month).to eq(6)
     end
   end
 

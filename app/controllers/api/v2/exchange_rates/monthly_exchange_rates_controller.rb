@@ -3,7 +3,11 @@ module Api
     module ExchangeRates
       class MonthlyExchangeRatesController < ApiController
         def show
-          render json: serialized_exchange_rates_list
+          if month && year
+            render json: serialized_exchange_rates_list
+          else
+            render json: { "errors": [{ "detail": 'not found' }] }, status: :not_found
+          end
         end
 
         private
@@ -11,7 +15,7 @@ module Api
         def serialized_exchange_rates_list
           ExchangeRates::ExchangeRatesListSerializer.new(
             exchange_rates,
-            include: %i[exchange_rate],
+            include: %i[exchange_rates exchange_rate_files],
           ).serializable_hash
         end
 
@@ -20,11 +24,15 @@ module Api
         end
 
         def month
-          (params[:month].presence || ExchangeRateCurrencyRate.max_month).to_i
+          return if params[:month].nil?
+
+          params[:month].presence.to_i
         end
 
         def year
-          (params[:year].presence || ExchangeRateCurrencyRate.max_year).to_i
+          return if params[:year].nil?
+
+          params[:year].presence.to_i
         end
       end
     end

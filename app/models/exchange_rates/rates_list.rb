@@ -2,6 +2,7 @@ module ExchangeRates
   class RatesList
     attr_accessor :year,
                   :month,
+                  :publication_date,
                   :exchange_rate_files,
                   :exchange_rates
 
@@ -18,22 +19,23 @@ module ExchangeRates
     end
 
     class << self
-      def build(year)
+      def build(month, year)
         rates_list = new
         rates_list.year = year
         rates_list.month = month
-        rates_list.exchange_rate_files = exchange_rate_files_for(month, year)
-        rates_list.exchange_rates = exchange_rates_for(month, year)
+        rates_list.publication_date = exchange_rate_files(month, year).first.publication_date
+        rates_list.exchange_rate_files = exchange_rate_files(month, year)
+        rates_list.exchange_rates = exchange_rates(month, year)
         rates_list
       end
 
-      def exchange_rate_files_for(month, year)
+      def exchange_rate_files(month, year)
         files = ExchangeRateCurrencyRate.files_for_year_and_month(month, year)
 
         ExchangeRates::ExchangeRateFile.wrap(files)
       end
 
-      def exchange_rates_for(month, year)
+      def exchange_rates(month, year)
         rates = ExchangeRateCurrencyRate.by_year_and_month(month, year)
 
         ExchangeRates::ExchangeRate.wrap(rates)

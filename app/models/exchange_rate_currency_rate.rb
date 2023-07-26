@@ -18,10 +18,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
     [3, 12].include?(validity_start_date.month) && validity_start_date.day == 31 && validity_end_date.nil?
   end
 
-  def countries
-    ExchangeRateCountry.where(currency_code:)
-  end
-
   dataset_module do
     def scheduled
       where(rate_type: SCHEDULED_RATE_TYPE)
@@ -96,15 +92,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .select_map(:validity_start_date)
         .first
         &.year.presence || Time.zone.today.year
-    end
-
-    def max_month
-      order(Sequel.desc(:validity_start_date))
-        .scheduled
-        .limit(1)
-        .select_map(:validity_start_date)
-        .first
-        &.month.presence || Time.zone.today.month
     end
 
     def months_for_year(year)
