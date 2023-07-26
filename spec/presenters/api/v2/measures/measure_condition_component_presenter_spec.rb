@@ -124,6 +124,45 @@ RSpec.describe Api::V2::Measures::MeasureConditionComponentPresenter do
     end
   end
 
+  describe '#presented_duty_expression' do
+    context 'when the component is an Small Producers Quotient component' do
+      let(:measure) { create(:measure) }
+      let(:measure_condition) { create(:measure_condition, measure:) }
+      let(:measure_condition_component) do
+        create(
+          :measure_condition_component,
+          :with_duty_expression,
+          :with_measurement_unit,
+          duty_expression_id: '02',
+          measure_condition:,
+          measurement_unit_code: 'SPQ',
+          monetary_unit_code: 'GBP',
+          duty_amount: 1.0,
+        )
+      end
+
+      it { expect(presenter.presented_duty_expression).to eq('- £1.00  / for each litre of pure alcohol, multiplied by the SPR discount') }
+    end
+
+    context 'when the component is not an Small Producers Quotient component' do
+      let(:measure) { create(:measure) }
+      let(:measure_condition) { create(:measure_condition, measure:) }
+      let(:measure_condition_component) do
+        create(
+          :measure_condition_component,
+          :asvx,
+          :with_duty_expression,
+          measure_condition:,
+          duty_expression_id: '01',
+          monetary_unit_code: 'GBP',
+          duty_amount: 500.0,
+        )
+      end
+
+      it { expect(presenter.presented_duty_expression).to eq('<span>500.00</span> GBP') }
+    end
+  end
+
   describe '.wrap' do
     subject(:wrapped) { described_class.wrap(measure_condition_components, measure) }
 

@@ -30,6 +30,14 @@ module Api
           end
         end
 
+        def presented_duty_expression
+          if small_producers_quotient?
+            verbose_duty_expression
+          else
+            formatted_duty_expression
+          end
+        end
+
         def formatted_duty_expression
           DutyExpressionFormatter.format(duty_expression_formatter_options.merge(formatted: true))
         end

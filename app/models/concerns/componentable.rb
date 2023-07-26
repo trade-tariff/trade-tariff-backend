@@ -114,7 +114,6 @@ module Componentable
         monetary_unit_abbreviation:,
         measurement_unit:,
         measurement_unit_qualifier:,
-        currency: TradeTariffBackend.currency,
       }
     end
 

@@ -18,5 +18,15 @@ FactoryBot.define do
         create(:duty_expression, :with_description, duty_expression_id: measure_condition_component.duty_expression_id)
       end
     end
+
+    trait :with_measurement_unit do
+      after(:create) do |measure_condition_component, _evaluator|
+        create(
+          :measurement_unit,
+          :with_description,
+          measurement_unit_code: measure_condition_component.measurement_unit_code,
+        )
+      end
+    end
   end
 end
