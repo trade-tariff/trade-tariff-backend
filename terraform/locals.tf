@@ -89,6 +89,10 @@ locals {
       value = "analyzers/F202143497"
     },
     {
+      name  = "TARIFF_SYNC_EMAIL"
+      value = "trade-tariff-support@enginegroup.com"
+    },
+    {
       name  = "TARIFF_IGNORE_PRESENCE_ERRORS"
       value = "1"
     },
