@@ -627,12 +627,20 @@ class Measure < Sequel::Model
   end
 
   def all_components
-    all_condition_components + measure_components + resolved_measure_components
+    default_components = measure_components + resolved_measure_components
+
+    return default_components if Time.zone.today < TradeTariffBackend.excise_alcohol_coercian_starts_from
+    return default_components if point_in_time.present? && point_in_time < TradeTariffBackend.excise_alcohol_coercian_starts_from
+
+    all_condition_components + default_components
   end
 
   private
 
   def all_unit_components
+    return all_components if Time.zone.today < TradeTariffBackend.excise_alcohol_coercian_starts_from
+    return all_components if point_in_time.present? && point_in_time < TradeTariffBackend.excise_alcohol_coercian_starts_from
+
     all_components + measure_conditions
   end
 
