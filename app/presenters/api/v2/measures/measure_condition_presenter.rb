@@ -31,15 +31,7 @@ module Api
         end
 
         def duty_expression
-          formatted_components = measure_condition_components.map do |measure_condition_component|
-            if measure_condition_component.small_producers_quotient?
-              measure_condition_component.verbose_duty_expression
-            else
-              measure_condition_component.formatted_duty_expression
-            end
-          end
-
-          formatted_components.join(' ')
+          measure_condition_components.map(&:presented_duty_expression).join(' ')
         end
 
         def requirement_duty_expression
