@@ -1,5 +1,5 @@
 module "backend_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.7.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.8.0"
 
   service_name  = "${var.service_name}-uk"
   service_count = var.service_count
@@ -25,6 +25,8 @@ module "backend_uk" {
   execution_role_policy_arns = [
     aws_iam_policy.secrets.arn
   ]
+
+  enable_ecs_exec = true
 
   service_environment_config = flatten([local.backend_common_vars,
     [
