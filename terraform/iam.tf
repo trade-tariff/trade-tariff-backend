@@ -36,7 +36,25 @@ data "aws_iam_policy_document" "secrets" {
   }
 }
 
+data "aws_iam_policy_document" "exec" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssmmessages:CreateControlChannel",
+      "ssmmessages:CreateDataChannel",
+      "ssmmessages:OpenControlChannel",
+      "ssmmessages:OpenDataChannel"
+    ]
+    resources = ["*"]
+  }
+}
+
 resource "aws_iam_policy" "secrets" {
   name   = "backend-execution-role-secrets-policy"
   policy = data.aws_iam_policy_document.secrets.json
+}
+
+resource "aws_iam_policy" "exec" {
+  name   = "backend-task-role-exec-policy"
+  policy = data.aws_iam_policy_document.exec.json
 }

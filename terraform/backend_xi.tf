@@ -22,6 +22,10 @@ module "backend_xi" {
   container_port        = 8080
   private_dns_namespace = "tariff.internal"
 
+  task_role_policy_arns = [
+    aws_iam_policy.exec.arn
+  ]
+
   execution_role_policy_arns = [
     aws_iam_policy.secrets.arn
   ]
