@@ -35,6 +35,9 @@ module ExchangeRates
       file_path = "data/exchange_rates/monthly_#{format}_#{year}-#{month}.#{format}"
       TariffSynchronizer::FileService.write_file(file_path, data_string)
 
+      file_size = TariffSynchronizer::FileService.file_size(file_path)
+      ExchangeRateFile.create(period_year: year, period_month: month, format:, file_size:, publication_date: current_time)
+
       info_message = "exchange_rates.monthly_#{format}-#{file_path}-size: #{data_string.size}"
 
       Rails.logger.info(info_message)

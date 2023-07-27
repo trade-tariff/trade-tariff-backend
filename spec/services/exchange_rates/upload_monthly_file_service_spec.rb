@@ -13,6 +13,8 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return('csv_string')
     allow(ExchangeRates::CreateXmlService).to receive(:call).with(data_result).and_return('xml_string')
     allow(TariffSynchronizer::FileService).to receive(:write_file).and_return(true)
+    allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(321)
+    allow(ExchangeRateFile).to receive(:create).and_return(true)
     allow(Rails.logger).to receive(:info).and_return(true)
   end
 
@@ -29,7 +31,9 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year)
       expect(ExchangeRates::CreateCsvService).to have_received(:call).with(data_result)
       expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(data_result)
-      expect(TariffSynchronizer::FileService).to have_received(:write_file)
+      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/monthly_csv_#{year}-#{month}.csv", 'csv_string')
+      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/monthly_csv_#{year}-#{month}.csv")
+      expect(ExchangeRateFile).to have_received(:create).with(period_year: year, period_month: month, format: :csv, file_size: 321, publication_date: current_time)
       expect(Rails.logger).to have_received(:info)
     end
   end
@@ -43,7 +47,9 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year)
       expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
       expect(ExchangeRates::CreateXmlService).to have_received(:call).with(data_result)
-      expect(TariffSynchronizer::FileService).to have_received(:write_file)
+      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/monthly_xml_#{year}-#{month}.xml", 'xml_string')
+      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/monthly_xml_#{year}-#{month}.xml")
+      expect(ExchangeRateFile).to have_received(:create).with(period_year: year, period_month: month, format: :xml, file_size: 321, publication_date: current_time)
       expect(Rails.logger).to have_received(:info)
     end
   end
@@ -70,6 +76,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
       expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(data_result)
       expect(TariffSynchronizer::FileService).not_to have_received(:write_file)
+      expect(ExchangeRateFile).not_to have_received(:create)
       expect(Rails.logger).not_to have_received(:info)
     end
   end

@@ -7,6 +7,8 @@ module Api
         set_type :exchange_rate_period
 
         attributes :month, :year
+
+        has_many :files, serializer: Api::V2::ExchangeRates::ExchangeRateFileSerializer
       end
     end
   end
