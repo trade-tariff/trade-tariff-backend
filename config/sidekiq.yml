@@ -74,4 +74,4 @@
     ExchangeRatesMonthlyUpload:
       cron: '0 12 * * THU'
       class: MonthlyExchangeRatesWorker
-      description: Upload CSV every penultimate thursday of the month at 12pm
+      description: Upload files every penultimate thursday of the month at 12pm
