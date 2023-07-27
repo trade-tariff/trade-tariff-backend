@@ -32,7 +32,6 @@ RSpec.configure do |config|
   config.include SynchronizerHelper
   config.include LoggerHelper
   config.include RescueHelper
-  config.include CodesMappingHelper
   config.include ActiveSupport::Testing::TimeHelpers
 
   config.include_context 'with fake global rules of origin data'
@@ -70,8 +69,6 @@ RSpec.configure do |config|
   end
 
   config.before do
-    stub_codes_mapping_data
-
     Rails.cache.clear
     Sidekiq::Worker.clear_all
 
