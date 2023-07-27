@@ -22,6 +22,9 @@ module "backend_uk" {
   container_port        = 8080
   private_dns_namespace = "tariff.internal"
 
+  cpu    = var.cpu
+  memory = var.memory
+
   task_role_policy_arns = [
     aws_iam_policy.exec.arn
   ]
