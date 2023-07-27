@@ -47,3 +47,13 @@ variable "alcohol_coercian_starts_from" {
   type        = string
   default     = "2023-01-01"
 }
+
+variable "cpu" {
+  description = "CPU units to use."
+  type        = number
+}
+
+variable "memory" {
+  description = "Memory to allocate in MB. Powers of 2 only."
+  type        = number
+}
