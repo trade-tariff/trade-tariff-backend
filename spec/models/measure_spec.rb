@@ -1242,13 +1242,13 @@ RSpec.describe Measure do
       it { expect(measure.units).to eq(expected_units) }
     end
 
-    context 'when there are just measure components' do
+    context 'when there are only measure components' do
       subject(:measure) { create(:measure, :with_measure_components) }
 
       it { expect(measure.units).to eq(expected_units) }
     end
 
-    context 'when there are just measure conditions but before the coercian start date' do
+    context 'when there are only measure conditions' do
       subject(:measure) do
         create(
           :measure,
@@ -1261,34 +1261,20 @@ RSpec.describe Measure do
         )
       end
 
-      include_context 'when before the coercian start date'
-
-      it { expect(measure.units).to eq(expected_units) }
-    end
-
-    context 'when there are just measure conditions but after the coercian start date' do
-      subject(:measure) do
-        create(
-          :measure,
-          :with_measure_conditions,
-          :excise,
-          condition_measurement_unit_code: 'ASV',
-          condition_measurement_unit_qualifier_code: 'X',
-          measurement_unit_code: 'DTN',
-          measurement_unit_qualifier_code: 'R',
-        )
+      include_context 'when before the coercian start date' do
+        it { expect(measure.units).to eq(expected_units) }
       end
 
-      include_context 'when on the coercian start date'
+      include_context 'when on the coercian start date' do
+        before do
+          expected_units << {
+            measurement_unit_code: 'ASV',
+            measurement_unit_qualifier_code: 'X',
+          }
+        end
 
-      before do
-        expected_units << {
-          measurement_unit_code: 'ASV',
-          measurement_unit_qualifier_code: 'X',
-        }
+        it { expect(measure.units).to eq(expected_units) }
       end
-
-      it { expect(measure.units).to eq(expected_units) }
     end
 
     context 'when there are no measure conditions or components' do
