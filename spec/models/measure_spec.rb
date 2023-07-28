@@ -1211,6 +1211,22 @@ RSpec.describe Measure do
   end
 
   describe '#units' do
+    shared_context 'when on the coercian start date' do
+      around do |example|
+        TimeMachine.at(Date.new(2023, 8, 1)) do
+          example.run
+        end
+      end
+    end
+
+    shared_context 'when before the coercian start date' do
+      around do |example|
+        TimeMachine.at(Date.new(2023, 7, 28)) do
+          example.run
+        end
+      end
+    end
+
     let(:expected_units) do
       [
         {
@@ -1226,16 +1242,39 @@ RSpec.describe Measure do
       it { expect(measure.units).to eq(expected_units) }
     end
 
-    context 'when there are just measure components' do
+    context 'when there are only measure components' do
       subject(:measure) { create(:measure, :with_measure_components) }
 
       it { expect(measure.units).to eq(expected_units) }
     end
 
-    context 'when there are just measure conditions' do
-      subject(:measure) { create(:measure, :with_measure_conditions) }
+    context 'when there are only measure conditions' do
+      subject(:measure) do
+        create(
+          :measure,
+          :with_measure_conditions,
+          :excise,
+          condition_measurement_unit_code: 'ASV',
+          condition_measurement_unit_qualifier_code: 'X',
+          measurement_unit_code: 'DTN',
+          measurement_unit_qualifier_code: 'R',
+        )
+      end
 
-      it { expect(measure.units).to eq(expected_units) }
+      include_context 'when before the coercian start date' do
+        it { expect(measure.units).to eq(expected_units) }
+      end
+
+      include_context 'when on the coercian start date' do
+        before do
+          expected_units << {
+            measurement_unit_code: 'ASV',
+            measurement_unit_qualifier_code: 'X',
+          }
+        end
+
+        it { expect(measure.units).to eq(expected_units) }
+      end
     end
 
     context 'when there are no measure conditions or components' do

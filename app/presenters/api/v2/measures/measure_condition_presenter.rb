@@ -59,8 +59,7 @@ module Api
         attr_reader :measure, :measure_condition
 
         def apply_coerced_condition_duty_amount_conversion_factor?
-          return false if Time.zone.today < excise_alcohol_coercian_starts_from
-          return false if MeasureCondition.point_in_time.present? && MeasureCondition.point_in_time < excise_alcohol_coercian_starts_from
+          return false if point_in_time.present? && point_in_time < excise_alcohol_coercian_starts_from
 
           measure.excise? && asv_requirement?
         end

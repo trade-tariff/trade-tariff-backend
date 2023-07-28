@@ -9,21 +9,48 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
   end
 
   describe '#condition_duty_amount' do
-    shared_examples 'a measure condition presented condition duty amount' do |expected_condition_duty_amount|
-      it { expect(presenter.condition_duty_amount).to eq(expected_condition_duty_amount) }
+    shared_examples 'a measure condition presented condition duty amount' do |coerced_amount, uncoerced_amount|
+      context 'when the coercian date starts' do
+        around do |example|
+          TimeMachine.at('2023-08-01') { example.run }
+        end
+
+        it { expect(presenter.condition_duty_amount).to eq(coerced_amount) }
+      end
+
+      context 'when before the coercian date starts' do
+        around do |example|
+          TimeMachine.at('2023-07-28') { example.run }
+        end
+
+        it { expect(presenter.condition_duty_amount).to eq(uncoerced_amount) }
+      end
     end
 
-    it_behaves_like 'a measure condition presented condition duty amount', 1.0 do
+    it_behaves_like 'a measure condition presented condition duty amount', 1.0, 0.01 do
       let(:measure) { create(:measure, :excise) }
-      let(:measure_condition) { create(:measure_condition, measure:, condition_measurement_unit_code: 'ASV', condition_duty_amount: 0.01) }
+      let(:measure_condition) do
+        create(
+          :measure_condition,
+          measure:,
+          condition_measurement_unit_code: 'ASV',
+          condition_duty_amount: 0.01,
+        )
+      end
     end
 
-    it_behaves_like 'a measure condition presented condition duty amount', 0.01 do
+    it_behaves_like 'a measure condition presented condition duty amount', 0.01, 0.01 do
       let(:measure) { create(:measure) }
-      let(:measure_condition) { create(:measure_condition, measure:, condition_duty_amount: 0.01) }
+      let(:measure_condition) do
+        create(
+          :measure_condition,
+          measure:,
+          condition_duty_amount: 0.01,
+        )
+      end
     end
 
-    it_behaves_like 'a measure condition presented condition duty amount', nil do
+    it_behaves_like 'a measure condition presented condition duty amount', nil, nil do
       let(:measure) { create(:measure) }
       let(:measure_condition) do
         create(
@@ -36,11 +63,25 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
   end
 
   describe '#duty_expression' do
-    shared_examples 'a measure condition presented duty expression' do |expected_duty_expression|
-      it { expect(presenter.duty_expression).to match(expected_duty_expression) }
+    shared_examples 'a measure condition presented duty expression' do |coerced_amount, uncoerced_amount|
+      context 'when the coercian date starts' do
+        around do |example|
+          TimeMachine.at('2023-08-01') { example.run }
+        end
+
+        it { expect(presenter.duty_expression).to match(coerced_amount) }
+      end
+
+      context 'when before the coercian date starts' do
+        around do |example|
+          TimeMachine.at('2023-07-28') { example.run }
+        end
+
+        it { expect(presenter.duty_expression).to match(uncoerced_amount) }
+      end
     end
 
-    it_behaves_like 'a measure condition presented duty expression', /<span>5.00<\/span> GBP - £1.00  \/ for each litre of pure alcohol, multiplied by the SPR discount/ do
+    it_behaves_like 'a measure condition presented duty expression', /<span>5.00<\/span> GBP - £1.00  \/ for each litre of pure alcohol, multiplied by the SPR discount/, /<span>500.00<\/span> GBP - £1.00/ do
       before do
         create(
           :measure_condition_component,
@@ -67,7 +108,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
       let(:measure_condition) { create(:measure_condition, measure:) }
     end
 
-    it_behaves_like 'a measure condition presented duty expression', %r{<span>100.00</span>.*} do
+    it_behaves_like 'a measure condition presented duty expression', %r{<span>100.00</span>.*}, %r{<span>100.00</span>.*} do
       before do
         create(
           :measure_condition_component,
@@ -83,11 +124,25 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
   end
 
   describe '#requirement_duty_expression' do
-    shared_examples 'a presented requirement duty expression' do |expected_duty_amount|
-      it { expect(presenter.requirement_duty_expression).to match(expected_duty_amount) }
+    shared_examples 'a presented requirement duty expression' do |coerced_amount, uncoerced_amount|
+      context 'when the coercian date starts' do
+        around do |example|
+          TimeMachine.at('2023-08-01') { example.run }
+        end
+
+        it { expect(presenter.requirement_duty_expression).to match(coerced_amount) }
+      end
+
+      context 'when before the coercian date starts' do
+        around do |example|
+          TimeMachine.at('2023-07-28') { example.run }
+        end
+
+        it { expect(presenter.requirement_duty_expression).to match(uncoerced_amount) }
+      end
     end
 
-    it_behaves_like 'a presented requirement duty expression', /^<span>1.00<\/span>.*$/ do
+    it_behaves_like 'a presented requirement duty expression', /^<span>1.00<\/span>.*$/, /^<span>0.01<\/span>.*$/ do
       let(:measure) { create(:measure, :excise) }
       let(:measure_condition) do
         create(
@@ -99,7 +154,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
       end
     end
 
-    it_behaves_like 'a presented requirement duty expression', /^<span>0.01<\/span>.*$/ do
+    it_behaves_like 'a presented requirement duty expression', /^<span>0.01<\/span>.*$/, /^<span>0.01<\/span>.*$/ do
       let(:measure) { create(:measure) }
       let(:measure_condition) do
         create(

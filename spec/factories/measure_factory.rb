@@ -356,6 +356,8 @@ FactoryBot.define do
 
     trait :with_measure_conditions do
       transient do
+        condition_measurement_unit_code { nil }
+        condition_measurement_unit_qualifier_code { nil }
         condition_code { 'B' }
         certificate_type_code { nil }
         certificate_code { nil }
@@ -365,8 +367,8 @@ FactoryBot.define do
         condition = create(
           :measure_condition,
           measure_sid: measure.measure_sid,
-          condition_measurement_unit_code: evaluator.measurement_unit_code,
-          condition_measurement_unit_qualifier_code: evaluator.measurement_unit_qualifier_code,
+          condition_measurement_unit_code: evaluator.condition_measurement_unit_code || evaluator.measurement_unit_code,
+          condition_measurement_unit_qualifier_code: evaluator.condition_measurement_unit_qualifier_code || evaluator.measurement_unit_qualifier_code,
           condition_code: evaluator.condition_code,
           certificate_type_code: evaluator.certificate_type_code,
           certificate_code: evaluator.certificate_code,
