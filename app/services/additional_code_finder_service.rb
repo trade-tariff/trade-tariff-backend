@@ -27,7 +27,9 @@ class AdditionalCodeFinderService
 
   def grouped_goods_nomenclatures
     grouped_measures.transform_values do |measures|
-      measures.map { |measure| indexed_goods_nomenclatures[measure.goods_nomenclature_sid] }
+      measures
+        .map { |measure| indexed_goods_nomenclatures[measure.goods_nomenclature_sid] }
+        .compact
     end
   end
 
