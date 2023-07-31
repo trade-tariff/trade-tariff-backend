@@ -10942,6 +10942,20 @@ CREATE INDEX measures_goods_nomenclature_item_id_index ON uk.measures_oplog USIN
 
 
 --
+-- Name: measures_oplog_additional_code_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_additional_code_id_index ON uk.measures_oplog USING btree (additional_code_id);
+
+
+--
+-- Name: measures_oplog_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_additional_code_type_id_index ON uk.measures_oplog USING btree (additional_code_type_id);
+
+
+--
 -- Name: measures_oplog_ordernumber_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11875,3 +11889,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230628141140_adds_index_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230706092636_adds_tradesets_descriptions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230725131904_create_exchange_rate_files.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230731095730_adds_index_to_additional_code_descriptions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230731202727_adds_additional_code_indexes_to_measures.rb');
