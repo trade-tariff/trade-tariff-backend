@@ -1647,4 +1647,79 @@ RSpec.describe Measure do
 
     it { is_expected.to match(/\.* \(.*\)/) }
   end
+
+  describe '.with_additional_code_sid' do
+    subject(:dataset) { described_class.with_additional_code_sid(additional_code_sid) }
+
+    before do
+      create(:measure, additional_code_sid: 1)
+      create(:measure, additional_code_sid: 2)
+    end
+
+    context 'when additional_code_sid is nil' do
+      let(:additional_code_sid) { nil }
+
+      it 'applies no filter' do
+        expect(dataset.pluck(:additional_code_sid)).to eq [1, 2]
+      end
+    end
+
+    context 'when additional_code_sid is present' do
+      let(:additional_code_sid) { 1 }
+
+      it 'applies the filter' do
+        expect(dataset.pluck(:additional_code_sid)).to eq [1]
+      end
+    end
+  end
+
+  describe '.with_additional_code_type' do
+    subject(:dataset) { described_class.with_additional_code_type(additional_code_type_id) }
+
+    before do
+      create(:measure, additional_code_type_id: 'A')
+      create(:measure, additional_code_type_id: 'B')
+    end
+
+    context 'when additional_code_type_id is nil' do
+      let(:additional_code_type_id) { nil }
+
+      it 'applies no filter' do
+        expect(dataset.pluck(:additional_code_type_id)).to eq %w[A B]
+      end
+    end
+
+    context 'when additional_code_type_id is present' do
+      let(:additional_code_type_id) { 'A' }
+
+      it 'applies the filter' do
+        expect(dataset.pluck(:additional_code_type_id)).to eq %w[A]
+      end
+    end
+  end
+
+  describe '.with_additional_code_id' do
+    subject(:dataset) { described_class.with_additional_code_id(additional_code_id) }
+
+    before do
+      create(:measure, additional_code_id: '700')
+      create(:measure, additional_code_id: '800')
+    end
+
+    context 'when additional_code_id is nil' do
+      let(:additional_code_id) { nil }
+
+      it 'applies no filter' do
+        expect(dataset.pluck(:additional_code_id)).to eq %w[700 800]
+      end
+    end
+
+    context 'when additional_code_id is present' do
+      let(:additional_code_id) { '700' }
+
+      it 'applies the filter' do
+        expect(dataset.pluck(:additional_code_id)).to eq %w[700]
+      end
+    end
+  end
 end
