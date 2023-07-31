@@ -172,7 +172,6 @@ module TradeTariffBackend
     def cache_indexes
       [
         Cache::CertificateIndex,
-        Cache::AdditionalCodeIndex,
         Cache::FootnoteIndex,
       ].map(&:new)
     end

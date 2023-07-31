@@ -8,9 +8,20 @@ module Api
 
         set_id :additional_code_sid
 
-        attributes :additional_code_type_id, :additional_code, :code, :description, :formatted_description
+        attributes :additional_code_type_id,
+                   :additional_code,
+                   :code,
+                   :description,
+                   :formatted_description
 
-        has_many :measures, serializer: Api::V2::Shared::MeasureSerializer
+        has_many :goods_nomenclatures,
+                 serializer: proc { |record, _params|
+                   if record && record.respond_to?(:goods_nomenclature_class)
+                     "Api::V2::Shared::#{record.goods_nomenclature_class}Serializer".constantize
+                   else
+                     Api::V2::Shared::GoodsNomenclatureSerializer
+                   end
+                 }
       end
     end
   end

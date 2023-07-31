@@ -206,6 +206,24 @@ class Measure < Sequel::Model
   end
 
   dataset_module do
+    def with_additional_code_sid(additional_code_sid)
+      return self if additional_code_sid.blank?
+
+      where(additional_code_sid:)
+    end
+
+    def with_additional_code_type(additional_code_type_id)
+      return self if additional_code_type_id.blank?
+
+      where(additional_code_type_id:)
+    end
+
+    def with_additional_code_id(additional_code_id)
+      return self if additional_code_id.blank?
+
+      where(additional_code_id:)
+    end
+
     def with_base_regulations
       distinct_measure_regulation_query(role: BASE_REGULATION_ROLES)
         .select_append(Sequel.as(Sequel.case({ { Sequel.qualify(:measures, :validity_start_date) => nil } => Sequel.lit('base_regulations.validity_start_date') }, Sequel.lit('measures.validity_start_date')), :effective_start_date))
