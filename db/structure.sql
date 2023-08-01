@@ -9465,6 +9465,13 @@ CREATE INDEX adco_types_pk ON uk.additional_code_types_oplog USING btree (additi
 
 
 --
+-- Name: add_code_desc_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX add_code_desc_description_trgm_idx ON uk.additional_code_descriptions_oplog USING gist (description public.gist_trgm_ops);
+
+
+--
 -- Name: additional_code_type; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10935,6 +10942,20 @@ CREATE INDEX measures_goods_nomenclature_item_id_index ON uk.measures_oplog USIN
 
 
 --
+-- Name: measures_oplog_additional_code_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_additional_code_id_index ON uk.measures_oplog USING btree (additional_code_id);
+
+
+--
+-- Name: measures_oplog_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_additional_code_type_id_index ON uk.measures_oplog USING btree (additional_code_type_id);
+
+
+--
 -- Name: measures_oplog_ordernumber_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11863,7 +11884,9 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230419084212_add_tree_no
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230425151153_adds_goods_nomenclature_class_to_search_suggestions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230519133544_adds_simplfied_procedural_codes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230619124026_create_exchange_rates.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20230628141140_adds_index_to_rate_type.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230627083227_add_indexes_for_cache_lookups.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230628141140_adds_index_to_rate_type.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230706092636_adds_tradesets_descriptions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230725131904_create_exchange_rate_files.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230731095730_adds_index_to_additional_code_descriptions.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230731202727_adds_additional_code_indexes_to_measures.rb');

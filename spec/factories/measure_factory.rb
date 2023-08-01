@@ -21,6 +21,7 @@ FactoryBot.define do
       generating_regulation { nil }
       default_start_date { 3.years.ago.beginning_of_day }
       additional_code { nil }
+      goods_nomenclature { nil }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }

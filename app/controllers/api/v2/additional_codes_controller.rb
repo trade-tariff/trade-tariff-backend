@@ -2,35 +2,36 @@ module Api
   module V2
     class AdditionalCodesController < ApiController
       def search
-        options = {}
-        options[:include] = [:measures, 'measures.goods_nomenclature']
-        render json: Api::V2::AdditionalCodes::AdditionalCodeSerializer.new(additional_codes, options.merge(serialization_meta)).serializable_hash
+        render json: serialized_additional_codes
       end
 
       private
 
-      def additional_codes
-        search_service.call
+      def serialized_additional_codes
+        Api::V2::AdditionalCodes::AdditionalCodeSerializer.new(
+          finder_service.call,
+          include: [:goods_nomenclatures],
+        ).serializable_hash
       end
 
-      def search_service
-        @search_service ||= AdditionalCodeSearchService.new(params, current_page, per_page)
+      def finder_service
+        @finder_service ||= AdditionalCodeFinderService.new(code, type, description)
       end
 
-      def per_page
-        5
+      def description
+        additional_code_search_params[:description]
       end
 
-      def serialization_meta
-        {
-          meta: {
-            pagination: {
-              page: current_page,
-              per_page:,
-              total_count: search_service.pagination_record_count,
-            },
-          },
-        }
+      def type
+        additional_code_search_params[:type]
+      end
+
+      def code
+        additional_code_search_params[:code]
+      end
+
+      def additional_code_search_params
+        params.permit(:description, :type, :code)
       end
     end
   end

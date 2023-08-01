@@ -1,5 +1,7 @@
 RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
   describe 'GET #search' do
+    subject(:response) { get :search, params:, format: :json }
+
     let!(:additional_code) { create(:additional_code, :with_description) }
 
     let(:pattern) do
@@ -16,11 +18,11 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
               formatted_description: String,
             },
             relationships: {
-              measures: {
+              goods_nomenclatures: {
                 data: [
                   {
                     id: String,
-                    type: 'measure',
+                    type: 'heading',
                   },
                 ],
               },
@@ -28,29 +30,6 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
           },
         ],
         included: [
-          {
-            id: String,
-            type: 'measure',
-            attributes: {
-              validity_start_date: String,
-              validity_end_date: nil,
-              goods_nomenclature_item_id: String,
-            },
-            relationships: {
-              goods_nomenclature: {
-                data: {
-                  id: String,
-                  type: 'heading',
-                },
-              },
-              geographical_area: {
-                data: {
-                  id: String,
-                  type: 'geographical_area',
-                },
-              },
-            },
-          },
           {
             id: String,
             type: 'heading',
@@ -64,65 +43,64 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
             },
           },
         ],
-        meta: {
-          pagination: {
-            page: Integer,
-            per_page: Integer,
-            total_count: Integer,
-          },
-        },
       }
     end
 
     before do
-      current_goods_nomenclature = create(:heading)
+      goods_nomenclature = create(:heading)
 
       create(
         :measure,
         :with_base_regulation,
-        additional_code_sid: additional_code.additional_code_sid,
-        goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
-        goods_nomenclature_item_id: current_goods_nomenclature.goods_nomenclature_item_id,
+        additional_code:,
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
+        goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
       )
       create(
         :goods_nomenclature_description,
-        goods_nomenclature_sid: current_goods_nomenclature.goods_nomenclature_sid,
-      )
-      create(
-        :measure,
-        :with_base_regulation,
-        additional_code_sid: additional_code.additional_code_sid,
-        goods_nomenclature_sid: nil,
-        goods_nomenclature_item_id: nil,
+        goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
       )
       create(
         :additional_code_description,
         :with_period,
         additional_code_sid: additional_code.additional_code_sid,
       )
+    end
 
-      Sidekiq::Testing.inline! do
-        TradeTariffBackend.cache_client.reindex(Cache::AdditionalCodeIndex.new)
-        sleep(1)
+    context 'when searching by additional code id' do
+      let(:params) { { code: additional_code.additional_code } }
+
+      it { expect(response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by additional code type' do
+      let(:params) { { type: additional_code.additional_code_type_id } }
+
+      it { expect(response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by additional code description' do
+      let(:params) { { description: additional_code.additional_code_description.description } }
+
+      it { expect(response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by additional code id, type and description' do
+      let(:params) do
+        {
+          code: additional_code.additional_code,
+          type: additional_code.additional_code_type_id,
+          description: additional_code.additional_code_description.description,
+        }
       end
+
+      it { expect(response.body).to match_json_expression pattern }
     end
 
-    it 'returns rendered found additional codes and related measures and goods nomenclatures searching by additional_code' do
-      get :search, params: { code: additional_code.additional_code }, format: :json
+    context 'when searching for a non-existing additional code' do
+      let(:params) { { code: 'non-existing' } }
 
-      expect(response.body).to match_json_expression pattern
-    end
-
-    it 'returns rendered found additional codes and related measures and goods nomenclatures searching by description' do
-      get :search, params: { description: additional_code.description }, format: :json
-
-      expect(response.body).to match_json_expression pattern
-    end
-
-    it 'returns rendered found additional codes and related measures and goods nomenclatures searching by type' do
-      get :search, params: { type: additional_code.additional_code_type_id }, format: :json
-
-      expect(response.body).to match_json_expression pattern
+      it { expect(response.body).to match_json_expression(data: [], included: []) }
     end
   end
 end
