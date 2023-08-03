@@ -119,19 +119,19 @@ RSpec.describe MeasurementUnit do
   end
 
   describe '.weight_units' do
-    subject { described_class.weight_units }
+    subject { described_class.weight_units.to_a }
 
-    it { is_expected.to eq(%w[DAP DHS DTN GFI GRM GRT KGM KMA RET TNE]) }
+    it { is_expected.to eq(%w[CCT CTM DAP DHS DTN DTNE DTNF DTNG DTNL DTNM DTNR DTNS GFI GRM GRT KCC KCL KGM KGMA KGME KGMG KGMP KGMS KGMT KMA KNI KNS KPH KPO KPP KSD KSH KUR TNE TNEE TNEI TNEJ TNEK TNEM TNER TNEZ]) }
   end
 
   describe '.volume_units' do
-    subject { described_class.volume_units }
+    subject { described_class.volume_units.to_a }
 
-    it { is_expected.to eq(%w[HLT KLT LPA LTR MIL MTQ]) }
+    it { is_expected.to eq(%w[HLT KLT LPA LTR LTRA MTQ MTQC]) }
   end
 
   describe '.percentage_abv_units' do
-    subject { described_class.percentage_abv_units }
+    subject { described_class.percentage_abv_units.to_a }
 
     it { is_expected.to eq(%w[ASV]) }
   end

@@ -34,6 +34,7 @@ RSpec.describe MeasureUnitService do
             'multiplier' => '0.01',
             'coerced_measurement_unit_code' => 'KGM',
             'original_unit' => 'x 100 kg',
+            'measurement_unit_type' => 'weight',
           },
         }
       end
