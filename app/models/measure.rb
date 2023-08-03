@@ -370,6 +370,40 @@ class Measure < Sequel::Model
                       :modification_regulation__validity_end_date)
     end
 
+    def with_all_measure_conditions
+      # There are more measure conditions than measures
+      # and we do not want to miss any measure conditions
+      # when joining them to measures.
+      #
+      # We then reject rows where measure_sid is nil (which is effectively an inner
+      # join on all measure conditions)
+      association_right_join(:measure_conditions)
+        .where(Sequel.~(measures__measure_sid: nil))
+    end
+
+    def with_certificate_type_code(type)
+      return self if type.blank?
+
+      where(measure_conditions__certificate_type_code: type)
+    end
+
+    def with_certificate_code(code)
+      return self if code.blank?
+
+      where(measure_conditions__certificate_code: code)
+    end
+
+    def with_certificate_types_and_codes(certificate_types_and_codes)
+      return self if certificate_types_and_codes.none?
+
+      conditions = certificate_types_and_codes.map do |type, code|
+        Sequel.expr(measure_conditions__certificate_type_code: type) & Sequel.expr(measure_conditions__certificate_code: code)
+      end
+      combined_conditions = conditions.reduce(:|)
+
+      where(combined_conditions)
+    end
+
     def with_generating_regulation
       association_left_join(:base_regulation, :modification_regulation)
         .where do |_query|

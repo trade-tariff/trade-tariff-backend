@@ -63,4 +63,17 @@ class Certificate < Sequel::Model
 
   delegate :description, :formatted_description, to: :certificate_description
   delegate :guidance_chief, :guidance_cds, to: :appendix_5a, allow_nil: true
+
+  dataset_module do
+    def with_certificate_types_and_codes(certificate_types_and_codes)
+      return self if certificate_types_and_codes.none?
+
+      conditions = certificate_types_and_codes.map do |type, code|
+        Sequel.expr(certificate_type_code: type) & Sequel.expr(certificate_code: code)
+      end
+      combined_conditions = conditions.reduce(:|)
+
+      where(combined_conditions)
+    end
+  end
 end
