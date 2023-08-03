@@ -29,15 +29,27 @@ class MeasurementUnit < Sequel::Model
     end
 
     def weight_units
-      measurement_units.select { |_k, v| v['measurement_unit_type'] == 'weight' }.keys
+      @weight_units ||= begin
+        units = measurement_units.select { |_k, v| v['measurement_unit_type'] == 'weight' }.keys
+
+        Set.new(units)
+      end
     end
 
     def volume_units
-      measurement_units.select { |_k, v| v['measurement_unit_type'] == 'volume' }.keys
+      @volume_units ||= begin
+        units = measurement_units.select { |_k, v| v['measurement_unit_type'] == 'volume' }.keys
+
+        Set.new(units)
+      end
     end
 
     def percentage_abv_units
-      measurement_units.select { |_k, v| v['measurement_unit_type'] == 'percentage_abv' }.keys
+      @percentage_abv_units ||= begin
+        units = measurement_units.select { |_k, v| v['measurement_unit_type'] == 'percentage_abv' }.keys
+
+        Set.new(units)
+      end
     end
 
     def measurement_units
