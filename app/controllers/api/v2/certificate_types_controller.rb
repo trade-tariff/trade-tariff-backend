@@ -8,7 +8,7 @@ module Api
       private
 
       def certificate_types
-        CertificateType.all
+        CertificateType.eager(:certificate_type_description).all
       end
     end
   end
