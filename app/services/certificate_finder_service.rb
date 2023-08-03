@@ -47,7 +47,7 @@ class CertificateFinderService
       .with_all_measure_conditions
       .with_certificate_type_code(type)
       .with_certificate_code(code)
-      .with_certificate_types_and_codes([])
+      .with_certificate_types_and_codes(description_types_and_codes)
       .distinct(%i[measure_conditions__certificate_type_code measure_conditions__certificate_code measures__goods_nomenclature_sid])
       .select_append(:measure_conditions__certificate_type_code, :measure_conditions__certificate_code)
       .all

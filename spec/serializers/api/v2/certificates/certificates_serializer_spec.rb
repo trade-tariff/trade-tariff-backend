@@ -22,7 +22,7 @@ RSpec.describe Api::V2::Certificates::CertificatesSerializer do
       {
         data: {
           id: String,
-          type: 'certificates',
+          type: eq(:certificates),
           attributes: {
             certificate_type_code: String,
             certificate_code: String,

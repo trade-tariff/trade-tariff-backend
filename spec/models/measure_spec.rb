@@ -1722,4 +1722,148 @@ RSpec.describe Measure do
       end
     end
   end
+
+  describe '.with_all_measure_conditions' do
+    subject(:measures) { described_class.with_all_measure_conditions.all }
+
+    before do
+      # create a measure condition without a measure - this should not be returned
+      create(:measure_condition, measure_sid: 99_999_999)
+      # create a measure condition with a measure
+      create(:measure_condition, measure:)
+      # create a measure condition with the same measure as the previous one
+      create(:measure_condition, measure:)
+    end
+
+    let(:measure) { create(:measure) }
+
+    it 'returns a measure for each condition' do
+      expect(measures.count).to eq 2
+    end
+
+    it 'returns measures that are the same' do
+      expect(measures.first).to eq_pk measures.second
+    end
+
+    it 'returns measures with measure condition attributes attached' do
+      expect(measures.pluck(:condition_duty_amount)).to all(be_present)
+    end
+  end
+
+  describe '.with_certificate_type_code' do
+    subject(:dataset) { described_class.with_all_measure_conditions.with_certificate_type_code(certificate_type_code) }
+
+    let(:measure) { create(:measure) }
+
+    before do
+      create(
+        :measure_condition,
+        measure: create(:measure),
+        certificate_type_code: 'Y',
+      )
+      create(
+        :measure_condition,
+        measure: create(:measure),
+        certificate_type_code: 'N',
+      )
+    end
+
+    context 'when certificate_type_code is nil' do
+      let(:certificate_type_code) { nil }
+
+      it 'applies no filter' do
+        expect(dataset.pluck(:certificate_type_code)).to eq %w[Y N]
+      end
+    end
+
+    context 'when certificate_type_code is present' do
+      let(:certificate_type_code) { 'Y' }
+
+      it 'applies the filter' do
+        expect(dataset.pluck(:certificate_type_code)).to eq %w[Y]
+      end
+    end
+  end
+
+  describe '.with_certificate_code' do
+    subject(:dataset) { described_class.with_all_measure_conditions.with_certificate_code(certificate_code) }
+
+    let(:measure) { create(:measure) }
+
+    before do
+      create(
+        :measure_condition,
+        measure: create(:measure),
+        certificate_code: '123',
+      )
+      create(
+        :measure_condition,
+        measure: create(:measure),
+        certificate_code: '456',
+      )
+    end
+
+    context 'when certificate_code is nil' do
+      let(:certificate_code) { nil }
+
+      it 'applies no filter' do
+        expect(dataset.pluck(:certificate_code)).to eq %w[123 456]
+      end
+    end
+
+    context 'when certificate_code is present' do
+      let(:certificate_code) { '123' }
+
+      it 'applies the filter' do
+        expect(dataset.pluck(:certificate_code)).to eq %w[123]
+      end
+    end
+  end
+
+  describe '.with_certificate_types_and_codes' do
+    subject(:dataset) { described_class.with_all_measure_conditions.with_certificate_types_and_codes(certificate_types_and_codes) }
+
+    before do
+      measure = create(:measure)
+      create(
+        :measure_condition,
+        measure:,
+        certificate_type_code: 'Y',
+        certificate_code: '123',
+      )
+      create(
+        :measure_condition,
+        measure:,
+        certificate_type_code: 'N',
+        certificate_code: '456',
+      )
+      create(
+        :measure_condition,
+        measure:,
+        certificate_type_code: 'Z',
+        certificate_code: '789',
+      )
+    end
+
+    context 'when certificate_types_and_codes is empty' do
+      let(:certificate_types_and_codes) { [] }
+
+      it 'applies no filter' do
+        expect(dataset.pluck(:certificate_code)).to eq %w[123 456 789]
+      end
+    end
+
+    context 'when certificate_types_and_codes is present' do
+      let(:certificate_types_and_codes) do
+        [
+          %w[Y 123],
+          %w[N 456],
+        ]
+      end
+
+      it 'applies the filter' do
+        expect(dataset.pluck(:certificate_code)).to eq %w[123 456]
+      end
+    end
+  end
 end
