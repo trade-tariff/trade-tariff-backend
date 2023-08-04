@@ -26,6 +26,10 @@ data "aws_ssm_parameter" "ecr_url" {
   name = "/${var.environment}/BACKEND_ECR_URL"
 }
 
+data "aws_ssm_parameter" "elasticsearch_url" {
+  name = "/development/ELASTICSEARCH_URL"
+}
+
 data "aws_secretsmanager_secret" "newrelic_license_key" {
   name = "newrelic-license-key"
 }

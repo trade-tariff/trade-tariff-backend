@@ -102,7 +102,7 @@ locals {
     },
     {
       name  = "TARIFF_QUERY_SEARCH_PARSER_URL"
-      value = "https://search-query-parser.tariff.internal:8080/api/search"
+      value = "http://search-query-parser.tariff.internal:8080/api/search"
     },
     {
       name  = "WEB_CONCURRENCY"
@@ -143,6 +143,10 @@ locals {
     {
       name      = "DATABASE_URL"
       valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+    },
+    {
+      name      = "ELASTICSEARCH_URL"
+      valueFrom = data.aws_ssm_parameter.elasticsearch_url.arn
     },
     {
       name      = "NEW_RELIC_LICENSE_KEY"

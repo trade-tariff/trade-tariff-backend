@@ -22,6 +22,18 @@ data "aws_iam_policy_document" "secrets" {
   statement {
     effect = "Allow"
     actions = [
+      "ssm:DescribeParameters",
+      "ssm:GetParameter",
+      "ssm:GetParameters"
+    ]
+    resources = [
+      data.aws_ssm_parameter.elasticsearch_url.arn
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
       "kms:Encrypt",
       "kms:Decrypt",
       "kms:ReEncryptFrom",
