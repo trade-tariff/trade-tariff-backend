@@ -300,42 +300,6 @@ RSpec.describe Measure do
     end
   end
 
-  describe '#measures' do
-    context 'with different dates and generating regulation types' do
-      before do
-        Sequel::Model.db.run(%{
-        INSERT INTO measures_oplog (measure_sid, measure_type_id, geographical_area_id, goods_nomenclature_item_id, validity_start_date, validity_end_date, measure_generating_regulation_role, measure_generating_regulation_id, justification_regulation_role, justification_regulation_id, stopped_flag, geographical_area_sid, goods_nomenclature_sid, ordernumber, additional_code_type_id, additional_code_id, additional_code_sid, reduction_indicator, export_refund_nomenclature_sid, national, tariff_measure_number, invalidated_by, invalidated_at, oid, operation, operation_date)
-        VALUES
-        (3445395, '103', '1011', '0805201000', '2016-01-01 00:00:00', '2016-02-29 00:00:00', 4, 'R1517542', 4, 'R1517542', false, 400, 68304, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3071870, 'U', '2015-11-26'),
-        (3445396, '103', '1011', '0805201000', '2016-03-01 00:00:00', '2016-10-31 00:00:00', 4, 'R1517542', 4, 'R1517542', false, 400, 68304, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3071871, 'U', '2015-11-26'),
-        (3445397, '103', '1011', '0805201000', '2016-11-01 00:00:00', '2016-12-31 00:00:00', 4, 'R1517542', 4, 'R1517542', false, 400, 68304, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 3071872, 'U', '2015-11-26');
-                             })
-        Sequel::Model.db.run(%{
-        INSERT INTO modification_regulations_oplog (modification_regulation_role, modification_regulation_id, validity_start_date, validity_end_date, published_date, officialjournal_number, officialjournal_page, base_regulation_role, base_regulation_id, replacement_indicator, stopped_flag, information_text, approved_flag, explicit_abrogation_regulation_role, explicit_abrogation_regulation_id, effective_end_date, complete_abrogation_regulation_role, complete_abrogation_regulation_id, oid, operation, operation_date)
-        VALUES
-        (4, 'R1517542', '2016-01-01 00:00:00', NULL, '2015-10-30', 'L 285', 1, 1, 'R8726580', 0, false, 'CN 2016 (Entry prices)', true, NULL, NULL, NULL, NULL, NULL, 26064, 'C', '2015-11-26');
-                             })
-        Sequel::Model.db.run(%{
-        INSERT INTO goods_nomenclatures_oplog (goods_nomenclature_sid, goods_nomenclature_item_id, producline_suffix, validity_start_date, validity_end_date, statistical_indicator, created_at, oid, operation, operation_date)
-        VALUES
-        (68304, '0805201000', '80', '1998-01-01 00:00:00', NULL, 0, '2013-08-02 20:03:55', 37691, 'C', NULL),
-        (70329, '0805201005', '80', '1999-01-01 00:00:00', NULL, 0, '2013-08-02 20:04:48', 39237, 'C', NULL);
-
-        INSERT INTO goods_nomenclature_indents_oplog (goods_nomenclature_indent_sid, goods_nomenclature_sid, validity_start_date, number_indents, goods_nomenclature_item_id, productline_suffix, created_at, validity_end_date, oid, operation, operation_date)
-        VALUES
-        (67883, 68304, '1998-01-01 00:00:00', 2, '0805201000', '80', '2013-08-02 20:03:55', NULL, 38832, 'C', NULL),
-        (69920, 70329, '1999-01-01 00:00:00', 3, '0805201005', '80', '2013-08-02 20:04:48', NULL, 40421, 'C', NULL);
-                             })
-      end
-
-      it { expect(TimeMachine.no_time_machine { described_class.with_modification_regulations.all.count }).to eq 3 }
-      it { expect(TimeMachine.no_time_machine { Commodity.by_code('0805201000').first.measures.count }).to eq 3 }
-      it { expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { described_class.with_modification_regulations.with_actual(ModificationRegulation).all.first.measure_sid }).to eq 3_445_396 }
-      it { expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.count }).to eq 1 }
-      it { expect(TimeMachine.at(Time.zone.parse('2016-07-21')) { Commodity.by_code('0805201005').first.measures.first.measure_sid }).to eq 3_445_396 }
-    end
-  end
-
   describe '#validity_end_date' do
     shared_examples 'a measure validity_end_date' do |national_measure, measure_end_date, base_regulation_end_date, expected_date|
       let(:measure) do
@@ -1058,74 +1022,6 @@ RSpec.describe Measure do
 
       # No regulation measure - control - this is not possible in the wild even
       create(:measure, measure_sid: 5)
-    end
-  end
-
-  describe '.with_base_regulations' do
-    context 'when approved_flag is set to true' do
-      subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
-
-      before do
-        create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 1)
-        create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 2)
-        create(:base_regulation, base_regulation_id: 'R9726580', base_regulation_role: 3)
-      end
-
-      include_context 'with regulation measures'
-
-      it { is_expected.to eq([1, 2, 3]) } # Base regulation measures
-    end
-
-    context 'when approved_flag is set to false' do
-      subject(:with_base_regulations) { described_class.with_base_regulations.pluck(:measure_sid) }
-
-      before do
-        create(:base_regulation, :unapproved, base_regulation_id: 'R9726580', base_regulation_role: 1)
-        create(:base_regulation, :unapproved, base_regulation_id: 'R9726580', base_regulation_role: 2)
-        create(:base_regulation, :unapproved, base_regulation_id: 'R9726580', base_regulation_role: 3)
-      end
-
-      include_context 'with regulation measures'
-
-      it { is_expected.to eq([]) } # Base regulation measures
-    end
-  end
-
-  describe '.with_modification_regulations' do
-    context 'when approved_flag is set to true' do
-      subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
-
-      before { create(:modification_regulation, modification_regulation_id: 'R9726580') }
-
-      include_context 'with regulation measures'
-
-      it { is_expected.to eq([4]) } # Modification regulation measure
-    end
-
-    context 'when approved_flag is set to false' do
-      subject(:with_modification_regulations) { described_class.with_modification_regulations.pluck(:measure_sid) }
-
-      before { create(:modification_regulation, :unapproved, modification_regulation_id: 'R9726580') }
-
-      include_context 'with regulation measures'
-
-      it { is_expected.to eq([]) } # Modification regulation measure
-    end
-  end
-
-  describe '#prettify_generated_duty_expression' do
-    subject(:measure) { create(:measure).prettify_generated_duty_expression(duty_expression) }
-
-    context 'when there are multiple spaces in the duty expression' do
-      let(:duty_expression) { '100 with  multiple space  in it' }
-
-      it { is_expected.to eq '100 with multiple space in it' }
-    end
-
-    context 'when there are simple expressed ad valorem percentages' do
-      let(:duty_expression) { '100 %' }
-
-      it { is_expected.to eq '100%' }
     end
   end
 

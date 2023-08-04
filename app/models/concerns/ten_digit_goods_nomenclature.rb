@@ -4,8 +4,6 @@ module TenDigitGoodsNomenclature
   included do
     plugin :oplog, primary_key: :goods_nomenclature_sid
 
-    include Declarable
-
     set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000')
       .order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
              Sequel.asc(:goods_nomenclatures__producline_suffix),
@@ -14,17 +12,12 @@ module TenDigitGoodsNomenclature
     set_primary_key [:goods_nomenclature_sid]
 
     one_to_one :heading, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
-      ds.with_actual(Heading)
-        .filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
+      ds.with_actual(Heading).non_grouping
     end
 
     one_to_one :chapter, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
       ds.with_actual(Chapter)
     end
-
-    one_to_many :overview_measures, key: {}, primary_key: {}, class_name: 'Measure', dataset: lambda {
-      measures_dataset.overview
-    }
 
     delegate :section, :section_id, to: :chapter, allow_nil: true
 
@@ -36,73 +29,11 @@ module TenDigitGoodsNomenclature
       def by_productline_suffix(productline_suffix)
         filter(producline_suffix: productline_suffix)
       end
-
-      def declarable
-        filter(producline_suffix: GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX)
-      end
     end
 
     # See oplog sequel plugin
     def operation=(operation)
       self[:operation] = operation.to_s.first.upcase
-    end
-
-    def ancestors
-      # TODO: we need to create more efficient and unambiguous way to get ancestors
-      # because getting Commodities with goods_nomenclature_item_id LIKE 'something'
-      # can fetch Commodities not from ancestors tree.
-      Commodity.select(Sequel.expr(:goods_nomenclatures).*)
-        .eager(:goods_nomenclature_indents,
-               :goods_nomenclature_descriptions)
-        .join_table(:inner,
-                    GoodsNomenclatureIndent
-        .select(:goods_nomenclature_indents__goods_nomenclature_sid,
-                :goods_nomenclature_indents__goods_nomenclature_item_id,
-                :goods_nomenclature_indents__number_indents)
-        .with_actual(GoodsNomenclature)
-        .join(:goods_nomenclatures, goods_nomenclature_indents__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid)
-        .where('goods_nomenclature_indents.goods_nomenclature_item_id LIKE ?', heading_id)
-        .where('goods_nomenclature_indents.goods_nomenclature_item_id <= ?', goods_nomenclature_item_id)
-        .order(Sequel.desc(:goods_nomenclature_indents__validity_start_date),
-               Sequel.desc(:goods_nomenclature_indents__goods_nomenclature_item_id))
-        .from_self
-        .group(:goods_nomenclature_sid, :goods_nomenclature_item_id, :number_indents)
-        .from_self
-        .where('number_indents < ?', goods_nomenclature_indent.number_indents),
-                    t1__goods_nomenclature_sid: :goods_nomenclatures__goods_nomenclature_sid,
-                    t1__goods_nomenclature_item_id: :goods_nomenclatures__goods_nomenclature_item_id)
-        .order(Sequel.desc(:goods_nomenclatures__goods_nomenclature_item_id))
-        .all
-        .group_by(&:number_indents)
-        .map(&:last)
-        .map(&:first)
-        .reverse
-        .sort_by(&:number_indents)
-        .select { |a| a.number_indents < goods_nomenclature_indent.number_indents }
-    end
-
-    def declarable?
-      cache_key = "commodity-#{goods_nomenclature_sid}-#{point_in_time&.to_date&.iso8601}-is-declarable?"
-
-      Rails.cache.fetch(cache_key) do
-        non_grouping? && children.none?
-      end
-    end
-
-    def uptree
-      @uptree ||= [ancestors, heading, chapter, self].flatten.compact
-    end
-
-    def children
-      @children ||= begin
-        mapper = GoodsNomenclatureMapper.new(preloaded_children.presence || load_children)
-
-        mapped = mapper.all.detect do |goods_nomenclature|
-          goods_nomenclature.goods_nomenclature_sid == goods_nomenclature_sid
-        end
-
-        mapped.try(:children) || []
-      end
     end
 
     def to_param
@@ -167,12 +98,6 @@ module TenDigitGoodsNomenclature
               .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
     end
 
-    def traverse_children(&block)
-      yield self
-
-      children.each { |child| child.traverse_children(&block) }
-    end
-
     def goods_nomenclature_class
       ns_declarable? ? 'Commodity' : 'Subheading'
     end
@@ -193,16 +118,6 @@ module TenDigitGoodsNomenclature
 
     def taric_code
       goods_nomenclature_item_id
-    end
-
-    def load_children
-      heading.commodities_dataset
-        .eager(:goods_nomenclature_indents, :goods_nomenclature_descriptions)
-        .all
-    end
-
-    def preloaded_children
-      Thread.current[:heading_commodities].try(:fetch, heading_short_code, {})
     end
   end
 end

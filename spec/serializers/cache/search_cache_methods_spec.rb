@@ -21,7 +21,7 @@ RSpec.describe Cache::SearchCacheMethods do
           goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
           number_indents: 0,
           description: '',
-          formatted_description: '',
+          formatted_description: nil,
           producline_suffix: '80',
           validity_start_date: goods_nomenclature.validity_start_date,
           validity_end_date: nil,

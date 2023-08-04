@@ -15,20 +15,4 @@ class Subheading < GoodsNomenclature
   def to_param
     "#{goods_nomenclature_item_id}-#{producline_suffix}"
   end
-
-  def commodities
-    @commodities ||= [ancestors, all_children].flatten.compact
-  end
-
-  private
-
-  def all_children
-    @all_children = []
-
-    traverse_children do |child|
-      @all_children << child
-    end
-
-    @all_children
-  end
 end

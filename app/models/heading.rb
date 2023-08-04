@@ -1,6 +1,4 @@
 class Heading < GoodsNomenclature
-  include Declarable
-
   plugin :oplog, primary_key: :goods_nomenclature_sid
   plugin :elasticsearch
 
@@ -15,19 +13,6 @@ class Heading < GoodsNomenclature
 
   include SearchReferenceable
 
-  one_to_many :commodities, primary_key: :heading_short_code, key: :heading_short_code, foreign_key: :heading_short_code do |ds|
-    ds.with_actual(Commodity)
-      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
-  end
-
-  one_to_many :goods_nomenclatures do |_ds|
-    GoodsNomenclature
-      .actual
-      .filter('goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature)
-      .exclude(goods_nomenclature_item_id:)
-      .exclude(goods_nomenclature_item_id: HiddenGoodsNomenclature.codes)
-  end
-
   one_to_one :chapter, primary_key: :chapter_short_code, key: :chapter_short_code, foreign_key: :chapter_short_code do |ds|
     ds.with_actual(Chapter)
   end
@@ -40,18 +25,6 @@ class Heading < GoodsNomenclature
   dataset_module do
     def by_code(code = '')
       filter(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}000000")
-    end
-
-    def by_declarable_code(code = '')
-      filter(goods_nomenclature_item_id: code.to_s.first(10))
-    end
-
-    def declarable
-      filter(producline_suffix: '80')
-    end
-
-    def non_grouping
-      filter { Sequel.~(producline_suffix: '10') }
     end
   end
 
@@ -74,22 +47,6 @@ class Heading < GoodsNomenclature
   def to_param
     short_code
   end
-
-  def uptree
-    [self, chapter].compact
-  end
-
-  def non_grouping?
-    producline_suffix != '10'
-  end
-
-  def declarable
-    non_grouping? && GoodsNomenclature.actual
-                                      .where('goods_nomenclature_item_id LIKE ?', "#{short_code}______")
-                                      .where('goods_nomenclature_item_id > ?', goods_nomenclature_item_id)
-                                      .none?
-  end
-  alias_method :declarable?, :declarable
 
   def changes(depth = 1)
     operation_klass.select(

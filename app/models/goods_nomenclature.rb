@@ -34,9 +34,7 @@ class GoodsNomenclature < Sequel::Model
   include GoodsNomenclatures::NestedSet
 
   one_to_one :chapter, class_name: name, class: self do |_ds|
-    Chapter
-      .actual
-      .where(goods_nomenclature_item_id: chapter_code)
+    Chapter.actual.where(goods_nomenclature_item_id: chapter_code)
   end
 
   one_to_one :heading, class_name: name, class: self do |_ds|
@@ -93,6 +91,7 @@ class GoodsNomenclature < Sequel::Model
            :description_indexed,
            :description_plain,
            :formatted_description,
+           :consigned_from,
            to: :goods_nomenclature_description,
            allow_nil: true
 

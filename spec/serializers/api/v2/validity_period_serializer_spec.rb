@@ -24,7 +24,7 @@ RSpec.describe Api::V2::ValidityPeriodSerializer do
           validity_start_date: '2021-01-01T00:00:00.000Z',
           validity_end_date: nil,
           description: '',
-          formatted_description: '',
+          formatted_description: nil,
           to_param: '0101',
         },
         relationships: { deriving_goods_nomenclatures: { data: [{ id: match(/\d+/), type: eq(:commodity) }] } },

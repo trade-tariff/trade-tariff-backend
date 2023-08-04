@@ -5,7 +5,7 @@ module Api
 
       def show
         @measures = MeasureCollection.new(
-          @commodity.measures_dataset.eager(
+          @commodity.ns_measures_dataset.eager(
             { footnotes: :footnote_descriptions },
             { measure_type: :measure_type_description },
             { measure_components: [{ duty_expression: :duty_expression_description },

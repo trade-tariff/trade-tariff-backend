@@ -1,5 +1,3 @@
-require 'goods_nomenclature_mapper'
-
 module Api
   module V2
     class HeadingsController < ApiController

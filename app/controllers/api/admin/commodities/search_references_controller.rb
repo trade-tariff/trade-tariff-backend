@@ -17,7 +17,7 @@ module Api
         end
 
         def commodity_or_subheading
-          subheading.declarable? ? commodity : subheading
+          subheading.ns_declarable? ? commodity : subheading
         end
 
         def commodity

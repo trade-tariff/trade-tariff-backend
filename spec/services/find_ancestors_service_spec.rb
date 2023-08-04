@@ -14,7 +14,7 @@ RSpec.describe FindAncestorsService do
     let(:goods_nomenclature_item_id) { commodity.goods_nomenclature_item_id }
 
     it 'returns the correct ancestors' do
-      expected_result = commodity.uptree.pluck(:goods_nomenclature_item_id)
+      expected_result = commodity.ns_ancestors.pluck(:goods_nomenclature_item_id)
 
       expect(service).to eq(expected_result)
     end
@@ -25,7 +25,7 @@ RSpec.describe FindAncestorsService do
     let(:goods_nomenclature_item_id) { chapter.goods_nomenclature_item_id }
 
     it 'returns the correct ancestors' do
-      expected_result = chapter.uptree.pluck(:goods_nomenclature_item_id)
+      expected_result = chapter.ns_ancestors.pluck(:goods_nomenclature_item_id)
 
       expect(service).to eq(expected_result)
     end
@@ -36,7 +36,7 @@ RSpec.describe FindAncestorsService do
     let(:goods_nomenclature_item_id) { heading.goods_nomenclature_item_id }
 
     it 'returns the correct ancestors' do
-      expected_result = heading.uptree.pluck(:goods_nomenclature_item_id)
+      expected_result = heading.ns_ancestors.pluck(:goods_nomenclature_item_id)
 
       expect(service).to eq(expected_result)
     end
