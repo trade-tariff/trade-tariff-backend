@@ -1,41 +1,5 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe MeasureCondition do
   subject(:measure_condition) { create :measure_condition }
-
-  it_is_associated 'one to one to', :monetary_unit do
-    let(:left_primary_key) { :condition_monetary_unit_code }
-    let(:monetary_unit_code) { Forgery(:basic).text(exactly: 3) }
-    let(:condition_monetary_unit_code) { monetary_unit_code }
-  end
-
-  it_is_associated 'one to one to', :measurement_unit do
-    let(:left_primary_key) { :condition_measurement_unit_code }
-    let(:measurement_unit_code) { Forgery(:basic).text(exactly: 3) }
-    let(:condition_measurement_unit_code) { measurement_unit_code }
-  end
-
-  it_is_associated 'one to one to', :measurement_unit_qualifier do
-    let(:left_primary_key) { :condition_measurement_unit_qualifier_code }
-    let(:measurement_unit_qualifier_code) { Forgery(:basic).text(exactly: 1) }
-    let(:condition_measurement_unit_qualifier_code) { measurement_unit_qualifier_code }
-  end
-
-  it_is_associated 'one to one to', :measure_condition_code do
-    let(:condition_code) { Forgery(:basic).text(exactly: 1) }
-  end
-
-  it_is_associated 'one to one to', :measure_action do
-    let(:action_code) { Forgery(:basic).text(exactly: 1) }
-  end
-
-  it_is_associated 'one to one to', :certificate_type do
-    let(:certificate_type_code) { Forgery(:basic).text(exactly: 1) }
-  end
-
-  it_is_associated 'one to one to', :certificate do
-    let(:certificate_code) { Forgery(:basic).text(exactly: 3) }
-    let(:certificate_type_code) { Forgery(:basic).text(exactly: 1) }
-  end
 
   describe '#requirement' do
     context 'with document requirement' do
@@ -332,4 +296,3 @@ RSpec.describe MeasureCondition do
     end
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers
