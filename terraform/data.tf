@@ -39,7 +39,7 @@ data "aws_secretsmanager_secret" "redis_connection_string" {
 }
 
 data "aws_secretsmanager_secret" "database_connection_string" {
-  name = "backend-database-connection-string"
+  name = "tradetariffpostgresdevelopment-connection-string"
 }
 
 data "aws_secretsmanager_secret" "secret_key_base" {
