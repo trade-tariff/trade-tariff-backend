@@ -1,8 +1,11 @@
 FactoryBot.define do
   sequence(:measure_condition_sid) { |n| n }
+  sequence(:condition_measurement_unit_qualifier_code, LoopingSequence.lower_a_to_upper_z, &:value)
+  sequence(:action_code, LoopingSequence.lower_a_to_upper_z, &:value)
 
   factory :measure_condition do
     transient do
+      certificate {}
       measure {}
       measurement_unit_code {}
       measurement_unit_qualifier_code {}
@@ -16,10 +19,8 @@ FactoryBot.define do
     condition_duty_amount { Forgery(:basic).number }
     condition_monetary_unit_code { Forgery(:basic).text(exactly: 3) }
     condition_measurement_unit_code { Forgery(:basic).text(exactly: 3) }
-    sequence(:condition_measurement_unit_qualifier_code, LoopingSequence.lower_a_to_upper_z, &:value)
-    sequence(:action_code, LoopingSequence.lower_a_to_upper_z, &:value)
-    sequence(:certificate_type_code, LoopingSequence.lower_a_to_upper_z, &:value)
-    certificate_code { Forgery(:basic).text(exactly: 3) }
+    certificate_code { certificate.try(:certificate_code) || Forgery(:basic).text(exactly: 3) }
+    certificate_type_code { certificate.try(:certificate_type_code) || Forgery(:basic).text(exactly: 1) }
   end
 
   trait :with_measure_condition_components do

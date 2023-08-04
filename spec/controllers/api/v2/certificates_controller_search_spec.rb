@@ -1,8 +1,9 @@
 RSpec.describe Api::V2::CertificatesController, type: :controller do
   describe 'GET #search' do
-    subject(:do_response) { get :search, params: { code: certificate.certificate_code }, format: :json && response }
+    subject(:do_response) { get :search, params:, format: :json && response }
 
     let(:certificate) { create(:certificate, :with_description) }
+
     let(:pattern) do
       {
         data: [
@@ -18,11 +19,11 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
               guidance_cds: String,
             },
             relationships: {
-              measures: {
+              goods_nomenclatures: {
                 data: [
                   {
                     id: String,
-                    type: 'measure',
+                    type: 'heading',
                   },
                 ],
               },
@@ -30,29 +31,6 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
           },
         ],
         included: [
-          {
-            id: String,
-            type: 'measure',
-            attributes: {
-              goods_nomenclature_item_id: String,
-              validity_start_date: String,
-              validity_end_date: nil,
-            },
-            relationships: {
-              goods_nomenclature: {
-                data: {
-                  id: String,
-                  type: 'heading',
-                },
-              },
-              geographical_area: {
-                data: {
-                  id: String,
-                  type: 'geographical_area',
-                },
-              },
-            },
-          },
           {
             id: String,
             type: 'heading',
@@ -66,13 +44,6 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
             },
           },
         ],
-        meta: {
-          pagination: {
-            page: Integer,
-            per_page: Integer,
-            total_count: Integer,
-          },
-        },
       }
     end
 
@@ -85,13 +56,24 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
         certificate_type_code: certificate.certificate_type_code,
         certificate_code: certificate.certificate_code,
       )
-
-      Sidekiq::Testing.inline! do
-        TradeTariffBackend.cache_client.reindex(Cache::CertificateIndex.new)
-        sleep(1)
-      end
     end
 
-    it { expect(do_response.body).to match_json_expression pattern }
+    context 'when searching by code' do
+      let(:params) { { code: certificate.certificate_code } }
+
+      it { expect(do_response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by description' do
+      let(:params) { { description: certificate.description } }
+
+      it { expect(do_response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by type' do
+      let(:params) { { type: certificate.certificate_type_code } }
+
+      it { expect(do_response.body).to match_json_expression pattern }
+    end
   end
 end

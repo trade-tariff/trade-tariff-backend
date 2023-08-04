@@ -6,10 +6,15 @@ class CertificateDescription < Sequel::Model
 
   set_primary_key [:certificate_description_period_sid]
 
-  custom_format :formatted_description, with: DescriptionFormatter,
-                                 using: :description
+  custom_format :formatted_description, with: DescriptionFormatter, using: :description
 
   def to_s
     description
+  end
+
+  dataset_module do
+    def with_fuzzy_description(description)
+      where(Sequel.ilike(:description, "%#{description}%"))
+    end
   end
 end

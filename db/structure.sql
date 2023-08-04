@@ -9577,6 +9577,13 @@ CREATE INDEX certificate ON uk.certificate_description_periods_oplog USING btree
 
 
 --
+-- Name: certificate_descriptions_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX certificate_descriptions_description_trgm_idx ON uk.certificate_descriptions_oplog USING gist (description public.gist_trgm_ops);
+
+
+--
 -- Name: chapter_notes_chapter_id_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10900,6 +10907,13 @@ CREATE INDEX measrm_pk ON uk.measurements_oplog USING btree (measurement_unit_co
 
 
 --
+-- Name: measure_conditions_oplog_certificate_type_code_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_conditions_oplog_certificate_type_code_index ON uk.measure_conditions_oplog USING btree (certificate_type_code);
+
+
+--
 -- Name: measure_generating_regulation; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11890,3 +11904,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230706092636_adds_trades
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230725131904_create_exchange_rate_files.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230731095730_adds_index_to_additional_code_descriptions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230731202727_adds_additional_code_indexes_to_measures.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230801133145_adds_certificate_indexes.rb');
