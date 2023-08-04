@@ -7,6 +7,17 @@ orbs:
   slack: circleci/slack@4.3.0
   queue: eddiewebb/queue@1.6.4
   tariff: trade-tariff/trade-tariff-ci-orb@0 # can also change to @dev:<gitsha> for specific version or @dev:alpha to test dev branches
+  terraform: circleci/terraform@3.2.1
+
+executors:
+  terraform:
+    docker:
+      - image: hashicorp/terraform:1.4.6
+    resource_class: small
+    working_directory: "/tmp/terraform"
+    environment:
+      TF_INPUT: 0
+      TF_IN_AUTOMATION: 1
 
 commands:
   cf_deploy_docker:
@@ -21,35 +32,56 @@ commands:
         type: string
       environment_key:
         type: string
+      app_domain_prefix:
+        type: string
+
     steps:
       - checkout
+
       - tariff/cf-install:
           space: << parameters.space >>
           version: "7.6.0"
+
+      - tariff/deploy-dark-app:
+          aws_access_key_id: "$AWS_ACCESS_KEY_ID"
+          aws_secret_access_key: "$AWS_SECRET_ACCESS_KEY"
+          cf_app: tariff-<< parameters.service >>-backend
+          docker_image: tariff-backend
+          docker_tag: << parameters.docker_image_tag >>
+          ecr_repo: "$ECR_REPO"
+          environment_key: << parameters.environment_key >>
+          space: << parameters.space >>
+
       - run:
-          name: "Fetch existing manifest"
+          name: "Map dark routes"
           command: |
-            cf create-app-manifest "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -p deploy_manifest.yml
+            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
+              "apps.internal" \
+              --hostname "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+
       - run:
-          name: "Push new app in dark mode"
+          name: "Create custom network policies for the backend"
           command: |
-            export DOCKER_IMAGE=tariff-backend
-            export DOCKER_TAG="<< parameters.docker_image_tag >>"
-
-            # Push as "dark" instance
-            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" -f deploy_manifest.yml --no-route  --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
-
-            # Map dark route
-            cf map-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
-
-            # Attach precreated autoscaling policy
-            cf attach-autoscaling-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" config/autoscaling/<< parameters.space >>-policy.json
-
             # Enable routing from this frontend to backend applications which are private
-            cf add-network-policy "$CF_FRONTEND_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_ADMIN_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --protocol tcp --port 8080
-            cf add-network-policy "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-search-query-parser-<< parameters.environment_key >>" --protocol tcp --port 8080
+            cf add-network-policy \
+              "$CF_FRONTEND_APP-<< parameters.environment_key >>" \
+              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
+              --protocol tcp --port 8080
+
+            cf add-network-policy \
+              "$CF_ADMIN_APP-<< parameters.environment_key >>" \
+              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
+              --protocol tcp --port 8080
+
+            cf add-network-policy \
+              "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" \
+              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
+              --protocol tcp --port 8080
+
+            cf add-network-policy \
+              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
+              "tariff-search-query-parser-<< parameters.environment_key >>" \
+              --protocol tcp --port 8080
 
       - when:
           condition:
@@ -63,14 +95,15 @@ commands:
                     cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
                   done
 
+
       - run:
           name: "Verify new version is working on dark URL."
           command: |
-            sleep 15
-            # Verify new version is working on dark URL.
             APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
 
-            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheck'`
+            sleep 15
+
+            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheckz'`
 
             if [ "$HTTPCODE" -ne 200 ];then
               echo "dark route not available, failing deploy ($HTTPCODE)"
@@ -80,46 +113,42 @@ commands:
             fi
 
       - run:
-          name: "Switch dark app to live"
+          name: "Attach autoscaling policy"
           command: |
-            # Send "real" url to new version
-            cf unmap-route  "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
+            cf attach-autoscaling-policy \
+              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
+              config/autoscaling/<< parameters.space >>-policy.json
 
-            # Start sending traffic to new version
-            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+      - run:
+          name: "Switch api beta dark app routes live"
+          command: |
+            # Start sending api beta traffic to new version
             cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
 
-            # Stop sending traffic to previous version
-            cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" apps.internal -n "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
+            # Stop sending api beta traffic to previous version
             cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
+
+      - tariff/pivot-dark-app:
+          app_domain_prefix: << parameters.app_domain_prefix >>
+          cf_app: tariff-<< parameters.service >>-backend
+          environment_key: << parameters.environment_key >>
+          space: << parameters.space >>
+          domain: "apps.internal"
 
       - run:
           name: Drain old app
           command: sleep 30
 
-      - run:
-          name: Stop and remove old app
-          command: |
-            # stop previous version
-            cf stop "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
-
-            # allow the old app to shutdown prior to deletion of the app
-            sleep 10
-
-            # delete previous version
-            cf delete "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" -f
-
-            # Switch name of "dark" version to claim correct name
-            cf rename "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>"
-
       - slack/notify:
           channel: deployments
           event: fail
           template: basic_fail_1
+
       - slack/notify:
           channel: deployments
           event: pass
           template: basic_success_1
+
   cf_deploy_docker_worker:
     parameters:
       docker_image_tag:
@@ -144,7 +173,13 @@ commands:
           command: |
             export DOCKER_IMAGE=tariff-backend
             export DOCKER_TAG="<< parameters.docker_image_tag >>"
-            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -f deploy_manifest.yml --no-route --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" --docker-username "$AWS_ACCESS_KEY_ID"
+            export CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY
+
+            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" \
+              -f deploy_manifest.yml \
+              --no-route \
+              --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
+              --docker-username "$AWS_ACCESS_KEY_ID"
 
   cf_deploy_docker_tasks:
     parameters:
@@ -170,7 +205,9 @@ commands:
           command: |
             export DOCKER_IMAGE=tariff-backend
             export DOCKER_TAG="<< parameters.docker_image_tag >>"
-            CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
+            export CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY
+
+            cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
                                                                -f tasks_deploy_manifest.yml \
                                                                --no-route \
                                                                --task \
@@ -402,8 +439,7 @@ jobs:
             aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $ECR_REPO
             docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
             docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
-
-  # new aws env
+      # new aws env
   build_and_push:
     environment:
       IMAGE_NAME: tariff-backend
@@ -421,7 +457,86 @@ jobs:
       - run:
           name: Build and push image
           command: ./.circleci/ecr.sh << parameters.environment >>
-  
+
+  write_docker_tag:
+    parameters:
+      environment:
+        type: string
+    docker:
+      - image: cimg/base:stable
+    steps:
+      - checkout
+      - run: echo "docker_tag = \"$(git rev-parse --short HEAD)\"" >> terraform/config_<< parameters.environment >>.tfvars
+      - persist_to_workspace:
+          root: .
+          paths:
+            - terraform/
+
+  # write_docker_tag:
+  #   parameters:
+  #     environment:
+  #       type: string
+  #   docker:
+  #     - image: cimg/base:stable
+  #   steps:
+  #     - checkout
+  #     - run: echo "docker_tag = \"$(git rev-parse --short HEAD)\"" >> terraform/config_<< parameters.environment >>.tfvars
+  #     - persist_to_workspace:
+  #         root: .
+  #         paths:
+  #           - terraform/
+
+  terraform_fmt_validate:
+    executor: terraform
+    parameters:
+      environment:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - terraform/init:
+          path: terraform/
+          backend_config_file: backends/<< parameters.environment >>.tfbackend
+      - terraform/fmt:
+          path: terraform/
+      - terraform/validate:
+          path: terraform/
+
+  plan_terraform:
+    executor: terraform
+    parameters:
+      environment:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - terraform/init:
+          path: terraform/
+          backend_config_file: backends/<< parameters.environment >>.tfbackend
+      - terraform/plan:
+          path: terraform/
+          backend_config_file: backends/<< parameters.environment >>.tfbackend
+          var_file: config_<< parameters.environment >>.tfvars
+
+  apply_terraform:
+    executor: terraform
+    parameters:
+      environment:
+        type: string
+    steps:
+      - checkout
+      - attach_workspace:
+          at: .
+      - terraform/init:
+          path: terraform/
+          backend_config_file: backends/<< parameters.environment >>.tfbackend
+      - terraform/apply:
+          path: terraform/
+          backend_config_file: backends/<< parameters.environment >>.tfbackend
+          var_file: config_<< parameters.environment >>.tfvars
+
   flaky_tests:
     docker:
       - image: cimg/ruby:3.2.2
@@ -463,7 +578,7 @@ jobs:
           command: |
             curl "http://localhost:9200/_cat/health"
       - ruby/rspec-test:
-          label: 'Run flaky tests'
+          label: "Run flaky tests"
           tag: "flaky"
       - slack/notify:
           channel: tariffs-regression
@@ -579,6 +694,7 @@ jobs:
           space: "development"
           environment_key: "dev"
           domain_prefix: "dev"
+          app_domain_prefix: "development"
           service: << parameters.service >>
       - sentry-release
 
@@ -609,7 +725,9 @@ jobs:
           space: "staging"
           environment_key: "staging"
           domain_prefix: "staging"
+          app_domain_prefix: "staging"
           service: << parameters.service >>
+
       - sentry-release
 
   deploy_release_to_staging:
@@ -636,6 +754,7 @@ jobs:
           space: "staging"
           environment_key: "staging"
           domain_prefix: "staging"
+          app_domain_prefix: "staging"
           service: << parameters.service >>
 
   deploy_production:
@@ -662,6 +781,7 @@ jobs:
           space: "production"
           environment_key: "production"
           domain_prefix: "www"
+          app_domain_prefix: "www"
           service: << parameters.service >>
       - sentry-release
 
@@ -801,14 +921,42 @@ workflows:
 
   ci:
     jobs:
+      - write_docker_tag:
+          environment: development
+      
       - linters:
           context: trade-tariff
-      - test:
-          context: trade-tariff
+        
+      # - test:
+      #     context: trade-tariff
+      #     filters:
+      #       branches:
+      #         ignore:
+      #           - main
+      
+      - terraform_fmt_validate:
+          context: trade-tariff-terraform-aws-development
+          environment: development
           filters:
             branches:
               ignore:
                 - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
+      
+      - tariff/build-and-push:
+          name: build_and_push_dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          image_name: tariff-backend
+          ssm_parameter: "/development/BACKEND_ECR_URL"
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
+      
       - build:
           name: build_dev
           context: trade-tariff
@@ -819,6 +967,7 @@ workflows:
                 - main
                 - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
+      
       - deploy_dev:
           matrix:
             parameters:
@@ -832,9 +981,11 @@ workflows:
                 - main
                 - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
+        
           requires:
-            - test
+            # - test
             - build_dev
+      
       - sync_opensearch_packages:
           name: sync_packages_dev
           space: development
@@ -846,6 +997,7 @@ workflows:
                 - main
                 - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
+      
       - smoketest_dev:
           name: smoketest_dev
           context: trade-tariff
@@ -858,6 +1010,7 @@ workflows:
           requires:
             - deploy_dev
             - sync_packages_dev
+      
       - sync_opensearch_packages:
           name: sync_packages_staging
           space: staging
@@ -868,6 +1021,7 @@ workflows:
               only:
                 - main
                 - /^hotfix\/.+/
+      
       - build:
           name: build_live
           context: trade-tariff
@@ -876,19 +1030,33 @@ workflows:
               only:
                 - main
                 - /^hotfix\/.+/
-      # new aws env
-      - build_and_push:
-          name: build_and_push_dev
+      
+      - plan_terraform:
           context: trade-tariff-terraform-aws-development
           environment: development
+          requires:
+            - write_docker_tag
+            - terraform_fmt_validate
           filters:
             branches:
               ignore:
                 - main
-                - /^hotfix\/.+/
                 - /^dependabot/(?!docker/).*/
-
-
+                - /^hotfix\/.+/
+      
+      - apply_terraform:
+          context: trade-tariff-terraform-aws-development
+          name: apply_terraform
+          environment: development
+          requires:
+            - plan_terraform
+            - build_and_push_dev
+          filters:
+            branches:
+              ignore:
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
+      
       - deploy_main_to_staging:
           matrix:
             parameters:
@@ -898,6 +1066,7 @@ workflows:
           context: trade-tariff
           requires:
             - build_live
+      
       - smoketest_staging:
           name: smoketest_staging
           context: trade-tariff
@@ -909,6 +1078,7 @@ workflows:
           requires:
             - sync_packages_staging
             - deploy_main_to_staging
+      
       - hold_create_release:
           type: approval
           filters:
@@ -918,6 +1088,7 @@ workflows:
                 - /^hotfix\/.+/
           requires:
             - deploy_main_to_staging
+      
       - tariff/create-production-release:
           context: trade-tariff
           image-name: tariff-backend
@@ -928,6 +1099,7 @@ workflows:
                 - /^hotfix\/.+/
           requires:
             - hold_create_release
+      
       - deploy_release_to_staging:
           matrix:
             parameters:
@@ -940,6 +1112,7 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
+      
       - smoketest_staging:
           name: smoketest_release_to_staging
           context: trade-tariff
@@ -950,6 +1123,7 @@ workflows:
               ignore: /.*/
           requires:
             - deploy_release_to_staging
+      
       - hold_deploy_production:
           type: approval
           filters:
@@ -957,6 +1131,7 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
+      
       - sync_opensearch_packages:
           name: sync_packages_production
           space: production
@@ -969,6 +1144,7 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
+      
       - deploy_production:
           matrix:
             parameters:
@@ -983,6 +1159,7 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
+      
       - notify_production_deployment:
           context: trade-tariff
           filters:

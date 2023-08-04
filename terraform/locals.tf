@@ -1,13 +1,17 @@
 locals {
-  project         = "trade-tariff"
-  no_reply        = "no-reply@${local.base_url}"
-  base_url        = "${local.project}.service.gov.uk"
-  environment_key = var.environment == "development" ? "development" : var.environment
+  no_reply = "no-reply@trade-tariff.service.gov.uk"
 }
 
 locals {
-
   backend_common_vars = [
+    {
+      name  = "PORT"
+      value = "8080"
+    },
+    {
+      name  = "ALCOHOL_COERCIAN_STARTS_FROM"
+      value = var.alcohol_coercian_starts_from
+    },
     {
       name  = "ALLOW_MISSING_MIGRATION_FILES"
       value = "true"
@@ -26,8 +30,7 @@ locals {
     },
     {
       name  = "FRONTEND_HOST"
-      value = "https://${local.environment_key}.${local.base_url}/"
-      # TODO: scope this due to www
+      value = "https://${var.base_domain}/"
     },
     {
       name  = "MALLOC_ARENA_MAX"
@@ -38,20 +41,20 @@ locals {
       value = "6"
     },
     {
+      name  = "MERGED_XI_UK_DATABASES"
+      value = "true"
+    },
+    {
       name  = "NEW_RELIC_AGENT_ENABLED"
       value = "false"
     },
     {
-      name  = "NEW_RELIC_APP_NAME"
-      value = "tariff-uk-backend-${var.environment}"
-    },
-    {
       name  = "NEW_RELIC_DISTRIBUTED_TRACING"
-      value = "true"
+      value = "false"
     },
     {
-      name  = "PAAS_S3_SERVICE_NAME"
-      value = "tariff-pdf-${local.environment_key}"
+      name  = "PLEK_SERVICE_SIGNON_URI"
+      value = "https://signon-dev.london.cloudapps.digital"
     },
     {
       name  = "RACK_TIMEOUT_SERVICE"
@@ -66,8 +69,12 @@ locals {
       value = "100"
     },
     {
-      name  = "SENTRY_DSN"
-      value = var.tariff_backend_sentry_dsn
+      name  = "RUBYOPT",
+      value = "--enable-yjit"
+    },
+    {
+      name  = "SENTRY_ENVIRONMENT"
+      value = var.environment
     },
     {
       name  = "SENTRY_PROJECT"
@@ -79,51 +86,91 @@ locals {
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
-      value = "analyzers/F102794475"
+      value = "analyzers/F159568045"
     },
     {
       name  = "SYNONYM_REFERENCE_ANALYZER"
-      value = "analyzers/F135140295"
+      value = "analyzers/F202143497"
+    },
+    {
+      name  = "TARIFF_SYNC_EMAIL"
+      value = "trade-tariff-support@enginegroup.com"
     },
     {
       name  = "TARIFF_IGNORE_PRESENCE_ERRORS"
       value = "1"
     },
     {
-      name  = "TARIFF_MEASURES_LOGGER"
-      value = "1"
-    },
-    {
       name  = "TARIFF_QUERY_SEARCH_PARSER_URL"
-      value = "https://${var.base_domain}/api/search/"
-    },
-    {
-      name  = "TARIFF_SYNC_EMAIL"
-      value = var.tariff_backend_sync_email
-    },
-    {
-      name  = "TARIFF_SYNC_HOST"
-      value = var.tariff_backend_sync_host
-    },
-    {
-      name  = "TARIFF_SYNC_PASSWORD"
-      value = var.tariff_backend_sync_password
-    },
-    {
-      name  = "TARIFF_SYNC_USERNAME"
-      value = var.tariff_backend_sync_username
-    },
-    {
-      name  = "TRADE_TARIFF_OAUTH_ID"
-      value = var.tariff_backend_oauth_id
-    },
-    {
-      name  = "TRADE_TARIFF_OAUTH_SECRET"
-      value = var.tariff_backend_oauth_secret
+      value = "http://search-query-parser.tariff.internal:8080/api/search"
     },
     {
       name  = "WEB_CONCURRENCY"
       value = "4"
     }
+  ]
+
+  # backend_common_worker_vars = [
+  #   {
+  #     name  = "TARIFF_SYNC_EMAIL"
+  #     value = "trade-tariff-support@enginegroup.com"
+  #   },
+  #   {
+  #     name  = "TARIFF_SYNC_HOST"
+  #     value = "https://webservices.hmrc.gov.uk"
+  #   },
+  #   {
+  #     name  = "SLACK_CHANNEL"
+  #     value = "#tariffs-etl"
+  #   },
+  # ]
+
+  backend_uk_common_secrets = [
+    {
+      name      = "REDIS_URL"
+      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn # TODO: Replace with UK-specific redis connection string
+    },
+  ]
+
+  backend_xi_common_secrets = [
+    {
+      name      = "REDIS_URL"
+      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn # TODO: Replace with XI-specific redis connection string
+    },
+  ]
+
+  backend_common_secrets = [
+    {
+      name      = "DATABASE_URL"
+      valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+    },
+    {
+      name      = "ELASTICSEARCH_URL"
+      valueFrom = data.aws_ssm_parameter.elasticsearch_url.arn
+    },
+    {
+      name      = "NEW_RELIC_LICENSE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.newrelic_license_key.arn
+    },
+    {
+      name      = "SENTRY_DSN"
+      valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
+    },
+    {
+      name      = "SECRET_KEY_BASE"
+      valueFrom = data.aws_secretsmanager_secret.secret_key_base.arn
+    },
+    {
+      name      = "TARIFF_SYNC_PASSWORD"
+      valueFrom = data.aws_secretsmanager_secret.sync_password.arn
+    },
+    {
+      name      = "TRADE_TARIFF_OAUTH_ID"
+      valueFrom = data.aws_secretsmanager_secret.oauth_id.arn
+    },
+    {
+      name      = "TRADE_TARIFF_OAUTH_SECRET"
+      valueFrom = data.aws_secretsmanager_secret.oauth_secret.arn
+    },
   ]
 }

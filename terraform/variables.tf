@@ -1,45 +1,3 @@
-variable "tariff_backend_sentry_dsn" {
-  description = "Backend Sentry DSN."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_sync_email" {
-  description = "Tariff Sync email."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_sync_host" {
-  description = "Tariff Sync host."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_sync_password" {
-  description = "Tariff Sync password."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_sync_username" {
-  description = "Tariff Sync username."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_oauth_id" {
-  description = "Tariff Backend OAuth ID."
-  type        = string
-  sensitive   = true
-}
-
-variable "tariff_backend_oauth_secret" {
-  description = "Tariff Backend OAuth secret."
-  type        = string
-  sensitive   = true
-}
-
 variable "environment" {
   description = "Deployment environment."
   type        = string
@@ -84,7 +42,18 @@ variable "base_domain" {
   type        = string
 }
 
-variable "trade_tariff_oauth_secret" {
-  description = "trade tarrif oauth secrets."
+variable "alcohol_coercian_starts_from" {
+  description = "When alcohol measurement unit coercian starts from for excise measurement units"
   type        = string
+  default     = "2023-01-01"
+}
+
+variable "cpu" {
+  description = "CPU units to use."
+  type        = number
+}
+
+variable "memory" {
+  description = "Memory to allocate in MB. Powers of 2 only."
+  type        = number
 }

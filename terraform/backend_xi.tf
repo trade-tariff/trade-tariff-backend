@@ -1,65 +1,70 @@
 module "backend_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.5.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.8.0"
 
   service_name  = "${var.service_name}-xi"
   service_count = var.service_count
   environment   = var.environment
   region        = var.region
 
-  cluster_name     = "trade-tariff-cluster-${var.environment}"
-  subnet_ids       = data.aws_subnets.private.ids
-  security_groups  = [data.aws_security_group.this.arn]
-  target_group_arn = data.aws_lb_target_group.this.arn
+  cluster_name              = "trade-tariff-cluster-${var.environment}"
+  subnet_ids                = data.aws_subnets.private.ids
+  security_groups           = [data.aws_security_group.this.id]
+  target_group_arn          = data.aws_lb_target_group.this["backend-xi-tg-${var.environment}"].arn
+  cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
+
   docker_image = data.aws_ssm_parameter.ecr_url.value
   docker_tag   = var.docker_tag
   skip_destroy = true
 
-  cloudwatch_log_group_name = data.aws_cloudwatch_log_groups.log_group.log_group_names
+  container_port        = 8080
+  private_dns_namespace = "tariff.internal"
 
-  # backend_xi_vars
+  cpu    = var.cpu
+  memory = var.memory
 
-  service_environment_config = flatten(local.backend_common_vars,
-    
+  task_role_policy_arns = [
+    aws_iam_policy.exec.arn
+  ]
+
+  execution_role_policy_arns = [
+    aws_iam_policy.secrets.arn
+  ]
+
+  enable_ecs_exec = true
+
+  service_environment_config = flatten([local.backend_common_vars,
     [
+      {
+        name  = "CDS"
+        value = "false"
+      },
+      {
+        name  = "GOVUK_APP_DOMAIN"
+        value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
+      },
+      {
+        name  = "NEW_RELIC_APP_NAME"
+        value = "tariff-xi-backend-${var.environment}"
+      },
+      {
+        name  = "SERVICE"
+        value = "xi"
+      },
+      {
+        name  = "TARIFF_FROM_EMAIL"
+        value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
+      },
+      {
+        name  = "VCAP_APPLICATION"
+        value = "{}"
+      }
+    ]
+  ])
 
-    {
-      name  = "CDS"
-      value = "false"
-    },
-    {
-      name  = "GOVUK_APP_DOMAIN"
-      value = "tariff-xi-backend-${local.environment_key}.apps.internal"
-    },
-    {
-      name  = "NEW_RELIC_APP_NAME"
-      value = "tariff-xi-backend-${var.environment}"
-    },
-    {
-      name  = "SERVICE"
-      value = "xi"
-    },
-    {
-      name  = "TARIFF_FROM_EMAIL"
-      value = "Tariff XI [${upper(var.environment)}] <${local.no_reply}>"
-    },
-    {
-      name  = "VCAP_APPLICATION"
-      value = "{}"
-    }
-  ]
-)
-
-  service_secrets_config = [
-    {
-      name      = "REDIS_URL"
-      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn
-    },
-    {
-      name      = "trade_tariff_oauth_secret"
-      value     = var.trade_tariff_oauth_secret
-    }
-  ]
+  service_secrets_config = flatten(
+    [local.backend_common_secrets, local.backend_xi_common_secrets]
+  )
 }
