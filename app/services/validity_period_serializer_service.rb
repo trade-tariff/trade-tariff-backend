@@ -31,7 +31,7 @@ class ValidityPeriodSerializerService
   def goods_nomenclature_scope
     if params[:commodity_id].present?
       # TODO: This can include subheadings - e.g. /commodities/0101290000/validity_periods is a subheading
-      Commodity.by_code(params[:commodity_id]).declarable
+      Commodity.by_code(params[:commodity_id]).non_grouping
     elsif params[:subheading_id].present?
       code, producline_suffix = params[:subheading_id].split('-')
 
