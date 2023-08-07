@@ -42,5 +42,12 @@ RSpec.describe CertificateFinderService do
       it { is_expected.to all(be_a(Api::V2::CertificateSearch::CertificatePresenter)) }
       it { expect(call.first.certificate_code).to eq certificate.certificate_code }
     end
+
+    context 'when no measures are associated with the certificate' do
+      let(:code) { certificate.certificate_code }
+      let(:type) { 'Y' }
+
+      it { is_expected.to be_empty }
+    end
   end
 end

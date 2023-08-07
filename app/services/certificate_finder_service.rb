@@ -6,7 +6,7 @@ class CertificateFinderService
   end
 
   def call
-    return [] if description_types_and_codes.empty? && type.blank? && code.blank?
+    return [] if description_types_and_codes.empty? && (type.blank? && code.blank?)
 
     Api::V2::CertificateSearch::CertificatePresenter.wrap(
       certificates,
@@ -19,6 +19,8 @@ class CertificateFinderService
   attr_reader :type, :code, :description
 
   def certificates
+    return [] if grouped_measures.none?
+
     all_certificate_codes = grouped_measures.keys.map do |certificate_full_code|
       [certificate_full_code[0], certificate_full_code[1...]]
     end
