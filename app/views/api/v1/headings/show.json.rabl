@@ -11,7 +11,7 @@ if footnotes.any?
   end
 end
 
-if @heading.declarable?
+if @heading.ns_declarable?
   attributes :basic_duty_rate
 
   extends 'api/v1/declarables/declarable', object: @heading, locals: { measures: @heading.applicable_measures }

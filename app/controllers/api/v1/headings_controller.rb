@@ -75,7 +75,7 @@ module Api
 
       def show
         @heading = heading
-        @heading_cache_key = "heading-#{@heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{@heading.declarable?}"
+        @heading_cache_key = "heading-#{@heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{@heading.ns_declarable?}"
         respond_with @heading
       end
 

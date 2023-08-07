@@ -71,19 +71,41 @@ module Api
               group[:group_lead] = heading
               group[:group_members] = []
 
-              group = { group_lead: nil, group_members: [] }
               groups << group
+
+              group = { group_lead: nil, group_members: [] }
             end
           else
             group = { group_lead: heading, group_members: [] }
             groups << group
           end
         end
-        groups.pluck(:group_lead)
+
+        groups.map do |result|
+          RootHeadingPresenter.new(result[:group_lead], result[:group_members])
+        end
       end
 
       def chapter_id
         params[:id]
+      end
+    end
+
+    class RootHeadingPresenter < WrapDelegator
+      attr_reader :children
+
+      def initialize(heading, children)
+        super(heading)
+
+        @children = children.any? ? RootHeadingPresenter.wrap(children, []) : []
+      end
+
+      def leaf
+        producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && children.none?
+      end
+
+      def declarable
+        ns_declarable?
       end
     end
   end
