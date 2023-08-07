@@ -40,17 +40,17 @@ module TariffSynchronizer
       @sql_subscriber = ActiveSupport::Notifications.subscribe(/sql\.sequel/) do |*args|
         event = ActiveSupport::Notifications::Event.new(*args)
 
-        binds = unless event.payload.fetch(:binds, []).blank?
-                  event.payload[:binds].map do |column, value|
+        binds = if event.payload.fetch(:binds, []).present?
+                  event.payload[:binds].map { |column, value|
                     [column.name, value]
-                  end.inspect
+                  }.inspect
                 end
 
         @database_queries.push(
-          format('(%{class_name}) %{sql} %{binds}',
-                 class_name: event.payload[:name],
-                 sql: event.payload[:sql].squeeze(' '),
-                 binds:),
+          sprintf('(%{class_name}) %{sql} %{binds}',
+                  class_name: event.payload[:name],
+                  sql: event.payload[:sql].squeeze(' '),
+                  binds:),
         )
       end
     end
@@ -80,17 +80,17 @@ module TariffSynchronizer
           model_name: record.class,
           details: {
             errors: record.errors,
-            xml_key: xml_key,
-            xml_node: xml_node,
-            exception: exception.class.to_s + ': ' + exception.message.to_s
+            xml_key:,
+            xml_node:,
+            exception: "#{exception.class}: #{exception.message}",
           }.to_json,
         )
       end
     end
 
-    def persist_exception_for_review(e)
-      @base_update.update(exception_class: e.class.to_s + ': ' + e.message.to_s,
-                          exception_backtrace: e.backtrace.join("\n"),
+    def persist_exception_for_review(exception)
+      @base_update.update(exception_class: "#{exception.class}: #{exception.message}",
+                          exception_backtrace: exception.backtrace.join("\n"),
                           exception_queries: @database_queries.join("\n"))
     end
 
