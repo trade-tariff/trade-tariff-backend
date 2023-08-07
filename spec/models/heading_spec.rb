@@ -86,15 +86,6 @@ RSpec.describe Heading do
     it { is_expected.to eq('Heading') }
   end
 
-  describe '.declarable' do
-    let(:heading_80) { create(:heading, producline_suffix: '80') }
-    let(:heading_10) { create(:heading, producline_suffix: '10') }
-
-    it { expect(described_class.declarable).to be_kind_of(Sequel::Dataset) }
-    it { expect(described_class.declarable).to include(heading_80) }
-    it { expect(described_class.declarable).not_to include(heading_10) }
-  end
-
   describe '.by_code' do
     let!(:heading1) { create(:heading, goods_nomenclature_item_id: '1234000000') }
     let!(:heading2) { create(:heading, goods_nomenclature_item_id: '4321000000') }

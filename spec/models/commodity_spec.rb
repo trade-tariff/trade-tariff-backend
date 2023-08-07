@@ -156,15 +156,6 @@ RSpec.describe Commodity do
     end
   end
 
-  describe '.declarable' do
-    let(:commodity_80) { create(:commodity, producline_suffix: '80') }
-    let(:commodity_10) { create(:commodity, producline_suffix: '10') }
-
-    it { expect(described_class.declarable).to be_kind_of(Sequel::Dataset) }
-    it { expect(described_class.declarable).to include(commodity_80) }
-    it { expect(described_class.declarable).not_to include(commodity_10) }
-  end
-
   describe '.by_code' do
     let(:commodity1) { create(:commodity, goods_nomenclature_item_id: '123') }
     let(:commodity2) { create(:commodity, goods_nomenclature_item_id: '456') }

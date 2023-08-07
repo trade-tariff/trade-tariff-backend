@@ -20,7 +20,7 @@ module Api
         @chapter = Chapter
           .actual
           .non_hidden
-          .by_code(chapter_id)
+          .by_code(params[:id])
           .take
       end
     end
