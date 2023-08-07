@@ -19,14 +19,7 @@ class Chapter < GoodsNomenclature
     ds.with_actual(Heading).non_hidden
   end
 
-  one_to_many :goods_nomenclatures do |_ds|
-    GoodsNomenclature
-      .actual
-      .filter('goods_nomenclature_item_id LIKE ?', relevant_goods_nomenclature)
-      .exclude(goods_nomenclature_item_id:)
-  end
-
-  one_to_one :chapter_note, primary_key: :to_param
+  one_to_one :chapter_note, primary_key: :chapter_short_code
 
   def guide_ids
     guides.pluck(:id)
@@ -103,10 +96,6 @@ class Chapter < GoodsNomenclature
     }
      .limit(TradeTariffBackend.change_count)
      .order(Sequel.desc(:operation_date, nulls: :last), Sequel.desc(:depth))
-  end
-
-  def uptree
-    [self]
   end
 
   private

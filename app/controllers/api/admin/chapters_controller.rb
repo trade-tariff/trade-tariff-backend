@@ -1,10 +1,6 @@
-require 'goods_nomenclature_mapper'
-
 module Api
   module Admin
     class ChaptersController < AdminController
-      before_action :find_chapter, only: [:show]
-
       def index
         @chapters = Chapter.eager(:chapter_note).all
 
@@ -15,19 +11,17 @@ module Api
         options = { is_collection: false }
         options[:include] = %i[chapter_note headings section]
 
-        render json: Api::Admin::Chapters::ChapterSerializer.new(@chapter, options).serializable_hash
+        render json: Api::Admin::Chapters::ChapterSerializer.new(chapter, options).serializable_hash
       end
 
       private
 
-      def find_chapter
-        @chapter = Chapter.actual.where(goods_nomenclature_item_id: chapter_id).take
-
-        raise Sequel::RecordNotFound if @chapter.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
-      end
-
-      def chapter_id
-        "#{params[:id]}00000000"
+      def chapter
+        @chapter = Chapter
+          .actual
+          .non_hidden
+          .by_code(chapter_id)
+          .take
       end
     end
   end

@@ -1,5 +1,3 @@
-require 'goods_nomenclature_mapper'
-
 module Api
   module V1
     class ChaptersController < ApiController
@@ -61,19 +59,53 @@ module Api
         @chapters ||= Chapter.eager(:chapter_note).all
       end
 
-      def headings
-        @headings ||= chapter
-          .headings_dataset
-          .eager(:goods_nomenclature_descriptions, :goods_nomenclature_indents)
-          .all
-      end
-
       def root_headings
-        @root_headings ||= GoodsNomenclatureMapper.new(headings).root_entries
+        groups = []
+        group = { group_lead: nil, group_members: [] }
+
+        chapter.ns_children.each do |heading|
+          if heading.producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX
+            if group[:group_lead].present?
+              group[:group_members] << heading
+            else
+              group[:group_lead] = heading
+              group[:group_members] = []
+
+              groups << group
+
+              group = { group_lead: nil, group_members: [] }
+            end
+          else
+            group = { group_lead: heading, group_members: [] }
+            groups << group
+          end
+        end
+
+        groups.map do |result|
+          RootHeadingPresenter.new(result[:group_lead], result[:group_members])
+        end
       end
 
       def chapter_id
         params[:id]
+      end
+    end
+
+    class RootHeadingPresenter < WrapDelegator
+      attr_reader :children
+
+      def initialize(heading, children)
+        super(heading)
+
+        @children = children.any? ? RootHeadingPresenter.wrap(children, []) : []
+      end
+
+      def leaf
+        producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && children.none?
+      end
+
+      def declarable
+        ns_declarable?
       end
     end
   end

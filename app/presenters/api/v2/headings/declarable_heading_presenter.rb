@@ -59,6 +59,12 @@ module Api
           import_measures.any?(&:entry_price_system?)
         end
 
+        def basic_duty_rate
+          if third_country_measures.one?
+            third_country_measures.first&.formatted_duty_expression
+          end
+        end
+
         def applicable_additional_codes
           ApplicableAdditionalCodeService.new(import_measures).call
         end

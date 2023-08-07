@@ -1,6 +1,6 @@
 object @heading
 attributes :id, :declarable
 
-child(@commodities) do
+child(@heading.ns_descendants) do
   attributes :id
 end

@@ -24,9 +24,9 @@ RSpec.describe Api::V2::CommoditiesController do
     end
 
     context 'when a filter for geographical_area_id is passed' do
-      before { create :geographical_area, geographical_area_id: 'RO' }
-
       subject(:do_response) { get :show, params: { id: commodity.code, filter: { geographical_area_id: 'RO' } } }
+
+      before { create :geographical_area, geographical_area_id: 'RO' }
 
       it 'passes the filter to the CachedCommodityService' do
         do_response
@@ -75,235 +75,213 @@ RSpec.describe Api::V2::CommoditiesController do
   end
 
   context 'when record is hidden' do
-    let!(:hidden_goods_nomenclature) { create :hidden_goods_nomenclature, goods_nomenclature_item_id: commodity.goods_nomenclature_item_id }
+    before do
+      create(
+        :hidden_goods_nomenclature,
+        goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+      )
 
-    it 'returns not found' do
       get :show, params: { id: commodity.goods_nomenclature_item_id }, format: :json
-
-      expect(response.status).to eq 404
     end
+
+    it { expect(response).to have_http_status(:not_found) }
   end
 
   context 'when commodity has children' do
-    # According to Taric manual, commodities that have product line suffix of
-    # 80 are not declarable. Unfortunately this is not always the case, sometimes
-    # productline suffix is 80, but commodity has children and therefore should also
-    # be considered to be non-declarable.
-    let!(:heading) { create :goods_nomenclature, goods_nomenclature_item_id: '3903000000' }
-    let!(:parent_commodity) do
-      create :commodity, :with_indent,
-             :with_chapter,
-             indents: 2,
-             goods_nomenclature_item_id: '3903909000',
-             producline_suffix: '80'
-    end
-    let!(:child_commodity) do
+    before do
+      create :goods_nomenclature, goods_nomenclature_item_id: '3903000000'
+
       create :commodity, :with_indent,
              indents: 3,
              goods_nomenclature_item_id: '3903909065',
              producline_suffix: '80'
-    end
 
-    it 'returns not found (is not declarable)' do
+      parent_commodity = create :commodity, :with_indent,
+                                :with_chapter,
+                                indents: 2,
+                                goods_nomenclature_item_id: '3903909000',
+                                producline_suffix: '80'
+
       get :show, params: { id: parent_commodity.goods_nomenclature_item_id }, format: :json
-
-      expect(response.status).to eq 404
-    end
-  end
-end
-
-RSpec.describe Api::V2::CommoditiesController, 'GET #changes' do
-  context 'changes happened after chapter creation' do
-    let!(:commodity) do
-      create :commodity, :with_indent,
-             :with_chapter_and_heading,
-             :with_description,
-             :declarable,
-             operation_date: Time.zone.today
     end
 
-    let(:pattern) do
-      {
-        data: [
-          {
-            id: String,
-            type: 'change',
-            attributes: {
-              oid: Integer,
-              model_name: 'GoodsNomenclature',
-              operation: 'C',
-              operation_date: String,
-            },
-            relationships: {
-              record: {
-                data: {
-                  id: String,
-                  type: 'goods_nomenclature',
-                },
-              },
-            },
-          },
-        ],
-        included: [
-          {
-            id: String,
-            type: 'goods_nomenclature',
-            attributes: Hash,
-          },
-        ],
-      }
-    end
-
-    it 'returns commodity changes' do
-      get :changes, params: { id: commodity }, format: :json
-
-      expect(response.body).to match_json_expression pattern
-    end
+    it { expect(response).to have_http_status(:not_found) }
   end
 
-  context 'changes happened before requested date' do
-    let!(:commodity) do
-      create :commodity, :with_indent,
-             :with_chapter_and_heading,
-             :with_description,
-             :declarable,
-             operation_date: Time.zone.today
-    end
+  describe 'GET /changes' do
+    context 'when changes happened after chapter creation' do
+      let!(:commodity) do
+        create :commodity, :with_indent,
+               :with_chapter_and_heading,
+               :with_description,
+               :declarable,
+               operation_date: Time.zone.today
+      end
 
-    let!(:pattern) do
-      {
-        data: [],
-        included: [],
-      }
-    end
-
-    it 'does not include change records' do
-      get :changes, params: { id: commodity, as_of: Time.zone.yesterday }, format: :json
-
-      expect(response.body).to match_json_expression pattern
-    end
-  end
-
-  context 'changes include deleted record' do
-    let!(:commodity) do
-      create :commodity, :with_indent,
-             :with_chapter_and_heading,
-             :with_description,
-             :declarable,
-             operation_date: Time.zone.today
-    end
-    let!(:measure) do
-      create :measure,
-             :with_measure_type,
-             goods_nomenclature: commodity,
-             goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-             goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
-             operation_date: Time.zone.today
-    end
-
-    let(:pattern) do
-      {
-        data: [
-          {
-            id: String,
-            type: 'change',
-            attributes: {
-              oid: Integer,
-              model_name: 'Measure',
-              operation: 'C',
-              operation_date: String,
+      let(:pattern) do
+        {
+          data: Array,
+          included: [
+            {
+              id: String,
+              type: 'goods_nomenclature',
+              attributes: Hash,
             },
-            relationships: {
-              record: {
-                data: {
-                  id: String,
-                  type: 'measure',
+          ],
+        }
+      end
+
+      it 'returns commodity changes' do
+        get :changes, params: { id: commodity }, format: :json
+
+        expect(response.body).to match_json_expression pattern
+      end
+    end
+
+    context 'when changes happened before requested date' do
+      let!(:commodity) do
+        create :commodity, :with_indent,
+               :with_chapter_and_heading,
+               :with_description,
+               :declarable,
+               operation_date: Time.zone.today
+      end
+
+      let!(:pattern) do
+        {
+          data: [],
+          included: [],
+        }
+      end
+
+      it 'does not include change records' do
+        get :changes, params: { id: commodity, as_of: Time.zone.yesterday }, format: :json
+
+        expect(response.body).to match_json_expression pattern
+      end
+    end
+
+    context 'when changes include deleted record' do
+      let!(:commodity) do
+        create :commodity, :with_indent,
+               :with_chapter_and_heading,
+               :with_description,
+               :declarable,
+               operation_date: Time.zone.today
+      end
+      let!(:measure) do
+        create :measure,
+               :with_measure_type,
+               goods_nomenclature: commodity,
+               goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+               goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
+               operation_date: Time.zone.today
+      end
+
+      let(:pattern) do
+        {
+          data: [
+            {
+              id: String,
+              type: 'change',
+              attributes: {
+                oid: Integer,
+                model_name: 'Measure',
+                operation: 'C',
+                operation_date: String,
+              },
+              relationships: {
+                record: {
+                  data: {
+                    id: String,
+                    type: 'measure',
+                  },
                 },
               },
             },
-          },
-          {
-            id: String,
-            type: 'change',
-            attributes: {
-              oid: Integer,
-              model_name: 'Measure',
-              operation: 'D',
-              operation_date: String,
-            },
-            relationships: {
-              record: {
-                data: {
-                  id: String,
-                  type: 'measure',
+            {
+              id: String,
+              type: 'change',
+              attributes: {
+                oid: Integer,
+                model_name: 'Measure',
+                operation: 'D',
+                operation_date: String,
+              },
+              relationships: {
+                record: {
+                  data: {
+                    id: String,
+                    type: 'measure',
+                  },
                 },
               },
             },
-          },
-          {
-            id: String,
-            type: 'change',
-            attributes: {
-              oid: Integer,
-              model_name: 'GoodsNomenclature',
-              operation: 'C',
-              operation_date: String,
-            },
-            relationships: {
-              record: {
-                data: {
-                  id: String,
-                  type: 'goods_nomenclature',
+            {
+              id: String,
+              type: 'change',
+              attributes: {
+                oid: Integer,
+                model_name: 'GoodsNomenclature',
+                operation: 'C',
+                operation_date: String,
+              },
+              relationships: {
+                record: {
+                  data: {
+                    id: String,
+                    type: 'goods_nomenclature',
+                  },
                 },
               },
             },
-          },
-        ],
-        included: [
-          {
-            id: String,
-            type: 'measure',
-            attributes: Hash,
-            relationships: {
-              geographical_area: {
-                data: {
-                  id: String,
-                  type: 'geographical_area',
+          ],
+          included: [
+            {
+              id: String,
+              type: 'measure',
+              attributes: Hash,
+              relationships: {
+                geographical_area: {
+                  data: {
+                    id: String,
+                    type: 'geographical_area',
+                  },
                 },
-              },
-              measure_type: {
-                data: {
-                  id: String,
-                  type: 'measure_type',
+                measure_type: {
+                  data: {
+                    id: String,
+                    type: 'measure_type',
+                  },
                 },
               },
             },
-          },
-          {
-            id: String,
-            type: 'geographical_area',
-            attributes: Hash,
-          },
-          {
-            id: String,
-            type: 'measure_type',
-            attributes: Hash,
-          },
-          {
-            id: String,
-            type: 'goods_nomenclature',
-            attributes: Hash,
-          },
-        ],
-      }
-    end
+            {
+              id: String,
+              type: 'geographical_area',
+              attributes: Hash,
+            },
+            {
+              id: String,
+              type: 'measure_type',
+              attributes: Hash,
+            },
+            {
+              id: String,
+              type: 'goods_nomenclature',
+              attributes: Hash,
+            },
+          ],
+        }
+      end
 
-    before { measure.destroy }
+      before { measure.destroy }
 
-    it 'renders record attributes' do
-      get :changes, params: { id: commodity }, format: :json
+      it 'renders record attributes' do
+        get :changes, params: { id: commodity }, format: :json
 
-      expect(response.body).to match_json_expression pattern
+        expect(response.body).to match_json_expression pattern
+      end
     end
   end
 end

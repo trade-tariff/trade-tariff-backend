@@ -65,8 +65,14 @@ module Api
           third_country_measures.size.positive? && third_country_measures.all?(&:zero_mfn?)
         end
 
+        def basic_duty_rate
+          if third_country_measures.one?
+            third_country_measures.first&.formatted_duty_expression
+          end
+        end
+
         def third_country_measures
-          import_measures.select(&:third_country?)
+          @third_country_measures ||= import_measures.select(&:third_country?)
         end
 
         def trade_remedies?

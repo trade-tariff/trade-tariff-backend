@@ -34,7 +34,7 @@ module HeadingService
       end
 
       def measures
-        heading.measures_dataset.eager(
+        heading.ns_measures_dataset.eager(
           {
             geographical_area: [
               :geographical_area_descriptions,

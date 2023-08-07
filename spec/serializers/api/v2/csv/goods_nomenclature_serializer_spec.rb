@@ -35,7 +35,7 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
           goods_nomenclature.description,
           '80',
           "/api/v2/headings/#{goods_nomenclature.short_code}",
-          goods_nomenclature.description,
+          goods_nomenclature.formatted_description,
           "#{goods_nomenclature.validity_start_date.to_date} 00:00:00 UTC",
           '',
           'true',

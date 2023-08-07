@@ -32,7 +32,7 @@ child @commodity.chapter do |chapter|
   end
 end
 
-child(@commodity.ancestors => :ancestors) {
+child(@commodity.ns_ancestors => :ancestors) {
   attributes :producline_suffix,
              :description,
              :number_indents,
