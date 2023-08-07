@@ -1,6 +1,6 @@
 RSpec.describe CertificateFinderService do
   describe '#call' do
-    subject(:call) { described_class.new(code, type, description).call }
+    subject(:call) { described_class.new(type, code, description).call }
 
     let(:code) { nil }
     let(:type) { nil }
@@ -22,18 +22,13 @@ RSpec.describe CertificateFinderService do
 
     it { is_expected.to be_empty }
 
-    context 'when searching by code' do
+    context 'when searching by code and type' do
       let(:code) { certificate.certificate_code }
-
-      it { is_expected.to all(be_a(Api::V2::CertificateSearch::CertificatePresenter)) }
-      it { expect(call.first.certificate_code).to eq certificate.certificate_code }
-    end
-
-    context 'when searching by type' do
       let(:type) { certificate.certificate_type_code }
 
       it { is_expected.to all(be_a(Api::V2::CertificateSearch::CertificatePresenter)) }
       it { expect(call.first.certificate_code).to eq certificate.certificate_code }
+      it { expect(call.first.certificate_type_code).to eq certificate.certificate_type_code }
     end
 
     context 'when searching by description' do
