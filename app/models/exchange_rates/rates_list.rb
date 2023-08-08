@@ -30,15 +30,15 @@ module ExchangeRates
       end
 
       def exchange_rate_files(month, year)
-        files = ExchangeRateCurrencyRate.files_for_year_and_month(month, year)
+        files = ExchangeRateFile.where(month:, year:)
 
-        ExchangeRates::ExchangeRateFile.wrap(files)
+        ExchangeRateFile.wrap(files)
       end
 
       def exchange_rates(month, year)
         rates = ExchangeRateCurrencyRate.by_year_and_month(month, year)
 
-        ExchangeRates::ExchangeRate.wrap(rates)
+        ExchangeRateCurrencyRate.wrap(rates)
       end
     end
   end

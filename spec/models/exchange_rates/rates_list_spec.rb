@@ -47,7 +47,7 @@ RSpec.describe ExchangeRates::RatesList do
     end
 
     it 'initializes exchange rate files to include an instance of a file' do
-      expect(rates_list.exchange_rate_files.first).to be_an_instance_of(ExchangeRates::ExchangeRateFile)
+      expect(rates_list.exchange_rate_files.first).to be_an_instance_of(ExchangeRateFile)
     end
 
     it 'initializes exchange rates to an empty array' do
@@ -58,14 +58,10 @@ RSpec.describe ExchangeRates::RatesList do
   describe '.exchange_rate_files' do
     subject(:exchange_rate_files) { described_class.exchange_rate_files(month, year) }
 
-    let(:files) { build_list(:exchange_rate_exchange_rate_file, 1) }
-
-    before do
-      allow(ExchangeRateCurrencyRate).to receive(:files_for_year_and_month).with(month, year).and_return(files)
-    end
+    let(:files) { build_list(:exchange_rate_file, 1) }
 
     it 'calls ExchangeRates::RatesList.build with the correct arguments' do
-      allow(ExchangeRates::ExchangeRateFile).to receive(:wrap).with(exchange_rate_files).and_return([])
+      allow(ExchangeRateFile).to receive(:wrap).with(exchange_rate_files).and_return([])
 
       exchange_rate_files
     end
@@ -74,8 +70,8 @@ RSpec.describe ExchangeRates::RatesList do
       expect(exchange_rate_files).to be_an(Array)
     end
 
-    it 'returns an array of ExchangeRates::ExchangeRateFile instances' do
-      expect(exchange_rate_files).to all(be_an_instance_of(ExchangeRates::ExchangeRateFile))
+    it 'returns an array of ExchangeRateFile instances' do
+      expect(exchange_rate_files).to all(be_an_instance_of(ExchangeRateFile))
     end
   end
 
@@ -88,8 +84,8 @@ RSpec.describe ExchangeRates::RatesList do
       allow(ExchangeRateCurrencyRate).to receive(:by_year_and_month).with(month, year).and_return(rates)
     end
 
-    it 'calls ExchangeRates::ExchangeRate.build with the correct arguments' do
-      allow(ExchangeRates::ExchangeRate).to receive(:wrap).with(rates).and_return([])
+    it 'calls ExchangeRateCurrencyRate.build with the correct arguments' do
+      allow(ExchangeRateCurrencyRate).to receive(:wrap).with(rates).and_return([])
 
       exchange_rates
     end
@@ -98,8 +94,8 @@ RSpec.describe ExchangeRates::RatesList do
       expect(exchange_rates).to be_an(Array)
     end
 
-    it 'returns an array of ExchangeRates::ExchangeRate instances' do
-      expect(exchange_rates).to all(be_an_instance_of(ExchangeRates::ExchangeRate))
+    it 'returns an array of ExchangeRateCurrencyRate instances' do
+      expect(exchange_rates).to all(be_an_instance_of(ExchangeRateCurrencyRate))
     end
   end
 end
