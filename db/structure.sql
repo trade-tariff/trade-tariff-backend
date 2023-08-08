@@ -9493,6 +9493,34 @@ CREATE INDEX base_regulation ON uk.modification_regulations_oplog USING btree (b
 
 
 --
+-- Name: base_regulations_oplog_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_oplog_approved_flag_index ON uk.base_regulations_oplog USING btree (approved_flag);
+
+
+--
+-- Name: base_regulations_oplog_effective_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_oplog_effective_end_date_index ON uk.base_regulations_oplog USING btree (effective_end_date);
+
+
+--
+-- Name: base_regulations_oplog_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_oplog_validity_end_date_index ON uk.base_regulations_oplog USING btree (validity_end_date);
+
+
+--
+-- Name: base_regulations_oplog_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_oplog_validity_start_date_index ON uk.base_regulations_oplog USING btree (validity_start_date);
+
+
+--
 -- Name: base_regulations_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -9948,6 +9976,41 @@ CREATE INDEX fo_fooopl_teslog_operation_date ON uk.footnotes_oplog USING btree (
 
 
 --
+-- Name: footnote_association_goods_nomenclatures_oplog_footnote_id_inde; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_association_goods_nomenclatures_oplog_footnote_id_inde ON uk.footnote_association_goods_nomenclatures_oplog USING btree (footnote_id);
+
+
+--
+-- Name: footnote_association_goods_nomenclatures_oplog_footnote_type_in; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_association_goods_nomenclatures_oplog_footnote_type_in ON uk.footnote_association_goods_nomenclatures_oplog USING btree (footnote_type);
+
+
+--
+-- Name: footnote_association_goods_nomenclatures_oplog_goods_nomenclatu; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_association_goods_nomenclatures_oplog_goods_nomenclatu ON uk.footnote_association_goods_nomenclatures_oplog USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: footnote_association_measures_oplog_footnote_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_association_measures_oplog_footnote_type_id_index ON uk.footnote_association_measures_oplog USING btree (footnote_type_id);
+
+
+--
+-- Name: footnote_descriptions_description_trgm_idx; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX footnote_descriptions_description_trgm_idx ON uk.footnote_descriptions_oplog USING gist (description public.gist_trgm_ops);
+
+
+--
 -- Name: footnote_id; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10337,6 +10400,20 @@ CREATE INDEX goods_nomenclature_validity_dates ON uk.goods_nomenclature_indents_
 --
 
 CREATE INDEX goods_nomenclatures_oplog_path_index ON uk.goods_nomenclatures_oplog USING gin (path);
+
+
+--
+-- Name: goods_nomenclatures_oplog_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_oplog_validity_end_date_index ON uk.goods_nomenclatures_oplog USING btree (validity_end_date);
+
+
+--
+-- Name: goods_nomenclatures_oplog_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_oplog_validity_start_date_index ON uk.goods_nomenclatures_oplog USING btree (validity_start_date);
 
 
 --
@@ -10970,10 +11047,31 @@ CREATE INDEX measures_oplog_additional_code_type_id_index ON uk.measures_oplog U
 
 
 --
+-- Name: measures_oplog_measure_generating_regulation_role_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_measure_generating_regulation_role_index ON uk.measures_oplog USING btree (measure_generating_regulation_role);
+
+
+--
 -- Name: measures_oplog_ordernumber_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX measures_oplog_ordernumber_validity_start_date_index ON uk.measures_oplog USING btree (ordernumber, validity_start_date);
+
+
+--
+-- Name: measures_oplog_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_validity_end_date_index ON uk.measures_oplog USING btree (validity_end_date);
+
+
+--
+-- Name: measures_oplog_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_oplog_validity_start_date_index ON uk.measures_oplog USING btree (validity_start_date);
 
 
 --
@@ -11086,6 +11184,34 @@ CREATE INDEX mod_reg_explicit_abrogation_regulation ON uk.modification_regulatio
 --
 
 CREATE INDEX mod_reg_pk ON uk.modification_regulations_oplog USING btree (modification_regulation_id, modification_regulation_role);
+
+
+--
+-- Name: modification_regulations_oplog_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_oplog_approved_flag_index ON uk.modification_regulations_oplog USING btree (approved_flag);
+
+
+--
+-- Name: modification_regulations_oplog_effective_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_oplog_effective_end_date_index ON uk.modification_regulations_oplog USING btree (effective_end_date);
+
+
+--
+-- Name: modification_regulations_oplog_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_oplog_validity_end_date_index ON uk.modification_regulations_oplog USING btree (validity_end_date);
+
+
+--
+-- Name: modification_regulations_oplog_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_oplog_validity_start_date_index ON uk.modification_regulations_oplog USING btree (validity_start_date);
 
 
 --
@@ -11905,3 +12031,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230725131904_create_exch
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230731095730_adds_index_to_additional_code_descriptions.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230731202727_adds_additional_code_indexes_to_measures.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230801133145_adds_certificate_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230808103253_adds_footnote_indexes.rb');
