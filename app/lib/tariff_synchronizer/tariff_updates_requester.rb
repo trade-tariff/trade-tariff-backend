@@ -56,7 +56,7 @@ module TariffSynchronizer
 
       client = Faraday.new(uri.host) do |conn|
         if TradeTariffBackend.xi?
-          conn.request :basic_auth, TariffSynchronizer.username, TariffSynchronizer.password
+          conn.set_basic_auth(TariffSynchronizer.username, TariffSynchronizer.password)
         end
       end
 
