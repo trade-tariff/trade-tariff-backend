@@ -7,14 +7,14 @@ module Api
         columns :goods_nomenclature_item_id,
                 :goods_nomenclature_sid
 
-        column  :declarable, &:ns_declarable?
+        column  :declarable, &:declarable?
 
         columns :description,
                 :description_plain,
                 :formatted_description,
                 :producline_suffix
 
-        column  :leaf, &:ns_leaf?
+        column  :leaf, &:leaf?
       end
     end
   end

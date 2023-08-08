@@ -224,7 +224,7 @@ class GoodsNomenclature < Sequel::Model
   end
 
   def classifiable_goods_nomenclatures
-    ns_ancestors.dup.push(self).reverse
+    ancestors.dup.push(self).reverse
   end
 
   def has_chemicals

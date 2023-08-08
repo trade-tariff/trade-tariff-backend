@@ -10,7 +10,7 @@ module Api
 
         attributes :goods_nomenclature_sid, :goods_nomenclature_item_id, :description
 
-        attribute :declarable, &:ns_declarable?
+        attribute :declarable, &:declarable?
 
         attribute :search_references_count do |heading|
           heading.search_references.count

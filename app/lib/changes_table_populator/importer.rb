@@ -95,7 +95,7 @@ module ChangesTablePopulator
              .first
 
       TimeMachine.at(descendants_date(gn, day)) do
-        gn.ns_declarable?
+        gn.declarable?
       end
     end
 
@@ -105,7 +105,7 @@ module ChangesTablePopulator
              .first
 
       TimeMachine.at(descendants_date(gn, day)) do
-        [gn] + gn.ns_descendants
+        [gn] + gn.descendants
       end
     end
   end

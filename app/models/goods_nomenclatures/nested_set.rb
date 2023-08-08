@@ -20,7 +20,7 @@ module GoodsNomenclatures
         ds.with_actual(GoodsNomenclatures::TreeNode)
       end
 
-      many_to_many :ns_ancestors,
+      many_to_many :ancestors,
                    left_primary_key: :goods_nomenclature_sid,
                    left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
                    right_primary_key: :goods_nomenclature_sid,
@@ -45,7 +45,7 @@ module GoodsNomenclatures
           end
       end
 
-      one_through_one :ns_parent,
+      one_through_one :parent,
                       left_primary_key: :goods_nomenclature_sid,
                       left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
                       right_primary_key: :goods_nomenclature_sid,
@@ -69,7 +69,7 @@ module GoodsNomenclatures
           end
       end
 
-      many_to_many :ns_descendants,
+      many_to_many :descendants,
                    left_primary_key: :goods_nomenclature_sid,
                    left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
                    right_primary_key: :goods_nomenclature_sid,
@@ -94,7 +94,7 @@ module GoodsNomenclatures
           end
       end
 
-      many_to_many :ns_children,
+      many_to_many :children,
                    left_primary_key: :goods_nomenclature_sid,
                    left_key: Sequel.qualify(:origin_nodes, :goods_nomenclature_sid),
                    right_primary_key: :goods_nomenclature_sid,
@@ -118,7 +118,7 @@ module GoodsNomenclatures
           end
       end
 
-      one_to_many :ns_measures,
+      one_to_many :measures,
                   primary_key: :goods_nomenclature_sid,
                   key: :goods_nomenclature_sid,
                   class_name: '::Measure',
@@ -129,7 +129,7 @@ module GoodsNomenclatures
           .without_excluded_types
       end
 
-      one_to_many :ns_overview_measures,
+      one_to_many :overview_measures,
                   primary_key: :goods_nomenclature_sid,
                   key: :goods_nomenclature_sid,
                   class_name: '::Measure',
@@ -152,7 +152,7 @@ module GoodsNomenclatures
             .distinct
         end
 
-        def ns_declarable
+        def declarable
           with_leaf_column
             .where(tree_node__child_sid: nil,
                    goods_nomenclatures__producline_suffix:
@@ -163,11 +163,11 @@ module GoodsNomenclatures
 
     def recursive_ancestor_populator(ancestors)
       @associations ||= {}
-      @associations[:ns_ancestors] ||= ancestors
+      @associations[:ancestors] ||= ancestors
 
       parents_ancestors = ancestors.dup
       parent = parents_ancestors.pop
-      @associations[:ns_parent] ||= parent
+      @associations[:parent] ||= parent
       return if ancestors.empty?
 
       parent.recursive_ancestor_populator(parents_ancestors)
@@ -175,18 +175,18 @@ module GoodsNomenclatures
 
     def recursive_descendant_populator(descendants, parent = nil)
       @associations ||= {}
-      @associations[:ns_descendants] ||= descendants
+      @associations[:descendants] ||= descendants
 
       if parent
-        @associations[:ns_parent] ||= parent
+        @associations[:parent] ||= parent
 
-        if parent.associations[:ns_ancestors]
-          @associations[:ns_ancestors] ||= (parent.associations[:ns_ancestors] + [parent])
+        if parent.associations[:ancestors]
+          @associations[:ancestors] ||= (parent.associations[:ancestors] + [parent])
         end
       end
 
       if descendants.empty?
-        @associations[:ns_children] ||= []
+        @associations[:children] ||= []
         return
       end
 
@@ -200,7 +200,7 @@ module GoodsNomenclatures
       end
 
       # populate children and assign to own association
-      @associations[:ns_children] ||= grouped_by_child.map do |child, childs_descendants|
+      @associations[:children] ||= grouped_by_child.map do |child, childs_descendants|
         child.recursive_descendant_populator(childs_descendants, self)
 
         child
@@ -211,20 +211,20 @@ module GoodsNomenclatures
       values.key?(:depth) ? values[:depth] : tree_node.depth
     end
 
-    def ns_declarable?
-      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && ns_leaf?
+    def declarable?
+      producline_suffix == GoodsNomenclatureIndent::NON_GROUPING_PRODUCTLINE_SUFFIX && leaf?
     end
 
-    def ns_leaf?
-      values.key?(:leaf) ? values[:leaf] : ns_children.empty?
+    def leaf?
+      values.key?(:leaf) ? values[:leaf] : children.empty?
     end
 
     def applicable_measures
-      (ns_ancestors.flat_map(&:ns_measures) + ns_measures).sort
+      (ancestors.flat_map(&:measures) + measures).sort
     end
 
     def applicable_overview_measures
-      (ns_ancestors.flat_map(&:ns_overview_measures) + ns_overview_measures).sort
+      (ancestors.flat_map(&:overview_measures) + overview_measures).sort
     end
   end
 end

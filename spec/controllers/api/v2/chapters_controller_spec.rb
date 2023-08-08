@@ -73,7 +73,7 @@ RSpec.describe Api::V2::ChaptersController do
             attributes: {
               goods_nomenclature_sid: heading.goods_nomenclature_sid,
               goods_nomenclature_item_id: heading.goods_nomenclature_item_id,
-              declarable: heading.ns_declarable?,
+              declarable: heading.declarable?,
               description: heading.description,
               producline_suffix: heading.producline_suffix,
               leaf: true,

@@ -18,11 +18,11 @@ module Api
 
         def chapter
           @chapter ||= \
-            ChapterPresenter.new(ns_ancestors.find { |a| a.is_a? Chapter })
+            ChapterPresenter.new(ancestors.find { |a| a.is_a? Chapter })
         end
 
         def commodities
-          @commodities ||= CommodityPresenter.wrap(ns_descendants)
+          @commodities ||= CommodityPresenter.wrap(descendants)
         end
 
         def commodity_ids

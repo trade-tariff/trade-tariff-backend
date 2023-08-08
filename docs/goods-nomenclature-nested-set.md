@@ -124,51 +124,51 @@ _Note: These are all eager loadable_
 
 ### Tree relationships
 
-* `ns_parent` - returns the parent
-* `ns_ancestors` - returns a list of ancestors - starting at root of tree
-* `ns_children` - all immediate children
-* `ns_descendants` - all descendants of a goods nomenclature, at any depth
+* `parent` - returns the parent
+* `ancestors` - returns a list of ancestors - starting at root of tree
+* `children` - all immediate children
+* `descendants` - all descendants of a goods nomenclature, at any depth
 
 ### Populators
 
-GoodsNomenclature records loaded for one relationship are often relevant to others, so where possible the fetching a relationship will also populate related relationships on the data model. Eg, fetching `#ns_ancestors` will also populate the `#ns_parent` relationship since that is the closest of the ancestors.
+GoodsNomenclature records loaded for one relationship are often relevant to others, so where possible the fetching a relationship will also populate related relationships on the data model. Eg, fetching `#ancestors` will also populate the `#parent` relationship since that is the closest of the ancestors.
 
-* `ns_ancestors` also populates `ns_parent` on self and all ancestors
-* `ns_descendants` also populates
-    * `ns_parent` for all descendants
-    * `ns_children` for self plus all descendants
-    * `ns_ancestors` for all descendants _if_ self already has ancestors loaded
+* `ancestors` also populates `parent` on self and all ancestors
+* `descendants` also populates
+    * `parent` for all descendants
+    * `children` for self plus all descendants
+    * `ancestors` for all descendants _if_ self already has ancestors loaded
 
 The above means you can get a nice recursive tree of children, so in the following example the first line will generate 2 queries and the second line will generate 0 queries.
 
 ```
-chapter = Chapter.actual.by_code('01').eager(:ns_descendants).take
-chapter.ns_children.first.ns_children.first.ns_children.first.ns_parent.ns_children.second
+chapter = Chapter.actual.by_code('01').eager(:descendants).take
+chapter.children.first.children.first.children.first.parent.children.second
 ```
 
-And if you eager load `#ns_ancestors` before `#ns_descendants` then that too will be populated, so the following example triggers 3 queries for line 1, and 0 for line 2 or any subsequent movement around the eager loaded hierarchy.
+And if you eager load `#ancestors` before `#descendants` then that too will be populated, so the following example triggers 3 queries for line 1, and 0 for line 2 or any subsequent movement around the eager loaded hierarchy.
 
 ```
-chapter = Chapter.actual.by_code('01').eager(ns_ancestors, :ns_descendants).take
-chapter.ns_children.first.ns_children.first.ns_children.map(&ns_ancestors)
+chapter = Chapter.actual.by_code('01').eager(ancestors, :descendants).take
+chapter.children.first.children.first.children.map(&ancestors)
 ```
 
 ### Useful methods
 
-* `#ns_leaf?` - tells you whether a Goods Nomenclature is branch or leaf (ie, no children). This benefits from eager loading (ns_children) and the Populators (see above)
-* `#ns_declarable?` - replacement for `#declarable` but eager loadable, internally relies upon `#ns_leaf?`
+* `#leaf?` - tells you whether a Goods Nomenclature is branch or leaf (ie, no children). This benefits from eager loading (children) and the Populators (see above)
+* `#declarable?` - replacement for `#declarable` but eager loadable, internally relies upon `#leaf?`
 * `#number_indents` - if data is loaded via the nested set relationships then this is populated automatically without needing to eager load `goods_nomenclature_indents`
 * `#depth` - internal reference for the depth of a goods nomenclature, normally `number_indents` + 2 except for chapters which are `number_indents` + 1
-* `#goods_nomenclature_class` - this now utilises ns_leaf? internally so benefits from eager loading `#ns_children` or `#ns_descendants` the same
-* `.ns_declarable` - Dataset method to filter by only declarable goods nomenclatures - this does do a left join to check for child_nodes _but_ it skips any rows which have children so shouldn't impact results
-* `.with_leaf_column` - Dataset method which includes a virtual `leaf` column showing whether an record has any children. This can be utilised by `ns_declarable?` to determining declarability without requiring additional queries. Carries a performance cost but can provide `leaf` for 24k commodities in ~0.5 seconds
+* `#goods_nomenclature_class` - this now utilises leaf? internally so benefits from eager loading `#children` or `#descendants` the same
+* `.declarable` - Dataset method to filter by only declarable goods nomenclatures - this does do a left join to check for child_nodes _but_ it skips any rows which have children so shouldn't impact results
+* `.with_leaf_column` - Dataset method which includes a virtual `leaf` column showing whether an record has any children. This can be utilised by `declarable?` to determining declarability without requiring additional queries. Carries a performance cost but can provide `leaf` for 24k commodities in ~0.5 seconds
 
 ### Measures
 
 There are two new eager loadable measures relationships
 
-* `ns_measures` - all measures directly on a goods nomenclature
-* `ns_overview_measures` - the overview measures directly on a goods nomenclature
+* `measures` - all measures directly on a goods nomenclature
+* `overview_measures` - the overview measures directly on a goods nomenclature
 
 These are different from the existing `#measures` and `#overview_measures` because they only load measures directly referencing the goods nomenclature.
 
@@ -186,7 +186,7 @@ The measures will need eager loading for both self and ancestors, eg
 ```
 Chapter.actual
        .by_code('01')
-       .eager(:ns_measures, ns_ancestors: :ns_measures)
+       .eager(:measures, ancestors: :measures)
        .take
 ```
 
@@ -195,9 +195,9 @@ This makes it possible to eager load measures for all descendants as well -;
 ```
 Chapter.actual
        .by_code('01')
-       .eager(:ns_measures,
-              ns_ancestors: :ns_measures,
-              ns_descendants: :ns_measures)
+       .eager(:measures,
+              ancestors: :measures,
+              descendants: :measures)
        .take
 ```
 
@@ -205,14 +205,14 @@ If you need to eager load relationships below measures, you'll need to duplicate
 
 ```
 MEASURE_EAGER = {
-	ns_measures: [:measure_type,
+	measures: [:measure_type,
                  { measure_conditions: :measure_condition_code }]
 }
 Chapter.actual
        .by_code('01')
        .eager(MEASURE_EAGER,
-              ns_ancestors: MEASURE_EAGER,
-              ns_descendants: MEASURE_EAGER)
+              ancestors: MEASURE_EAGER,
+              descendants: MEASURE_EAGER)
        .take
 ```
 

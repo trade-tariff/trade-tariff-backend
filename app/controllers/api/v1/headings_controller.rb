@@ -52,8 +52,8 @@ module Api
             :chapter_note,
             { sections: :section_note },
           ],
-          ns_measures: MEASURE_EAGER,
-          ns_ancestors: [{ ns_measures: MEASURE_EAGER }],
+          measures: MEASURE_EAGER,
+          ancestors: [{ measures: MEASURE_EAGER }],
         },
       ].freeze
 
@@ -66,8 +66,8 @@ module Api
             :chapter_note,
             { sections: :section_note },
           ],
-          ns_descendants: %i[
-            ns_parent
+          descendants: %i[
+            parent
             goods_nomenclature_descriptions
           ],
         },
@@ -75,7 +75,7 @@ module Api
 
       def show
         @heading = heading
-        @heading_cache_key = "heading-#{@heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{@heading.ns_declarable?}"
+        @heading_cache_key = "heading-#{@heading.goods_nomenclature_sid}-#{actual_date}-#{TradeTariffBackend.currency}-#{@heading.declarable?}"
         respond_with @heading
       end
 
@@ -125,7 +125,7 @@ module Api
       def declarable?
         shared_heading_scope
           .take
-          .ns_declarable?
+          .declarable?
       end
     end
   end

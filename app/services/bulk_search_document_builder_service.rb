@@ -34,7 +34,7 @@ class BulkSearchDocumentBuilderService
         intercept_terms: Set.new,
       )
 
-      [goods_nomenclature].concat(goods_nomenclature.ns_ancestors).each do |applicable_goods_nomenclature|
+      [goods_nomenclature].concat(goods_nomenclature.ancestors).each do |applicable_goods_nomenclature|
         next if acc[short_code][:observed].include?(applicable_goods_nomenclature.goods_nomenclature_sid)
 
         search_references = applicable_goods_nomenclature.search_references.pluck(:title).flatten

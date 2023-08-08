@@ -5,7 +5,7 @@ module Api
 
       def show
         @measures = MeasureCollection.new(
-          @commodity.ns_measures_dataset.eager(
+          @commodity.measures_dataset.eager(
             { footnotes: :footnote_descriptions },
             { measure_type: :measure_type_description },
             { measure_components: [{ duty_expression: :duty_expression_description },
@@ -54,7 +54,7 @@ module Api
       def find_commodity
         @commodity = Commodity.actual
                               .non_hidden
-                              .ns_declarable
+                              .declarable
                               .by_code(params[:id])
                               .take
       end

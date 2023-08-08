@@ -12,29 +12,29 @@ module Reporting
     ].freeze
 
     GOODS_NOMENCLATURE_MEASURE_EAGER = [
-      :ns_measures,
+      :measures,
       {
-        ns_ancestors: :ns_measures,
-        ns_descendants: :ns_measures,
+        ancestors: :measures,
+        descendants: :measures,
       },
     ].freeze
 
     GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER = [
-      :ns_overview_measures,
+      :overview_measures,
       :goods_nomenclature_descriptions,
       {
-        ns_ancestors: :ns_overview_measures,
-        ns_descendants: %i[ns_overview_measures goods_nomenclature_descriptions],
+        ancestors: :overview_measures,
+        descendants: %i[overview_measures goods_nomenclature_descriptions],
       },
     ].freeze
 
     GOODS_NOMENCLATURE_OVERVIEW_MEASURE_WITH_COMPONENTS_EAGER = [
-      :ns_overview_measures,
+      :overview_measures,
       :goods_nomenclature_descriptions,
       {
-        ns_ancestors: [{ ns_overview_measures: MEASURE_EAGER }],
-        ns_descendants: [
-          { ns_overview_measures: MEASURE_EAGER },
+        ancestors: [{ overview_measures: MEASURE_EAGER }],
+        descendants: [
+          { overview_measures: MEASURE_EAGER },
           :goods_nomenclature_descriptions,
         ],
       },

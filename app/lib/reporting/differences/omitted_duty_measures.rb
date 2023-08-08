@@ -156,8 +156,8 @@ module Reporting
       def each_declarable(as_of)
         start_time = Time.zone.now
         each_chapter(eager: Differences::GOODS_NOMENCLATURE_MEASURE_EAGER, as_of:) do |eager_chapter|
-          eager_chapter.ns_descendants.each do |chapter_descendant|
-            next unless chapter_descendant.ns_declarable?
+          eager_chapter.descendants.each do |chapter_descendant|
+            next unless chapter_descendant.declarable?
 
             yield PresentedDeclarable.new(chapter_descendant)
           end

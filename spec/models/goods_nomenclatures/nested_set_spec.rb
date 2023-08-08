@@ -68,7 +68,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has ancestors' do |context_name, node, ancestors|
         context "with #{context_name}" do
-          subject { tree[node].ns_ancestors }
+          subject { tree[node].ancestors }
 
           it { is_expected.to eq_pk tree.values_at(*ancestors) }
         end
@@ -76,7 +76,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has parent' do |context_name, node, parent_node|
         context "with #{context_name}" do
-          subject { tree[node].ns_parent }
+          subject { tree[node].parent }
 
           it { is_expected.to eq_pk tree[parent_node] }
         end
@@ -84,7 +84,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has descendants' do |context_name, node, descendants|
         context "with #{context_name}" do
-          subject { tree[node].ns_descendants }
+          subject { tree[node].descendants }
 
           it { is_expected.to eq_pk tree.values_at(*descendants) }
         end
@@ -92,7 +92,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
       shared_examples 'it has children' do |context_name, node, children|
         context "with #{context_name}" do
-          subject { tree[node].ns_children }
+          subject { tree[node].children }
 
           it { is_expected.to eq_pk tree.values_at(*children) }
         end
@@ -110,7 +110,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it { is_expected.not_to be_nil }
       end
 
-      describe '#ns_ancestors' do
+      describe '#ancestors' do
         let(:third_tier_ancestors) { tree.values_at(:chapter, :heading, :subheading) }
 
         it_behaves_like 'it has ancestors', 'chapter', :chapter, []
@@ -120,10 +120,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has ancestors', 'leaf commodity', :commodity1, %i[chapter heading subheading subsubheading]
         it_behaves_like 'it has ancestors', 'second leaf commodity', :commodity3, %i[chapter heading subheading]
 
-        it_behaves_like 'it supports eager loading', :ns_ancestors
+        it_behaves_like 'it supports eager loading', :ancestors
 
         context 'for second tree' do
-          subject { tree[:second_tree].ns_ancestors.map(&:goods_nomenclature_item_id) }
+          subject { tree[:second_tree].ancestors.map(&:goods_nomenclature_item_id) }
 
           let(:commodity) { tree[:second_tree] }
 
@@ -138,40 +138,40 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         context 'when eager loading' do
-          let(:eager_loaded) { commodities.eager(:ns_ancestors).all.first }
+          let(:eager_loaded) { commodities.eager(:ancestors).all.first }
 
           let :commodities do
             GoodsNomenclature.where(goods_nomenclature_sid: tree[:subsubheading].goods_nomenclature_sid)
           end
 
           context 'for eager loaded goods nomenclature' do
-            subject { eager_loaded.associations[:ns_parent] }
+            subject { eager_loaded.associations[:parent] }
 
             it { is_expected.to eq_pk tree[:subheading] }
           end
 
           context 'for eager loaded goods nomenclatures parents parent' do
-            subject { eager_loaded.associations[:ns_parent].associations[:ns_parent] }
+            subject { eager_loaded.associations[:parent].associations[:parent] }
 
             it { is_expected.to eq_pk tree[:heading] }
           end
 
           context 'for eager loaded goods nomenclatures parents ancestors' do
-            subject { eager_loaded.associations[:ns_parent].associations[:ns_ancestors] }
+            subject { eager_loaded.associations[:parent].associations[:ancestors] }
 
             it { is_expected.to eq_pk tree.values_at(:chapter, :heading) }
           end
         end
 
         describe 'values from db query' do
-          subject { tree[:subheading].ns_ancestors.map(&:values) }
+          subject { tree[:subheading].ancestors.map(&:values) }
 
           it { is_expected.to all include leaf: false }
           it { is_expected.to all include :number_indents }
         end
       end
 
-      describe '#ns_parent' do
+      describe '#parent' do
         it_behaves_like 'it has parent', 'chapter', :chapter, nil
         it_behaves_like 'it has parent', 'heading', :heading, :chapter
         it_behaves_like 'it has parent', 'subheading', :subheading, :heading
@@ -179,10 +179,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has parent', 'leaf commodity', :commodity1, :subsubheading
         it_behaves_like 'it has parent', 'second leaf commodity', :commodity3, :subheading
 
-        it_behaves_like 'it supports eager loading', :ns_parent
+        it_behaves_like 'it supports eager loading', :parent
 
         context 'for second tree' do
-          subject { tree[:second_tree].ns_parent.goods_nomenclature_item_id }
+          subject { tree[:second_tree].parent.goods_nomenclature_item_id }
 
           let(:item_id) { "#{tree[:second_tree].goods_nomenclature_item_id.first(4)}000000" }
 
@@ -190,14 +190,14 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         describe 'values from db query' do
-          subject { tree[:subheading].ns_parent.values }
+          subject { tree[:subheading].parent.values }
 
           it { is_expected.to include leaf: false }
           it { is_expected.to include number_indents: 0 }
         end
       end
 
-      describe '#ns_descendants' do
+      describe '#descendants' do
         it_behaves_like 'it has descendants', 'chapter', :chapter, %i[heading subheading subsubheading commodity1 commodity2 commodity3]
         it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
         it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 commodity2 commodity3]
@@ -205,10 +205,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has descendants', 'leaf commodity', :commodity1, %i[]
         it_behaves_like 'it has descendants', 'second leaf commodity', :commodity3, %i[]
 
-        it_behaves_like 'it supports eager loading', :ns_descendants
+        it_behaves_like 'it supports eager loading', :descendants
 
         context 'for second tree' do
-          subject { tree[:second_tree].ns_descendants.map(&:goods_nomenclature_item_id) }
+          subject { tree[:second_tree].descendants.map(&:goods_nomenclature_item_id) }
 
           it { is_expected.to have_attributes length: 3 }
         end
@@ -223,43 +223,43 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         context 'when eager loading' do
-          let(:eager_loaded) { commodities.eager(:ns_descendants).all.first }
+          let(:eager_loaded) { commodities.eager(:descendants).all.first }
 
           let :commodities do
             GoodsNomenclature.where(goods_nomenclature_sid: tree[:subheading].goods_nomenclature_sid)
           end
 
           context 'for eager loaded goods nomenclatures children' do
-            subject { eager_loaded.associations[:ns_children] }
+            subject { eager_loaded.associations[:children] }
 
             it { is_expected.to eq_pk [tree[:subsubheading], tree[:commodity3]] }
           end
 
           context 'for eager loaded goods_nomenclatures childs descendants' do
-            subject { eager_loaded.associations[:ns_children].first.associations[:ns_descendants] }
+            subject { eager_loaded.associations[:children].first.associations[:descendants] }
 
             it { is_expected.to eq_pk tree.values_at(:commodity1, :commodity2) }
           end
 
           context 'for eager loaded goods nomenclatures childs children' do
-            subject { eager_loaded.associations[:ns_children].first.associations[:ns_children] }
+            subject { eager_loaded.associations[:children].first.associations[:children] }
 
             it { is_expected.to eq_pk [tree[:commodity1], tree[:commodity2]] }
           end
 
           context 'for eager loaded goods nomenclatures childs parent' do
-            subject { eager_loaded.associations[:ns_children].first.associations[:ns_parent] }
+            subject { eager_loaded.associations[:children].first.associations[:parent] }
 
             it { is_expected.to eq_pk tree[:subheading] }
           end
 
           context 'for eager loaded goods nomenclatures childs childrens parent' do
             subject do
-              eager_loaded.associations[:ns_children]
+              eager_loaded.associations[:children]
                           .first
-                          .associations[:ns_children]
+                          .associations[:children]
                           .first
-                          .associations[:ns_parent]
+                          .associations[:parent]
             end
 
             it { is_expected.to eq_pk tree[:subsubheading] }
@@ -267,16 +267,16 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
           context 'when including ancestors' do
             let(:eager_loaded) do
-              commodities.eager(:ns_ancestors, :ns_descendants).all.first
+              commodities.eager(:ancestors, :descendants).all.first
             end
 
             context 'for eager loaded goods nomenclatures childs childrens parent' do
               subject(:leaf) do
-                eager_loaded.associations[:ns_children]
+                eager_loaded.associations[:children]
                             .first
-                            .associations[:ns_children]
+                            .associations[:children]
                             .first
-                            .associations[:ns_ancestors]
+                            .associations[:ancestors]
               end
 
               it 'populates descendant ancestors automatically' do
@@ -290,13 +290,13 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         describe 'values from db query' do
-          subject { tree[:subheading].ns_descendants[0].values }
+          subject { tree[:subheading].descendants[0].values }
 
           it { is_expected.to include number_indents: 2 }
         end
       end
 
-      describe '#ns_children' do
+      describe '#children' do
         it_behaves_like 'it has children', 'chapter', :chapter, %i[heading]
         it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
         it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
@@ -304,10 +304,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it_behaves_like 'it has children', 'leaf commodity', :commodity1, %i[]
         it_behaves_like 'it has children', 'second leaf commodity', :commodity3, %i[]
 
-        it_behaves_like 'it supports eager loading', :ns_children
+        it_behaves_like 'it supports eager loading', :children
 
         context 'for second tree' do
-          subject { tree[:second_tree].ns_children.map(&:goods_nomenclature_item_id) }
+          subject { tree[:second_tree].children.map(&:goods_nomenclature_item_id) }
 
           it { is_expected.to have_attributes length: 1 }
         end
@@ -322,7 +322,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         describe 'values from db query' do
-          subject { tree[:subheading].ns_children[0].values }
+          subject { tree[:subheading].children[0].values }
 
           it { is_expected.to include number_indents: 2 }
         end
@@ -346,25 +346,25 @@ RSpec.describe GoodsNomenclatures::NestedSet do
                  number_indents: 2
         end
 
-        describe '#ns_ancestors' do
+        describe '#ancestors' do
           it_behaves_like 'it has ancestors', 'subsubheading', :subsubheading, %i[chapter heading]
           it_behaves_like 'it has ancestors', 'commodity under subsubheading', :commodity1, %i[chapter heading subsubheading]
           it_behaves_like 'it has ancestors', 'commodity under subheading', :commodity3, %i[chapter heading subsubheading]
         end
 
-        describe '#ns_parent' do
+        describe '#parent' do
           it_behaves_like 'it has parent', 'subsubheading', :subsubheading, :heading
           it_behaves_like 'it has parent', 'commodity under subsubheading', :commodity1, :subsubheading
           it_behaves_like 'it has parent', 'commodity under subheading', :commodity3, :subsubheading
         end
 
-        describe '#ns_descendants' do
+        describe '#descendants' do
           it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
           it_behaves_like 'it has descendants', 'subheading', :subheading, %i[]
           it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2 commodity3]
         end
 
-        describe '#ns_children' do
+        describe '#children' do
           it_behaves_like 'it has children', 'heading', :heading, %i[subheading subsubheading]
           it_behaves_like 'it has children', 'subheading', :subheading, %i[]
           it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2 commodity3]
@@ -373,25 +373,25 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         context 'when accessing historical data via TimeMachine' do
           around { |example| TimeMachine.at(2.weeks.ago) { example.run } }
 
-          describe '#ns_ancestors' do
+          describe '#ancestors' do
             it_behaves_like 'it has ancestors', 'nested subheading', :subsubheading, %i[chapter heading subheading]
             it_behaves_like 'it has ancestors', 'leaf commodity', :commodity1, %i[chapter heading subheading subsubheading]
             it_behaves_like 'it has ancestors', 'second leaf commodity', :commodity3, %i[chapter heading subheading]
           end
 
-          describe '#ns_parent' do
+          describe '#parent' do
             it_behaves_like 'it has parent', 'nested subheading', :subsubheading, :subheading
             it_behaves_like 'it has parent', 'leaf commodity', :commodity1, :subsubheading
             it_behaves_like 'it has parent', 'second leaf commodity', :commodity3, :subheading
           end
 
-          describe '#ns_descendants' do
+          describe '#descendants' do
             it_behaves_like 'it has descendants', 'heading', :heading, %i[subheading subsubheading commodity1 commodity2 commodity3]
             it_behaves_like 'it has descendants', 'subheading', :subheading, %i[subsubheading commodity1 commodity2 commodity3]
             it_behaves_like 'it has descendants', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
           end
 
-          describe '#ns_children' do
+          describe '#children' do
             it_behaves_like 'it has children', 'heading', :heading, %i[subheading]
             it_behaves_like 'it has children', 'subheading', :subheading, %i[subsubheading commodity3]
             it_behaves_like 'it has children', 'nested subheading', :subsubheading, %i[commodity1 commodity2]
@@ -403,27 +403,27 @@ RSpec.describe GoodsNomenclatures::NestedSet do
 
           let(:commodity) { create :commodity }
 
-          describe '#ns_ancestors' do
-            it { expect { commodity.ns_ancestors }.to raise_exception described_class::DateNotSet }
+          describe '#ancestors' do
+            it { expect { commodity.ancestors }.to raise_exception described_class::DateNotSet }
           end
 
-          describe '#ns_parent' do
-            it { expect { commodity.ns_parent }.to raise_exception described_class::DateNotSet }
+          describe '#parent' do
+            it { expect { commodity.parent }.to raise_exception described_class::DateNotSet }
           end
 
-          describe '#ns_children' do
-            it { expect { commodity.ns_children }.to raise_exception described_class::DateNotSet }
+          describe '#children' do
+            it { expect { commodity.children }.to raise_exception described_class::DateNotSet }
           end
 
-          describe '#ns_descendants' do
-            it { expect { commodity.ns_descendants }.to raise_exception described_class::DateNotSet }
+          describe '#descendants' do
+            it { expect { commodity.descendants }.to raise_exception described_class::DateNotSet }
           end
         end
       end
     end
 
-    describe '#ns_measures' do
-      subject { measure.goods_nomenclature.ns_measures.map(&:measure_sid) }
+    describe '#measures' do
+      subject { measure.goods_nomenclature.measures.map(&:measure_sid) }
 
       let :measure do
         create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
@@ -444,10 +444,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           GoodsNomenclature
             .actual
             .where(goods_nomenclature_sid: measure.goods_nomenclature_sid)
-            .eager(:ns_measures)
+            .eager(:measures)
             .all
             .first
-            .associations[:ns_measures]
+            .associations[:measures]
             .map(&:measure_sid)
         end
 
@@ -455,8 +455,8 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       end
     end
 
-    describe '#ns_overview_measures' do
-      subject { measure.goods_nomenclature.ns_overview_measures.map(&:measure_sid) }
+    describe '#overview_measures' do
+      subject { measure.goods_nomenclature.overview_measures.map(&:measure_sid) }
 
       let :measure do
         create :measure, :with_base_regulation, :with_goods_nomenclature, measure_type_id:
@@ -483,10 +483,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
           GoodsNomenclature
             .actual
             .where(goods_nomenclature_sid: measure.goods_nomenclature_sid)
-            .eager(:ns_overview_measures)
+            .eager(:overview_measures)
             .all
             .first
-            .associations[:ns_overview_measures]
+            .associations[:overview_measures]
             .map(&:measure_sid)
         end
 
@@ -513,34 +513,34 @@ RSpec.describe GoodsNomenclatures::NestedSet do
     it { is_expected.to include commodity.pk => true }
   end
 
-  describe '.ns_declarable' do
-    subject { GoodsNomenclature.actual.ns_declarable.all }
+  describe '.declarable' do
+    subject { GoodsNomenclature.actual.declarable.all }
 
     before { commodity }
 
     let(:commodity) { create :commodity, :non_grouping, :with_children }
 
     it { is_expected.not_to include commodity }
-    it { is_expected.to include commodity.ns_children.first.ns_children.first }
+    it { is_expected.to include commodity.children.first.children.first }
   end
 
-  describe '#ns_declarable?' do
+  describe '#declarable?' do
     context 'with descendants' do
       subject { create :commodity, :non_grouping, :with_children }
 
-      it { is_expected.not_to be_ns_declarable }
+      it { is_expected.not_to be_declarable }
     end
 
     context 'without descendants' do
       subject { create :commodity, :non_grouping, :without_children }
 
-      it { is_expected.to be_ns_declarable }
+      it { is_expected.to be_declarable }
     end
 
     context 'with grouping productline suffix' do
       subject { create :commodity, :grouping, :without_children }
 
-      it { is_expected.not_to be_ns_declarable }
+      it { is_expected.not_to be_declarable }
     end
   end
 
@@ -561,19 +561,19 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       end
 
       context 'with chapter' do
-        let(:gn) { commodity.ns_ancestors[0] }
+        let(:gn) { commodity.ancestors[0] }
 
         it { is_expected.to be 0 }
       end
 
       context 'with heading' do
-        let(:gn) { commodity.ns_ancestors[1] }
+        let(:gn) { commodity.ancestors[1] }
 
         it { is_expected.to be 0 }
       end
 
       context 'with commodity' do
-        let(:gn) { commodity.ns_parent.ns_descendants[0] }
+        let(:gn) { commodity.parent.descendants[0] }
 
         it { is_expected.to be 1 }
       end
@@ -590,7 +590,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
              :with_base_regulation,
              geographical_area_id: 'ES',
              measure_type_id: 2,
-             goods_nomenclature: subheading.ns_children.first
+             goods_nomenclature: subheading.children.first
     end
 
     it { is_expected.to eq_pk [measure] }
@@ -602,7 +602,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         create :measure,
                :with_base_regulation,
                geographical_area_id: 'FR',
-               goods_nomenclature: subheading.ns_parent
+               goods_nomenclature: subheading.parent
       end
 
       let :parent_measure do
@@ -629,7 +629,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
              :supplementary,
              :with_base_regulation,
              :erga_omnes,
-             goods_nomenclature: subheading.ns_children.first
+             goods_nomenclature: subheading.children.first
     end
 
     it { is_expected.to eq_pk [measure] }
@@ -642,7 +642,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
                :vat,
                :with_base_regulation,
                :erga_omnes,
-               goods_nomenclature: subheading.ns_parent
+               goods_nomenclature: subheading.parent
       end
 
       let :parent_measure do

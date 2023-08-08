@@ -23,7 +23,7 @@ module Api
       def find_commodity
         @commodity = Commodity.actual
                               .non_hidden
-                              .ns_declarable
+                              .declarable
                               .by_code(params[:id])
                               .take
       end

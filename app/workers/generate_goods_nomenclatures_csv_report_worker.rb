@@ -24,13 +24,13 @@ class GenerateGoodsNomenclaturesCsvReportWorker
       .non_hidden
       .eager(
         :goods_nomenclature_descriptions,
-        ns_ancestors: :goods_nomenclature_descriptions,
-        ns_descendants: :goods_nomenclature_descriptions,
+        ancestors: :goods_nomenclature_descriptions,
+        descendants: :goods_nomenclature_descriptions,
       )
       .all
       .each_with_object([]) do |chapter, acc|
         acc << chapter
-        acc.concat chapter.ns_descendants
+        acc.concat chapter.descendants
       end
   end
 end

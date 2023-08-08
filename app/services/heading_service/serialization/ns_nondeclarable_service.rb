@@ -34,18 +34,18 @@ module HeadingService
         :goods_nomenclature_descriptions,
         {
           footnotes: :footnote_descriptions,
-          ns_overview_measures: MEASURES_EAGER_LOAD,
-          ns_ancestors: [
+          overview_measures: MEASURES_EAGER_LOAD,
+          ancestors: [
             :goods_nomenclature_descriptions,
             {
-              ns_overview_measures: MEASURES_EAGER_LOAD,
+              overview_measures: MEASURES_EAGER_LOAD,
               footnotes: :footnote_descriptions,
             },
           ],
-          ns_descendants: [
+          descendants: [
             :goods_nomenclature_descriptions,
             {
-              ns_overview_measures: MEASURES_EAGER_LOAD,
+              overview_measures: MEASURES_EAGER_LOAD,
               footnotes: :footnote_descriptions,
             },
           ],

@@ -11,7 +11,7 @@ if footnotes.any?
   end
 end
 
-if @heading.ns_declarable?
+if @heading.declarable?
   attributes :basic_duty_rate
 
   extends 'api/v1/declarables/declarable', object: @heading, locals: { measures: @heading.applicable_measures }
@@ -33,7 +33,7 @@ else
     end
   end
 
-  child(@heading.ns_descendants) do
+  child(@heading.descendants) do
     attributes :description,
                :number_indents,
                :goods_nomenclature_item_id,
@@ -42,9 +42,9 @@ else
                :description_plain,
                :producline_suffix
 
-    attribute :leaf?, &:ns_leaf
+    attribute :leaf?, &:leaf
 
-    node(:parent_sid) { |commodity| commodity.ns_parent.try(:goods_nomenclature_sid) }
+    node(:parent_sid) { |commodity| commodity.parent.try(:goods_nomenclature_sid) }
     node(:search_references_count) { |commodity| commodity.search_references.count }
   end
 end

@@ -19,7 +19,7 @@ module Cache
       eager_load_measures.merge(
         footnote_descriptions: {},
         goods_nomenclatures: %i[goods_nomenclature_descriptions
-                                ns_children
+                                children
                                 goods_nomenclature_indents],
       )
     end

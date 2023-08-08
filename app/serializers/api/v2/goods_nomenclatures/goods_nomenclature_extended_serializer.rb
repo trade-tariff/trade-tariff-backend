@@ -13,9 +13,9 @@ module Api
         end
 
         attributes :formatted_description, :validity_start_date, :validity_end_date
-        attribute :declarable, &:ns_declarable?
+        attribute :declarable, &:declarable?
 
-        belongs_to :parent, record_type: :goods_nomenclature, &:ns_parent
+        belongs_to :parent, record_type: :goods_nomenclature, &:parent
       end
     end
   end

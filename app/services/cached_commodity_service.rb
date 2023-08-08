@@ -95,9 +95,9 @@ class CachedCommodityService
     @commodity ||= Commodity
       .actual
       .where(goods_nomenclature_sid: @commodity_sid)
-      .eager(ns_ancestors: { ns_measures: MEASURES_EAGER_LOAD_GRAPH,
-                             goods_nomenclature_descriptions: {} },
-             ns_measures: MEASURES_EAGER_LOAD_GRAPH)
+      .eager(ancestors: { measures: MEASURES_EAGER_LOAD_GRAPH,
+                          goods_nomenclature_descriptions: {} },
+             measures: MEASURES_EAGER_LOAD_GRAPH)
       .take
   end
 

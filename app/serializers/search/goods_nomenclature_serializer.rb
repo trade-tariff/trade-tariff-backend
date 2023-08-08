@@ -51,7 +51,7 @@ module Search
     end
 
     def ancestors
-      @ancestors ||= ns_ancestors.map do |ancestor|
+      @ancestors ||= super.map do |ancestor|
         {
           id: ancestor.goods_nomenclature_sid,
           goods_nomenclature_item_id: ancestor.goods_nomenclature_item_id,
@@ -112,7 +112,7 @@ module Search
     end
 
     def facet_classification
-      @facet_classification ||= if ns_declarable?
+      @facet_classification ||= if declarable?
                                   Beta::Search::FacetClassification::Declarable.build(self)
                                 else
                                   Beta::Search::FacetClassification::NonDeclarable.build(self)

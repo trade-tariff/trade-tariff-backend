@@ -13,7 +13,7 @@ module Api
                    :goods_nomenclature_item_id,
                    :producline_suffix
 
-        attribute :declarable, &:ns_declarable?
+        attribute :declarable, &:declarable?
       end
     end
   end

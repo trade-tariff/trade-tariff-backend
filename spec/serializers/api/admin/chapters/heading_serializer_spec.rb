@@ -11,7 +11,7 @@ RSpec.describe Api::Admin::Chapters::HeadingSerializer do
           goods_nomenclature_sid: serializable.goods_nomenclature_sid,
           goods_nomenclature_item_id: serializable.goods_nomenclature_item_id,
           description: serializable.description,
-          declarable: serializable.ns_declarable?,
+          declarable: serializable.declarable?,
           search_references_count: 0,
         },
       },

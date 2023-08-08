@@ -28,7 +28,7 @@ class SuggestionsService
   def build_search_references_search_suggestions
     SearchReference
       .select(:id, :title, :goods_nomenclature_sid, :referenced_class)
-      .eager(referenced: :ns_children)
+      .eager(referenced: :children)
       .distinct(:title)
       .order(Sequel.desc(:title))
       .all
@@ -48,7 +48,7 @@ class SuggestionsService
   end
 
   def full_chemicals
-    @full_chemicals ||= FullChemical.eager(goods_nomenclature: :ns_children).all
+    @full_chemicals ||= FullChemical.eager(goods_nomenclature: :children).all
   end
 
   def build_search_reference_record(search_reference)

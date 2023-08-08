@@ -28,7 +28,7 @@ module Api
                   .by_code(subheading_code)
                   .by_productline_suffix(productline_suffix)
                   .take
-                  .tap { |sh| raise Sequel::RecordNotFound if sh.ns_leaf? }
+                  .tap { |sh| raise Sequel::RecordNotFound if sh.leaf? }
       end
     end
   end
