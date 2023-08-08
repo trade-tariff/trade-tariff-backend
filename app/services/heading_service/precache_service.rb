@@ -13,8 +13,8 @@ module HeadingService
         each_heading do |heading|
           write_heading(heading)
 
-          heading.ns_descendants.each do |subheading|
-            next if subheading.ns_declarable?
+          heading.descendants.each do |subheading|
+            next if subheading.declarable?
 
             write_subheading subheading
           end
@@ -30,9 +30,9 @@ module HeadingService
                .where(goods_nomenclature_sid: chapter.goods_nomenclature_sid)
                .eager(*Serialization::NsNondeclarableService::HEADING_EAGER_LOAD)
                .take
-               .ns_children
+               .children
                .each do |heading|
-          next if heading.ns_declarable?
+          next if heading.declarable?
 
           yield heading
         end

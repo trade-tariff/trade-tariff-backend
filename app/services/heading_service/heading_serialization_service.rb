@@ -45,7 +45,7 @@ module HeadingService
     attr_reader :heading, :actual_date, :filters
 
     def serialization_service
-      if heading.ns_declarable?
+      if heading.declarable?
         HeadingService::Serialization::DeclarableService
           .new(heading, filters)
       else
@@ -55,7 +55,7 @@ module HeadingService
     end
 
     def heading_cache_key
-      self.class.cache_key(heading, actual_date, heading.ns_declarable?, filters)
+      self.class.cache_key(heading, actual_date, heading.declarable?, filters)
     end
   end
 end

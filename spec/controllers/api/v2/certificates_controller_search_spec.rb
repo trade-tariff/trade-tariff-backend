@@ -58,20 +58,14 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
       )
     end
 
-    context 'when searching by code' do
-      let(:params) { { code: certificate.certificate_code } }
+    context 'when searching by code and type' do
+      let(:params) { { code: certificate.certificate_code, type: certificate.certificate_type_code } }
 
       it { expect(do_response.body).to match_json_expression pattern }
     end
 
     context 'when searching by description' do
       let(:params) { { description: certificate.description } }
-
-      it { expect(do_response.body).to match_json_expression pattern }
-    end
-
-    context 'when searching by type' do
-      let(:params) { { type: certificate.certificate_type_code } }
 
       it { expect(do_response.body).to match_json_expression pattern }
     end

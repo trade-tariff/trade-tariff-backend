@@ -6,7 +6,7 @@ class FindAncestorsService
   def call
     return [] if goods_nomenclature_item_id.blank?
 
-    goods_nomenclature.ns_ancestors.dup.push(goods_nomenclature).map(&:goods_nomenclature_item_id)
+    goods_nomenclature.ancestors.dup.push(goods_nomenclature).map(&:goods_nomenclature_item_id)
   end
 
   private

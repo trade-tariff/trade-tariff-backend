@@ -18,9 +18,9 @@ class TreeIntegrityCheckingService
   private
 
   def check_for_tree_break!(chapter)
-    chapter.ns_descendants.each do |descendant|
-      if (descendant.ns_children.empty? && descendant.ns_descendants.any?) ||
-          descendant.ns_parent.nil?
+    chapter.descendants.each do |descendant|
+      if (descendant.children.empty? && descendant.descendants.any?) ||
+          descendant.parent.nil?
         @failures << descendant.goods_nomenclature_sid
       end
     end

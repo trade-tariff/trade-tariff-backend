@@ -19,7 +19,7 @@ module Api
                             .non_grouping
                             .non_hidden
                             .by_code(params[:id])
-                            .eager(ns_descendants: %i[goods_nomenclature_descriptions search_references])
+                            .eager(descendants: %i[goods_nomenclature_descriptions search_references])
                             .take
       end
 
@@ -32,7 +32,7 @@ module Api
       end
 
       def applicable_goods_nomenclature_sids
-        heading.ns_descendants.pluck(:goods_nomenclature_sid) +
+        heading.descendants.pluck(:goods_nomenclature_sid) +
           [heading.goods_nomenclature_sid]
       end
     end

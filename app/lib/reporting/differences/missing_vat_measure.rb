@@ -67,8 +67,8 @@ module Reporting
 
       def each_declarable
         each_chapter(eager: Differences::GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER) do |eager_chapter|
-          eager_chapter.ns_descendants.each do |chapter_descendant|
-            next unless chapter_descendant.ns_declarable?
+          eager_chapter.descendants.each do |chapter_descendant|
+            next unless chapter_descendant.declarable?
 
             next if chapter_descendant.applicable_overview_measures.find { |measure|
               measure.measure_type_id.in?(FILTERED_MEASURE_TYPES) &&

@@ -24,9 +24,9 @@ module Reporting
 
     GOODS_NOMENCLATURE_EAGER = [
       {
-        ns_ancestors: [{ ns_measures: MEASURE_EAGER }],
-        ns_descendants: [{ ns_measures: MEASURE_EAGER }, :goods_nomenclature_descriptions],
-        ns_measures: MEASURE_EAGER,
+        ancestors: [{ measures: MEASURE_EAGER }],
+        descendants: [{ measures: MEASURE_EAGER }, :goods_nomenclature_descriptions],
+        measures: MEASURE_EAGER,
       },
       :goods_nomenclature_descriptions,
     ].freeze
@@ -165,8 +165,8 @@ module Reporting
 
       def each_declarable
         each_chapter do |eager_chapter|
-          eager_chapter.ns_descendants.each do |chapter_descendant|
-            next unless chapter_descendant.ns_declarable?
+          eager_chapter.descendants.each do |chapter_descendant|
+            next unless chapter_descendant.declarable?
 
             yield DeclarableDuties::PresentedDeclarable.new(chapter_descendant)
           end

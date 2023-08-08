@@ -8,8 +8,8 @@ module Api
                 :number_indents,
                 :goods_nomenclature_item_id
 
-        column :declarable, &:ns_declarable?
-        column :leaf, &:ns_leaf?
+        column :declarable, &:declarable?
+        column :leaf, &:leaf?
 
         columns :goods_nomenclature_sid,
                 :formatted_description,
@@ -17,8 +17,8 @@ module Api
                 :producline_suffix
 
         column :parent_sid do |commodity|
-          if commodity.ns_parent.is_a?(TenDigitGoodsNomenclature)
-            commodity.ns_parent.goods_nomenclature_sid
+          if commodity.parent.is_a?(TenDigitGoodsNomenclature)
+            commodity.parent.goods_nomenclature_sid
           end
         end
       end

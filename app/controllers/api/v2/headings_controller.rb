@@ -48,11 +48,11 @@ module Api
 
       def heading_commodities
         heading_scope
-          .eager(ns_descendants: :goods_nomenclature_descriptions)
+          .eager(descendants: :goods_nomenclature_descriptions)
           .all
           .first
           .tap { |heading| heading || (raise Sequel::RecordNotFound) }
-          .ns_descendants
+          .descendants
       end
 
       def filter_params

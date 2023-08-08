@@ -23,7 +23,7 @@ module Api
                    :validity_end_date,
                    :has_chemicals
 
-        attribute :declarable, &:ns_declarable?
+        attribute :declarable, &:declarable?
 
         has_many :footnotes, serializer: Api::V2::Headings::FootnoteSerializer
         has_one :section, serializer: Api::V2::Commodities::SectionSerializer

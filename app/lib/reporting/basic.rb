@@ -16,9 +16,9 @@ module Reporting
     ].freeze
 
     GOODS_NOMENCLATURE_EAGER = [
-      { ns_ancestors: [{ ns_overview_measures: MEASURE_EAGER }] },
-      { ns_overview_measures: MEASURE_EAGER },
-      :ns_children,
+      { ancestors: [{ overview_measures: MEASURE_EAGER }] },
+      { overview_measures: MEASURE_EAGER },
+      :children,
       :goods_nomenclature_descriptions,
     ].freeze
 
@@ -102,7 +102,7 @@ module Reporting
       def goods_nomenclatures
         GoodsNomenclature
           .actual
-          .ns_declarable
+          .declarable
           .eager(GOODS_NOMENCLATURE_EAGER)
           .non_hidden
           .non_classifieds

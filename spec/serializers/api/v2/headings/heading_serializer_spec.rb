@@ -42,7 +42,7 @@ RSpec.describe Api::V2::Headings::HeadingSerializer do
           footnotes: { data: [] },
           section: { data: { id: chapter.section.id.to_s, type: 'section' } },
           chapter: { data: { id: chapter.goods_nomenclature_sid.to_s, type: 'chapter' } },
-          commodities: { data: [{ id: heading.ns_descendants.first.goods_nomenclature_sid.to_s, type: 'commodity' }] },
+          commodities: { data: [{ id: heading.descendants.first.goods_nomenclature_sid.to_s, type: 'commodity' }] },
         },
       },
     }

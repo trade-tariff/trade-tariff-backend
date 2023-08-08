@@ -17,7 +17,7 @@ RSpec.describe Api::V2::Headings::CommodityPresenter do
     end
 
     context 'for non_declarable' do
-      subject { described_class.new child.ns_parent }
+      subject { described_class.new child.parent }
 
       it { is_expected.to have_attributes declarable: false }
       it { is_expected.to have_attributes leaf: false }
@@ -54,7 +54,7 @@ RSpec.describe Api::V2::Headings::CommodityPresenter do
 
     let(:measures) do
       [
-        Api::V2::Measures::MeasurePresenter.new(heading_measure, commodity.ns_parent),
+        Api::V2::Measures::MeasurePresenter.new(heading_measure, commodity.parent),
         Api::V2::Measures::MeasurePresenter.new(measure, commodity),
       ]
     end
@@ -64,7 +64,7 @@ RSpec.describe Api::V2::Headings::CommodityPresenter do
     end
 
     let :heading_measure do
-      create :measure, :with_base_regulation, :supplementary, goods_nomenclature: commodity.ns_parent
+      create :measure, :with_base_regulation, :supplementary, goods_nomenclature: commodity.parent
     end
 
     it 'has expected measures' do

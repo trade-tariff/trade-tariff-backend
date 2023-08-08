@@ -166,7 +166,7 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
   describe '#ancestors' do
     subject { described_class.new(commodity, MeasureCollection.new([])).ancestors }
 
-    let(:commodity) { subheading.ns_children.first }
+    let(:commodity) { subheading.children.first }
     let(:subheading) { create :subheading, :with_chapter_and_heading, :with_children }
 
     it { is_expected.to eq_pk [subheading] }

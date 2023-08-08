@@ -6,7 +6,7 @@ module Search
       declarables = GoodsNomenclature
         .actual
         .where(heading_short_code:)
-        .ns_declarable
+        .declarable
         .eager(*eager_load)
         .all
 
@@ -21,8 +21,8 @@ module Search
         :goods_nomenclature_descriptions,
         :search_references,
         :tradeset_descriptions,
-        :ns_children,
-        { ns_ancestors: %i[search_references goods_nomenclature_descriptions] },
+        :children,
+        { ancestors: %i[search_references goods_nomenclature_descriptions] },
       ]
     end
 

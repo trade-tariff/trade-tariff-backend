@@ -45,7 +45,7 @@ module TenDigitGoodsNomenclature
     end
 
     def short_code
-      if ns_declarable?
+      if declarable?
         goods_nomenclature_item_id
       else
         specific_system_short_code
@@ -99,7 +99,7 @@ module TenDigitGoodsNomenclature
     end
 
     def goods_nomenclature_class
-      ns_declarable? ? 'Commodity' : 'Subheading'
+      declarable? ? 'Commodity' : 'Subheading'
     end
 
     def to_admin_param

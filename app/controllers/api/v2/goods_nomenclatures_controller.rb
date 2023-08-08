@@ -7,10 +7,10 @@ module Api
 
       def index
         commodities = Chapter.non_hidden
-                             .eager(:ns_ancestors,
-                                    ns_descendants: :goods_nomenclature_descriptions)
+                             .eager(:ancestors,
+                                    descendants: :goods_nomenclature_descriptions)
                              .all
-                             .flat_map(&:ns_descendants)
+                             .flat_map(&:descendants)
 
         respond_with(commodities)
       end
@@ -21,11 +21,11 @@ module Api
                           .non_hidden
                           .eager(:goods_nomenclature_descriptions,
                                  :goods_nomenclature_indents,
-                                 :ns_ancestors,
-                                 ns_descendants: :goods_nomenclature_descriptions)
+                                 :ancestors,
+                                 descendants: :goods_nomenclature_descriptions)
                           .all
 
-        @goods_nomenclatures = chapters.flat_map { |ch| [ch] + ch.ns_descendants }
+        @goods_nomenclatures = chapters.flat_map { |ch| [ch] + ch.descendants }
 
         respond_with(@goods_nomenclatures)
       end
@@ -34,11 +34,11 @@ module Api
         chapter = Chapter.actual
                          .non_hidden
                          .by_code(params[:chapter_id])
-                         .eager(:ns_ancestors,
-                                ns_descendants: :goods_nomenclature_descriptions)
+                         .eager(:ancestors,
+                                descendants: :goods_nomenclature_descriptions)
                          .take
 
-        @goods_nomenclatures = [chapter] + chapter.ns_descendants
+        @goods_nomenclatures = [chapter] + chapter.descendants
 
         respond_with(@goods_nomenclatures)
       end
@@ -47,14 +47,14 @@ module Api
         headings = Heading.actual
                           .non_hidden
                           .by_code(params[:heading_id])
-                          .eager(:ns_ancestors,
-                                 ns_descendants: :goods_nomenclature_descriptions)
+                          .eager(:ancestors,
+                                 descendants: :goods_nomenclature_descriptions)
                           .all
 
         raise Sequel::RecordNotFound if headings.empty?
 
         @goods_nomenclatures = headings.flat_map do |heading|
-          [heading] + heading.ns_descendants
+          [heading] + heading.descendants
         end
 
         respond_with(@goods_nomenclatures)
@@ -72,7 +72,7 @@ module Api
         when Subheading
           "/api/v2/subheadings/#{object.to_param}"
         else
-          if check_for_subheadings && !object.ns_declarable?
+          if check_for_subheadings && !object.declarable?
             "/api/v2/subheadings/#{gnid.first(10)}-#{object.producline_suffix}"
           else
             "/api/v2/commodities/#{gnid.first(10)}"

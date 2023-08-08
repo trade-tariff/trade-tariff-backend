@@ -93,7 +93,7 @@ module Api
       def chapter_headings
         chapter
           .headings_dataset
-          .eager(:goods_nomenclature_descriptions, :ns_children)
+          .eager(:goods_nomenclature_descriptions, :children)
           .all
       end
     end

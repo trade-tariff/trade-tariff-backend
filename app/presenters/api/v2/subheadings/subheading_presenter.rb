@@ -17,19 +17,19 @@ module Api
         end
 
         def commodities
-          @commodities ||= Headings::CommodityPresenter.wrap(ancestors + [self] + ns_descendants)
+          @commodities ||= Headings::CommodityPresenter.wrap(ten_digit_ancestors + [self] + descendants)
         end
 
         def commodity_ids
           commodities.map(&:goods_nomenclature_sid)
         end
 
-        def ancestors
-          @ancestors ||= ns_ancestors.select { |ancestor| ancestor.is_a? TenDigitGoodsNomenclature }
+        def ten_digit_ancestors
+          @ten_digit_ancestors ||= ancestors.select { |ancestor| ancestor.is_a? TenDigitGoodsNomenclature }
         end
 
-        def ancestor_ids
-          ancestors.map(&:goods_nomenclature_sid)
+        def ten_digit_ancestor_ids
+          ten_digit_ancestors.map(&:goods_nomenclature_sid)
         end
 
         def section
@@ -38,11 +38,11 @@ module Api
 
         def chapter
           @chapter ||= \
-            Headings::ChapterPresenter.new(ns_ancestors.find { |a| a.is_a? Chapter })
+            Headings::ChapterPresenter.new(ancestors.find { |a| a.is_a? Chapter })
         end
 
         def heading
-          @heading ||= ns_ancestors.find { |a| a.is_a? Heading }
+          @heading ||= ancestors.find { |a| a.is_a? Heading }
         end
       end
     end

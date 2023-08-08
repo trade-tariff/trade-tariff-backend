@@ -27,7 +27,7 @@ module Cache
           :modification_regulation,
           {
             goods_nomenclature: %i[goods_nomenclature_descriptions
-                                   ns_children
+                                   children
                                    goods_nomenclature_indents],
             geographical_area: %i[geographical_area_descriptions],
           },
