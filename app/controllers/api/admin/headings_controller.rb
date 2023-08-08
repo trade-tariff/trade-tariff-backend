@@ -19,7 +19,7 @@ module Api
                             .non_grouping
                             .non_hidden
                             .by_code(params[:id])
-                            .eager(ns_descendants: %i[goods_nomenclature_descriptions])
+                            .eager(ns_descendants: %i[goods_nomenclature_descriptions search_references])
                             .take
       end
 

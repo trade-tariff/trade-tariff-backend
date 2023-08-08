@@ -17,11 +17,6 @@ class Heading < GoodsNomenclature
     ds.with_actual(Chapter)
   end
 
-  one_to_many :search_references, key: :goods_nomenclature_sid, reciprocal: :referenced, conditions: { referenced_class: 'Heading' },
-                                  adder: proc { |search_reference| search_reference.update(goods_nomenclature_sid:, referenced_class: 'Heading') },
-                                  remover: proc { |search_reference| search_reference.update(goods_nomenclature_sid: nil, referenced_class: nil) },
-                                  clearer: proc { search_references_dataset.update(goods_nomenclature_sid: nil, referenced_class: nil) }
-
   dataset_module do
     def by_code(code = '')
       filter(goods_nomenclatures__goods_nomenclature_item_id: "#{code.to_s.first(4)}000000")
