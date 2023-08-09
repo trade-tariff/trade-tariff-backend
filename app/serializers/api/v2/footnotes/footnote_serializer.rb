@@ -13,13 +13,10 @@ module Api
                    :footnote_id,
                    :description,
                    :formatted_description,
-                   :extra_large_measures,
                    :validity_start_date,
                    :validity_end_date
 
-        has_many :measures, serializer: Api::V2::Shared::MeasureSerializer
-        has_many :goods_nomenclatures,
-                 serializer: Api::V2::Shared::GoodsNomenclatureSerializer.serializer_proc
+        has_many :goods_nomenclatures, serializer: Api::V2::Shared::GoodsNomenclatureSerializer.serializer_proc
       end
     end
   end

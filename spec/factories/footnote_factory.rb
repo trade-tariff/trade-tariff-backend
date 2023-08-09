@@ -5,8 +5,10 @@ FactoryBot.define do
     transient do
       valid_at { 2.years.ago.beginning_of_day }
       valid_to { nil }
-      goods_nomenclature_sid { generate(:goods_nomenclature_sid) }
-      measure_sid { generate(:measure_sid) }
+      goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
+      goods_nomenclature {}
+      measure_sid { measure&.measure_sid || generate(:measure_sid) }
+      measure {}
     end
 
     footnote_id      { Forgery(:basic).text(exactly: 3) }
@@ -22,10 +24,15 @@ FactoryBot.define do
     end
 
     trait :with_description do
-      after(:create) do |ftn, _evaluator|
+      transient do
+        description { Forgery(:basic).text }
+      end
+
+      after(:create) do |ftn, evaluator|
         create(
           :footnote_description_period,
           :with_description,
+          description: evaluator.description,
           footnote_type_id: ftn.footnote_type_id,
           footnote_id: ftn.footnote_id,
           validity_start_date: ftn.validity_start_date,
@@ -97,9 +104,13 @@ FactoryBot.define do
     validity_end_date                      { nil }
 
     trait :with_description do
-      after(:create) do |ftn_desc_period, _evaluator|
+      transient do
+        description { Forgery(:basic).text }
+      end
+      after(:create) do |ftn_desc_period, evaluator|
         create(
           :footnote_description,
+          description: evaluator.description,
           footnote_type_id: ftn_desc_period.footnote_type_id,
           footnote_id: ftn_desc_period.footnote_id,
           footnote_description_period_sid: ftn_desc_period.footnote_description_period_sid,

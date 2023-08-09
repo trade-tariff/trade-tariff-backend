@@ -1176,8 +1176,8 @@ RSpec.describe Measure do
     end
   end
 
-  describe '.with_all_measure_conditions' do
-    subject(:measures) { described_class.with_all_measure_conditions.all }
+  describe '.join_measure_conditions' do
+    subject(:measures) { described_class.join_measure_conditions.all }
 
     before do
       # create a measure condition without a measure - this should not be returned
@@ -1204,7 +1204,7 @@ RSpec.describe Measure do
   end
 
   describe '.with_certificate_type_code' do
-    subject(:dataset) { described_class.with_all_measure_conditions.with_certificate_type_code(certificate_type_code) }
+    subject(:dataset) { described_class.join_measure_conditions.with_certificate_type_code(certificate_type_code) }
 
     let(:measure) { create(:measure) }
 
@@ -1239,7 +1239,7 @@ RSpec.describe Measure do
   end
 
   describe '.with_certificate_code' do
-    subject(:dataset) { described_class.with_all_measure_conditions.with_certificate_code(certificate_code) }
+    subject(:dataset) { described_class.join_measure_conditions.with_certificate_code(certificate_code) }
 
     let(:measure) { create(:measure) }
 
@@ -1274,7 +1274,7 @@ RSpec.describe Measure do
   end
 
   describe '.with_certificate_types_and_codes' do
-    subject(:dataset) { described_class.with_all_measure_conditions.with_certificate_types_and_codes(certificate_types_and_codes) }
+    subject(:dataset) { described_class.join_measure_conditions.with_certificate_types_and_codes(certificate_types_and_codes) }
 
     before do
       measure = create(:measure)
@@ -1317,6 +1317,83 @@ RSpec.describe Measure do
       it 'applies the filter' do
         expect(dataset.pluck(:certificate_code)).to eq %w[123 456]
       end
+    end
+  end
+
+  describe '.with_footnote_type_id' do
+    subject(:dataset) { described_class.join_footnotes.with_footnote_type_id('01') }
+
+    before do
+      measure = create(:measure)
+
+      create(:footnote, :with_measure_association, measure:, footnote_type_id: '01')
+      create(:footnote, :with_measure_association, measure:, footnote_type_id: '02')
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(dataset.pluck(:footnote_type_id)).to eq(%w[01]) }
+  end
+
+  describe '.with_footnote_id' do
+    subject(:dataset) { described_class.join_footnotes.with_footnote_id('123') }
+
+    before do
+      measure = create(:measure)
+
+      create(:footnote, :with_measure_association, measure:, footnote_id: '123')
+      create(:footnote, :with_measure_association, measure:, footnote_id: '456')
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(dataset.pluck(:footnote_id)).to eq(%w[123]) }
+  end
+
+  describe '.with_footnote_types_and_ids' do
+    subject(:dataset) { described_class.join_footnotes.with_footnote_types_and_ids(footnote_types_and_ids) }
+
+    before do
+      measure = create(:measure)
+
+      create(
+        :footnote,
+        :with_measure_association,
+        measure:,
+        footnote_type_id: 'Y',
+        footnote_id: '123',
+      )
+      create(
+        :footnote,
+        :with_measure_association,
+        measure:,
+        footnote_type_id: 'N',
+        footnote_id: '456',
+      )
+      create(
+        :footnote,
+        :with_measure_association,
+        measure:,
+        footnote_type_id: 'Z',
+        footnote_id: '789',
+      )
+    end
+
+    context 'when footnote_types_and_ids is empty' do
+      let(:footnote_types_and_ids) { [] }
+
+      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456 789] }
+      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N Z] }
+    end
+
+    context 'when footnote_types_and_ids is present' do
+      let(:footnote_types_and_ids) do
+        [
+          %w[Y 123],
+          %w[N 456],
+        ]
+      end
+
+      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456] }
+      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N] }
     end
   end
 end

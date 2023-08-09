@@ -211,13 +211,7 @@ class Measure < Sequel::Model
       where(additional_code_id:)
     end
 
-    def with_all_measure_conditions
-      # There are more measure conditions than measures
-      # and we do not want to miss any measure conditions
-      # when joining them to measures.
-      #
-      # We then reject rows where measure_sid is nil (which is effectively an inner
-      # join on all measure conditions)
+    def join_measure_conditions
       association_right_join(:measure_conditions)
         .where(Sequel.~(measures__measure_sid: nil))
     end
@@ -239,6 +233,34 @@ class Measure < Sequel::Model
 
       conditions = certificate_types_and_codes.map do |type, code|
         Sequel.expr(measure_conditions__certificate_type_code: type) & Sequel.expr(measure_conditions__certificate_code: code)
+      end
+      combined_conditions = conditions.reduce(:|)
+
+      where(combined_conditions)
+    end
+
+    def join_footnotes
+      association_right_join(:footnotes)
+        .exclude(measures__measure_sid: nil)
+    end
+
+    def with_footnote_type_id(footnote_type_id)
+      return self if footnote_type_id.blank?
+
+      where(footnotes__footnote_type_id: footnote_type_id)
+    end
+
+    def with_footnote_id(footnote_id)
+      return self if footnote_id.blank?
+
+      where(footnotes__footnote_id: footnote_id)
+    end
+
+    def with_footnote_types_and_ids(footnote_types_and_ids)
+      return self if footnote_types_and_ids.none?
+
+      conditions = footnote_types_and_ids.map do |type, id|
+        Sequel.expr(footnotes__footnote_type_id: type) & Sequel.expr(footnotes__footnote_id: id)
       end
       combined_conditions = conditions.reduce(:|)
 

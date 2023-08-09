@@ -373,4 +373,105 @@ RSpec.describe GoodsNomenclature do
       it { is_expected.to have_attributes object_id: goods_nomenclature.object_id }
     end
   end
+
+  describe '.join_footnotes' do
+    subject(:goods_nomenclatures) { described_class.join_footnotes.all }
+
+    before do
+      goods_nomenclature = create(:goods_nomenclature)
+
+      # create multiple footnotes associated with our goods nomenclature
+      create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:)
+      create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:)
+
+      # create a footnote with no existing goods nomenclature - excluded
+      create(:footnote, :with_goods_nomenclature_association)
+
+      # create a footnote not associated with a goods nomenclature - excluded
+      create(:footnote)
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(goods_nomenclatures.first).to eq_pk goods_nomenclatures.second }
+    it { expect(goods_nomenclatures.count).to eq(2) }
+    it { expect(goods_nomenclatures.pluck(:footnote_id)).to all(be_present) }
+    it { expect(goods_nomenclatures.pluck(:footnote_type_id)).to all(be_present) }
+  end
+
+  describe '.with_footnote_type_id' do
+    subject(:dataset) { described_class.join_footnotes.with_footnote_type_id('01') }
+
+    before do
+      goods_nomenclature = create(:goods_nomenclature)
+
+      create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:, footnote_type_id: '01')
+      create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:, footnote_type_id: '02')
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(dataset.pluck(:footnote_type_id)).to eq(%w[01]) }
+  end
+
+  describe '.with_footnote_id' do
+    subject(:dataset) { described_class.join_footnotes.with_footnote_id('123') }
+
+    before do
+      goods_nomenclature = create(:goods_nomenclature)
+
+      create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:, footnote_id: '123')
+      create(:footnote, :with_goods_nomenclature_association, goods_nomenclature:, footnote_id: '456')
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(dataset.pluck(:footnote_id)).to eq(%w[123]) }
+  end
+
+  describe '.with_footnote_types_and_ids' do
+    subject(:dataset) { described_class.join_footnotes.with_footnote_types_and_ids(footnote_types_and_ids) }
+
+    before do
+      goods_nomenclature = create(:goods_nomenclature)
+
+      create(
+        :footnote,
+        :with_goods_nomenclature_association,
+        goods_nomenclature:,
+        footnote_type_id: 'Y',
+        footnote_id: '123',
+      )
+      create(
+        :footnote,
+        :with_goods_nomenclature_association,
+        goods_nomenclature:,
+        footnote_type_id: 'N',
+        footnote_id: '456',
+      )
+      create(
+        :footnote,
+        :with_goods_nomenclature_association,
+        goods_nomenclature:,
+        footnote_type_id: 'Z',
+        footnote_id: '789',
+      )
+    end
+
+    context 'when footnote_types_and_ids is empty' do
+      let(:footnote_types_and_ids) { [] }
+
+      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456 789] }
+      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N Z] }
+    end
+
+    context 'when footnote_types_and_ids is present' do
+      let(:footnote_types_and_ids) do
+        [
+          %w[Y 123],
+          %w[N 456],
+        ]
+      end
+
+      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456] }
+      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N] }
+    end
+  end
 end

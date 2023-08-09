@@ -131,6 +131,34 @@ class GoodsNomenclature < Sequel::Model
     def non_grouping
       where(producline_suffix: '80')
     end
+
+    def join_footnotes
+      association_right_join(:footnotes)
+        .exclude(goods_nomenclatures__goods_nomenclature_item_id: nil)
+    end
+
+    def with_footnote_type_id(footnote_type_id)
+      return self if footnote_type_id.blank?
+
+      where(footnotes__footnote_type_id: footnote_type_id)
+    end
+
+    def with_footnote_id(footnote_id)
+      return self if footnote_id.blank?
+
+      where(footnotes__footnote_id: footnote_id)
+    end
+
+    def with_footnote_types_and_ids(footnote_types_and_ids)
+      return self if footnote_types_and_ids.none?
+
+      conditions = footnote_types_and_ids.map do |type, id|
+        Sequel.expr(footnotes__footnote_type_id: type) & Sequel.expr(footnotes__footnote_id: id)
+      end
+      combined_conditions = conditions.reduce(:|)
+
+      where(combined_conditions)
+    end
   end
 
   def goods_nomenclature_class
