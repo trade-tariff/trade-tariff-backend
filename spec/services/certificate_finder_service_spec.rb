@@ -18,9 +18,12 @@ RSpec.describe CertificateFinderService do
 
     before do
       create(:measure_condition, certificate:, measure:)
+      allow(SearchDescriptionNormaliserService).to receive(:new).and_call_original
+      call
     end
 
     it { is_expected.to be_empty }
+    it { expect(SearchDescriptionNormaliserService).to have_received(:new).with(description) }
 
     context 'when searching by code and type' do
       let(:code) { certificate.certificate_code }
@@ -36,6 +39,7 @@ RSpec.describe CertificateFinderService do
 
       it { is_expected.to all(be_a(Api::V2::CertificateSearch::CertificatePresenter)) }
       it { expect(call.first.certificate_code).to eq certificate.certificate_code }
+      it { expect(SearchDescriptionNormaliserService).to have_received(:new).with(description) }
     end
 
     context 'when no measures are associated with the certificate' do

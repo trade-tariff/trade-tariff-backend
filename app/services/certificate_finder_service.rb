@@ -77,10 +77,14 @@ class CertificateFinderService
   end
 
   def description_types_and_codes
-    return [] if description.blank?
+    return [] if normalised_description.blank?
 
     CertificateDescription
-      .with_fuzzy_description(description)
+      .with_fuzzy_description(normalised_description)
       .select_map(%i[certificate_type_code certificate_code])
+  end
+
+  def normalised_description
+    @normalised_description ||= SearchDescriptionNormaliserService.new(description).call
   end
 end
