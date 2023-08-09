@@ -2,34 +2,98 @@ RSpec.describe Api::V2::Footnotes::FootnoteSerializer do
   subject(:serializer) { described_class.new(serializable).serializable_hash.as_json }
 
   let(:serializable) do
-    footnote = create(:footnote, :with_description)
-    goods_nomenclatures = create_list(:heading, 1)
+    cache_serialized_footnote = Cache::FootnoteSerializer.new(footnote, []).as_json
 
-    Api::V2::FootnoteSearch::FootnotePresenter.new(footnote, goods_nomenclatures)
+    Hashie::TariffMash.new(cache_serialized_footnote)
   end
 
+  let(:footnote) { create(:footnote, :with_description) }
+
   describe '#serializable_hash' do
-    let(:expected_pattern) do
-      {
-        data: {
-          id: String,
-          type: 'footnote',
-          attributes: {
-            code: String,
-            footnote_type_id: String,
-            footnote_id: String,
-            description: String,
-            formatted_description: String,
-            validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
-            validity_end_date: nil,
+    context 'when there are associated goods nomenclature' do
+      before do
+        create(
+          :footnote_association_goods_nomenclature,
+          footnote:,
+          goods_nomenclature: create(:heading),
+        )
+
+        create(
+          :footnote_association_measure,
+          footnote:,
+          measure: create(
+            :measure,
+            :with_base_regulation,
+            goods_nomenclature: create(:chapter),
+          ),
+        )
+      end
+
+      let(:expected_pattern) do
+        {
+          data: {
+            id: String,
+            type: 'footnote',
+            attributes: {
+              code: String,
+              footnote_type_id: String,
+              footnote_id: String,
+              description: String,
+              formatted_description: String,
+              extra_large_measures: false,
+              validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
+              validity_end_date: nil,
+            },
+            relationships: {
+              measures: { data: [{ id: String, type: 'measure' }] },
+              goods_nomenclatures: { data: [{ id: String, type: 'heading' }] },
+            },
           },
-          relationships: {
-            goods_nomenclatures: { data: [{ id: String, type: 'heading' }] },
-          },
-        },
-      }
+        }
+      end
+
+      it { is_expected.to match_json_expression(expected_pattern) }
     end
 
-    it { is_expected.to match_json_expression(expected_pattern) }
+    context 'when goods nomenclature references are broken' do
+      before do
+        create(
+          :footnote_association_goods_nomenclature,
+          footnote:,
+          goods_nomenclature_sid: '9999',
+        )
+
+        create(
+          :footnote_association_measure,
+          footnote:,
+          measure: create(:measure, goods_nomenclature: nil),
+        )
+      end
+
+      let(:expected_pattern) do
+        {
+          data: {
+            id: String,
+            type: 'footnote',
+            attributes: {
+              code: String,
+              footnote_type_id: String,
+              footnote_id: String,
+              description: String,
+              formatted_description: String,
+              extra_large_measures: false,
+              validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
+              validity_end_date: nil,
+            },
+            relationships: {
+              goods_nomenclatures: { data: [] },
+              measures: { data: [] },
+            },
+          },
+        }
+      end
+
+      it { is_expected.to match_json_expression(expected_pattern) }
+    end
   end
 end

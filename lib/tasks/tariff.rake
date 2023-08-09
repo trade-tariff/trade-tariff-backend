@@ -4,6 +4,16 @@ namespace :tariff do
     TradeTariffBackend.reindex
   end
 
+  desc 'Recache relevant entities on ElasticSearch'
+  task recache: %w[environment] do
+    TradeTariffBackend.recache
+  end
+
+  desc 'Enqueue clearing of all caches'
+  task recache_all: %w[environment] do
+    Sidekiq::Client.enqueue(ClearCacheWorker)
+  end
+
   desc 'List queued jobs'
   task jobs: %w[environment] do
     require 'sidekiq/api'

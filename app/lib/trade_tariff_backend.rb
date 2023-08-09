@@ -102,6 +102,12 @@ module TradeTariffBackend
       Mailer.reindex_exception(e).deliver_now
     end
 
+    def recache(indexer = cache_client)
+      indexer.update_all
+    rescue StandardError => e
+      Mailer.reindex_exception(e).deliver_now
+    end
+
     # Number of changes to fetch for Commodity/Heading/Chapter
     def change_count
       10
@@ -133,6 +139,14 @@ module TradeTariffBackend
       )
     end
 
+    def cache_client
+      @cache_client ||= SearchClient.new(
+        opensearch_client,
+        namespace: 'cache',
+        indexes: cache_indexes,
+      )
+    end
+
     def search_indexes
       [
         Search::ChapterIndex,
@@ -152,6 +166,12 @@ module TradeTariffBackend
     def by_heading_search_indexes
       [
         Search::BulkSearchIndex,
+      ].map(&:new)
+    end
+
+    def cache_indexes
+      [
+        Cache::FootnoteIndex,
       ].map(&:new)
     end
 

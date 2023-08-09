@@ -55,17 +55,6 @@ class Footnote < Sequel::Model
   delegate :description, :formatted_description, to: :footnote_description
 
   dataset_module do
-    def with_footnote_types_and_ids(footnote_types_and_ids)
-      return self if footnote_types_and_ids.none?
-
-      conditions = footnote_types_and_ids.map do |type, id|
-        Sequel.expr(footnotes__footnote_type_id: type) & Sequel.expr(footnotes__footnote_id: id)
-      end
-      combined_conditions = conditions.reduce(:|)
-
-      where(combined_conditions)
-    end
-
     def national
       where(national: true)
     end

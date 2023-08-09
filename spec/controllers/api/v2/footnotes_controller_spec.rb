@@ -13,10 +13,21 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
 
     create(:footnote_association_measure, measure: measure_with_goods_nomenclature, footnote:)
     create(:footnote_association_measure, measure: measure_no_goods_nomenclature, footnote:)
+
+    Sidekiq::Testing.inline! do
+      TradeTariffBackend.cache_client.reindex(Cache::FootnoteIndex.new)
+      sleep(2)
+    end
   end
 
-  context 'when searching by the code and type' do
-    let(:query) { { code: footnote.footnote_id, type: footnote.footnote_type_id } }
+  context 'when searching by the code' do
+    let(:query) { { code: footnote.footnote_id } }
+
+    it_behaves_like 'a successful jsonapi response'
+  end
+
+  context 'when searching by type' do
+    let(:query) { { type: footnote.footnote_type_id } }
 
     it_behaves_like 'a successful jsonapi response'
   end
@@ -34,6 +45,13 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
       {
         data: [],
         included: [],
+        meta: {
+          pagination: {
+            page: Integer,
+            per_page: Integer,
+            total_count: Integer,
+          },
+        },
       }
     end
 

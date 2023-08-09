@@ -8,7 +8,7 @@ module Api
       private
 
       def footnote_types
-        FootnoteType.eager(:footnote_type_description).all
+        FootnoteType.all
       end
     end
   end

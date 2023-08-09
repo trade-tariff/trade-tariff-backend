@@ -3,6 +3,8 @@ RSpec.configure do |config|
     connection_attempts ||= 0
 
     TradeTariffBackend.search_client.reindex_all
+    TradeTariffBackend.cache_client.reindex_all
+
   rescue Faraday::ConnectionFailed => e
     connection_attempts += 1
 
