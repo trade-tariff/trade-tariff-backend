@@ -374,8 +374,8 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '.with_footnotes' do
-    subject(:goods_nomenclatures) { described_class.with_footnotes.all }
+  describe '.join_footnotes' do
+    subject(:goods_nomenclatures) { described_class.join_footnotes.all }
 
     before do
       goods_nomenclature = create(:goods_nomenclature)
@@ -399,7 +399,7 @@ RSpec.describe GoodsNomenclature do
   end
 
   describe '.with_footnote_type_id' do
-    subject(:dataset) { described_class.with_footnotes.with_footnote_type_id('01') }
+    subject(:dataset) { described_class.join_footnotes.with_footnote_type_id('01') }
 
     before do
       goods_nomenclature = create(:goods_nomenclature)
@@ -413,7 +413,7 @@ RSpec.describe GoodsNomenclature do
   end
 
   describe '.with_footnote_id' do
-    subject(:dataset) { described_class.with_footnotes.with_footnote_id('123') }
+    subject(:dataset) { described_class.join_footnotes.with_footnote_id('123') }
 
     before do
       goods_nomenclature = create(:goods_nomenclature)
@@ -427,7 +427,7 @@ RSpec.describe GoodsNomenclature do
   end
 
   describe '.with_footnote_types_and_ids' do
-    subject(:dataset) { described_class.with_footnotes.with_footnote_types_and_ids(footnote_types_and_ids) }
+    subject(:dataset) { described_class.join_footnotes.with_footnote_types_and_ids(footnote_types_and_ids) }
 
     before do
       goods_nomenclature = create(:goods_nomenclature)

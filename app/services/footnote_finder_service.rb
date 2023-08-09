@@ -9,6 +9,9 @@
 #
 # Finally footnotes are retrieved by their id and type and returned and associated with there active goods nomenclatures
 class FootnoteFinderService
+  ID_INDEX_RANGE = 0..1
+  TYPE_INDEX_RANGE = 2..-1
+
   def initialize(type, id, description)
     @type = type
     @id = id
@@ -16,7 +19,7 @@ class FootnoteFinderService
   end
 
   def call
-    return [] if description_types_and_ids.empty? && type.blank? && id.blank?
+    return [] if description_types_and_ids.empty? && (type.blank? || id.blank?)
     return [] if goods_nomenclature_sids.empty?
 
     Api::V2::FootnoteSearch::FootnotePresenter.wrap(
@@ -31,10 +34,7 @@ class FootnoteFinderService
 
   def footnotes
     all_ids_and_types = all_matching_goods_nomenclatures.keys.map do |key|
-      type = key[0..1]
-      id = key[2..]
-
-      [type, id]
+      [key[ID_INDEX_RANGE], key[TYPE_INDEX_RANGE]]
     end
 
     Footnote
@@ -47,7 +47,7 @@ class FootnoteFinderService
   def grouped_goods_nomenclatures_by_goods_nomenclature_association
     GoodsNomenclature
       .actual
-      .with_footnotes
+      .join_footnotes
       .with_footnote_type_id(type)
       .with_footnote_id(id)
       .with_footnote_types_and_ids(description_types_and_ids)
@@ -75,7 +75,7 @@ class FootnoteFinderService
     Measure
       .with_regulation_dates_query
       .actual
-      .with_footnotes
+      .join_footnotes
       .with_footnote_type_id(type)
       .with_footnote_id(id)
       .with_footnote_types_and_ids(description_types_and_ids)
@@ -122,12 +122,16 @@ class FootnoteFinderService
 
   def description_types_and_ids
     @description_types_and_ids ||= begin
-      return [] if description.blank?
+      return [] if normalised_description.blank?
 
       FootnoteDescription
-        .with_fuzzy_description(description)
+        .with_fuzzy_description(normalised_description)
         .select_map(%i[footnote_type_id footnote_id])
         .uniq
     end
+  end
+
+  def normalised_description
+    @normalised_description ||= SearchDescriptionNormaliserService.new(description).call
   end
 end

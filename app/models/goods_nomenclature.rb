@@ -132,7 +132,7 @@ class GoodsNomenclature < Sequel::Model
       where(producline_suffix: '80')
     end
 
-    def with_footnotes
+    def join_footnotes
       association_right_join(:footnotes)
         .exclude(goods_nomenclatures__goods_nomenclature_item_id: nil)
     end

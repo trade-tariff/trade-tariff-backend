@@ -46,7 +46,7 @@ class CertificateFinderService
     @grouped_measures ||= Measure
       .actual
       .with_regulation_dates_query
-      .with_all_measure_conditions
+      .join_measure_conditions
       .with_certificate_type_code(type)
       .with_certificate_code(code)
       .with_certificate_types_and_codes(description_types_and_codes)

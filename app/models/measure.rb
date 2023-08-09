@@ -211,13 +211,7 @@ class Measure < Sequel::Model
       where(additional_code_id:)
     end
 
-    def with_all_measure_conditions
-      # There are more measure conditions than measures
-      # and we do not want to miss any measure conditions
-      # when joining them to measures.
-      #
-      # We then reject rows where measure_sid is nil (which is effectively an inner
-      # join on all measure conditions)
+    def join_measure_conditions
       association_right_join(:measure_conditions)
         .where(Sequel.~(measures__measure_sid: nil))
     end
@@ -245,7 +239,7 @@ class Measure < Sequel::Model
       where(combined_conditions)
     end
 
-    def with_footnotes
+    def join_footnotes
       association_right_join(:footnotes)
         .exclude(measures__measure_sid: nil)
     end
