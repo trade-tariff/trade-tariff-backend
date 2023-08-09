@@ -39,6 +39,7 @@ RSpec.describe CertificateFinderService do
 
       it { is_expected.to all(be_a(Api::V2::CertificateSearch::CertificatePresenter)) }
       it { expect(call.first.certificate_code).to eq certificate.certificate_code }
+      it { expect(SearchDescriptionNormaliserService).to have_received(:new).with(description) }
     end
 
     context 'when no measures are associated with the certificate' do

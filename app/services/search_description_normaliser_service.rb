@@ -13,15 +13,10 @@ class SearchDescriptionNormaliserService
       .downcase
       .scan(/\w+/)
 
-    # Reject stop words unless part of a word phrase
-    words = if words.length > 1
-              words
-            else
-              words.reject { |word| stop_words.include?(word) || word.length < MIN_WORD_LENGTH }
-            end
+    reject_word = words.one? && (words.first.length < MIN_WORD_LENGTH || stop_words.include?(words.first))
 
-    words
-      .join(' ')
-      .strip
+    return '' if reject_word
+
+    words.join(' ')
   end
 end

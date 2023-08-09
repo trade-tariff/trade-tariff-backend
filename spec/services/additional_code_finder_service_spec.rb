@@ -39,6 +39,7 @@ RSpec.describe AdditionalCodeFinderService do
 
       it { is_expected.to all(be_a(Api::V2::AdditionalCodeSearch::AdditionalCodePresenter)) }
       it { expect(call.first.additional_code).to eq additional_code.additional_code }
+      it { expect(SearchDescriptionNormaliserService).to have_received(:new).with(description) }
     end
   end
 end
