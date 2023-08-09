@@ -1,40 +1,37 @@
 module Api
   module V2
     class FootnotesController < ApiController
-      before_action :find_footnotes
-
       def search
-        options = {}
-        options[:include] = [:measures, 'measures.goods_nomenclature', :goods_nomenclatures]
-        render json: Api::V2::Footnotes::FootnoteSerializer.new(@footnotes, options.merge(serialization_meta)).serializable_hash
+        render json: serialized_footnotes
       end
 
       private
 
-      def find_footnotes
-        TimeMachine.now do
-          @footnotes = search_service.perform
-        end
+      def serialized_footnotes
+        Api::V2::Footnotes::FootnoteSerializer.new(
+          finder_service.call,
+          include: [:goods_nomenclatures],
+        ).serializable_hash
       end
 
-      def search_service
-        @search_service ||= FootnoteSearchService.new(params, current_page, per_page)
+      def finder_service
+        @finder_service ||= FootnoteFinderService.new(type, code, description)
       end
 
-      def per_page
-        5
+      def type
+        footnote_search_params[:type]
       end
 
-      def serialization_meta
-        {
-          meta: {
-            pagination: {
-              page: current_page,
-              per_page:,
-              total_count: search_service.pagination_record_count,
-            },
-          },
-        }
+      def code
+        footnote_search_params[:code]
+      end
+
+      def description
+        footnote_search_params[:description]
+      end
+
+      def footnote_search_params
+        params.permit(:type, :code, :description)
       end
     end
   end

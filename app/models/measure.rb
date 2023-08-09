@@ -245,6 +245,34 @@ class Measure < Sequel::Model
       where(combined_conditions)
     end
 
+    def with_footnotes
+      association_right_join(:footnotes)
+        .exclude(measures__measure_sid: nil)
+    end
+
+    def with_footnote_type_id(footnote_type_id)
+      return self if footnote_type_id.blank?
+
+      where(footnotes__footnote_type_id: footnote_type_id)
+    end
+
+    def with_footnote_id(footnote_id)
+      return self if footnote_id.blank?
+
+      where(footnotes__footnote_id: footnote_id)
+    end
+
+    def with_footnote_types_and_ids(footnote_types_and_ids)
+      return self if footnote_types_and_ids.none?
+
+      conditions = footnote_types_and_ids.map do |type, id|
+        Sequel.expr(footnotes__footnote_type_id: type) & Sequel.expr(footnotes__footnote_id: id)
+      end
+      combined_conditions = conditions.reduce(:|)
+
+      where(combined_conditions)
+    end
+
     def with_measure_type(condition_measure_type)
       where(measures__measure_type_id: condition_measure_type.to_s)
     end

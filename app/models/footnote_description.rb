@@ -10,4 +10,10 @@ class FootnoteDescription < Sequel::Model
 
   custom_format :formatted_description, with: DescriptionFormatter,
                                         using: :description
+
+  dataset_module do
+    def with_fuzzy_description(description)
+      where(Sequel.ilike(:description, "%#{description}%"))
+    end
+  end
 end

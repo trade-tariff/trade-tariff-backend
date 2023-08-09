@@ -1319,4 +1319,81 @@ RSpec.describe Measure do
       end
     end
   end
+
+  describe '.with_footnote_type_id' do
+    subject(:dataset) { described_class.with_footnotes.with_footnote_type_id('01') }
+
+    before do
+      measure = create(:measure)
+
+      create(:footnote, :with_measure_association, measure:, footnote_type_id: '01')
+      create(:footnote, :with_measure_association, measure:, footnote_type_id: '02')
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(dataset.pluck(:footnote_type_id)).to eq(%w[01]) }
+  end
+
+  describe '.with_footnote_id' do
+    subject(:dataset) { described_class.with_footnotes.with_footnote_id('123') }
+
+    before do
+      measure = create(:measure)
+
+      create(:footnote, :with_measure_association, measure:, footnote_id: '123')
+      create(:footnote, :with_measure_association, measure:, footnote_id: '456')
+    end
+
+    it { is_expected.to all(be_a(described_class)) }
+    it { expect(dataset.pluck(:footnote_id)).to eq(%w[123]) }
+  end
+
+  describe '.with_footnote_types_and_ids' do
+    subject(:dataset) { described_class.with_footnotes.with_footnote_types_and_ids(footnote_types_and_ids) }
+
+    before do
+      measure = create(:measure)
+
+      create(
+        :footnote,
+        :with_measure_association,
+        measure:,
+        footnote_type_id: 'Y',
+        footnote_id: '123',
+      )
+      create(
+        :footnote,
+        :with_measure_association,
+        measure:,
+        footnote_type_id: 'N',
+        footnote_id: '456',
+      )
+      create(
+        :footnote,
+        :with_measure_association,
+        measure:,
+        footnote_type_id: 'Z',
+        footnote_id: '789',
+      )
+    end
+
+    context 'when footnote_types_and_ids is empty' do
+      let(:footnote_types_and_ids) { [] }
+
+      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456 789] }
+      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N Z] }
+    end
+
+    context 'when footnote_types_and_ids is present' do
+      let(:footnote_types_and_ids) do
+        [
+          %w[Y 123],
+          %w[N 456],
+        ]
+      end
+
+      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456] }
+      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N] }
+    end
+  end
 end
