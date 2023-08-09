@@ -95,7 +95,6 @@ commands:
                     cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
                   done
 
-
       - run:
           name: "Verify new version is working on dark URL."
           command: |
@@ -923,17 +922,17 @@ workflows:
     jobs:
       - write_docker_tag:
           environment: development
-      
+
       - linters:
           context: trade-tariff
-        
-      # - test:
-      #     context: trade-tariff
-      #     filters:
-      #       branches:
-      #         ignore:
-      #           - main
-      
+
+      - test:
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
+
       - terraform_fmt_validate:
           context: trade-tariff-terraform-aws-development
           environment: development
@@ -943,7 +942,7 @@ workflows:
                 - main
                 - /^dependabot/(?!docker/).*/
                 - /^hotfix\/.+/
-      
+
       - tariff/build-and-push:
           name: build_and_push_dev
           context: trade-tariff-terraform-aws-development
@@ -956,7 +955,7 @@ workflows:
                 - main
                 - /^dependabot/(?!docker/).*/
                 - /^hotfix\/.+/
-      
+
       - build:
           name: build_dev
           context: trade-tariff
@@ -967,7 +966,7 @@ workflows:
                 - main
                 - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
-      
+
       - deploy_dev:
           matrix:
             parameters:
@@ -981,11 +980,11 @@ workflows:
                 - main
                 - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
-        
+
           requires:
             # - test
             - build_dev
-      
+
       - sync_opensearch_packages:
           name: sync_packages_dev
           space: development
@@ -997,7 +996,7 @@ workflows:
                 - main
                 - /^dependabot\/(?!docker\/).*/
                 - /^hotfix\/.+/
-      
+
       - smoketest_dev:
           name: smoketest_dev
           context: trade-tariff
@@ -1010,7 +1009,7 @@ workflows:
           requires:
             - deploy_dev
             - sync_packages_dev
-      
+
       - sync_opensearch_packages:
           name: sync_packages_staging
           space: staging
@@ -1021,7 +1020,7 @@ workflows:
               only:
                 - main
                 - /^hotfix\/.+/
-      
+
       - build:
           name: build_live
           context: trade-tariff
@@ -1030,7 +1029,7 @@ workflows:
               only:
                 - main
                 - /^hotfix\/.+/
-      
+
       - plan_terraform:
           context: trade-tariff-terraform-aws-development
           environment: development
@@ -1043,7 +1042,7 @@ workflows:
                 - main
                 - /^dependabot/(?!docker/).*/
                 - /^hotfix\/.+/
-      
+
       - apply_terraform:
           context: trade-tariff-terraform-aws-development
           name: apply_terraform
@@ -1056,7 +1055,7 @@ workflows:
               ignore:
                 - /^dependabot/(?!docker/).*/
                 - /^hotfix\/.+/
-      
+
       - deploy_main_to_staging:
           matrix:
             parameters:
@@ -1066,7 +1065,7 @@ workflows:
           context: trade-tariff
           requires:
             - build_live
-      
+
       - smoketest_staging:
           name: smoketest_staging
           context: trade-tariff
@@ -1078,7 +1077,7 @@ workflows:
           requires:
             - sync_packages_staging
             - deploy_main_to_staging
-      
+
       - hold_create_release:
           type: approval
           filters:
@@ -1088,7 +1087,7 @@ workflows:
                 - /^hotfix\/.+/
           requires:
             - deploy_main_to_staging
-      
+
       - tariff/create-production-release:
           context: trade-tariff
           image-name: tariff-backend
@@ -1099,7 +1098,7 @@ workflows:
                 - /^hotfix\/.+/
           requires:
             - hold_create_release
-      
+
       - deploy_release_to_staging:
           matrix:
             parameters:
@@ -1112,7 +1111,7 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
-      
+
       - smoketest_staging:
           name: smoketest_release_to_staging
           context: trade-tariff
@@ -1123,7 +1122,7 @@ workflows:
               ignore: /.*/
           requires:
             - deploy_release_to_staging
-      
+
       - hold_deploy_production:
           type: approval
           filters:
@@ -1131,7 +1130,7 @@ workflows:
               only: /^release-202[\d-]+/
             branches:
               ignore: /.*/
-      
+
       - sync_opensearch_packages:
           name: sync_packages_production
           space: production
@@ -1144,7 +1143,7 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
-      
+
       - deploy_production:
           matrix:
             parameters:
@@ -1159,7 +1158,7 @@ workflows:
               ignore: /.*/
           requires:
             - hold_deploy_production
-      
+
       - notify_production_deployment:
           context: trade-tariff
           filters:
