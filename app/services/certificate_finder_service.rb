@@ -16,7 +16,7 @@ class CertificateFinderService
 
   private
 
-  attr_reader :type, :code, :description
+  attr_reader :type, :code
 
   def certificates
     return [] if grouped_measures.none?
@@ -82,5 +82,9 @@ class CertificateFinderService
     CertificateDescription
       .with_fuzzy_description(description)
       .select_map(%i[certificate_type_code certificate_code])
+  end
+
+  def description
+    @description ||= SearchDescriptionNormaliserService.new(@description).call
   end
 end

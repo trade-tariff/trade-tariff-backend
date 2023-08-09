@@ -204,7 +204,7 @@ module TradeTariffBackend
     end
 
     def stop_words
-      @stop_words ||= YAML.load_file(stop_words_file)[:stop_words]
+      @stop_words ||= Set.new(YAML.load_file(stop_words_file)[:stop_words])
     end
 
     def stop_words_file

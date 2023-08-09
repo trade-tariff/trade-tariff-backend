@@ -16,7 +16,7 @@ class AdditionalCodeFinderService
 
   private
 
-  attr_reader :code, :type, :description
+  attr_reader :code, :type
 
   def additional_codes
     AdditionalCode
@@ -69,5 +69,9 @@ class AdditionalCodeFinderService
     AdditionalCodeDescription
       .with_fuzzy_description(description)
       .select_map(:additional_code_sid)
+  end
+
+  def description
+    @description ||= SearchDescriptionNormaliserService.new(@description).call
   end
 end

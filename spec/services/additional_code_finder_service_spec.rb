@@ -8,7 +8,7 @@ RSpec.describe AdditionalCodeFinderService do
 
     let(:additional_code) { create(:additional_code, :with_description) }
 
-    let!(:measure) do
+    let(:measure) do
       create(
         :measure,
         :with_base_regulation,
@@ -17,9 +17,14 @@ RSpec.describe AdditionalCodeFinderService do
       )
     end
 
-    before { measure }
+    before do
+      measure
+      allow(SearchDescriptionNormaliserService).to receive(:new).and_call_original
+      call
+    end
 
     it { is_expected.to be_empty }
+    it { expect(SearchDescriptionNormaliserService).to have_received(:new).with(description) }
 
     context 'when searching by code' do
       let(:code) { additional_code.additional_code }
