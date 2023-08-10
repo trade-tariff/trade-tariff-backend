@@ -1,4 +1,4 @@
-RSpec.describe BulkSearch::ErrorSerializationService do
+RSpec.describe Api::Search::ErrorSerializationService do
   describe '#call' do
     subject(:result) { described_class.new(searches).call }
 

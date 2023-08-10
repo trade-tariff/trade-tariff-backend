@@ -2,7 +2,11 @@ module Api
   module V2
     class AdditionalCodesController < ApiController
       def search
-        render json: serialized_additional_codes
+        if search_validator.valid?
+          render json: serialized_additional_codes
+        else
+          render json: serialized_errors, status: :unprocessable_entity
+        end
       end
 
       private
@@ -32,6 +36,14 @@ module Api
 
       def additional_code_search_params
         params.permit(:description, :type, :code)
+      end
+
+      def search_validator
+        @search_validator ||= SearchValidator.new(additional_code_search_params)
+      end
+
+      def serialized_errors
+        Api::Search::ErrorSerializationService.new(search_validator).call
       end
     end
   end

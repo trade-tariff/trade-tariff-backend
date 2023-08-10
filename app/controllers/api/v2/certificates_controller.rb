@@ -2,7 +2,11 @@ module Api
   module V2
     class CertificatesController < ApiController
       def search
-        render json: serialized_certificates
+        if search_validator.valid?
+          render json: serialized_certificates
+        else
+          render json: serialized_errors, status: :unprocessable_entity
+        end
       end
 
       def index
@@ -59,6 +63,14 @@ module Api
 
       def certificate_search_params
         params.permit(:type, :code, :description)
+      end
+
+      def search_validator
+        @search_validator ||= SearchValidator.new(certificate_search_params)
+      end
+
+      def serialized_errors
+        Api::Search::ErrorSerializationService.new(search_validator).call
       end
     end
   end

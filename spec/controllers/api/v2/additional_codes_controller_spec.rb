@@ -67,21 +67,22 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
       )
     end
 
-    context 'when searching by additional code id' do
-      let(:params) { { code: additional_code.additional_code } }
+    context 'when searching by additional code id and type' do
+      let(:params) do
+        {
+          code: additional_code.additional_code,
+          type: additional_code.additional_code_type_id,
+        }
+      end
 
-      it { expect(response.body).to match_json_expression pattern }
-    end
-
-    context 'when searching by additional code type' do
-      let(:params) { { type: additional_code.additional_code_type_id } }
-
+      it { is_expected.to have_http_status :ok }
       it { expect(response.body).to match_json_expression pattern }
     end
 
     context 'when searching by additional code description' do
       let(:params) { { description: additional_code.additional_code_description.description } }
 
+      it { is_expected.to have_http_status :ok }
       it { expect(response.body).to match_json_expression pattern }
     end
 
@@ -94,11 +95,72 @@ RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
         }
       end
 
+      it { is_expected.to have_http_status :ok }
+      it { expect(response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by additional code type' do
+      let(:params) { { type: additional_code.additional_code_type_id } }
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'is required when filtering by type',
+              'detail' => 'Code is required when filtering by type',
+              'source' => { 'pointer' => '/data/attributes/code' },
+            },
+          ],
+        }
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+      it { expect(response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by additional code id' do
+      let(:params) { { code: additional_code.additional_code } }
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'is required when filtering by code',
+              'detail' => 'Type is required when filtering by code',
+              'source' => { 'pointer' => '/data/attributes/type' },
+            },
+          ],
+        }
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+      it { expect(response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching with no params' do
+      let(:params) { {} }
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'Please supply a description or a type and a code value',
+              'detail' => 'Description Please supply a description or a type and a code value',
+              'source' => { 'pointer' => '/data/attributes/description' },
+            },
+          ],
+        }
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
       it { expect(response.body).to match_json_expression pattern }
     end
 
     context 'when searching for a non-existing additional code' do
-      let(:params) { { code: 'non-existing' } }
+      let(:params) { { code: 'non-existing', type: 'non-existing' } }
 
       it { expect(response.body).to match_json_expression(data: [], included: []) }
     end

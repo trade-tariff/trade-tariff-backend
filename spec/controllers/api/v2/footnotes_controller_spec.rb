@@ -1,5 +1,5 @@
 RSpec.describe Api::V2::FootnotesController, type: :controller do
-  subject(:do_response) { get :search, params: query, format: :json && response }
+  subject(:do_response) { get :search, params:, format: :json && response }
 
   let(:footnote) { create(:footnote, :with_description) }
 
@@ -16,19 +16,79 @@ RSpec.describe Api::V2::FootnotesController, type: :controller do
   end
 
   context 'when searching by the code and type' do
-    let(:query) { { code: footnote.footnote_id, type: footnote.footnote_type_id } }
+    let(:params) { { code: footnote.footnote_id, type: footnote.footnote_type_id } }
 
     it_behaves_like 'a successful jsonapi response'
   end
 
   context 'when searching by description' do
-    let(:query) { { description: footnote.description } }
+    let(:params) { { description: footnote.description } }
 
     it_behaves_like 'a successful jsonapi response'
   end
 
+  context 'when searching by type' do
+    let(:params) { { type: footnote.footnote_type_id } }
+
+    let(:pattern) do
+      {
+        'errors' => [
+          {
+            'status' => 422,
+            'title' => 'is required when filtering by type',
+            'detail' => 'Code is required when filtering by type',
+            'source' => { 'pointer' => '/data/attributes/code' },
+          },
+        ],
+      }
+    end
+
+    it { is_expected.to have_http_status :unprocessable_entity }
+    it { expect(do_response.body).to match_json_expression pattern }
+  end
+
+  context 'when searching by id' do
+    let(:params) { { code: footnote.footnote_id } }
+
+    let(:pattern) do
+      {
+        'errors' => [
+          {
+            'status' => 422,
+            'title' => 'is required when filtering by code',
+            'detail' => 'Type is required when filtering by code',
+            'source' => { 'pointer' => '/data/attributes/type' },
+          },
+        ],
+      }
+    end
+
+    it { is_expected.to have_http_status :unprocessable_entity }
+    it { expect(do_response.body).to match_json_expression pattern }
+  end
+
+  context 'when searching with no params' do
+    let(:params) { {} }
+
+    let(:pattern) do
+      {
+        'errors' => [
+          {
+            'status' => 422,
+            'title' => 'Please supply a description or a type and a code value',
+            'detail' => 'Description Please supply a description or a type and a code value',
+            'source' => { 'pointer' => '/data/attributes/description' },
+          },
+        ],
+      }
+    end
+
+    it { is_expected.to have_http_status :unprocessable_entity }
+    it { expect(do_response.body).to match_json_expression pattern }
+  end
+
   context 'when no footnotes are found' do
-    let(:query) { { code: 'F-O-O-B-A-R' } }
+    let(:params) { { code: 'F-O-O-B-A-R', type: 'FOO' } }
 
     let(:pattern_empty) do
       {

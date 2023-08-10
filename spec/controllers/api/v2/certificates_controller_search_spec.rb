@@ -69,5 +69,65 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
 
       it { expect(do_response.body).to match_json_expression pattern }
     end
+
+    context 'when searching by type' do
+      let(:params) { { type: certificate.certificate_type_code } }
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'is required when filtering by type',
+              'detail' => 'Code is required when filtering by type',
+              'source' => { 'pointer' => '/data/attributes/code' },
+            },
+          ],
+        }
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+      it { expect(do_response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching by id' do
+      let(:params) { { code: certificate.certificate_code } }
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'is required when filtering by code',
+              'detail' => 'Type is required when filtering by code',
+              'source' => { 'pointer' => '/data/attributes/type' },
+            },
+          ],
+        }
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+      it { expect(do_response.body).to match_json_expression pattern }
+    end
+
+    context 'when searching with no params' do
+      let(:params) { {} }
+
+      let(:pattern) do
+        {
+          'errors' => [
+            {
+              'status' => 422,
+              'title' => 'Please supply a description or a type and a code value',
+              'detail' => 'Description Please supply a description or a type and a code value',
+              'source' => { 'pointer' => '/data/attributes/description' },
+            },
+          ],
+        }
+      end
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+      it { expect(do_response.body).to match_json_expression pattern }
+    end
   end
 end

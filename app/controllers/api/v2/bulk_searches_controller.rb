@@ -10,7 +10,7 @@ module Api
           @serialized_result = Api::V2::BulkSearch::ResultCollectionSerializer.new(@result).serializable_hash
           render json: @serialized_result, status: :accepted, location: api_bulk_search_path(@result)
         else
-          @serialized_result = ::BulkSearch::ErrorSerializationService.new(@result.searches).call
+          @serialized_result = Api::Search::ErrorSerializationService.new(@result.searches).call
 
           render json: @serialized_result, status: :unprocessable_entity
         end

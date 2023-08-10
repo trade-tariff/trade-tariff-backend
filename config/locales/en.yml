@@ -1,1 +1,13 @@
 en:
+  activemodel:
+    errors:
+      models:
+        search_validator:
+          attributes:
+            type:
+              blank: is required when filtering by code
+            code:
+              blank: is required when filtering by type
+            description:
+              blank: Please supply a description or a type and a code value
+
