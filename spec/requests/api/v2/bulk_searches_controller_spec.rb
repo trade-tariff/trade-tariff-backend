@@ -53,7 +53,6 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
               'status' => 422,
               'title' => '900 is not a valid number of digits',
               'detail' => 'Number of digits 900 is not a valid number of digits',
-              'source' => { 'pointer' => '/data/attributes/number_of_digits' },
             },
           ],
         }

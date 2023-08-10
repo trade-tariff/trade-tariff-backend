@@ -9,5 +9,4 @@ en:
             code:
               blank: is required when filtering by type
             description:
-              blank: Please supply a description or a type and a code value
-
+              blank: is required when code and type are missing

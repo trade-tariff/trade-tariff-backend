@@ -80,7 +80,6 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
               'status' => 422,
               'title' => 'is required when filtering by type',
               'detail' => 'Code is required when filtering by type',
-              'source' => { 'pointer' => '/data/attributes/code' },
             },
           ],
         }
@@ -100,7 +99,6 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
               'status' => 422,
               'title' => 'is required when filtering by code',
               'detail' => 'Type is required when filtering by code',
-              'source' => { 'pointer' => '/data/attributes/type' },
             },
           ],
         }
@@ -118,9 +116,8 @@ RSpec.describe Api::V2::CertificatesController, type: :controller do
           'errors' => [
             {
               'status' => 422,
-              'title' => 'Please supply a description or a type and a code value',
-              'detail' => 'Description Please supply a description or a type and a code value',
-              'source' => { 'pointer' => '/data/attributes/description' },
+              'title' => 'is required when code and type are missing',
+              'detail' => 'Description is required when code and type are missing',
             },
           ],
         }

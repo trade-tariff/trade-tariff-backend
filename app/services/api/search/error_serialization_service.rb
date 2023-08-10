@@ -28,9 +28,6 @@ module Api
           status: DEFAULT_ERROR_STATUS_CODE,
           title: message,
           detail: "#{attribute.to_s.humanize} #{message}",
-          source: {
-            pointer: "/data/attributes/#{attribute}",
-          },
         }
       end
     end
