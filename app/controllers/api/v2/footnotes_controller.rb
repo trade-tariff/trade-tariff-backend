@@ -2,7 +2,11 @@ module Api
   module V2
     class FootnotesController < ApiController
       def search
-        render json: serialized_footnotes
+        if search_validator.valid?
+          render json: serialized_footnotes
+        else
+          render json: serialized_errors, status: :unprocessable_entity
+        end
       end
 
       private
@@ -32,6 +36,14 @@ module Api
 
       def footnote_search_params
         params.permit(:type, :code, :description)
+      end
+
+      def search_validator
+        @search_validator ||= SearchValidator.new(footnote_search_params)
+      end
+
+      def serialized_errors
+        Api::Search::ErrorSerializationService.new(search_validator).call
       end
     end
   end

@@ -1,4 +1,4 @@
-RSpec.describe BulkSearch::ErrorSerializationService do
+RSpec.describe Api::Search::ErrorSerializationService do
   describe '#call' do
     subject(:result) { described_class.new(searches).call }
 
@@ -12,13 +12,11 @@ RSpec.describe BulkSearch::ErrorSerializationService do
               status: 422,
               title: ' is not a valid number of digits',
               detail: 'Number of digits  is not a valid number of digits',
-              source: { pointer: '/data/attributes/number_of_digits' },
             },
             {
               status: 422,
               title: "can't be blank",
               detail: "Input description can't be blank",
-              source: { pointer: '/data/attributes/input_description' },
             },
           ],
         }

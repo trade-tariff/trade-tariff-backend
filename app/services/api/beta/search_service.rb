@@ -1,7 +1,7 @@
 module Api
   module Beta
     class SearchService
-      DEFAULT_SEARCH_INDEX = Search::GoodsNomenclatureIndex.new.name
+      DEFAULT_SEARCH_INDEX = ::Search::GoodsNomenclatureIndex.new.name
       SHORT_CODE_MATCH = /^(\d+)(-\d{2})?$/
 
       def initialize(search_query, search_params = {})

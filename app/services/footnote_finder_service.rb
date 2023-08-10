@@ -19,7 +19,7 @@ class FootnoteFinderService
   end
 
   def call
-    return [] if description_types_and_ids.empty? && (type.blank? || id.blank?)
+    return [] if description_types_and_ids.empty? && type.blank? && id.blank?
     return [] if goods_nomenclature_sids.empty?
 
     Api::V2::FootnoteSearch::FootnotePresenter.wrap(
