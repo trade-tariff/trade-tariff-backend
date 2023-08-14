@@ -1,8 +1,8 @@
 locals {
   no_reply = "no-reply@trade-tariff.service.gov.uk"
-}
 
-locals {
+  worker_command = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
+
   backend_common_vars = [
     {
       name  = "PORT"

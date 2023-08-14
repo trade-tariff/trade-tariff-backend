@@ -1,5 +1,5 @@
 module "worker_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.8.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.10.0"
 
   service_name  = "worker-xi"
   service_count = var.service_count
@@ -9,7 +9,6 @@ module "worker_xi" {
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
   security_groups           = [data.aws_security_group.this.id]
-  target_group_arn          = data.aws_lb_target_group.this["backend-xi-tg-${var.environment}"].arn
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   min_capacity = var.min_capacity
@@ -34,6 +33,9 @@ module "worker_xi" {
   ]
 
   enable_ecs_exec = true
+
+  container_entrypoint = [""]
+  container_command    = local.worker_command
 
   service_environment_config = flatten([local.backend_common_vars,
     [
@@ -60,10 +62,6 @@ module "worker_xi" {
       {
         name  = "VCAP_APPLICATION"
         value = "{}"
-      },
-      {
-        name  = "command"
-        value = "[tail, -f, /dev/null]"
       }
     ]
   ])
