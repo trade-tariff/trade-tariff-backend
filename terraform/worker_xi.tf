@@ -35,7 +35,7 @@ module "worker_xi" {
 
   enable_ecs_exec = true
 
-  container_command = ["bundle exec sidekiq -C ./config/sidekiq.yml"]
+  container_command = ["/bin/sh", "bundle exec sidekiq -C ./config/sidekiq.yml"]
 
   service_environment_config = flatten([local.backend_common_vars,
     [
