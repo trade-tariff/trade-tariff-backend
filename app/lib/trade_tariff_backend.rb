@@ -242,6 +242,18 @@ module TradeTariffBackend
       ENV.fetch('ELASTICSEARCH_URL', 'http://localhost:9200')
     end
 
+    def xe_api_url
+      ENV['XE_API_URL']
+    end
+
+    def xe_api_username
+      ENV['XE_API_USERNAME']
+    end
+
+    def xe_api_password
+      ENV['XE_API_PASSWORD']
+    end
+
     def opensearch_debug
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end
