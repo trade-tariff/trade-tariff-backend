@@ -64,7 +64,7 @@ RSpec.describe RulesOfOrigin::Proof do
     let(:scheme) { build :rules_of_origin_scheme, scheme_set: }
     let(:proof_urls) { { 'origin-declaration' => 'https://www.gov.uk/' } }
     let(:proof_class) { 'origin-declaration' }
-    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet, proof_urls: }
+    let(:scheme_set) { instance_double RulesOfOrigin::TradingScheme, proof_urls: }
 
     context 'without proof_class' do
       let(:proof_class) { nil }
@@ -104,7 +104,7 @@ RSpec.describe RulesOfOrigin::Proof do
 
     let(:scheme) { build :rules_of_origin_scheme, scheme_set: }
     let(:proof_class) { 'origin-declaration' }
-    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet, read_referenced_file: 'foobar' }
+    let(:scheme_set) { instance_double RulesOfOrigin::TradingScheme, read_referenced_file: 'foobar' }
 
     context 'when assigned directly' do
       let(:proof) { build :rules_of_origin_proof, proof_class:, scheme: }

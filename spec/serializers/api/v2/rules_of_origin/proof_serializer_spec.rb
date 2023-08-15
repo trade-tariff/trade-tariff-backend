@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::RulesOfOrigin::ProofSerializer do
   subject(:serializable) { described_class.new(proof).serializable_hash }
 
-  let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet, proof_urls: urls }
+  let(:scheme_set) { instance_double RulesOfOrigin::TradingScheme, proof_urls: urls }
   let(:scheme) { build :rules_of_origin_scheme, scheme_set: }
   let(:proof) { build :rules_of_origin_proof, scheme: }
   let(:urls) { { 'origin-declaration' => 'https://www.gov.uk/' } }

@@ -4,7 +4,7 @@ unless RSpec.configuration.filter.opposite.rules[:roo_data]
   RSpec.describe 'Rules of Origin Data', :roo_data do
     describe 'v2 rulesets' do
       %w[uk xi].each do |service|
-        RulesOfOrigin::SchemeSet::DEFAULT_SOURCE_PATH
+        RulesOfOrigin::TradingScheme::DEFAULT_SOURCE_PATH
           .join("roo_schemes_#{service}", 'rule_sets')
           .children
           .each do |data_set_json|
@@ -24,7 +24,7 @@ unless RSpec.configuration.filter.opposite.rules[:roo_data]
     end
 
     describe 'UK articles' do
-      RulesOfOrigin::SchemeSet::DEFAULT_SOURCE_PATH
+      RulesOfOrigin::TradingScheme::DEFAULT_SOURCE_PATH
         .join('roo_schemes_uk', 'articles')
         .children
         .select(&:directory?)

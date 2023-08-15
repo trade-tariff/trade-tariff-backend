@@ -15,7 +15,7 @@ module RulesOfOrigin
     private
 
       def default_scheme_set
-        RulesOfOrigin::SchemeSet.from_default_file(TradeTariffBackend.service)
+        RulesOfOrigin::TradingScheme.from_default_file(TradeTariffBackend.service)
       end
 
       def default_rule_set

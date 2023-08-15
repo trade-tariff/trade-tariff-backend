@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :rules_of_origin_scheme_set, class: 'RulesOfOrigin::SchemeSet' do
+  factory :rules_of_origin_scheme_set, class: 'RulesOfOrigin::TradingScheme' do
     initialize_with { new base_path, scheme_data.to_json }
 
     transient do

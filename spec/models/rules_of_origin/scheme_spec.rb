@@ -212,7 +212,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     end
 
     let(:intro_file) { 'intro.md' }
-    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
+    let(:scheme_set) { instance_double RulesOfOrigin::TradingScheme }
 
     it 'will read the referenced file' do
       expect(scheme).to have_attributes fta_intro: 'fta intro content'
@@ -239,7 +239,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     end
 
     let(:notes_file) { 'notes.md' }
-    let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
+    let(:scheme_set) { instance_double RulesOfOrigin::TradingScheme }
 
     it 'will read the referenced file' do
       expect(scheme).to \
