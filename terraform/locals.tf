@@ -128,14 +128,14 @@ locals {
   backend_uk_common_secrets = [
     {
       name      = "REDIS_URL"
-      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn # TODO: Replace with UK-specific redis connection string
+      valueFrom = data.aws_secretsmanager_secret.redis_uk_connection_string.arn
     },
   ]
 
   backend_xi_common_secrets = [
     {
       name      = "REDIS_URL"
-      valueFrom = data.aws_secretsmanager_secret.redis_connection_string.arn # TODO: Replace with XI-specific redis connection string
+      valueFrom = data.aws_secretsmanager_secret.redis_xi_connection_string.arn
     },
   ]
 

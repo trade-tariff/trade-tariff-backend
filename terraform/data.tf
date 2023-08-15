@@ -38,8 +38,12 @@ data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
 }
 
-data "aws_secretsmanager_secret" "redis_connection_string" {
-  name = "redis-backend-connection-string"
+data "aws_secretsmanager_secret" "redis_uk_connection_string" {
+  name = "redis-backend-uk-connection-string"
+}
+
+data "aws_secretsmanager_secret" "redis_xi_connection_string" {
+  name = "redis-backend-xi-connection-string"
 }
 
 data "aws_secretsmanager_secret" "database_connection_string" {
