@@ -64,6 +64,10 @@ data "aws_secretsmanager_secret" "sync_password" {
   name = "backend-sync-password"
 }
 
+data "aws_secretsmanager_secret" "sync_username" {
+  name = "backend-sync-username"
+}
+
 data "aws_secretsmanager_secret" "oauth_id" {
   name = "backend-oauth-id"
 }
