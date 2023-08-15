@@ -1,7 +1,8 @@
 module ExchangeRates
   class UpdateCurrencyRatesService
-    def initialize
-      @xe_api = XeApi.new
+    def initialize(date: Time.zone.today)
+      @date = date
+      @xe_api = XeApi.new(date: @date)
     end
 
     def call
@@ -24,8 +25,8 @@ module ExchangeRates
       currency_code = currency_data['quotecurrency']
       rate_value = currency_data['mid']
 
-      validity_start_date = Time.zone.today.beginning_of_month
-      validity_end_date = Time.zone.today.end_of_month
+      validity_start_date = @date.next_month.beginning_of_month
+      validity_end_date = @date.next_month.end_of_month
 
       if ExchangeRateCurrency.where(currency_code:).any?
         ExchangeRateCurrencyRate.create(
