@@ -313,8 +313,6 @@ jobs:
     parameters:
       space:
         type: string
-      service:
-        type: string
     docker:
       - image: cimg/base:current-22.04
     steps:
@@ -332,15 +330,15 @@ jobs:
       - run:
           name: "Dump whole database"
           command: |
-            cf conduit tariff-<< parameters.service >>-<< parameters.space >>-postgres -- pg_dump --file tariff-<< parameters.service >>-<< parameters.space >>-postgres.sql --no-acl --no-owner --clean --verbose
+            cf conduit tariff-merged-<< parameters.space >>-postgres -- pg_dump --file tariff-merged-<< parameters.space >>-postgres.sql --no-acl --no-owner --clean --verbose
       - run:
           name: "Compress dump"
           command: |
-            zip tariff-<< parameters.service >>-<< parameters.space >>.sql.zip tariff-<< parameters.service >>-<< parameters.space >>-postgres.sql
+            zip tariff-merged-<< parameters.space >>.sql.zip tariff-merged-<< parameters.space >>-postgres.sql
       - run:
           name: "Persist dump"
           command: |
-            aws s3 cp tariff-<< parameters.service >>-<< parameters.space >>.sql.zip s3://$DATABASE_BACKUPS_BUCKET_NAME/snapshots/
+            aws s3 cp tariff-merged-<< parameters.space >>.sql.zip s3://$DATABASE_BACKUPS_BUCKET_NAME/snapshots/
 
   renew_search_references:
     parameters:
@@ -825,46 +823,29 @@ workflows:
     jobs:
       - flaky_tests:
           context: trade-tariff
-  # sunday:
-  #   triggers:
-  #     - schedule:
-  #         # Every Sunday at 2.30 PM UTC
-  #         cron: "30 2 * * 0"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #   jobs:
-  #     - dump_and_persist_database:
-  #         name: uk_development_dump_and_persist_database
-  #         context: trade-tariff
-  #         service: uk
-  #         space: development
-  #     - dump_and_persist_database:
-  #         name: xi_development_dump_and_persist_database
-  #         context: trade-tariff
-  #         service: xi
-  #         space: development
-  #     - dump_and_persist_database:
-  #         name: uk_staging_dump_and_persist_database
-  #         context: trade-tariff
-  #         service: uk
-  #         space: staging
-  #     - dump_and_persist_database:
-  #         name: xi_staging_dump_and_persist_database
-  #         context: trade-tariff
-  #         service: xi
-  #         space: staging
-  #     - dump_and_persist_database:
-  #         name: uk_production_dump_and_persist_database
-  #         context: trade-tariff
-  #         service: uk
-  #         space: production
-  #     - dump_and_persist_database:
-  #         name: xi_production_dump_and_persist_database
-  #         context: trade-tariff
-  #         service: xi
-  #         space: production
+  sunday:
+    triggers:
+      - schedule:
+          # Every Sunday at 2.30 PM UTC
+          cron: "30 2 * * 0"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - dump_and_persist_database:
+          name: development_dump_and_persist_database
+          context: trade-tariff
+          space: development
+      - dump_and_persist_database:
+          name: staging_dump_and_persist_database
+          context: trade-tariff
+          space: staging
+      - dump_and_persist_database:
+          name: production_dump_and_persist_database
+          context: trade-tariff
+          space: production
+
   # daily:
   #   triggers:
   #     - schedule:
