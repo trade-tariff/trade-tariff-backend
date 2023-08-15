@@ -8,7 +8,8 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           :with_links,
           :with_origin_reference_document,
           scheme_set:,
-          unilateral: true
+          unilateral: true,
+          show_proofs_for_geographical_areas: ['AU']
   end
 
   let :serializer do
@@ -29,6 +30,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemeSerializer do
           unilateral: true,
           proof_intro: nil,
           proof_codes: {},
+          show_proofs_for_geographical_areas: ['AU']
         },
         relationships: {
           links: {
