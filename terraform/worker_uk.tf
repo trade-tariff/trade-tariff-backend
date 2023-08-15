@@ -37,7 +37,9 @@ module "worker_uk" {
   container_entrypoint = [""]
   container_command    = local.worker_command
 
-  service_environment_config = flatten([local.backend_common_vars,
+  service_environment_config = flatten([
+    local.backend_common_vars,
+    local.backend_common_worker_vars,
     [
       {
         name  = "CDS"

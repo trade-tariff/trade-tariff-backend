@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 data "aws_vpc" "vpc" {
   tags = { Name = "trade_tariff_${var.environment}_vpc" }
 }
