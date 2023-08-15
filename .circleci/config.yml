@@ -824,14 +824,14 @@ workflows:
       - flaky_tests:
           context: trade-tariff
   sunday:
-    # triggers:
-    #   - schedule:
-    #       # Every Sunday at 2.30 PM UTC
-    #       cron: "30 2 * * 0"
-    #       filters:
-    #         branches:
-    #           only:
-    #             - main
+    triggers:
+      - schedule:
+          # Every Sunday at 2.30 PM UTC
+          cron: "30 2 * * 0"
+          filters:
+            branches:
+              only:
+                - main
     jobs:
       - dump_and_persist_database:
           name: development_dump_and_persist_database
@@ -899,253 +899,253 @@ workflows:
   #         requires:
   #           - dump_search_references
 
-  # ci:
-  #   jobs:
-  #     - write_docker_tag:
-  #         environment: development
+  ci:
+    jobs:
+      - write_docker_tag:
+          environment: development
 
-  #     - linters:
-  #         context: trade-tariff
+      - linters:
+          context: trade-tariff
 
-  #     - test:
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
+      - test:
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
 
-  #     - terraform_fmt_validate:
-  #         context: trade-tariff-terraform-aws-development
-  #         environment: development
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^dependabot/(?!docker/).*/
-  #               - /^hotfix\/.+/
+      - terraform_fmt_validate:
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
 
-  #     - tariff/build-and-push:
-  #         name: build_and_push_dev
-  #         context: trade-tariff-terraform-aws-development
-  #         environment: development
-  #         image_name: tariff-backend
-  #         ssm_parameter: "/development/BACKEND_ECR_URL"
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^dependabot/(?!docker/).*/
-  #               - /^hotfix\/.+/
+      - tariff/build-and-push:
+          name: build_and_push_dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          image_name: tariff-backend
+          ssm_parameter: "/development/BACKEND_ECR_URL"
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
 
-  #     - build:
-  #         name: build_dev
-  #         context: trade-tariff
-  #         dev-build: true
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^dependabot\/(?!docker\/).*/
-  #               - /^hotfix\/.+/
+      - build:
+          name: build_dev
+          context: trade-tariff
+          dev-build: true
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot\/(?!docker\/).*/
+                - /^hotfix\/.+/
 
-  #     - deploy_dev:
-  #         matrix:
-  #           parameters:
-  #             service:
-  #               - xi
-  #               - uk
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^dependabot\/(?!docker\/).*/
-  #               - /^hotfix\/.+/
+      - deploy_dev:
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot\/(?!docker\/).*/
+                - /^hotfix\/.+/
 
-  #         requires:
-  #           # - test
-  #           - build_dev
+          requires:
+            # - test
+            - build_dev
 
-  #     - sync_opensearch_packages:
-  #         name: sync_packages_dev
-  #         space: development
-  #         bucket: trade-tariff-opensearch-packages-development
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^dependabot\/(?!docker\/).*/
-  #               - /^hotfix\/.+/
+      - sync_opensearch_packages:
+          name: sync_packages_dev
+          space: development
+          bucket: trade-tariff-opensearch-packages-development
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot\/(?!docker\/).*/
+                - /^hotfix\/.+/
 
-  #     - smoketest_dev:
-  #         name: smoketest_dev
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^hotfix\/.+/
-  #               - /^dependabot\/(?!docker\/).*/
-  #         requires:
-  #           - deploy_dev
-  #           - sync_packages_dev
+      - smoketest_dev:
+          name: smoketest_dev
+          context: trade-tariff
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^hotfix\/.+/
+                - /^dependabot\/(?!docker\/).*/
+          requires:
+            - deploy_dev
+            - sync_packages_dev
 
-  #     - sync_opensearch_packages:
-  #         name: sync_packages_staging
-  #         space: staging
-  #         bucket: trade-tariff-opensearch-packages-staging
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #               - /^hotfix\/.+/
+      - sync_opensearch_packages:
+          name: sync_packages_staging
+          space: staging
+          bucket: trade-tariff-opensearch-packages-staging
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+                - /^hotfix\/.+/
 
-  #     - build:
-  #         name: build_live
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #               - /^hotfix\/.+/
+      - build:
+          name: build_live
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+                - /^hotfix\/.+/
 
-  #     - plan_terraform:
-  #         context: trade-tariff-terraform-aws-development
-  #         environment: development
-  #         requires:
-  #           - write_docker_tag
-  #           - terraform_fmt_validate
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - main
-  #               - /^dependabot/(?!docker/).*/
-  #               - /^hotfix\/.+/
+      - plan_terraform:
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          requires:
+            - write_docker_tag
+            - terraform_fmt_validate
+          filters:
+            branches:
+              ignore:
+                - main
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
 
-  #     - apply_terraform:
-  #         context: trade-tariff-terraform-aws-development
-  #         name: apply_terraform
-  #         environment: development
-  #         requires:
-  #           - plan_terraform
-  #           - build_and_push_dev
-  #         filters:
-  #           branches:
-  #             ignore:
-  #               - /^dependabot/(?!docker/).*/
-  #               - /^hotfix\/.+/
+      - apply_terraform:
+          context: trade-tariff-terraform-aws-development
+          name: apply_terraform
+          environment: development
+          requires:
+            - plan_terraform
+            - build_and_push_dev
+          filters:
+            branches:
+              ignore:
+                - /^dependabot/(?!docker/).*/
+                - /^hotfix\/.+/
 
-  #     - deploy_main_to_staging:
-  #         matrix:
-  #           parameters:
-  #             service:
-  #               - xi
-  #               - uk
-  #         context: trade-tariff
-  #         requires:
-  #           - build_live
+      - deploy_main_to_staging:
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          requires:
+            - build_live
 
-  #     - smoketest_staging:
-  #         name: smoketest_staging
-  #         context: trade-tariff
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #               - /^hotfix\/.+/
-  #         requires:
-  #           - sync_packages_staging
-  #           - deploy_main_to_staging
+      - smoketest_staging:
+          name: smoketest_staging
+          context: trade-tariff
+          filters:
+            branches:
+              only:
+                - main
+                - /^hotfix\/.+/
+          requires:
+            - sync_packages_staging
+            - deploy_main_to_staging
 
-  #     - hold_create_release:
-  #         type: approval
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #               - /^hotfix\/.+/
-  #         requires:
-  #           - deploy_main_to_staging
+      - hold_create_release:
+          type: approval
+          filters:
+            branches:
+              only:
+                - main
+                - /^hotfix\/.+/
+          requires:
+            - deploy_main_to_staging
 
-  #     - tariff/create-production-release:
-  #         context: trade-tariff
-  #         image-name: tariff-backend
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  #               - /^hotfix\/.+/
-  #         requires:
-  #           - hold_create_release
+      - tariff/create-production-release:
+          context: trade-tariff
+          image-name: tariff-backend
+          filters:
+            branches:
+              only:
+                - main
+                - /^hotfix\/.+/
+          requires:
+            - hold_create_release
 
-  #     - deploy_release_to_staging:
-  #         matrix:
-  #           parameters:
-  #             service:
-  #               - xi
-  #               - uk
-  #         context: trade-tariff
-  #         filters:
-  #           tags:
-  #             only: /^release-202[\d-]+/
-  #           branches:
-  #             ignore: /.*/
+      - deploy_release_to_staging:
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
 
-  #     - smoketest_staging:
-  #         name: smoketest_release_to_staging
-  #         context: trade-tariff
-  #         filters:
-  #           tags:
-  #             only: /^release-202[\d-]+/
-  #           branches:
-  #             ignore: /.*/
-  #         requires:
-  #           - deploy_release_to_staging
+      - smoketest_staging:
+          name: smoketest_release_to_staging
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - deploy_release_to_staging
 
-  #     - hold_deploy_production:
-  #         type: approval
-  #         filters:
-  #           tags:
-  #             only: /^release-202[\d-]+/
-  #           branches:
-  #             ignore: /.*/
+      - hold_deploy_production:
+          type: approval
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
 
-  #     - sync_opensearch_packages:
-  #         name: sync_packages_production
-  #         space: production
-  #         bucket: trade-tariff-opensearch-packages-production
-  #         context: trade-tariff
-  #         filters:
-  #           tags:
-  #             only: /^release-202[\d-]+/
-  #           branches:
-  #             ignore: /.*/
-  #         requires:
-  #           - hold_deploy_production
+      - sync_opensearch_packages:
+          name: sync_packages_production
+          space: production
+          bucket: trade-tariff-opensearch-packages-production
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - hold_deploy_production
 
-  #     - deploy_production:
-  #         matrix:
-  #           parameters:
-  #             service:
-  #               - xi
-  #               - uk
-  #         context: trade-tariff
-  #         filters:
-  #           tags:
-  #             only: /^release-202[\d-]+/
-  #           branches:
-  #             ignore: /.*/
-  #         requires:
-  #           - hold_deploy_production
+      - deploy_production:
+          matrix:
+            parameters:
+              service:
+                - xi
+                - uk
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - hold_deploy_production
 
-  #     - notify_production_deployment:
-  #         context: trade-tariff
-  #         filters:
-  #           tags:
-  #             only: /^release-202[\d-]+/
-  #           branches:
-  #             ignore: /.*/
-  #         requires:
-  #           - deploy_production
+      - notify_production_deployment:
+          context: trade-tariff
+          filters:
+            tags:
+              only: /^release-202[\d-]+/
+            branches:
+              ignore: /.*/
+          requires:
+            - deploy_production
