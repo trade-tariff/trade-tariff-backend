@@ -161,6 +161,10 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.secret_key_base.arn
     },
     {
+      name      = "TARIFF_SYNC_USERNAME"
+      valueFrom = data.aws_secretsmanager_secret.sync_username.arn
+    },
+    {
       name      = "TARIFF_SYNC_PASSWORD"
       valueFrom = data.aws_secretsmanager_secret.sync_password.arn
     },
