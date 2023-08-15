@@ -8,8 +8,13 @@ module Api
 
         set_id :scheme_code
 
-        attributes :scheme_code, :title, :countries, :unilateral,
-                   :proof_intro, :proof_codes
+        attributes :scheme_code,
+                   :title,
+                   :countries,
+                   :unilateral,
+                   :proof_intro,
+                   :proof_codes,
+                   :show_proofs_for_geographical_areas
 
         has_many :links, serializer: Api::V2::RulesOfOrigin::LinkSerializer
         has_many :proofs, serializer: Api::V2::RulesOfOrigin::ProofSerializer
