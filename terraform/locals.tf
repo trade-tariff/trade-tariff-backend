@@ -1,6 +1,6 @@
 locals {
-  no_reply = "no-reply@trade-tariff.service.gov.uk"
-
+  account_id     = data.aws_caller_identity.current.account_id
+  no_reply       = "no-reply@trade-tariff.service.gov.uk"
   worker_command = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
 
   backend_common_vars = [
@@ -18,7 +18,7 @@ locals {
     },
     {
       name  = "AWS_BUCKET_NAME"
-      value = "trade-tariff-persistence-${var.environment}"
+      value = "trade-tariff-persistence-${var.environment}-${local.account_id}"
     },
     {
       name  = "BETA_SEARCH_MAX_HITS"
@@ -82,7 +82,7 @@ locals {
     },
     {
       name  = "SPELLING_CORRECTOR_BUCKET_NAME"
-      value = "trade-tariff-search-configuration-${var.environment}"
+      value = "trade-tariff-search-configuration-${var.environment}-${local.account_id}"
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
@@ -110,20 +110,20 @@ locals {
     }
   ]
 
-  # backend_common_worker_vars = [
-  #   {
-  #     name  = "TARIFF_SYNC_EMAIL"
-  #     value = "trade-tariff-support@enginegroup.com"
-  #   },
-  #   {
-  #     name  = "TARIFF_SYNC_HOST"
-  #     value = "https://webservices.hmrc.gov.uk"
-  #   },
-  #   {
-  #     name  = "SLACK_CHANNEL"
-  #     value = "#tariffs-etl"
-  #   },
-  # ]
+  backend_common_worker_vars = [
+    {
+      name  = "TARIFF_SYNC_EMAIL"
+      value = "trade-tariff-support@enginegroup.com"
+    },
+    {
+      name  = "TARIFF_SYNC_HOST"
+      value = "https://webservices.hmrc.gov.uk"
+    },
+    {
+      name  = "SLACK_CHANNEL"
+      value = "#tariffs-etl"
+    },
+  ]
 
   backend_uk_common_secrets = [
     {
