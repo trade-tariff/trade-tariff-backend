@@ -82,7 +82,7 @@ locals {
     },
     {
       name  = "SPELLING_CORRECTOR_BUCKET_NAME"
-      value = "trade-tariff-search-configuration-${var.environment}-${local.account_id}"
+      value = "trade-tariff-search-configuration-${local.account_id}"
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
