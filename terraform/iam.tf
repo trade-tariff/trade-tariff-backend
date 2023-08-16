@@ -50,6 +50,11 @@ data "aws_iam_policy_document" "secrets" {
   }
 }
 
+resource "aws_iam_policy" "secrets" {
+  name   = "backend-execution-role-secrets-policy"
+  policy = data.aws_iam_policy_document.secrets.json
+}
+
 data "aws_iam_policy_document" "exec" {
   statement {
     effect = "Allow"
@@ -67,12 +72,26 @@ data "aws_iam_policy_document" "exec" {
   }
 }
 
-resource "aws_iam_policy" "secrets" {
-  name   = "backend-execution-role-secrets-policy"
-  policy = data.aws_iam_policy_document.secrets.json
-}
-
 resource "aws_iam_policy" "exec" {
   name   = "backend-task-role-exec-policy"
   policy = data.aws_iam_policy_document.exec.json
+}
+
+data "aws_iam_policy_document" "spelling_corrector_bucket" {
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:ListBucket"]
+    resources = [data.aws_s3_bucket.spelling_corrector.arn]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["s3:PutObject"]
+    resources = ["${data.aws_s3_bucket.spelling_corrector.arn}/*"]
+  }
+}
+
+resource "aws_iam_policy" "s3" {
+  name   = "backend-task-role-s3-policy"
+  policy = data.aws_iam_policy_document.spelling_corrector_bucket.json
 }

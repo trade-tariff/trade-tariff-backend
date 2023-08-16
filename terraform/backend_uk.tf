@@ -26,7 +26,8 @@ module "backend_uk" {
   memory = var.memory
 
   task_role_policy_arns = [
-    aws_iam_policy.exec.arn
+    aws_iam_policy.exec.arn,
+    aws_iam_policy.s3.arn
   ]
 
   execution_role_policy_arns = [
