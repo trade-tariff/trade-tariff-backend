@@ -77,5 +77,5 @@ data "aws_secretsmanager_secret" "oauth_secret" {
 }
 
 data "aws_s3_bucket" "spelling_corrector" {
-  bucket = "trade-tariff-search-configuration-${var.environment}-${local.account_id}"
+  bucket = "trade-tariff-search-configuration-${local.account_id}"
 }
