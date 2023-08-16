@@ -10,7 +10,7 @@ module RulesOfOrigin
 
     attr_reader :cumulation_methods, :validity_start_date, :validity_end_date
 
-    attr_writer :rule_sets, :proof_codes
+    attr_writer :rule_sets, :proof_codes, :show_proofs_for_geographical_areas
 
     delegate :read_referenced_file, to: :scheme_set
 
@@ -23,6 +23,10 @@ module RulesOfOrigin
 
     def links
       @links || []
+    end
+
+    def show_proofs_for_geographical_areas
+      @show_proofs_for_geographical_areas || []
     end
 
     def cumulation_methods=(cumulation_methods_data)

@@ -2,6 +2,7 @@
 
 module RulesOfOrigin
   class SchemeSet
+    # Scheme in this context is the Trading Scheme and not a scheme that provide a validation
     DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
 
     attr_reader :base_path, :links, :proof_urls

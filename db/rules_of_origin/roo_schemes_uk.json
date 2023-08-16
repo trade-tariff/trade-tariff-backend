@@ -441,6 +441,9 @@
             ],
             "countries": [
                 "AU"
+            ],
+            "show_proofs_for_geographical_areas": [
+                "AU"
             ]
         },
         {
@@ -3157,6 +3160,9 @@
             ],
             "countries": [
                 "NZ"
+            ],
+            "show_proofs_for_geographical_areas": [
+                "NZ"
             ]
         },
         {
@@ -5204,6 +5210,9 @@
                 "TZ",
                 "YE",
                 "ZM"
+            ],
+            "show_proofs_for_geographical_areas": [
+                "1062"
             ]
         },
         {
@@ -5376,6 +5385,10 @@
                 "PH",
                 "LK",
                 "UZ"
+            ],
+            "show_proofs_for_geographical_areas": [
+                "1060",
+                "1061"
             ]
         }
     ],
