@@ -26,4 +26,9 @@ namespace :exchange_rates do
       ExchangeRateCountry.populate
     end
   end
+
+  desc 'Import old data into files'
+  task import_old_data: %w[environment] do
+    ExchangeRate::CreateOldFilesService.call
+  end
 end
