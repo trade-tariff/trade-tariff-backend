@@ -12,7 +12,7 @@ RSpec.describe Api::V2::SearchController do
       before do
         goods_nomenclature = create :chapter, goods_nomenclature_item_id: '0100000000'
 
-        create(:search_suggestion, goods_nomenclature:)
+        create(:search_suggestion, :goods_nomenclature, goods_nomenclature:)
 
         post :search, params: { q: '01', as_of: Time.zone.today.iso8601 }
       end
@@ -112,7 +112,7 @@ RSpec.describe Api::V2::SearchController do
         {
           'data' => [
             {
-              'id' => 'test',
+              'id' => be_present,
               'type' => 'search_suggestion',
               'attributes' => {
                 'value' => 'same',
