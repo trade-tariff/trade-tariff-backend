@@ -6,15 +6,17 @@ module ExchangeRates
 
     def initialize(type)
       @current_time = Time.zone.now
-      @month = current_time.month
+      @month = current_time.next_month.month
       @year = current_time.year
       @type = type
     end
 
     def call
-      return unless penultimate_thursday?
-
       data_result = ::ExchangeRateCurrencyRate.for_month(month, year)
+
+      if data_result.empty?
+        raise DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}."
+      end
 
       case type
       when :csv
@@ -42,13 +44,7 @@ module ExchangeRates
 
       Rails.logger.info(info_message)
     end
-
-    def penultimate_thursday?
-      return false unless current_time.thursday?
-      return false unless current_time.month == 7.days.from_now.month
-      return false unless current_time.month != 14.days.from_now.month
-
-      true
-    end
   end
+
+  class DataNotFoundError < StandardError; end
 end

@@ -4,7 +4,6 @@ class MonthlyExchangeRatesWorker
   sidekiq_options retry: false
 
   def perform
-    ExchangeRates::UploadMonthlyFileService.call(:csv)
-    ExchangeRates::UploadMonthlyFileService.call(:xml)
+    ExchangeRates::MonthlyExchangeRatesService.call
   end
 end
