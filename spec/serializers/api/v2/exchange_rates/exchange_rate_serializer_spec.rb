@@ -1,22 +1,26 @@
 RSpec.describe Api::V2::ExchangeRates::ExchangeRateSerializer do
-  subject(:serializable) { described_class.new(exchange_rate).serializable_hash }
+  subject(:serializable) { described_class.new(presented).serializable_hash }
 
-  let(:exchange_rate) { build(:exchange_rate) }
+  let(:presented) do
+    exchange_rate_currency_rate = create(:exchange_rate_currency_rate, currency_code: 'GBP')
+    create(:exchange_rate_currency, currency_code: 'GBP', currency_description: 'Pound Sterling')
 
-  let :expected do
+    Api::V2::ExchangeRates::CurrencyRatePresenter.new(exchange_rate_currency_rate, 6, 2023)
+  end
+
+  let(:expected) do
     {
       data: {
-        id: exchange_rate.id,
+        id: presented.id,
         type: :exchange_rate,
         attributes: {
-          country: exchange_rate.country,
-          country_code: exchange_rate.country_code,
-          currency_description: exchange_rate.currency_description,
-          currency_code: exchange_rate.currency_code,
-          rate: exchange_rate.rate,
-          validity_start_date: exchange_rate.validity_start_date,
-          validity_end_date: exchange_rate.validity_end_date,
+          currency_description: 'Pound Sterling',
+          currency_code: 'GBP',
+          rate: presented.rate,
+          validity_start_date: presented.validity_start_date,
+          validity_end_date: presented.validity_end_date,
         },
+        relationships: { exchange_rate_countries: { data: [] } },
       },
     }
   end

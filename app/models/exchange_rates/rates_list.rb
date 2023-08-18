@@ -20,25 +20,31 @@ module ExchangeRates
 
     class << self
       def build(month, year)
+        exchange_rate_files = exchange_rate_files(month, year)
+
         rates_list = new
         rates_list.year = year
         rates_list.month = month
-        rates_list.publication_date = exchange_rate_files(month, year).first.publication_date
-        rates_list.exchange_rate_files = exchange_rate_files(month, year)
+        rates_list.exchange_rate_files = exchange_rate_files
         rates_list.exchange_rates = exchange_rates(month, year)
         rates_list
       end
 
-      def exchange_rate_files(month, year)
-        files = ExchangeRateFile.where(month:, year:)
-
-        ExchangeRateFile.wrap(files)
+      def exchange_rate_files(period_month, period_year)
+        ExchangeRateFile.where(period_month:, period_year:).all
       end
 
       def exchange_rates(month, year)
-        rates = ExchangeRateCurrencyRate.by_year_and_month(month, year)
+        rates = ExchangeRateCurrencyRate
+          .by_month_and_year(month, year)
+          .scheduled
+          .eager(
+            :exchange_rate_currency,
+            :exchange_rate_countries,
+          )
+          .all
 
-        ExchangeRateCurrencyRate.wrap(rates)
+        Api::V2::ExchangeRates::CurrencyRatePresenter.wrap(rates, month, year)
       end
     end
   end

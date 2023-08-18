@@ -8,10 +8,25 @@ FactoryBot.define do
   end
 
   trait :with_rates_file do
-    exchange_rate_files { build_list :exchange_rate_exchange_rate_file, 1 }
+    exchange_rate_files do
+      build_list(
+        :exchange_rate_file,
+        1,
+        period_month: month,
+        period_year: year,
+      )
+    end
   end
 
   trait :with_exchange_rates do
-    exchange_rates { build_list :exchange_rate, 1 }
+    exchange_rates do
+      start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
+
+      create_list(
+        :exchange_rate_currency_rate,
+        1,
+        validity_start_date: start_of_month,
+      )
+    end
   end
 end

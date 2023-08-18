@@ -15,7 +15,7 @@ module Api
         def serialized_exchange_rates_list
           ExchangeRates::ExchangeRatesListSerializer.new(
             exchange_rates,
-            include: %i[exchange_rates exchange_rate_files],
+            include: %i[exchange_rates.exchange_rate_countries exchange_rate_files],
           ).serializable_hash
         end
 

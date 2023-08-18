@@ -23,7 +23,6 @@ RSpec.describe Api::V2::ExchangeRates::MonthlyExchangeRatesController, type: :re
             attributes: {
               year: 2023,
               month: 6,
-              publication_date: '2023-06-22T00:00:00.000Z',
             },
             relationships: {
               exchange_rate_files: Hash,

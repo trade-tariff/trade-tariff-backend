@@ -60,12 +60,6 @@ RSpec.describe ExchangeRates::RatesList do
 
     let(:files) { build_list(:exchange_rate_file, 1) }
 
-    it 'calls ExchangeRates::RatesList.build with the correct arguments' do
-      allow(ExchangeRateFile).to receive(:wrap).with(exchange_rate_files).and_return([])
-
-      exchange_rate_files
-    end
-
     it 'returns an array' do
       expect(exchange_rate_files).to be_an(Array)
     end
@@ -78,14 +72,20 @@ RSpec.describe ExchangeRates::RatesList do
   describe '.exchange_rates' do
     subject(:exchange_rates) { described_class.exchange_rates(month, year) }
 
-    let(:rates) { build_list(:exchange_rate, 1) }
+    let(:rates) { build_list(:exchange_rate_currency_rate, 1) }
 
     before do
-      allow(ExchangeRateCurrencyRate).to receive(:by_year_and_month).with(month, year).and_return(rates)
+      allow(ExchangeRateCurrencyRate)
+        .to receive(:by_month_and_year)
+        .with(month, year)
+        .and_call_original
     end
 
     it 'calls ExchangeRateCurrencyRate.build with the correct arguments' do
-      allow(ExchangeRateCurrencyRate).to receive(:wrap).with(rates).and_return([])
+      allow(Api::V2::ExchangeRates::CurrencyRatePresenter)
+        .to receive(:wrap)
+        .with(anything, month, year)
+        .and_return([])
 
       exchange_rates
     end

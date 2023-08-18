@@ -10,6 +10,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
   many_to_one :exchange_rate_currency, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCurrency
   one_to_many :exchange_rate_countries, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountry
 
+  delegate :currency_description,
+           to: :exchange_rate_currency,
+           allow_nil: true
+
   def scheduled_rate?
     validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
   end
@@ -38,7 +42,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .distinct(:validity_start_date)
     end
 
-    def by_year_and_month(month, year = Time.zone.today.year)
+    def by_month_and_year(month, year = Time.zone.today.year)
       return if month.blank? || year.blank?
 
       start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
@@ -103,7 +107,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
     end
 
     def for_month(month, year = Time.zone.today.year)
-      by_year_and_month(month, year)
+      by_month_and_year(month, year)
         .scheduled
         .order(Sequel.asc(:validity_start_date))
         .order(Sequel.asc(:currency_code))
