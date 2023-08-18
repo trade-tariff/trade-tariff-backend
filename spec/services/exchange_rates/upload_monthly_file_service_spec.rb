@@ -2,7 +2,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
   subject(:upload_file) { described_class.call(type) }
 
   let(:current_time) { Time.zone.now }
-  let(:month) { current_time.month }
+  let(:month) { current_time.next_month.month }
   let(:year) { current_time.year }
   let(:data_result) { [instance_double('ExchangeRateCurrencyRate')] }
 
@@ -62,22 +62,12 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     end
   end
 
-  context 'when it is not the penultimate Thursday' do
-    before do
-      travel_to Time.zone.local(2023, 7, 6)
-    end
+  context 'when data doesnt exist in the database' do
+    let(:data_result) { [] }
+    let(:type) { :xml }
 
-    let(:type) { :csv }
-
-    it 'does not upload the file', :aggregate_failures do
-      upload_file
-
-      expect(::ExchangeRateCurrencyRate).not_to have_received(:for_month).with(month, year)
-      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
-      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(data_result)
-      expect(TariffSynchronizer::FileService).not_to have_received(:write_file)
-      expect(ExchangeRateFile).not_to have_received(:create)
-      expect(Rails.logger).not_to have_received(:info)
+    it 'raises ArgumentError' do
+      expect { upload_file }.to raise_error(ExchangeRates::DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}.")
     end
   end
 end

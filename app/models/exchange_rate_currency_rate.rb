@@ -1,6 +1,9 @@
 require 'csv'
 
 class ExchangeRateCurrencyRate < Sequel::Model
+  SCHEDULED_RATE_TYPE = 'scheduled'.freeze
+  SPOT_RATE_TYPE = 'spot'.freeze
+
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
@@ -17,11 +20,11 @@ class ExchangeRateCurrencyRate < Sequel::Model
 
   dataset_module do
     def scheduled
-      where(rate_type: 'scheduled')
+      where(rate_type: SCHEDULED_RATE_TYPE)
     end
 
     def spot
-      where(rate_type: 'spot')
+      where(rate_type: SPOT_RATE_TYPE)
     end
 
     def by_year(year)
