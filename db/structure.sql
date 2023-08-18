@@ -7101,7 +7101,7 @@ CREATE TABLE uk.search_suggestions (
     value text NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone,
-    type text,
+    type text NOT NULL,
     priority integer,
     goods_nomenclature_sid integer,
     goods_nomenclature_class text
@@ -9283,7 +9283,7 @@ ALTER TABLE ONLY uk.search_references
 --
 
 ALTER TABLE ONLY uk.search_suggestions
-    ADD CONSTRAINT search_suggestions_pkey PRIMARY KEY (id, value);
+    ADD CONSTRAINT search_suggestions_pkey PRIMARY KEY (id, type);
 
 
 --
@@ -12032,3 +12032,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230731095730_adds_index_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230731202727_adds_additional_code_indexes_to_measures.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230801133145_adds_certificate_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230808103253_adds_footnote_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230817135045_adds_primary_key_for_id_and_type.rb');

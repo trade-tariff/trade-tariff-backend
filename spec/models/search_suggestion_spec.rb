@@ -1,6 +1,12 @@
 RSpec.describe SearchSuggestion do
   describe '#goods_nomenclature' do
-    subject(:goods_nomenclature) { create(:search_suggestion, goods_nomenclature: create(:heading)).goods_nomenclature }
+    subject(:goods_nomenclature) do
+      create(
+        :search_suggestion,
+        :goods_nomenclature,
+        goods_nomenclature: create(:heading),
+      ).goods_nomenclature
+    end
 
     it { is_expected.to be_a(Heading) }
   end
@@ -20,7 +26,7 @@ RSpec.describe SearchSuggestion do
       end
 
       it 'returns search suggestions' do
-        expect(fuzzy_search.pluck(:value)).to eq(
+        expect(fuzzy_search.pluck(:value)).to match_array(
           [
             'alu',
             'aluminium wire',
@@ -110,7 +116,7 @@ RSpec.describe SearchSuggestion do
       let(:query) { '' }
 
       before do
-        create(:search_suggestion, value: '') # control
+        create(:search_suggestion, :goods_nomenclature, value: '') # control
       end
 
       it 'returns an empty array' do
@@ -167,7 +173,6 @@ RSpec.describe SearchSuggestion do
     before do
       create(:search_suggestion, :search_reference, value: 'gold ore')
       create(:search_suggestion, :full_chemical_name, value: 'ore')
-      create(:search_suggestion, value: 'null type')
     end
 
     it { is_expected.to eq(['gold ore', 'ore']) }
@@ -180,7 +185,6 @@ RSpec.describe SearchSuggestion do
       create(:search_suggestion, :goods_nomenclature, value: '1234')
       create(:search_suggestion, :full_chemical_cus, value: '0154438-3')
       create(:search_suggestion, :full_chemical_cas, value: '8028-66-8')
-      create(:search_suggestion, value: '1235')
     end
 
     it { is_expected.to eq(%w[1234 0154438-3 8028-66-8]) }

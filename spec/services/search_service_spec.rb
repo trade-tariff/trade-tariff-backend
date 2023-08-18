@@ -62,7 +62,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :chapter, goods_nomenclature_item_id: '1100000000'
 
-        create :search_suggestion, goods_nomenclature:
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:
       end
 
       it { expect(result).to match_json_expression pattern }
@@ -83,7 +83,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :heading, goods_nomenclature_item_id: '0101000000'
 
-        create :search_suggestion, goods_nomenclature:
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:
       end
 
       it { expect(result).to match_json_expression pattern }
@@ -103,7 +103,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :subheading, goods_nomenclature_item_id: '0101210000'
 
-        create :search_suggestion, goods_nomenclature:
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:
       end
 
       context 'when subheading with suffix' do
@@ -133,7 +133,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :commodity, goods_nomenclature_item_id: '0101210000'
 
-        create :search_suggestion, goods_nomenclature:
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:
       end
 
       context 'when searching by full code' do
@@ -153,7 +153,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :commodity, goods_nomenclature_item_id: '0101210000'
 
-        create :search_suggestion, goods_nomenclature:, value: '8028-66-8'
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:, value: '8028-66-8'
       end
 
       let(:pattern) do
@@ -194,7 +194,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :commodity, goods_nomenclature_item_id: '0101210000'
 
-        create :search_suggestion, goods_nomenclature:, value: '0150000-1'
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:, value: '0150000-1'
       end
 
       it { expect(result).to match_json_expression pattern }
@@ -215,7 +215,7 @@ RSpec.describe SearchService do
       before do
         goods_nomenclature = create :commodity, goods_nomenclature_item_id: '0101210000'
 
-        create :search_suggestion, goods_nomenclature:, value: 'insulin, human'
+        create :search_suggestion, :goods_nomenclature, goods_nomenclature:, value: 'insulin, human'
       end
 
       it { expect(result).to match_json_expression pattern }
@@ -418,6 +418,7 @@ RSpec.describe SearchService do
     describe 'validity period function' do
       before do
         create :search_suggestion,
+               :search_reference,
                goods_nomenclature: heading,
                value: 'water'
       end

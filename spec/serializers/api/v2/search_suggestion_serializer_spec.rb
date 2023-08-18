@@ -11,7 +11,7 @@ RSpec.describe Api::V2::SearchSuggestionSerializer do
     expect(serialized).to include_json(
       {
         data: {
-          id: 'test',
+          id: be_present,
           type: eq(:search_suggestion),
           attributes: {
             value: 'aluminium wire',

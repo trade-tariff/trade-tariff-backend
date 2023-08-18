@@ -34,7 +34,7 @@ RSpec.describe SearchSuggestionPopulatorService do
 
   context 'when the search suggestion already exists' do
     before do
-      create(:search_suggestion, value: 'gold ore')
+      create(:search_suggestion, :search_reference, value: 'gold ore')
     end
 
     it { expect { call }.not_to raise_error }
