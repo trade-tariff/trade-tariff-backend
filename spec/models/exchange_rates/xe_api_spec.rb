@@ -24,10 +24,7 @@ RSpec.describe ExchangeRates::XeApi do
   let(:faraday_mock) { instance_double(Faraday::Connection) }
 
   before do
-    allow(Faraday).to receive(:new).and_return(faraday_mock)
-    allow(TradeTariffBackend).to receive(:xe_api_url).and_return('xeurl.com')
-    allow(TradeTariffBackend).to receive(:xe_api_username).and_return('xeuser')
-    allow(TradeTariffBackend).to receive(:xe_api_password).and_return('xepassword')
+    allow(described_class).to receive(:client).and_return(faraday_mock)
   end
 
   describe '#get_all_historic_rates' do

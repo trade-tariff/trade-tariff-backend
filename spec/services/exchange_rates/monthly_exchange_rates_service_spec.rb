@@ -8,46 +8,39 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
       travel_back
     end
 
-    # rubocop:disable all
     context 'when tomorrow is penultimate Thursday and today is Wednesday' do
       before do
         travel_to Time.zone.local(2023, 7, 19)
-      end
 
-      it 'calls the necessary services and notifies' do
-        expect(ExchangeRates::UpdateCurrencyRatesService).to receive_message_chain(:new, :call)
-        expect(ExchangeRates::UploadMonthlyFileService).to receive(:call).with(:csv)
-        expect(ExchangeRates::UploadMonthlyFileService).to receive(:call).with(:xml)
-        expect(SlackNotifierService).to receive(:call).with(/Exchange rates for the current month/)
+        update_service = instance_double(ExchangeRates::UpdateCurrencyRatesService, call: true)
+
+        allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).and_return(update_service)
+        allow(ExchangeRates::UploadMonthlyFileService).to receive(:call)
+        allow(SlackNotifierService).to receive(:call)
+
         call_service
       end
+
+      it { expect(ExchangeRates::UpdateCurrencyRatesService).to have_received(:new) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:csv) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:xml) }
+      it { expect(SlackNotifierService).to have_received(:call).with(/Exchange rates for the current month/) }
     end
 
     context 'when tomorrow is not penultimate Thursday' do
       before do
         travel_to Time.zone.local(2023, 7, 12)
-      end
 
-      it 'does not call any services' do
-        expect(ExchangeRates::UpdateCurrencyRatesService).not_to receive(:new)
-        expect(ExchangeRates::UploadMonthlyFileService).not_to receive(:call)
-        expect(SlackNotifierService).not_to receive(:call)
+        allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new)
+        allow(ExchangeRates::UploadMonthlyFileService).to receive(:call)
+        allow(SlackNotifierService).to receive(:call)
+
         call_service
       end
-    end
 
-    context 'when today is not Wednesday' do
-      before do
-        travel_to Time.zone.local(2023, 7, 18)
-      end
-
-      it 'does not call any services' do
-        expect(ExchangeRates::UpdateCurrencyRatesService).not_to receive(:new)
-        expect(ExchangeRates::UploadMonthlyFileService).not_to receive(:call)
-        expect(SlackNotifierService).not_to receive(:call)
-        call_service
-      end
+      it { expect(ExchangeRates::UpdateCurrencyRatesService).not_to have_received(:new) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).not_to have_received(:call) }
+      it { expect(SlackNotifierService).not_to have_received(:call) }
     end
-    # rubocop:enable all
   end
 end

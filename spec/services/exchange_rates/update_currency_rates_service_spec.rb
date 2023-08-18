@@ -8,44 +8,53 @@ module ExchangeRates
       let(:response) do
         {
           'to' => [
-            { 'quotecurrency' => 'AED', 'mid' => 4.662353708 },
+            { 'quotecurrency' => 'AED', 'mid' => 4.662353708 }, # Has corresponding currency
+            { 'quotecurrency' => 'AED', 'mid' => 4.662353708 }, # Has corresponding currency but is duplicated and won't create two
+            { 'quotecurrency' => 'EUR', 'mid' => 6.662353708 }, # Has a corresponding currency
+            { 'quotecurrency' => 'FGA', 'mid' => 5.662353708 }, # Has no corresponding currency
           ],
         }
+      end
+
+      let(:expected_rates) do
+        [
+          {
+            currency_code: 'AED',
+            validity_start_date: Time.zone.today.next_month.beginning_of_month,
+            validity_end_date: Time.zone.today.next_month.end_of_month,
+            rate: 4.662353708,
+            rate_type: ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+          },
+          {
+            currency_code: 'EUR',
+            validity_start_date: Time.zone.today.next_month.beginning_of_month,
+            validity_end_date: Time.zone.today.next_month.end_of_month,
+            rate: 6.662353708,
+            rate_type: ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+          },
+        ].as_json
       end
 
       before do
         allow(XeApi).to receive(:new).and_return(xe_api)
         allow(xe_api).to receive(:get_all_historic_rates).and_return(response)
+
+        create(:exchange_rate_currency, currency_code: 'AED')
+        create(:exchange_rate_currency, currency_code: 'EUR')
       end
 
-      context 'when currency doesnt exist' do
-        it 'doesnt create a new rate' do
-          expect {
-            service.call
-          }.not_to change(ExchangeRateCurrencyRate, :count)
-        end
+      it 'only inserts rates that exist as currencies' do
+        expect {
+          service.call
+        }.to change(ExchangeRateCurrencyRate, :count).by(2)
       end
 
-      context 'when currency exists' do
-        before { create(:exchange_rate_currency) }
+      it 'creates the rates specified in the api' do
+        service.call
 
-        it 'creates new rate' do
-          expect {
-            service.call
-          }.to change(ExchangeRateCurrencyRate, :count).by(1)
-        end
+        new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
 
-        # rubocop:disable RSpec/MultipleExpectations
-        it 'raises unique index error when trying to create duplicate rates' do
-          create(:exchange_rate_currency_rate)
-
-          expect {
-            expect {
-              service.call
-            }.to raise_error(Sequel::UniqueConstraintViolation)
-          }.not_to change(ExchangeRateCurrencyRate, :count)
-        end
-        # rubocop:enable RSpec/MultipleExpectations
+        expect(new_rates).to include_json(expected_rates)
       end
     end
   end

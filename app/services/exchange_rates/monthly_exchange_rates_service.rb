@@ -2,7 +2,7 @@ module ExchangeRates
   class MonthlyExchangeRatesService
     class << self
       def call
-        return unless tomorrow_is_penultimate_thursday? && today_is_wednesday?
+        return unless is_tomorrow_is_penultimate_thursday? && today_is_wednesday?
 
         ExchangeRates::UpdateCurrencyRatesService.new.call
         ExchangeRates::UploadMonthlyFileService.call(:csv)
@@ -21,8 +21,9 @@ module ExchangeRates
         SlackNotifierService.call(message)
       end
 
-      def tomorrow_is_penultimate_thursday?
+      def is_tomorrow_is_penultimate_thursday?
         tomorrow = Time.zone.now.tomorrow
+
         return false unless tomorrow.thursday?
         return false unless tomorrow.month == (7.days.from_now + 1.day).month
         return false unless tomorrow.month != (14.days.from_now + 1.day).month
