@@ -131,6 +131,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
           :heading,
           :with_indent,
           :with_description,
+          :declarable,
           :with_chapter,
         )
       end

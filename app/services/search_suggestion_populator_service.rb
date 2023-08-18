@@ -5,7 +5,6 @@ class SearchSuggestionPopulatorService
     SearchSuggestion.unrestrict_primary_key
     TimeMachine.now do
       suggestions = SuggestionsService.new.call
-      suggestions = suggestions.uniq { |suggestion| [suggestion[:id], suggestion[:type]] }
 
       suggestions.each_slice(BATCH_SIZE) do |values|
         SearchSuggestion.dataset.insert_conflict(
@@ -51,6 +50,7 @@ class SearchSuggestionPopulatorService
 
     SearchSuggestion
       .where(id: expired_goods_nomenclature_sids.map(&:to_s))
+      .goods_nomenclature_type
       .delete
   end
 end
