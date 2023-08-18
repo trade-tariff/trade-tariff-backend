@@ -3,6 +3,8 @@ require 'csv'
 class ExchangeRateCountry < Sequel::Model
   COUNTRY_FILE = 'data/exchange_rates/territory.csv'.freeze
 
+  alias_method :id, :country_code
+
   class << self
     def populate(src = COUNTRY_FILE)
       unrestrict_primary_key

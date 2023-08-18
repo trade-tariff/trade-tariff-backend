@@ -4,6 +4,6 @@ class ExchangeRateFile < Sequel::Model
   end
 
   def id
-    "#{period_year}-#{period_month}-#{format}-exchange_rate_file"
+    "#{period_year}-#{period_month}-#{format}_file"
   end
 end

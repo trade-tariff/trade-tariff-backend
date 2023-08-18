@@ -12,7 +12,7 @@ RSpec.describe ExchangeRateFile, type: :model do
 
   describe '#id' do
     let(:exchange_rate_file) { build(:exchange_rate_file) }
-    let(:expected_id) { "#{exchange_rate_file.period_year}-#{exchange_rate_file.period_month}-#{exchange_rate_file.format}-exchange_rate_file" }
+    let(:expected_id) { "#{exchange_rate_file.period_year}-#{exchange_rate_file.period_month}-#{exchange_rate_file.format}_file" }
 
     it 'returns the correct id' do
       expect(exchange_rate_file.id).to eq(expected_id)

@@ -94,6 +94,7 @@ Rails.application.routes.draw do
       namespace :exchange_rates do
         get :period_lists, to: 'period_lists#show'
         resources :files, only: [:index]
+        get :monthly_exchange_rates, to: 'monthly_exchange_rates#show'
       end
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{1,2}/ } do
