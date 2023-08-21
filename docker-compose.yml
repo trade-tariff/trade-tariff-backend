@@ -9,7 +9,7 @@ services:
       - dev-env-redis-volume:/data
   hmrc-postgres:
     container_name: postgres
-    image: postgres:10
+    image: postgres:13.10
     environment:
       - PGDATA=/var/lib/postgresql/data/pgdata
       - POSTGRES_USER=${USER}
@@ -19,7 +19,7 @@ services:
     ports:
       - 127.0.0.1:5432:5432
     volumes:
-      - hmrc-postgres:/var/lib/postgresql/data
+       - hmrc-postgres13:/var/lib/postgresql/data
   hmrc-opensearch:
     container_name: hmrc-opensearch
     image: opensearchproject/opensearch:2
@@ -54,6 +54,8 @@ volumes:
   postgres:
     driver: local
   hmrc-postgres:
+    driver: local
+  hmrc-postgres13:
     driver: local
   hmrc-os:
     driver: local
