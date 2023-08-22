@@ -22,13 +22,13 @@ module ExchangeRates
   private
 
     def headings
-      [
-        'Period',
-        'countryName',
-        'countryCode',
-        'currencyName',
-        'currencyCode',
-        'rateNew',
+      %w[
+        Period
+        countryName
+        countryCode
+        currencyName
+        currencyCode
+        rateNew
       ]
     end
 
