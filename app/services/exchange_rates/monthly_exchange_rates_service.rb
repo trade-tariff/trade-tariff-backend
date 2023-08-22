@@ -7,6 +7,7 @@ module ExchangeRates
         ExchangeRates::UpdateCurrencyRatesService.new.call
         ExchangeRates::UploadMonthlyFileService.call(:csv)
         ExchangeRates::UploadMonthlyFileService.call(:xml)
+        ExchangeRates::UploadMonthlyFileService.call(:csv_hmrc)
 
         notify
       end

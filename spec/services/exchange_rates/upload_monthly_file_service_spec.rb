@@ -12,6 +12,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year).and_return(data_result)
     allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return('csv_string')
     allow(ExchangeRates::CreateXmlService).to receive(:call).with(data_result).and_return('xml_string')
+    allow(ExchangeRates::CreateCsvHmrcService).to receive(:call).with(data_result).and_return('csv_hmrc_string')
     allow(TariffSynchronizer::FileService).to receive(:write_file).and_return(true)
     allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(321)
     allow(ExchangeRateFile).to receive(:create).and_return(true)
@@ -54,11 +55,28 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     end
   end
 
+  context 'when type is :csv_hmrc' do
+    let(:type) { :csv_hmrc }
+
+    it 'uploads the CSV file', :aggregate_failures do
+      upload_file
+
+      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year)
+      expect(ExchangeRates::CreateCsvHmrcService).to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(data_result)
+      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}08MonthlyRates.csv", 'csv_hmrc_string')
+      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}08MonthlyRates.csv")
+      expect(ExchangeRateFile).not_to have_received(:create).with(period_year: year, period_month: month, format: :csv_hmrc, file_size: 321, publication_date: current_time)
+      expect(Rails.logger).to have_received(:info)
+    end
+  end
+
   context 'when type is invalid' do
     let(:type) { :invalid_type }
 
     it 'raises ArgumentError' do
-      expect { upload_file }.to raise_error(ArgumentError, 'Invalid type: invalid_type. Type must be :csv or :xml.')
+      expect { upload_file }.to raise_error(ArgumentError, 'Invalid type: invalid_type. Type must be :csv, :csv_hmrc or :xml.')
     end
   end
 
