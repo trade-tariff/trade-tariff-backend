@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 15.3
+-- Dumped by pg_dump version 14.8 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
