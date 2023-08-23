@@ -71,7 +71,6 @@
       class: TreeIntegrityCheckWorker
       description: Check integrity of Goods Nomenclature hierarchy 4 weeks in future
       args: [ 28 ]
-    ExchangeRatesMonthlyUpload:
+    MonthlyExchangeRatesWorker:
       cron: '0 21 * * 3'
-      class: MonthlyExchangeRatesWorker
       description: Update data from XE API and Upload files to S3 every penultimate wednesday of the month at 9pm

@@ -22,8 +22,9 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
       end
 
       it { expect(ExchangeRates::UpdateCurrencyRatesService).to have_received(:new) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:csv) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:xml) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_xml) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv_hmrc) }
       it { expect(SlackNotifierService).to have_received(:call).with(/Exchange rates for the current month/) }
     end
 

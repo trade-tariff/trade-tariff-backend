@@ -55,20 +55,6 @@ RSpec.describe ExchangeRates::RatesList do
     end
   end
 
-  describe '.exchange_rate_files' do
-    subject(:exchange_rate_files) { described_class.exchange_rate_files(month, year) }
-
-    let(:files) { build_list(:exchange_rate_file, 1) }
-
-    it 'returns an array' do
-      expect(exchange_rate_files).to be_an(Array)
-    end
-
-    it 'returns an array of ExchangeRateFile instances' do
-      expect(exchange_rate_files).to all(be_an_instance_of(ExchangeRateFile))
-    end
-  end
-
   describe '.exchange_rates' do
     subject(:exchange_rates) { described_class.exchange_rates(month, year) }
 

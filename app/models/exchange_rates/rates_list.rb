@@ -20,7 +20,7 @@ module ExchangeRates
 
     class << self
       def build(month, year)
-        exchange_rate_files = exchange_rate_files(month, year)
+        exchange_rate_files = ExchangeRateFile.applicable_files_for(month, year)
 
         rates_list = new
         rates_list.year = year
@@ -28,10 +28,6 @@ module ExchangeRates
         rates_list.exchange_rate_files = exchange_rate_files
         rates_list.exchange_rates = exchange_rates(month, year)
         rates_list
-      end
-
-      def exchange_rate_files(period_month, period_year)
-        ExchangeRateFile.where(period_month:, period_year:).all
       end
 
       def exchange_rates(month, year)

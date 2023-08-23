@@ -7,8 +7,8 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
 
     before do
       allow(TariffSynchronizer::FileService).to receive(:get).and_call_original
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/monthly_csv_#{year}-#{month}.csv").and_return(StringIO.new(csv_data))
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/monthly_xml_#{year}-#{month}.xml").and_return(StringIO.new(xml_data))
+      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv").and_return(StringIO.new(csv_data))
+      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml").and_return(StringIO.new(xml_data))
     end
 
     context 'when requesting CSV format' do
@@ -23,7 +23,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq("attachment; filename=#{TradeTariffBackend.service}-monthly_csv_#{year}-#{month}.csv")
+        expect(response.headers['Content-Disposition']).to eq("attachment; filename=monthly_csv_#{year}-#{month}.csv")
       end
 
       it 'returns the CSV data as the response body' do
@@ -43,7 +43,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq("attachment; filename=#{TradeTariffBackend.service}-monthly_xml_#{year}-#{month}.xml")
+        expect(response.headers['Content-Disposition']).to eq("attachment; filename=monthly_xml_#{year}-#{month}.xml")
       end
 
       it 'returns the XML data as the response body' do

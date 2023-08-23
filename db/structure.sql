@@ -1798,7 +1798,8 @@ CREATE TABLE uk.exchange_rate_files (
     period_month integer NOT NULL,
     format character varying(20),
     file_size integer,
-    publication_date date
+    publication_date date,
+    type text NOT NULL
 );
 
 
@@ -9871,6 +9872,13 @@ CREATE INDEX exchange_rate_files_period_year_index ON uk.exchange_rate_files USI
 
 
 --
+-- Name: exchange_rate_files_type_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX exchange_rate_files_type_index ON uk.exchange_rate_files USING btree (type);
+
+
+--
 -- Name: exp_abrg_reg_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12033,3 +12041,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230731202727_adds_additi
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230801133145_adds_certificate_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230808103253_adds_footnote_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230817135045_adds_primary_key_for_id_and_type.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230823093436_adds_type_to_file.rb');

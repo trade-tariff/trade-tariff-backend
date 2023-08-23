@@ -5,17 +5,21 @@ module Api
         def index
           respond_to do |format|
             format.csv do
+              filename = ExchangeRateFile.filename_for('monthly_csv', 'csv', year, month)
+
               send_data(
                 serialized_csv,
                 type: 'text/csv; charset=utf-8; header=present',
-                disposition: "attachment; filename=#{TradeTariffBackend.service}-monthly_csv_#{year}-#{month}.csv",
+                disposition: "attachment; filename=#{filename}",
               )
             end
             format.xml do
+              filename = ExchangeRateFile.filename_for('monthly_xml', 'xml', year, month)
+
               send_data(
                 serialized_xml,
                 type: 'application/xml; charset=utf-8; header=present',
-                disposition: "attachment; filename=#{TradeTariffBackend.service}-monthly_xml_#{year}-#{month}.xml",
+                disposition: "attachment; filename=#{filename}",
               )
             end
           end
@@ -24,22 +28,30 @@ module Api
         private
 
         def month
-          params[:month].to_i
+          @month ||= params[:month].to_i
         end
 
         def year
-          params[:year].to_i
+          @year ||= params[:year].to_i
+        end
+
+        def filename_for(type, format)
+          "#{type}_#{year}-#{month}.#{format}"
         end
 
         def serialized_csv
+          object_key = ExchangeRateFile.filepath_for('monthly_csv', 'csv', year, month)
+
           TariffSynchronizer::FileService
-            .get("data/exchange_rates/monthly_csv_#{year}-#{month}.csv")
+            .get(object_key)
             .read
         end
 
         def serialized_xml
+          object_key = ExchangeRateFile.filepath_for('monthly_xml', 'xml', year, month)
+
           TariffSynchronizer::FileService
-            .get("data/exchange_rates/monthly_xml_#{year}-#{month}.xml")
+            .get(object_key)
             .read
         end
       end
