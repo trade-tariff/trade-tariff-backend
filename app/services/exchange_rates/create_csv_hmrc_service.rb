@@ -54,7 +54,7 @@ module ExchangeRates
         currency_rate.exchange_rate_countries.find { |country| country.country == country_name }.country_code,
         currency_rate.exchange_rate_currency.try(:currency_description),
         currency_rate.currency_code,
-        sprintf('%.4f', currency_rate.rate),
+        currency_rate.presented_rate,
       ]
     end
 

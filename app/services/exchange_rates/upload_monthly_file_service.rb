@@ -5,9 +5,7 @@ module ExchangeRates
     end
 
     def initialize(type)
-      @current_time = Time.zone.now
-      @month = current_time.next_month.month
-      @year = current_time.year
+      @publication_date = Time.zone.today
       @type = type
     end
 
@@ -19,38 +17,52 @@ module ExchangeRates
       end
 
       case type
-      when :csv
+      when :monthly_csv
         upload_data(data_result, :csv, ExchangeRates::CreateCsvService)
-      when :xml
+      when :monthly_xml
         upload_data(data_result, :xml, ExchangeRates::CreateXmlService)
-      when :csv_hmrc
-        upload_data(data_result, :csv_hmrc, ExchangeRates::CreateCsvHmrcService)
+      when :monthly_csv_hmrc
+        upload_data(data_result, :csv, ExchangeRates::CreateCsvHmrcService)
       else
-        raise ArgumentError, "Invalid type: #{type}. Type must be :csv, :csv_hmrc or :xml."
+        raise ArgumentError, "Invalid type: #{type}."
       end
     end
 
   private
 
-    attr_reader :current_time, :month, :year, :type
+    attr_reader :publication_date, :type
 
     def upload_data(data_result, format, service_class)
       data_string = service_class.call(data_result)
-      file_path = "data/exchange_rates/monthly_#{format}_#{year}-#{month}.#{format}"
-      file_path = "data/exchange_rates/#{year}#{month_hmrc}MonthlyRates.csv" if type == :csv_hmrc
+      file_path = ExchangeRateFile.filepath_for(type, format, year, month)
 
       TariffSynchronizer::FileService.write_file(file_path, data_string)
 
       file_size = TariffSynchronizer::FileService.file_size(file_path)
-      ::ExchangeRateFile.create(period_year: year, period_month: month, format:, file_size:, publication_date: current_time) unless type == :csv_hmrc
+      ::ExchangeRateFile.create(
+        period_year: year,
+        period_month: month,
+        format:,
+        type:,
+        file_size:,
+        publication_date:,
+      )
 
-      info_message = "exchange_rates.monthly_#{format}-#{file_path}-size: #{data_string.size}"
+      info_message = "Generated file name: #{file_path}, size: #{file_size}"
 
       Rails.logger.info(info_message)
     end
 
-    def month_hmrc
-      month.to_i.to_s.rjust(2, '0')
+    def year
+      @year ||= if publication_date.next_month.year != publication_date.year
+                  publication_date.next_month.year
+                else
+                  publication_date.year
+                end
+    end
+
+    def month
+      @month ||= publication_date.next_month.month
     end
   end
 

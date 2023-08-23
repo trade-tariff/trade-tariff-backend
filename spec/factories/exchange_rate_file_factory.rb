@@ -4,6 +4,7 @@ FactoryBot.define do
     sequence(:period_month) { 6 }
     format { 'csv' }
     file_size { 123 }
+    type { 'monthly_csv' }
     publication_date { Date.new(2023, 7, 25) }
   end
 end

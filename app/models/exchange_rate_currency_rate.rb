@@ -14,6 +14,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
            to: :exchange_rate_currency,
            allow_nil: true
 
+  def presented_rate
+    sprintf('%.4f', rate)
+  end
+
   def scheduled_rate?
     validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
   end
