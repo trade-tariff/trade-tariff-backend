@@ -31,7 +31,11 @@ module Api
         end
 
         def duty_expression
-          measure_condition_components.map(&:presented_duty_expression).join(' ')
+          if measure.excise? && measure_condition_components.any?(&:small_producers_quotient?)
+            SpqDutyExpressionFormatter.format(measure_condition_components.first)
+          else
+            measure_condition_components.map(&:presented_duty_expression).join(' ')
+          end
         end
 
         def requirement_duty_expression

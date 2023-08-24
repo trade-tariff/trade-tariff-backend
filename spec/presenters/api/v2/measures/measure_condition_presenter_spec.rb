@@ -81,7 +81,7 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
       end
     end
 
-    it_behaves_like 'a measure condition presented duty expression', /<span>5.00<\/span> GBP - £1.00  \/ for each litre of pure alcohol, multiplied by the SPR discount/, /<span>500.00<\/span> GBP - £1.00/ do
+    it_behaves_like 'a measure condition presented duty expression', '(£5.00 - SPR discount) / vol% / hl', '(£500.00 - SPR discount) / vol% / hl' do
       before do
         create(
           :measure_condition_component,
