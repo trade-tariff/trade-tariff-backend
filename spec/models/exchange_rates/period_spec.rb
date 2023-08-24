@@ -36,8 +36,8 @@ RSpec.describe ExchangeRates::Period do
 
     context 'with files' do
       before do
-        create(:exchange_rate_file, period_year: year, period_month: month)
-        create(:exchange_rate_file, period_year: year, period_month: month)
+        create(:exchange_rate_file, period_year: year, period_month: month, type: 'monthly_csv')
+        create(:exchange_rate_file, period_year: year, period_month: month, type: 'monthly_xml')
       end
 
       it 'builds a period' do
