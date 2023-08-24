@@ -936,6 +936,9 @@ workflows:
                 - main
                 - /^dependabot/(?!docker/).*/
                 - /^hotfix\/.+/
+          requires:
+            - test
+
 
       - build:
           name: build_dev
