@@ -2,53 +2,49 @@ module Api
   module V2
     module ExchangeRates
       class FilesController < ApiController
-        def index
-          respond_to do |format|
-            format.csv do
-              filename = ExchangeRateFile.filename_for('monthly_csv', 'csv', year, month)
+        def show
+          filename = ExchangeRateFile.filename_for(type, format, year, month)
 
-              send_data(
-                serialized_csv,
-                type: 'text/csv; charset=utf-8; header=present',
-                disposition: "attachment; filename=#{filename}",
-              )
-            end
-            format.xml do
-              filename = ExchangeRateFile.filename_for('monthly_xml', 'xml', year, month)
-
-              send_data(
-                serialized_xml,
-                type: 'application/xml; charset=utf-8; header=present',
-                disposition: "attachment; filename=#{filename}",
-              )
-            end
-          end
+          send_data(
+            file_data,
+            type: type_header,
+            disposition: "attachment; filename=#{filename}",
+          )
         end
 
         private
 
+        def type
+          id.split('_').first(2).join('_')
+        end
+
         def month
-          @month ||= params[:month].to_i
+          @month ||= params[:id].split('-').last
         end
 
         def year
-          @year ||= params[:year].to_i
+          @year ||= params[:id].split('-').first.split('_').last
+        end
+
+        def id
+          params[:id].to_s
         end
 
         def filename_for(type, format)
           "#{type}_#{year}-#{month}.#{format}"
         end
 
-        def serialized_csv
-          object_key = ExchangeRateFile.filepath_for('monthly_csv', 'csv', year, month)
-
-          TariffSynchronizer::FileService
-            .get(object_key)
-            .read
+        def format
+          request.format.symbol
         end
 
-        def serialized_xml
-          object_key = ExchangeRateFile.filepath_for('monthly_xml', 'xml', year, month)
+        def type_header
+          header = request.format.symbol == :csv ? 'text/csv' : 'application/xml'
+          header.concat('; charset=utf-8; header=present')
+        end
+
+        def file_data
+          object_key = ExchangeRateFile.filepath_for(type, format, year, month)
 
           TariffSynchronizer::FileService
             .get(object_key)
