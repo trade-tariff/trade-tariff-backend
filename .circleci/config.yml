@@ -963,7 +963,7 @@ workflows:
                 - /^hotfix\/.+/
 
           requires:
-            # - test
+            - test
             - build_dev
 
       - sync_opensearch_packages:
