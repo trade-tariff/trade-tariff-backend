@@ -29,6 +29,6 @@ namespace :exchange_rates do
 
   desc 'Import old data into files'
   task import_old_data: %w[environment] do
-    ExchangeRate::CreateOldFilesService.call
+    ExchangeRates::CreateOldFilesService.call
   end
 end

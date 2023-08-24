@@ -11,41 +11,50 @@ module ExchangeRates
     def call
       old_file_dates.each do |date_hash|
         month_name = date_hash[:edition_date].split(' ')[MONTH_INDEX]
-        month = Date::MONTHNAMES.index(month_name)
         year = date_hash[:edition_date].split(' ')[YEAR_INDEX]
+        month = Date::MONTHNAMES.index(month_name)
 
-        data_result = ::ExchangeRateCurrencyRate.for_month(month, year)
+        exchange_rate_currency_rates = ::ExchangeRateCurrencyRate.for_month(month, year)
 
         created_date = date_hash[:updated_date]
 
-        upload_data(data_result,
-                    :csv,
-                    ExchangeRates::CreateCsvService,
-                    created_date,
-                    month,
-                    year)
-        upload_data(data_result,
-                    :xml,
-                    ExchangeRates::CreateXmlService,
-                    created_date,
-                    month,
-                    year)
+        upload_data(
+          exchange_rate_currency_rates,
+          :csv,
+          ExchangeRates::CreateCsvService,
+          created_date,
+          month,
+          year,
+          :monthly_csv,
+        )
+        upload_data(
+          exchange_rate_currency_rates,
+          :xml,
+          ExchangeRates::CreateXmlService,
+          created_date,
+          month,
+          year,
+          :monthly_xml,
+        )
       end
     end
 
   private
 
-    def upload_data(data_result, format, service_class, created_date, month, year)
+    def upload_data(data_result, format, service_class, created_date, month, year, type)
       data_string = service_class.call(data_result)
-      file_path = "data/exchange_rates/monthly_#{format}_#{year}-#{month}.#{format}"
+      file_path = ExchangeRateFile.filepath_for(type, format, year, month)
       TariffSynchronizer::FileService.write_file(file_path, data_string)
-
       file_size = TariffSynchronizer::FileService.file_size(file_path)
-      ExchangeRateFile.create(period_year: year,
-                              period_month: month,
-                              format:,
-                              file_size:,
-                              publication_date: created_date.to_time)
+
+      ExchangeRateFile.create(
+        period_year: year,
+        period_month: month,
+        format:,
+        file_size:,
+        publication_date: created_date,
+        type:,
+      )
 
       info_message = "exchange_rates.monthly_#{format}-#{file_path}-size: #{file_size}"
 
