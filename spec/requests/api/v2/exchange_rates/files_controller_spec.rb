@@ -1,18 +1,19 @@
 RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
   describe 'GET #index' do
-    let(:csv_data) { 'foo,bar\nqux,qul' }
-    let(:xml_data) { '<xml><data>...</data></xml>' }
     let(:year) { 2023 }
     let(:month) { 7 }
+    let(:data) { 'foo,bar\nqux,qul' }
 
     before do
       allow(TariffSynchronizer::FileService).to receive(:get).and_call_original
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv").and_return(StringIO.new(csv_data))
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml").and_return(StringIO.new(xml_data))
+      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/#{type}_#{year}-#{month}.#{format}").and_return(StringIO.new(data))
     end
 
     context 'when requesting CSV format' do
-      before { get api_exchange_rates_files_path(format: :csv, year:, month:) }
+      let(:type) { 'monthly_csv' }
+      let(:format) { 'csv' }
+
+      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -27,12 +28,15 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the CSV data as the response body' do
-        expect(response.body).to eq(csv_data)
+        expect(response.body).to eq(data)
       end
     end
 
     context 'when requesting XML format' do
-      before { get api_exchange_rates_files_path(format: :xml, year:, month:) }
+      let(:type) { 'monthly_xml' }
+      let(:format) { 'xml' }
+
+      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :xml) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -47,7 +51,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the XML data as the response body' do
-        expect(response.body).to eq(xml_data)
+        expect(response.body).to eq(data)
       end
     end
   end

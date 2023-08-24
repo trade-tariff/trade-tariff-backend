@@ -1,21 +1,61 @@
-require 'rails_helper'
-
 RSpec.describe ExchangeRateFile, type: :model do
   describe '#file_path' do
     let(:exchange_rate_file) { build(:exchange_rate_file) }
-    let(:expected_file_path) { "/api/v2/exchange_rates/files.csv?month=#{exchange_rate_file.period_month}&year=#{exchange_rate_file.period_year}" }
 
-    it 'returns the correct file path' do
-      expect(exchange_rate_file.file_path).to eq(expected_file_path)
-    end
+    it { expect(exchange_rate_file.file_path).to eq('/api/v2/exchange_rates/files/monthly_csv_2023-6.csv') }
   end
 
   describe '#id' do
     let(:exchange_rate_file) { build(:exchange_rate_file) }
-    let(:expected_id) { "#{exchange_rate_file.period_year}-#{exchange_rate_file.period_month}-#{exchange_rate_file.format}_file" }
 
-    it 'returns the correct id' do
-      expect(exchange_rate_file.id).to eq(expected_id)
+    it { expect(exchange_rate_file.id).to be_present }
+  end
+
+  describe '.filepath_for' do
+    let(:type) { 'monthly_csv' }
+    let(:format) { 'csv' }
+    let(:year) { 2023 }
+    let(:month) { 7 }
+
+    let(:expected_filepath) { "data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv" }
+
+    it 'returns the correct filepath' do
+      expect(described_class.filepath_for(type, format, year, month)).to eq(expected_filepath)
     end
+  end
+
+  describe '.filename_for' do
+    let(:type) { 'monthly_csv' }
+    let(:format) { 'csv' }
+    let(:year) { 2023 }
+    let(:month) { 7 }
+
+    let(:expected_filename) { "monthly_csv_#{year}-#{month}.csv" }
+
+    it 'returns the correct filename' do
+      expect(described_class.filename_for(type, format, year, month)).to eq(expected_filename)
+    end
+  end
+
+  describe '.applicable_files_for' do
+    before do
+      expected_files
+      create(:exchange_rate_file, period_month: month, period_year: year, type: 'monthly_xml_foo')
+      create(:exchange_rate_file, period_month: month + 1, period_year: year + 1, type: 'monthly_csv')
+    end
+
+    let(:month) { 7 }
+    let(:year) { 2023 }
+    let(:expected_files) do
+      create_list(
+        :exchange_rate_file,
+        1,
+        period_month: month,
+        period_year: year,
+        type: 'monthly_xml',
+      )
+    end
+
+    it { expect(described_class.applicable_files_for(month, year)).to match_array(expected_files) }
   end
 end

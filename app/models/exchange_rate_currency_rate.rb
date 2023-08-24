@@ -14,8 +14,22 @@ class ExchangeRateCurrencyRate < Sequel::Model
            to: :exchange_rate_currency,
            allow_nil: true
 
+  def_column_accessor :country, :country_code
+
+  include ContentAddressableId
+
+  content_addressable_fields :currency_code, :validity_start_date, :validity_end_date, :country, :country_code
+
   def presented_rate
     sprintf('%.4f', rate)
+  end
+
+  def period_year
+    validity_start_date.year
+  end
+
+  def period_month
+    validity_start_date.month
   end
 
   def scheduled_rate?

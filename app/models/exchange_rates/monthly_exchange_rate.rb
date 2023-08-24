@@ -1,14 +1,14 @@
 module ExchangeRates
-  class RatesList
+  class MonthlyExchangeRate
+    include ContentAddressableId
+
+    content_addressable_fields :year, :month
+
     attr_accessor :year,
                   :month,
                   :publication_date,
                   :exchange_rate_files,
                   :exchange_rates
-
-    def id
-      "#{year}-#{month}-exchange_rate_period"
-    end
 
     def exchange_rate_file_ids
       exchange_rate_files.map(&:id)
@@ -31,16 +31,13 @@ module ExchangeRates
       end
 
       def exchange_rates(month, year)
-        rates = ExchangeRateCurrencyRate
+        ExchangeRateCurrencyRate
           .by_month_and_year(month, year)
           .scheduled
-          .eager(
-            :exchange_rate_currency,
-            :exchange_rate_countries,
-          )
+          .association_right_join(:exchange_rate_countries)
+          .eager(:exchange_rate_currency)
+          .order(:country)
           .all
-
-        Api::V2::ExchangeRates::CurrencyRatePresenter.wrap(rates, month, year)
       end
     end
   end

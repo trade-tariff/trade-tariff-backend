@@ -12,5 +12,40 @@ FactoryBot.define do
       rate { 1.7816 }
       rate_type { 'spot' }
     end
+
+    trait :with_multiple_countries do
+      after(:create) do |currency_rate|
+        create(
+          :exchange_rate_country,
+          currency_code: currency_rate.currency_code,
+          country_code: 'DH',
+          country: 'Abu Dhabi',
+        )
+        create(
+          :exchange_rate_country,
+          currency_code: currency_rate.currency_code,
+          country_code: 'DU',
+          country: 'Dubai',
+        )
+      end
+    end
+
+    trait :with_usa do
+      currency_code { 'USD' }
+
+      after(:create) do |currency_rate|
+        create(
+          :exchange_rate_currency,
+          currency_code: currency_rate.currency_code,
+          currency_description: 'Dollar',
+        )
+        create(
+          :exchange_rate_country,
+          currency_code: currency_rate.currency_code,
+          country_code: 'US',
+          country: 'United States',
+        )
+      end
+    end
   end
 end

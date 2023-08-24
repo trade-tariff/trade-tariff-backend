@@ -62,7 +62,7 @@ RSpec.describe ExchangeRateCurrencyRate do
 
   describe '.months_for_year' do
     it 'returns the distinct months for the given year in descending order' do
-      expect(described_class.months_for_year(2020)).to eq([2, 1])
+      expect(described_class.months_for_year(2020)).to eq([3, 2, 1])
     end
   end
 

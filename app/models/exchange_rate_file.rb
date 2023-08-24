@@ -2,12 +2,12 @@ class ExchangeRateFile < Sequel::Model
   APPLICABLE_TYPES = %w[monthly_csv monthly_xml].freeze
   OBJECT_KEY_PREFIX = 'data/exchange_rates'.freeze
 
-  def file_path
-    "/api/v2/exchange_rates/files.#{format}?month=#{period_month}&year=#{period_year}"
-  end
+  include ContentAddressableId
 
-  def id
-    "#{period_year}-#{period_month}-#{format}_file"
+  content_addressable_fields :format, :type, :publication_date, :period_year, :period_month
+
+  def file_path
+    "/api/v2/exchange_rates/files/#{type}_#{period_year}-#{period_month}.#{format}"
   end
 
   dataset_module do

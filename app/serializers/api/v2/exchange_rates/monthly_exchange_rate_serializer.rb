@@ -1,10 +1,10 @@
 module Api
   module V2
     module ExchangeRates
-      class ExchangeRatesListSerializer
+      class MonthlyExchangeRateSerializer
         include JSONAPI::Serializer
 
-        set_type :exchange_rates_list
+        set_type :monthly_exchange_rate
 
         attributes :year, :month
 

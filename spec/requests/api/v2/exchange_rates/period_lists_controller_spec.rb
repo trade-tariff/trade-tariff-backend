@@ -2,7 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
   describe 'GET #show' do
-    subject(:rendered) { make_request && response }
+    subject { make_request && response }
 
     let(:period_list) { build(:period_list, :with_periods, :with_period_years, year: 2023) }
 

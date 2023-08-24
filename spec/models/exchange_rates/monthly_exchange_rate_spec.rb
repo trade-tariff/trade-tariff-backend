@@ -1,4 +1,4 @@
-RSpec.describe ExchangeRates::RatesList do
+RSpec.describe ExchangeRates::MonthlyExchangeRate do
   let(:year) { 2023 }
   let(:month) { 6 }
   let(:publication_date) { '2023-06-22T00:00:00.000Z' }
@@ -6,17 +6,13 @@ RSpec.describe ExchangeRates::RatesList do
   describe '#id' do
     subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
 
-    it 'returns the correct id' do
-      expect(rates_list.id).to eq("#{year}-#{month}-exchange_rate_period")
-    end
+    it { expect(rates_list.id).to be_present }
   end
 
   describe '#exchange_rate_file_ids' do
     subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
 
-    it 'returns the ids of exchange rate years' do
-      expect(rates_list.exchange_rate_file_ids).to eq(['2023-6-csv_file'])
-    end
+    it { expect(rates_list.exchange_rate_file_ids).to all(be_present) }
   end
 
   describe '#exchange_rate_ids' do
@@ -58,30 +54,23 @@ RSpec.describe ExchangeRates::RatesList do
   describe '.exchange_rates' do
     subject(:exchange_rates) { described_class.exchange_rates(month, year) }
 
-    let(:rates) { build_list(:exchange_rate_currency_rate, 1) }
+    let(:validity_start_date) { Date.new(2023, 6, 1) }
 
     before do
-      allow(ExchangeRateCurrencyRate)
-        .to receive(:by_month_and_year)
-        .with(month, year)
-        .and_call_original
+      create(
+        :exchange_rate_currency_rate,
+        :with_usa,
+        validity_start_date:,
+      )
+
+      create(
+        :exchange_rate_currency_rate,
+        :with_multiple_countries,
+        validity_start_date:,
+      )
     end
 
-    it 'calls ExchangeRateCurrencyRate.build with the correct arguments' do
-      allow(Api::V2::ExchangeRates::CurrencyRatePresenter)
-        .to receive(:wrap)
-        .with(anything, month, year)
-        .and_return([])
-
-      exchange_rates
-    end
-
-    it 'returns an array' do
-      expect(exchange_rates).to be_an(Array)
-    end
-
-    it 'returns an array of ExchangeRateCurrencyRate instances' do
-      expect(exchange_rates).to all(be_an_instance_of(ExchangeRateCurrencyRate))
-    end
+    it { expect(exchange_rates.pluck(:country_code)).to eq(%w[DH DU US]) }
+    it { expect(exchange_rates.pluck(:country)).to eq(['Abu Dhabi', 'Dubai', 'United States']) }
   end
 end
