@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 14.8 (Homebrew)
+-- Dumped by pg_dump version 15.3
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -9360,6 +9360,14 @@ ALTER TABLE ONLY uk.transmission_comments_oplog
 
 
 --
+-- Name: exchange_rate_files unique_key_for_files; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.exchange_rate_files
+    ADD CONSTRAINT unique_key_for_files UNIQUE (period_year, period_month, format, type);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -12042,3 +12050,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230801133145_adds_certif
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230808103253_adds_footnote_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230817135045_adds_primary_key_for_id_and_type.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230823093436_adds_type_to_file.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230824155416_add_unique_key_for_files.rb');
