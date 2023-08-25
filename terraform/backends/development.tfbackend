@@ -1,4 +1,5 @@
-bucket      = "terraform-state-development-844815912454"
-key         = "tariff-backend.tfstate"
-region      = "eu-west-2"
-encrypt     = true
+bucket         = "terraform-state-development-844815912454"
+key            = "tariff-backend.tfstate"
+region         = "eu-west-2"
+encrypt        = true
+dynamodb_table = "backend-lock-844815912454"
