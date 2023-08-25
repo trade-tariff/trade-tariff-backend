@@ -2,9 +2,9 @@ module ExchangeRates
   class PeriodList
     attr_accessor :year, :exchange_rate_periods, :exchange_rate_years
 
-    def id
-      "#{year}-exchange_rate_period_list"
-    end
+    include ContentAddressableId
+
+    content_addressable_fields :year
 
     def exchange_rate_year_ids
       exchange_rate_years.map(&:id)
