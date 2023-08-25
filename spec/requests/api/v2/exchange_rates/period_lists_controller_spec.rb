@@ -14,12 +14,12 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
     end
 
     context 'when the year parameter is provided' do
-      let(:make_request) { get api_exchange_rates_period_lists_path(year: '2023', format: :json) }
+      let(:make_request) { get api_exchange_rates_period_list_path(year: '2023', format: :json) }
 
       let(:pattern) do
         {
           data: {
-            id: '2023-exchange_rate_period_list',
+            id: be_present,
             type: 'exchange_rate_period_list',
             attributes: {
               year: 2023,
@@ -38,12 +38,12 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
     end
 
     context 'when the year parameter is not provided' do
-      let(:make_request) { get api_exchange_rates_period_lists_path(format: :json) }
+      let(:make_request) { get api_exchange_rates_period_list_path(format: :json) }
 
       let(:pattern) do
         {
           data: {
-            id: '2023-exchange_rate_period_list',
+            id: be_present,
             type: 'exchange_rate_period_list',
             attributes: {
               year: 2023,

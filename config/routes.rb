@@ -92,9 +92,9 @@ Rails.application.routes.draw do
       end
 
       namespace :exchange_rates do
-        get :period_lists, to: 'period_lists#show'
-        resources :files, only: [:show]
+        get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
         resources :monthly_exchange_rates, only: [:show]
+        resources :files, only: [:show]
       end
 
       resources :chapters, only: %i[index show], constraints: { id: /\d{1,2}/ } do
