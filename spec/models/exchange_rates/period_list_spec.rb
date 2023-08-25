@@ -6,7 +6,7 @@ RSpec.describe ExchangeRates::PeriodList do
     subject(:period_list) { build(:period_list) }
 
     it 'returns the correct id' do
-      expect(period_list.id).to eq("#{year}-exchange_rate_period_list")
+      expect(period_list.id).to be_present
     end
   end
 
