@@ -33,11 +33,14 @@ class ExchangeRateCurrencyRate < Sequel::Model
   end
 
   def scheduled_rate?
-    validity_end_date.present? && validity_start_date.day == 1 && validity_end_date == validity_start_date.end_of_month
+    validity_end_date.present? &&
+      validity_start_date.present? &&
+      validity_start_date.day == 1 &&
+      validity_end_date == validity_start_date.end_of_month
   end
 
   def spot_rate?
-    [3, 12].include?(validity_start_date.month) && validity_start_date.day == 31 && validity_end_date.nil?
+    [3, 12].include?(validity_start_date&.month) && validity_start_date&.day == 31 && validity_end_date.blank?
   end
 
   dataset_module do
@@ -82,23 +85,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
   end
 
   class << self
-    def populate(src = RATES_FILE)
-      unrestrict_primary_key
-
-      CSV.foreach(src) do |row|
-        currency_code = row[0]
-        validity_start_date = row[1]
-        validity_end_date = row[2]
-        rate = row[3]
-
-        exchange_rate_currency_rate = new(currency_code:, validity_start_date:, validity_end_date:, rate:)
-        exchange_rate_currency_rate.rate_type = determine_rate_type(exchange_rate_currency_rate)
-        exchange_rate_currency_rate.save
-      end
-
-      restrict_primary_key
-    end
-
     def all_years
       distinct
         .select { date_part('year', :validity_start_date).cast(:integer).as(:year) }
@@ -124,7 +110,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .uniq
     end
 
-    def for_month(month, year = Time.zone.today.year)
+    def for_month(month, year)
       by_month_and_year(month, year)
         .scheduled
         .order(Sequel.asc(:validity_start_date))
