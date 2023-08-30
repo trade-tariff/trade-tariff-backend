@@ -3,7 +3,11 @@ module Api
     module ExchangeRates
       class PeriodListsController < ApiController
         def show
-          render json: serialized_period_list
+          if serialized_period_list[:data].empty?
+            render json: { data: {} }, status: :not_found
+          else
+            render json: serialized_period_list
+          end
         end
 
         private
