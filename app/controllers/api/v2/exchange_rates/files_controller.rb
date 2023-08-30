@@ -5,17 +5,20 @@ module Api
         def show
           filename = ExchangeRateFile.filename_for(type, format, year, month)
 
-          send_data(
-            file_data,
-            type: type_header,
-            disposition: "attachment; filename=#{filename}",
-          )
+          if file.present?
+            send_data(
+              file_data,
+              type: type_header,
+              disposition: "attachment; filename=#{filename}",
+            )
+          end
         end
 
         private
 
         def type
-          id.split('_').first(2).join('_')
+          match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml)_/)
+          match_data[1] if match_data
         end
 
         def month
@@ -49,6 +52,10 @@ module Api
           TariffSynchronizer::FileService
             .get(object_key)
             .read
+        end
+
+        def file
+          @file ||= ExchangeRateFile.where(type:, period_year: year, period_month: month, format: format.to_s).take
         end
       end
     end

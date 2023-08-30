@@ -254,6 +254,14 @@ module TradeTariffBackend
       ENV['XE_API_PASSWORD']
     end
 
+    def support_email
+      ENV['TARIFF_SUPPORT_EMAIL']
+    end
+
+    def management_email
+      ENV['TARIFF_MANAGEMENT_EMAIL']
+    end
+
     def opensearch_debug
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end

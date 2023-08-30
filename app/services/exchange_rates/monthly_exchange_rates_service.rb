@@ -10,6 +10,7 @@ module ExchangeRates
         ExchangeRates::UploadMonthlyFileService.call(:monthly_csv_hmrc)
 
         notify
+        email_files_to_hmrc
       end
 
       private
@@ -20,6 +21,10 @@ module ExchangeRates
         logger.info message
 
         SlackNotifierService.call(message)
+      end
+
+      def email_files_to_hmrc
+        ExchangeRates::Mailer.monthly_files
       end
 
       def is_tomorrow_is_penultimate_thursday?
