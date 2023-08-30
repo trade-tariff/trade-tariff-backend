@@ -836,6 +836,15 @@ workflows:
             - build-dev
           <<: *filter-not-main
 
+      - apply-terraform:
+          name: apply-terraform-dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          requires:
+            - plan-terraform-dev
+            - build-and-push-dev
+          <<: *filter-not-main
+
       - tariff/smoketests:
           name: smoketest-dev
           context: trade-tariff

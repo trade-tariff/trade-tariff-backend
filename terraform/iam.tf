@@ -85,8 +85,9 @@ data "aws_iam_policy_document" "spelling_corrector_bucket" {
   }
 
   statement {
-    effect    = "Allow"
-    actions   = ["s3:PutObject"]
+    effect  = "Allow"
+    actions = ["s3:PutObject"]
+    # tfsec:ignore:aws-iam-no-policy-wildcards
     resources = ["${data.aws_s3_bucket.spelling_corrector.arn}/*"]
   }
 }
