@@ -27,7 +27,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
       it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_xml) }
       it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv_hmrc) }
       it { expect(SlackNotifierService).to have_received(:call).with(/Exchange rates for the current month/) }
-      it { expect(ExchangeRates::Mailer).to have_received(:monthly_files)}
+      it { expect(ExchangeRates::Mailer).to have_received(:monthly_files) }
     end
 
     context 'when tomorrow is not penultimate Thursday' do
@@ -45,7 +45,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
       it { expect(ExchangeRates::UpdateCurrencyRatesService).not_to have_received(:new) }
       it { expect(ExchangeRates::UploadMonthlyFileService).not_to have_received(:call) }
       it { expect(SlackNotifierService).not_to have_received(:call) }
-      it { expect(ExchangeRates::Mailer).not_to have_received(:monthly_files)}
+      it { expect(ExchangeRates::Mailer).not_to have_received(:monthly_files) }
     end
   end
 end

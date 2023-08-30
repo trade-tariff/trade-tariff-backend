@@ -18,7 +18,7 @@ module ExchangeRates
     private
 
     def date
-      @date ||= Date.today
+      @date ||= Time.zone.today
     end
 
     def year
