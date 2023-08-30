@@ -8,7 +8,7 @@ module Api
 
         if @result.valid?
           @serialized_result = Api::V2::BulkSearch::ResultCollectionSerializer.new(@result).serializable_hash
-          render json: @serialized_result, status: :accepted, location: api_bulk_search_path(@result)
+          render json: @serialized_result, status: :accepted, location: frontendify_path(api_bulk_search_path(@result))
         else
           @serialized_result = Api::Search::ErrorSerializationService.new(@result.searches).call
 
@@ -65,6 +65,10 @@ module Api
         else
           []
         end
+      end
+
+      def frontendify_path(path)
+        File.join('/api/v2/', path)
       end
     end
   end

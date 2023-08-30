@@ -37,7 +37,7 @@ RSpec.describe Api::V2::BulkSearchesController, type: :request do
     it { expect(BulkSearchWorker).to have_received(:perform_async) }
     it { expect(response).to have_http_status(:accepted) }
     it { expect(response.body).to match_json_expression(pattern) }
-    it { expect(response.location).to eq(api_bulk_search_path(id)) }
+    it { expect(response.location).to eq("/api/v2/bulk_searches/#{id}") }
 
     context 'when the request is invalid' do
       let(:make_request) do
