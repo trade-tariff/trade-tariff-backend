@@ -8,7 +8,7 @@ module "backend_uk" {
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
   security_groups           = [data.aws_security_group.this.id]
-  target_group_arn          = data.aws_lb_target_group.this["backend-uk-tg-${var.environment}"].arn
+  target_group_arn          = data.aws_lb_target_group.this["backend-uk"].arn
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   min_capacity = var.min_capacity
