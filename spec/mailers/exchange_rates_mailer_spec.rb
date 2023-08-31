@@ -15,7 +15,7 @@ RSpec.describe ExchangeRatesMailer, type: :mailer do
     end
 
     context 'when email is sent it has correct attributes' do
-      mail = described_class.monthly_files
+      subject(:mail) { described_class.monthly_files.tap(&:deliver_now) }
 
       it { expect(mail.subject).to eq("#{date.next_month.strftime('%B %Y')} Exchange Rate Files (monthly)") }
       it { expect(mail.from).to eq(['no-reply@example.com']) }

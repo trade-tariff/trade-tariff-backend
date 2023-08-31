@@ -26,7 +26,7 @@ module ExchangeRates
       def email_files_to_hmrc
         return if TradeTariffBackend.xi?
 
-        ExchangeRatesMailer.monthly_files
+        ExchangeRatesMailer.monthly_files&.deliver_now
       end
 
       def is_tomorrow_is_penultimate_thursday?
