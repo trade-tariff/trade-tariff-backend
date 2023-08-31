@@ -18,7 +18,7 @@ locals {
     },
     {
       name  = "AWS_BUCKET_NAME"
-      value = "trade-tariff-persistence-${var.environment}-${local.account_id}"
+      value = data.aws_s3_bucket.persistence.bucket
     },
     {
       name  = "BETA_SEARCH_MAX_HITS"
@@ -74,7 +74,7 @@ locals {
     },
     {
       name  = "SENTRY_ENVIRONMENT"
-      value = var.environment
+      value = "aws-${var.environment}"
     },
     {
       name  = "SENTRY_PROJECT"
@@ -82,15 +82,15 @@ locals {
     },
     {
       name  = "SPELLING_CORRECTOR_BUCKET_NAME"
-      value = "trade-tariff-search-configuration-${local.account_id}"
+      value = data.aws_s3_bucket.spelling_corrector.bucket
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
-      value = "analyzers/F159568045"
+      value = "analyzers/F159568045" # TODO: fetch from each env
     },
     {
       name  = "SYNONYM_REFERENCE_ANALYZER"
-      value = "analyzers/F202143497"
+      value = "analyzers/F202143497" # TODO: fetch from each env
     },
     {
       name  = "TARIFF_SYNC_EMAIL"

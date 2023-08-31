@@ -79,16 +79,25 @@ resource "aws_iam_policy" "exec" {
 
 data "aws_iam_policy_document" "spelling_corrector_bucket" {
   statement {
-    effect    = "Allow"
-    actions   = ["s3:ListBucket"]
-    resources = [data.aws_s3_bucket.spelling_corrector.arn]
+    effect  = "Allow"
+    actions = ["s3:ListBucket"]
+    resources = [
+      data.aws_s3_bucket.spelling_corrector.arn,
+      data.aws_s3_bucket.persistence.arn
+    ]
   }
 
   statement {
-    effect  = "Allow"
-    actions = ["s3:PutObject"]
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:PutObject"
+    ]
     # tfsec:ignore:aws-iam-no-policy-wildcards
-    resources = ["${data.aws_s3_bucket.spelling_corrector.arn}/*"]
+    resources = [
+      "${data.aws_s3_bucket.spelling_corrector.arn}/*",
+      "${data.aws_s3_bucket.persistence.arn}/*"
+    ]
   }
 }
 
