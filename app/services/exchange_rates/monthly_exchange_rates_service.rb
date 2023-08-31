@@ -24,6 +24,8 @@ module ExchangeRates
       end
 
       def email_files_to_hmrc
+        return if TradeTariffBackend.xi?
+
         ExchangeRatesMailer.monthly_files
       end
 
