@@ -358,7 +358,7 @@ jobs:
           space: << parameters.to_space >>
           environment_key: << parameters.to_environment_key >>
 
-  linters:
+  ruby-checks:
     docker:
       - image: cimg/ruby:3.2.2
     resource_class: small
@@ -786,15 +786,15 @@ workflows:
 
   deploy-to-development:
     jobs:
-      - linters:
+      - ruby-checks:
           context: trade-tariff
           <<: *filter-not-main
-      
+
       - test:
           context: trade-tariff
           <<: *filter-not-main
           requires:
-            - linters
+            - ruby-checks
 
       - write-docker-tag:
           name: write-docker-tag-dev
@@ -986,7 +986,7 @@ workflows:
           name: write-docker-tag-prod-release
           environment: production
           <<: *filter-release
-      
+
       - apply-terraform:
           name: apply-terraform-prod
           context: trade-tariff-terraform-aws-production
