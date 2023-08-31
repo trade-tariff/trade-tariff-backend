@@ -11,6 +11,18 @@ RSpec.describe ExchangeRateFile, type: :model do
     it { expect(exchange_rate_file.id).to be_present }
   end
 
+  describe '#object_key' do
+    let(:exchange_rate_file) { build(:exchange_rate_file) }
+
+    it { expect(exchange_rate_file.object_key).to eq('data/exchange_rates/2023/6/monthly_csv_2023-6.csv') }
+  end
+
+  describe '#filename' do
+    let(:exchange_rate_file) { build(:exchange_rate_file) }
+
+    it { expect(exchange_rate_file.filename).to eq('monthly_csv_2023-6.csv') }
+  end
+
   describe '.filepath_for' do
     let(:type) { 'monthly_csv' }
     let(:format) { 'csv' }
