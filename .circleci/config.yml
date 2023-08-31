@@ -20,7 +20,8 @@ filter-release: &filter-release
     tags:
       only: /^release-202[\d-]+/
     branches:
-      ignore: /.*/
+      ignore:
+        - "/.*/"
 
 orbs:
   aws-cli: circleci/aws-cli@2.0.3
@@ -448,6 +449,8 @@ jobs:
 
   plan-terraform:
     executor: terraform
+    environment:
+      TF_CLI_ARGS: "-lock=false"
     parameters:
       environment:
         type: string
@@ -479,6 +482,7 @@ jobs:
           path: terraform/
           backend_config_file: backends/<< parameters.environment >>.tfbackend
           var_file: config_<< parameters.environment >>.tfvars
+          lock-timeout: 5m
 
   flaky-tests:
     docker:
@@ -731,7 +735,7 @@ jobs:
           command: |
             bin/sync-opensearch-packages << parameters.space >> << parameters.bucket >>
 
-  notify_production_deployment:
+  notify-production-deployment:
     docker:
       - image: cimg/ruby:3.2.2
     steps:
@@ -782,17 +786,19 @@ workflows:
 
   deploy-to-development:
     jobs:
-      - write-docker-tag:
-          name: write-docker-tag-dev
-          environment: development
-          <<: *filter-not-main
-
       - linters:
           context: trade-tariff
           <<: *filter-not-main
       
       - test:
           context: trade-tariff
+          <<: *filter-not-main
+          requires:
+            - linters
+
+      - write-docker-tag:
+          name: write-docker-tag-dev
+          environment: development
           <<: *filter-not-main
 
       - fmt-validate-terraform:
@@ -841,6 +847,7 @@ workflows:
           context: trade-tariff-terraform-aws-development
           environment: development
           requires:
+            - test
             - plan-terraform-dev
             - build-and-push-dev
           <<: *filter-not-main
@@ -943,15 +950,12 @@ workflows:
           type: approval
           <<: *filter-main
 
-      - create-release?:
-          type: approval
-          <<: *filter-main
-
       - tariff/create-production-release:
+          name: create-production-release
           context: trade-tariff
           image-name: tariff-backend
           requires:
-            - create-release?
+            - promote-to-production?
           <<: *filter-main
 
       - sync-opensearch-packages:
@@ -970,25 +974,23 @@ workflows:
                 - xi
                 - uk
           context: trade-tariff
-          requires:
-            - promote-to-production?
           <<: *filter-release
 
-      - notify_production_deployment:
+      - notify-production-deployment:
           context: trade-tariff
-          filters:
-            tags:
-              only: /^release-202[\d-]+/
-            branches:
-              ignore: /.*/
           requires:
             - deploy-production
+          <<: *filter-release
 
+      - write-docker-tag:
+          name: write-docker-tag-prod-release
+          environment: production
+          <<: *filter-release
+      
       - apply-terraform:
           name: apply-terraform-prod
           context: trade-tariff-terraform-aws-production
           environment: production
           requires:
-            - write-docker-tag-prod
-            - promote-to-production?
-          <<: *filter-main
+            - write-docker-tag-prod-release
+          <<: *filter-release
