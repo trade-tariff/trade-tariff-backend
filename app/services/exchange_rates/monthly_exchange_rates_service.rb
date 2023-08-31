@@ -24,7 +24,7 @@ module ExchangeRates
       end
 
       def email_files_to_hmrc
-        ExchangeRates::Mailer.monthly_files
+        ExchangeRatesMailer.monthly_files
       end
 
       def is_tomorrow_is_penultimate_thursday?
