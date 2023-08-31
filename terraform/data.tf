@@ -79,3 +79,7 @@ data "aws_secretsmanager_secret" "oauth_secret" {
 data "aws_s3_bucket" "spelling_corrector" {
   bucket = "trade-tariff-search-configuration-${local.account_id}"
 }
+
+data "aws_s3_bucket" "persistence" {
+  bucket = "trade-tariff-persistence-${local.account_id}"
+}
