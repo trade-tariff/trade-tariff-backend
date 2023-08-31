@@ -1,4 +1,6 @@
 class ExchangeRatesMailer < ApplicationMailer
+  include ExchangeRatesHelper
+
   default to: TradeTariffBackend.management_email
 
   def monthly_files
@@ -16,14 +18,10 @@ class ExchangeRatesMailer < ApplicationMailer
   end
 
   def year
-    @year ||= if date.next_month.year != date.year
-                date.next_month.year
-              else
-                date.year
-              end
+    @year ||= next_month_year(date)
   end
 
   def month
-    @month ||= date.next_month.month
+    @month ||= next_month(date)
   end
 end
