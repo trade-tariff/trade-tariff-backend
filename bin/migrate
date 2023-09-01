@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+set -xe
+
+environment=$1
+service=$2
+
+# fetch the task ARN to feed into execute-command
+taskArn=$(aws ecs list-tasks \
+  --cluster "trade-tariff-cluster-${environment}" \
+  --service-name "${service}" |
+  jq .taskArns[0] -r)
+
+aws ecs execute-command \
+  --cluster "trade-tariff-cluster-${environment}" \
+  --task "${taskArn}" \
+  --container "${service}" \
+  --interactive \
+  --command "cd app && bundle exec rails db:migrate"
+
+aws ecs execute-command \
+  --cluster "trade-tariff-cluster-${environment}" \
+  --task "${taskArn}" \
+  --container "${service}" \
+  --interactive \
+  --command "cd app && bundle exec rails data:migrate"

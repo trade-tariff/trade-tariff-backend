@@ -256,7 +256,24 @@ commands:
             cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
             cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails data:migrate" --name "data-migrate" --wait
 
+
 jobs:
+  run-migrations-aws:
+    docker:
+      - image: cimg/base:current
+    parameters:
+      service:
+        type: string
+      environment:
+        type: string
+    steps:
+      - checkout
+      - aws-cli/install
+      - run:
+          name: "Run migrations"
+          command: |
+            bin/migrate << parameters.environment >> << parameters.service >>
+
   dump-search-references:
     parameters:
       from_environment_key:
@@ -842,6 +859,16 @@ workflows:
             - build-dev
           <<: *filter-not-main
 
+      - run-migrations-aws:
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          matrix:
+            parameters:
+              service:
+                - worker-xi
+                - worker-uk
+          <<: *filter-not-main
+
       - apply-terraform:
           name: apply-terraform-dev
           context: trade-tariff-terraform-aws-development
@@ -850,6 +877,8 @@ workflows:
             - test
             - plan-terraform-dev
             - build-and-push-dev
+            - run-migrations-aws-worker-uk
+            - run-migrations-aws-worker-xi
           <<: *filter-not-main
 
       - tariff/smoketests:
