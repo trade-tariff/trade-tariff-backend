@@ -931,6 +931,16 @@ workflows:
           ssm_parameter: "/staging/BACKEND_ECR_URL"
           <<: *filter-main
 
+      - run-migrations-aws:
+          context: trade-tariff-terraform-aws-staging
+          environment: staging
+          matrix:
+            parameters:
+              service:
+                - worker-xi
+                - worker-uk
+          <<: *filter-main
+
       - apply-terraform:
           name: apply-terraform-staging
           context: trade-tariff-terraform-aws-staging
@@ -939,6 +949,8 @@ workflows:
             - write-docker-tag-staging
             - plan-terraform-staging
             - build-and-push-live
+            - run-migrations-aws-worker-uk
+            - run-migrations-aws-worker-xi
           <<: *filter-main
 
       - sync-opensearch-packages:
@@ -1023,10 +1035,22 @@ workflows:
           environment: production
           <<: *filter-release
 
+      - run-migrations-aws:
+          context: trade-tariff-terraform-aws-production
+          environment: staging
+          matrix:
+            parameters:
+              service:
+                - worker-xi
+                - worker-uk
+          <<: *filter-release
+
       - apply-terraform:
           name: apply-terraform-prod
           context: trade-tariff-terraform-aws-production
           environment: production
           requires:
             - write-docker-tag-prod-release
+            - run-migrations-aws-worker-uk
+            - run-migrations-aws-worker-xi
           <<: *filter-release
