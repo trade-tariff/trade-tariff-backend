@@ -10,6 +10,14 @@ class ExchangeRateFile < Sequel::Model
     "/api/v2/exchange_rates/files/#{type}_#{period_year}-#{period_month}.#{format}"
   end
 
+  def object_key
+    "#{OBJECT_KEY_PREFIX}/#{period_year}/#{period_month}/#{filename}"
+  end
+
+  def filename
+    "#{type}_#{period_year}-#{period_month}.#{format}"
+  end
+
   dataset_module do
     def applicable_types
       where(type: APPLICABLE_TYPES)

@@ -1,5 +1,7 @@
 module ExchangeRates
   class UploadMonthlyFileService
+    include ExchangeRatesHelper
+
     def self.call(type)
       new(type).call
     end
@@ -54,15 +56,11 @@ module ExchangeRates
     end
 
     def year
-      @year ||= if publication_date.next_month.year != publication_date.year
-                  publication_date.next_month.year
-                else
-                  publication_date.year
-                end
+      @year ||= next_month_year(publication_date)
     end
 
     def month
-      @month ||= publication_date.next_month.month
+      @month ||= next_month(publication_date)
     end
   end
 

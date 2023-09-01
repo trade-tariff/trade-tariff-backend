@@ -15,7 +15,8 @@ module Api
         private
 
         def type
-          id.split('_').first(2).join('_')
+          match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml)_/)
+          match_data[1] if match_data
         end
 
         def month
@@ -44,11 +45,18 @@ module Api
         end
 
         def file_data
-          object_key = ExchangeRateFile.filepath_for(type, format, year, month)
-
           TariffSynchronizer::FileService
-            .get(object_key)
+            .get(file.object_key)
             .read
+        end
+
+        def file
+          @file ||= ExchangeRateFile.where(
+            type:,
+            period_year: year,
+            period_month: month,
+            format: format.to_s,
+          ).take
         end
       end
     end
