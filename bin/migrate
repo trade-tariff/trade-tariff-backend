@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 
 set -xe
 
@@ -16,11 +16,11 @@ aws ecs execute-command \
   --task "${taskArn}" \
   --container "${service}" \
   --interactive \
-  --command "cd app && bundle exec rails db:migrate"
+  --command "/bin/sh -c 'bundle exec rails db:migrate'"
 
 aws ecs execute-command \
   --cluster "trade-tariff-cluster-${environment}" \
   --task "${taskArn}" \
   --container "${service}" \
   --interactive \
-  --command "cd app && bundle exec rails data:migrate"
+  --command "/bin/sh -c 'bundle exec rails data:migrate'"
