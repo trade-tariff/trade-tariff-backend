@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.11.3"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
   service_name  = "worker-uk"
   service_count = var.service_count
@@ -36,6 +36,10 @@ module "worker_uk" {
 
   container_entrypoint = [""]
   container_command    = local.worker_command
+
+  init_container            = true
+  init_container_entrypoint = [""]
+  init_container_command    = local.init_command
 
   service_environment_config = flatten([
     local.backend_common_vars,
