@@ -103,7 +103,7 @@ module TenDigitGoodsNomenclature
     end
 
     def to_admin_param
-      "#{goods_nomenclature_item_id}-#{producline_suffix}"
+      goods_nomenclature_item_id
     end
 
     private
