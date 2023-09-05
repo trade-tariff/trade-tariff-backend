@@ -45,7 +45,8 @@ data "aws_iam_policy_document" "secrets" {
       "kms:GenerateDataKeyWithoutPlaintext"
     ]
     resources = [
-      data.aws_kms_key.secretsmanager_key.arn
+      data.aws_kms_key.secretsmanager_key.arn,
+      data.aws_kms_key.opensearch_key.arn
     ]
   }
 }

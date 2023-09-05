@@ -2,6 +2,7 @@ locals {
   account_id     = data.aws_caller_identity.current.account_id
   no_reply       = "no-reply@trade-tariff.service.gov.uk"
   worker_command = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
+  init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
   backend_common_vars = [
     {

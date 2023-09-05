@@ -40,6 +40,10 @@ data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
 }
 
+data "aws_kms_key" "opensearch_key" {
+  key_id = "alias/opensearch-key"
+}
+
 data "aws_secretsmanager_secret" "redis_uk_connection_string" {
   name = "redis-backend-uk-connection-string"
 }
