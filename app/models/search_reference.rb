@@ -49,7 +49,7 @@ class SearchReference < Sequel::Model
   end
 
   def referenced_id
-    referenced.to_admin_param
+    referenced.to_param
   end
 
   def title_indexed
