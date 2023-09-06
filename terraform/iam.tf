@@ -76,13 +76,14 @@ data "aws_iam_policy_document" "task_role_kms_keys" {
   statement {
     effect = "Allow"
     actions = [
-      "kms:Encrypt",
       "kms:Decrypt",
-      "kms:ReEncryptFrom",
-      "kms:ReEncryptTo",
+      "kms:Encrypt",
+      "kms:GenerateDataKey",
       "kms:GenerateDataKeyPair",
       "kms:GenerateDataKeyPairWithoutPlainText",
-      "kms:GenerateDataKeyWithoutPlaintext"
+      "kms:GenerateDataKeyWithoutPlaintext",
+      "kms:ReEncryptFrom",
+      "kms:ReEncryptTo",
     ]
     resources = [
       data.aws_kms_key.opensearch_key.arn,
