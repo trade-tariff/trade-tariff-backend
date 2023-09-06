@@ -24,6 +24,22 @@ data "aws_iam_policy_document" "secrets" {
   statement {
     effect = "Allow"
     actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncryptFrom",
+      "kms:ReEncryptTo",
+      "kms:GenerateDataKeyPair",
+      "kms:GenerateDataKeyPairWithoutPlainText",
+      "kms:GenerateDataKeyWithoutPlaintext"
+    ]
+    resources = [
+      data.aws_kms_key.secretsmanager_key.arn,
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
       "ssm:DescribeParameters",
       "ssm:GetParameter",
       "ssm:GetParameters"
@@ -54,6 +70,30 @@ data "aws_iam_policy_document" "secrets" {
 resource "aws_iam_policy" "secrets" {
   name   = "backend-execution-role-secrets-policy"
   policy = data.aws_iam_policy_document.secrets.json
+}
+
+data "aws_iam_policy_document" "task_role_kms_keys" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Encrypt",
+      "kms:Decrypt",
+      "kms:ReEncryptFrom",
+      "kms:ReEncryptTo",
+      "kms:GenerateDataKeyPair",
+      "kms:GenerateDataKeyPairWithoutPlainText",
+      "kms:GenerateDataKeyWithoutPlaintext"
+    ]
+    resources = [
+      data.aws_kms_key.opensearch_key.arn,
+      data.aws_kms_key.persistence_key.arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "task_role_kms_keys" {
+  name   = "backend-task-role-kms-keys-policy"
+  policy = data.aws_iam_policy_document.task_role_kms_keys.json
 }
 
 data "aws_iam_policy_document" "exec" {
