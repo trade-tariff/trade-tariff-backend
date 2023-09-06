@@ -117,10 +117,6 @@ locals {
       value = "trade-tariff-support@enginegroup.com"
     },
     {
-      name  = "TARIFF_SYNC_HOST"
-      value = "https://webservices.hmrc.gov.uk"
-    },
-    {
       name  = "SLACK_CHANNEL"
       value = "#tariffs-etl"
     },
@@ -160,6 +156,10 @@ locals {
     {
       name      = "SECRET_KEY_BASE"
       valueFrom = data.aws_secretsmanager_secret.secret_key_base.arn
+    },
+    {
+      name      = "TARIFF_SYNC_HOST"
+      valueFrom = data.aws_secretsmanager_secret.sync_host.arn
     },
     {
       name      = "TARIFF_SYNC_USERNAME"

@@ -68,6 +68,10 @@ data "aws_secretsmanager_secret" "sentry_dsn" {
   name = "backend-sentry-dsn"
 }
 
+data "aws_secretsmanager_secret" "sync_host" {
+  name = "backend-sync-host"
+}
+
 data "aws_secretsmanager_secret" "sync_password" {
   name = "backend-sync-password"
 }
