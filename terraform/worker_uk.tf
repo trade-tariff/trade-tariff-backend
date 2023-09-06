@@ -26,7 +26,7 @@ module "worker_uk" {
   task_role_policy_arns = [
     aws_iam_policy.exec.arn,
     aws_iam_policy.s3.arn,
-    aws_iam_policy.kms_keys.arn
+    aws_iam_policy.task_role_kms_keys.arn
   ]
 
   execution_role_policy_arns = [
