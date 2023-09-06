@@ -30,6 +30,7 @@ class SearchReference < Sequel::Model
               reciprocal_type: :many_to_one,
               setter: referenced_setter do |ds|
     ds.with_actual(GoodsNomenclature)
+      .with_leaf_column
   end
 
   self.raise_on_save_failure = false
@@ -50,6 +51,10 @@ class SearchReference < Sequel::Model
 
   def referenced_id
     referenced.to_param
+  end
+
+  def referenced_class
+    referenced&.goods_nomenclature_class || super
   end
 
   def title_indexed
