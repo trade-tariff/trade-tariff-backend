@@ -32,10 +32,6 @@ data "aws_ssm_parameter" "elasticsearch_url" {
   name = "/${var.environment}/ELASTICSEARCH_URL"
 }
 
-data "aws_secretsmanager_secret" "newrelic_license_key" {
-  name = "newrelic-license-key"
-}
-
 data "aws_kms_key" "secretsmanager_key" {
   key_id = "alias/secretsmanager-key"
 }

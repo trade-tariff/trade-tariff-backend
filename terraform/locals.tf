@@ -176,10 +176,6 @@ locals {
       valueFrom = data.aws_ssm_parameter.elasticsearch_url.arn
     },
     {
-      name      = "NEW_RELIC_LICENSE_KEY"
-      valueFrom = data.aws_secretsmanager_secret.newrelic_license_key.arn
-    },
-    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },

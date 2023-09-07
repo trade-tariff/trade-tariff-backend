@@ -9,7 +9,6 @@ data "aws_iam_policy_document" "secrets" {
     ]
     resources = [
       data.aws_secretsmanager_secret.database_connection_string.arn,
-      data.aws_secretsmanager_secret.newrelic_license_key.arn,
       data.aws_secretsmanager_secret.oauth_id.arn,
       data.aws_secretsmanager_secret.oauth_secret.arn,
       data.aws_secretsmanager_secret.redis_uk_connection_string.arn,
@@ -113,7 +112,6 @@ data "aws_iam_policy_document" "exec" {
       "logs:DescribeLogStreams",
       "logs:PutLogEvents"
     ]
-    # tfsec:ignore:aws-iam-no-policy-wildcards
     resources = ["*"]
   }
 }
@@ -139,7 +137,6 @@ data "aws_iam_policy_document" "spelling_corrector_bucket" {
       "s3:GetObject",
       "s3:PutObject"
     ]
-    # tfsec:ignore:aws-iam-no-policy-wildcards
     resources = [
       "${data.aws_s3_bucket.spelling_corrector.arn}/*",
       "${data.aws_s3_bucket.persistence.arn}/*"

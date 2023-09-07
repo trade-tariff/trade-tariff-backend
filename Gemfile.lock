@@ -224,7 +224,6 @@ GEM
       timeout
     net-smtp (0.3.3)
       net-protocol
-    newrelic_rpm (9.4.2)
     nio4r (2.5.9)
     nokogiri (1.15.4)
       mini_portile2 (~> 2.8.2)
@@ -462,7 +461,6 @@ DEPENDENCIES
   letter_opener
   lograge
   logstash-event
-  newrelic_rpm
   nokogiri
   omniauth-rails_csrf_protection
   opensearch-ruby
