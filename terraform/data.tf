@@ -44,6 +44,10 @@ data "aws_kms_key" "opensearch_key" {
   key_id = "alias/opensearch-key"
 }
 
+data "aws_kms_key" "persistence_key" {
+  key_id = "alias/s3-key"
+}
+
 data "aws_secretsmanager_secret" "redis_uk_connection_string" {
   name = "redis-backend-uk-connection-string"
 }
@@ -64,12 +68,28 @@ data "aws_secretsmanager_secret" "sentry_dsn" {
   name = "backend-sentry-dsn"
 }
 
-data "aws_secretsmanager_secret" "sync_password" {
-  name = "backend-sync-password"
+data "aws_secretsmanager_secret" "sync_uk_host" {
+  name = "backend-uk-sync-host"
 }
 
-data "aws_secretsmanager_secret" "sync_username" {
-  name = "backend-sync-username"
+data "aws_secretsmanager_secret" "sync_uk_password" {
+  name = "backend-uk-sync-password"
+}
+
+data "aws_secretsmanager_secret" "sync_uk_username" {
+  name = "backend-uk-sync-username"
+}
+
+data "aws_secretsmanager_secret" "sync_xi_host" {
+  name = "backend-xi-sync-host"
+}
+
+data "aws_secretsmanager_secret" "sync_xi_password" {
+  name = "backend-xi-sync-password"
+}
+
+data "aws_secretsmanager_secret" "sync_xi_username" {
+  name = "backend-xi-sync-username"
 }
 
 data "aws_secretsmanager_secret" "oauth_id" {
