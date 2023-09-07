@@ -3,7 +3,10 @@ class ExchangeRatesMailer < ApplicationMailer
 
   default to: TradeTariffBackend.management_email
 
-  def monthly_files
+  attr_reader :date
+
+  def monthly_files(date = Time.zone.today)
+    @date = date
     @month_and_year = date.next_month.strftime('%B %Y')
     @csv_hmrc = ExchangeRateFile.where(type: 'monthly_csv_hmrc', period_month: month, period_year: year).take
     @xml = ExchangeRateFile.where(type: 'monthly_xml', period_month: month, period_year: year).take
@@ -12,10 +15,6 @@ class ExchangeRatesMailer < ApplicationMailer
   end
 
   private
-
-  def date
-    @date ||= Time.zone.today
-  end
 
   def year
     @year ||= next_month_year(date)
