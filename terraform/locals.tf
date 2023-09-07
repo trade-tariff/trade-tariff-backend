@@ -142,11 +142,11 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.sync_uk_host.arn
     },
     {
-      name      = "HMR_CLIENT_ID"
+      name      = "HMRC_CLIENT_ID"
       valueFrom = data.aws_secretsmanager_secret.sync_uk_username.arn
     },
     {
-      name      = "HMR_CLIENT_SECRET"
+      name      = "HMRC_CLIENT_SECRET"
       valueFrom = data.aws_secretsmanager_secret.sync_uk_password.arn
     },
   ]
