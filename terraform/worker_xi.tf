@@ -45,6 +45,7 @@ module "worker_xi" {
   service_environment_config = flatten([
     local.backend_common_vars,
     local.backend_common_worker_vars,
+    local.backend_xi_worker_secrets,
     [
       {
         name  = "CDS"

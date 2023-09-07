@@ -136,6 +136,36 @@ locals {
     },
   ]
 
+  backend_uk_worker_secrets = [
+    {
+      name      = "HMRC_API_HOST"
+      valueFrom = data.aws_secretsmanager_secret.sync_uk_host.arn
+    },
+    {
+      name      = "HMR_CLIENT_ID"
+      valueFrom = data.aws_secretsmanager_secret.sync_uk_username.arn
+    },
+    {
+      name      = "HMR_CLIENT_SECRET"
+      valueFrom = data.aws_secretsmanager_secret.sync_uk_password.arn
+    },
+  ]
+
+  backend_xi_worker_secrets = [
+    {
+      name      = "TARIFF_SYNC_HOST"
+      valueFrom = data.aws_secretsmanager_secret.sync_xi_host.arn
+    },
+    {
+      name      = "TARIFF_SYNC_USERNAME"
+      valueFrom = data.aws_secretsmanager_secret.sync_xi_username.arn
+    },
+    {
+      name      = "TARIFF_SYNC_PASSWORD"
+      valueFrom = data.aws_secretsmanager_secret.sync_xi_password.arn
+    },
+  ]
+
   backend_common_secrets = [
     {
       name      = "DATABASE_URL"
@@ -156,18 +186,6 @@ locals {
     {
       name      = "SECRET_KEY_BASE"
       valueFrom = data.aws_secretsmanager_secret.secret_key_base.arn
-    },
-    {
-      name      = "TARIFF_SYNC_HOST"
-      valueFrom = data.aws_secretsmanager_secret.sync_host.arn
-    },
-    {
-      name      = "TARIFF_SYNC_USERNAME"
-      valueFrom = data.aws_secretsmanager_secret.sync_username.arn
-    },
-    {
-      name      = "TARIFF_SYNC_PASSWORD"
-      valueFrom = data.aws_secretsmanager_secret.sync_password.arn
     },
     {
       name      = "TRADE_TARIFF_OAUTH_ID"
