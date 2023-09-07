@@ -53,9 +53,6 @@ gem 'rabl'
 gem 'responders'
 gem 'tilt'
 
-# Newrelic
-gem 'newrelic_rpm'
-
 group :development do
   gem 'foreman'
   gem 'letter_opener'
