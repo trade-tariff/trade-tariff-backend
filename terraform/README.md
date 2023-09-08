@@ -77,6 +77,8 @@ Terraform to deploy the service into AWS.
 | <a name="input_region"></a> [region](#input\_region) | AWS region to use. | `string` | n/a | yes |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `2` | no |
 | <a name="input_service_name"></a> [service\_name](#input\_service\_name) | Name of the service | `string` | `"backend"` | no |
+| <a name="input_stemming_exclusion_reference_analyzer"></a> [stemming\_exclusion\_reference\_analyzer](#input\_stemming\_exclusion\_reference\_analyzer) | Stemmer package file path in opensearch | `string` | n/a | yes |
+| <a name="input_synonym_reference_analyzer"></a> [synonym\_reference\_analyzer](#input\_synonym\_reference\_analyzer) | Synonym package file path in opensearch | `string` | n/a | yes |
 
 ## Outputs
 

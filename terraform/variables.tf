@@ -57,3 +57,13 @@ variable "memory" {
   description = "Memory to allocate in MB. Powers of 2 only."
   type        = number
 }
+
+variable "stemming_exclusion_reference_analyzer" {
+  description = "Stemmer package file path in opensearch"
+  type        = string
+}
+
+variable "synonym_reference_analyzer" {
+  description = "Synonym package file path in opensearch"
+  type        = string
+}

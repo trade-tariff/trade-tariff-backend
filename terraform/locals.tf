@@ -87,11 +87,11 @@ locals {
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
-      value = "analyzers/F159568045" # TODO: fetch from each env
+      value = var.stemming_exclusion_reference_analyzer
     },
     {
       name  = "SYNONYM_REFERENCE_ANALYZER"
-      value = "analyzers/F202143497" # TODO: fetch from each env
+      value = var.synonym_reference_analyzer
     },
     {
       name  = "TARIFF_SYNC_EMAIL"
