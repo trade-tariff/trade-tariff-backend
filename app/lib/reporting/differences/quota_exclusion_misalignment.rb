@@ -60,6 +60,14 @@ module Reporting
 
       attr_reader :name, :report
 
+      def misaligned_rows
+        quota_order_numbers_grouped_by_key.each do |key, q|
+          qm = measures_grouped_by_key[key]
+
+          yield build_row_for(qm, q) if qm && (qm[:excluded_geographical_areas] != q[:excluded_geographical_areas])
+        end
+      end
+
       def build_row_for(measure, quota_order_number)
         [
           measure[:measure_sid],
@@ -67,14 +75,6 @@ module Reporting
           measure[:geographical_area_id],
           [quota_order_number[:excluded_geographical_areas].join(','), measure[:excluded_geographical_areas].join(',')].join("\n"),
         ]
-      end
-
-      def misaligned_rows
-        quota_order_numbers_grouped_by_key.each do |key, q|
-          qm = measures_grouped_by_key[key]
-
-          yield build_row_for(qm, q) if qm && (qm[:excluded_geographical_areas] != q[:excluded_geographical_areas])
-        end
       end
 
       def quota_order_numbers_grouped_by_key
@@ -107,7 +107,6 @@ module Reporting
         @quotas_with_excluded_geographical_areas ||=
           QuotaOrderNumber
             .actual
-            .exclude(quota_order_number_id: /^054/)
             .eager(
               :measure,
               quota_order_number_origin: [{ quota_order_number_origin_exclusions: :geographical_area }],
@@ -115,7 +114,6 @@ module Reporting
             .all
             .select do |quota_order_number|
               quota_order_number.quota_order_number_origin &&
-                quota_order_number.quota_order_number_origin.quota_order_number_origin_exclusions.any? &&
                 quota_order_number.measure
             end
       end
@@ -123,12 +121,11 @@ module Reporting
       def quota_measures_with_excluded_geographical_areas
         @quota_measures_with_excluded_geographical_areas ||=
           Measure
-            .actual                                                 # Return only current (as of today) measures
+            .actual
             .with_regulation_dates_query
             .exclude(ordernumber: nil)
-            .exclude(ordernumber: /^054/)
-            .association_join(:measure_excluded_geographical_areas) # inner join to filter in measures with excluded geographical areas
-            .association_join(:quota_order_number)                  # inner join to filter in measures with quota order number
+            .exclude(ordernumber: /^0\d4/)
+            .association_join(:quota_order_number)
             .eager(:measure_excluded_geographical_areas)
             .all
       end
