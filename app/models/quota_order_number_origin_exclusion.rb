@@ -9,5 +9,5 @@ class QuotaOrderNumberOriginExclusion < Sequel::Model
     ds.with_actual(GeographicalArea)
   end
 
-  delegate :geographical_area_id, to: :geographical_area
+  delegate :geographical_area_id, to: :geographical_area, allow_nil: true
 end
