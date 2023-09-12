@@ -36,6 +36,17 @@ class ExchangeRateFile < Sequel::Model
       "#{type}_#{year}-#{month}.#{format}"
     end
 
+    def filename_for_download(type, format, year, month)
+      month_with_zero = format('%02i', month)
+      
+      case type
+      when "monthly_csv_hmrc"
+        "#{year}#{month_with_zero}MonthlyRates.#{format}"
+      else
+        "exrates-monthly-#{month_with_zero}#{year[2..3]}.#{format}"
+      end
+    end
+
     def applicable_files_for(month, year)
       applicable_types
         .where(period_year: year, period_month: month)

@@ -25,7 +25,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq("attachment; filename=monthly_csv_#{year}-#{month}.csv")
+        expect(response.headers['Content-Disposition']).to eq("attachment; filename=exrates-monthly-0723.csv")
       end
 
       it 'returns the CSV data as the response body' do
@@ -48,7 +48,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq("attachment; filename=monthly_xml_#{year}-#{month}.xml")
+        expect(response.headers['Content-Disposition']).to eq("attachment; filename=exrates-monthly-0723.xml")
       end
 
       it 'returns the XML data as the response body' do
@@ -71,7 +71,7 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
 
       it 'returns the correct Content-Disposition header' do
-        expect(response.headers['Content-Disposition']).to eq("attachment; filename=monthly_csv_hmrc_#{year}-#{month}.csv")
+        expect(response.headers['Content-Disposition']).to eq("attachment; filename=202307MonthlyRates.csv")
       end
 
       it 'returns the CSV data as the response body' do
