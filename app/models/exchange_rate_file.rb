@@ -37,10 +37,10 @@ class ExchangeRateFile < Sequel::Model
     end
 
     def filename_for_download(type, format, year, month)
-      month_with_zero = format('%02i', month)
-      
+      month_with_zero = sprintf('%02i', month)
+
       case type
-      when "monthly_csv_hmrc"
+      when 'monthly_csv_hmrc'
         "#{year}#{month_with_zero}MonthlyRates.#{format}"
       else
         "exrates-monthly-#{month_with_zero}#{year[2..3]}.#{format}"
