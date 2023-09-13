@@ -61,7 +61,10 @@ Rails.application.configure do
     }.merge(JSON.parse(ENV['VCAP_APPLICATION']))
   end
 
-  config.lograge.ignore_actions = ['HealthcheckController#index']
+  config.lograge.ignore_actions = [
+    'HealthcheckController#index',
+    'HealthcheckController#checkz',
+  ]
 
   # Rails cache store
   # PaasConfig returns url and db
