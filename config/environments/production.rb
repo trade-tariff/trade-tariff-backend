@@ -63,7 +63,7 @@ Rails.application.configure do
 
   config.lograge.ignore_actions = [
     'HealthcheckController#index',
-    'HealthcheckController#checkz'
+    'HealthcheckController#checkz',
   ]
 
   # Rails cache store
