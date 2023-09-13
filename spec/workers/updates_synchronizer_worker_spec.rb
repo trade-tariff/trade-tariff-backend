@@ -4,7 +4,6 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(GenerateGoodsNomenclaturesCsvReportWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
   end
 
@@ -61,7 +60,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
         it { expect(TariffSynchronizer).to have_received(:download) }
         it { expect(TariffSynchronizer).to have_received(:apply) }
-        it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
 
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true, true) }
@@ -98,7 +97,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
           it { expect(TariffSynchronizer).not_to have_received(:download) }
           it { expect(TariffSynchronizer).not_to have_received(:apply) }
 
-          it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
           it { expect(described_class.jobs).to have_attributes length: 1 }
 
           it 'creates a later job to re-attempt download and processing' do
@@ -209,7 +208,7 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
           it { expect(TariffSynchronizer).to have_received(:download_cds) }
           it { expect(TariffSynchronizer).to have_received(:apply_cds) }
-          it { expect(Sidekiq::Client).not_to have_received(:enqueue) }
+          it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
 
           context 'with reapply_data_migrations option' do
             subject(:perform) { described_class.new.perform(true, true) }

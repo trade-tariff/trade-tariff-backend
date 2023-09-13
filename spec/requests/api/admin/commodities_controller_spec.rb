@@ -17,13 +17,13 @@ RSpec.describe Api::Admin::CommoditiesController, type: :request do
     end
 
     before do
-      allow(TariffSynchronizer::FileService).to receive(:get).and_return(StringIO.new("foo,bar\nqux,qul"))
+      allow(Reporting::Commodities).to receive(:get_today).and_return(StringIO.new("foo,bar\nqux,qul"))
     end
 
-    it 'gets the csv from the FileService' do
+    it 'gets the csv' do
       do_request
 
-      expect(TariffSynchronizer::FileService).to have_received(:get).with("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv")
+      expect(Reporting::Commodities).to have_received(:get_today)
     end
 
     it_behaves_like 'a successful csv response' do

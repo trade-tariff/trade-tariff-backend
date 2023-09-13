@@ -32,12 +32,11 @@ class UpdatesSynchronizerWorker
 
     Sidekiq::Client.enqueue(ClearInvalidSearchReferences)
     Sidekiq::Client.enqueue(TreeIntegrityCheckWorker)
-    # Repopulation of the goods nomenclature index depends on the materialised paths being present
     Sidekiq::Client.enqueue(ClearCacheWorker)
-    Sidekiq::Client.enqueue(GenerateGoodsNomenclaturesCsvReportWorker)
-    Sidekiq::Client.enqueue(ReportWorker)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
     attempt_reschedule!
+  ensure
+    Sidekiq::Client.enqueue(ReportWorker)
   end
 
 private

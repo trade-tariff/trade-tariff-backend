@@ -2,8 +2,8 @@ module Reporting
   module Reportable
     extend ActiveSupport::Concern
 
-    def object
-      bucket.object(object_key)
+    def object(key = object_key)
+      bucket.object(key)
     end
 
     def bucket
