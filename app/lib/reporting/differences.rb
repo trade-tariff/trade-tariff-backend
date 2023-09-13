@@ -42,8 +42,6 @@ module Reporting
 
     extend Reporting::Reportable
 
-    delegate :get, to: TariffSynchronizer::FileService
-
     attr_reader :package,
                 :workbook,
                 :regular_style,
@@ -105,7 +103,7 @@ module Reporting
       methods.each do |method|
         start = Time.zone.now
 
-        send(method)
+        public_send(method)
 
         finish = Time.zone.now
         Rails.logger.info("Finished method '#{method}' (Duration: #{finish - start} seconds)")
@@ -234,11 +232,11 @@ module Reporting
     end
 
     def uk_goods_nomenclatures
-      @uk_goods_nomenclatures ||= handle_csv(get("uk/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+      @uk_goods_nomenclatures ||= handle_csv(Reporting::Commodities.get_uk_today)
     end
 
     def xi_goods_nomenclatures
-      @xi_goods_nomenclatures ||= handle_csv(get("xi/goods_nomenclatures/#{Time.zone.today.iso8601}.csv"))
+      @xi_goods_nomenclatures ||= handle_csv(Reporting::Commodities.get_xi_today)
     end
 
     def each_chapter(eager:, as_of: Time.zone.today.iso8601)

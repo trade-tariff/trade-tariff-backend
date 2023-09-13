@@ -5,6 +5,7 @@ class ReportWorker
 
   def perform
     if TradeTariffBackend.reporting_enabled?
+      Reporting::Commodities.generate
       Reporting::Basic.generate
       Reporting::DeclarableDuties.generate
       Reporting::Prohibitions.generate
