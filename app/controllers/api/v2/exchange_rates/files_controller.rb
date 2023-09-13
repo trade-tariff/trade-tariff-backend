@@ -3,7 +3,7 @@ module Api
     module ExchangeRates
       class FilesController < ApiController
         def show
-          filename = ExchangeRateFile.filename_for(type, format, year, month)
+          filename = ExchangeRateFile.filename_for_download(type, format, year, month)
 
           send_data(
             file_data,
@@ -29,10 +29,6 @@ module Api
 
         def id
           params[:id].to_s
-        end
-
-        def filename_for(type, format)
-          "#{type}_#{year}-#{month}.#{format}"
         end
 
         def format
