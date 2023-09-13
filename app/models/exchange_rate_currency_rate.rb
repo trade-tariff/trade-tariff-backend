@@ -1,6 +1,8 @@
 require 'csv'
 
 class ExchangeRateCurrencyRate < Sequel::Model
+  plugin :validation_helpers
+
   SCHEDULED_RATE_TYPE = 'scheduled'.freeze
   SPOT_RATE_TYPE = 'spot'.freeze
 
@@ -19,6 +21,12 @@ class ExchangeRateCurrencyRate < Sequel::Model
   include ContentAddressableId
 
   content_addressable_fields :currency_code, :validity_start_date, :validity_end_date, :country, :country_code
+
+  def validate
+    super
+
+    validates_unique(%i[currency_code validity_start_date validity_end_date rate_type])
+  end
 
   def presented_rate
     sprintf('%.4f', rate)
