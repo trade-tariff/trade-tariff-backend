@@ -8,6 +8,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
 
     before do
       allow(ExchangeRates::PeriodList).to receive(:build).with(2023).and_return(period_list)
+      allow(ExchangeRates::PeriodList).to receive(:build).with(1970).and_return([])
       allow(ExchangeRateCurrencyRate).to receive(:max_year).and_return(2023)
 
       make_request
@@ -59,6 +60,13 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       it { is_expected.to have_http_status(:ok) }
       it { expect(response.body).to match_json_expression(pattern) }
       it { expect(ExchangeRateCurrencyRate).to have_received(:max_year) }
+    end
+
+    context 'when the year parameter has no available data' do
+      let(:make_request) { get api_exchange_rates_period_list_path(year: '1970', format: :json) }
+
+      it { is_expected.to have_http_status(:not_found) }
+      it { expect(response.body).to match_json_expression({ data: {} }) }
     end
   end
 end

@@ -65,6 +65,18 @@ RSpec.describe ExchangeRates::PeriodList do
     it 'returns an array of ExchangeRates::Period instances' do
       expect(exchange_rate_periods).to all(be_an_instance_of(ExchangeRates::Period))
     end
+
+    context 'when the year contains no periods' do
+      let(:year) { 1970 }
+
+      before do
+        allow(ExchangeRateCurrencyRate).to receive(:months_for_year).with(year).and_return([])
+      end
+
+      it 'returns an empty array' do
+        expect(exchange_rate_periods).to eq([])
+      end
+    end
   end
 
   describe '.exchange_rate_years' do
