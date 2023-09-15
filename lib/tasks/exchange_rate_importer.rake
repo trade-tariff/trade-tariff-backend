@@ -4,22 +4,31 @@ namespace :importer do
     desc 'Import Average Exchange Rates'
 
     task import_agv_ex_rates: %i[environment] do
-      average_type = 'average'
+      end_dates = [
+        '31 March 2020',
+        '31 December 2020',
+        '31 March 2021',
+        '31 December 2021',
+        '31 March 2022',
+        '31 December 2022',
+        '31 March 2023',
+      ]
 
-      url = 'https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/1154375/Average_for_the_year_to_31_March_2023.csv'
+      import_avg_exchange_rate_csv(end_dates[6])
+    end
 
-      client = Faraday.new
-      response = client.get(url)
+    # rubocop:disable Rake/MethodDefinitionInTask
+    def import_avg_exchange_rate_csv(end_date)
+      # Example of valid filename: "Average for the year to 31 March 2020.csv"
+      filename = "./lib/tasks/exchange_rates_averages/Average for the year to #{end_date}.csv"
+      data = CSV.read(filename, headers: true)
 
-      csv = csv_without_title(response.body)
-
-      data = CSV.parse(csv, headers: true)
-
-      validity_end_date = Date.new(2023, 3, 31)
-      validity_start_date = validity_end_date - 1.year # TODO: assuming that average period is one year - To be confirmed!
+      validity_end_date = Date.parse(end_date)
+      validity_start_date = validity_end_date - 1.year
 
       invalid_rows = []
       invalid_records = []
+      invalid_countries = []
       new_records_count = 0
 
       puts 'Importing Exchange rates ...'
@@ -32,14 +41,23 @@ namespace :importer do
           next
         end
 
-        currency_unit_per_pound = row[4].to_f # Currency Units per £1
+        country_name = row[0].strip # Country
+        country = ExchangeRateCountry.where(country: country_name).first
 
-        new_rate = ExchangeRateCurrencyRate.new(currency_code: row['Currency Code'],
+        if country.nil?
+          puts "Invalid name for country: #{country_name}"
+          invalid_countries << country_name
+
+          next
+        end
+
+        currency_code = country.currency_code
+
+        new_rate = ExchangeRateCurrencyRate.new(currency_code:,
                                                 validity_start_date:,
                                                 validity_end_date:,
-                                                rate_type: average_type,
-                                                rate: currency_unit_per_pound)
-
+                                                rate_type: 'average',
+                                                rate: row['Currency Units per pound'].to_f)
         if new_rate.valid?
           new_rate.save
           new_records_count += 1
@@ -55,21 +73,12 @@ namespace :importer do
       puts "New exchage rates imported: #{new_records_count}"
       puts "Invalid CSV rows: #{invalid_rows.count}"
       puts "Invalid records: #{invalid_records.count}"
+
+      puts "Invalid countries: #{invalid_countries.join(', ')}"
     end
 
-    # rubocop:disable Rake/MethodDefinitionInTask
     def invalid?(row)
       row.to_hash.values.any?(&:empty?)
-    end
-
-    def csv_without_title(text)
-      start_valid_data = 0
-
-      if text.include?('Average for the year')
-        start_valid_data = text.index("\r\n") + 2 # skip the first row with the Title
-      end
-
-      text[start_valid_data..]
     end
     # rubocop:enable Rake/MethodDefinitionInTask
   end
