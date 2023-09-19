@@ -11,17 +11,17 @@ module ExchangeRates
     end
 
     class << self
-      def wrap(months, year)
+      def wrap(months, year, type)
         months.map do |month|
-          build(month, year)
+          build(month, year, type)
         end
       end
 
-      def build(month, year)
+      def build(month, year, type)
         period = new
         period.month = month
         period.year = year
-        period.files = ::ExchangeRateFile.applicable_files_for(month, year)
+        period.files = ::ExchangeRateFile.applicable_files_for(month, year, type)
         period
       end
     end

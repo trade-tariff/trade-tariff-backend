@@ -3,6 +3,7 @@ require 'csv'
 class ExchangeRateCurrencyRate < Sequel::Model
   SCHEDULED_RATE_TYPE = 'scheduled'.freeze
   SPOT_RATE_TYPE = 'spot'.freeze
+  AVERAGE_RATE_TYPE = 'average'.freeze
 
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
@@ -63,14 +64,20 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .distinct(:validity_start_date)
     end
 
-    def by_month_and_year(month, year = Time.zone.today.year)
+    def by_month_and_year(month, year = Time.zone.today.year, type)
       return if month.blank? || year.blank?
-
+    
       start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
-      end_of_month = start_of_month.end_of_month
-
-      where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
-        .order(Sequel.desc(:validity_start_date))
+    
+      if type == SCHEDULED_RATE_TYPE
+        end_of_month = start_of_month.end_of_month
+        where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
+      elsif type == SPOT_RATE_TYPE
+        start_date = start_of_month.end_of_month
+        where { (validity_start_date == start_date) }
+      end
+    
+      order(Sequel.desc(:validity_start_date))
     end
 
     def files_for_year_and_month(month, year = Time.zone.today.year)
@@ -85,10 +92,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
   end
 
   class << self
-    def all_years
+    def all_years(type)
       distinct
         .select { date_part('year', :validity_start_date).cast(:integer).as(:year) }
-        .scheduled
+        .where(rate_type: type)
         .order(Sequel.desc(:year))
         .pluck(:year)
     end
@@ -102,9 +109,9 @@ class ExchangeRateCurrencyRate < Sequel::Model
         &.year.presence || Time.zone.today.year
     end
 
-    def months_for_year(year)
+    def months_for_year(year, type)
       by_year(year)
-        .scheduled
+        .where(rate_type: type)
         .select_map(:validity_start_date)
         .map(&:month)
         .uniq

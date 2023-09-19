@@ -1,5 +1,5 @@
 class ExchangeRateFile < Sequel::Model
-  APPLICABLE_TYPES = %w[monthly_csv monthly_xml].freeze
+  APPLICABLE_TYPES = %w[monthly_csv monthly_xml spot_csv average_csv].freeze
   OBJECT_KEY_PREFIX = 'data/exchange_rates'.freeze
 
   include ContentAddressableId
@@ -47,9 +47,18 @@ class ExchangeRateFile < Sequel::Model
       end
     end
 
-    def applicable_files_for(month, year)
+    def applicable_files_for(month, year, type)
+      case type
+      when "scheduled"
+        file_types = ["monthly_csv", "monthly_xml"]
+      when "spot"
+        file_types = ["spot_csv"]
+      when "average"
+        file_types = ["average_csv"]
+      end
+    
       applicable_types
-        .where(period_year: year, period_month: month)
+        .where(period_year: year, period_month: month, type: file_types)
         .all
     end
   end

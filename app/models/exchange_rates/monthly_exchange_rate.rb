@@ -19,21 +19,21 @@ module ExchangeRates
     end
 
     class << self
-      def build(month, year)
-        exchange_rate_files = ExchangeRateFile.applicable_files_for(month, year)
+      def build(month, year, type)
+        exchange_rate_files = ExchangeRateFile.applicable_files_for(month, year, type)
 
         rates_list = new
         rates_list.year = year
         rates_list.month = month
         rates_list.exchange_rate_files = exchange_rate_files
-        rates_list.exchange_rates = exchange_rates(month, year)
+        rates_list.exchange_rates = exchange_rates(month, year, type)
         rates_list
       end
 
-      def exchange_rates(month, year)
+      def exchange_rates(month, year, type)
         ExchangeRateCurrencyRate
-          .by_month_and_year(month, year)
-          .scheduled
+          .by_month_and_year(month, year, type)
+          .where(rate_type: type)
           .association_right_join(:exchange_rate_countries)
           .eager(:exchange_rate_currency)
           .order(:country)

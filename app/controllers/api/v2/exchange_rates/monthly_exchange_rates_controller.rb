@@ -16,7 +16,7 @@ module Api
         end
 
         def monthly_exchange_rate
-          ::ExchangeRates::MonthlyExchangeRate.build(period_month, period_year)
+          ::ExchangeRates::MonthlyExchangeRate.build(period_month, period_year, type)
         end
 
         def period_month
@@ -29,6 +29,20 @@ module Api
 
         def id
           params[:id].to_s
+        end
+
+        def filter_params
+          params.fetch(:filter, {}).permit(:type)
+        end
+
+        def type
+          filter_params[:type]
+        end
+
+        def type
+          type_param = filter_params[:type]
+
+          type_param if [ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE, ExchangeRateCurrencyRate::SPOT_RATE_TYPE, ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE].include?(type_param)
         end
       end
     end

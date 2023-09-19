@@ -20,11 +20,25 @@ module Api
         end
 
         def period_list
-          @period_list ||= ::ExchangeRates::PeriodList.build(year)
+          @period_list ||= ::ExchangeRates::PeriodList.build(year, type)
         end
 
         def year
           (params[:year].presence || ExchangeRateCurrencyRate.max_year).to_i
+        end
+
+        def filter_params
+          params.fetch(:filter, {}).permit(:type)
+        end
+
+        def type
+          filter_params[:type]
+        end
+
+        def type
+          type_param = filter_params[:type]
+
+          type_param if [ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE, ExchangeRateCurrencyRate::SPOT_RATE_TYPE, ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE].include?(type_param)
         end
       end
     end
