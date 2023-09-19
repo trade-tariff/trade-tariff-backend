@@ -1,3 +1,5 @@
+require 'opensearch/version'
+
 module TradeTariffBackend
   MAX_LOCK_LIFETIME = 600_000
   REVISION_FILE = Rails.root.join('REVISION').to_s.freeze
