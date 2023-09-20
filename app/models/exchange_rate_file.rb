@@ -49,14 +49,14 @@ class ExchangeRateFile < Sequel::Model
 
     def applicable_files_for(month, year, type)
       case type
-      when "scheduled"
-        file_types = ["monthly_csv", "monthly_xml"]
-      when "spot"
-        file_types = ["spot_csv"]
-      when "average"
-        file_types = ["average_csv"]
+      when ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE
+        file_types = %w[monthly_csv monthly_xml]
+      when ExchangeRateCurrencyRate::SPOT_RATE_TYPE
+        file_types = %w[spot_csv]
+      when ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE
+        file_types = %w[average_csv]
       end
-    
+
       applicable_types
         .where(period_year: year, period_month: month, type: file_types)
         .all
