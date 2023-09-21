@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 15.3
+-- Dumped by pg_dump version 15.4
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -694,6 +694,202 @@ CREATE SEQUENCE uk.audits_id_seq
 --
 
 ALTER SEQUENCE uk.audits_id_seq OWNED BY uk.audits.id;
+
+
+--
+-- Name: quota_associations_oplog; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.quota_associations_oplog (
+    main_quota_definition_sid integer,
+    sub_quota_definition_sid integer,
+    relation_type character varying(255),
+    coefficient numeric(16,5),
+    created_at timestamp without time zone,
+    oid integer NOT NULL,
+    operation character varying(1) DEFAULT 'C'::character varying,
+    operation_date date,
+    filename text
+);
+
+
+--
+-- Name: quota_associations; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.quota_associations AS
+ SELECT quota_associations1.main_quota_definition_sid,
+    quota_associations1.sub_quota_definition_sid,
+    quota_associations1.relation_type,
+    quota_associations1.coefficient,
+    quota_associations1.oid,
+    quota_associations1.operation,
+    quota_associations1.operation_date,
+    quota_associations1.filename
+   FROM uk.quota_associations_oplog quota_associations1
+  WHERE ((quota_associations1.oid IN ( SELECT max(quota_associations2.oid) AS max
+           FROM uk.quota_associations_oplog quota_associations2
+          WHERE ((quota_associations1.main_quota_definition_sid = quota_associations2.main_quota_definition_sid) AND (quota_associations1.sub_quota_definition_sid = quota_associations2.sub_quota_definition_sid)))) AND ((quota_associations1.operation)::text <> 'D'::text));
+
+
+--
+-- Name: quota_definitions_oplog; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.quota_definitions_oplog (
+    quota_definition_sid integer,
+    quota_order_number_id character varying(255),
+    validity_start_date timestamp without time zone,
+    validity_end_date timestamp without time zone,
+    quota_order_number_sid integer,
+    volume numeric(12,2),
+    initial_volume numeric(12,2),
+    measurement_unit_code character varying(3),
+    maximum_precision integer,
+    critical_state character varying(255),
+    critical_threshold integer,
+    monetary_unit_code character varying(255),
+    measurement_unit_qualifier_code character varying(1),
+    description text,
+    created_at timestamp without time zone,
+    oid integer NOT NULL,
+    operation character varying(1) DEFAULT 'C'::character varying,
+    operation_date date,
+    filename text
+);
+
+
+--
+-- Name: quota_definitions; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.quota_definitions AS
+ SELECT quota_definitions1.quota_definition_sid,
+    quota_definitions1.quota_order_number_id,
+    quota_definitions1.validity_start_date,
+    quota_definitions1.validity_end_date,
+    quota_definitions1.quota_order_number_sid,
+    quota_definitions1.volume,
+    quota_definitions1.initial_volume,
+    quota_definitions1.measurement_unit_code,
+    quota_definitions1.maximum_precision,
+    quota_definitions1.critical_state,
+    quota_definitions1.critical_threshold,
+    quota_definitions1.monetary_unit_code,
+    quota_definitions1.measurement_unit_qualifier_code,
+    quota_definitions1.description,
+    quota_definitions1.oid,
+    quota_definitions1.operation,
+    quota_definitions1.operation_date,
+    quota_definitions1.filename
+   FROM uk.quota_definitions_oplog quota_definitions1
+  WHERE ((quota_definitions1.oid IN ( SELECT max(quota_definitions2.oid) AS max
+           FROM uk.quota_definitions_oplog quota_definitions2
+          WHERE (quota_definitions1.quota_definition_sid = quota_definitions2.quota_definition_sid))) AND ((quota_definitions1.operation)::text <> 'D'::text));
+
+
+--
+-- Name: quota_order_number_origins_oplog; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.quota_order_number_origins_oplog (
+    quota_order_number_origin_sid integer,
+    quota_order_number_sid integer,
+    geographical_area_id character varying(255),
+    validity_start_date timestamp without time zone,
+    validity_end_date timestamp without time zone,
+    geographical_area_sid integer,
+    created_at timestamp without time zone,
+    oid integer NOT NULL,
+    operation character varying(1) DEFAULT 'C'::character varying,
+    operation_date date,
+    filename text
+);
+
+
+--
+-- Name: quota_order_number_origins; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.quota_order_number_origins AS
+ SELECT quota_order_number_origins1.quota_order_number_origin_sid,
+    quota_order_number_origins1.quota_order_number_sid,
+    quota_order_number_origins1.geographical_area_id,
+    quota_order_number_origins1.validity_start_date,
+    quota_order_number_origins1.validity_end_date,
+    quota_order_number_origins1.geographical_area_sid,
+    quota_order_number_origins1.oid,
+    quota_order_number_origins1.operation,
+    quota_order_number_origins1.operation_date,
+    quota_order_number_origins1.filename
+   FROM uk.quota_order_number_origins_oplog quota_order_number_origins1
+  WHERE ((quota_order_number_origins1.oid IN ( SELECT max(quota_order_number_origins2.oid) AS max
+           FROM uk.quota_order_number_origins_oplog quota_order_number_origins2
+          WHERE (quota_order_number_origins1.quota_order_number_origin_sid = quota_order_number_origins2.quota_order_number_origin_sid))) AND ((quota_order_number_origins1.operation)::text <> 'D'::text));
+
+
+--
+-- Name: quota_order_numbers_oplog; Type: TABLE; Schema: uk; Owner: -
+--
+
+CREATE TABLE uk.quota_order_numbers_oplog (
+    quota_order_number_sid integer,
+    quota_order_number_id character varying(255),
+    validity_start_date timestamp without time zone,
+    validity_end_date timestamp without time zone,
+    created_at timestamp without time zone,
+    oid integer NOT NULL,
+    operation character varying(1) DEFAULT 'C'::character varying,
+    operation_date date,
+    filename text
+);
+
+
+--
+-- Name: quota_order_numbers; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.quota_order_numbers AS
+ SELECT quota_order_numbers1.quota_order_number_sid,
+    quota_order_numbers1.quota_order_number_id,
+    quota_order_numbers1.validity_start_date,
+    quota_order_numbers1.validity_end_date,
+    quota_order_numbers1.oid,
+    quota_order_numbers1.operation,
+    quota_order_numbers1.operation_date,
+    quota_order_numbers1.filename
+   FROM uk.quota_order_numbers_oplog quota_order_numbers1
+  WHERE ((quota_order_numbers1.oid IN ( SELECT max(quota_order_numbers2.oid) AS max
+           FROM uk.quota_order_numbers_oplog quota_order_numbers2
+          WHERE (quota_order_numbers1.quota_order_number_sid = quota_order_numbers2.quota_order_number_sid))) AND ((quota_order_numbers1.operation)::text <> 'D'::text));
+
+
+--
+-- Name: bad_quota_associations; Type: VIEW; Schema: uk; Owner: -
+--
+
+CREATE VIEW uk.bad_quota_associations AS
+ SELECT qd_main.quota_order_number_id AS main_quota_order_number_id,
+    qd_main.validity_start_date,
+    qd_main.validity_end_date,
+    qono_main.geographical_area_id AS main_origin,
+    qd_sub.quota_order_number_id AS sub_quota_order_number_id,
+    qono_sub.geographical_area_id AS sub_origin,
+        CASE
+            WHEN (qa.main_quota_definition_sid = qa.sub_quota_definition_sid) THEN 'self'::text
+            ELSE 'other'::text
+        END AS linkage,
+    qa.relation_type,
+    qa.coefficient
+   FROM ((((((uk.quota_associations qa
+     JOIN uk.quota_definitions qd_main ON ((qa.main_quota_definition_sid = qd_main.quota_definition_sid)))
+     JOIN uk.quota_definitions qd_sub ON ((qa.sub_quota_definition_sid = qd_sub.quota_definition_sid)))
+     JOIN uk.quota_order_numbers qon_main ON ((qon_main.quota_order_number_sid = qd_main.quota_order_number_sid)))
+     JOIN uk.quota_order_numbers qon_sub ON ((qon_sub.quota_order_number_sid = qd_sub.quota_order_number_sid)))
+     JOIN uk.quota_order_number_origins qono_main ON ((qon_main.quota_order_number_sid = qono_main.quota_order_number_sid)))
+     JOIN uk.quota_order_number_origins qono_sub ON ((qon_sub.quota_order_number_sid = qono_sub.quota_order_number_sid)))
+  WHERE (qd_main.validity_start_date >= '2021-01-01 00:00:00'::timestamp without time zone)
+  ORDER BY qd_main.quota_order_number_id, qd_sub.quota_order_number_id, qd_main.validity_start_date;
 
 
 --
@@ -5948,42 +6144,6 @@ ALTER SEQUENCE uk.publication_sigles_oplog_oid_seq OWNED BY uk.publication_sigle
 
 
 --
--- Name: quota_associations_oplog; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.quota_associations_oplog (
-    main_quota_definition_sid integer,
-    sub_quota_definition_sid integer,
-    relation_type character varying(255),
-    coefficient numeric(16,5),
-    created_at timestamp without time zone,
-    oid integer NOT NULL,
-    operation character varying(1) DEFAULT 'C'::character varying,
-    operation_date date,
-    filename text
-);
-
-
---
--- Name: quota_associations; Type: VIEW; Schema: uk; Owner: -
---
-
-CREATE VIEW uk.quota_associations AS
- SELECT quota_associations1.main_quota_definition_sid,
-    quota_associations1.sub_quota_definition_sid,
-    quota_associations1.relation_type,
-    quota_associations1.coefficient,
-    quota_associations1.oid,
-    quota_associations1.operation,
-    quota_associations1.operation_date,
-    quota_associations1.filename
-   FROM uk.quota_associations_oplog quota_associations1
-  WHERE ((quota_associations1.oid IN ( SELECT max(quota_associations2.oid) AS max
-           FROM uk.quota_associations_oplog quota_associations2
-          WHERE ((quota_associations1.main_quota_definition_sid = quota_associations2.main_quota_definition_sid) AND (quota_associations1.sub_quota_definition_sid = quota_associations2.sub_quota_definition_sid)))) AND ((quota_associations1.operation)::text <> 'D'::text));
-
-
---
 -- Name: quota_associations_oid_seq; Type: SEQUENCE; Schema: uk; Owner: -
 --
 
@@ -6229,62 +6389,6 @@ ALTER SEQUENCE uk.quota_critical_events_oid_seq OWNED BY uk.quota_critical_event
 
 
 --
--- Name: quota_definitions_oplog; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.quota_definitions_oplog (
-    quota_definition_sid integer,
-    quota_order_number_id character varying(255),
-    validity_start_date timestamp without time zone,
-    validity_end_date timestamp without time zone,
-    quota_order_number_sid integer,
-    volume numeric(12,2),
-    initial_volume numeric(12,2),
-    measurement_unit_code character varying(3),
-    maximum_precision integer,
-    critical_state character varying(255),
-    critical_threshold integer,
-    monetary_unit_code character varying(255),
-    measurement_unit_qualifier_code character varying(1),
-    description text,
-    created_at timestamp without time zone,
-    oid integer NOT NULL,
-    operation character varying(1) DEFAULT 'C'::character varying,
-    operation_date date,
-    filename text
-);
-
-
---
--- Name: quota_definitions; Type: VIEW; Schema: uk; Owner: -
---
-
-CREATE VIEW uk.quota_definitions AS
- SELECT quota_definitions1.quota_definition_sid,
-    quota_definitions1.quota_order_number_id,
-    quota_definitions1.validity_start_date,
-    quota_definitions1.validity_end_date,
-    quota_definitions1.quota_order_number_sid,
-    quota_definitions1.volume,
-    quota_definitions1.initial_volume,
-    quota_definitions1.measurement_unit_code,
-    quota_definitions1.maximum_precision,
-    quota_definitions1.critical_state,
-    quota_definitions1.critical_threshold,
-    quota_definitions1.monetary_unit_code,
-    quota_definitions1.measurement_unit_qualifier_code,
-    quota_definitions1.description,
-    quota_definitions1.oid,
-    quota_definitions1.operation,
-    quota_definitions1.operation_date,
-    quota_definitions1.filename
-   FROM uk.quota_definitions_oplog quota_definitions1
-  WHERE ((quota_definitions1.oid IN ( SELECT max(quota_definitions2.oid) AS max
-           FROM uk.quota_definitions_oplog quota_definitions2
-          WHERE (quota_definitions1.quota_definition_sid = quota_definitions2.quota_definition_sid))) AND ((quota_definitions1.operation)::text <> 'D'::text));
-
-
---
 -- Name: quota_definitions_oid_seq; Type: SEQUENCE; Schema: uk; Owner: -
 --
 
@@ -6408,46 +6512,6 @@ ALTER SEQUENCE uk.quota_order_number_origin_exclusions_oid_seq OWNED BY uk.quota
 
 
 --
--- Name: quota_order_number_origins_oplog; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.quota_order_number_origins_oplog (
-    quota_order_number_origin_sid integer,
-    quota_order_number_sid integer,
-    geographical_area_id character varying(255),
-    validity_start_date timestamp without time zone,
-    validity_end_date timestamp without time zone,
-    geographical_area_sid integer,
-    created_at timestamp without time zone,
-    oid integer NOT NULL,
-    operation character varying(1) DEFAULT 'C'::character varying,
-    operation_date date,
-    filename text
-);
-
-
---
--- Name: quota_order_number_origins; Type: VIEW; Schema: uk; Owner: -
---
-
-CREATE VIEW uk.quota_order_number_origins AS
- SELECT quota_order_number_origins1.quota_order_number_origin_sid,
-    quota_order_number_origins1.quota_order_number_sid,
-    quota_order_number_origins1.geographical_area_id,
-    quota_order_number_origins1.validity_start_date,
-    quota_order_number_origins1.validity_end_date,
-    quota_order_number_origins1.geographical_area_sid,
-    quota_order_number_origins1.oid,
-    quota_order_number_origins1.operation,
-    quota_order_number_origins1.operation_date,
-    quota_order_number_origins1.filename
-   FROM uk.quota_order_number_origins_oplog quota_order_number_origins1
-  WHERE ((quota_order_number_origins1.oid IN ( SELECT max(quota_order_number_origins2.oid) AS max
-           FROM uk.quota_order_number_origins_oplog quota_order_number_origins2
-          WHERE (quota_order_number_origins1.quota_order_number_origin_sid = quota_order_number_origins2.quota_order_number_origin_sid))) AND ((quota_order_number_origins1.operation)::text <> 'D'::text));
-
-
---
 -- Name: quota_order_number_origins_oid_seq; Type: SEQUENCE; Schema: uk; Owner: -
 --
 
@@ -6464,42 +6528,6 @@ CREATE SEQUENCE uk.quota_order_number_origins_oid_seq
 --
 
 ALTER SEQUENCE uk.quota_order_number_origins_oid_seq OWNED BY uk.quota_order_number_origins_oplog.oid;
-
-
---
--- Name: quota_order_numbers_oplog; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.quota_order_numbers_oplog (
-    quota_order_number_sid integer,
-    quota_order_number_id character varying(255),
-    validity_start_date timestamp without time zone,
-    validity_end_date timestamp without time zone,
-    created_at timestamp without time zone,
-    oid integer NOT NULL,
-    operation character varying(1) DEFAULT 'C'::character varying,
-    operation_date date,
-    filename text
-);
-
-
---
--- Name: quota_order_numbers; Type: VIEW; Schema: uk; Owner: -
---
-
-CREATE VIEW uk.quota_order_numbers AS
- SELECT quota_order_numbers1.quota_order_number_sid,
-    quota_order_numbers1.quota_order_number_id,
-    quota_order_numbers1.validity_start_date,
-    quota_order_numbers1.validity_end_date,
-    quota_order_numbers1.oid,
-    quota_order_numbers1.operation,
-    quota_order_numbers1.operation_date,
-    quota_order_numbers1.filename
-   FROM uk.quota_order_numbers_oplog quota_order_numbers1
-  WHERE ((quota_order_numbers1.oid IN ( SELECT max(quota_order_numbers2.oid) AS max
-           FROM uk.quota_order_numbers_oplog quota_order_numbers2
-          WHERE (quota_order_numbers1.quota_order_number_sid = quota_order_numbers2.quota_order_number_sid))) AND ((quota_order_numbers1.operation)::text <> 'D'::text));
 
 
 --
@@ -12051,3 +12079,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230808103253_adds_footno
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230817135045_adds_primary_key_for_id_and_type.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230823093436_adds_type_to_file.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230824155416_add_unique_key_for_files.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230921124623_adds_bad_quota_associations.rb');

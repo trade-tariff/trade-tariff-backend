@@ -13,7 +13,7 @@ module Reporting
         'Exclusions (quota, then measure)',
       ].freeze
 
-      TAB_COLOR = 'cc0000'.freeze
+      TAB_COLOR = 'cccc00'.freeze
 
       CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
 
