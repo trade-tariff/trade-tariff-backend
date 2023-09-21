@@ -15,7 +15,7 @@ module Api
         private
 
         def type
-          match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml)_/)
+          match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv)_/)
           match_data[1] if match_data
         end
 

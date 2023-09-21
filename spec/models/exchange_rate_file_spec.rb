@@ -68,6 +68,6 @@ RSpec.describe ExchangeRateFile, type: :model do
       )
     end
 
-    it { expect(described_class.applicable_files_for(month, year)).to match_array(expected_files) }
+    it { expect(described_class.applicable_files_for(month, year, 'scheduled')).to match_array(expected_files) }
   end
 end

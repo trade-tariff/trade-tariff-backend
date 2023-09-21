@@ -3,6 +3,7 @@ require 'csv'
 class ExchangeRateCurrencyRate < Sequel::Model
   SCHEDULED_RATE_TYPE = 'scheduled'.freeze
   SPOT_RATE_TYPE = 'spot'.freeze
+  AVERAGE_RATE_TYPE = 'average'.freeze
 
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
