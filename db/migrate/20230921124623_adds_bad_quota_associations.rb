@@ -1,6 +1,6 @@
 Sequel.migration do
   up do
-    run %Q{
+    run %(
       CREATE VIEW bad_quota_associations AS
         SELECT
             qd_main.quota_order_number_id AS main_quota_order_number_id,
@@ -35,7 +35,7 @@ Sequel.migration do
             qd_main.quota_order_number_id,
             qd_sub.quota_order_number_id,
             qd_main.validity_start_date;
-    }
+    )
   end
 
   down do
