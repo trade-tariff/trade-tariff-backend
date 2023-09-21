@@ -95,6 +95,7 @@ module Reporting
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
         add_missing_quota_origins_worksheet
+        add_bad_quota_association_worksheet
         add_quota_exclusion_misalignment_worksheet
       ]
 
@@ -136,13 +137,6 @@ module Reporting
     def add_indentation_worksheet
       Reporting::Differences::Indentation.new(
         'Indentation differences',
-        self,
-      ).add_worksheet
-    end
-
-    def add_quota_exclusion_misalignment_worksheet
-      Reporting::Differences::QuotaExclusionMisalignment.new(
-        'Quota exclusion misalignment',
         self,
       ).add_worksheet
     end
@@ -227,6 +221,20 @@ module Reporting
     def add_missing_quota_origins_worksheet
       Reporting::Differences::QuotaMissingOrigin.new(
         'Quota with no origins',
+        self,
+      ).add_worksheet
+    end
+
+    def add_bad_quota_association_worksheet
+      Reporting::Differences::BadQuotaAssociation.new(
+        'Self-referential associations',
+        self,
+      ).add_worksheet
+    end
+
+    def add_quota_exclusion_misalignment_worksheet
+      Reporting::Differences::QuotaExclusionMisalignment.new(
+        'Exclusion misalignment',
         self,
       ).add_worksheet
     end
