@@ -6,15 +6,15 @@ RSpec.describe ExchangeRateCurrencyRate do
   let(:aed) { january.where(currency_code: 'AED').take }
 
   describe '.for_month' do
-    subject(:for_month) { described_class.for_month(1, 2020) }
+    subject(:for_month) { described_class.for_month(1, 2020, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     before do
-      # scheduled and within month and year so in scope
+      # scheduled
       create(
         :exchange_rate_currency_rate,
         :scheduled_rate,
         currency_code: 'YYY',
-        validity_start_date: '2020-01-02', # in scope
+        validity_start_date: '2020-01-01', # in scope
       )
       create(
         :exchange_rate_currency_rate,
@@ -40,7 +40,7 @@ RSpec.describe ExchangeRateCurrencyRate do
     end
 
     it { is_expected.to all(be_a(described_class)) }
-    it { expect(for_month.pluck(:validity_start_date)).to eq(['2020-01-01'.to_date, '2020-01-02'.to_date]) }
+    it { expect(for_month.pluck(:validity_start_date)).to eq(['2020-01-01'.to_date, '2020-01-01'.to_date]) }
     it { expect(for_month.pluck(:currency_code)).to eq(%w[XXX YYY]) }
     it { expect(for_month.pluck(:rate_type)).to eq(%w[scheduled scheduled]) }
   end
@@ -52,7 +52,7 @@ RSpec.describe ExchangeRateCurrencyRate do
     end
 
     it 'returns the distinct years in descending order' do
-      expect(described_class.all_years).to eq([2021, 2020])
+      expect(described_class.all_years(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)).to eq([2021, 2020])
     end
   end
 
@@ -74,7 +74,7 @@ RSpec.describe ExchangeRateCurrencyRate do
     end
 
     it 'returns the distinct months for the given year in descending order' do
-      expect(described_class.months_for_year(2020)).to eq([7, 1])
+      expect(described_class.months_for_year(2020, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)).to eq([7, 1])
     end
   end
 
@@ -170,5 +170,40 @@ RSpec.describe ExchangeRateCurrencyRate do
     it { expect(described_class.by_year(2023).count).to eq(2) }
 
     it { expect(described_class.by_year(nil)).to be_nil }
+  end
+
+  describe '.by_month_and_year' do
+    context 'when type is scheduled and start date is first day of month' do
+      subject(:result) { described_class.by_month_and_year(1, 2020, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+
+      before do
+        create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'YYY', validity_start_date: '2020-01-02')
+        create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'XXX', validity_start_date: '2020-01-01')
+        create(:exchange_rate_currency_rate, :spot_rate, currency_code: 'ZZZ', validity_start_date: '2020-01-31')
+        create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'AAA', validity_start_date: '2020-03-01')
+      end
+
+      it { expect(result.pluck(:rate_type)).to eq(['scheduled']) }
+    end
+
+    context 'when type is spot and start date is last day of month' do
+      subject(:result) { described_class.by_month_and_year(1, 2020, ExchangeRateCurrencyRate::SPOT_RATE_TYPE) }
+
+      before do
+        create(:exchange_rate_currency_rate, :spot_rate, currency_code: 'SPOT1', validity_start_date: '2020-01-31')
+        create(:exchange_rate_currency_rate, :spot_rate, currency_code: 'SPOT2', validity_start_date: '2020-01-31')
+        create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'SCHEDULED', validity_start_date: '2020-01-01')
+        create(:exchange_rate_currency_rate, :spot_rate, currency_code: 'SPOT3', validity_start_date: '2020-03-01')
+      end
+      
+      it { expect(result.pluck(:rate_type)).to eq(['spot', 'spot']) }
+    end
+
+    context 'when type is not valid' do
+      it 'returns nil' do
+        result = described_class.by_month_and_year(1, 2020, 'invalid_type')
+        expect(result).to be_nil
+      end
+    end
   end
 end

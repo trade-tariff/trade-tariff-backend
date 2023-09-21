@@ -68,16 +68,13 @@ class ExchangeRateCurrencyRate < Sequel::Model
       return if month.blank? || year.blank?
     
       start_of_month = Time.zone.parse("#{year}-#{month}-01").beginning_of_month
-    
+      end_of_month = start_of_month.end_of_month
+
       if type == SCHEDULED_RATE_TYPE
-        end_of_month = start_of_month.end_of_month
-        where { (validity_start_date >= start_of_month) & (validity_start_date <= end_of_month) }
+        where(validity_start_date: start_of_month, rate_type: type).order(Sequel.desc(:validity_start_date))
       elsif type == SPOT_RATE_TYPE
-        start_date = start_of_month.end_of_month
-        where { (validity_start_date == start_date) }
+        where(validity_start_date: end_of_month, rate_type: type).order(Sequel.desc(:validity_start_date))
       end
-    
-      order(Sequel.desc(:validity_start_date))
     end
 
     def files_for_year_and_month(month, year = Time.zone.today.year)
@@ -117,9 +114,9 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .uniq
     end
 
-    def for_month(month, year)
-      by_month_and_year(month, year)
-        .scheduled
+    def for_month(month, year, type)
+      by_month_and_year(month, year, type)
+        .where(rate_type: type)
         .order(Sequel.asc(:validity_start_date))
         .order(Sequel.asc(:currency_code))
         .all

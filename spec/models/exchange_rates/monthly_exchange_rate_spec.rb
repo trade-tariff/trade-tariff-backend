@@ -52,7 +52,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRate do
   end
 
   describe '.exchange_rates' do
-    subject(:exchange_rates) { described_class.exchange_rates(month, year) }
+    subject(:exchange_rates) { described_class.exchange_rates(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     let(:validity_start_date) { Date.new(2023, 6, 1) }
 
