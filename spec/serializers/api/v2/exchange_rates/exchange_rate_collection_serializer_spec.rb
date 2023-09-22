@@ -1,9 +1,9 @@
-RSpec.describe Api::V2::ExchangeRates::MonthlyExchangeRateSerializer do
+RSpec.describe Api::V2::ExchangeRates::ExchangeRateCollectionSerializer do
   subject(:serializable) { described_class.new(exchange_rate_rates_list).serializable_hash }
 
   let(:exchange_rate_rates_list) do
     build(
-      :exchange_rates_list,
+      :exchange_rates_collection,
       :with_rates_file,
       :with_exchange_rates,
     )
@@ -14,7 +14,7 @@ RSpec.describe Api::V2::ExchangeRates::MonthlyExchangeRateSerializer do
     {
       data: {
         id: be_present,
-        type: eq(:monthly_exchange_rate),
+        type: eq(:exchange_rate_collection),
         attributes: {
           year: be_a(Integer),
           month: be_a(Integer),

@@ -1,11 +1,12 @@
 module ExchangeRates
-  class MonthlyExchangeRate
+  class ExchangeRateCollection
     include ContentAddressableId
 
-    content_addressable_fields :year, :month
+    content_addressable_fields :year, :month, :type
 
     attr_accessor :year,
                   :month,
+                  :type,
                   :publication_date,
                   :exchange_rate_files,
                   :exchange_rates
@@ -25,6 +26,7 @@ module ExchangeRates
         rates_list = new
         rates_list.year = year
         rates_list.month = month
+        rates_list.type = type
         rates_list.exchange_rate_files = exchange_rate_files
         rates_list.exchange_rates = exchange_rates(month, year, type)
         rates_list
@@ -32,8 +34,9 @@ module ExchangeRates
 
       def exchange_rates(month, year, type)
         ExchangeRateCurrencyRate
-          .by_month_and_year(month, year, type)
-          .where(rate_type: type)
+          .with_applicable_date
+          .by_month_and_year(month, year)
+          .by_type(type)
           .association_right_join(:exchange_rate_countries)
           .eager(:exchange_rate_currency)
           .order(:country)

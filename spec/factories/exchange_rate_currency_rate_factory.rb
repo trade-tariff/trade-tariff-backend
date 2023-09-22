@@ -6,13 +6,6 @@ FactoryBot.define do
     rate { 4.8012 }
     rate_type { 'scheduled' }
 
-    trait :spot_rate do
-      validity_start_date { Date.new(2022, 12, 31) }
-      validity_end_date { nil }
-      rate { 1.7816 }
-      rate_type { 'spot' }
-    end
-
     trait :with_multiple_countries do
       after(:create) do |currency_rate|
         create(
@@ -54,6 +47,10 @@ FactoryBot.define do
 
     trait :spot_rate do
       rate_type { 'spot' }
+    end
+
+    trait :average_rate do
+      rate_type { 'average' }
     end
   end
 end

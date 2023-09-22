@@ -24,7 +24,11 @@ module Api
         end
 
         def year
-          (params[:year].presence || ExchangeRateCurrencyRate.max_year).to_i
+          (params[:year].presence || default_year).to_i
+        end
+
+        def default_year
+          ExchangeRateCurrencyRate.max_year(type)
         end
       end
     end

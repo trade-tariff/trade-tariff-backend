@@ -2,15 +2,24 @@ module Api
   module V2
     module ExchangeRates
       class BaseController < ApiController
+        before_action :validate_exchange_rate_type
+
         private
 
-        def valid_exchange_rate_type?(type_param)
-          [ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE, ExchangeRateCurrencyRate::SPOT_RATE_TYPE, ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE].include?(type_param)
+        def validate_exchange_rate_type
+          raise NotImplementedError, type unless valid_exchange_rate_type?
+        end
+
+        def valid_exchange_rate_type?
+          [
+            ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+            ExchangeRateCurrencyRate::SPOT_RATE_TYPE,
+            ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE,
+          ].include?(type)
         end
 
         def type
-          type_param = filter_params[:type]
-          type_param if valid_exchange_rate_type?(type_param)
+          filter_params[:type]
         end
 
         def filter_params

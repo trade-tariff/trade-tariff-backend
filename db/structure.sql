@@ -9869,7 +9869,7 @@ CREATE INDEX exchange_rate_currency_rates_currency_code_index ON uk.exchange_rat
 -- Name: exchange_rate_currency_rates_currency_code_validity_start_date_; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE UNIQUE INDEX exchange_rate_currency_rates_currency_code_validity_start_date_ ON uk.exchange_rate_currency_rates USING btree (currency_code, validity_start_date, validity_end_date);
+CREATE UNIQUE INDEX exchange_rate_currency_rates_currency_code_validity_start_date_ ON uk.exchange_rate_currency_rates USING btree (currency_code, validity_start_date, validity_end_date, rate_type);
 
 
 --
@@ -12080,3 +12080,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230817135045_adds_primar
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230823093436_adds_type_to_file.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230824155416_add_unique_key_for_files.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230921124623_adds_bad_quota_associations.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20230922203255_fix_exchange_rate_index.rb');

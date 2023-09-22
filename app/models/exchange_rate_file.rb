@@ -4,6 +4,12 @@ class ExchangeRateFile < Sequel::Model
 
   include ContentAddressableId
 
+  TYPE_TO_FILE_MAP = {
+    ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE => %w[monthly_csv monthly_xml],
+    ExchangeRateCurrencyRate::SPOT_RATE_TYPE => %w[spot_csv],
+    ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE => %w[average_csv],
+  }.freeze
+
   content_addressable_fields :format, :type, :publication_date, :period_year, :period_month
 
   def file_path
@@ -42,20 +48,15 @@ class ExchangeRateFile < Sequel::Model
       case type
       when 'monthly_csv_hmrc'
         "#{year}#{month_with_zero}MonthlyRates.#{format}"
-      else
+      when 'monthly_csv', 'monthly_xml'
         "exrates-monthly-#{month_with_zero}#{year[2..3]}.#{format}"
+      else
+        filename_for(type, format, year, month)
       end
     end
 
     def applicable_files_for(month, year, type)
-      case type
-      when ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE
-        file_types = %w[monthly_csv monthly_xml]
-      when ExchangeRateCurrencyRate::SPOT_RATE_TYPE
-        file_types = %w[spot_csv]
-      when ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE
-        file_types = %w[average_csv]
-      end
+      file_types = TYPE_TO_FILE_MAP[type]
 
       applicable_types
         .where(period_year: year, period_month: month, type: file_types)
