@@ -28,7 +28,7 @@ module ExchangeRates
     def upsert_rates(rates)
       ExchangeRateCurrencyRate
         .dataset
-        .insert_conflict(target: %i[currency_code validity_start_date validity_end_date])
+        .insert_conflict(target: %i[currency_code validity_start_date validity_end_date rate_type])
         .multi_insert(rates)
     end
 

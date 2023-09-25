@@ -27,7 +27,7 @@ RSpec.describe ExchangeRates::PeriodList do
   end
 
   describe '.build' do
-    subject(:period_list) { described_class.build(year) }
+    subject(:period_list) { described_class.build(year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     it 'builds a period list with exchange rate periods and years' do
       expect(period_list).to be_an_instance_of(described_class)
@@ -47,14 +47,14 @@ RSpec.describe ExchangeRates::PeriodList do
   end
 
   describe '.exchange_rate_periods_for' do
-    subject(:exchange_rate_periods) { described_class.exchange_rate_periods_for(year) }
+    subject(:exchange_rate_periods) { described_class.exchange_rate_periods_for(year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     before do
-      allow(ExchangeRateCurrencyRate).to receive(:months_for_year).with(year).and_return(months)
+      allow(ExchangeRateCurrencyRate).to receive(:months_for_year).with(year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE).and_return(months)
     end
 
     it 'calls ExchangeRates::Period.build with the correct arguments' do
-      allow(ExchangeRates::Period).to receive(:wrap).with(months, year).and_return([])
+      allow(ExchangeRates::Period).to receive(:wrap).with(months, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE).and_return([])
       exchange_rate_periods
     end
 
@@ -70,7 +70,7 @@ RSpec.describe ExchangeRates::PeriodList do
       let(:year) { 1970 }
 
       before do
-        allow(ExchangeRateCurrencyRate).to receive(:months_for_year).with(year).and_return([])
+        allow(ExchangeRateCurrencyRate).to receive(:months_for_year).with(year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE).and_return([])
       end
 
       it 'returns an empty array' do
@@ -80,7 +80,7 @@ RSpec.describe ExchangeRates::PeriodList do
   end
 
   describe '.exchange_rate_years' do
-    subject(:exchange_rate_years) { described_class.exchange_rate_years }
+    subject(:exchange_rate_years) { described_class.exchange_rate_years(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     let(:years) { [2020, 2021, 2022] }
 

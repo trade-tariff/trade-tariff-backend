@@ -12,7 +12,7 @@ module ExchangeRates
     end
 
     def call
-      data_result = ::ExchangeRateCurrencyRate.for_month(month, year)
+      data_result = ::ExchangeRateCurrencyRate.for_month(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)
 
       if data_result.empty?
         raise DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}."

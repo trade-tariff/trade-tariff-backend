@@ -1,7 +1,7 @@
 module Api
   module V2
     module ExchangeRates
-      class PeriodListsController < ApiController
+      class PeriodListsController < BaseController
         def show
           if serialized_period_list[:data].empty?
             render json: { data: {} }, status: :not_found
@@ -20,11 +20,15 @@ module Api
         end
 
         def period_list
-          @period_list ||= ::ExchangeRates::PeriodList.build(year)
+          @period_list ||= ::ExchangeRates::PeriodList.build(year, type)
         end
 
         def year
-          (params[:year].presence || ExchangeRateCurrencyRate.max_year).to_i
+          (params[:year].presence || default_year).to_i
+        end
+
+        def default_year
+          ExchangeRateCurrencyRate.max_year(type)
         end
       end
     end

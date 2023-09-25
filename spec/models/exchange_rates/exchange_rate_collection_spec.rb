@@ -1,22 +1,22 @@
-RSpec.describe ExchangeRates::MonthlyExchangeRate do
+RSpec.describe ExchangeRates::ExchangeRateCollection do
   let(:year) { 2023 }
   let(:month) { 6 }
   let(:publication_date) { '2023-06-22T00:00:00.000Z' }
 
   describe '#id' do
-    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
+    subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file) }
 
     it { expect(rates_list.id).to be_present }
   end
 
   describe '#exchange_rate_file_ids' do
-    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
+    subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file) }
 
     it { expect(rates_list.exchange_rate_file_ids).to all(be_present) }
   end
 
   describe '#exchange_rate_ids' do
-    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file) }
+    subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file) }
 
     it 'returns the ids of exchange rate periods' do
       expect(rates_list.exchange_rate_ids).to be_empty
@@ -24,7 +24,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRate do
   end
 
   describe '.build' do
-    subject(:rates_list) { build(:exchange_rates_list, :with_rates_file, year:, month:) }
+    subject(:rates_list) { build(:exchange_rates_collection, :with_rates_file, year:, month:) }
 
     it 'builds a rates list with exchange rates and exchange rate files' do
       expect(rates_list).to be_an_instance_of(described_class)
@@ -52,7 +52,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRate do
   end
 
   describe '.exchange_rates' do
-    subject(:exchange_rates) { described_class.exchange_rates(month, year) }
+    subject(:exchange_rates) { described_class.exchange_rates(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     let(:validity_start_date) { Date.new(2023, 6, 1) }
 

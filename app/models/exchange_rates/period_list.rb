@@ -1,10 +1,13 @@
 module ExchangeRates
   class PeriodList
-    attr_accessor :year, :exchange_rate_periods, :exchange_rate_years
+    attr_accessor :year,
+                  :exchange_rate_periods,
+                  :exchange_rate_years,
+                  :type
 
     include ContentAddressableId
 
-    content_addressable_fields :year
+    content_addressable_fields :year, :type
 
     def exchange_rate_year_ids
       exchange_rate_years.map(&:id)
@@ -15,22 +18,23 @@ module ExchangeRates
     end
 
     class << self
-      def build(year)
+      def build(year, type)
         period_list = new
         period_list.year = year
-        period_list.exchange_rate_periods = exchange_rate_periods_for(year)
-        period_list.exchange_rate_years = exchange_rate_years
+        period_list.type = type
+        period_list.exchange_rate_periods = exchange_rate_periods_for(year, type)
+        period_list.exchange_rate_years = exchange_rate_years(type)
         period_list
       end
 
-      def exchange_rate_periods_for(year)
-        months = ExchangeRateCurrencyRate.months_for_year(year)
+      def exchange_rate_periods_for(year, type)
+        months = ExchangeRateCurrencyRate.months_for_year(year, type)
 
-        ExchangeRates::Period.wrap(months, year)
+        ExchangeRates::Period.wrap(months, year, type)
       end
 
-      def exchange_rate_years
-        years = ExchangeRateCurrencyRate.all_years
+      def exchange_rate_years(type)
+        years = ExchangeRateCurrencyRate.all_years(type)
 
         ExchangeRates::PeriodYear.wrap(years)
       end
