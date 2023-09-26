@@ -3,6 +3,8 @@ require 'date'
 module Sequel
   module Plugins
     module TimeMachine
+      BREXIT_DATE = Date.new(2020, 1, 31).freeze
+
       def self.configure(model, opts = {})
         model.period_start_date_column = opts[:period_start_column]
         model.period_end_date_column = opts[:period_end_column]
@@ -91,6 +93,18 @@ module Sequel
           else
             self
           end
+        end
+
+        # Use for fetching records after Brexit happened.
+        #
+        # Example:
+        #
+        #   Measure.with_regulation_dates_query.since_brexit
+        #
+        # Will fetch all measures that are valid after Brexit.
+        #
+        def since_brexit
+          filter { |o| o.>=(model.period_start_date_column, BREXIT_DATE) }
         end
 
         # Use for extending datasets and associations, so that specified
