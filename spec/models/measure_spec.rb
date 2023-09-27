@@ -130,6 +130,30 @@ RSpec.describe Measure do
     end
   end
 
+  describe '.excluding_licensed_quotas' do
+    subject(:dataset) { described_class.excluding_licensed_quotas }
+
+    before do
+      create(:measure, ordernumber: '094001') # licensed and excluded
+      create(:measure, ordernumber: '096001') # non-licensed not excluded
+    end
+
+    it { expect(dataset.pluck(:ordernumber)).to eq %w[096001] }
+  end
+
+  describe '.with_regulation_dates_non_current' do
+    subject { described_class.with_regulation_dates_query_non_current.all.first }
+
+    around { |example| TimeMachine.now { example.run } }
+
+    before do
+      create(:measure, :with_base_regulation, validity_start_date: 3.days.ago.beginning_of_day, validity_end_date: 2.days.ago.end_of_day)
+    end
+
+    it { is_expected.to have_attributes effective_start_date: 3.days.ago.beginning_of_day }
+    it { is_expected.to have_attributes effective_end_date: 2.days.ago.end_of_day.floor(6) }
+  end
+
   describe '.with_regulation_dates_query' do
     subject { described_class.with_regulation_dates_query.all.first }
 

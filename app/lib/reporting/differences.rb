@@ -61,6 +61,8 @@ module Reporting
       @regular_style = workbook.styles.add_style(
         alignment: {
           wrap_text: true,
+          horizontal: :left,
+          vertical: :top,
         },
         font_name: 'Calibri',
         sz: 11,
@@ -97,6 +99,7 @@ module Reporting
         add_missing_quota_origins_worksheet
         add_bad_quota_association_worksheet
         add_quota_exclusion_misalignment_worksheet
+        add_measure_quota_coverage_worksheet
       ]
 
       methods = (methods & only) if only.any?
@@ -239,6 +242,13 @@ module Reporting
       ).add_worksheet
     end
 
+    def add_measure_quota_coverage_worksheet
+      Reporting::Differences::MeasureQuotaCoverage.new(
+        'Measure quot def coverage',
+        self,
+      ).add_worksheet
+    end
+
     def uk_goods_nomenclatures
       @uk_goods_nomenclatures ||= handle_csv(Reporting::Commodities.get_uk_today)
     end
@@ -288,7 +298,7 @@ module Reporting
       private
 
       def object_key
-        "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y_%m_%d')}.xlsx"
+        "#{service}/reporting/#{year}/#{month}/#{day}/differences_#{now.strftime('%Y-%m-%d')}.xlsx"
       end
     end
   end

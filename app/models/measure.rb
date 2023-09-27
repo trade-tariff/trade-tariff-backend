@@ -340,6 +340,12 @@ class Measure < Sequel::Model
         end
     end
 
+    def with_regulation_dates_query_non_current
+      with_generating_regulation
+        .select_append(Sequel.as(effective_start_date_column, :effective_start_date))
+        .select_append(Sequel.as(effective_end_date_column, :effective_end_date))
+    end
+
     def with_regulation_dates_query
       with_generating_regulation
         .select_append(Sequel.as(effective_start_date_column, :effective_start_date))
@@ -395,6 +401,16 @@ class Measure < Sequel::Model
 
         Sequel.|(*overview_types)
       end
+    end
+
+    def excluding_licensed_quotas
+      exclusion_criteria = Sequel.|(
+        *QuotaOrderNumber::LICENSED_QUOTA_PREFIXES.map do |prefix|
+          Sequel.like(:ordernumber, "#{prefix}%")
+        end,
+      )
+
+      exclude(exclusion_criteria)
     end
   end
 
