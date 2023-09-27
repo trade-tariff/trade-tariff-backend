@@ -310,4 +310,15 @@ RSpec.describe QuotaDefinition do
       it { is_expected.to be_shows_balance_transfers }
     end
   end
+
+  describe '.excluding_licensed_quotas' do
+    subject(:dataset) { described_class.excluding_licensed_quotas }
+
+    before do
+      create(:quota_definition, quota_order_number_id: '094001') # licensed and excluded
+      create(:quota_definition, quota_order_number_id: '096001') # non-licensed not excluded
+    end
+
+    it { expect(dataset.pluck(:quota_order_number_id)).to eq %w[096001] }
+  end
 end

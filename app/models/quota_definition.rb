@@ -69,6 +69,18 @@ class QuotaDefinition < Sequel::Model
     ds.where('validity_end_date IS NULL OR validity_end_date >= ?', Measure.point_in_time)
   end
 
+  dataset_module do
+    def excluding_licensed_quotas
+      exclusion_criteria = Sequel.|(
+        *QuotaOrderNumber::LICENSED_QUOTA_PREFIXES.map do |prefix|
+          Sequel.like(:quota_order_number_id, "#{prefix}%")
+        end,
+      )
+
+      exclude(exclusion_criteria)
+    end
+  end
+
   def measure_ids
     measures&.map(&:measure_sid)
   end
