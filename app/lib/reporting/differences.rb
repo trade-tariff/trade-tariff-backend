@@ -100,6 +100,8 @@ module Reporting
         add_bad_quota_association_worksheet
         add_quota_exclusion_misalignment_worksheet
         add_measure_quota_coverage_worksheet
+        add_missing_supplementary_units_from_uk_worksheet
+        add_missing_supplementary_units_from_xi_worksheet
       ]
 
       methods = (methods & only) if only.any?
@@ -249,12 +251,38 @@ module Reporting
       ).add_worksheet
     end
 
+    def add_missing_supplementary_units_from_uk_worksheet
+      Reporting::Differences::SupplementaryUnit.new(
+        'xi',
+        'uk',
+        'Supp units on EU not UK',
+        self,
+      ).add_worksheet
+    end
+
+    def add_missing_supplementary_units_from_xi_worksheet
+      Reporting::Differences::SupplementaryUnit.new(
+        'uk',
+        'xi',
+        'Supp units on UK not EU',
+        self,
+      ).add_worksheet
+    end
+
     def uk_goods_nomenclatures
       @uk_goods_nomenclatures ||= handle_csv(Reporting::Commodities.get_uk_today)
     end
 
     def xi_goods_nomenclatures
       @xi_goods_nomenclatures ||= handle_csv(Reporting::Commodities.get_xi_today)
+    end
+
+    def uk_supplementary_unit_measures
+      @uk_supplementary_unit_measures ||= handle_csv(Reporting::SupplementaryUnits.get_uk_today)
+    end
+
+    def xi_supplementary_unit_measures
+      @xi_supplementary_unit_measures ||= handle_csv(Reporting::SupplementaryUnits.get_xi_today)
     end
 
     def each_chapter(eager:, as_of: Time.zone.today.iso8601)
