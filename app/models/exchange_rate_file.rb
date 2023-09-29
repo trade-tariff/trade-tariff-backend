@@ -28,6 +28,14 @@ class ExchangeRateFile < Sequel::Model
     def applicable_types
       where(type: APPLICABLE_TYPES)
     end
+
+    def by_year(period_year)
+      where(period_year:)
+    end
+
+    def by_rate_type(rate_type)
+      where(type: TYPE_TO_FILE_MAP[rate_type])
+    end
   end
 
   class << self
@@ -60,6 +68,29 @@ class ExchangeRateFile < Sequel::Model
 
       where(period_year: year, period_month: month, type: file_types)
         .all
+    end
+
+    def all_years(rate_type)
+      distinct
+        .by_rate_type(rate_type)
+        .select(:period_year)
+        .order(Sequel.desc(:period_year))
+        .select_map(:period_year)
+    end
+
+    def months_for(type, year)
+      scope = by_rate_type(type)
+        .order(Sequel.desc(:period_year), Sequel.desc(:period_month))
+        .select(:period_year, :period_month)
+        .distinct
+
+      scope = if year.present?
+                scope.by_year(year)
+              else
+                scope
+              end
+
+      scope.pluck(:period_month, :period_year)
     end
   end
 end

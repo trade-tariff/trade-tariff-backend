@@ -1,6 +1,6 @@
 module ExchangeRates
   class Period
-    attr_accessor :month, :year, :files
+    attr_accessor :month, :year, :files, :has_exchange_rates
 
     def id
       "#{year}-#{month}-exchange_rate_period"
@@ -11,17 +11,18 @@ module ExchangeRates
     end
 
     class << self
-      def wrap(months, year, type)
-        months.map do |month|
-          build(month, year, type)
+      def wrap(months_and_years, type, has_exchange_rates)
+        months_and_years.map do |month, year|
+          build(month, year, type, has_exchange_rates)
         end
       end
 
-      def build(month, year, type)
+      def build(month, year, type, has_exchange_rates)
         period = new
         period.month = month
         period.year = year
         period.files = ::ExchangeRateFile.applicable_files_for(month, year, type)
+        period.has_exchange_rates = has_exchange_rates
         period
       end
     end

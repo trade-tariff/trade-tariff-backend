@@ -65,6 +65,15 @@ class ExchangeRateCurrencyRate < Sequel::Model
       select { date_part('month', :applicable_date).cast(:integer).as(:month) }
     end
 
+    def with_applicable_month_and_year
+      select do
+        [
+          date_part('month', :applicable_date).cast(:integer).as(:month),
+          date_part('year', :applicable_date).cast(:integer).as(:year),
+        ]
+      end
+    end
+
     def by_type(type)
       where(rate_type: type)
     end
@@ -102,14 +111,20 @@ class ExchangeRateCurrencyRate < Sequel::Model
         &.year.presence || Time.zone.today.year
     end
 
-    def months_for_year(year, type)
-      with_applicable_date
-        .by_year(year)
+    def months_for(type, year)
+      scope = with_applicable_date
+        .with_applicable_month_and_year
         .by_type(type)
-        .with_applicable_month
-        .order(Sequel.desc(:month))
+        .order(Sequel.desc(:year), Sequel.desc(:month))
         .distinct
-        .pluck(:month)
+
+      scope = if year.present?
+                scope.by_year(year)
+              else
+                scope
+              end
+
+      scope.pluck(:month, :year)
     end
 
     def for_month(month, year, type)

@@ -20,15 +20,11 @@ module Api
         end
 
         def period_list
-          @period_list ||= ::ExchangeRates::PeriodList.build(year, type)
+          @period_list ||= ::ExchangeRates::PeriodList.build(type, year)
         end
 
         def year
-          (params[:year].presence || default_year).to_i
-        end
-
-        def default_year
-          ExchangeRateCurrencyRate.max_year(type)
+          params[:year]
         end
       end
     end
