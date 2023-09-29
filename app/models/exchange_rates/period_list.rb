@@ -28,8 +28,11 @@ module ExchangeRates
       end
 
       def exchange_rate_periods_for(year, type)
-        months = ExchangeRateCurrencyRate.months_for_year(year, type)
-
+        months = if type == 'average'
+                   [3, 12]
+                 else
+                   ExchangeRateCurrencyRate.months_for_year(year, type)
+                 end
         ExchangeRates::Period.wrap(months, year, type)
       end
 

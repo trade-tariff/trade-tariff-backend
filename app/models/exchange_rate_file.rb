@@ -13,7 +13,7 @@ class ExchangeRateFile < Sequel::Model
   content_addressable_fields :format, :type, :publication_date, :period_year, :period_month
 
   def file_path
-    "/api/v2/exchange_rates/files/#{type}_#{period_year}-#{period_month}.#{format}"
+    "/api/v2/exchange_rates/files/#{filename}"
   end
 
   def object_key
@@ -55,11 +55,10 @@ class ExchangeRateFile < Sequel::Model
       end
     end
 
-    def applicable_files_for(month, year, type)
-      file_types = TYPE_TO_FILE_MAP[type]
+    def applicable_files_for(month, year, rate_type)
+      file_types = TYPE_TO_FILE_MAP[rate_type]
 
-      applicable_types
-        .where(period_year: year, period_month: month, type: file_types)
+      where(period_year: year, period_month: month, type: file_types)
         .all
     end
   end
