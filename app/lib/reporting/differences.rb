@@ -11,6 +11,24 @@ module Reporting
       },
     ].freeze
 
+    MEASURE_UNIT_EAGER = [
+      :measure_type,
+      {
+        measure_components: %i[
+          measurement_unit
+          measurement_unit_qualifier
+        ],
+        measure_conditions: [
+          {
+            measure_condition_components: %i[
+              measurement_unit
+              measurement_unit_qualifier
+            ],
+          },
+        ],
+      },
+    ].freeze
+
     GOODS_NOMENCLATURE_MEASURE_EAGER = [
       :measures,
       {
@@ -37,6 +55,14 @@ module Reporting
           { overview_measures: MEASURE_EAGER },
           :goods_nomenclature_descriptions,
         ],
+      },
+    ].freeze
+
+    GOODS_NOMENCLATURE_MEASURE_WITH_UNIT_EAGER = [
+      { measures: MEASURE_UNIT_EAGER },
+      {
+        ancestors: [{ measures: MEASURE_UNIT_EAGER }],
+        descendants: [{ measures: MEASURE_UNIT_EAGER }],
       },
     ].freeze
 
@@ -102,6 +128,7 @@ module Reporting
         add_measure_quota_coverage_worksheet
         add_missing_supplementary_units_from_uk_worksheet
         add_missing_supplementary_units_from_xi_worksheet
+        add_candidate_supplementary_units
       ]
 
       methods = (methods & only) if only.any?
@@ -265,6 +292,13 @@ module Reporting
         'uk',
         'xi',
         'Supp units on UK not EU',
+        self,
+      ).add_worksheet
+    end
+
+    def add_candidate_supplementary_units
+      Reporting::Differences::CandidateSupplementaryUnit.new(
+        'Supp unit candidates',
         self,
       ).add_worksheet
     end
