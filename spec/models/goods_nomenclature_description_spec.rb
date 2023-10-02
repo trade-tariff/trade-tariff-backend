@@ -102,4 +102,49 @@ RSpec.describe GoodsNomenclatureDescription do
       it { expect(goods_nomenclature_description.consigned_from).to be_nil }
     end
   end
+
+  describe '#formatted_description' do
+    let(:goods_nomenclature_description) { create(:goods_nomenclature_description, description: description) }
+
+    context "when description contains consigned countries" do
+      let(:description) { "Originating in or consigned from China." }
+
+      it "returns the formatted description with capitalized first letter and consigned country names" do
+        expect(goods_nomenclature_description.formatted_description).to eq(
+                                                                          "Originating in or consigned from China."
+                                                                        )
+      end
+    end
+
+    context "when description contains consigned countries with space" do
+      let(:description) { "Originating in or consigned from United Kingdom." }
+
+      it "returns the formatted description with capitalized first letter and consigned country names" do
+        expect(goods_nomenclature_description.formatted_description).to eq(
+                                                                          "Originating in or consigned from United Kingdom."
+                                                                        )
+      end
+    end
+
+    context "when description does not contain consigned countries" do
+      let(:description) { "This is a description without consigned countries." }
+
+      it "returns the formatted description with capitalized first letter" do
+        expect(goods_nomenclature_description.formatted_description).to eq(
+                                                                          "This is a description without consigned countries."
+                                                                        )
+      end
+    end
+
+    context "when description contains consigned and originating countries" do
+      let(:description) { "Consigned from Japan or originating in China." }
+
+      it "returns the formatted description with capitalized first letter and consigned country names" do
+        expect(goods_nomenclature_description.formatted_description).to eq(
+                                                                          "Consigned from Japan or originating in China."
+                                                                        )
+      end
+    end
+  end
+
 end

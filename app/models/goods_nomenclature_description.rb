@@ -36,7 +36,15 @@ class GoodsNomenclatureDescription < Sequel::Model
   end
 
   def formatted_description
-    super.mb_chars.downcase.to_s.gsub(/^(.)/) { Regexp.last_match(1).capitalize }
+    formatted = super.mb_chars.downcase.to_s.gsub(/^(.)/) { Regexp.last_match(1).capitalize }
+    consigned_countries.each do |country|
+      formatted.gsub!(country.downcase, country)
+    end
+    formatted
+  end
+
+  def consigned_countries
+    description.scan(CONSIGNED_FROM_REGEX).flatten
   end
 
   def to_s
