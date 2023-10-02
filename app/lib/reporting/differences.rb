@@ -129,6 +129,7 @@ module Reporting
         add_missing_supplementary_units_from_uk_worksheet
         add_missing_supplementary_units_from_xi_worksheet
         add_candidate_supplementary_units
+        add_me16_worksheet
       ]
 
       methods = (methods & only) if only.any?
@@ -298,6 +299,13 @@ module Reporting
 
     def add_candidate_supplementary_units
       Reporting::Differences::CandidateSupplementaryUnit.new(
+        'Supp unit candidates',
+        self,
+      ).add_worksheet
+    end
+
+    def add_me16_worksheet
+      Reporting::Differences::Me16.new(
         'Supp unit candidates',
         self,
       ).add_worksheet
