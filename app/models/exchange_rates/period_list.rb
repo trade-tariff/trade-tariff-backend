@@ -32,12 +32,17 @@ module ExchangeRates
       def periods_for(type, year)
         year = default_year(year, type)
 
-        months_and_years = ExchangeRateCurrencyRate.months_for(type, year)
-        has_exchange_rates = months_and_years.present?
-        months_and_years += ExchangeRateFile.months_for(type, year)
-        months_and_years = months_and_years.uniq.sort_by { |m, y| [y, m] }.reverse
+        rate_months_and_years = ExchangeRateCurrencyRate.months_for(type, year).to_set
+        file_months_and_years = ExchangeRateFile.months_for(type, year).to_set
 
-        ExchangeRates::Period.wrap(months_and_years, type, has_exchange_rates)
+        months_and_years = (rate_months_and_years + file_months_and_years).uniq.sort_by { |m, y| [y, m] }.reverse.map do |month_and_year|
+          {
+            month_and_year:,
+            has_exchange_rates: rate_months_and_years.include?(month_and_year),
+          }
+        end
+
+        ExchangeRates::Period.wrap(months_and_years, type)
       end
 
       def exchange_rate_years(type)

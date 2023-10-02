@@ -11,13 +11,20 @@ module ExchangeRates
     end
 
     class << self
-      def wrap(months_and_years, type, has_exchange_rates)
-        months_and_years.map do |month, year|
-          build(month, year, type, has_exchange_rates)
+      def wrap(months_and_years, type)
+        months_and_years.map do |month_and_year|
+          build(
+            month_and_year[:month_and_year],
+            month_and_year[:has_exchange_rates],
+            type,
+          )
         end
       end
 
-      def build(month, year, type, has_exchange_rates)
+      def build(month_and_year, has_exchange_rates, type)
+        month = month_and_year&.first
+        year = month_and_year&.last
+
         period = new
         period.month = month
         period.year = year
