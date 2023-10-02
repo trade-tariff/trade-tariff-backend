@@ -22,7 +22,7 @@ RSpec.describe ExchangeRateCurrencyRate do
   end
 
   describe '.months_for_year' do
-    subject(:result) { described_class.months_for_year(2020, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+    subject(:result) { described_class.months_for(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE, 2020) }
 
     before do
       create(
@@ -37,7 +37,7 @@ RSpec.describe ExchangeRateCurrencyRate do
       )
     end
 
-    it { expect(result).to eq([7, 1]) }
+    it { expect(result).to eq([[7, 2020], [1, 2020]]) }
   end
 
   describe '.for_month' do
@@ -151,8 +151,8 @@ RSpec.describe ExchangeRateCurrencyRate do
     subject(:dataset) { described_class.by_type('scheduled') }
 
     before do
-      create(:exchange_rate_currency_rate, rate_type: 'scheduled')
-      create(:exchange_rate_currency_rate, rate_type: 'foo')
+      create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'XXX')
+      create(:exchange_rate_currency_rate, :spot_rate, currency_code: 'YYY')
     end
 
     it { expect(dataset.pluck(:rate_type)).to eq(%w[scheduled]) }
