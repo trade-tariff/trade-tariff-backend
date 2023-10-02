@@ -24,7 +24,7 @@ module Api
         end
 
         def year
-          params[:year]
+          params[:year].to_i if params[:year]
         end
       end
     end

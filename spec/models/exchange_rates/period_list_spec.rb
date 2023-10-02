@@ -44,30 +44,17 @@ RSpec.describe ExchangeRates::PeriodList do
     it 'initializes exchange rate years to an empty array' do
       expect(period_list.exchange_rate_years).to be_empty
     end
-  end
 
-  describe '.exchange_rate_years' do
-    subject(:exchange_rate_years) do
-      described_class.exchange_rate_years(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)
-    end
+    context 'when year is nil' do
+      let(:year) { nil }
 
-    let(:years) { [2022, 2021, 2020] }
+      it 'calls max_year' do
+        allow(ExchangeRateCurrencyRate).to receive(:max_year)
 
-    before do
-      allow(ExchangeRateCurrencyRate).to receive(:all_years).and_return(years)
-    end
+        period_list.exchange_rate_periods
 
-    it 'calls ExchangeRates::PeriodYear.build with the correct arguments' do
-      allow(ExchangeRates::PeriodYear).to receive(:wrap).with(years).and_return([])
-      exchange_rate_years
-    end
-
-    it 'returns an array' do
-      expect(exchange_rate_years).to be_an(Array)
-    end
-
-    it 'returns an array of ExchangeRates::PeriodYear instances' do
-      expect(exchange_rate_years).to all(be_an_instance_of(ExchangeRates::PeriodYear))
+        expect(ExchangeRateCurrencyRate).to have_received(:max_year).with('scheduled')
+      end
     end
   end
 end

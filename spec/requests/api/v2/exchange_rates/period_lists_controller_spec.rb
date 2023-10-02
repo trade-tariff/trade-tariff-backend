@@ -7,14 +7,18 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
     let(:period_list) { build(:period_list, :with_periods, :with_period_years, year: 2023) }
 
     before do
-      allow(ExchangeRates::PeriodList).to receive(:build).with(2023, 'scheduled').and_return(period_list)
-      allow(ExchangeRates::PeriodList).to receive(:build).with(1970, 'scheduled').and_return([])
-      allow(ExchangeRateCurrencyRate).to receive(:max_year).with('scheduled').and_return(2023)
+      allow(ExchangeRates::PeriodList).to receive(:build).with('scheduled', year).and_return(period_list)
 
       make_request
     end
 
     context 'when the year parameter is provided' do
+      before do
+        allow(ExchangeRateCurrencyRate).to receive(:max_year).with('scheduled').and_return(2023)
+      end
+
+      let(:year) { 2023 }
+
       let(:make_request) do
         get api_exchange_rates_period_list_path(
           year: '2023',
@@ -46,6 +50,8 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
     end
 
     context 'when the year parameter is not provided' do
+      let(:year) { nil }
+
       let(:make_request) do
         get api_exchange_rates_period_list_path(
           filter: { type: 'scheduled' },
@@ -72,10 +78,12 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
 
       it { is_expected.to have_http_status(:ok) }
       it { expect(response.body).to match_json_expression(pattern) }
-      it { expect(ExchangeRateCurrencyRate).to have_received(:max_year) }
     end
 
-    context 'when the year parameter has no available data' do
+    context 'when there are no available data for the year' do
+      let(:year) { 1970 }
+      let(:period_list) { [] }
+
       let(:make_request) do
         get api_exchange_rates_period_list_path(
           year: '1970',
