@@ -1,7 +1,7 @@
 RSpec.describe ExchangeRates::Period do
   let(:year) { 2022 }
   let(:month) { 3 }
-  let(:period) { described_class.build(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+  let(:period) { described_class.build([month, year], true, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
   describe '#id' do
     it 'returns the formatted period ID' do
@@ -60,20 +60,28 @@ RSpec.describe ExchangeRates::Period do
 
   describe '.wrap' do
     let(:year) { 2022 }
-    let(:months) { [1, 2, 3] }
-    let(:periods) { described_class.wrap(months, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+    let(:month) { 1 }
+    let(:periods) do
+      described_class.wrap(
+        [{
+          month_and_year: [month, year],
+          has_exchange_rates: true,
+        }],
+        ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+      )
+    end
 
     it 'builds an array of periods' do
       expect(periods).to be_an(Array)
     end
 
-    it 'builds an array of 3 periods' do
-      expect(periods.size).to eq(3)
+    it 'builds an array of one period' do
+      expect(periods.size).to eq(1)
     end
 
     it 'builds periods with correct month' do
       periods.each do |period|
-        expect(period.month).to be_in(months)
+        expect(period.month).to be(month)
       end
     end
 
