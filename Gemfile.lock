@@ -386,7 +386,7 @@ GEM
     sentry-sidekiq (5.11.0)
       sentry-ruby (~> 5.11.0)
       sidekiq (>= 3.0)
-    sequel (5.72.0)
+    sequel (5.73.0)
       bigdecimal
     sequel-rails (1.2.0)
       actionpack (>= 4.0.0)
