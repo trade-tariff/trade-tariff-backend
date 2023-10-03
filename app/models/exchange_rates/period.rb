@@ -11,25 +11,19 @@ module ExchangeRates
     end
 
     class << self
-      def wrap(months_and_years, type)
-        months_and_years.map do |month_and_year|
-          build(
-            month_and_year[:month_and_year],
-            month_and_year[:has_exchange_rates],
-            type,
-          )
-        end
+      def wrap(months_years_rates, type)
+        months_years_rates.map { |m_y_r| build(m_y_r, type) }
       end
 
-      def build(month_and_year, has_exchange_rates, type)
-        month = month_and_year&.first
-        year = month_and_year&.last
+      def build(month_year_rate, type)
+        month = month_year_rate.month
+        year = month_year_rate.year
 
         period = new
         period.month = month
         period.year = year
         period.files = ::ExchangeRateFile.applicable_files_for(month, year, type)
-        period.has_exchange_rates = has_exchange_rates
+        period.has_exchange_rates = month_year_rate.has_exchange_rates
         period
       end
     end
