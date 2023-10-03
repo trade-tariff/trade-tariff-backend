@@ -1,6 +1,5 @@
 RSpec.describe ExchangeRates::PeriodList do
   let(:year) { 2020 }
-  let(:months) { [1, 2, 3] }
 
   describe '#id' do
     subject(:period_list) { build(:period_list) }

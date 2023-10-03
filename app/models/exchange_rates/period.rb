@@ -2,12 +2,7 @@ module ExchangeRates
   class Period
     attr_accessor :month, :year, :files, :has_exchange_rates
 
-    def initialize(month:, year:, has_exchange_rates:, files:)
-      @month = month
-      @year = year
-      @has_exchange_rates = has_exchange_rates
-      @file = files
-    end
+    include ActiveModel::Model
 
     def id
       "#{year}-#{month}-exchange_rate_period"
