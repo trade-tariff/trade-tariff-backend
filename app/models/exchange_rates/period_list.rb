@@ -9,8 +9,6 @@ module ExchangeRates
 
     content_addressable_fields :year, :type
 
-    MonthYearRates = Struct.new(:month, :year, :has_exchange_rates)
-
     def exchange_rate_year_ids
       exchange_rate_years.map(&:id)
     end
@@ -40,11 +38,11 @@ module ExchangeRates
         months_years_rates = (rate_months_and_years + file_months_and_years).uniq.sort_by { |m, y| [y, m] }
           .reverse
           .map do |month_and_year|
-            MonthYearRates.new(
+            {
               month: month_and_year[0],
               year: month_and_year[1],
               has_exchange_rates: rate_months_and_years.include?(month_and_year),
-            )
+            }
           end
 
         ExchangeRates::Period.wrap(months_years_rates, type)
