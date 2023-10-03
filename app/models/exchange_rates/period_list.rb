@@ -18,25 +18,50 @@ module ExchangeRates
     end
 
     class << self
-      def build(year, type)
+      def build(type, year = nil)
         period_list = new
-        period_list.year = year
         period_list.type = type
-        period_list.exchange_rate_periods = exchange_rate_periods_for(year, type)
+        period_list.year = year
+        period_list.exchange_rate_periods = periods_for(type, year)
         period_list.exchange_rate_years = exchange_rate_years(type)
         period_list
       end
 
-      def exchange_rate_periods_for(year, type)
-        months = ExchangeRateCurrencyRate.months_for_year(year, type)
+      private
 
-        ExchangeRates::Period.wrap(months, year, type)
+      def periods_for(type, year)
+        year = default_year(year, type)
+
+        rate_months_and_years = ExchangeRateCurrencyRate.months_for(type, year).to_set
+        file_months_and_years = ExchangeRateFile.months_for(type, year).to_set
+
+        months_years_rates = (rate_months_and_years + file_months_and_years).uniq.sort_by { |m, y| [y, m] }
+          .reverse
+          .map do |month_and_year|
+            {
+              month: month_and_year[0],
+              year: month_and_year[1],
+              has_exchange_rates: rate_months_and_years.include?(month_and_year),
+            }
+          end
+
+        ExchangeRates::Period.wrap(months_years_rates, type)
       end
 
       def exchange_rate_years(type)
         years = ExchangeRateCurrencyRate.all_years(type)
+        years += ExchangeRateFile.all_years(type)
+        years = years.uniq.sort.reverse
 
         ExchangeRates::PeriodYear.wrap(years)
+      end
+
+      # For monthly rates, we want to default to the latest year
+      # All other types return all years worth of data
+      def default_year(year, type)
+        if type == ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE
+          (year.presence || ExchangeRateCurrencyRate.max_year(type)).to_i
+        end
       end
     end
   end

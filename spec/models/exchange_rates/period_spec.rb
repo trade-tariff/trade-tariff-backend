@@ -1,79 +1,62 @@
 RSpec.describe ExchangeRates::Period do
-  let(:year) { 2022 }
-  let(:month) { 3 }
-  let(:period) { described_class.build(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
-
   describe '#id' do
-    it 'returns the formatted period ID' do
-      expect(period.id).to eq('2022-3-exchange_rate_period')
-    end
-  end
+    subject(:id) { build(:exchange_rates_period, year: '2022', month: '3').id }
 
-  describe '#file_ids' do
-    context 'without files' do
-      it 'returns empty array' do
-        expect(period.file_ids).to be_empty
-      end
-    end
-
-    context 'with files' do
-      before do
-        create(:exchange_rate_file, period_year: year, period_month: month)
-      end
-
-      it 'returns the ids of associated exchange rate files' do
-        expect(period.file_ids).to eq([period.files.first.id])
-      end
-    end
+    it { is_expected.to eq('2022-3-exchange_rate_period') }
   end
 
   describe '.build' do
+    let(:period) do
+      described_class.build(
+        {
+          month: '3',
+          year: '2022',
+          has_exchange_rates: true,
+        },
+        ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+      )
+    end
+
     context 'without files' do
-      it 'does not load any associated files' do
-        expect(period.files.count).to eq(0)
-      end
+      it { expect(period.files).to be_empty }
     end
 
     context 'with files' do
       before do
-        create(:exchange_rate_file, period_year: year, period_month: month, type: 'monthly_csv')
-        create(:exchange_rate_file, period_year: year, period_month: month, type: 'monthly_xml')
+        create(:exchange_rate_file, period_year: '2022', period_month: '3', type: 'monthly_csv')
       end
 
-      it 'builds a period' do
-        expect(period).to be_a(described_class)
-      end
-
-      it 'builds a period with correct month' do
-        expect(period.month).to eq(month)
-      end
-
-      it 'builds a period with correct year' do
-        expect(period.year).to eq(year)
-      end
-
-      it 'loads associated files' do
-        expect(period.files.count).to eq(2)
-      end
+      it { expect(period).to be_a(described_class) }
+      it { expect(period).to have_attributes(month: '3', year: '2022') }
+      it { expect(period.files.pluck(:type)).to eq(%w[monthly_csv]) }
     end
   end
 
   describe '.wrap' do
     let(:year) { 2022 }
-    let(:months) { [1, 2, 3] }
-    let(:periods) { described_class.wrap(months, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+    let(:month) { 1 }
+    let(:periods) do
+      described_class.wrap(
+        [{
+          month:,
+          year:,
+          has_exchange_rates: true,
+        }],
+        ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+      )
+    end
 
     it 'builds an array of periods' do
       expect(periods).to be_an(Array)
     end
 
-    it 'builds an array of 3 periods' do
-      expect(periods.size).to eq(3)
+    it 'builds an array of one period' do
+      expect(periods.size).to eq(1)
     end
 
     it 'builds periods with correct month' do
       periods.each do |period|
-        expect(period.month).to be_in(months)
+        expect(period.month).to be(month)
       end
     end
 

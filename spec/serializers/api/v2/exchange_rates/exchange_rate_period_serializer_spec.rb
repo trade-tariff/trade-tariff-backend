@@ -11,6 +11,7 @@ RSpec.describe Api::V2::ExchangeRates::ExchangeRatePeriodSerializer do
         attributes: {
           month: 1,
           year: 2022,
+          has_exchange_rates: nil,
         },
         relationships: {
           files: {

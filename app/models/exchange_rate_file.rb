@@ -13,7 +13,7 @@ class ExchangeRateFile < Sequel::Model
   content_addressable_fields :format, :type, :publication_date, :period_year, :period_month
 
   def file_path
-    "/api/v2/exchange_rates/files/#{type}_#{period_year}-#{period_month}.#{format}"
+    "/api/v2/exchange_rates/files/#{filename}"
   end
 
   def object_key
@@ -27,6 +27,14 @@ class ExchangeRateFile < Sequel::Model
   dataset_module do
     def applicable_types
       where(type: APPLICABLE_TYPES)
+    end
+
+    def by_year(period_year)
+      where(period_year:)
+    end
+
+    def by_rate_type(rate_type)
+      where(type: TYPE_TO_FILE_MAP[rate_type])
     end
   end
 
@@ -55,12 +63,34 @@ class ExchangeRateFile < Sequel::Model
       end
     end
 
-    def applicable_files_for(month, year, type)
-      file_types = TYPE_TO_FILE_MAP[type]
+    def applicable_files_for(month, year, rate_type)
+      file_types = TYPE_TO_FILE_MAP[rate_type]
 
-      applicable_types
-        .where(period_year: year, period_month: month, type: file_types)
+      where(period_year: year, period_month: month, type: file_types)
         .all
+    end
+
+    def all_years(rate_type)
+      distinct
+        .by_rate_type(rate_type)
+        .select(:period_year)
+        .order(Sequel.desc(:period_year))
+        .select_map(:period_year)
+    end
+
+    def months_for(type, year)
+      scope = by_rate_type(type)
+        .order(Sequel.desc(:period_year), Sequel.desc(:period_month))
+        .select(:period_year, :period_month)
+        .distinct
+
+      scope = if year.present?
+                scope.by_year(year)
+              else
+                scope
+              end
+
+      scope.pluck(:period_month, :period_year)
     end
   end
 end
