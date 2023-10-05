@@ -9,9 +9,10 @@ module Api
         attributes :currency_description,
                    :currency_code,
                    :country_code,
-                   :country,
                    :validity_start_date,
                    :validity_end_date
+
+        attribute :country, &:country_description
 
         attribute :rate, &:presented_rate
       end

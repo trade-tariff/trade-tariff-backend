@@ -2,7 +2,7 @@ module ExchangeRates
   class UpdateCurrencyRatesService
     def initialize(date: Time.zone.today)
       @date = date
-      @xe_api = XeApi.new(date: @date)
+      @xe_api = ::ExchangeRates::XeApi.new(date: @date)
     end
 
     def call
@@ -10,7 +10,7 @@ module ExchangeRates
 
       ExchangeRateCurrencyRate.db.transaction do
         rates = build_rates(response)
-        included_rates = ExchangeRateCurrency.select_map(:currency_code)
+        included_rates = ExchangeRateCountryCurrency.distinct(:currency_code).select_map(:currency_code)
         rates = rates.select { |rate| included_rates.include?(rate.currency_code) }
 
         upsert_rates(rates)

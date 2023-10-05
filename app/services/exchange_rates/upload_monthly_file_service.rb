@@ -12,19 +12,21 @@ module ExchangeRates
     end
 
     def call
-      data_result = ::ExchangeRateCurrencyRate.for_month(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)
+      rates = ::ExchangeRateCurrencyRate
+        .for_month(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)
+        .sort_by { |rate| [rate.country_description, rate.currency_description] }
 
-      if data_result.empty?
+      if rates.empty?
         raise DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}."
       end
 
       case type
       when :monthly_csv
-        upload_data(data_result, :csv, ExchangeRates::CreateCsvService)
+        upload_data(rates, :csv, ExchangeRates::CreateCsvService)
       when :monthly_xml
-        upload_data(data_result, :xml, ExchangeRates::CreateXmlService)
+        upload_data(rates, :xml, ExchangeRates::CreateXmlService)
       when :monthly_csv_hmrc
-        upload_data(data_result, :csv, ExchangeRates::CreateCsvHmrcService)
+        upload_data(rates, :csv, ExchangeRates::CreateCsvHmrcService)
       else
         raise ArgumentError, "Invalid type: #{type}."
       end

@@ -8,18 +8,23 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
-  many_to_one :exchange_rate_currency, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCurrency
-  one_to_many :exchange_rate_countries, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountry
+  one_to_many :exchange_rate_countries_currencies, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountryCurrency
 
-  delegate :currency_description,
-           to: :exchange_rate_currency,
-           allow_nil: true
-
-  def_column_accessor :country, :country_code, :applicable_date, :year, :month
+  def_column_accessor :currency_description,
+                      :country_description,
+                      :country_code,
+                      :applicable_date,
+                      :year,
+                      :month,
+                      :country_currency_validity_start_date,
+                      :country_currency_validity_end_date
 
   include ContentAddressableId
 
-  content_addressable_fields :currency_code, :validity_start_date, :validity_end_date, :country, :country_code
+  content_addressable_fields :currency_code,
+                             :country_code,
+                             :validity_start_date,
+                             :validity_end_date
 
   def presented_rate
     sprintf('%.4f', rate)
@@ -43,7 +48,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
   dataset_module do
     def with_applicable_date
       with(
-        :cte,
+        :exchange_rate_currency_rates,
         select_all(:exchange_rate_currency_rates)
         .select_append(
           Sequel.case(
@@ -54,7 +59,32 @@ class ExchangeRateCurrencyRate < Sequel::Model
             :rate_type,
           ).as(:applicable_date),
         ),
-      ).from(:cte)
+      ).from(:exchange_rate_currency_rates)
+    end
+
+    # Expands applicable exchange rates with a given currency code to match
+    # all of the countries that use that currency and filters on the countries
+    # and currencies that are relevant for that exchange rate.
+    #
+    # You'd typically want to filter exchange rates by a type and a date range
+    # and then expand the exchange rates to include all of the countries that
+    # use that currency with descriptions on the date of the exchange rate.
+    #
+    # ExchangeRateCurrencyRate
+    #   .with_applicable_date
+    #   .by_month_and_year(3, 2022)
+    #   .by_type('average')
+    #   .with_exchange_rate_country_currency
+    def with_exchange_rate_country_currency
+      association_right_join(:exchange_rate_countries_currencies)
+        .select_append { Sequel[:exchange_rate_countries_currencies][:validity_start_date].as(:country_currency_validity_start_date) }
+        .select_append { Sequel[:exchange_rate_countries_currencies][:validity_end_date].as(:country_currency_validity_end_date) }
+        .select_append { Sequel[:exchange_rate_currency_rates][:validity_start_date].as(:validity_start_date) }
+        .select_append { Sequel[:exchange_rate_currency_rates][:validity_end_date].as(:validity_end_date) }
+        .where do |_query|
+          (Sequel[:exchange_rate_countries_currencies][:validity_start_date] <= Sequel[:exchange_rate_currency_rates][:validity_end_date]) &
+            (Sequel.function(:COALESCE, Sequel[:exchange_rate_countries_currencies][:validity_end_date], Sequel.lit("'infinity'")) >= Sequel[:exchange_rate_currency_rates][:validity_start_date])
+        end
     end
 
     def with_applicable_year
@@ -131,9 +161,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
       with_applicable_date
         .by_month_and_year(month, year)
         .by_type(type)
-        .order(Sequel.asc(:applicable_date))
-        .order(Sequel.asc(:currency_code))
+        .with_exchange_rate_country_currency
         .all
+        .group_by { |rate| [rate.currency_code, rate.country_code] }
+        .map { |_, rates| rates.max_by(&:country_currency_validity_start_date) }
     end
   end
 end

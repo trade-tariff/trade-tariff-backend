@@ -4,15 +4,15 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
   let(:current_time) { Time.zone.now }
   let(:month) { current_time.next_month.month }
   let(:year) { current_time.year }
-  let(:data_result) { [instance_double('ExchangeRateCurrencyRate')] }
+  let(:rates) { create_list(:exchange_rate_currency_rate, 1, :with_usa) }
 
   before do
     travel_to Time.zone.local(2023, 7, 20)
 
-    allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year, 'scheduled').and_return(data_result)
-    allow(ExchangeRates::CreateCsvService).to receive(:call).with(data_result).and_return('csv_string')
-    allow(ExchangeRates::CreateXmlService).to receive(:call).with(data_result).and_return('xml_string')
-    allow(ExchangeRates::CreateCsvHmrcService).to receive(:call).with(data_result).and_return('csv_hmrc_string')
+    allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year, 'scheduled').and_return(rates)
+    allow(ExchangeRates::CreateCsvService).to receive(:call).with(rates).and_return('csv_string')
+    allow(ExchangeRates::CreateXmlService).to receive(:call).with(rates).and_return('xml_string')
+    allow(ExchangeRates::CreateCsvHmrcService).to receive(:call).with(rates).and_return('csv_hmrc_string')
     allow(TariffSynchronizer::FileService).to receive(:write_file).and_return(true)
     allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(321)
     allow(ExchangeRateFile).to receive(:create).and_return(true)
@@ -30,8 +30,8 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       upload_file
 
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'scheduled')
-      expect(ExchangeRates::CreateCsvService).to have_received(:call).with(data_result)
-      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvService).to have_received(:call).with(rates)
+      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv", 'csv_string')
       expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv")
       expect(ExchangeRateFile).to have_received(:create).with(
@@ -53,8 +53,8 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       upload_file
 
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'scheduled')
-      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
-      expect(ExchangeRates::CreateXmlService).to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(rates)
+      expect(ExchangeRates::CreateXmlService).to have_received(:call).with(rates)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml", 'xml_string')
       expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml")
       expect(ExchangeRateFile).to have_received(:create).with(
@@ -76,9 +76,9 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       upload_file
 
       expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'scheduled')
-      expect(ExchangeRates::CreateCsvHmrcService).to have_received(:call).with(data_result)
-      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(data_result)
-      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(data_result)
+      expect(ExchangeRates::CreateCsvHmrcService).to have_received(:call).with(rates)
+      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(rates)
+      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_csv_hmrc_#{year}-#{month}.csv", 'csv_hmrc_string')
       expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/monthly_csv_hmrc_#{year}-#{month}.csv")
       expect(ExchangeRateFile).to have_received(:create).with(
@@ -102,7 +102,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
   end
 
   context 'when data doesnt exist in the database' do
-    let(:data_result) { [] }
+    let(:rates) { [] }
     let(:type) { :monthly_xml }
 
     it 'raises ArgumentError' do

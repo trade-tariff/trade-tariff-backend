@@ -2,15 +2,9 @@ RSpec.describe Api::V2::ExchangeRates::ExchangeRateSerializer do
   subject(:serializable) { described_class.new(exchange_rate).serializable_hash }
 
   let(:exchange_rate) do
-    create(
-      :exchange_rate_currency_rate,
-      :with_usa,
-    )
+    create(:exchange_rate_currency_rate, :with_usa)
 
-    ExchangeRateCurrencyRate
-      .association_right_join(:exchange_rate_countries)
-      .eager(:exchange_rate_currency)
-      .take
+    ExchangeRateCurrencyRate.with_exchange_rate_country_currency.take
   end
 
   let(:expected) do
