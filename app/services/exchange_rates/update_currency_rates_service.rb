@@ -44,7 +44,7 @@ module ExchangeRates
         validity_start_date:,
         validity_end_date:,
         rate:,
-        rate_type: ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+        rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
       )
     end
   end

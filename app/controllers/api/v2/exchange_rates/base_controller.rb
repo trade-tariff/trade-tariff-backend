@@ -12,7 +12,7 @@ module Api
 
         def valid_exchange_rate_type?
           [
-            ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+            ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
             ExchangeRateCurrencyRate::SPOT_RATE_TYPE,
             ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE,
           ].include?(type)

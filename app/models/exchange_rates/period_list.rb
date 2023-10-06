@@ -59,7 +59,7 @@ module ExchangeRates
       # For monthly rates, we want to default to the latest year
       # All other types return all years worth of data
       def default_year(year, type)
-        if type == ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE
+        if type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE
           (year.presence || ExchangeRateCurrencyRate.max_year(type)).to_i
         end
       end

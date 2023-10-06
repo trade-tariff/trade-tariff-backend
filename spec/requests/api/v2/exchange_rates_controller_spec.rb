@@ -9,7 +9,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
     before do
       allow(ExchangeRates::ExchangeRateCollection)
         .to receive(:build)
-        .with('6', '2023', 'scheduled')
+        .with('6', '2023', 'monthly')
         .and_return(exchange_rate_collection)
 
       make_request
@@ -19,7 +19,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
       let(:make_request) do
         get api_exchange_rate_path(
           '2023-6',
-          filter: { type: 'scheduled' },
+          filter: { type: 'monthly' },
           format: :json,
         )
       end
@@ -32,7 +32,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
             attributes: {
               year: 2023,
               month: 6,
-              type: 'scheduled',
+              type: 'monthly',
             },
             relationships: {
               exchange_rate_files: Hash,
@@ -46,7 +46,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
 
       it { expect(response.body).to match_json_expression(pattern) }
 
-      it { expect(ExchangeRates::ExchangeRateCollection).to have_received(:build).with('6', '2023', 'scheduled') }
+      it { expect(ExchangeRates::ExchangeRateCollection).to have_received(:build).with('6', '2023', 'monthly') }
     end
   end
 end

@@ -4,7 +4,7 @@ FactoryBot.define do
     validity_start_date { Time.zone.today.next_month.beginning_of_month }
     validity_end_date { validity_start_date.to_date.end_of_month }
     rate { 4.8012 }
-    rate_type { 'scheduled' }
+    rate_type { 'monthly' }
 
     trait :with_usa do
       currency_code { 'USD' }
@@ -22,8 +22,8 @@ FactoryBot.define do
       end
     end
 
-    trait :scheduled_rate do
-      rate_type { 'scheduled' }
+    trait :monthly_rate do
+      rate_type { 'monthly' }
     end
 
     trait :spot_rate do

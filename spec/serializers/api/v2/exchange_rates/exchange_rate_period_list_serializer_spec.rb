@@ -12,7 +12,7 @@ RSpec.describe Api::V2::ExchangeRates::ExchangeRatePeriodListSerializer do
         type: :exchange_rate_period_list,
         attributes: {
           year: exchange_rate_period_list.year,
-          type: 'scheduled',
+          type: 'monthly',
         },
         relationships: {
           exchange_rate_periods: {

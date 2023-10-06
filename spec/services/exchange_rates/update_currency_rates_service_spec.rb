@@ -22,14 +22,14 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
           validity_start_date: Time.zone.today.next_month.beginning_of_month,
           validity_end_date: Time.zone.today.next_month.end_of_month,
           rate: 4.662353708,
-          rate_type: ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+          rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
         },
         {
           currency_code: 'EUR',
           validity_start_date: Time.zone.today.next_month.beginning_of_month,
           validity_end_date: Time.zone.today.next_month.end_of_month,
           rate: 6.662353708,
-          rate_type: ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+          rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
         },
       ].as_json
     end

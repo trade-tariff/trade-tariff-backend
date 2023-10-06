@@ -9,7 +9,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
   before do
     travel_to Time.zone.local(2023, 7, 20)
 
-    allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year, 'scheduled').and_return(rates)
+    allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year, 'monthly').and_return(rates)
     allow(ExchangeRates::CreateCsvService).to receive(:call).with(rates).and_return('csv_string')
     allow(ExchangeRates::CreateXmlService).to receive(:call).with(rates).and_return('xml_string')
     allow(ExchangeRates::CreateCsvHmrcService).to receive(:call).with(rates).and_return('csv_hmrc_string')
@@ -28,7 +28,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     it 'uploads the CSV file', :aggregate_failures do
       upload_file
 
-      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'scheduled')
+      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'monthly')
       expect(ExchangeRates::CreateCsvService).to have_received(:call).with(rates)
       expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv", 'csv_string')
@@ -50,7 +50,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     it 'uploads the XML file', :aggregate_failures do
       upload_file
 
-      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'scheduled')
+      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'monthly')
       expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(rates)
       expect(ExchangeRates::CreateXmlService).to have_received(:call).with(rates)
       expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml", 'xml_string')
@@ -72,7 +72,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     it 'uploads the CSV file', :aggregate_failures do
       upload_file
 
-      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'scheduled')
+      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'monthly')
       expect(ExchangeRates::CreateCsvHmrcService).to have_received(:call).with(rates)
       expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(rates)
       expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)

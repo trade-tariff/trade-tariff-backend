@@ -7,14 +7,14 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
     let(:period_list) { build(:period_list, :with_periods, :with_period_years, year: 2023) }
 
     before do
-      allow(ExchangeRates::PeriodList).to receive(:build).with('scheduled', year).and_return(period_list)
+      allow(ExchangeRates::PeriodList).to receive(:build).with('monthly', year).and_return(period_list)
 
       make_request
     end
 
     context 'when the year parameter is provided' do
       before do
-        allow(ExchangeRateCurrencyRate).to receive(:max_year).with('scheduled').and_return(2023)
+        allow(ExchangeRateCurrencyRate).to receive(:max_year).with('monthly').and_return(2023)
       end
 
       let(:year) { 2023 }
@@ -22,7 +22,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       let(:make_request) do
         get api_exchange_rates_period_list_path(
           year: '2023',
-          filter: { type: 'scheduled' },
+          filter: { type: 'monthly' },
           format: :json,
         )
       end
@@ -34,7 +34,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
             type: 'exchange_rate_period_list',
             attributes: {
               year: 2023,
-              type: 'scheduled',
+              type: 'monthly',
             },
             relationships: {
               exchange_rate_periods: Hash,
@@ -54,7 +54,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
 
       let(:make_request) do
         get api_exchange_rates_period_list_path(
-          filter: { type: 'scheduled' },
+          filter: { type: 'monthly' },
           format: :json,
         )
       end
@@ -66,7 +66,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
             type: 'exchange_rate_period_list',
             attributes: {
               year: 2023,
-              type: 'scheduled',
+              type: 'monthly',
             },
             relationships: {
               exchange_rate_periods: Hash,
@@ -87,7 +87,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       let(:make_request) do
         get api_exchange_rates_period_list_path(
           year: '1970',
-          filter: { type: 'scheduled' },
+          filter: { type: 'monthly' },
           format: :json,
         )
       end

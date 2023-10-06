@@ -11,7 +11,7 @@ RSpec.describe ExchangeRates::CreateCsvHmrcService do
   end
 
   let(:data) do
-    ExchangeRateCurrencyRate.for_month(2, 2020, 'scheduled')
+    ExchangeRateCurrencyRate.for_month(2, 2020, 'monthly')
   end
 
   let(:parsed_csv) do
