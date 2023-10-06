@@ -6,37 +6,18 @@ FactoryBot.define do
     rate { 4.8012 }
     rate_type { 'scheduled' }
 
-    trait :with_multiple_countries do
-      after(:create) do |currency_rate|
-        create(
-          :exchange_rate_country,
-          currency_code: currency_rate.currency_code,
-          country_code: 'DH',
-          country: 'Abu Dhabi',
-        )
-        create(
-          :exchange_rate_country,
-          currency_code: currency_rate.currency_code,
-          country_code: 'DU',
-          country: 'Dubai',
-        )
-      end
-    end
-
     trait :with_usa do
       currency_code { 'USD' }
 
       after(:create) do |currency_rate|
         create(
-          :exchange_rate_currency,
-          currency_code: currency_rate.currency_code,
-          currency_description: 'Dollar',
-        )
-        create(
-          :exchange_rate_country,
+          :exchange_rate_country_currency,
           currency_code: currency_rate.currency_code,
           country_code: 'US',
-          country: 'United States',
+          country_description: 'United States',
+          currency_description: 'Dollar',
+          validity_start_date: currency_rate.validity_start_date,
+          validity_end_date: currency_rate.validity_end_date,
         )
       end
     end

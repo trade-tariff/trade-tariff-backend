@@ -34,13 +34,8 @@ module ExchangeRates
 
       def exchange_rates(month, year, type)
         ExchangeRateCurrencyRate
-          .with_applicable_date
-          .by_month_and_year(month, year)
-          .by_type(type)
-          .association_right_join(:exchange_rate_countries)
-          .eager(:exchange_rate_currency)
-          .order(:country)
-          .all
+          .for_month(month, year, type)
+          .sort_by { |rate| [rate.country_description, rate.currency_description] }
       end
     end
   end

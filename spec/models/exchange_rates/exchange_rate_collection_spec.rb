@@ -52,25 +52,52 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
   end
 
   describe '.exchange_rates' do
-    subject(:exchange_rates) { described_class.exchange_rates(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
-
-    let(:validity_start_date) { Date.new(2023, 6, 1) }
+    subject(:exchange_rates) { described_class.exchange_rates('1', '2020', ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
 
     before do
       create(
+        :exchange_rate_country_currency,
+        currency_code: 'EUR',
+        country_code: 'DE',
+        country_description: 'Germany',
+        currency_description: 'Euro',
+        validity_start_date: '2020-01-01',
+        validity_end_date: '2020-01-31',
+      )
+      create(
+        :exchange_rate_country_currency,
+        currency_code: 'EUR',
+        country_code: 'DE',
+        country_description: 'Deutschland',
+        currency_description: 'Euro',
+        validity_start_date: '2020-01-02',
+        validity_end_date: '2020-01-31',
+      )
+      create(
         :exchange_rate_currency_rate,
-        :with_usa,
-        validity_start_date:,
+        :scheduled_rate,
+        currency_code: 'EUR',
+        validity_start_date: '2020-01-01',
+        validity_end_date: '2020-01-31',
       )
 
       create(
+        :exchange_rate_country_currency,
+        currency_code: 'USD',
+        country_code: 'US',
+        country_description: 'United States',
+        validity_start_date: '2020-01-01',
+        validity_end_date: '2020-01-31',
+      )
+      create(
         :exchange_rate_currency_rate,
-        :with_multiple_countries,
-        validity_start_date:,
+        :scheduled_rate,
+        currency_code: 'USD',
+        validity_start_date: '2020-01-01',
+        validity_end_date: '2020-01-31',
       )
     end
 
-    it { expect(exchange_rates.pluck(:country_code)).to eq(%w[DH DU US]) }
-    it { expect(exchange_rates.pluck(:country)).to eq(['Abu Dhabi', 'Dubai', 'United States']) }
+    it { expect(exchange_rates.pluck(:country_description)).to eq(['Deutschland', 'United States']) }
   end
 end

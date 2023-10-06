@@ -16,9 +16,7 @@ RSpec.describe ExchangeRateCurrencyRate do
       create(:exchange_rate_currency_rate, validity_start_date: '2021-01-01')
     end
 
-    it 'returns the maximum year from the validity start dates' do
-      expect(described_class.max_year('scheduled')).to eq(2021)
-    end
+    it { expect(described_class.max_year('scheduled')).to eq(2021) }
   end
 
   describe '.months_for_year' do
@@ -47,6 +45,9 @@ RSpec.describe ExchangeRateCurrencyRate do
       create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'YYY', validity_start_date: '2020-01-01')
       create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'XXX', validity_start_date: '2020-01-31')
       create(:exchange_rate_currency_rate, :spot_rate, validity_start_date: '2020-02-02')
+      create(:exchange_rate_country_currency, currency_code: 'XXX', validity_start_date: '2020-01-01')
+      create(:exchange_rate_country_currency, currency_code: 'YYY', validity_start_date: '2020-01-01')
+      create(:exchange_rate_country_currency, currency_code: 'AED', validity_start_date: '2020-01-01')
     end
 
     it { is_expected.to all(be_a(described_class)) }
@@ -122,6 +123,238 @@ RSpec.describe ExchangeRateCurrencyRate do
       ]
 
       expect(dataset.pluck(:rate_type, :applicable_date)).to eq(expected)
+    end
+  end
+
+  describe '.with_exchange_rate_country_currency' do
+    subject(:dataset) { described_class.with_exchange_rate_country_currency }
+
+    context 'when there are no matching exchange rates' do
+      before do
+        create(:exchange_rate_country_currency, validity_start_date: '2020-01-01')
+      end
+
+      it { expect(dataset).to be_empty }
+    end
+
+    context 'when there are no matching country currencies' do
+      before do
+        create(:exchange_rate_currency_rate, validity_start_date: '2020-01-01')
+      end
+
+      it { expect(dataset).to be_empty }
+    end
+
+    # exchange rate              |-------|
+    # country  currency |-------|
+    context 'when exchange rate is after the country currency' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+        create(
+          :exchange_rate_currency_rate,
+          validity_start_date: '2020-02-01',
+          validity_end_date: '2020-02-29',
+        )
+      end
+
+      it { expect(dataset).to be_empty }
+    end
+
+    # exchange rate     |-------|
+    # country  currency          |-------|
+    context 'when the country currency is after the exchange rate' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          validity_start_date: '2020-02-01',
+          validity_end_date: '2020-02-29',
+        )
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+      end
+
+      it { expect(dataset).to be_empty }
+    end
+
+    # exchange rate     |-------|
+    # country  currency   |-----|
+    context 'when the exchange rate starts before the country currency' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2019-12-01',
+          validity_end_date: '2020-01-31',
+        )
+      end
+
+      it { expect(dataset).not_to be_empty }
+    end
+
+    # exchange rate     |---------|
+    # country  currency |-------|
+    context 'when the exchange rate ends after the country currency' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-02-29',
+        )
+      end
+
+      it { expect(dataset).not_to be_empty }
+    end
+
+    # exchange rate     |---------|
+    # country  currency   |-----|
+    context 'when the exchange rate entirely contains the country currency' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2019-12-01',
+          validity_end_date: '2020-02-29',
+        )
+      end
+
+      it { expect(dataset).not_to be_empty }
+    end
+
+    # exchange rate       |---|
+    # country  currency |-------|
+    context 'when the country currency entirely contains the exchange rate' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          validity_start_date: '2019-12-01',
+          validity_end_date: '2020-02-29',
+        )
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+      end
+
+      it { expect(dataset).not_to be_empty }
+    end
+
+    # exchange rate       |-----|
+    # country  currency   |-----|
+    # country  currency     |---|
+    context 'when the exchange rate overlaps multiple of the same country currencies' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          country_code: 'Denmark',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          country_code: 'Denmark',
+          validity_start_date: '2020-01-02',
+          validity_end_date: '2020-01-31',
+        )
+
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+      end
+
+      it { expect(dataset.pluck(:country_code)).to eq(%w[Denmark Denmark]) }
+    end
+
+    # exchange rate       |-----|
+    # country  currency   |...
+    context 'when the country currency has no end date' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: nil,
+        )
+        create(
+          :exchange_rate_currency_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+      end
+
+      it { expect(dataset).not_to be_empty }
+    end
+
+    context 'when multiple countries share the same currency code' do
+      before do
+        create(
+          :exchange_rate_country_currency,
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+          country_code: 'FR',
+          currency_code: 'EUR',
+          country_description: 'France',
+          currency_description: 'Euro',
+        )
+
+        create(
+          :exchange_rate_country_currency,
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+          country_code: 'IT',
+          currency_code: 'EUR',
+          country_description: 'Italy',
+          currency_description: 'Euro',
+        )
+
+        create(
+          :exchange_rate_currency_rate,
+          :scheduled_rate,
+          currency_code: 'EUR',
+          validity_start_date: '2020-01-01',
+          validity_end_date: '2020-01-31',
+        )
+      end
+
+      it 'returns the exchange rate for each country' do
+        expect(dataset.pluck(:country_code)).to include('FR', 'IT')
+      end
     end
   end
 

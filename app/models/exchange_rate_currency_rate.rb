@@ -8,18 +8,22 @@ class ExchangeRateCurrencyRate < Sequel::Model
   RATES_FILE = 'data/exchange_rates/all_rates.csv'.freeze
   SPOT_RATES_FILE = 'data/exchange_rates/all_spot_rates.csv'.freeze
 
-  many_to_one :exchange_rate_currency, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCurrency
-  one_to_many :exchange_rate_countries, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountry
+  one_to_many :exchange_rate_countries_currencies, key: :currency_code, primary_key: :currency_code, class_name: ExchangeRateCountryCurrency
 
-  delegate :currency_description,
-           to: :exchange_rate_currency,
-           allow_nil: true
-
-  def_column_accessor :country, :country_code, :applicable_date, :year, :month
+  def_column_accessor :currency_description,
+                      :country_description,
+                      :country_code,
+                      :applicable_date,
+                      :year,
+                      :month,
+                      :country_currency_validity_start_date
 
   include ContentAddressableId
 
-  content_addressable_fields :currency_code, :validity_start_date, :validity_end_date, :country, :country_code
+  content_addressable_fields :currency_code,
+                             :country_code,
+                             :validity_start_date,
+                             :validity_end_date
 
   def presented_rate
     sprintf('%.4f', rate)
@@ -43,7 +47,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
   dataset_module do
     def with_applicable_date
       with(
-        :cte,
+        :exchange_rate_currency_rates,
         select_all(:exchange_rate_currency_rates)
         .select_append(
           Sequel.case(
@@ -54,7 +58,31 @@ class ExchangeRateCurrencyRate < Sequel::Model
             :rate_type,
           ).as(:applicable_date),
         ),
-      ).from(:cte)
+      ).from(:exchange_rate_currency_rates)
+    end
+
+    # Expands exchange rates to include:
+    #
+    # - The country code and description for the country
+    # - The currency code and description for the currency
+    #
+    # This is done by joining the exchange_rate_countries_currencies table
+    # and filtering by the descriptions and countries that are valid for the
+    # exchange rate's validity period.
+    #
+    # We use infinity for country currency validity end dates that are null.
+    # This will make the country currency descriptions apply for all dates that
+    # start before the exchange rate's validity end date.
+    def with_exchange_rate_country_currency
+      association_right_join(:exchange_rate_countries_currencies)
+        .select_append { Sequel[:exchange_rate_countries_currencies][:validity_start_date].as(:country_currency_validity_start_date) }
+        .select_append { Sequel[:exchange_rate_countries_currencies][:validity_end_date].as(:country_currency_validity_end_date) }
+        .select_append { Sequel[:exchange_rate_currency_rates][:validity_start_date].as(:validity_start_date) }
+        .select_append { Sequel[:exchange_rate_currency_rates][:validity_end_date].as(:validity_end_date) }
+        .where do |_query|
+          (Sequel[:exchange_rate_countries_currencies][:validity_start_date] <= Sequel[:exchange_rate_currency_rates][:validity_end_date]) &
+            (Sequel.function(:COALESCE, Sequel[:exchange_rate_countries_currencies][:validity_end_date], Sequel.lit("'infinity'")) >= Sequel[:exchange_rate_currency_rates][:validity_start_date])
+        end
     end
 
     def with_applicable_year
@@ -131,9 +159,10 @@ class ExchangeRateCurrencyRate < Sequel::Model
       with_applicable_date
         .by_month_and_year(month, year)
         .by_type(type)
-        .order(Sequel.asc(:applicable_date))
-        .order(Sequel.asc(:currency_code))
+        .with_exchange_rate_country_currency
         .all
+        .group_by { |rate| [rate.currency_code, rate.country_code] }
+        .map { |_, rates| rates.max_by(&:country_currency_validity_start_date) }
     end
   end
 end
