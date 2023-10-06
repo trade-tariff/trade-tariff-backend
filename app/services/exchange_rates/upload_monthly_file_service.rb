@@ -13,7 +13,7 @@ module ExchangeRates
 
     def call
       rates = ::ExchangeRateCurrencyRate
-        .for_month(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)
+        .for_month(month, year, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)
         .sort_by { |rate| [rate.country_description, rate.currency_description] }
 
       if rates.empty?

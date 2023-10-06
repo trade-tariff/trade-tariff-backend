@@ -52,7 +52,7 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
   end
 
   describe '.exchange_rates' do
-    subject(:exchange_rates) { described_class.exchange_rates('1', '2020', ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+    subject(:exchange_rates) { described_class.exchange_rates('1', '2020', ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE) }
 
     before do
       create(
@@ -75,7 +75,7 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
       )
       create(
         :exchange_rate_currency_rate,
-        :scheduled_rate,
+        :monthly_rate,
         currency_code: 'EUR',
         validity_start_date: '2020-01-01',
         validity_end_date: '2020-01-31',
@@ -91,7 +91,7 @@ RSpec.describe ExchangeRates::ExchangeRateCollection do
       )
       create(
         :exchange_rate_currency_rate,
-        :scheduled_rate,
+        :monthly_rate,
         currency_code: 'USD',
         validity_start_date: '2020-01-01',
         validity_end_date: '2020-01-31',

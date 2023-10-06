@@ -68,7 +68,7 @@ RSpec.describe ExchangeRateFile, type: :model do
       )
     end
 
-    it { expect(described_class.applicable_files_for(month, year, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)).to match_array(expected_files) }
+    it { expect(described_class.applicable_files_for(month, year, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)).to match_array(expected_files) }
 
     it 'returns spot_csv files when type is spot' do
       spot_csv_files = create(:exchange_rate_file, period_month: month, period_year: year, type: 'spot_csv')

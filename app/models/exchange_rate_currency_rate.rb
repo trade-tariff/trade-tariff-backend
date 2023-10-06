@@ -1,7 +1,7 @@
 require 'csv'
 
 class ExchangeRateCurrencyRate < Sequel::Model
-  SCHEDULED_RATE_TYPE = 'scheduled'.freeze
+  MONTHLY_RATE_TYPE = 'monthly'.freeze
   SPOT_RATE_TYPE = 'spot'.freeze
   AVERAGE_RATE_TYPE = 'average'.freeze
 
@@ -35,13 +35,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
 
   def period_month
     validity_start_date.month
-  end
-
-  def scheduled_rate?
-    validity_end_date.present? &&
-      validity_start_date.present? &&
-      validity_start_date.day == 1 &&
-      validity_end_date == validity_start_date.end_of_month
   end
 
   dataset_module do

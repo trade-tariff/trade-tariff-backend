@@ -13,7 +13,7 @@ RSpec.describe ExchangeRates::Period do
           year: '2022',
           has_exchange_rates: true,
         },
-        ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+        ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
       )
     end
 
@@ -42,7 +42,7 @@ RSpec.describe ExchangeRates::Period do
           year:,
           has_exchange_rates: true,
         }],
-        ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE,
+        ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
       )
     end
 

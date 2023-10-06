@@ -5,7 +5,7 @@ class ExchangeRateFile < Sequel::Model
   include ContentAddressableId
 
   TYPE_TO_FILE_MAP = {
-    ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE => %w[monthly_csv monthly_xml],
+    ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE => %w[monthly_csv monthly_xml],
     ExchangeRateCurrencyRate::SPOT_RATE_TYPE => %w[spot_csv],
     ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE => %w[average_csv],
   }.freeze

@@ -6,7 +6,7 @@ RSpec.describe ExchangeRateCurrencyRate do
     end
 
     it 'returns the distinct years in descending order' do
-      expect(described_class.all_years(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE)).to eq([2021, 2020])
+      expect(described_class.all_years(ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)).to eq([2021, 2020])
     end
   end
 
@@ -16,21 +16,21 @@ RSpec.describe ExchangeRateCurrencyRate do
       create(:exchange_rate_currency_rate, validity_start_date: '2021-01-01')
     end
 
-    it { expect(described_class.max_year('scheduled')).to eq(2021) }
+    it { expect(described_class.max_year('monthly')).to eq(2021) }
   end
 
   describe '.months_for_year' do
-    subject(:result) { described_class.months_for(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE, 2020) }
+    subject(:result) { described_class.months_for(ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE, 2020) }
 
     before do
       create(
         :exchange_rate_currency_rate,
-        :scheduled_rate,
+        :monthly_rate,
         validity_start_date: '2020-01-01',
       )
       create(
         :exchange_rate_currency_rate,
-        :scheduled_rate,
+        :monthly_rate,
         validity_start_date: '2020-07-01',
       )
     end
@@ -39,11 +39,11 @@ RSpec.describe ExchangeRateCurrencyRate do
   end
 
   describe '.for_month' do
-    subject(:for_month) { described_class.for_month(1, 2020, ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE) }
+    subject(:for_month) { described_class.for_month(1, 2020, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE) }
 
     before do
-      create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'YYY', validity_start_date: '2020-01-01')
-      create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'XXX', validity_start_date: '2020-01-31')
+      create(:exchange_rate_currency_rate, :monthly_rate, currency_code: 'YYY', validity_start_date: '2020-01-01')
+      create(:exchange_rate_currency_rate, :monthly_rate, currency_code: 'XXX', validity_start_date: '2020-01-31')
       create(:exchange_rate_currency_rate, :spot_rate, validity_start_date: '2020-02-02')
       create(:exchange_rate_country_currency, currency_code: 'XXX', validity_start_date: '2020-01-01')
       create(:exchange_rate_country_currency, currency_code: 'YYY', validity_start_date: '2020-01-01')
@@ -53,42 +53,7 @@ RSpec.describe ExchangeRateCurrencyRate do
     it { is_expected.to all(be_a(described_class)) }
     it { expect(for_month.pluck(:validity_start_date)).to eq(['2020-01-31'.to_date, '2020-01-01'.to_date]) }
     it { expect(for_month.pluck(:currency_code)).to eq(%w[XXX YYY]) }
-    it { expect(for_month.pluck(:rate_type)).to all(eq('scheduled')) }
-  end
-
-  describe '#scheduled_rate?' do
-    context 'when the validity_start_date is first of the month and the validity_end_date is the end of the month' do
-      subject(:currency_rate) do
-        build(
-          :exchange_rate_currency_rate,
-          rate_type: 'scheduled',
-          validity_start_date: Date.new(2020, 1, 1),
-          validity_end_date: Date.new(2020, 1, 31),
-        )
-      end
-
-      it { is_expected.to be_scheduled_rate }
-    end
-
-    shared_examples_for 'an non scheduled rate' do |validity_start_date, validity_end_date|
-      subject(:currency_rate) do
-        build(
-          :exchange_rate_currency_rate,
-          validity_start_date:,
-          validity_end_date:,
-        )
-      end
-
-      let(:validity_start_date) { validity_start_date }
-      let(:validity_end_date) { validity_end_date }
-
-      it { is_expected.not_to be_scheduled_rate }
-    end
-
-    it_behaves_like 'an non scheduled rate', Date.new(2020, 1, 1), Date.new(2020, 1, 30) # not end of month
-    it_behaves_like 'an non scheduled rate', Date.new(2020, 1, 1), nil # no end date
-    it_behaves_like 'an non scheduled rate', Date.new(2020, 1, 2), Date.new(2020, 1, 31) # not start of month
-    it_behaves_like 'an non scheduled rate', nil, Date.new(2020, 1, 31) # no start date
+    it { expect(for_month.pluck(:rate_type)).to all(eq('monthly')) }
   end
 
   describe '.with_applicable_date' do
@@ -97,7 +62,7 @@ RSpec.describe ExchangeRateCurrencyRate do
     before do
       create(
         :exchange_rate_currency_rate,
-        :scheduled_rate,
+        :monthly_rate,
         validity_start_date: '2020-03-01',
         validity_end_date: '2020-03-31',
       )
@@ -117,7 +82,7 @@ RSpec.describe ExchangeRateCurrencyRate do
 
     it 'picks the right applicable date for the given rate type' do
       expected = [
-        ['scheduled', '2020-03-01'.to_date], # picks start date
+        ['monthly', '2020-03-01'.to_date], # picks start date
         ['spot', '2021-01-01'.to_date],      # picks start date
         ['average', '2020-03-31'.to_date],   # picks end date
       ]
@@ -345,7 +310,7 @@ RSpec.describe ExchangeRateCurrencyRate do
 
         create(
           :exchange_rate_currency_rate,
-          :scheduled_rate,
+          :monthly_rate,
           currency_code: 'EUR',
           validity_start_date: '2020-01-01',
           validity_end_date: '2020-01-31',
@@ -381,14 +346,14 @@ RSpec.describe ExchangeRateCurrencyRate do
   end
 
   describe '.by_type' do
-    subject(:dataset) { described_class.by_type('scheduled') }
+    subject(:dataset) { described_class.by_type('monthly') }
 
     before do
-      create(:exchange_rate_currency_rate, :scheduled_rate, currency_code: 'XXX')
+      create(:exchange_rate_currency_rate, :monthly_rate, currency_code: 'XXX')
       create(:exchange_rate_currency_rate, :spot_rate, currency_code: 'YYY')
     end
 
-    it { expect(dataset.pluck(:rate_type)).to eq(%w[scheduled]) }
+    it { expect(dataset.pluck(:rate_type)).to eq(%w[monthly]) }
   end
 
   describe '.by_year' do

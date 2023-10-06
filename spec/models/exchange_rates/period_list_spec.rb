@@ -26,7 +26,7 @@ RSpec.describe ExchangeRates::PeriodList do
   end
 
   describe '.build' do
-    subject(:period_list) { described_class.build(ExchangeRateCurrencyRate::SCHEDULED_RATE_TYPE, year) }
+    subject(:period_list) { described_class.build(ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE, year) }
 
     it 'builds a period list with exchange rate periods and years' do
       expect(period_list).to be_an_instance_of(described_class)
@@ -52,7 +52,7 @@ RSpec.describe ExchangeRates::PeriodList do
 
         period_list.exchange_rate_periods
 
-        expect(ExchangeRateCurrencyRate).to have_received(:max_year).with('scheduled')
+        expect(ExchangeRateCurrencyRate).to have_received(:max_year).with('monthly')
       end
     end
   end
