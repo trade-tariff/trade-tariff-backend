@@ -145,8 +145,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).to be_empty }
     end
 
-    # exchange rate              |       |
-    # country  currency |       |
+    # exchange rate              |-------|
+    # country  currency |-------|
     context 'when exchange rate is after the country currency' do
       before do
         create(
@@ -164,8 +164,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).to be_empty }
     end
 
-    # exchange rate     |       |
-    # country  currency          |       |
+    # exchange rate     |-------|
+    # country  currency          |-------|
     context 'when the country currency is after the exchange rate' do
       before do
         create(
@@ -185,8 +185,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).to be_empty }
     end
 
-    # exchange rate     |       |
-    # country  currency   |     |
+    # exchange rate     |-------|
+    # country  currency   |-----|
     context 'when the exchange rate starts before the country currency' do
       before do
         create(
@@ -206,8 +206,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).not_to be_empty }
     end
 
-    # exchange rate     |         |
-    # country  currency |       |
+    # exchange rate     |---------|
+    # country  currency |-------|
     context 'when the exchange rate ends after the country currency' do
       before do
         create(
@@ -227,8 +227,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).not_to be_empty }
     end
 
-    # exchange rate     |         |
-    # country  currency   |     |
+    # exchange rate     |---------|
+    # country  currency   |-----|
     context 'when the exchange rate entirely contains the country currency' do
       before do
         create(
@@ -248,8 +248,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).not_to be_empty }
     end
 
-    # exchange rate       |   |
-    # country  currency |       |
+    # exchange rate       |---|
+    # country  currency |-------|
     context 'when the country currency entirely contains the exchange rate' do
       before do
         create(
@@ -269,9 +269,9 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset).not_to be_empty }
     end
 
-    # exchange rate       |     |
-    # country  currency   |     |
-    # country  currency     |   |
+    # exchange rate       |-----|
+    # country  currency   |-----|
+    # country  currency     |---|
     context 'when the exchange rate overlaps multiple of the same country currencies' do
       before do
         create(
@@ -300,8 +300,8 @@ RSpec.describe ExchangeRateCurrencyRate do
       it { expect(dataset.pluck(:country_code)).to eq(%w[Denmark Denmark]) }
     end
 
-    # exchange rate       |     |
-    # country  currency   |
+    # exchange rate       |-----|
+    # country  currency   |...
     context 'when the country currency has no end date' do
       before do
         create(

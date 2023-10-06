@@ -36,11 +36,11 @@ module ExchangeRates
 
     attr_reader :publication_date, :type
 
-    def upload_data(data_result, format, service_class)
-      data_string = service_class.call(data_result)
+    def upload_data(rates, format, file_creation_service)
+      exchange_rate_file = file_creation_service.call(rates)
       file_path = ExchangeRateFile.filepath_for(type, format, year, month)
 
-      TariffSynchronizer::FileService.write_file(file_path, data_string)
+      TariffSynchronizer::FileService.write_file(file_path, exchange_rate_file)
 
       file_size = TariffSynchronizer::FileService.file_size(file_path)
       ::ExchangeRateFile.create(

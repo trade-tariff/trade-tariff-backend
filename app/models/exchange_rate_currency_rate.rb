@@ -16,8 +16,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
                       :applicable_date,
                       :year,
                       :month,
-                      :country_currency_validity_start_date,
-                      :country_currency_validity_end_date
+                      :country_currency_validity_start_date
 
   include ContentAddressableId
 

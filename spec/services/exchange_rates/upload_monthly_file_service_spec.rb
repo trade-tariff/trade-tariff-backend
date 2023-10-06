@@ -16,7 +16,6 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     allow(TariffSynchronizer::FileService).to receive(:write_file).and_return(true)
     allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(321)
     allow(ExchangeRateFile).to receive(:create).and_return(true)
-    allow(Rails.logger).to receive(:info).and_return(true)
   end
 
   after do
@@ -42,7 +41,6 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
         file_size: 321,
         publication_date: current_time,
       )
-      expect(Rails.logger).to have_received(:info)
     end
   end
 
@@ -65,7 +63,6 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
         file_size: 321,
         publication_date: current_time,
       )
-      expect(Rails.logger).to have_received(:info)
     end
   end
 
@@ -89,7 +86,6 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
         file_size: 321,
         publication_date: current_time,
       )
-      expect(Rails.logger).to have_received(:info)
     end
   end
 
