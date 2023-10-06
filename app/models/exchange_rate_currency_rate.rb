@@ -61,19 +61,18 @@ class ExchangeRateCurrencyRate < Sequel::Model
       ).from(:exchange_rate_currency_rates)
     end
 
-    # Expands applicable exchange rates with a given currency code to match
-    # all of the countries that use that currency and filters on the countries
-    # and currencies that are relevant for that exchange rate.
+    # Expands exchange rates to include:
     #
-    # You'd typically want to filter exchange rates by a type and a date range
-    # and then expand the exchange rates to include all of the countries that
-    # use that currency with descriptions on the date of the exchange rate.
+    # - The country code and description for the country
+    # - The currency code and description for the currency
     #
-    # ExchangeRateCurrencyRate
-    #   .with_applicable_date
-    #   .by_month_and_year(3, 2022)
-    #   .by_type('average')
-    #   .with_exchange_rate_country_currency
+    # This is done by joining the exchange_rate_countries_currencies table
+    # and filtering by the descriptions and countries that are valid for the
+    # exchange rate's validity period.
+    #
+    # We use infinity for country currency validity end dates that are null.
+    # This will make the country currency descriptions apply for all dates that
+    # start before the exchange rate's validity end date.
     def with_exchange_rate_country_currency
       association_right_join(:exchange_rate_countries_currencies)
         .select_append { Sequel[:exchange_rate_countries_currencies][:validity_start_date].as(:country_currency_validity_start_date) }
