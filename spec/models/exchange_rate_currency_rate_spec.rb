@@ -334,17 +334,6 @@ RSpec.describe ExchangeRateCurrencyRate do
     it { expect(dataset.map(&:values)).to eq([{ year: 2020 }, { year: 2021 }]) }
   end
 
-  describe '.with_applicable_month' do
-    subject(:dataset) { described_class.with_applicable_date.with_applicable_month }
-
-    before do
-      create(:exchange_rate_currency_rate, validity_start_date: '2020-01-01')
-      create(:exchange_rate_currency_rate, validity_start_date: '2020-12-12')
-    end
-
-    it { expect(dataset.map(&:values)).to eq([{ month: 1 }, { month: 12 }]) }
-  end
-
   describe '.by_type' do
     subject(:dataset) { described_class.by_type('monthly') }
 

@@ -29,14 +29,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
     sprintf('%.4f', rate)
   end
 
-  def period_year
-    validity_start_date.year
-  end
-
-  def period_month
-    validity_start_date.month
-  end
-
   dataset_module do
     def with_applicable_date
       with(
@@ -80,10 +72,6 @@ class ExchangeRateCurrencyRate < Sequel::Model
 
     def with_applicable_year
       select { date_part('year', :applicable_date).cast(:integer).as(:year) }
-    end
-
-    def with_applicable_month
-      select { date_part('month', :applicable_date).cast(:integer).as(:month) }
     end
 
     def with_applicable_month_and_year
