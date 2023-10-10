@@ -4,7 +4,7 @@ module ExchangeRates
       def call
         return unless is_tomorrow_is_penultimate_thursday? && today_is_wednesday?
 
-        ExchangeRates::UpdateCurrencyRatesService.new.call
+        ExchangeRates::UpdateCurrencyRatesService.new(type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE).call
         ExchangeRates::UploadMonthlyFileService.call(:monthly_csv)
         ExchangeRates::UploadMonthlyFileService.call(:monthly_xml)
         ExchangeRates::UploadMonthlyFileService.call(:monthly_csv_hmrc)

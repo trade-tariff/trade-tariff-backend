@@ -28,6 +28,8 @@ FactoryBot.define do
 
     trait :spot_rate do
       rate_type { 'spot' }
+      validity_start_date { Time.zone.today.end_of_month }
+      validity_end_date { Time.zone.today.end_of_month }
     end
 
     trait :average_rate do

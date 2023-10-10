@@ -1,8 +1,9 @@
 module ExchangeRates
   class UpdateCurrencyRatesService
-    def initialize(date: Time.zone.today)
+    def initialize(type:, date: Time.zone.today)
       @date = date
       @xe_api = ::ExchangeRates::XeApi.new(date: @date)
+      @type = type
     end
 
     def call
@@ -10,7 +11,7 @@ module ExchangeRates
 
       ExchangeRateCurrencyRate.db.transaction do
         rates = build_rates(response)
-        included_rates = ExchangeRateCountryCurrency.distinct(:currency_code).select_map(:currency_code)
+        included_rates = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? ExchangeRateCountryCurrency.distinct(:currency_code).select_map(:currency_code) : ExchangeRateCountryCurrency::SPOT_RATE_CURRENCY_CODES
         rates = rates.select { |rate| included_rates.include?(rate.currency_code) }
 
         upsert_rates(rates)
@@ -36,15 +37,15 @@ module ExchangeRates
       currency_code = currency_data['quotecurrency']
       rate = currency_data['mid']
 
-      validity_start_date = @date.next_month.beginning_of_month
-      validity_end_date = @date.next_month.end_of_month
+      validity_start_date = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? @date.next_month.beginning_of_month : @date.end_of_month
+      validity_end_date = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? @date.next_month.end_of_month : @date.end_of_month
 
       ExchangeRateCurrencyRate.new(
         currency_code:,
         validity_start_date:,
         validity_end_date:,
         rate:,
-        rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
+        rate_type: @type,
       )
     end
   end

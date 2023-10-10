@@ -12,8 +12,10 @@ module ExchangeRates
     end
 
     def call
+      rate_type = type == :spot_csv ? ExchangeRateCurrencyRate::SPOT_RATE_TYPE : ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE
+
       rates = ::ExchangeRateCurrencyRate
-        .for_month(month, year, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)
+        .for_month(month, year, rate_type)
         .sort_by { |rate| [rate.country_description, rate.currency_description] }
 
       if rates.empty?
@@ -27,6 +29,8 @@ module ExchangeRates
         upload_data(rates, :xml, ExchangeRates::CreateXmlService)
       when :monthly_csv_hmrc
         upload_data(rates, :csv, ExchangeRates::CreateCsvHmrcService)
+      when :spot_csv
+        upload_data(rates, :csv, ExchangeRates::CreateCsvSpotService)
       else
         raise ArgumentError, "Invalid type: #{type}."
       end
@@ -58,11 +62,11 @@ module ExchangeRates
     end
 
     def year
-      @year ||= next_month_year(publication_date)
+      @year ||= type == :spot_csv ? Time.zone.today.year : next_month_year(publication_date)
     end
 
     def month
-      @month ||= next_month(publication_date)
+      @month ||= type == :spot_csv ? Time.zone.today.month : next_month(publication_date)
     end
   end
 

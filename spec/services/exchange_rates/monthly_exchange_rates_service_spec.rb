@@ -22,7 +22,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
         call_service
       end
 
-      it { expect(ExchangeRates::UpdateCurrencyRatesService).to have_received(:new) }
+      it { expect(ExchangeRates::UpdateCurrencyRatesService).to have_received(:new).with(type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE) }
       it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv) }
       it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_xml) }
       it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv_hmrc) }

@@ -105,4 +105,27 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
       expect { upload_file }.to raise_error(ExchangeRates::DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}.")
     end
   end
+
+  context 'when type is :spot_csv' do
+    let(:type) { :spot_csv }
+    let(:rates) { create_list(:exchange_rate_currency_rate, 1, :spot_rate, :with_usa) }
+
+    it 'uploads the CSV file', :aggregate_failures do
+      upload_file
+
+      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(7, year, 'spot')
+      expect(ExchangeRates::CreateCsvService).to have_received(:call).with(rates)
+      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)
+      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/spot_csv_#{year}-#{month}.csv", 'csv_string')
+      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/spot_csv_#{year}-#{month}.csv")
+      expect(ExchangeRateFile).to have_received(:create).with(
+        period_year: year,
+        period_month: month,
+        format: :csv,
+        type: :spot_csv,
+        file_size: 321,
+        publication_date: current_time,
+      )
+    end
+  end
 end
