@@ -16,7 +16,7 @@ class ExchangeRates::CreateXmlService
             xml.countryCode rate.country_code
             xml.currencyName rate.currency_description
             xml.currencyCode rate.currency_code
-            xml.rateNew rate.rate
+            xml.rateNew rate.presented_rate
           end
         end
       end

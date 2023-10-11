@@ -34,7 +34,7 @@ module ExchangeRates
         rate.country_description,
         rate.currency_description,
         rate.currency_code,
-        rate.rate,
+        rate.presented_rate,
         format_date(rate.validity_start_date),
         format_date(rate.validity_end_date),
       ]
