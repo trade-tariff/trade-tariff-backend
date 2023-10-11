@@ -178,33 +178,37 @@ module TariffSynchronizer
         Sequel::Model.db.transaction do
           # Delete actual data
           oplog_based_models.each do |model|
-            model.operation_klass.where { operation_date > date_for_rollback }.delete
+            model.operation_klass.where(Sequel.lit('operation_date > ?', date_for_rollback)).delete
           end
 
           if keep
             # Rollback TARIC
-            TariffSynchronizer::TaricUpdate.applied_or_failed.where { issue_date > date_for_rollback }.each do |taric_update|
-              instrument('rollback_update.tariff_synchronizer',
-                         update_type: :taric,
-                         filename: taric_update.filename)
+            TariffSynchronizer::TaricUpdate.applied_or_failed
+              .where(Sequel.lit('issue_date > ?', date_for_rollback))
+              .each do |taric_update|
+                instrument('rollback_update.tariff_synchronizer',
+                           update_type: :taric,
+                           filename: taric_update.filename)
 
-              taric_update.mark_as_pending
-              taric_update.clear_applied_at
+                taric_update.mark_as_pending
+                taric_update.clear_applied_at
 
-              # delete presence errors
-              taric_update.presence_errors_dataset.destroy
-            end
+                # delete presence errors
+                taric_update.presence_errors_dataset.destroy
+              end
           else
             # Rollback TARIC
-            TariffSynchronizer::TaricUpdate.where { issue_date > date_for_rollback }.each do |taric_update|
-              instrument('rollback_update.tariff_synchronizer',
-                         update_type: :taric,
-                         filename: taric_update.filename)
+            TariffSynchronizer::TaricUpdate
+              .where(Sequel.lit('issue_date > ?', date_for_rollback))
+              .each do |taric_update|
+                instrument('rollback_update.tariff_synchronizer',
+                           update_type: :taric,
+                           filename: taric_update.filename)
 
-              # delete presence errors
-              taric_update.presence_errors_dataset.destroy
-              taric_update.delete
-            end
+                # delete presence errors
+                taric_update.presence_errors_dataset.destroy
+                taric_update.delete
+              end
           end
 
           # Requeue data migrations
