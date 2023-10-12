@@ -2,50 +2,43 @@ require 'rails_helper'
 
 RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
   describe '.call' do
-    subject(:call_service) { described_class.call }
+    subject(:call) { described_class.new(date, download:).call }
 
-    after do
-      travel_back
+    let(:date) { Time.zone.today }
+
+    let(:update_service) { instance_double(ExchangeRates::UpdateCurrencyRatesService, call: true) }
+
+    before do
+      create(
+        :exchange_rate_currency_rate,
+        :monthly_rate,
+        :with_usa,
+        validity_start_date: date,
+      )
+      allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(date).and_return(update_service)
+      allow(ExchangeRates::UploadMonthlyFileService).to receive(:new).and_call_original
+
+      call
     end
 
-    context 'when tomorrow is penultimate Thursday and today is Wednesday' do
-      before do
-        travel_to Time.zone.local(2023, 7, 19)
+    context 'when download is true' do
+      let(:download) { true }
 
-        update_service = instance_double(ExchangeRates::UpdateCurrencyRatesService, call: true)
+      it { expect(update_service).to have_received(:call) }
 
-        allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).and_return(update_service)
-        allow(ExchangeRates::UploadMonthlyFileService).to receive(:call)
-        allow(SlackNotifierService).to receive(:call)
-        allow(ExchangeRatesMailer).to receive(:monthly_files)
-
-        call_service
-      end
-
-      it { expect(ExchangeRates::UpdateCurrencyRatesService).to have_received(:new) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_xml) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:call).with(:monthly_csv_hmrc) }
-      it { expect(SlackNotifierService).to have_received(:call).with(/Exchange rates for the current month/) }
-      it { expect(ExchangeRatesMailer).to have_received(:monthly_files) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_xml) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv_hmrc) }
     end
 
-    context 'when tomorrow is not penultimate Thursday' do
-      before do
-        travel_to Time.zone.local(2023, 7, 12)
+    context 'when download is false' do
+      let(:download) { false }
 
-        allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new)
-        allow(ExchangeRates::UploadMonthlyFileService).to receive(:call)
-        allow(SlackNotifierService).to receive(:call)
-        allow(ExchangeRatesMailer).to receive(:monthly_files)
+      it { expect(update_service).not_to have_received(:call) }
 
-        call_service
-      end
-
-      it { expect(ExchangeRates::UpdateCurrencyRatesService).not_to have_received(:new) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).not_to have_received(:call) }
-      it { expect(SlackNotifierService).not_to have_received(:call) }
-      it { expect(ExchangeRatesMailer).not_to have_received(:monthly_files) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_xml) }
+      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv_hmrc) }
     end
   end
 end

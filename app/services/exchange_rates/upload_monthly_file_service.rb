@@ -1,70 +1,43 @@
 module ExchangeRates
   class UploadMonthlyFileService
-    include ExchangeRatesHelper
-
-    def self.call(type)
-      new(type).call
-    end
-
-    def initialize(type)
-      @publication_date = Time.zone.today
+    def initialize(rates, date, type)
+      @rates = rates
+      @date = date
       @type = type
     end
 
     def call
-      rates = ::ExchangeRateCurrencyRate
-        .for_month(month, year, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)
-        .sort_by { |rate| [rate.country_description, rate.currency_description] }
-
-      if rates.empty?
-        raise DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}."
-      end
-
       case type
       when :monthly_csv
-        upload_data(rates, :csv, ExchangeRates::CreateCsvService)
+        upload_data(:csv, ExchangeRates::CreateCsvService)
       when :monthly_xml
-        upload_data(rates, :xml, ExchangeRates::CreateXmlService)
+        upload_data(:xml, ExchangeRates::CreateXmlService)
       when :monthly_csv_hmrc
-        upload_data(rates, :csv, ExchangeRates::CreateCsvHmrcService)
-      else
-        raise ArgumentError, "Invalid type: #{type}."
+        upload_data(:csv, ExchangeRates::CreateCsvHmrcService)
       end
     end
 
-  private
+    private
 
-    attr_reader :publication_date, :type
+    attr_reader :rates, :date, :type
 
-    def upload_data(rates, format, file_creation_service)
+    def upload_data(format, file_creation_service)
       exchange_rate_file = file_creation_service.call(rates)
-      file_path = ExchangeRateFile.filepath_for(type, format, year, month)
+      file_path = ExchangeRateFile.filepath_for(type, format, date.year, date.month)
 
       TariffSynchronizer::FileService.write_file(file_path, exchange_rate_file)
 
       file_size = TariffSynchronizer::FileService.file_size(file_path)
       ::ExchangeRateFile.create(
-        period_year: year,
-        period_month: month,
+        period_year: date.year,
+        period_month: date.month,
         format:,
         type:,
         file_size:,
-        publication_date:,
+        publication_date: date,
       )
 
-      info_message = "Generated file name: #{file_path}, size: #{file_size}"
-
-      Rails.logger.info(info_message)
-    end
-
-    def year
-      @year ||= next_month_year(publication_date)
-    end
-
-    def month
-      @month ||= next_month(publication_date)
+      Rails.logger.info("Generated file name: #{file_path}, size: #{file_size}")
     end
   end
-
-  class DataNotFoundError < StandardError; end
 end
