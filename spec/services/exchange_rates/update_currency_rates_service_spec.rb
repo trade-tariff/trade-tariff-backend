@@ -3,7 +3,9 @@ require 'rails_helper'
 RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
   describe '#call' do
     let(:xe_api) { instance_double(ExchangeRates::XeApi) }
-    let(:service) { described_class.new }
+    let(:service) do
+      described_class.new(Time.zone.today)
+    end
     let(:response) do
       {
         'to' => [
@@ -19,15 +21,15 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
       [
         {
           currency_code: 'AED',
-          validity_start_date: Time.zone.today.next_month.beginning_of_month,
-          validity_end_date: Time.zone.today.next_month.end_of_month,
+          validity_start_date: Time.zone.today.beginning_of_month,
+          validity_end_date: Time.zone.today.end_of_month,
           rate: 4.662353708,
           rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
         },
         {
           currency_code: 'EUR',
-          validity_start_date: Time.zone.today.next_month.beginning_of_month,
-          validity_end_date: Time.zone.today.next_month.end_of_month,
+          validity_start_date: Time.zone.today.beginning_of_month,
+          validity_end_date: Time.zone.today.end_of_month,
           rate: 6.662353708,
           rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
         },
@@ -35,7 +37,7 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
     end
 
     before do
-      allow(ExchangeRates::XeApi).to receive(:new).and_return(xe_api)
+      allow(ExchangeRates::XeApi).to receive(:new).with(date: Time.zone.today).and_return(xe_api)
       allow(xe_api).to receive(:get_all_historic_rates).and_return(response)
       create(:exchange_rate_country_currency, currency_code: 'AED')
       create(:exchange_rate_country_currency, currency_code: 'EUR')

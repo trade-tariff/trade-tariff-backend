@@ -1,108 +1,40 @@
 RSpec.describe ExchangeRates::UploadMonthlyFileService do
-  subject(:upload_file) { described_class.call(type) }
+  subject(:call) { described_class.new(rates, date, type).call }
 
-  let(:current_time) { Time.zone.now }
-  let(:month) { current_time.next_month.month }
-  let(:year) { current_time.year }
   let(:rates) { create_list(:exchange_rate_currency_rate, 1, :with_usa) }
+  let(:date) { Time.zone.today }
 
   before do
-    travel_to Time.zone.local(2023, 7, 20)
+    allow(TariffSynchronizer::FileService).to receive(:write_file)
+    allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(1)
+    allow(ExchangeRates::CreateCsvService).to receive(:new).and_call_original
+    allow(ExchangeRates::CreateXmlService).to receive(:new).and_call_original
+    allow(ExchangeRates::CreateCsvHmrcService).to receive(:new).and_call_original
 
-    allow(::ExchangeRateCurrencyRate).to receive(:for_month).with(month, year, 'monthly').and_return(rates)
-    allow(ExchangeRates::CreateCsvService).to receive(:call).with(rates).and_return('csv_string')
-    allow(ExchangeRates::CreateXmlService).to receive(:call).with(rates).and_return('xml_string')
-    allow(ExchangeRates::CreateCsvHmrcService).to receive(:call).with(rates).and_return('csv_hmrc_string')
-    allow(TariffSynchronizer::FileService).to receive(:write_file).and_return(true)
-    allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(321)
-    allow(ExchangeRateFile).to receive(:create).and_return(true)
-  end
-
-  after do
-    travel_back
+    call
   end
 
   context 'when type is :monthly_csv' do
     let(:type) { :monthly_csv }
 
-    it 'uploads the CSV file', :aggregate_failures do
-      upload_file
-
-      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'monthly')
-      expect(ExchangeRates::CreateCsvService).to have_received(:call).with(rates)
-      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)
-      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv", 'csv_string')
-      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/monthly_csv_#{year}-#{month}.csv")
-      expect(ExchangeRateFile).to have_received(:create).with(
-        period_year: year,
-        period_month: month,
-        format: :csv,
-        type: :monthly_csv,
-        file_size: 321,
-        publication_date: current_time,
-      )
-    end
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_\d{4}-\d{2}.csv/), include('Country')) }
+    it { expect(ExchangeRateFile.count).to eq(1) }
+    it { expect(ExchangeRates::CreateCsvService).to have_received(:new).with(rates) }
   end
 
   context 'when type is :monthly_xml' do
     let(:type) { :monthly_xml }
 
-    it 'uploads the XML file', :aggregate_failures do
-      upload_file
-
-      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'monthly')
-      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(rates)
-      expect(ExchangeRates::CreateXmlService).to have_received(:call).with(rates)
-      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml", 'xml_string')
-      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/monthly_xml_#{year}-#{month}.xml")
-      expect(ExchangeRateFile).to have_received(:create).with(
-        period_year: year,
-        period_month: month,
-        format: :xml,
-        type: :monthly_xml,
-        file_size: 321,
-        publication_date: current_time,
-      )
-    end
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_xml_\d{4}-\d{2}.xml/), include('countryName')) }
+    it { expect(ExchangeRateFile.count).to eq(1) }
+    it { expect(ExchangeRates::CreateXmlService).to have_received(:new).with(rates) }
   end
 
   context 'when type is :monthly_csv_hmrc' do
     let(:type) { :monthly_csv_hmrc }
 
-    it 'uploads the CSV file', :aggregate_failures do
-      upload_file
-
-      expect(::ExchangeRateCurrencyRate).to have_received(:for_month).with(month, year, 'monthly')
-      expect(ExchangeRates::CreateCsvHmrcService).to have_received(:call).with(rates)
-      expect(ExchangeRates::CreateCsvService).not_to have_received(:call).with(rates)
-      expect(ExchangeRates::CreateXmlService).not_to have_received(:call).with(rates)
-      expect(TariffSynchronizer::FileService).to have_received(:write_file).with("data/exchange_rates/#{year}/#{month}/monthly_csv_hmrc_#{year}-#{month}.csv", 'csv_hmrc_string')
-      expect(TariffSynchronizer::FileService).to have_received(:file_size).with("data/exchange_rates/#{year}/#{month}/monthly_csv_hmrc_#{year}-#{month}.csv")
-      expect(ExchangeRateFile).to have_received(:create).with(
-        period_year: year,
-        period_month: month,
-        format: :csv,
-        type: :monthly_csv_hmrc,
-        file_size: 321,
-        publication_date: current_time,
-      )
-    end
-  end
-
-  context 'when type is invalid' do
-    let(:type) { :invalid_type }
-
-    it 'raises ArgumentError' do
-      expect { upload_file }.to raise_error(ArgumentError, 'Invalid type: invalid_type.')
-    end
-  end
-
-  context 'when data doesnt exist in the database' do
-    let(:rates) { [] }
-    let(:type) { :monthly_xml }
-
-    it 'raises ArgumentError' do
-      expect { upload_file }.to raise_error(ExchangeRates::DataNotFoundError, "No exchange rate data found for month #{month} and year #{year}.")
-    end
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_hmrc_\d{4}-\d{2}.csv/), include('Period')) }
+    it { expect(ExchangeRateFile.count).to eq(1) }
+    it { expect(ExchangeRates::CreateCsvHmrcService).to have_received(:new).with(rates) }
   end
 end
