@@ -80,9 +80,9 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       it { expect(response.body).to match_json_expression(pattern) }
     end
 
-    context 'when there are no available data for the year' do
+    context 'when there is no available data for the year' do
       let(:year) { 1970 }
-      let(:period_list) { [] }
+      let(:period_list) { build(:period_list, exchange_rate_periods: [], year: 1970) }
 
       let(:make_request) do
         get api_exchange_rates_period_list_path(
@@ -92,8 +92,25 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
         )
       end
 
-      it { is_expected.to have_http_status(:not_found) }
-      it { expect(response.body).to match_json_expression({ data: {} }) }
+      let(:pattern) do
+        {
+          data: {
+            id: be_present,
+            type: 'exchange_rate_period_list',
+            attributes: {
+              year: 1970,
+              type: 'monthly',
+            },
+            relationships: {
+              exchange_rate_periods: { data: [] },
+              exchange_rate_years: { data: [] },
+            },
+          },
+        }.ignore_extra_keys!
+      end
+
+      it { is_expected.to have_http_status(:success) }
+      it { expect(response.body).to match_json_expression(pattern) }
     end
   end
 end
