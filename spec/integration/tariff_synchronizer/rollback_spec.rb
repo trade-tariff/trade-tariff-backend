@@ -1,9 +1,11 @@
 RSpec.describe TariffSynchronizer, '.rollback' do
-  subject(:rollback) { described_class.rollback('2021-01-01') }
+  subject(:rollback) { described_class.rollback(start_rollback_day.iso8601) }
 
-  let(:first_rolled_back_update) { create(:taric_update, :with_corresponding_data, example_date: Date.parse('2021-01-03')) }
-  let(:second_rolled_back_update) { create(:taric_update, :with_corresponding_data, example_date: Date.parse('2021-01-02')) }
-  let(:non_rolled_back_update) { create(:taric_update, :with_corresponding_data, example_date: Date.parse('2021-01-01')) }
+  let(:start_rollback_day) { Time.zone.today - 3.days }
+
+  let(:first_rolled_back_update) { create(:taric_update, :with_corresponding_data, example_date: start_rollback_day + 2.days) }
+  let(:second_rolled_back_update) { create(:taric_update, :with_corresponding_data, example_date: start_rollback_day + 1.day) }
+  let(:non_rolled_back_update) { create(:taric_update, :with_corresponding_data, example_date: start_rollback_day) }
 
   before do
     first_rolled_back_update

@@ -40,6 +40,7 @@ module ExchangeRates
       validity_start_date = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? @date.next_month.beginning_of_month : @date.end_of_month
       validity_end_date = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? @date.next_month.end_of_month : @date.end_of_month
 
+
       ExchangeRateCurrencyRate.new(
         currency_code:,
         validity_start_date:,

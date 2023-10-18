@@ -1,47 +1,46 @@
 module ExchangeRates
+  class DataNotFoundError < StandardError; end
+
   class MonthlyExchangeRatesService
-    class << self
-      def call
-        return unless is_tomorrow_is_penultimate_thursday? && today_is_wednesday?
-
-        ExchangeRates::UpdateCurrencyRatesService.new(type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE).call
-        ExchangeRates::UploadMonthlyFileService.call(:monthly_csv)
-        ExchangeRates::UploadMonthlyFileService.call(:monthly_xml)
-        ExchangeRates::UploadMonthlyFileService.call(:monthly_csv_hmrc)
-
-        notify
-        email_files_to_hmrc
-      end
-
-      private
-
-      def notify
-        message = 'Exchange rates for the current month have been added and are accessible for viewing at /exchange_rates.'
-
-        logger.info message
-
-        SlackNotifierService.call(message)
-      end
-
-      def email_files_to_hmrc
-        return if TradeTariffBackend.xi?
-
-        ExchangeRatesMailer.monthly_files&.deliver_now
-      end
-
-      def is_tomorrow_is_penultimate_thursday?
-        tomorrow = Time.zone.now.tomorrow
-
-        return false unless tomorrow.thursday?
-        return false unless tomorrow.month == (7.days.from_now + 1.day).month
-        return false unless tomorrow.month != (14.days.from_now + 1.day).month
-
-        true
-      end
-
-      def today_is_wednesday?
-        Time.zone.now.wednesday?
-      end
+    def initialize(date, download:)
+      @date = date
+      @download = download
     end
+
+    def call
+      ExchangeRates::UpdateCurrencyRatesService.new(date).call if download
+
+      if rates.empty?
+        raise DataNotFoundError, "No exchange rate data found for month #{date.month} and year #{date.year}."
+      end
+
+      ExchangeRates::UploadMonthlyFileService.new(
+        rates,
+        date,
+        :monthly_csv,
+      ).call
+
+      ExchangeRates::UploadMonthlyFileService.new(
+        rates,
+        date,
+        :monthly_xml,
+      ).call
+
+      ExchangeRates::UploadMonthlyFileService.new(
+        rates,
+        date,
+        :monthly_csv_hmrc,
+      ).call
+    end
+
+    def rates
+      @rates ||= ::ExchangeRateCurrencyRate
+        .for_month(date.month, date.year, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)
+        .sort_by { |rate| [rate.country_description, rate.currency_description] }
+    end
+
+    private
+
+    attr_reader :date, :download
   end
 end
