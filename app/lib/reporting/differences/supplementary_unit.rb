@@ -8,6 +8,9 @@ module Reporting
                :uk_supplementary_unit_measures,
                :xi_supplementary_unit_measures, to: :report
 
+      WORKSHEET_NAME_EU = 'Supp units on EU not UK'.freeze
+      WORKSHEET_NAME_UK = 'Supp units on UK not EU'.freeze
+
       HEADER_ROW = [
         'Commodity code',
         'Geographical area ID',
@@ -34,7 +37,7 @@ module Reporting
       METRIC = ERB.new('Supplementary units present on the <%= source_name %> tariff, but not on the <%= target_name %> tariff')
       SUBTEXT = 'May cause issues for Northern Ireland trade'.freeze
 
-      def initialize(source, target, name, report)
+      def initialize(source, target, report)
         @source = source
         @target = target
         @name = name
@@ -58,6 +61,7 @@ module Reporting
           end
 
           rows.each do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: centered_style)
             sheet.rows.last.tap do |last_row|
               last_row.cells[0].style = regular_style # Commodity code
@@ -68,9 +72,13 @@ module Reporting
         end
       end
 
+      def name
+        source == 'uk' ? WORKSHEET_NAME_UK : WORKSHEET_NAME_EU
+      end
+
       private
 
-      attr_reader :source, :target, :name, :report
+      attr_reader :source, :target, :report
 
       def rows
         all_missing = source_measures - target_measures

@@ -4,7 +4,13 @@ module Reporting
     #
     # Checks to see if their exclusions are not aligned/the same
     class QuotaExclusionMisalignment
-      delegate :workbook, :bold_style, :centered_style, to: :report
+      delegate :workbook,
+               :bold_style,
+               :centered_style,
+               :print_style,
+               to: :report
+
+      WORKSHEET_NAME = 'Exclusion misalignment'.freeze
 
       HEADER_ROW = [
         'Measure SID',
@@ -20,15 +26,14 @@ module Reporting
       COLUMN_WIDTHS = [
         20,  # "Measure SID"
         20,  # Order number
-        20,  # UK Commodity
+        20,  # Commodity
         150, # Exclusions (quota, then measure)
       ].freeze
 
       AUTOFILTER_CELL_RANGE = 'A1:D1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
       end
 
@@ -49,6 +54,7 @@ module Reporting
             sheet.rows.last.tap do |last_row|
               last_row.cells[1].style = centered_style
               last_row.cells[2].style = centered_style
+              last_row.cells[3].style = print_style
             end
           end
 
@@ -56,15 +62,21 @@ module Reporting
         end
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def misaligned_rows
-        quota_order_numbers_grouped_by_key.each do |key, q|
-          qm = measures_grouped_by_key[key]
+        TimeMachine.at(report.as_of) do
+          quota_order_numbers_grouped_by_key.each do |key, q|
+            qm = measures_grouped_by_key[key]
 
-          yield build_row_for(qm, q) if qm && (qm[:excluded_geographical_areas] != q[:excluded_geographical_areas])
+            yield build_row_for(qm, q) if qm && (qm[:excluded_geographical_areas] != q[:excluded_geographical_areas])
+          end
         end
       end
 
@@ -72,8 +84,8 @@ module Reporting
         [
           measure[:measure_sid],
           quota_order_number[:quota_order_number],
-          measure[:geographical_area_id],
-          [quota_order_number[:excluded_geographical_areas].join(','), measure[:excluded_geographical_areas].join(',')].join("\n"),
+          measure[:goods_nomenclature_item_id],
+          "#{quota_order_number[:excluded_geographical_areas].join(',')}\n#{measure[:excluded_geographical_areas].join(',')}",
         ]
       end
 
@@ -83,6 +95,7 @@ module Reporting
 
           acc[key] ||= {
             measure_sid: quota_order_number.measure.measure_sid,
+            goods_nomenclature_item_id: quota_order_number.measure.goods_nomenclature_item_id,
             quota_order_number: quota_order_number.quota_order_number_id,
             geographical_area_id: quota_order_number.quota_order_number_origin.geographical_area_id,
             excluded_geographical_areas: quota_order_number.quota_order_number_origin.quota_order_number_origin_exclusions.map(&:geographical_area_id).sort,
@@ -96,6 +109,7 @@ module Reporting
               key = "#{measure.ordernumber}-#{measure.geographical_area_id}"
               acc[key] ||= {
                 measure_sid: measure.measure_sid,
+                goods_nomenclature_item_id: measure.goods_nomenclature_item_id,
                 quota_order_number: measure.ordernumber,
                 geographical_area_id: measure.geographical_area_id,
                 excluded_geographical_areas: measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort,
@@ -121,7 +135,6 @@ module Reporting
       def quota_measures_with_excluded_geographical_areas
         @quota_measures_with_excluded_geographical_areas ||=
           Measure
-            .actual
             .with_regulation_dates_query
             .exclude(ordernumber: nil)
             .exclude(ordernumber: /^0\d4/)
