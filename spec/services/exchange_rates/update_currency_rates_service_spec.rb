@@ -92,7 +92,7 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
             validity_end_date: Time.zone.today.end_of_month,
             rate: 6.662353708,
             rate_type: ExchangeRateCurrencyRate::SPOT_RATE_TYPE,
-          }
+          },
         ].as_json
       end
 
