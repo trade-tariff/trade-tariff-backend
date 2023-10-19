@@ -17,6 +17,7 @@ RSpec.describe ExchangeRatesMailer, type: :mailer do
 
     it { expect(mail.subject).to eq("#{date.strftime('%B %Y')} Exchange Rate Files (monthly)") }
     it { expect(mail.from).to eq(['no-reply@example.com']) }
-    it { expect(mail.to).to eq(['user@example.com']) }
+    it { expect(mail.to).to eq(['manager@example.com']) }
+    it { expect(mail.bcc).to eq(['user@example.com']) }
   end
 end
