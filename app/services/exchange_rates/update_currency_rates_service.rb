@@ -1,8 +1,9 @@
 module ExchangeRates
   class UpdateCurrencyRatesService
-    def initialize(date)
+    def initialize(date, sample_date)
       @date = date
-      @xe_api = ::ExchangeRates::XeApi.new(date:)
+      @sample_date = sample_date
+      @xe_api = ::ExchangeRates::XeApi.new(date: sample_date)
     end
 
     def call

@@ -2,9 +2,10 @@ require 'rails_helper'
 
 RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
   describe '.call' do
-    subject(:call) { described_class.new(date, download:).call }
+    subject(:call) { described_class.new(date, sample_date, download:).call }
 
-    let(:date) { Time.zone.today }
+    let(:date) { sample_date.next_month }
+    let(:sample_date) { Time.zone.today }
 
     let(:update_service) { instance_double(ExchangeRates::UpdateCurrencyRatesService, call: true) }
 
@@ -15,7 +16,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
         :with_usa,
         validity_start_date: date,
       )
-      allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(date).and_return(update_service)
+      allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(date, sample_date).and_return(update_service)
       allow(ExchangeRates::UploadMonthlyFileService).to receive(:new).and_call_original
 
       call

@@ -2,13 +2,14 @@ module ExchangeRates
   class DataNotFoundError < StandardError; end
 
   class MonthlyExchangeRatesService
-    def initialize(date, download:)
+    def initialize(date, sample_date, download:)
       @date = date
+      @sample_date = sample_date
       @download = download
     end
 
     def call
-      ExchangeRates::UpdateCurrencyRatesService.new(date).call if download
+      ExchangeRates::UpdateCurrencyRatesService.new(date, sample_date).call if download
 
       if rates.empty?
         raise DataNotFoundError, "No exchange rate data found for month #{date.month} and year #{date.year}."
@@ -41,6 +42,6 @@ module ExchangeRates
 
     private
 
-    attr_reader :date, :download
+    attr_reader :date, :sample_date, :download
   end
 end

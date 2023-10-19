@@ -1,24 +1,43 @@
 RSpec.describe MonthlyExchangeRatesWorker, type: :worker do
   subject(:worker) { described_class.new }
 
+  let(:body) do
+    {
+      to: [
+        {
+          quotecurrency: 'AED',
+          mid: 4.662353708,
+        },
+      ],
+    }.to_json
+  end
+
   describe '#perform' do
+    subject(:perform) { worker.perform(today.iso8601) }
+
     before do
-      travel_to today
       allow(TariffSynchronizer::FileService).to receive(:write_file)
       allow(TariffSynchronizer::FileService).to receive(:file_size).and_return(1)
 
       create(:exchange_rate_country_currency, currency_code: 'AED')
 
-      body = { to: [{ quotecurrency: 'AED', mid: 4.662353708 }] }.to_json
-
-      stub_request(:get, 'https://example.com/v1/historic_rate.json/?amount=1&date=2023-11-18&from=GBP&to=*')
+      stub_request(:get, 'https://example.com/v1/historic_rate.json/?amount=1&date=2023-10-18&from=GBP&to=*')
         .to_return(status: 200, body:)
 
-      worker.perform
+      stub_request(:get, 'https://example.com/v1/historic_rate.json/?amount=1&date=2023-10-19&from=GBP&to=*')
+        .to_return(status: 200, body:)
+
+      perform
     end
 
-    after do
-      travel_back
+    context 'when force is true' do
+      subject(:perform) { worker.perform(today.iso8601, true) }
+
+      let(:today) { Date.parse('2023-10-19').beginning_of_day }
+
+      it { expect(TariffSynchronizer::FileService).to have_received(:write_file).exactly(3).times }
+      it { expect(ExchangeRateCurrencyRate.count).to eq(1) }
+      it { expect(ActionMailer::Base.deliveries.count).to eq(1) }
     end
 
     context 'when tomorrow is the penultimate Thursday of the month' do
