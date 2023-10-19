@@ -3,12 +3,13 @@ class MonthlyExchangeRatesWorker
 
   sidekiq_options retry: 1, retry_in: 1.hour
 
-  def perform
-    return unless tomorrow_is_penultimate_thursday? && today_is_wednesday?
+  def perform(sample_date = Time.zone.today.iso8601, force = false)
+    sample_date = Date.parse(sample_date)
+    date = sample_date.next_month
 
-    date = Time.zone.today.next_month
+    return unless tomorrow_is_penultimate_thursday?(sample_date) || force
 
-    ExchangeRates::MonthlyExchangeRatesService.new(date, download: true).call
+    ExchangeRates::MonthlyExchangeRatesService.new(date, sample_date, download: true).call
 
     notify
     email_files_to_hmrc(date)
@@ -28,17 +29,13 @@ class MonthlyExchangeRatesWorker
     ExchangeRatesMailer.monthly_files(date)&.deliver_now
   end
 
-  def tomorrow_is_penultimate_thursday?
-    tomorrow = Time.zone.now.tomorrow
+  def tomorrow_is_penultimate_thursday?(sample_date)
+    tomorrow = sample_date.tomorrow
 
     return false unless tomorrow.thursday?
     return false unless tomorrow.month == (7.days.from_now + 1.day).month
     return false unless tomorrow.month != (14.days.from_now + 1.day).month
 
     true
-  end
-
-  def today_is_wednesday?
-    Time.zone.now.wednesday?
   end
 end
