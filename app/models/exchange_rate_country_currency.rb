@@ -13,4 +13,8 @@ class ExchangeRateCountryCurrency < Sequel::Model(:exchange_rate_countries_curre
     validates_presence :currency_code
     validates_presence :validity_start_date
   end
+
+  def self.live_currency_codes
+    distinct(:currency_code).select_map(:currency_code)
+  end
 end
