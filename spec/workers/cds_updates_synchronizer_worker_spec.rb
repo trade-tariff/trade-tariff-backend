@@ -1,6 +1,6 @@
 require 'data_migrator'
 
-RSpec.describe UpdatesSynchronizerWorker, type: :worker do
+RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
@@ -29,51 +29,9 @@ RSpec.describe UpdatesSynchronizerWorker, type: :worker do
 
     let(:changes_applied) { true }
 
-    context 'when on the xi service' do
-      before { perform }
-
-      let(:service) { 'xi' }
-
-      it { expect(TaricSynchronizer).to have_received(:download) }
-      it { expect(TaricSynchronizer).to have_received(:apply) }
-
-      it { expect(CdsSynchronizer).not_to have_received(:download) }
-      it { expect(CdsSynchronizer).not_to have_received(:apply) }
-
-      it { expect(DataMigrator).not_to have_received(:migrate_up!) }
-
-      it { expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!) }
-
-      it_behaves_like 'a synchronizer worker that queues other workers'
-
-      it { expect(described_class.jobs).to be_empty }
-
-      context 'with reapply_data_migrations option' do
-        subject(:perform) { described_class.new.perform(true, true) }
-
-        it { expect(TaricSynchronizer).to have_received(:download) }
-        it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
-      end
-
-      context 'with no updates applied' do
-        let(:changes_applied) { nil }
-
-        it { expect(TaricSynchronizer).to have_received(:download) }
-        it { expect(TaricSynchronizer).to have_received(:apply) }
-        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
-
-        context 'with reapply_data_migrations option' do
-          subject(:perform) { described_class.new.perform(true, true) }
-
-          it { expect(TaricSynchronizer).to have_received(:download) }
-          it { expect(DataMigrator).not_to have_received(:migrate_up!) }
-        end
-      end
-    end
-
     context 'when on the uk service' do
       before do
-        stub_const 'UpdatesSynchronizerWorker::CUT_OFF_TIME',
+        stub_const 'CdsUpdatesSynchronizerWorker::CUT_OFF_TIME',
                    cut_off_time.strftime('%H:%M')
 
         allow(SlackNotifierService).to receive(:call)

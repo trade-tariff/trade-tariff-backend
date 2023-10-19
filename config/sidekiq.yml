@@ -33,12 +33,12 @@
     UKUpdatesSynchronizerWorker:
       cron: "0 5 * * *"
       description: "Runs ETL of CDS files and populates indexes"
-      class: UpdatesSynchronizerWorker
+      class: CdsUpdatesSynchronizerWorker
       status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
     XIUpdatesSynchronizerWorker:
       cron: "0 0 * * *"
       description: "Runs ETL of Taric files and populates indexes"
-      class: UpdatesSynchronizerWorker
+      class: TaricUpdatesSynchronizerWorker
       status: <%= ENV.fetch('SERVICE', 'uk') == 'xi' ? 'enabled' : 'disabled' %>
     HealthcheckWorker:
       every: 30.minutes

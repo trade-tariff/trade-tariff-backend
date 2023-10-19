@@ -122,7 +122,7 @@ Check out [wiki article on the subject](https://github.com/trade-tariff/trade-ta
 
 ## Performing daily updates
 
-These are run hourly by a background worker UpdatesSynchronizerWorker.
+These are run hourly by a background worker CdsUpdatesSynchronizerWorker or TaricUpdatesSynchronizerWorker.
 
 
 ### Sync process
