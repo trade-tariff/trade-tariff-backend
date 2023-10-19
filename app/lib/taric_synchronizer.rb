@@ -76,7 +76,6 @@ class TaricSynchronizer
       Rails.logger.warn 'Failed to acquire Redis lock for update application'
     end
 
-
     # Restore database to specific date in the past
     #
     # NOTE: this does not remove records from initial seed
@@ -88,12 +87,15 @@ class TaricSynchronizer
           Sequel::Model.db.transaction do
             # Delete actual data
             oplog_based_models.each do |model|
-              model.operation_klass.where { operation_date > date_for_rollback }.delete
+              model.operation_klass.where(Sequel.lit('operation_date > ?', date_for_rollback)).delete
             end
 
             if keep
               # Rollback TARIC
-              TariffSynchronizer::TaricUpdate.applied_or_failed.where { issue_date > date_for_rollback }.each do |taric_update|
+              TariffSynchronizer::TaricUpdate.applied_or_failed
+                                             .where(Sequel.lit('issue_date > ?', date_for_rollback))
+                                             .each do |taric_update|
+
                 Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
 
                 taric_update.mark_as_pending
@@ -104,7 +106,10 @@ class TaricSynchronizer
               end
             else
               # Rollback TARIC
-              TariffSynchronizer::TaricUpdate.where { issue_date > date_for_rollback }.each do |taric_update|
+              TariffSynchronizer::TaricUpdate
+                .where(Sequel.lit('issue_date > ?', date_for_rollback))
+                .each do |taric_update|
+
                 Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
 
                 # delete presence errors
