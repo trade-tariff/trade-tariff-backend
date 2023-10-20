@@ -195,7 +195,7 @@ GEM
     lemmatizer (0.2.2)
     letter_opener (1.8.1)
       launchy (>= 2.2, < 3)
-    lograge (0.13.0)
+    lograge (0.14.0)
       actionpack (>= 4)
       activesupport (>= 4)
       railties (>= 4)
