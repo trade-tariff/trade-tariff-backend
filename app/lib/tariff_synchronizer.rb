@@ -1,5 +1,4 @@
 module TariffSynchronizer
-
   class FailedUpdatesError < StandardError; end
 
   delegate :instrument, :subscribe, to: ActiveSupport::Notifications
@@ -90,5 +89,4 @@ module TariffSynchronizer
 
     Sequel::Model.subclasses
   end
-
 end

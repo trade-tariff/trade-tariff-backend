@@ -19,7 +19,7 @@ RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
   describe '#apply_lock_error' do
     before do
       create(:taric_update, :applied, example_date: Time.zone.yesterday)
-      create(:taric_update, :pending, example_date: Date.today)
+      create(:taric_update, :pending, example_date: Time.zone.today)
 
       expect(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'foo')
     end

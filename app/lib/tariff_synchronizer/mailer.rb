@@ -1,7 +1,7 @@
 require 'mailer_environment'
 
 module TariffSynchronizer
-  class Mailer < ActionMailer::Base
+  class Mailer < ApplicationMailer
     include MailerEnvironment
 
     default from: TradeTariffBackend.from_email,

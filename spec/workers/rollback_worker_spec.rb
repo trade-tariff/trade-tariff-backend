@@ -12,54 +12,55 @@ RSpec.describe RollbackWorker, type: :worker do
       end
 
       it 'calls rollback' do
-      it 'invokes rollback' do
-        expect(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
-        expect(CdsSynchronizer).not_to receive(:rollback)
-        described_class.new.perform(date)
+        it 'invokes rollback' do
+          expect(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
+          expect(CdsSynchronizer).not_to receive(:rollback)
+          described_class.new.perform(date)
 
-        expect(TariffSynchronizer).to have_received(:rollback).with(date, keep: false)
+          expect(TariffSynchronizer).to have_received(:rollback).with(date, keep: false)
+        end
+
+        it 'does not call rollback_cds' do
+          allow(TariffSynchronizer).to receive(:rollback_cds)
+
+          described_class.new.perform(date)
+
+          expect(TariffSynchronizer).not_to have_received(:rollback_cds)
+        end
+
+        it 'refreshes materialized view' do
+          described_class.new.perform(date)
+
+          expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!)
+        end
       end
 
-      it 'does not call rollback_cds' do
-        allow(TariffSynchronizer).to receive(:rollback_cds)
+      context 'for cds env' do
+        before do
+          allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
+        end
 
-        described_class.new.perform(date)
+        it 'calls rollback_cds' do
+          expect(CdsSynchronizer).to receive(:rollback).with(date, keep: false)
+          expect(TaricSynchronizer).not_to receive(:rollback)
+          described_class.new.perform(date)
 
-        expect(TariffSynchronizer).not_to have_received(:rollback_cds)
-      end
+          expect(TariffSynchronizer).to have_received(:rollback_cds).with(date, keep: false)
+        end
 
-      it 'refreshes materialized view' do
-        described_class.new.perform(date)
+        it 'does not call rollback' do
+          allow(TariffSynchronizer).to receive(:rollback)
 
-        expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!)
-      end
-    end
+          described_class.new.perform(date)
 
-    context 'for cds env' do
-      before do
-        allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
-      end
+          expect(TariffSynchronizer).not_to have_received(:rollback)
+        end
 
-      it 'calls rollback_cds' do
-        expect(CdsSynchronizer).to receive(:rollback).with(date, keep: false)
-        expect(TaricSynchronizer).not_to receive(:rollback)
-        described_class.new.perform(date)
+        it 'refreshes materialized view' do
+          described_class.new.perform(date)
 
-        expect(TariffSynchronizer).to have_received(:rollback_cds).with(date, keep: false)
-      end
-
-      it 'does not call rollback' do
-        allow(TariffSynchronizer).to receive(:rollback)
-
-        described_class.new.perform(date)
-
-        expect(TariffSynchronizer).not_to have_received(:rollback)
-      end
-
-      it 'refreshes materialized view' do
-        described_class.new.perform(date)
-
-        expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!)
+          expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!)
+        end
       end
     end
   end

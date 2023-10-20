@@ -6,7 +6,7 @@ class TaricUpdatesSynchronizerWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(check_for_todays_file = true, reapply_data_migrations = false)
+  def perform(_check_for_todays_file = true, reapply_data_migrations = false)
     return unless TradeTariffBackend.xi?
 
     logger.info 'Running TaricUpdatesSynchronizerWorker'
@@ -38,5 +38,4 @@ private
   def refresh_materialized_view
     GoodsNomenclatures::TreeNode.refresh!
   end
-
 end

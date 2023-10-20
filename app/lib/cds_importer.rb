@@ -65,11 +65,11 @@ class CdsImporter
     end
 
     def cds_failed_log(exception, key, hash)
-      "Cds import failed: #{exception}".tap { |message|
+      "Cds import failed: #{exception}".tap do |message|
         message << "\n Failed object: #{key}\n #{hash}"
         message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
         Rails.logger.error message
-      }
+      end
     end
   end
 

@@ -167,7 +167,7 @@ module TariffSynchronizer
       delegate :instrument, to: ActiveSupport::Notifications
 
       def sync(initial_date:)
-        applicable_download_date_range(initial_date:initial_date).each { |date| download(date) }
+        applicable_download_date_range(initial_date:).each { |date| download(date) }
 
         notify_about_missing_updates if last_updates_are_missing?
       end
@@ -203,9 +203,7 @@ module TariffSynchronizer
       end
 
       def notify_about_missing_updates
-        TariffLogger.missing_updates(
-                   update_type:,
-                   count: TariffSynchronizer.warning_day_count)
+        TariffLogger.missing_updates(update_type:, count: TariffSynchronizer.warning_day_count)
       end
     end
   end

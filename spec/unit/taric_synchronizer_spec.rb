@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/AnyInstance
 RSpec.describe TaricSynchronizer, truncation: true do
@@ -91,7 +90,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
 
   describe '.apply' do
     let(:applied_update) { create(:taric_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:taric_update, :pending, example_date: Date.today) }
+    let(:pending_update) { create(:taric_update, :pending, example_date: Time.zone.today) }
 
     context 'when successful' do
       before do
@@ -202,6 +201,5 @@ RSpec.describe TaricSynchronizer, truncation: true do
     end
   end
 end
-# rubocop:enable RSpec/InstanceVariable
 # rubocop:enable RSpec/MultipleExpectations
 # rubocop:enable RSpec/AnyInstance

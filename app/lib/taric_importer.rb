@@ -40,17 +40,18 @@ class TaricImporter
       transaction = Transaction.new(hash_from_node, @issue_date)
       transaction.persist
     rescue StandardError => e
-      taric_failed_log(e,hash_from_node)
+      taric_failed_log(e, hash_from_node)
       raise ImportException
     end
 
     private
+
     def taric_failed_log(exception, hash)
-      "Taric import failed: #{exception}".tap { |message|
+      "Taric import failed: #{exception}".tap do |message|
         message << "\n Failed transaction:\n #{hash}"
         message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
         Rails.logger.error message
-      }
+      end
     end
   end
 

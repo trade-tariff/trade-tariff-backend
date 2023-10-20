@@ -37,9 +37,7 @@ class TaricSynchronizer
 
       TradeTariffBackend.with_redis_lock do
         begin
-          TradeTariffBackend.patch_broken_taric_downloads? ?
-            TariffSynchronizer::TaricUpdate.sync_patched :
-            TariffSynchronizer::TaricUpdate.sync(initial_date: initial_update_date)
+          TradeTariffBackend.patch_broken_taric_downloads? ? TariffSynchronizer::TaricUpdate.sync_patched : TariffSynchronizer::TaricUpdate.sync(initial_date: initial_update_date)
         rescue TariffSynchronizer::TariffUpdatesRequester::DownloadException => e
           TariffLogger.failed_download(exception: e)
           raise e.original
@@ -95,7 +93,6 @@ class TaricSynchronizer
               TariffSynchronizer::TaricUpdate.applied_or_failed
                                              .where(Sequel.lit('issue_date > ?', date_for_rollback))
                                              .each do |taric_update|
-
                 Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
 
                 taric_update.mark_as_pending
@@ -109,7 +106,6 @@ class TaricSynchronizer
               TariffSynchronizer::TaricUpdate
                 .where(Sequel.lit('issue_date > ?', date_for_rollback))
                 .each do |taric_update|
-
                 Rails.logger.info "Rolling back Taric file: #{taric_update.filename}"
 
                 # delete presence errors

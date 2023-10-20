@@ -21,11 +21,11 @@ class TaricImporter
       end
 
       def call
-        raise NotImplementedError.new
+        raise NotImplementedError
       end
 
       def to_oplog_operation
-        raise NotImplementedError.new
+        raise NotImplementedError
       end
 
       private
@@ -41,11 +41,10 @@ class TaricImporter
       def get_model_record
         filters = attributes.slice(*primary_key).symbolize_keys
         if ignore_presence_errors?
-          model = klass.filter(filters).first
+          klass.filter(filters).first
         else
-          model = klass.filter(filters).take
+          klass.filter(filters).take
         end
-        model
       end
 
       def log_presence_error

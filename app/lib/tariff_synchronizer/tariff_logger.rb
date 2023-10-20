@@ -2,9 +2,7 @@ require 'logger'
 
 module TariffSynchronizer
   class TariffLogger
-
     class << self
-
       # Apply all pending Taric updates
       def apply(update_names, import_warnings = [])
         Rails.logger.info('Finished applying updates')
@@ -49,8 +47,6 @@ module TariffSynchronizer
 
         Mailer.missing_updates(event.payload[:count], event.payload[:update_type].to_s).deliver_now
       end
-
     end
   end
 end
-

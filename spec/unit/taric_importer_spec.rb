@@ -1,5 +1,4 @@
 # rubocop:disable RSpec/MultipleExpectations
-# rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe TaricImporter do
   describe '#import' do
@@ -112,6 +111,5 @@ RSpec.describe TaricImporter do
     end
   end
 end
-# rubocop:enable RSpec/InstanceVariable
 # rubocop:enable RSpec/MultipleExpectations
 # rubocop:enable RSpec/MultipleMemoizedHelpers

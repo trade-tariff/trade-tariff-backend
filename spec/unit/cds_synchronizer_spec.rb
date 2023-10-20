@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/AnyInstance
 RSpec.describe CdsSynchronizer, truncation: true do
@@ -28,7 +27,6 @@ RSpec.describe CdsSynchronizer, truncation: true do
 
         described_class.download
       end
-
     end
 
     context 'when sync variables are not set' do
@@ -52,7 +50,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
     end
 
     context 'when a download exception' do
-      let(:exception) {StandardError.new 'Something went wrong'}
+      let(:exception) { StandardError.new 'Something went wrong' }
 
       before do
         allow(described_class).to receive(:sync_variables_set?).and_return(true)
@@ -77,7 +75,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
 
   describe '.apply' do
     let(:applied_update) { create(:taric_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:taric_update, :pending, example_date: Date.today) }
+    let(:pending_update) { create(:taric_update, :pending, example_date: Time.zone.today) }
 
     context 'with failed updates present' do
       let(:failed_update) { create(:taric_update, :failed, example_date: Time.zone.yesterday) }
@@ -180,7 +178,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
 
   describe '.apply' do
     let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:cds_update, :pending, example_date: Date.today) }
+    let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
 
     before do
       allow_any_instance_of(CdsImporter).to receive(:import).and_return({})
@@ -198,9 +196,9 @@ RSpec.describe CdsSynchronizer, truncation: true do
     end
 
     context 'with failed updates present' do
-      before { create :taric_update, :failed }
-
       subject(:apply) { described_class.apply }
+
+      before { create :taric_update, :failed }
 
       it 'does not kick off the ClearCacheWorker' do
         expect { apply }.to raise_error StandardError
@@ -208,6 +206,5 @@ RSpec.describe CdsSynchronizer, truncation: true do
     end
   end
 end
-# rubocop:enable RSpec/InstanceVariable
 # rubocop:enable RSpec/MultipleExpectations
 # rubocop:enable RSpec/AnyInstance

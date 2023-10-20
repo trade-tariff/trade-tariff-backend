@@ -12,7 +12,6 @@ class CdsSynchronizer
   self.initial_update_date = Date.new(2020, 9, 1)
 
   class << self
-
     def download
       return Rails.logger.error 'Missing: Tariff sync enviroment variables: TARIFF_SYNC_USERNAME, TARIFF_SYNC_PASSWORD, TARIFF_SYNC_HOST and TARIFF_SYNC_EMAIL.' unless sync_variables_set?
 
@@ -97,7 +96,7 @@ class CdsSynchronizer
           DataMigration.since(date.end_of_day).delete
         end
 
-        Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{!!keep}"
+        Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{keep}"
       end
     rescue Redlock::LockError
       Rails.logger.warn("Failed to acquire Redis lock for rollback to #{rollback_date}. Keep records: #{keep}")
@@ -106,6 +105,7 @@ class CdsSynchronizer
     def sync_variables_set?
       ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?
     end
+
     def downloaded_todays_file?
       CdsUpdate.downloaded_todays_file?
     end

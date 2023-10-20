@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 15.4
+-- Dumped by pg_dump version 16.0
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -65,11 +65,11 @@ CREATE FUNCTION public.forbid_ddl_reader() RETURNS event_trigger
 		END IF;
 
 		-- do not execute if member of manager role
-		IF pg_has_role(current_user, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_manager', 'member') THEN
+		IF pg_has_role(current_user, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_manager', 'member') THEN
 			RETURN;
 		END IF;
 
-		IF pg_has_role(current_user, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_reader', 'member') THEN
+		IF pg_has_role(current_user, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_reader', 'member') THEN
 			RAISE EXCEPTION 'executing % is disabled for read only bindings', tg_tag;
 		END IF;
 	end
@@ -116,15 +116,15 @@ CREATE FUNCTION public.make_readable_generic() RETURNS void
 		END IF;
 
 		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_manager', 'member') THEN
+		IF NOT pg_has_role(current_user, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_manager', 'member') THEN
 			RETURN;
 		END IF;
 
 		FOR r in (select schema_name from information_schema.schemata) LOOP
 			BEGIN
-				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_reader');
-				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_reader');
-				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_reader');
+				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_reader');
+				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_reader');
+				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_reader');
 
 				RAISE NOTICE 'GRANTED READ ONLY IN SCHEMA %s', r.schema_name;
 			EXCEPTION WHEN OTHERS THEN
@@ -158,11 +158,11 @@ CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
 		END IF;
 
 		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_manager', 'member') THEN
+		IF NOT pg_has_role(current_user, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_manager', 'member') THEN
 			RETURN;
 		END IF;
 
-		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_manager');
+		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_cbcf231f_9fac_4fa5_8551_85d8d425cf4a_manager');
 
 		RETURN;
 	end
