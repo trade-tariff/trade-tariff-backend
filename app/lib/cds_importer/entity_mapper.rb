@@ -68,7 +68,7 @@ class CdsImporter
     end
 
     def logger_enabled?
-      TariffSynchronizer.cds_logger_enabled
+      CdsSynchronizer.cds_logger_enabled
     end
   end
 end

@@ -9,9 +9,4 @@ module LoggerHelper
     yield
     teardown
   end
-
-  def tariff_synchronizer_logger_listener
-    setup # Setup LogSubscriber::TestHelper
-    TariffSynchronizer::Logger.attach_to :tariff_synchronizer
-  end
 end

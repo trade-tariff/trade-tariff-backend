@@ -1,4 +1,4 @@
-RSpec.describe TariffSynchronizer, '.rollback' do
+RSpec.describe TaricSynchronizer, '.rollback' do
   subject(:rollback) { described_class.rollback(start_rollback_day.iso8601) }
 
   let(:start_rollback_day) { Time.zone.today - 3.days }

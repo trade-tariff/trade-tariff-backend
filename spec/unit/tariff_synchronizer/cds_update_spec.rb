@@ -68,12 +68,12 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
     end
 
     it 'logs an info event' do
-      tariff_synchronizer_logger_listener
       allow_any_instance_of(CdsImporter).to \
         receive(:import).and_return inserted_oplog_records
+
+      expect(Rails.logger).to receive(:info)
+
       cds_update.import!
-      expect(@logger.logged(:info).size).to eq 1
-      expect(@logger.logged(:info).last).to match(/Applied CDS update/)
     end
 
     describe 'checking results of import' do

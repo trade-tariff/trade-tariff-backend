@@ -34,13 +34,13 @@ module TariffSynchronizer
           return response
         else
           @retry_count -= 1
-          ActiveSupport::Notifications.instrument('delay_download.tariff_synchronizer', url: @url, response_code: response.response_code)
+          Rails.logger.info "Delaying update fetching: #{@url} (response code: #{response.response_code})"
           sleep TariffSynchronizer.request_throttle
         end
       rescue DownloadException => e
-        ActiveSupport::Notifications.instrument('download_exception.tariff_synchronizer', url: @url, class: e.original.class)
+        Rails.logger.info "Delaying update fetching: #{@url} (reason: #{e.original.class})"
         if @exception_retry_count.zero?
-          ActiveSupport::Notifications.instrument('download_exception_exceeded.tariff_synchronizer', url: @url)
+          Rails.logger.info "Giving up fetching: #{@url}, too many DownloadExceptions"
           raise
         else
           @exception_retry_count -= 1
@@ -56,7 +56,7 @@ module TariffSynchronizer
 
       client = Faraday.new(uri.host) do |conn|
         if TradeTariffBackend.xi?
-          conn.set_basic_auth(TariffSynchronizer.username, TariffSynchronizer.password)
+          conn.set_basic_auth(TaricSynchronizer.username, TaricSynchronizer.password)
         end
       end
 

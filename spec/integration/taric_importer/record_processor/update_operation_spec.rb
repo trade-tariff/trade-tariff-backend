@@ -54,7 +54,7 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
 
       context 'with ignoring presence errors' do
         before do
-          allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+          allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
         end
 
         it 'creates new record' do

@@ -12,7 +12,7 @@ RSpec.shared_examples_for 'Base Update' do
       it 'should_receive download to be invoked' do
         expect(described_class).to receive(:download).at_least(1)
 
-        described_class.sync
+        described_class.sync(initial_date:Time.zone.yesterday)
       end
     end
   end

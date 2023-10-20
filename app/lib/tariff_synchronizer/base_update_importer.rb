@@ -95,8 +95,7 @@ module TariffSynchronizer
     end
 
     def notify_exception(exception)
-      ActiveSupport::Notifications.instrument(
-        'failed_update.tariff_synchronizer',
+      TariffLogger.failed_update(
         exception:,
         update: @base_update,
         database_queries: @database_queries,

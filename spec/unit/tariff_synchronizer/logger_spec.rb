@@ -1,24 +1,18 @@
-RSpec.describe TariffSynchronizer::Logger, truncation: true do
+RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
   include BankHolidaysHelper
-
-  before(:all) { WebMock.disable_net_connect! }
-
-  after(:all)  { WebMock.allow_net_connect! }
-
-  before { tariff_synchronizer_logger_listener }
 
   describe '#rollback_lock_error' do
     before do
       expect(TradeTariffBackend).to receive(
         :with_redis_lock,
       ).and_raise(Redlock::LockError, 'foo')
-
-      TariffSynchronizer.rollback(Time.zone.today, keep: true)
     end
 
     it 'logs a warn event' do
-      expect(@logger.logged(:warn).size).to be >= 1
-      expect(@logger.logged(:warn).first.to_s).to match(/acquire Redis lock/)
+      expect(Rails.logger.warn.size).to be >= 1
+      expect(Rails.logger).to receive(:warn).with(include('Failed to acquire Redis lock for rollback'))
+
+      TaricSynchronizer.rollback(Time.zone.today, keep: true)
     end
   end
 
@@ -31,10 +25,10 @@ RSpec.describe TariffSynchronizer::Logger, truncation: true do
     end
 
     it 'logs a warn event' do
-      TariffSynchronizer.apply
+      expect(Rails.logger.warn.size).to be >= 1
+      expect(Rails.logger).to receive(:warn).with(include('Failed to acquire Redis lock for update application'))
 
-      expect(@logger.logged(:warn).size).to be >= 1
-      expect(@logger.logged(:warn).first.to_s).to match(/acquire Redis lock/)
+      TaricSynchronizer.apply
     end
   end
 end

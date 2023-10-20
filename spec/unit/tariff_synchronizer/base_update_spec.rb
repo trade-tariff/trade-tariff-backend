@@ -93,13 +93,13 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     end
 
     it_behaves_like 'an applicable download date range', :taric_update do
-      subject(:applicable_download_date_range) { TariffSynchronizer::TaricUpdate.applicable_download_date_range }
+      subject(:applicable_download_date_range) { TariffSynchronizer::TaricUpdate.applicable_download_date_range(initial_date: Date.new(2012, 6, 6)) }
 
       let(:initial_date) { Date.new(2012, 6, 6) }
     end
 
     it_behaves_like 'an applicable download date range', :cds_update do
-      subject(:applicable_download_date_range) { TariffSynchronizer::CdsUpdate.applicable_download_date_range }
+      subject(:applicable_download_date_range) { TariffSynchronizer::CdsUpdate.applicable_download_date_range(initial_date: Date.new(2020, 9, 1)) }
 
       let(:initial_date) { Date.new(2020, 9, 1) }
     end
@@ -113,7 +113,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
         expect(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: nil))
       end
 
-      TariffSynchronizer::CdsUpdate.sync
+      TariffSynchronizer::CdsUpdate.sync(initial_date: 20.days.ago.to_date)
     end
   end
 

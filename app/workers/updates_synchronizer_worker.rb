@@ -11,7 +11,7 @@ class UpdatesSynchronizerWorker
     logger.info 'Downloading...'
 
     if TradeTariffBackend.uk?
-      TariffSynchronizer.download_cds
+      CdsSynchronizer.download
 
       if check_for_todays_file &&
           todays_file_has_not_yet_arrived? &&
@@ -20,11 +20,11 @@ class UpdatesSynchronizerWorker
       end
 
       logger.info 'Applying...'
-      return unless TariffSynchronizer.apply_cds # return if nothing changed
+      return unless CdsSynchronizer.apply # return if nothing changed
     elsif TradeTariffBackend.xi?
-      TariffSynchronizer.download
+      TaricSynchronizer.download
       logger.info 'Applying...'
-      return unless TariffSynchronizer.apply # return if nothing changed
+      return unless TaricSynchronizer.apply # return if nothing changed
     end
 
     migrate_data if reapply_data_migrations
@@ -54,7 +54,7 @@ private
   end
 
   def todays_file_has_not_yet_arrived?
-    !TariffSynchronizer.downloaded_todays_file_for_cds?
+    !CdsSynchronizer.downloaded_todays_file?
   end
 
   def migrate_data

@@ -31,7 +31,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
   describe '#ignore_presence_errors?' do
     it 'returns true if presence ignored' do
-      allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+      allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       expect(empty_operation.send(:ignore_presence_errors?)).to be_truthy
     end
   end
@@ -39,7 +39,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
   describe '#get_model_record' do
     context 'with ignoring presence on destroy' do
       before do
-        allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       end
 
       it 'gets model record' do
@@ -72,7 +72,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
     context 'with NOT ignoring presence on destroy' do
       before do
-        allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(false)
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(false)
       end
 
       it 'gets model record' do
@@ -130,7 +130,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
     context 'if record is not found' do
       before do
-        allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       end
 
       it 'sends presence error events' do

@@ -5,10 +5,12 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
     it 'Logs the request for the TaricUpdate file' do
       expect(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
         .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
-      tariff_synchronizer_logger_listener
+
+      allow(Rails.logger).to receive(:info)
+
       described_class.new(example_date).perform
-      expect(@logger.logged(:info).size).to eq 1
-      expect(@logger.logged(:info).last).to eq("Checking for TARIC update for #{example_date} at http://example.com/taric/TARIC320100101")
+      expect(Rails.logger).to have_received(:info)
+      expect(Rails.logger).to have_received(:info).with("Checking for TARIC update for #{example_date} at http://example.com/taric/TARIC320100101")
     end
 
     it 'Calls the external server to download file' do
@@ -64,10 +66,9 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
       end
 
       it 'Logs the creating of the TaricUpdate record with failed state' do
-        tariff_synchronizer_logger_listener
+        expect(Rails.logger).to receive(:warn).with('Download retry count exceeded for http://example.com/taric/TARIC320100101')
+
         described_class.new(example_date).perform
-        expect(@logger.logged(:warn).size).to eq 1
-        expect(@logger.logged(:warn).last).to eq('Download retry count exceeded for http://example.com/taric/TARIC320100101')
       end
 
       it 'Sends a warning email' do
@@ -97,10 +98,9 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
       end
 
       it 'Logs the creating of the TaricUpdate record with failed state' do
-        tariff_synchronizer_logger_listener
+        expect(Rails.logger).to receive(:error).with('Blank update content received for 2010-01-01: http://example.com/taric/TARIC320100101')
+
         described_class.new(example_date).perform
-        expect(@logger.logged(:error).size).to eq 1
-        expect(@logger.logged(:error).last).to eq('Blank update content received for 2010-01-01: http://example.com/taric/TARIC320100101')
       end
 
       it 'Sends a warning email' do

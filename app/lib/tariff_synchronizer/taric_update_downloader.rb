@@ -1,8 +1,7 @@
 module TariffSynchronizer
   # Download pending updates TARIC files
   class TaricUpdateDownloader
-    delegate :instrument, :subscribe, to: ActiveSupport::Notifications
-    delegate :taric_query_url_template, :taric_update_url_template, :host, to: TariffSynchronizer
+    delegate :taric_query_url_template, :taric_update_url_template, :host, to: TaricSynchronizer
 
     attr_reader :date, :url
 
@@ -14,7 +13,7 @@ module TariffSynchronizer
     def perform
       return if check_date_already_downloaded?
 
-      log_request_to_taric_update
+      Rails.logger.info("Checking for TARIC update for #{date} at #{url}")
       send("create_record_for_#{response.state}_response")
     end
 
@@ -36,12 +35,12 @@ module TariffSynchronizer
 
     def create_record_for_empty_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument('blank_update.tariff_synchronizer', date:, url:)
+      TariffLogger.blank_update(date:, url:)
     end
 
     def create_record_for_exceeded_response
       update_or_create(BaseUpdate::FAILED_STATE, missing_filename)
-      instrument('retry_exceeded.tariff_synchronizer', date:, url:)
+      TariffLogger.retry_exceeded(date, url)
     end
 
     # We do not create records for missing updates (see dynamic send method in perform)
@@ -58,7 +57,7 @@ module TariffSynchronizer
     end
 
     def log_request_to_taric_update
-      instrument('get_taric_update_name.tariff_synchronizer', date:, url:)
+      Rails.logger.info "Checking for TARIC update for #{date} at #{url}"
     end
 
     def date_api_url

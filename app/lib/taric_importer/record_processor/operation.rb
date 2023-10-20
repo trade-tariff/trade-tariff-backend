@@ -31,7 +31,7 @@ class TaricImporter
       private
 
       def ignore_presence_errors?
-        TariffSynchronizer.ignore_presence_errors
+        TaricSynchronizer.ignore_presence_errors
       end
 
       # Sometimes update operations go in wrong order (not chronologically, e.g. 'update' operation goes before 'create').

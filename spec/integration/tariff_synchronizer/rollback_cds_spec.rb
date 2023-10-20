@@ -1,5 +1,5 @@
-RSpec.describe TariffSynchronizer, '.rollback_cds' do
-  subject(:rollback_cds) { described_class.rollback_cds('2021-01-01') }
+RSpec.describe CdsSynchronizer, '.rollback' do
+  subject(:rollback) { described_class.rollback('2021-01-01') }
 
   let(:first_rolled_back_update) { create(:cds_update, :with_corresponding_data, example_date: Date.parse('2021-01-03')) }
   let(:second_rolled_back_update) { create(:cds_update, :with_corresponding_data, example_date: Date.parse('2021-01-02')) }

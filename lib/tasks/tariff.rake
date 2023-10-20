@@ -58,7 +58,7 @@ namespace :tariff do
     task rollback: %w[environment class_eager_load] do
       if ENV['DATE']
         if TradeTariffBackend.use_cds?
-          TariffSynchronizer.rollback_cds(ENV['DATE'], keep: ENV['KEEP'])
+          CdsSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
         else
           TariffSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
         end

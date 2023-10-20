@@ -11,7 +11,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     it 'calls the downloader with the correct args' do
       create :taric_update, :applied, issue_date: 1.day.ago.to_date
 
-      described_class.sync
+      described_class.sync(initial_date: 20.days.ago.to_date)
 
       (20.days.ago.to_date..Time.zone.today).each do |download_date|
         expect(TariffSynchronizer::TaricUpdateDownloader).to have_received(:new).with(download_date)
@@ -55,11 +55,13 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
     end
 
     it 'logs an info event' do
-      tariff_synchronizer_logger_listener
       allow_any_instance_of(TaricImporter).to receive(:import)
+      allow(Rails.logger).to receive(:info)
+
       taric_update.import!
-      expect(@logger.logged(:info).size).to eq 1
-      expect(@logger.logged(:info).last).to match(/Applied TARIC update/)
+
+      expect(Rails.logger).to have_received(:info)
+      expect(Rails.logger).to have_received(:info).with(include('Applied TARIC update'))
     end
   end
 

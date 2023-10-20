@@ -125,7 +125,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
     context 'when cds logger enabled' do
       before do
-        allow(TariffSynchronizer).to receive(:cds_logger_enabled).and_return(true)
+        allow(CdsSynchronizer).to receive(:cds_logger_enabled).and_return(true)
         allow(AdditionalCode.operation_klass).to receive(:insert).and_raise(StandardError, 'foo')
       end
 
@@ -134,7 +134,7 @@ RSpec.describe CdsImporter::EntityMapper do
 
     context 'when cds logger disabled' do
       before do
-        allow(TariffSynchronizer).to receive(:cds_logger_enabled).and_return(false)
+        allow(CdsSynchronizer).to receive(:cds_logger_enabled).and_return(false)
         allow(AdditionalCode.operation_klass).to receive(:insert).and_raise(StandardError, 'foo')
       end
 

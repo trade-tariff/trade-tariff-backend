@@ -6,8 +6,8 @@ module TariffSynchronizer
     SEQUENCE_APPLICABLE_STATES = [APPLIED_STATE, PENDING_STATE].freeze
 
     class << self
-      def sync
-        applicable_download_date_range.each { |issue_date| download(issue_date) }
+      def sync(initial_date:)
+        applicable_download_date_range(initial_date:).each { |issue_date| download(issue_date) }
       end
 
       def sync_patched
@@ -71,10 +71,9 @@ module TariffSynchronizer
     end
 
     def import!
-      instrument('apply_taric.tariff_synchronizer', filename:) do
-        TaricImporter.new(self).import
-        mark_as_applied
-      end
+      TaricImporter.new(self).import
+      mark_as_applied
+      Rails.logger.info "Applied TARIC update #{filename}"
     end
 
     def filename_sequence
