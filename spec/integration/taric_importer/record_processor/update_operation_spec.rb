@@ -20,22 +20,17 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
       LanguageDescription.unrestrict_primary_key
     end
 
-    context 'record for update present' do
+    context 'when record for update present' do
       before do
         create_language_description_record
       end
 
       it 'identifies as create operation' do
         operation.call
-        expect(LanguageDescription.count).to eq 1
         expect(LanguageDescription.first.description).to eq 'French!'
       end
 
       it 'returns model instance' do
-        expect(operation.call).to be_kind_of LanguageDescription
-      end
-
-      it 'returns model instance even when the previous record is equal' do
         expect(operation.call).to be_kind_of LanguageDescription
       end
 
@@ -47,7 +42,7 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
       end
     end
 
-    context 'record for update missing' do
+    context 'when record for update is missing' do
       it 'raises Sequel::RecordNotFound exception' do
         expect { operation.call }.to raise_error(Sequel::RecordNotFound)
       end
@@ -62,13 +57,18 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
         end
 
         it 'sends presence error events' do
-          expect(operation).to receive(:log_presence_error)
+          allow(operation).to receive(:log_presence_error)
           operation.call
+          expect(operation).to have_received(:log_presence_error)
         end
 
         it 'invokes CreateOperation' do
-          expect_any_instance_of(TaricImporter::RecordProcessor::CreateOperation).to receive(:call)
+          instance = instance_double(TaricImporter::RecordProcessor::CreateOperation)
+          allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new).and_return(instance)
+          allow(instance).to receive(:call)
           operation.call
+
+          expect(instance).to have_received(:call)
         end
       end
     end

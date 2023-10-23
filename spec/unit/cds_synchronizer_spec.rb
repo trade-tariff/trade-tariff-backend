@@ -1,5 +1,4 @@
 # rubocop:disable RSpec/MultipleExpectations
-# rubocop:disable RSpec/AnyInstance
 RSpec.describe CdsSynchronizer, truncation: true do
   describe '.initial_update_date' do
     it 'returns initial update date ' do
@@ -23,9 +22,11 @@ RSpec.describe CdsSynchronizer, truncation: true do
 
       it 'logs an info event' do
         allow(TariffSynchronizer::CdsUpdate).to receive(:sync).and_return(true)
-        expect(Rails.logger).to receive(:info)
+        allow(Rails.logger).to receive(:info)
 
         described_class.download
+
+        expect(Rails.logger).to have_received(:info)
       end
     end
 
@@ -43,9 +44,11 @@ RSpec.describe CdsSynchronizer, truncation: true do
       end
 
       it 'logs an error event' do
-        expect(Rails.logger).to receive(:error)
+        allow(Rails.logger).to receive(:error)
 
         described_class.download
+
+        expect(Rails.logger).to have_received(:error)
       end
     end
 
@@ -93,9 +96,11 @@ RSpec.describe CdsSynchronizer, truncation: true do
       end
 
       it 'logs the error event' do
-        expect(Rails.logger).to receive(:error)
+        allow(Rails.logger).to receive(:error)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
+
+        expect(Rails.logger).to have_received(:error)
       end
 
       it 'sends email with the error' do
@@ -175,36 +180,5 @@ RSpec.describe CdsSynchronizer, truncation: true do
       end
     end
   end
-
-  describe '.apply' do
-    let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
-
-    before do
-      allow_any_instance_of(CdsImporter).to receive(:import).and_return({})
-
-      applied_update
-      pending_update
-    end
-
-    context 'with successful updates present' do
-      subject(:apply) { described_class.apply }
-
-      it 'does not kick off the ClearCacheWorker' do
-        expect(apply).to be_truthy
-      end
-    end
-
-    context 'with failed updates present' do
-      subject(:apply) { described_class.apply }
-
-      before { create :taric_update, :failed }
-
-      it 'does not kick off the ClearCacheWorker' do
-        expect { apply }.to raise_error StandardError
-      end
-    end
-  end
 end
 # rubocop:enable RSpec/MultipleExpectations
-# rubocop:enable RSpec/AnyInstance

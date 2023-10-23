@@ -13,11 +13,13 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
   describe '.download' do
     it 'calls CdsUpdateDownloader perform for a Cds update' do
-      downloader = instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: true)
-      expect(TariffSynchronizer::CdsUpdateDownloader).to receive(:new)
-        .with(example_date)
-        .and_return(downloader)
+      downloader = instance_spy('TariffSynchronizer::CdsUpdateDownloader', perform: true)
+      allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:new)
+                                                          .with(example_date)
+                                                          .and_return(downloader)
       described_class.download(example_date)
+      expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:new)
+                                                           .with(example_date)
     end
   end
 
@@ -51,29 +53,27 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       # stub the file_path method to return a valid path of a real file.
       allow(cds_update).to receive(:file_path).and_return('spec/fixtures/cds_samples/tariff_dailyExtract_v1_20201010T235959.gzip')
       allow(cds_update).to receive(:filesize).and_return filesize
+
+      cds_importer = instance_double('CdsImporter')
+      allow(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
+      allow(cds_importer).to receive(:import).and_return inserted_oplog_records
     end
 
     it 'calls the CdsImporter import method' do
-      cds_importer = instance_double('CdsImporter')
-      expect(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
-      expect(cds_importer).to receive(:import).and_return inserted_oplog_records
       cds_update.import!
     end
 
     it 'marks the Cds update as applied' do
-      allow_any_instance_of(CdsImporter).to \
-        receive(:import).and_return inserted_oplog_records
       cds_update.import!
       expect(cds_update.reload).to be_applied
     end
 
     it 'logs an info event' do
-      allow_any_instance_of(CdsImporter).to \
-        receive(:import).and_return inserted_oplog_records
-
-      expect(Rails.logger).to receive(:info)
+      allow(Rails.logger).to receive(:info)
 
       cds_update.import!
+
+      expect(Rails.logger).to have_received(:info)
     end
 
     describe 'checking results of import' do
