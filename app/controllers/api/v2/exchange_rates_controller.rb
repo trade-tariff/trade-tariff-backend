@@ -1,6 +1,8 @@
 module Api
   module V2
     class ExchangeRatesController < ExchangeRates::BaseController
+      before_action :validate_id
+
       def show
         render json: serialized_exchange_rate_collection
       end
@@ -28,6 +30,10 @@ module Api
 
       def id
         params[:id].to_s
+      end
+
+      def validate_id
+        raise Sequel::RecordNotFound unless /\A\d{4}-\d{1,2}\z/.match?(id)
       end
     end
   end

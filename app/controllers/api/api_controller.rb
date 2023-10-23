@@ -17,7 +17,7 @@ module Api
       render json: serializer.serialized_errors({ error: 'not found', url: request.url }), status: :not_found
     end
 
-    rescue_from ActionController::ParameterMissing do |exception|
+    rescue_from ActionController::ParameterMissing, NotImplementedError do |exception|
       serializer = TradeTariffBackend.error_serializer(request)
       render json: serializer.serialized_errors({ error: exception.message, url: request.url }), status: :unprocessable_entity
     end

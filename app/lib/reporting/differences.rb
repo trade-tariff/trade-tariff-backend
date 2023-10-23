@@ -73,7 +73,9 @@ module Reporting
                 :regular_style,
                 :bold_style,
                 :centered_style,
-                :as_of
+                :print_style,
+                :as_of,
+                :overview_counts
 
     def initialize
       @package = Axlsx::Package.new
@@ -101,7 +103,17 @@ module Reporting
         font_name: 'Calibri',
         sz: 11,
       )
+      @print_style = workbook.styles.add_style(
+        alignment: {
+          wrap_text: true,
+          horizontal: :left,
+          vertical: :top,
+        },
+        font_name: 'Courier New',
+        sz: 11,
+      )
       @as_of = Time.zone.today.iso8601
+      @overview_counts = Hash.new(0)
     end
 
     def generate(only: [])
@@ -130,15 +142,14 @@ module Reporting
         add_missing_supplementary_units_from_xi_worksheet
         add_candidate_supplementary_units
         add_me16_worksheet
+        add_overview_worksheet
       ]
 
       methods = (methods & only) if only.any?
 
       methods.each do |method|
         start = Time.zone.now
-
         public_send(method)
-
         finish = Time.zone.now
         Rails.logger.info("Finished method '#{method}' (Duration: #{finish - start} seconds)")
       end
@@ -149,166 +160,96 @@ module Reporting
       package
     end
 
+    def add_overview_worksheet
+      Reporting::Differences::Overview.new(self).add_worksheet
+    end
+
     def add_missing_from_uk_worksheet
-      Reporting::Differences::GoodsNomenclature.new(
-        'xi',
-        'uk',
-        'Commodities in EU, not in UK',
-        self,
-      ).add_worksheet
+      Reporting::Differences::GoodsNomenclature.new('xi', 'uk', self).add_worksheet
     end
 
     def add_missing_from_xi_worksheet
-      Reporting::Differences::GoodsNomenclature.new(
-        'uk',
-        'xi',
-        'Commodities in UK, not in EU',
-        self,
-      ).add_worksheet
+      Reporting::Differences::GoodsNomenclature.new('uk', 'xi', self).add_worksheet
     end
 
     def add_indentation_worksheet
-      Reporting::Differences::Indentation.new(
-        'Indentation differences',
-        self,
-      ).add_worksheet
+      Reporting::Differences::Indentation.new(self).add_worksheet
     end
 
     def add_hierarchy_worksheet
-      Reporting::Differences::Hierarchy.new(
-        'Hierarchy differences',
-        self,
-      ).add_worksheet
+      Reporting::Differences::Hierarchy.new(self).add_worksheet
     end
 
     def add_endline_worksheet
-      Reporting::Differences::Endline.new(
-        'End line differences',
-        self,
-      ).add_worksheet
+      Reporting::Differences::Endline.new(self).add_worksheet
     end
 
     def add_start_date_worksheet
-      Reporting::Differences::GoodsNomenclatureStartDate.new(
-        'Start date differences',
-        self,
-      ).add_worksheet
+      Reporting::Differences::GoodsNomenclatureStartDate.new(self).add_worksheet
     end
 
     def add_end_date_worksheet
-      Reporting::Differences::GoodsNomenclatureEndDate.new(
-        'End date differences',
-        self,
-      ).add_worksheet
+      Reporting::Differences::GoodsNomenclatureEndDate.new(self).add_worksheet
     end
 
     def add_mfn_missing_worksheet
-      Reporting::Differences::MfnMissing.new(
-        'MFN missing',
-        self,
-      ).add_worksheet
+      Reporting::Differences::MfnMissing.new(self).add_worksheet
     end
 
     def add_mfn_duplicated_worksheet
-      Reporting::Differences::MfnDuplicated.new(
-        'Duplicate MFNs',
-        self,
-      ).add_worksheet
+      Reporting::Differences::MfnDuplicated.new(self).add_worksheet
     end
 
     def add_misapplied_action_code_worksheet
-      Reporting::Differences::MisappliedActionCode.new(
-        'Misapplied action codes',
-        self,
-      ).add_worksheet
+      Reporting::Differences::MisappliedActionCode.new(self).add_worksheet
     end
 
     def add_incomplete_measure_condition_worksheet
-      Reporting::Differences::IncompleteMeasureCondition.new(
-        'Incomplete conditions',
-        self,
-      ).add_worksheet
+      Reporting::Differences::IncompleteMeasureCondition.new(self).add_worksheet
     end
 
     def add_me32_worksheet
-      Reporting::Differences::Me32.new(
-        'ME32 candidates',
-        self,
-      ).add_worksheet
+      Reporting::Differences::Me32.new(self).add_worksheet
     end
 
     def add_omitted_duty_measures_worksheet
-      Reporting::Differences::OmittedDutyMeasures.new(
-        'Omitted duties',
-        self,
-      ).add_worksheet
+      Reporting::Differences::OmittedDutyMeasures.new(self).add_worksheet
     end
 
     def add_missing_vat_measure_worksheet
-      Reporting::Differences::MissingVatMeasure.new(
-        'VAT missing',
-        self,
-      ).add_worksheet
+      Reporting::Differences::MissingVatMeasure.new(self).add_worksheet
     end
 
     def add_missing_quota_origins_worksheet
-      Reporting::Differences::QuotaMissingOrigin.new(
-        'Quota with no origins',
-        self,
-      ).add_worksheet
+      Reporting::Differences::QuotaMissingOrigin.new(self).add_worksheet
     end
 
     def add_bad_quota_association_worksheet
-      Reporting::Differences::BadQuotaAssociation.new(
-        'Self-referential associations',
-        self,
-      ).add_worksheet
+      Reporting::Differences::BadQuotaAssociation.new(self).add_worksheet
     end
 
     def add_quota_exclusion_misalignment_worksheet
-      Reporting::Differences::QuotaExclusionMisalignment.new(
-        'Exclusion misalignment',
-        self,
-      ).add_worksheet
+      Reporting::Differences::QuotaExclusionMisalignment.new(self).add_worksheet
     end
 
     def add_measure_quota_coverage_worksheet
-      Reporting::Differences::MeasureQuotaCoverage.new(
-        'Measure quot def coverage',
-        self,
-      ).add_worksheet
+      Reporting::Differences::MeasureQuotaCoverage.new(self).add_worksheet
     end
 
     def add_missing_supplementary_units_from_uk_worksheet
-      Reporting::Differences::SupplementaryUnit.new(
-        'xi',
-        'uk',
-        'Supp units on EU not UK',
-        self,
-      ).add_worksheet
+      Reporting::Differences::SupplementaryUnit.new('xi', 'uk', self).add_worksheet
     end
 
     def add_missing_supplementary_units_from_xi_worksheet
-      Reporting::Differences::SupplementaryUnit.new(
-        'uk',
-        'xi',
-        'Supp units on UK not EU',
-        self,
-      ).add_worksheet
+      Reporting::Differences::SupplementaryUnit.new('uk', 'xi', self).add_worksheet
     end
 
     def add_candidate_supplementary_units
-      Reporting::Differences::CandidateSupplementaryUnit.new(
-        'Supp unit candidates',
-        self,
-      ).add_worksheet
+      Reporting::Differences::CandidateSupplementaryUnit.new(self).add_worksheet
     end
 
     def add_me16_worksheet
-      Reporting::Differences::Me16.new(
-        'Supp unit candidates',
-        self,
-      ).add_worksheet
+      Reporting::Differences::Me16.new(self).add_worksheet
     end
 
     def uk_goods_nomenclatures
@@ -346,6 +287,10 @@ module Reporting
 
     def handle_csv(csv)
       CSV.parse(csv, headers: true).map(&:to_h)
+    end
+
+    def increment_count(worksheet_name)
+      overview_counts[worksheet_name] += 1
     end
 
     class << self

@@ -15,7 +15,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
       make_request
     end
 
-    context 'when the year and month parameters are provided' do
+    context 'when the year and month parameters are valid' do
       let(:make_request) do
         get api_exchange_rate_path(
           '2023-6',
@@ -47,6 +47,52 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
       it { expect(response.body).to match_json_expression(pattern) }
 
       it { expect(ExchangeRates::ExchangeRateCollection).to have_received(:build).with('6', '2023', 'monthly') }
+    end
+
+    context 'when the year and month parameters are invalid' do
+      let(:make_request) do
+        get api_exchange_rate_path(
+          '2023idadas-6',
+          filter: { type: 'monthly' },
+          format: :json,
+        )
+      end
+
+      let(:pattern) do
+        {
+          error: 'not found',
+          url: 'http://www.example.com/exchange_rates/2023idadas-6?filter%5Btype%5D=monthly',
+        }
+      end
+
+      it { is_expected.to have_http_status(:not_found) }
+
+      it { expect(response.body).to match_json_expression(pattern) }
+
+      it { expect(ExchangeRates::ExchangeRateCollection).not_to have_received(:build) }
+    end
+
+    context 'when the type parameter is invalid' do
+      let(:make_request) do
+        get api_exchange_rate_path(
+          '2023-6',
+          filter: { type: 'invalid' },
+          format: :json,
+        )
+      end
+
+      let(:pattern) do
+        {
+          'error' => 'invalid',
+          'url' => 'http://www.example.com/exchange_rates/2023-6?filter%5Btype%5D=invalid',
+        }
+      end
+
+      it { is_expected.to have_http_status(:unprocessable_entity) }
+
+      it { expect(response.body).to match_json_expression(pattern) }
+
+      it { expect(ExchangeRates::ExchangeRateCollection).not_to have_received(:build) }
     end
   end
 end

@@ -8,6 +8,8 @@ module Reporting
                :each_chapter,
                to: :report
 
+      WORKSHEET_NAME = 'Supp unit candidates'.freeze
+
       HEADER_ROW = [
         'Commodity code',
         'Unit(s)',
@@ -28,8 +30,7 @@ module Reporting
       METRIC = 'Supplementary units that should be present'.freeze
       SUBTEXT = 'Excise etc. may require a supp unit that is not provided'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
       end
 
@@ -50,6 +51,7 @@ module Reporting
           end
 
           each_row do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
           end
 
@@ -57,9 +59,13 @@ module Reporting
         end
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def each_row
         each_chapter(eager: Differences::GOODS_NOMENCLATURE_MEASURE_WITH_UNIT_EAGER) do |eager_chapter|
