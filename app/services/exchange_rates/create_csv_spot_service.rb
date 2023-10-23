@@ -33,7 +33,7 @@ module ExchangeRates
         rate.country_description,
         rate.currency_description,
         rate.currency_code,
-        1 / rate.rate,
+        1 / rate.presented_rate.to_f,
         rate.rate,
       ]
     end
