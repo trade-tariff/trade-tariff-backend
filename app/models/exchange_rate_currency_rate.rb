@@ -87,6 +87,15 @@ class ExchangeRateCurrencyRate < Sequel::Model
       where(rate_type: type)
     end
 
+    def by_currency(currency_code)
+      where(currency_code: currency_code)
+    end
+
+    def by_currency_and_last_year(currency_code)
+      # Warning if this is called when an average rate is not meant to be called
+      by_type(MONTHLY_RATE_TYPE).by_currency(currency_code).last(12)
+    end
+
     def by_year(year)
       where(Sequel.cast(Sequel.function(:date_part, 'year', :applicable_date), Integer) => year)
     end
