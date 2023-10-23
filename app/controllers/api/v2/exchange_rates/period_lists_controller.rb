@@ -2,6 +2,8 @@ module Api
   module V2
     module ExchangeRates
       class PeriodListsController < BaseController
+        before_action :validate_id
+
         def show
           render json: serialized_period_list
         end
@@ -21,6 +23,10 @@ module Api
 
         def year
           params[:year].to_i if params[:year]
+        end
+
+        def validate_id
+          raise Sequel::RecordNotFound unless /\A\d{4}\z/.match?(params[:year].to_s) || params[:year].blank?
         end
       end
     end
