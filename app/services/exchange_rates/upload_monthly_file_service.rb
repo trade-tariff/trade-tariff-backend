@@ -14,6 +14,8 @@ module ExchangeRates
         upload_data(:xml, ExchangeRates::CreateXmlService)
       when :monthly_csv_hmrc
         upload_data(:csv, ExchangeRates::CreateCsvHmrcService)
+      when :spot_csv
+        upload_data(:csv, ExchangeRates::CreateCsvSpotService)
       end
     end
 

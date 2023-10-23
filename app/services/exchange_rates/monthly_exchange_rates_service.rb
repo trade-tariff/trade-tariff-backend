@@ -9,7 +9,7 @@ module ExchangeRates
     end
 
     def call
-      ExchangeRates::UpdateCurrencyRatesService.new(date, sample_date).call if download
+      ExchangeRates::UpdateCurrencyRatesService.new(date, sample_date, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE).call if download
 
       if rates.empty?
         raise DataNotFoundError, "No exchange rate data found for month #{date.month} and year #{date.year}."
