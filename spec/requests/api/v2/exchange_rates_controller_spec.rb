@@ -71,5 +71,28 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
 
       it { expect(ExchangeRates::ExchangeRateCollection).not_to have_received(:build) }
     end
+
+    context 'when the type parameter is invalid' do
+      let(:make_request) do
+        get api_exchange_rate_path(
+          '2023-6',
+          filter: { type: 'invalid' },
+          format: :json,
+        )
+      end
+
+      let(:pattern) do
+        {
+          'error' => 'invalid',
+          'url' => 'http://www.example.com/exchange_rates/2023-6?filter%5Btype%5D=invalid',
+        }
+      end
+
+      it { is_expected.to have_http_status(:unprocessable_entity) }
+
+      it { expect(response.body).to match_json_expression(pattern) }
+
+      it { expect(ExchangeRates::ExchangeRateCollection).not_to have_received(:build) }
+    end
   end
 end

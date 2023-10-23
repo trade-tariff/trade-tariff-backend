@@ -134,5 +134,27 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       it { is_expected.to have_http_status(:not_found) }
       it { expect(response.body).to match_json_expression(pattern) }
     end
+
+    context 'when the type parameter is invalid' do
+      let(:year) { 2023 }
+
+      let(:make_request) do
+        get api_exchange_rates_period_list_path(
+          year: '2023',
+          filter: { type: 'invalid' },
+          format: :json,
+        )
+      end
+
+      let(:pattern) do
+        {
+          error: 'invalid',
+          url: 'http://www.example.com/exchange_rates/period_lists/2023?filter%5Btype%5D=invalid',
+        }
+      end
+
+      it { is_expected.to have_http_status(:unprocessable_entity) }
+      it { expect(response.body).to match_json_expression(pattern) }
+    end
   end
 end
