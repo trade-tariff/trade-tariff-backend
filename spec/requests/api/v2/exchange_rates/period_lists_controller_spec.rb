@@ -112,5 +112,27 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       it { is_expected.to have_http_status(:success) }
       it { expect(response.body).to match_json_expression(pattern) }
     end
+
+    context 'when the year parameter is invalid' do
+      let(:year) { '2023idadas' }
+
+      let(:make_request) do
+        get api_exchange_rates_period_list_path(
+          year: '2023idadas',
+          filter: { type: 'monthly' },
+          format: :json,
+        )
+      end
+
+      let(:pattern) do
+        {
+          error: 'not found',
+          url: 'http://www.example.com/exchange_rates/period_lists/2023idadas?filter%5Btype%5D=monthly',
+        }
+      end
+
+      it { is_expected.to have_http_status(:not_found) }
+      it { expect(response.body).to match_json_expression(pattern) }
+    end
   end
 end
