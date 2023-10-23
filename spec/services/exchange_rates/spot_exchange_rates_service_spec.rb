@@ -23,7 +23,7 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
 
         allow(ExchangeRateCurrencyRate).to receive(:for_month).and_return(spot_rates)
 
-        allow(ExchangeRates::UploadMonthlyFileService).to receive(:new).and_call_original
+        allow(ExchangeRates::UploadFileService).to receive(:new).and_call_original
 
         call
       end
@@ -33,7 +33,7 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
 
         it { expect(update_service).to have_received(:call) }
 
-        it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(spot_rates, sample_date, :spot_csv) }
+        it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(spot_rates, sample_date, :spot_csv) }
 
         it { expect(ExchangeRateCurrencyRate).to have_received(:for_month).with(sample_date.month, sample_date.year, 'spot') }
       end
@@ -43,7 +43,7 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
 
         it { expect(update_service).not_to have_received(:call) }
 
-        it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(spot_rates, sample_date, :spot_csv) }
+        it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(spot_rates, sample_date, :spot_csv) }
 
         it { expect(ExchangeRateCurrencyRate).to have_received(:for_month).with(sample_date.month, sample_date.year, 'spot') }
       end

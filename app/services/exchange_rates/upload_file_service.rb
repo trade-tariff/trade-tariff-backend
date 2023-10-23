@@ -1,5 +1,5 @@
 module ExchangeRates
-  class UploadMonthlyFileService
+  class UploadFileService
     def initialize(rates, date, type)
       @rates = rates
       @date = date
@@ -15,6 +15,8 @@ module ExchangeRates
       when :monthly_csv_hmrc
         upload_data(:csv, ExchangeRates::CreateCsvHmrcService)
       when :spot_csv
+        upload_data(:csv, ExchangeRates::CreateCsvSpotService)
+      when :average_csv
         upload_data(:csv, ExchangeRates::CreateCsvSpotService)
       end
     end

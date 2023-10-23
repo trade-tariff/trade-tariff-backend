@@ -1,4 +1,4 @@
-RSpec.describe ExchangeRates::UploadMonthlyFileService do
+RSpec.describe ExchangeRates::UploadFileService do
   subject(:call) { described_class.new(rates, date, type).call }
 
   let(:rates) { create_list(:exchange_rate_currency_rate, 1, :with_usa) }

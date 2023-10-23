@@ -17,7 +17,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
         validity_start_date: date,
       )
       allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(date, sample_date, 'monthly').and_return(update_service)
-      allow(ExchangeRates::UploadMonthlyFileService).to receive(:new).and_call_original
+      allow(ExchangeRates::UploadFileService).to receive(:new).and_call_original
 
       call
     end
@@ -27,9 +27,9 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
 
       it { expect(update_service).to have_received(:call) }
 
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_xml) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv_hmrc) }
+      it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(anything, date, :monthly_csv) }
+      it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(anything, date, :monthly_xml) }
+      it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(anything, date, :monthly_csv_hmrc) }
     end
 
     context 'when download is false' do
@@ -37,9 +37,9 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
 
       it { expect(update_service).not_to have_received(:call) }
 
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_xml) }
-      it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(anything, date, :monthly_csv_hmrc) }
+      it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(anything, date, :monthly_csv) }
+      it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(anything, date, :monthly_xml) }
+      it { expect(ExchangeRates::UploadFileService).to have_received(:new).with(anything, date, :monthly_csv_hmrc) }
     end
   end
 end
