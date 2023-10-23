@@ -7,7 +7,7 @@ module Reporting
                :each_chapter,
                to: :report
 
-      WORKSHEET_NAME = 'VAT-related anomalies'.freeze
+      WORKSHEET_NAME = 'VAT missing'.freeze
 
       FILTERED_MEASURE_TYPES = Set.new(%w[305]).freeze
       FILTERED_GEOGRAPHICAL_AREA_IDS = Set.new(%w[1011]).freeze
@@ -26,7 +26,6 @@ module Reporting
         80, # Description
       ].freeze
 
-      AUTOFILTER_CELL_RANGE = 'A1:B1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(report)
@@ -37,7 +36,6 @@ module Reporting
         workbook.add_worksheet(name:) do |sheet|
           sheet.sheet_pr.tab_color = TAB_COLOR
           sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
           sheet.sheet_view.pane do |pane|
             pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
             pane.state = :frozen
@@ -75,6 +73,7 @@ module Reporting
         each_chapter(eager: Differences::GOODS_NOMENCLATURE_OVERVIEW_MEASURE_EAGER) do |eager_chapter|
           eager_chapter.descendants.each do |chapter_descendant|
             next unless chapter_descendant.declarable?
+            next if chapter_descendant.classified?
 
             next if chapter_descendant.applicable_overview_measures.find { |measure|
               measure.measure_type_id.in?(FILTERED_MEASURE_TYPES) &&

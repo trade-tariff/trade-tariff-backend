@@ -135,9 +135,9 @@ module Reporting
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
         add_missing_quota_origins_worksheet
+        add_measure_quota_coverage_worksheet
         add_bad_quota_association_worksheet
         add_quota_exclusion_misalignment_worksheet
-        add_measure_quota_coverage_worksheet
         add_missing_supplementary_units_from_uk_worksheet
         add_missing_supplementary_units_from_xi_worksheet
         add_candidate_supplementary_units
@@ -224,16 +224,16 @@ module Reporting
       Reporting::Differences::QuotaMissingOrigin.new(self).add_worksheet
     end
 
+    def add_measure_quota_coverage_worksheet
+      Reporting::Differences::MeasureQuotaCoverage.new(self).add_worksheet
+    end
+
     def add_bad_quota_association_worksheet
       Reporting::Differences::BadQuotaAssociation.new(self).add_worksheet
     end
 
     def add_quota_exclusion_misalignment_worksheet
       Reporting::Differences::QuotaExclusionMisalignment.new(self).add_worksheet
-    end
-
-    def add_measure_quota_coverage_worksheet
-      Reporting::Differences::MeasureQuotaCoverage.new(self).add_worksheet
     end
 
     def add_missing_supplementary_units_from_uk_worksheet
@@ -273,6 +273,7 @@ module Reporting
         Chapter
           .actual
           .non_hidden
+          .non_classifieds
           .all
           .each do |chapter|
             eager_chapter = Chapter.actual

@@ -24,9 +24,10 @@ module Reporting
       TAB_COLOR = '00ff00'.freeze
 
       CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
-      COLUMN_WIDTHS = Array.new(HEADER_ROW.size, 20).freeze
+      COLUMN_WIDTHS = Array.new(HEADER_ROW.size, 20)
+      COLUMN_WIDTHS[1] = 40
+      COLUMN_WIDTHS.freeze
 
-      AUTOFILTER_CELL_RANGE = 'A1:J1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(report)
@@ -37,7 +38,6 @@ module Reporting
         workbook.add_worksheet(name:) do |sheet|
           sheet.sheet_pr.tab_color = TAB_COLOR
           sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
           sheet.sheet_view.pane do |pane|
             pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
             pane.state = :frozen
@@ -80,7 +80,6 @@ module Reporting
       def each_missapplied_measure(&block)
         TimeMachine.now do
           Measure
-            .actual
             .dedupe_similar
             .with_regulation_dates_query
             .without_excluded_types

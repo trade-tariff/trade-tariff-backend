@@ -32,7 +32,7 @@ module Reporting
       ].freeze
 
       AUTOFILTER_CELL_RANGE = 'A5:E5'.freeze
-      FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
+      FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
       METRIC = ERB.new('Supplementary units present on the <%= source_name %> tariff, but not on the <%= target_name %> tariff')
       SUBTEXT = 'May cause issues for Northern Ireland trade'.freeze
@@ -50,7 +50,12 @@ module Reporting
           sheet.add_row([rendered_metric], style: bold_style)
           sheet.merge_cells('A2:E2')
           sheet.add_row([SUBTEXT], style: regular_style)
-          sheet.add_row(['Back to overview', nil, nil, nil, nil], style: nil, hyperlink: { location: 'Overview!A1', target: :sheet })
+          sheet.add_row(['Back to overview'])
+          sheet.add_hyperlink(
+            location: "'Overview'!A1",
+            target: :sheet,
+            ref: sheet.rows.last[0].r,
+          )
           sheet.add_row([])
           sheet.add_row(HEADER_ROW, style: bold_style)
           sheet.auto_filter = AUTOFILTER_CELL_RANGE
