@@ -3,7 +3,7 @@ RSpec.describe ExchangeRates::CreateCsvSpotService do
 
   let(:data) { ExchangeRateCurrencyRate.for_month(2, 2020, 'spot') }
   let(:parsed_csv) do
-    "Country,Unit Of Currency,Currency Code,Sterling value of Currency Unit £,Currency Units per £1\nUnited States,Dollar,USD,0.20828126301757896,4.8012\n"
+    "Country,Unit Of Currency,Currency Code,Sterling value of Currency Unit £,Currency Units per £1\nUnited States,Dollar,USD,0.2083,4.8012\n"
   end
 
   before do

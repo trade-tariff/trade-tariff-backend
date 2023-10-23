@@ -7,11 +7,9 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
 
   context 'when rates exist' do
     describe '.call' do
-      let(:date_three_months_later) { sample_date >> 3 }
-
       let(:update_service) { instance_double(ExchangeRates::UpdateCurrencyRatesService, call: true) }
 
-      let(:spot_rates) { ExchangeRateCurrencyRate.where(rate_type: 'spot', validity_start_date: sample_date).all }
+      let(:spot_rates) { ExchangeRateCurrencyRate.by_type('spot').all }
 
       before do
         create(
@@ -21,21 +19,10 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
           validity_start_date: sample_date,
         )
 
-        create(
-          :exchange_rate_currency_rate,
-          :spot_rate,
-          :with_usa,
-          validity_start_date: date_three_months_later,
-          validity_end_date: date_three_months_later,
-        )
-
-        create(
-          :exchange_rate_currency_rate,
-          :monthly_rate,
-          :with_usa,
-        )
-
         allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(sample_date, sample_date, 'spot').and_return(update_service)
+
+        allow(ExchangeRateCurrencyRate).to receive(:for_month).and_return(spot_rates)
+
         allow(ExchangeRates::UploadMonthlyFileService).to receive(:new).and_call_original
 
         call
@@ -47,6 +34,8 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
         it { expect(update_service).to have_received(:call) }
 
         it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(spot_rates, sample_date, :spot_csv) }
+
+        it { expect(ExchangeRateCurrencyRate).to have_received(:for_month).with(sample_date.month, sample_date.year, 'spot') }
       end
 
       context 'when download is false' do
@@ -55,6 +44,8 @@ RSpec.describe ExchangeRates::SpotExchangeRatesService do
         it { expect(update_service).not_to have_received(:call) }
 
         it { expect(ExchangeRates::UploadMonthlyFileService).to have_received(:new).with(spot_rates, sample_date, :spot_csv) }
+
+        it { expect(ExchangeRateCurrencyRate).to have_received(:for_month).with(sample_date.month, sample_date.year, 'spot') }
       end
     end
 

@@ -33,8 +33,8 @@ module ExchangeRates
         rate.country_description,
         rate.currency_description,
         rate.currency_code,
-        1 / rate.presented_rate.to_f,
-        rate.rate,
+        sprintf('%.4f', 1 / rate.rate),
+        rate.presented_rate,
       ]
     end
 
