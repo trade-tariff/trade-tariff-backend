@@ -7,6 +7,8 @@ module Reporting
                :each_chapter,
                to: :report
 
+      WORKSHEET_NAME = 'ME32 candidates'.freeze
+
       HEADER_ROW = [
         'Commodity code',
         'Measure type',
@@ -33,8 +35,7 @@ module Reporting
       METRIC = 'ME32 candidates'.freeze
       SUBTEXT = 'There may be no overlap in time with other measure occurrences with a goods code in the same nomenclature hierarchy which references the same measure type, geo area, order number and additional code.'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
       end
 
@@ -57,6 +58,7 @@ module Reporting
           end
 
           rows.compact.each do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
           end
 
@@ -66,9 +68,13 @@ module Reporting
         Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def rows
         acc = []

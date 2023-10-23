@@ -9,6 +9,9 @@ module Reporting
                :xi_goods_nomenclatures,
                to: :report
 
+      WORKSHEET_NAME_EU = 'Commodities in EU, not in UK'.freeze
+      WORKSHEET_NAME_UK = 'Commodities in UK, not in EU'.freeze
+
       HEADER_ROW = [
         'SID',
         'Commodity',
@@ -38,7 +41,7 @@ module Reporting
       AUTOFILTER_CELL_RANGE = 'A1:H1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      def initialize(source, target, name, report)
+      def initialize(source, target, report)
         @source = source
         @target = target
         @name = name
@@ -57,6 +60,7 @@ module Reporting
           end
 
           rows.each do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             sheet.rows.last.tap do |last_row|
               last_row.cells[5].style = centered_style # Indentation
@@ -68,9 +72,13 @@ module Reporting
         end
       end
 
+      def name
+        source == 'uk' ? WORKSHEET_NAME_UK : WORKSHEET_NAME_EU
+      end
+
       private
 
-      attr_reader :source, :target, :name, :report
+      attr_reader :source, :target, :report
 
       def rows
         all_missing = source_goods_nomenclatures.keys - target_goods_nomenclatures.keys

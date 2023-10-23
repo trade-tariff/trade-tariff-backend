@@ -7,12 +7,14 @@ module Reporting
                :each_chapter,
                to: :report
 
+      WORKSHEET_NAME = 'ME16 candidates'.freeze
+
       HEADER_ROW = [
         'Commodity code',
         'Measure type',
       ].freeze
 
-      TAB_COLOR = '00ff00'.freeze
+      TAB_COLOR = '000000'.freeze
 
       CELL_TYPES = Array.new(HEADER_ROW.size, :string).freeze
 
@@ -27,8 +29,7 @@ module Reporting
       METRIC = 'ME16 candidates'.freeze
       SUBTEXT = 'This indicates that there are comm codes where a duty exists both with and without additional codes, which breaks ME16'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
       end
 
@@ -51,6 +52,7 @@ module Reporting
           end
 
           rows.compact.each do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
           end
 
@@ -60,9 +62,13 @@ module Reporting
         Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def rows
         acc = []

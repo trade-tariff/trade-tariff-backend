@@ -7,6 +7,8 @@ module Reporting
                :centered_style,
                to: :report
 
+      WORKSHEET_NAME = 'Self-referential associations'.freeze
+
       HEADER_ROW = [
         'Order number (main)',
         'Def. start date (main)',
@@ -29,8 +31,7 @@ module Reporting
       AUTOFILTER_CELL_RANGE = 'A1:J1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
       end
 
@@ -46,6 +47,7 @@ module Reporting
           end
 
           each_row do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
           end
 
@@ -53,9 +55,13 @@ module Reporting
         end
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def each_row
         ::BadQuotaAssociation.actual.each do |bad_quota_association|

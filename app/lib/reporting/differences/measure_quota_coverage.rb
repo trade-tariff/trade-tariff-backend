@@ -6,6 +6,8 @@ module Reporting
     class MeasureQuotaCoverage
       delegate :workbook, :bold_style, :regular_style, to: :report
 
+      WORKSHEET_NAME = 'Measure quot def coverage'.freeze
+
       HEADER_ROW = [
         'Measure SID',
         'Commodity code',
@@ -20,8 +22,7 @@ module Reporting
       COLUMN_WIDTHS = [20] * HEADER_ROW.size
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
         @end_of_year = Time.zone.today.end_of_year
       end
@@ -37,6 +38,7 @@ module Reporting
           end
 
           rows.each do |row|
+            report.increment_count(name)
             sheet.add_row(
               row,
               types: CELL_TYPES,
@@ -48,9 +50,13 @@ module Reporting
         end
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def rows
         rs = measures_with_quota_definitions.each_with_object([]) do |measure_with_quota_definitions, acc|

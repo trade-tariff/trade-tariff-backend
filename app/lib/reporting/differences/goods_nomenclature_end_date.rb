@@ -9,6 +9,8 @@ module Reporting
                :xi_goods_nomenclatures,
                to: :report
 
+      WORKSHEET_NAME = 'End date differences'.freeze
+
       HEADER_ROW = [
         'Commodity code (PLS)',
         'UK end date',
@@ -28,8 +30,7 @@ module Reporting
       AUTOFILTER_CELL_RANGE = 'A1:C1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      def initialize(name, report)
-        @name = name
+      def initialize(report)
         @report = report
       end
 
@@ -45,6 +46,7 @@ module Reporting
           end
 
           rows.compact.each do |row|
+            report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
           end
 
@@ -52,9 +54,13 @@ module Reporting
         end
       end
 
+      def name
+        WORKSHEET_NAME
+      end
+
       private
 
-      attr_reader :name, :report
+      attr_reader :report
 
       def rows
         matching_goods_nomenclature = uk_goods_nomenclature_ids.keys & xi_goods_nomenclature_ids.keys
