@@ -10,6 +10,7 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     allow(ExchangeRates::CreateCsvService).to receive(:new).and_call_original
     allow(ExchangeRates::CreateXmlService).to receive(:new).and_call_original
     allow(ExchangeRates::CreateCsvHmrcService).to receive(:new).and_call_original
+    allow(ExchangeRates::CreateCsvSpotService).to receive(:new).and_call_original
 
     call
   end
@@ -36,5 +37,14 @@ RSpec.describe ExchangeRates::UploadMonthlyFileService do
     it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_hmrc_\d{4}-\d{2}.csv/), include('Period')) }
     it { expect(ExchangeRateFile.count).to eq(1) }
     it { expect(ExchangeRates::CreateCsvHmrcService).to have_received(:new).with(rates) }
+  end
+
+  context 'when type is :spot_csv' do
+    let(:type) { :spot_csv }
+    let(:rates) { create_list(:exchange_rate_currency_rate, 1, :spot_rate, :with_usa) }
+
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/spot_csv_\d{4}-\d{2}.csv/), include('Country')) }
+    it { expect(ExchangeRateFile.count).to eq(1) }
+    it { expect(ExchangeRates::CreateCsvSpotService).to have_received(:new).with(rates) }
   end
 end

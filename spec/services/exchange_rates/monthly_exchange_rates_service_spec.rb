@@ -16,7 +16,7 @@ RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
         :with_usa,
         validity_start_date: date,
       )
-      allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(date, sample_date).and_return(update_service)
+      allow(ExchangeRates::UpdateCurrencyRatesService).to receive(:new).with(date, sample_date, 'monthly').and_return(update_service)
       allow(ExchangeRates::UploadMonthlyFileService).to receive(:new).and_call_original
 
       call

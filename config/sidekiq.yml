@@ -73,4 +73,7 @@
       args: [ 28 ]
     MonthlyExchangeRatesWorker:
       cron: '0 21 * * 3'
-      description: Update data from XE API and Upload files to S3 every penultimate wednesday of the month at 9pm
+      description: Update monthly rates data from XE API and Upload files to S3 every penultimate wednesday of the month at 9pm
+    SpotExchangeRatesWorker:
+      cron: '0 21 31 3,12 *' # Runs on end of March and December
+      description: Update spot rates data from XE API and Upload files to S3
