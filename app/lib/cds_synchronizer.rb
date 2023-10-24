@@ -107,6 +107,5 @@ class CdsSynchronizer
     def sync_variables_set?
       ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?
     end
-
   end
 end

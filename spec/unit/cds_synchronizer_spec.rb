@@ -1,3 +1,4 @@
+# rubocop:disable RSpec/MultipleExpectations
 RSpec.describe CdsSynchronizer, truncation: true do
   describe '.initial_update_date' do
     it 'returns initial update date ' do
