@@ -77,3 +77,6 @@
     SpotExchangeRatesWorker:
       cron: '0 21 31 3,12 *' # Runs on end of March and December
       description: Update spot rates data from XE API and Upload files to S3
+    AverageExchangeRatesWorker:
+      cron: '0 21 31 3,12 *' # Runs on end of March and December
+      description: Creates average rates from downloaded data and uploads file to S3

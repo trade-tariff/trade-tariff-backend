@@ -17,7 +17,7 @@ module ExchangeRates
       when :spot_csv
         upload_data(:csv, ExchangeRates::CreateCsvSpotService)
       when :average_csv
-        upload_data(:csv, ExchangeRates::CreateCsvSpotService)
+        upload_data(:csv, ExchangeRates::CreateCsvAverageRatesService)
       end
     end
 

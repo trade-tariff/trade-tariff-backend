@@ -48,5 +48,19 @@ FactoryBot.define do
       country_description { 'Abu Dhabi' }
       currency_description { 'Dirham' }
     end
+
+    trait :bd do
+      country_code { 'BD' }
+      currency_code { 'BDD' }
+      country_description { 'Barbados' }
+      currency_description { 'Dollar' }
+    end
+
+    trait :zw do
+      country_code { 'ZW' }
+      currency_code { 'ZWD' }
+      country_description { 'Zimbabwe' }
+      currency_description { 'Dollar' }
+    end
   end
 end

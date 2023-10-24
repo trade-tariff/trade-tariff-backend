@@ -1,5 +1,8 @@
 module ExchangeRates
   class CreateCsvAverageRatesService
+    COUNTRY_INDEX = 0
+    RATE_INDEX = 1
+
     HEADINGS = [
       'Country',
       'Unit Of Currency',
@@ -20,21 +23,27 @@ module ExchangeRates
       CSV.generate do |csv|
         csv << HEADINGS
 
-        @data.each do |rate|
-          csv << build_row(rate)
+        # Data is in the format of { ExchangeRateCountryCurrency => avg_rate },{...}
+        data.each do |hash|
+          csv << build_row(hash)
         end
       end
     end
 
     private
 
-    def build_row(rate)
+    attr_reader :data
+
+    def build_row(rate_hash)
+      country = rate_hash[COUNTRY_INDEX]
+      rate = rate_hash[RATE_INDEX]
+
       [
-        rate.country_description,
-        rate.currency_description,
-        rate.currency_code,
-        sprintf('%.4f', 1 / rate.rate),
-        rate.presented_rate,
+        country.country_description,
+        country.currency_description,
+        country.currency_code,
+        sprintf('%.4f', 1 / rate),
+        sprintf('%.4f', rate),
       ]
     end
 

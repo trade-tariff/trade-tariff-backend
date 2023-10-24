@@ -3,65 +3,88 @@ module ExchangeRates
     VALID_MONTHS = [4, 12].freeze
     VALID_DAY = 31
 
-    class << self
-      def call
-        return unless valid_date
+    def self.call(force_run)
+      new.call(force_run)
+    end
 
-        avg_rates = create_average_rates
-        log_to_slack
-        build_average_rate_file(avg_rates)
+    def call(force_run)
+      return argument_error unless valid_date || force_run
+
+      avg_rates = create_average_rates
+
+      countries_and_rate = match_country_with_rates(avg_rates)
+      upload_average_rate_file(countries_and_rate)
+    end
+
+    private
+
+    def match_country_with_rates(avg_rates)
+      live_countries_last_twelve_months.each_with_object({}) do |country, h|
+        # Need to ensure unique rates are being collected
+        avg_rate = avg_rates
+                    .select { |rate| rate.currency_code == country.currency_code }
+                    .first
+                    .rate
+
+        # { ExchangeRateCountryCurrency => avg_rate }
+        h[country] = avg_rate
       end
+    end
 
-      private
+    def upload_average_rate_file(countries_and_rate)
+      ExchangeRates::UploadFileService.new(
+        countries_and_rate,
+        Time.zone.today,
+        :average_csv,
+      ).call
+    end
 
-      def build_average_rate_file(avg_rates)
-        ExchangeRates::UploadFileService.new(
-          avg_rates,
-          Time.zone.today.iso8601,
-          :average_csv,
-        ).call
+    def valid_date
+      return false unless Time.zone.today.day == VALID_DAY
+      return false unless VALID_MONTHS.include?(Time.zone.today.month)
+
+      true
+    end
+
+    def create_average_rates
+      live_countries_last_twelve_months.select_map(:currency_code).uniq.map do |currency_code|
+        avg_rate = valid_average_rate(currency_code)
+
+        next unless avg_rate
+
+        ExchangeRateCurrencyRate.create(
+          currency_code:,
+          validity_start_date: Time.zone.today.beginning_of_month,
+          validity_end_date: Time.zone.today.end_of_month,
+          rate_type: ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE,
+          rate: avg_rate,
+        )
       end
+    end
 
-      def valid_date
-        return false unless Time.zone.today.day == VALID_DAY
-        return false unless VALID_MONTHS.include?(Time.zone.today.month)
-      end
+    def live_countries_last_twelve_months
+      # This needs to be all countries that have had a rate for a currency last 12 months
+      @live_countries_last_twelve_months ||= ExchangeRateCountryCurrency.live_last_twelve_months
+    end
 
-      def create_average_rates
-        currency_codes = ExchangeRateCountryCurrency.live_currency_codes
+    def valid_average_rate(currency_code)
+      rates = ExchangeRateCurrencyRate.monthly_by_currency_last_year(currency_code)
 
-        currency_codes.map do |currency_code|
-          next unless valid_average_rate(currency_code)
+      # Ensure the last month is not after the current date
+      return unless rates.last.validity_start_date <= Time.zone.today
 
-          avg_rate = valid_average_rate(currency_code)
+      # Ensure the first month is not greater than 12 months ago
+      return unless rates.first.validity_end_date > Time.zone.today - 12.months
 
-          ExchangeRateCurrencyRate.create(
-            currency_code:,
-            validity_start_date: Time.zone.today.beginning_of_month,
-            validity_end_date: nil,
-            rate_type: ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE,
-            rate: avg_rate,
-          )
-        end
-      end
+      rates.pluck(:rate).sum.fdiv(rates.count)
+    end
 
-      def valid_average_rate(currency_code)
-        rates = ExchangeRateCurrencyRate.by_currency_and_last_year(currency_code)
+    def argument_error
+      error_message = 'Argument error, invalid date, average exchange rate creation'
 
-        return unless rates.count >= 12
-        return unless rates.first.validity_start_date.month == Time.zone.today.month
-        return unless VALID_MONTHS.include?(rates.first.validity_start_date.month)
+      Rails.logger.error(error_message)
 
-        rates.pluck(:rate).sum.fdiv(rates.size)
-      end
-
-      def log_to_slack
-        message = 'Average exchange rates for the current period have been added and are accessible for viewing at /exchange_rates.'
-
-        logger.info message
-
-        SlackNotifierService.call(message)
-      end
+      raise ArgumentError, error_message
     end
   end
 end

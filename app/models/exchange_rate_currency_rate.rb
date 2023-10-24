@@ -88,12 +88,16 @@ class ExchangeRateCurrencyRate < Sequel::Model
     end
 
     def by_currency(currency_code)
-      where(currency_code: currency_code)
+      where(currency_code: currency_code.upcase)
     end
 
-    def by_currency_and_last_year(currency_code)
-      # Warning if this is called when an average rate is not meant to be called
-      by_type(MONTHLY_RATE_TYPE).by_currency(currency_code).last(12)
+    def monthly_by_currency_last_year(currency_code)
+      by_type(MONTHLY_RATE_TYPE)
+        .by_currency(currency_code.upcase)
+        .where('validity_start_date <= ?', Time.zone.today.end_of_month)
+        .where('validity_end_date <= ?', Time.zone.today.end_of_month)
+        .where('validity_start_date > ?', Time.zone.today.end_of_month - 12.months)
+        .order_by(:validity_start_date)
     end
 
     def by_year(year)

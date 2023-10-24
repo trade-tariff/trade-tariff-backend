@@ -11,6 +11,7 @@ RSpec.describe ExchangeRates::UploadFileService do
     allow(ExchangeRates::CreateXmlService).to receive(:new).and_call_original
     allow(ExchangeRates::CreateCsvHmrcService).to receive(:new).and_call_original
     allow(ExchangeRates::CreateCsvSpotService).to receive(:new).and_call_original
+    allow(ExchangeRates::CreateCsvAverageRatesService).to receive(:new).and_call_original
 
     call
   end
@@ -46,5 +47,25 @@ RSpec.describe ExchangeRates::UploadFileService do
     it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/spot_csv_\d{4}-\d{2}.csv/), include('Country')) }
     it { expect(ExchangeRateFile.count).to eq(1) }
     it { expect(ExchangeRates::CreateCsvSpotService).to have_received(:new).with(rates) }
+  end
+
+  context 'when type is :average_csv' do
+    let(:type) { :average_csv }
+    let(:rates) do
+      {
+        create(:exchange_rate_country_currency, :eu) => 1.2434658,
+        create(:exchange_rate_country_currency, :us) => 1.453546,
+        create(:exchange_rate_country_currency, :kz) => 453.46583,
+        create(:exchange_rate_country_currency, :kz, currency_description: 'Dollar', currency_code: 'USD') => 1.453546,
+      }
+    end
+
+    it 'uploads correctly', :aggregate_failures do
+      call
+
+      expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/average_csv_\d{4}-\d{2}.csv/), include('Country'))
+      expect(ExchangeRateFile.count).to eq(1)
+      expect(ExchangeRates::CreateCsvAverageRatesService).to have_received(:new).with(rates)
+    end
   end
 end
