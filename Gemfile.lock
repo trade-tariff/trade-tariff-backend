@@ -309,7 +309,7 @@ GEM
     rake (13.0.6)
     redis (5.0.8)
       redis-client (>= 0.17.0)
-    redis-client (0.17.0)
+    redis-client (0.17.1)
       connection_pool
     redlock (2.0.4)
       redis-client (>= 0.14.1, < 1.0.0)
