@@ -53,7 +53,7 @@ class TaricSynchronizer
       applied_updates = []
       import_warnings = []
 
-      # The sync task is run on multiple machines to avoid more than on process
+      # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
       TradeTariffBackend.with_redis_lock do
         # Updates could be modifying primary keys so unrestricted it for all models.

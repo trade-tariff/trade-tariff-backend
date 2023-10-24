@@ -6,7 +6,7 @@ class TaricUpdatesSynchronizerWorker
 
   sidekiq_options queue: :sync, retry: false
 
-  def perform(_check_for_todays_file = true, reapply_data_migrations = false)
+  def perform(reapply_data_migrations = false)
     return unless TradeTariffBackend.xi?
 
     logger.info 'Running TaricUpdatesSynchronizerWorker'

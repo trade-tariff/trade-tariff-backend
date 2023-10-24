@@ -29,7 +29,6 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     let(:changes_applied) { true }
 
-    context 'when on the uk service' do
       before do
         stub_const 'CdsUpdatesSynchronizerWorker::CUT_OFF_TIME',
                    cut_off_time.strftime('%H:%M')
@@ -42,7 +41,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       context 'with todays file missing' do
         before do
-          allow(CdsSynchronizer).to receive(:downloaded_todays_file?)
+          allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?)
                                        .and_return(false)
 
           perform
@@ -132,7 +131,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
       context 'with todays file present' do
         before do
-          allow(CdsSynchronizer).to receive(:downloaded_todays_file?)
+          allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?)
                                        .and_return(true)
 
           perform
@@ -186,6 +185,5 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(described_class.jobs).to have_attributes length: 1 }
       end
-    end
   end
 end

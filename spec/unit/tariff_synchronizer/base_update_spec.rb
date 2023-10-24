@@ -135,8 +135,8 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     context 'with weekends' do
       before do
         travel_to Date.parse('21-05-2017')
-        @update1 = create(:taric_update, :missing, example_date: Time.zone.today)
-        @update2 = create(:taric_update, example_date: Time.zone.yesterday)
+        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
+        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
       end
 
       after do
@@ -151,8 +151,8 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     context 'without weekends' do
       before do
         travel_to Date.parse('17-05-2017')
-        @update1 = create(:taric_update, :missing, example_date: Time.zone.today)
-        @update2 = create(:taric_update, example_date: Time.zone.yesterday)
+        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
+        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
       end
 
       after do

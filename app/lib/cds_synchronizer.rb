@@ -1,6 +1,8 @@
 class CdsSynchronizer
   extend TariffSynchronizer
 
+  delegate :download_todays_file?, to: TariffSynchronizer::CdsUpdate
+
   # 1 - does not raise exception during record save
   #   - logs cds error with xml node, record errors and exception
   cattr_accessor :cds_logger_enabled
@@ -13,7 +15,7 @@ class CdsSynchronizer
 
   class << self
     def download
-      return Rails.logger.error 'Missing: Tariff sync enviroment variables: TARIFF_SYNC_USERNAME, TARIFF_SYNC_PASSWORD, TARIFF_SYNC_HOST and TARIFF_SYNC_EMAIL.' unless sync_variables_set?
+      return Rails.logger.error 'Missing: Tariff sync enviroment variables: HMRC_API_HOST, HMRC_CLIENT_ID and HMRC_CLIENT_SECRET.' unless sync_variables_set?
 
       TradeTariffBackend.with_redis_lock do
         begin
@@ -33,7 +35,7 @@ class CdsSynchronizer
       applied_updates = []
       import_warnings = []
 
-      # The sync task is run on multiple machines to avoid more than on process
+      # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
       TradeTariffBackend.with_redis_lock do
         # Updates could be modifying primary keys so unrestricted it for all models.
@@ -58,7 +60,7 @@ class CdsSynchronizer
         end
       end
     rescue Redlock::LockError
-      TariffLogger.apply_lock_error
+      Rails.logger.warn 'Failed to acquire Redis lock for update application'
     end
 
     def rollback(rollback_date, keep: false)
@@ -89,7 +91,7 @@ class CdsSynchronizer
             cds_update.delete unless keep
           end
 
-          # Requeue data migrations
+          # Run missing data migrations at next deploy
           # Rollback leaves 'date_for_rollback's data intact, it removes only
           # removes data for subsequent days - so look for migrations after
           # the end of the date_for_rollback day
@@ -106,8 +108,5 @@ class CdsSynchronizer
       ENV['HMRC_API_HOST'].present? && ENV['HMRC_CLIENT_ID'].present? && ENV['HMRC_CLIENT_SECRET'].present?
     end
 
-    def downloaded_todays_file?
-      CdsUpdate.downloaded_todays_file?
-    end
   end
 end

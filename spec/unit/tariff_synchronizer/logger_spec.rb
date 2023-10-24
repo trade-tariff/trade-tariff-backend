@@ -9,12 +9,6 @@ RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
       allow(Rails.logger).to receive(:warn)
     end
 
-    it 'logs a warn event' do
-      TaricSynchronizer.rollback(Time.zone.today, keep: true)
-
-      expect(Rails.logger).to have_received(:warn)
-    end
-
     it 'logs a warn event message' do
       TaricSynchronizer.rollback(Time.zone.today, keep: true)
 
@@ -29,11 +23,6 @@ RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
 
       allow(TradeTariffBackend).to receive(:with_redis_lock).and_raise(Redlock::LockError, 'foo')
       allow(Rails.logger).to receive(:warn)
-    end
-
-    it 'logs a warn event' do
-      TaricSynchronizer.apply
-      expect(Rails.logger).to have_received(:warn)
     end
 
     it 'logs warn event message' do

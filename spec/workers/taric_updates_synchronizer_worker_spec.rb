@@ -49,7 +49,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       it { expect(described_class.jobs).to be_empty }
 
       context 'with reapply_data_migrations option' do
-        subject(:perform) { described_class.new.perform(true, true) }
+        subject(:perform) { described_class.new.perform(true) }
 
         it { expect(TaricSynchronizer).to have_received(:download) }
         it { expect(DataMigrator).to have_received(:migrate_up!).with(nil) }
@@ -63,7 +63,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
         it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
 
         context 'with reapply_data_migrations option' do
-          subject(:perform) { described_class.new.perform(true, true) }
+          subject(:perform) { described_class.new.perform(true) }
 
           it { expect(TaricSynchronizer).to have_received(:download) }
           it { expect(DataMigrator).not_to have_received(:migrate_up!) }

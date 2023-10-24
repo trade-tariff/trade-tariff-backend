@@ -50,7 +50,7 @@ private
   end
 
   def todays_file_has_not_yet_arrived?
-    !CdsSynchronizer.downloaded_todays_file?
+    !TariffSynchronizer::CdsUpdate.downloaded_todays_file?
   end
 
   def migrate_data

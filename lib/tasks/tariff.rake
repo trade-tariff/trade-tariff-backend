@@ -36,7 +36,7 @@ namespace :tariff do
       if TradeTariffBackend.use_cds?
         CdsUpdatesSynchronizerWorker.perform(true, true)
       else
-        TaricUpdatesSynchronizerWorker.perform(true, true)
+        TaricUpdatesSynchronizerWorker.perform(true)
       end
     end
 

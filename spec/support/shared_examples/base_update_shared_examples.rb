@@ -7,7 +7,6 @@ RSpec.shared_examples_for 'Base Update' do
     end
 
     context 'when last update is out of date' do
-      # let!(:example_taric_update) { create :taric_update, example_date: Time.zone.yesterday }
 
       it 'should_receive download to be invoked' do
         allow(described_class).to receive(:download)

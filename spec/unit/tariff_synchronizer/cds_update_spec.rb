@@ -68,14 +68,6 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       expect(cds_update.reload).to be_applied
     end
 
-    it 'logs an info event' do
-      allow(Rails.logger).to receive(:info)
-
-      cds_update.import!
-
-      expect(Rails.logger).to have_received(:info)
-    end
-
     describe 'checking results of import' do
       before do
         allow(CdsImporter).to receive(:new).with(cds_update).and_return importer

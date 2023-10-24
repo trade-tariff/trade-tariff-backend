@@ -128,7 +128,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
                                      'description' => 'French')
         end
 
-        it 'returns a model record of' do
+        it 'returns a model record' do
           record = operation.send(:get_model_record)
           expect(record).to be_a(LanguageDescription)
         end
@@ -154,7 +154,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         expect { operation.call }.to change(LanguageDescription, :count).from(1).to(0)
       end
 
-      it 'returns the model record of' do
+      it 'returns the model record' do
         record = operation.call
         expect(record).to be_a(LanguageDescription)
       end
