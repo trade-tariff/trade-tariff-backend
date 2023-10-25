@@ -91,7 +91,7 @@ class CdsSynchronizer
             cds_update.delete unless keep
           end
 
-          # Look for migrations after the end of the 
+          # Look for migrations after the end of the
           # date_for_rollback day and remove them
           DataMigration.since(date.end_of_day).delete
         end
