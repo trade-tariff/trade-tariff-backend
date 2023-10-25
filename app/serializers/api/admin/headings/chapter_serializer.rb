@@ -8,7 +8,7 @@ module Api
 
         set_id :goods_nomenclature_sid
 
-        attributes :goods_nomenclature_item_id, :description
+        attributes :goods_nomenclature_item_id, :producline_suffix, :description
       end
     end
   end

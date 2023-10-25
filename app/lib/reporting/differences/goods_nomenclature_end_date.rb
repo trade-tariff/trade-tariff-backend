@@ -27,7 +27,6 @@ module Reporting
         20, # EU start date
       ].freeze
 
-      AUTOFILTER_CELL_RANGE = 'A1:C1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(report)
@@ -38,7 +37,6 @@ module Reporting
         workbook.add_worksheet(name:) do |sheet|
           sheet.sheet_pr.tab_color = TAB_COLOR
           sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
           sheet.sheet_view.pane do |pane|
             pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
             pane.state = :frozen

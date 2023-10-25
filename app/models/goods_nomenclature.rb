@@ -1,5 +1,6 @@
 class GoodsNomenclature < Sequel::Model
   VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH = 10
+  CLASSIFICATION_CHAPTER = '98'.freeze
 
   extend ActiveModel::Naming
   include Formatter
@@ -125,7 +126,7 @@ class GoodsNomenclature < Sequel::Model
     end
 
     def non_classifieds
-      exclude(chapter_short_code: '98')
+      exclude(chapter_short_code: CLASSIFICATION_CHAPTER)
     end
 
     def non_grouping
@@ -249,6 +250,10 @@ class GoodsNomenclature < Sequel::Model
 
   def grouping?
     !non_grouping?
+  end
+
+  def classified?
+    chapter_short_code == CLASSIFICATION_CHAPTER
   end
 
   def classifiable_goods_nomenclatures

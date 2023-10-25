@@ -181,6 +181,20 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
+  describe '#classified?' do
+    context 'when the goods nomenclature is part of the classified chapter' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_item_id: '9800000000').reload }
+
+      it { is_expected.to be_classified }
+    end
+
+    context 'when the goods nomenclature is not part of the classified chapter' do
+      subject(:goods_nomenclature) { create(:goods_nomenclature, goods_nomenclature_item_id: '9900000000') }
+
+      it { is_expected.not_to be_classified }
+    end
+  end
+
   describe '#classifiable_goods_nomenclatures' do
     subject(:classifiable_goods_nomenclatures) do
       described_class
