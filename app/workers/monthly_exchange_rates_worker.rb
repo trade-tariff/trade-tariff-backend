@@ -33,8 +33,8 @@ class MonthlyExchangeRatesWorker
     tomorrow = sample_date.tomorrow
 
     return false unless tomorrow.thursday?
-    return false unless tomorrow.month == (7.days.from_now + 1.day).month
-    return false unless tomorrow.month != (14.days.from_now + 1.day).month
+    return false unless tomorrow.month == (sample_date + 8.days).month
+    return false unless tomorrow.month != (sample_date + 15.days).month
 
     true
   end
