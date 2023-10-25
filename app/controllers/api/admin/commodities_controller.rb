@@ -23,10 +23,14 @@ module Api
       private
 
       def find_commodity
-        @commodity = Commodity.actual
-                              .by_productline_suffix(productline_suffix)
-                              .by_code(commodity_code)
-                              .take
+        @commodity = GoodsNomenclature
+          .actual
+          .with_leaf_column
+          .where(
+            goods_nomenclatures__goods_nomenclature_item_id: commodity_code,
+            goods_nomenclatures__producline_suffix: productline_suffix,
+          )
+          .take
 
         raise Sequel::RecordNotFound if @commodity.goods_nomenclature_item_id.in? HiddenGoodsNomenclature.codes
       end
