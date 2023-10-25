@@ -4,7 +4,7 @@ class AverageExchangeRatesWorker
   sidekiq_options retry: 1, retry_in: 1.hour
 
   def perform
-    ExchangeRates::AverageExchangeRatesService.call(false)
+    ExchangeRates::AverageExchangeRatesService.call(force_run: false, selected_date: Time.zone.today.iso8601)
 
     notify
   end

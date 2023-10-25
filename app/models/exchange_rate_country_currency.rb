@@ -26,16 +26,16 @@ class ExchangeRateCountryCurrency < Sequel::Model(:exchange_rate_countries_curre
     ).distinct(:currency_code).select_map(:currency_code)
   end
 
-  def self.live_last_twelve_months
+  def self.live_last_twelve_months(date)
     # Criteria:
     # Start date less than then end of the current month and end date nil or more than
     # End date more than then beginning of the current month 12 months ago
 
     where(
-      (Sequel[:validity_start_date] <= Time.zone.today.end_of_month) &
+      (Sequel[:validity_start_date] <= date.end_of_month) &
       (Sequel[:validity_end_date] =~ nil) |
-      (Sequel[:validity_start_date] <= Time.zone.today.end_of_month) &
-      (Sequel[:validity_end_date] >= Time.zone.today.beginning_of_month - 11.months),
+      (Sequel[:validity_start_date] <= date.end_of_month) &
+      (Sequel[:validity_end_date] >= date.beginning_of_month - 11.months),
     ).order_by(:country_description)
   end
 end

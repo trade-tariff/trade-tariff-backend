@@ -367,24 +367,26 @@ RSpec.describe ExchangeRateCurrencyRate do
   end
 
   describe '.monthly_by_currency_last_year' do
-    subject(:dataset) { described_class.monthly_by_currency_last_year(currency_code) }
+    subject(:dataset) { described_class.monthly_by_currency_last_year(currency_code, today) }
+
+    let(:today) { Time.zone.today }
 
     before do
       create(:exchange_rate_currency_rate, :monthly_rate, :with_usa,
-             validity_start_date: Time.zone.today.beginning_of_month + 1.month,
-             validity_end_date: Time.zone.today.end_of_month + 1.month)
+             validity_start_date: today.beginning_of_month + 1.month,
+             validity_end_date: today.end_of_month + 1.month)
       create(:exchange_rate_currency_rate, :monthly_rate, :with_usa,
-             validity_start_date: Time.zone.today.end_of_month,
-             validity_end_date: Time.zone.today.end_of_month)
+             validity_start_date: today.end_of_month,
+             validity_end_date: today.end_of_month)
       create(:exchange_rate_currency_rate, :monthly_rate, :with_usa,
-             validity_start_date: Time.zone.today.beginning_of_month - 11.months,
-             validity_end_date: Time.zone.today.end_of_month - 11.months)
+             validity_start_date: today.beginning_of_month - 11.months,
+             validity_end_date: today.end_of_month - 11.months)
       create(:exchange_rate_currency_rate, :monthly_rate, :with_usa,
-             validity_start_date: Time.zone.today.end_of_month - 12.months,
-             validity_end_date: Time.zone.today.end_of_month - 12.months)
+             validity_start_date: today.end_of_month - 12.months,
+             validity_end_date: today.end_of_month - 12.months)
       create(:exchange_rate_currency_rate, :monthly_rate, :with_eur,
-             validity_start_date: Time.zone.today.beginning_of_month,
-             validity_end_date: Time.zone.today.end_of_month)
+             validity_start_date: today.beginning_of_month,
+             validity_end_date: today.end_of_month)
     end
 
     context 'when currency code is lower case' do

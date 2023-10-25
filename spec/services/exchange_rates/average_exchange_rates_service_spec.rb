@@ -2,11 +2,12 @@ require 'rails_helper'
 
 RSpec.describe ExchangeRates::AverageExchangeRatesService do
   describe '.call' do
-    subject(:create_average_rates) { described_class.call(force_run) }
+    subject(:create_average_rates) { described_class.call(force_run:, selected_date: test_date) }
 
     let(:force_run) { false }
+    let(:parsed_date) { Date.parse(test_date) }
 
-    let(:expected_filepath) { "data/exchange_rates/#{test_date.year}/#{test_date.month}/average_csv_#{test_date.year}-#{test_date.month}.csv" }
+    let(:expected_filepath) { "data/exchange_rates/#{parsed_date.year}/#{parsed_date.month}/average_csv_#{parsed_date.year}-#{parsed_date.month}.csv" }
     let(:expected_csv) do
       <<~CSV
         Country,Unit Of Currency,Currency Code,Sterling value of Currency Unit £,Currency Units per £1
@@ -21,7 +22,7 @@ RSpec.describe ExchangeRates::AverageExchangeRatesService do
     end
 
     before do
-      travel_to test_date
+      travel_to parsed_date
       setup_data
 
       allow(TariffSynchronizer::FileService)
@@ -49,7 +50,7 @@ RSpec.describe ExchangeRates::AverageExchangeRatesService do
     end
 
     context 'when run on a valid date' do
-      let(:test_date) { Date.new(2023, 12, 31) }
+      let(:test_date) { '2023-12-31' }
 
       after do
         travel_back
@@ -59,7 +60,7 @@ RSpec.describe ExchangeRates::AverageExchangeRatesService do
     end
 
     context 'when run on an invalid date' do
-      let(:test_date) { Date.new(2023, 10, 25) }
+      let(:test_date) { '2023-10-25' }
 
       after do
         travel_back

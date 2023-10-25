@@ -34,9 +34,11 @@ RSpec.describe ExchangeRateCountryCurrency do
              validity_end_date: Time.zone.today.end_of_month - 12.months)
     end
 
+    let(:test_date) { Time.zone.today }
+
     it 'retuns all the live currency_codes', :aggregate_failures do
-      expect(described_class.live_last_twelve_months.count).to eq(3)
-      expect(described_class.live_last_twelve_months.pluck(:country_code)).to eq(%w[EU KZ ZW])
+      expect(described_class.live_last_twelve_months(test_date).count).to eq(3)
+      expect(described_class.live_last_twelve_months(test_date).pluck(:country_code)).to eq(%w[EU KZ ZW])
     end
   end
 end
