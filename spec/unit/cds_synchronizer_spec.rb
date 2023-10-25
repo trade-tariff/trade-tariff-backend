@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations
 RSpec.describe CdsSynchronizer, truncation: true do
   describe '.initial_update_date' do
     it 'returns initial update date ' do
@@ -65,7 +64,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
         expect { described_class.download }.to raise_error StandardError
       end
 
-      it 'sends an email with the exception error' do
+      it 'sends an email with the exception error', :aggregate_failures do
         ActionMailer::Base.deliveries.clear
         expect { described_class.download }.to raise_error(StandardError)
 
@@ -87,7 +86,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
         failed_update
       end
 
-      it 'does not apply pending updates' do
+      it 'does not apply pending updates', :aggregate_failures do
         allow(TariffSynchronizer::TaricUpdate).to receive(:pending_at)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
@@ -95,7 +94,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
         expect(TariffSynchronizer::TaricUpdate).not_to have_received(:pending_at)
       end
 
-      it 'logs the error event' do
+      it 'logs the error event', :aggregate_failures do
         allow(Rails.logger).to receive(:error)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
@@ -133,7 +132,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
     context 'when sequence is NOT correct' do
       let(:pending_sequence_number) { applied_sequence_number + 2 }
 
-      it 'raises a wrong sequence error and notifies Slack app' do
+      it 'raises a wrong sequence error and notifies Slack app', :aggregate_failures do
         allow(SlackNotifierService).to receive(:call)
 
         expect {
@@ -171,14 +170,12 @@ RSpec.describe CdsSynchronizer, truncation: true do
     context 'when pending CDS update does not respect the sequence' do
       let(:pending_date) { applied_date + 2.days }
 
-      it 'raises wrong sequence error and notifies Slack app' do
-        allow(SlackNotifierService).to receive(:call)
+      before { allow(SlackNotifierService).to receive(:call) }
 
+      it 'raises wrong sequence error and notifies Slack app', :aggregate_failures do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
-
         expect(SlackNotifierService).to have_received(:call)
       end
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations

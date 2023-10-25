@@ -91,10 +91,8 @@ class CdsSynchronizer
             cds_update.delete unless keep
           end
 
-          # Run missing data migrations at next deploy
-          # Rollback leaves 'date_for_rollback's data intact, it removes only
-          # removes data for subsequent days - so look for migrations after
-          # the end of the date_for_rollback day
+          # Look for migrations after the end of the 
+          # date_for_rollback day and remove them
           DataMigration.since(date.end_of_day).delete
         end
 
