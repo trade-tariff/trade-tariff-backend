@@ -39,7 +39,6 @@ module Reporting
         20, # MFN 2 - Measure type
       ].freeze
 
-      AUTOFILTER_CELL_RANGE = 'A1:J1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(report)
@@ -50,7 +49,6 @@ module Reporting
         workbook.add_worksheet(name:) do |sheet|
           sheet.sheet_pr.tab_color = TAB_COLOR
           sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
           sheet.sheet_view.pane do |pane|
             pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
             pane.state = :frozen
@@ -93,11 +91,16 @@ module Reporting
           eager_chapter.descendants.each do |chapter_descendant|
             next unless chapter_descendant.declarable?
 
-            mfns = chapter_descendant.applicable_overview_measures.select do |measure|
+            candidate_mfns = chapter_descendant.applicable_overview_measures.select do |measure|
               measure.measure_type_id.in?(MeasureType::THIRD_COUNTRY)
             end
 
-            yield chapter_descendant if mfns.size == 2
+            all_additional_code_measures = candidate_mfns.all?(&:additional_code_sid)
+            all_different_type_measures = candidate_mfns.map(&:measure_type_id).uniq.size == 2 && candidate_mfns.size == 2
+
+            next if all_additional_code_measures || all_different_type_measures
+
+            yield chapter_descendant if candidate_mfns.many?
           end
         end
       end

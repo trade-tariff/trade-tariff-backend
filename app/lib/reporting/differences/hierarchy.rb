@@ -4,7 +4,6 @@ module Reporting
       delegate :workbook,
                :regular_style,
                :bold_style,
-               :centered_style,
                :uk_goods_nomenclatures,
                :xi_goods_nomenclatures,
                to: :report
@@ -27,7 +26,6 @@ module Reporting
         20, # EU hierarchy
       ].freeze
 
-      AUTOFILTER_CELL_RANGE = 'A1:C1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(report)
@@ -38,7 +36,6 @@ module Reporting
         workbook.add_worksheet(name:) do |sheet|
           sheet.sheet_pr.tab_color = TAB_COLOR
           sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
           sheet.sheet_view.pane do |pane|
             pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
             pane.state = :frozen
@@ -48,10 +45,6 @@ module Reporting
           rows.compact.each do |row|
             report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
-            sheet.rows.last.tap do |last_row|
-              last_row.cells[1].style = centered_style # UK endline status
-              last_row.cells[2].style = centered_style # EU endline status
-            end
           end
 
           sheet.column_widths(*COLUMN_WIDTHS)
@@ -81,6 +74,7 @@ module Reporting
 
         matching = matching_uk_goods_nomenclature['Hierarchy'] == matching_xi_goods_nomenclature['Hierarchy']
 
+        return nil if matching_uk_goods_nomenclature['End line'] == 'false'
         return nil if matching
 
         item_id, pls = matching_uk_goods_nomenclature['ItemIDPlusPLS'].split('_')

@@ -24,7 +24,7 @@ module Reporting
       ].freeze
 
       AUTOFILTER_CELL_RANGE = 'A5:B5'.freeze
-      FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
+      FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
       METRIC = 'ME16 candidates'.freeze
       SUBTEXT = 'This indicates that there are comm codes where a duty exists both with and without additional codes, which breaks ME16'.freeze
@@ -40,7 +40,12 @@ module Reporting
           subtext_row = sheet.add_row([SUBTEXT], style: regular_style)
           subtext_row.height = 30
           sheet.merge_cells('A2:E2')
-          sheet.add_row(['Back to overview', nil, nil, nil, nil], style: nil, hyperlink: { location: 'Overview!A1', target: :sheet })
+          sheet.add_row(['Back to overview'])
+          sheet.add_hyperlink(
+            location: "'Overview'!A1",
+            target: :sheet,
+            ref: sheet.rows.last[0].r,
+          )
           sheet.add_row([])
 
           sheet.add_row(HEADER_ROW, style: bold_style)

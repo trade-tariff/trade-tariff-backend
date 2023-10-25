@@ -28,7 +28,6 @@ module Reporting
 
       COLUMN_WIDTHS = [20] * HEADER_ROW.size
 
-      AUTOFILTER_CELL_RANGE = 'A1:J1'.freeze
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
       def initialize(report)
@@ -39,7 +38,6 @@ module Reporting
         workbook.add_worksheet(name:) do |sheet|
           sheet.sheet_pr.tab_color = TAB_COLOR
           sheet.add_row(HEADER_ROW, style: bold_style)
-          sheet.auto_filter = AUTOFILTER_CELL_RANGE
           sheet.sheet_view.pane do |pane|
             pane.top_left_cell = FROZEN_VIEW_STARTING_CELL
             pane.state = :frozen

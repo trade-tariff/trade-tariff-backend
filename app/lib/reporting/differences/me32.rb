@@ -30,7 +30,7 @@ module Reporting
       ].freeze
 
       AUTOFILTER_CELL_RANGE = 'A5:E5'.freeze
-      FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
+      FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
       METRIC = 'ME32 candidates'.freeze
       SUBTEXT = 'There may be no overlap in time with other measure occurrences with a goods code in the same nomenclature hierarchy which references the same measure type, geo area, order number and additional code.'.freeze
@@ -46,7 +46,12 @@ module Reporting
           subtext_row = sheet.add_row([SUBTEXT], style: regular_style)
           subtext_row.height = 30
           sheet.merge_cells('A2:E2')
-          sheet.add_row(['Back to overview', nil, nil, nil, nil], style: nil, hyperlink: { location: 'Overview!A1', target: :sheet })
+          sheet.add_row(['Back to overview'])
+          sheet.add_hyperlink(
+            location: "'Overview'!A1",
+            target: :sheet,
+            ref: sheet.rows.last[0].r,
+          )
           sheet.add_row([])
 
           sheet.add_row(HEADER_ROW, style: bold_style)

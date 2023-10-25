@@ -25,7 +25,7 @@ module Reporting
       ].freeze
 
       AUTOFILTER_CELL_RANGE = 'A5:B5'.freeze
-      FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
+      FROZEN_VIEW_STARTING_CELL = 'A5'.freeze
 
       METRIC = 'Supplementary units that should be present'.freeze
       SUBTEXT = 'Excise etc. may require a supp unit that is not provided'.freeze
@@ -40,7 +40,12 @@ module Reporting
           sheet.add_row([METRIC], style: bold_style)
           sheet.merge_cells('A2:E2')
           sheet.add_row([SUBTEXT], style: regular_style)
-          sheet.add_row(['Back to overview', nil, nil, nil, nil], style: nil, hyperlink: { location: 'Overview!A1', target: :sheet })
+          sheet.add_row(['Back to overview'])
+          sheet.add_hyperlink(
+            location: "'Overview'!A1",
+            target: :sheet,
+            ref: sheet.rows.last[0].r,
+          )
           sheet.add_row([])
           sheet.add_row(HEADER_ROW, style: bold_style)
           sheet.auto_filter = AUTOFILTER_CELL_RANGE
@@ -53,6 +58,7 @@ module Reporting
           each_row do |row|
             report.increment_count(name)
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
+            sheet.rows.last[1].style = centered_style
           end
 
           sheet.column_widths(*COLUMN_WIDTHS)
@@ -75,13 +81,20 @@ module Reporting
             supplementary_unit = chapter_descendant.applicable_measures.find(&:supplementary?)
             next if supplementary_unit.present?
 
-            units = chapter_descendant.applicable_measures.flat_map(&:units).uniq
+            units = chapter_descendant
+              .applicable_measures
+              .flat_map(&:units)
 
             next if units.blank?
 
-            units = units.map { |unit| "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier]}" }.join(', ')
+            units = units.map do |unit|
+              "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier]}"
+            end
 
-            yield [chapter_descendant.goods_nomenclature_item_id, units]
+            yield [
+              chapter_descendant.goods_nomenclature_item_id,
+              units.uniq.join(', '),
+            ]
           end
         end
       end
