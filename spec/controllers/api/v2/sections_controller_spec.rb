@@ -1,5 +1,6 @@
 RSpec.describe Api::V2::SectionsController do
   # GET /api/v2/sections/:id
+
   describe '#show' do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }

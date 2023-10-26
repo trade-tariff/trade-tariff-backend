@@ -1,5 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe TaricImporter do
   describe '#import' do
     let(:example_date) { Date.new(2013, 8, 2) }
@@ -24,7 +22,7 @@ RSpec.describe TaricImporter do
         expect { importer.import }.to raise_error TaricImporter::ImportException
       end
 
-      it 'logs an error event' do
+      it 'logs an error event', :aggregate_failures do
         allow(Rails.logger).to receive(:error)
         importer = described_class.new(taric_update)
         expect { importer.import }.to raise_error TaricImporter::ImportException
@@ -111,5 +109,3 @@ RSpec.describe TaricImporter do
     end
   end
 end
-# rubocop:enable RSpec/MultipleExpectations
-# rubocop:enable RSpec/MultipleMemoizedHelpers
