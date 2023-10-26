@@ -141,7 +141,7 @@ RSpec.describe Chapter do
     let!(:chapter1) { create(:chapter, goods_nomenclature_item_id: '1200000000') }
     let!(:chapter2) { create(:chapter, goods_nomenclature_item_id: '2100000000') }
 
-    it 'returns chapters filtered by goods_nomenclature_item_id' do
+    it 'returns chapters filtered by goods_nomenclature_item_id', :aggregate_failures do
       chapters = described_class.by_code('12')
       expect(chapters).to include(chapter1)
       expect(chapters).not_to include(chapter2)

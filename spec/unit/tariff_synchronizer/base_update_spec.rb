@@ -33,6 +33,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       expect(result.size).to eq(1)
     end
 
+
     context 'when get all' do
       let(:date) { Date.new(2016, 2, 6) }
 
@@ -41,15 +42,11 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
         create :taric_update, :applied, issue_date: date
       end
 
-      it 'return only the most recent one of each update_type' do
-        result = described_class.latest_applied_of_both_kinds.all
-        expect(result.size).to eq(1)
-      end
+    it 'return only the most recent one of each update_type', :aggregate_failures do
+      result = described_class.latest_applied_of_both_kinds.all
 
-      it 'return correct issue date' do
-        result = described_class.latest_applied_of_both_kinds.all
-        expect(result.first.issue_date).to eq(date)
-      end
+      expect(result.size).to eq(1)
+      expect(result.first.issue_date).to eq(date)
     end
   end
 

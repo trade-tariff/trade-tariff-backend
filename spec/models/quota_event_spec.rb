@@ -11,7 +11,7 @@ RSpec.describe QuotaEvent do
   let!(:critical_event) { create :quota_critical_event }
 
   describe '.for_quota_definition' do
-    it 'returns all quota events for specified quota_definition_sid' do
+    it 'returns all quota events for specified quota_definition_sid', :aggregate_failures do
       events = described_class.for_quota_definition(quota_definition.quota_definition_sid, Time.zone.today).all
       expect(
         events.select { |ev| ev[:event_type] == 'balance' },

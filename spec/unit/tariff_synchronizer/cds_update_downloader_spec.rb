@@ -32,7 +32,7 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
     end
 
     context 'when response contains example_date' do
-      it 'calls TariffDownloader for requested date..5 days ago' do
+      it 'calls TariffDownloader for requested date..5 days ago', :aggregate_failures do
         expect(TariffSynchronizer::TariffDownloader).to receive(:new).with(
           body[0]['filename'], body[0]['downloadURL'], example_date, TariffSynchronizer::CdsUpdate
         ).and_call_original

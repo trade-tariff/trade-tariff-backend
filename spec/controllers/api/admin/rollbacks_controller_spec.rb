@@ -9,7 +9,7 @@ RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
   context 'when rollback is valid' do
     before { record }
 
-    it 'responds with success + redirect' do
+    it 'responds with success + redirect', :aggregate_failures do
       post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
 
       expect(response.status).to eq 201
@@ -32,7 +32,7 @@ RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
       }.ignore_extra_keys!
     end
 
-    it 'returns errors for rollback' do
+    it 'returns errors for rollback', :aggregate_failures do
       post :create, params: { data: { type: :rollback, attributes: { date: '', keep: '' } } }
 
       expect(response.status).to eq 422
@@ -73,7 +73,7 @@ RSpec.describe Api::Admin::RollbacksController, 'GET to #index' do
     }
   end
 
-  it 'returns scheduled rollbacks' do
+  it 'returns scheduled rollbacks', :aggregate_failures do
     get :index, format: :json
 
     expect(response.status).to eq 200
@@ -85,7 +85,7 @@ RSpec.describe Api::Admin::RollbacksController, 'GET to #index' do
       rollback.delete
     end
 
-    it 'returns empty rollbacks array' do
+    it 'returns empty rollbacks array', :aggregate_failures do
       get :index, format: :json
 
       expect(response.status).to eq 200

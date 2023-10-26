@@ -23,13 +23,15 @@ RSpec.describe BankHolidays do
     end
 
     it 'invokes weekends checker method' do
-      expect(described_class).to receive(:weekends).with(2)
+      allow(described_class).to receive(:weekends).with(2)
       described_class.last(2)
+      expect(described_class).to have_received(:weekends).with(2)
     end
 
     it 'invokes holidays checker method' do
-      expect(described_class).to receive(:holidays).with(2)
+      allow(described_class).to receive(:holidays).with(2)
       described_class.last(2)
+      expect(described_class).to have_received(:holidays).with(2)
     end
 
     context 'without weekends' do
@@ -41,7 +43,7 @@ RSpec.describe BankHolidays do
         travel_back
       end
 
-      it 'orders holidays asc' do
+      it 'orders holidays asc', :aggregate_failures do
         res = described_class.last(3)
         # see stub_holidays_gem_between_call example
         expect(res[0]).to eq(Date.parse('2015-10-07'))
@@ -58,7 +60,7 @@ RSpec.describe BankHolidays do
         travel_back
       end
 
-      it 'orders holidays and weekends asc' do
+      it 'orders holidays and weekends asc', :aggregate_failures do
         res = described_class.last(3)
         # see stub_holidays_gem_between_call example
         expect(res[0]).to eq(Date.parse('2016-11-30'))

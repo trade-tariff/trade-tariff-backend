@@ -1,5 +1,5 @@
 RSpec.describe LoopingSequence do
-  it 'progresses from the first value to the last then loops back' do
+  it 'progresses from the first value to the last then loops back', :aggregate_failures do
     sequence = described_class.new('a'..'z')
 
     expect(sequence.value).to eq 'a'
@@ -12,7 +12,7 @@ RSpec.describe LoopingSequence do
     expect(sequence.next.value).to eq 'a'
   end
 
-  it 'works with larger ranges' do
+  it 'works with larger ranges', :aggregate_failures do
     sequence = described_class.new('aa'..'zz')
 
     expect(sequence.value).to eq 'aa'
@@ -25,7 +25,7 @@ RSpec.describe LoopingSequence do
     expect(sequence.next.value).to eq 'aa'
   end
 
-  it 'includes a preset a-Z, without punctuation' do
+  it 'includes a preset a-Z, without punctuation', :aggregate_failures do
     sequence = described_class.lower_a_to_upper_z
 
     expect(sequence.value).to eq 'a'

@@ -21,7 +21,7 @@ RSpec.describe Api::Admin::FootnotesController, 'GET to #index' do
 
   before { login_as_api_user }
 
-  specify 'returns national footnote' do
+  specify 'returns national footnote', :aggregate_failures do
     get :index, format: :json
 
     expect(response.body).to match_json_expression response_pattern

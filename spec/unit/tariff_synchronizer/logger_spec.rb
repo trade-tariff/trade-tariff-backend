@@ -9,7 +9,7 @@ RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
       allow(Rails.logger).to receive(:warn)
     end
 
-    it 'logs a warn event message' do
+    it 'logs a warn event', :aggregate_failures do
       TaricSynchronizer.rollback(Time.zone.today, keep: true)
 
       expect(Rails.logger).to have_received(:warn).with(include('Failed to acquire Redis lock for rollback'))
@@ -25,7 +25,7 @@ RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
       allow(Rails.logger).to receive(:warn)
     end
 
-    it 'logs warn event message' do
+    it 'logs a warn event', :aggregate_failures do
       TaricSynchronizer.apply
       expect(Rails.logger).to have_received(:warn).with(include('Failed to acquire Redis lock for update application'))
     end

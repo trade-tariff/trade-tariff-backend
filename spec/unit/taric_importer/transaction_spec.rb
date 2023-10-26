@@ -21,7 +21,7 @@ RSpec.describe TaricImporter::Transaction do
   end
 
   describe '#persist' do
-    it 'instantiates RecordProcessor class and calls the process! method' do
+    it 'instantiates RecordProcessor class and calls the process! method', :aggregate_failures do
       record_processor_instance = instance_double(TaricImporter::RecordProcessor)
       expect(TaricImporter::RecordProcessor).to receive(:new)
                                                 .with(record, transaction_date)

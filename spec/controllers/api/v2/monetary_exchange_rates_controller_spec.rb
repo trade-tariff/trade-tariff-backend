@@ -8,7 +8,7 @@ RSpec.describe Api::V2::MonetaryExchangeRatesController, 'GET to #index' do
     let!(:five_year_old_period) { create :monetary_exchange_period, validity_start_date: 5.years.ago.beginning_of_day }
     let!(:five_year_old_rate) { create :monetary_exchange_rate, monetary_exchange_period_sid: five_year_old_period.monetary_exchange_period_sid }
 
-    it 'returns exchange rates for the last 5 years' do
+    it 'returns exchange rates for the last 5 years', :aggregate_failures do
       get :index, format: :json
 
       json_response = JSON.parse(response.body)['data']

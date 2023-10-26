@@ -1,6 +1,9 @@
 RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
-  let(:empty_operation) do
-    described_class.new(nil, nil)
+  subject(:operation) { described_class.new(record, date) }
+
+  let(:date) { Time.zone.today }
+  let(:record) do
+    TaricImporter::RecordProcessor::Record.new(record_hash)
   end
 
   let(:record_hash) do
@@ -15,24 +18,23 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
            'description' => 'French' } }
   end
 
-  let(:record) do
-    TaricImporter::RecordProcessor::Record.new(record_hash)
-  end
-
-  let(:operation) do
-    described_class.new(record, Time.zone.today)
-  end
-
   describe '#to_oplog_operation' do
+    let(:date) { nil }
+    let(:record) { nil }
+
     it 'identifies as destroy operation' do
-      expect(empty_operation.to_oplog_operation).to eq :destroy
+      expect(operation.to_oplog_operation).to eq :destroy
     end
   end
 
   describe '#ignore_presence_errors?' do
+    let(:date) { nil }
+    let(:record) { nil }
+
     it 'returns true if presence ignored' do
       allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
-      expect(empty_operation.send(:ignore_presence_errors?)).to be_truthy
+      allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+      expect(operation.send(:ignore_presence_errors?)).to be_truthy
     end
   end
 
@@ -77,7 +79,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
                                      'description' => 'French')
         end
 
-        it 'returns a model record' do
+        it 'returns a model record', :aggregate_failures do
           record = operation.send(:get_model_record)
           expect(record).to be_a(LanguageDescription)
         end
@@ -128,7 +130,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
                                      'description' => 'French')
         end
 
-        it 'returns a model record' do
+        it 'returns a model record', :aggregate_failures do
           record = operation.send(:get_model_record)
           expect(record).to be_a(LanguageDescription)
         end

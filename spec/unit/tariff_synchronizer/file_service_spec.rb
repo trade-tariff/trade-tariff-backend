@@ -3,7 +3,7 @@ RSpec.describe TariffSynchronizer::FileService do
 
   context 'in development' do
     describe '.write_file' do
-      it 'Saves the file in the local filesystem' do
+      it 'Saves the file in the local filesystem', :aggregate_failures do
         FakeFS do
           prepare_synchronizer_folders
           file_path = File.join(TariffSynchronizer.root_path, 'chief', 'hello.txt')
@@ -17,7 +17,7 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_exists?' do
-      it 'checks the file in the local filesystem' do
+      it 'checks the file in the local filesystem', :aggregate_failures do
         result = described_class.file_exists?('spec/fixtures/hello_world.txt')
         expect(result).to be true
 
@@ -34,7 +34,7 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_as_stringio' do
-      it 'returns a IO object with the associated file info' do
+      it 'returns a IO object with the associated file info', :aggregate_failures do
         allow(base_update).to receive(:file_path).and_return('spec/fixtures/hello_world.txt')
         result = described_class.file_as_stringio(base_update)
         expect(result).to be_kind_of(IO)
@@ -56,7 +56,7 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.write_file' do
-      it 'Saves the file to a S3 bucket in if is the production environment' do
+      it 'Saves the file to a S3 bucket in if is the production environment', :aggregate_failures do
         expect(@aws_bucket).to receive(:object).with('data/some-file.txt').and_return(@aws_object)
         expect(@aws_object).to receive(:put).with(body: 'Hello World')
 
@@ -65,7 +65,7 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_exists?' do
-      it 'Saves the file to a S3 bucket in if is the production environment' do
+      it 'Saves the file to a S3 bucket in if is the production environment', :aggregate_failures do
         expect(@aws_bucket).to receive(:object).with('data/some-file.txt').and_return(@aws_object)
         expect(@aws_object).to receive(:exists?)
 
@@ -74,7 +74,7 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_size' do
-      it 'returns the file size in the local filesystem' do
+      it 'returns the file size in the local filesystem', :aggregate_failures do
         expect(@aws_bucket).to receive(:object).with('data/some-file.txt').and_return(@aws_object)
         expect(@aws_object).to receive(:size)
 
@@ -83,7 +83,7 @@ RSpec.describe TariffSynchronizer::FileService do
     end
 
     describe '.file_as_stringio' do
-      it 'calls amazon s3 to get the object with the same file_path and returns a string io' do
+      it 'calls amazon s3 to get the object with the same file_path and returns a string io', :aggregate_failures do
         allow(base_update).to receive(:file_path).and_return('data/some-file.txt')
         aws_object_output = instance_double('Aws::S3::Types::GetObjectOutput')
         expect(@aws_bucket).to receive(:object).with('data/some-file.txt').and_return(@aws_object)

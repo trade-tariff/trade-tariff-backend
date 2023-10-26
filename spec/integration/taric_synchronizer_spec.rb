@@ -3,6 +3,14 @@ RSpec.describe TaricSynchronizer do
     let!(:taric_update) { create :taric_update, :pending, example_date: }
 
     before do
+    subject(:apply_synchronizer) { described_class.apply }
+
+    let!(:taric_update_applied) { create :taric_update, :applied, example_date: example_date - 1.day }
+    let!(:taric_update) { create :taric_update, :pending, example_date: }
+
+    let(:example_date) { Time.zone.today }
+
+    before(:context) do
       prepare_synchronizer_folders
       create_taric_file example_date
     end
@@ -13,7 +21,7 @@ RSpec.describe TaricSynchronizer do
 
     context 'when everything is fine' do
       it 'applies missing updates' do
-        described_class.apply
+        apply_synchronizer
         expect(taric_update.reload).to be_applied
       end
     end
@@ -30,8 +38,9 @@ RSpec.describe TaricSynchronizer do
         rescuing { described_class.apply }
       end
 
-      it 'marks taric update as failed' do
-        rescuing { described_class.apply }
+      it 'marks taric update as failed', :aggregate_failures do
+        expect(taric_update).to be_pending
+        rescuing { apply_synchronizer }
         expect(taric_update.reload).to be_failed
       end
     end
@@ -47,6 +56,7 @@ RSpec.describe TaricSynchronizer do
       end
 
       it 'stops syncing' do
+        expect { apply_synchronizer }.to raise_error Sequel::Rollback
         expect(taric_update.reload).not_to be_applied
       end
 
@@ -66,6 +76,7 @@ RSpec.describe TaricSynchronizer do
       end
 
       it 'stops syncing' do
+        expect { apply_synchronizer }.to raise_error Sequel::Rollback
         expect(taric_update.reload).not_to be_applied
       end
 
@@ -157,9 +168,5 @@ RSpec.describe TaricSynchronizer do
         expect { older_update.reload }.not_to raise_error
       end
     end
-  end
-
-  def example_date
-    @example_date ||= Time.zone.today
   end
 end
