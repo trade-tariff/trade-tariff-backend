@@ -2,7 +2,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
   let(:example_date) { Date.new(2010, 1, 1) }
 
   describe '#perform' do
-    it 'logs the request for the TaricUpdate file', :aggregate_failures do
+    it 'Logs the request for the TaricUpdate file' do
       allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
         .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
 
@@ -63,7 +63,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
           .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :retry_exceeded))
       end
 
-      it 'creates a record' do
+      it 'Creates a record' do
         expect {
           described_class.new(example_date).perform
         }.to change(TariffSynchronizer::TaricUpdate, :count).by(1)
@@ -96,10 +96,8 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
                                                                .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :retry_exceeded))
       end
 
-      it 'logs the creating of the TaricUpdate record with failed state', :aggregate_failures do
+      it 'Logs the creating of the TaricUpdate record with failed state' do
         allow(Rails.logger).to receive(:warn)
-
-        tariff_synchronizer_logger_listener
 
         described_class.new(example_date).perform
 
@@ -155,6 +153,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
 
       it 'Logs the creating of the TaricUpdate record with failed state' do
         allow(Rails.logger).to receive(:error)
+
         described_class.new(example_date).perform
 
         expect(Rails.logger).to have_received(:error).with('Blank update content received for 2010-01-01: http://example.com/taric/TARIC320100101')

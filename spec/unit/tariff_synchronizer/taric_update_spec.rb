@@ -43,11 +43,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
       allow(taric_update).to receive(:file_path).and_return('spec/fixtures/taric_samples/insert_record.xml')
     end
 
-    it 'calls the TaricImporter import method', :aggregate_failures do
-      taric_importer = instance_double('TaricImporter')
-      expect(TaricImporter).to receive(:new).with(taric_update).and_return(taric_importer)
-      expect(taric_importer).to receive(:import)
-
+    it 'calls the TaricImporter import method' do
       taric_update.import!
       expect(taric_importer).to have_received(:import)
     end
@@ -57,10 +53,8 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
       expect(taric_update.reload).to be_applied
     end
 
-
-    it 'logs an info event', :aggregate_failures do
-      tariff_synchronizer_logger_listener
-      allow_any_instance_of(TaricImporter).to receive(:import)
+    it 'logs an info event' do
+      allow(Rails.logger).to receive(:info)
 
       taric_update.import!
 
