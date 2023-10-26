@@ -8,7 +8,7 @@ RSpec.describe RulesOfOrigin::DataSet do
   end
 
   let(:scheme_set) { build :rules_of_origin_scheme_set }
-  let(:rule_set) { build :rules_of_origin_rule_set, rules: rules }
+  let(:rule_set) { build :rules_of_origin_rule_set, rules: }
   let(:mappings) { build :rules_of_origin_heading_mappings, rule: rules.first }
   let(:scheme_associations) { build :rules_of_origin_scheme_associations }
 
@@ -17,8 +17,8 @@ RSpec.describe RulesOfOrigin::DataSet do
   it { is_expected.to respond_to :heading_mappings }
   it { is_expected.to respond_to :scheme_associations }
 
-  it { is_expected.to have_attributes scheme_set: scheme_set }
-  it { is_expected.to have_attributes rule_set: rule_set }
+  it { is_expected.to have_attributes(scheme_set:) }
+  it { is_expected.to have_attributes(rule_set:) }
   it { is_expected.to have_attributes heading_mappings: mappings }
-  it { is_expected.to have_attributes scheme_associations: scheme_associations }
+  it { is_expected.to have_attributes(scheme_associations:) }
 end

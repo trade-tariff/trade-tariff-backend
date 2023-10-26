@@ -8,13 +8,9 @@ module Api
 
         set_id :regulation_id
 
-        attribute :validity_end_date do |regulation|
-          regulation.effective_end_date
-        end
+        attribute :validity_end_date, &:effective_end_date
 
-        attribute :validity_start_date do |regulation|
-          regulation.effective_start_date
-        end
+        attribute :validity_start_date, &:effective_start_date
 
         attribute :regulation_code do |regulation|
           ApplicationHelper.regulation_code(regulation)

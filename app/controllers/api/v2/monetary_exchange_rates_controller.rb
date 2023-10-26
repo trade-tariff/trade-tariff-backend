@@ -2,7 +2,7 @@ module Api
   module V2
     class MonetaryExchangeRatesController < ApiController
       def index
-        jan_five_back = 5.years.ago.change({ day: 01, month: 01, hour: 0, minute: 0, second: 0 })
+        jan_five_back = 5.years.ago.change({ day: 0o1, month: 0o1, hour: 0, minute: 0, second: 0 })
         @rates = MonetaryExchangeRate.eager(:monetary_exchange_period)
                                      .join_table(:inner, :monetary_exchange_periods, monetary_exchange_period_sid: :monetary_exchange_period_sid)
                                      .where(child_monetary_unit_code: 'GBP')

@@ -11,7 +11,7 @@ class RingBuffer < Array
     super
   end
 
-  alias :push :<<
+  alias_method :push, :<<
 
   def full?
     size == @max_size

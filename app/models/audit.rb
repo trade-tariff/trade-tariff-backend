@@ -36,6 +36,6 @@ class Audit < Sequel::Model
   end
 
   def set_created_at
-    self.created_at = DateTime.now
+    self.created_at = Time.zone.now
   end
 end

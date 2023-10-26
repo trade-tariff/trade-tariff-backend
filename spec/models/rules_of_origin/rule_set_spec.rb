@@ -52,7 +52,7 @@ RSpec.describe RulesOfOrigin::RuleSet do
       let(:id_rule) { 20_000_001 }
 
       it { is_expected.to be_instance_of RulesOfOrigin::Rule }
-      it { is_expected.to have_attributes id_rule: id_rule }
+      it { is_expected.to have_attributes(id_rule:) }
     end
 
     context 'with unknown rule' do

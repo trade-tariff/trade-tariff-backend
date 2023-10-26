@@ -109,7 +109,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController, 'PUT to #update' do
     it 'changes chapter_note content' do
       expect {
         put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: 'test string' } } }, format: :json
-      }.to change { chapter.reload.chapter_note.content }
+      }.to(change { chapter.reload.chapter_note.content })
     end
   end
 
@@ -133,7 +133,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController, 'PUT to #update' do
     it 'does not change chapter_note content' do
       expect {
         put :update, params: { chapter_id: chapter.to_param, data: { type: 'chapter_note', attributes: { content: '' } } }, format: :json
-      }.not_to change { chapter.reload.chapter_note.content }
+      }.not_to(change { chapter.reload.chapter_note.content })
     end
   end
 end
@@ -153,7 +153,7 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController, 'DELETE to #destroy
     it 'deletes chapter note' do
       expect {
         delete :destroy, params: { chapter_id: chapter.to_param }, format: :json
-      }.to change { chapter.reload.chapter_note }
+      }.to(change { chapter.reload.chapter_note })
     end
   end
 

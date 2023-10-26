@@ -22,7 +22,7 @@ class TaricImporter
 
     def verify_transaction
       if @transaction['transaction_id'].blank?
-        raise ArgumentError.new('TARIC transaction does not have required attributes')
+        raise ArgumentError, 'TARIC transaction does not have required attributes'
       end
     end
   end

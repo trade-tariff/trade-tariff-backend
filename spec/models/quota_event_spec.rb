@@ -1,11 +1,11 @@
 RSpec.describe QuotaEvent do
   let!(:quota_definition) { create :quota_definition }
   let!(:balance_event)    do
-    create :quota_balance_event, quota_definition: quota_definition,
+    create :quota_balance_event, quota_definition:,
                                  occurrence_timestamp: 3.days.ago
   end
   let!(:exhaustion_event) do
-    create :quota_exhaustion_event, quota_definition: quota_definition,
+    create :quota_exhaustion_event, quota_definition:,
                                     occurrence_timestamp: 25.hours.ago
   end
   let!(:critical_event) { create :quota_critical_event }

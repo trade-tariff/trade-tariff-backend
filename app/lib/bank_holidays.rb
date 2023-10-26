@@ -6,8 +6,6 @@ module BankHolidays
     [weekends(n), holidays(n)].flatten.compact.uniq.sort.last(n)
   end
 
-  private
-
   def self.weekends(n)
     ((Time.zone.today - n + 1)..Time.zone.today).to_a.select { |d| d.saturday? || d.sunday? }
   end

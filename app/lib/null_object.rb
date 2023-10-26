@@ -7,7 +7,7 @@ class NullObject
     true
   end
 
-  def method_missing(*args, &block)
+  def method_missing(*_args)
     nil
   end
 end

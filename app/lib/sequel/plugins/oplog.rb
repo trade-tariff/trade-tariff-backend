@@ -36,7 +36,7 @@ module Sequel
                                   class_name: operation_class_name
         model.one_to_many :operations, key: primary_key,
                                        foreign_key: primary_key,
-                                       primary_key: primary_key,
+                                       primary_key:,
                                        class_name: operation_class_name
 
         # Delegations

@@ -107,7 +107,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController, 'PUT to #update' do
     it 'changes section_note content' do
       expect {
         put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
-      }.to change { section.reload.section_note.content }
+      }.to(change { section.reload.section_note.content })
     end
   end
 
@@ -131,7 +131,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController, 'PUT to #update' do
     it 'does not change section_note content' do
       expect {
         put :update, params: { section_id: section.id, section_note: { content: '' } }, format: :json
-      }.not_to change { section.reload.section_note.content }
+      }.not_to(change { section.reload.section_note.content })
     end
   end
 end
@@ -151,7 +151,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController, 'DELETE to #destroy
     it 'deletes section note' do
       expect {
         delete :destroy, params: { section_id: section.id }, format: :json
-      }.to change { section.reload.section_note }
+      }.to(change { section.reload.section_note })
     end
   end
 

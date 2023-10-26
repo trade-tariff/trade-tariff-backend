@@ -3,7 +3,7 @@ FactoryBot.define do
     initialize_with { new scheme_set, rule_set, heading_mappings, scheme_associations }
 
     scheme_set { build :rules_of_origin_scheme_set }
-    rule_set { build :rules_of_origin_rule_set, rules: rules }
+    rule_set { build :rules_of_origin_rule_set, rules: }
     scheme_associations { build :rules_of_origin_scheme_associations }
 
     heading_mappings do
@@ -14,7 +14,7 @@ FactoryBot.define do
 
     transient do
       scheme_code { scheme_set.schemes.first }
-      rules { build_list :rules_of_origin_rule, 2, scheme_code: scheme_code }
+      rules { build_list :rules_of_origin_rule, 2, scheme_code: }
       sequence(:heading_code, 1000) { |n| sprintf '%06d', n }
     end
   end

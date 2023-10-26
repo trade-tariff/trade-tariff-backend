@@ -18,11 +18,11 @@ module TimeMachine
 
   # Travel to specified date and time
   def self.at(datetime)
-    datetime = DateTime.current if datetime.blank?
+    datetime = Time.current if datetime.blank?
     datetime = begin
-      DateTime.parse(datetime.to_s)
+      Time.zone.parse(datetime.to_s)
     rescue ArgumentError
-      DateTime.current
+      Time.current
     end
 
     previous = Thread.current[THREAD_DATETIME_KEY]
@@ -35,7 +35,7 @@ module TimeMachine
   end
 
   def self.now(&block)
-    at(DateTime.current, &block)
+    at(Time.current, &block)
   end
 
   def self.with_relevant_validity_periods
