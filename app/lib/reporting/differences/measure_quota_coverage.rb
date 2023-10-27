@@ -62,36 +62,31 @@ module Reporting
         rs = measures_with_quota_definitions.each_with_object([]) do |measure_with_quota_definitions, acc|
           measure = measure_with_quota_definitions[:measure]
           quota_definitions = measure_with_quota_definitions[:quota_definitions]
-          has_quota_definition = false
-          quota_definition_dates = []
+          measure_start = measure.effective_start_date.to_date
+          measure_end = measure.effective_end_date.try(:to_date).presence || @end_of_year
 
-          quota_definitions.each do |quota_definition|
-            m_start = measure.effective_start_date
-            m_end = measure.effective_end_date.presence || @end_of_year
-            q_start = quota_definition.validity_start_date
-            q_end = quota_definition.validity_end_date
+          next if quota_definitions.blank?
 
-            within_measure = m_start <= q_start && m_end >= q_end
-            within_measure ||= q_end >= @end_of_year
+          definition_start = quota_definitions.first.validity_start_date.to_date
+          definition_end = quota_definitions.last.validity_end_date.to_date
 
-            quota_definition_dates << [quota_definition.validity_start_date, quota_definition.validity_end_date]
+          full_extent = (definition_start <= measure_start && definition_end >= measure_end) || definition_end > @end_of_year
 
-            next unless within_measure
+          next if full_extent
 
-            has_quota_definition = true
-
-            break
-          end
-
-          unless has_quota_definition
-            acc << build_row_for(measure, quota_definition_dates)
-          end
+          acc << build_row_for(
+            measure,
+            quota_definitions.pluck(
+              :validity_start_date,
+              :validity_end_date,
+            ),
+          )
         end
 
         rs.sort_by do |row|
           [
-            row[2], # ordernumber
             row[1], # goods_nomenclature_item_id
+            row[2], # ordernumber
           ]
         end
       end
@@ -136,14 +131,16 @@ module Reporting
             .with_regulation_dates_query_non_current
             .since_brexit
             .excluding_licensed_quotas
-            .exclude(ordernumber: nil)
+            .where(ordernumber: /^05\d*/)
             .all
       end
 
       def applicable_quota_definitions
         @applicable_quota_definitions ||= QuotaDefinition
           .where(quota_order_number_id: applicable_measures.pluck(:ordernumber))
+          .order(:quota_order_number_id, :validity_start_date)
           .excluding_licensed_quotas
+          .where(quota_order_number_id: /^05\d*/)
           .since_brexit
           .all
       end
