@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe ExchangeRates::AverageExchangeRatesService do
+RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
   describe '.call' do
     subject(:create_average_rates) { described_class.call(force_run:, selected_date: test_date) }
 
@@ -79,7 +79,7 @@ RSpec.describe ExchangeRates::AverageExchangeRatesService do
   end
 
   def setup_data
-    # 13 months of data
+    # 13 months of data 1 in the future
     us = create(:exchange_rate_country_currency, :us)
 
     # 12 months of data

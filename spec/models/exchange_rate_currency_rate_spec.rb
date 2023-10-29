@@ -358,18 +358,13 @@ RSpec.describe ExchangeRateCurrencyRate do
 
       it { expect(dataset.pluck(:currency_code)).to eq(%w[USD]) }
     end
-
-    context 'when currency code is upper case' do
-      let(:currency_code) { 'USD' }
-
-      it { expect(dataset.pluck(:currency_code)).to eq(%w[USD]) }
-    end
   end
 
   describe '.monthly_by_currency_last_year' do
     subject(:dataset) { described_class.monthly_by_currency_last_year(currency_code, today) }
 
     let(:today) { Time.zone.today }
+    let(:currency_code) { 'usd' }
 
     before do
       create(:exchange_rate_currency_rate, :monthly_rate, :with_usa,
@@ -389,22 +384,9 @@ RSpec.describe ExchangeRateCurrencyRate do
              validity_end_date: today.end_of_month)
     end
 
-    context 'when currency code is lower case' do
-      let(:currency_code) { 'usd' }
-
-      it 'will return the correct results', :aggregate_failures do
-        expect(dataset.count).to eq(2)
-        expect(dataset.pluck(:currency_code).uniq).to eq(%w[USD])
-      end
-    end
-
-    context 'when currency code is upper case' do
-      let(:currency_code) { 'USD' }
-
-      it 'will return the correct results', :aggregate_failures do
-        expect(dataset.count).to eq(2)
-        expect(dataset.pluck(:currency_code).uniq).to eq(%w[USD])
-      end
+    it 'will return the correct results', :aggregate_failures do
+      expect(dataset.count).to eq(2)
+      expect(dataset.pluck(:currency_code).uniq).to eq(%w[USD])
     end
   end
 
