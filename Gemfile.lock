@@ -311,7 +311,7 @@ GEM
       redis-client (>= 0.17.0)
     redis-client (0.17.1)
       connection_pool
-    redlock (2.0.4)
+    redlock (2.0.6)
       redis-client (>= 0.14.1, < 1.0.0)
     regexp_parser (2.8.1)
     request_store (1.5.1)
