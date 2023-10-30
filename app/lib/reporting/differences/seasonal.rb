@@ -204,6 +204,8 @@ module Reporting
                            "#{to}/#{Time.zone.today.year}"
                          end.to_date
 
+          # Handle cases where the validity start date is after the validity end date
+          # e.g start 01/10  end 30/04
           delta = candidate_to - validity_start_date
 
           if delta.negative?

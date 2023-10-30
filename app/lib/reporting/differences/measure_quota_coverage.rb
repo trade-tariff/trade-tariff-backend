@@ -65,8 +65,6 @@ module Reporting
           measure_start = measure.effective_start_date.to_date
           measure_end = measure.effective_end_date.try(:to_date).presence || @end_of_year
 
-          next if quota_definitions.blank?
-
           definition_start = quota_definitions.first.validity_start_date.to_date
           definition_end = quota_definitions.last.validity_end_date.to_date
 
@@ -116,13 +114,12 @@ module Reporting
       end
 
       def measures_with_quota_definitions
-        applicable_measures.map do |measure|
-          {
-            measure:,
-            quota_definitions: applicable_quota_definitions.select do |quota_definition|
-                                 measure.ordernumber == quota_definition.quota_order_number_id
-                               end,
-          }
+        applicable_measures.each_with_object([]) do |measure, acc|
+          quota_definitions = applicable_quota_definitions.select do |quota_definition|
+            measure.ordernumber == quota_definition.quota_order_number_id
+          end
+
+          acc << { measure:, quota_definitions: } if quota_definitions.present?
         end
       end
 
