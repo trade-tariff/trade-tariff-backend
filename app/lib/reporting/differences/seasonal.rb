@@ -84,13 +84,9 @@ module Reporting
       def rows
         acc = []
 
-        each_seasonal_measure do |measure|
-          row = build_row_for(measure)
+        each_seasonal_measure { |measure| acc << build_row_for(measure) }
 
-          acc << row unless row.nil?
-        end
-
-        acc
+        acc.compact
       end
 
       def build_row_for(measure)
@@ -108,11 +104,11 @@ module Reporting
         seasonal_measures.map do |seasonal_measure|
           applicable_measure = applicable_measures[seasonal_measure]
 
-          if applicable_measure
-            seasonal_measure.failed_duty_status = DUTY_STATUSES[:start_date] if applicable_measure.validity_start_date != seasonal_measure.validity_start_date
-          else
-            seasonal_measure.failed_duty_status = DUTY_STATUSES[:no_duty]
-          end
+          seasonal_measure.failed_duty_status = if applicable_measure
+                                                  DUTY_STATUSES[:start_date] if applicable_measure.validity_start_date != seasonal_measure.validity_start_date
+                                                else
+                                                  DUTY_STATUSES[:no_duty]
+                                                end
 
           yield seasonal_measure if seasonal_measure.failed_duty_status.present?
         end
@@ -121,8 +117,8 @@ module Reporting
       def applicable_measures
         @applicable_measures ||= begin
           measures = Measure
-          .with_seasonal_measures(measure_type_ids, geographical_area_ids)
-          .all
+            .with_seasonal_measures(measure_type_ids, geographical_area_ids)
+            .all
 
           PresentedMeasure.wrap(measures).index_by { |measure| measure }
         end
