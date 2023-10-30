@@ -11,20 +11,20 @@ RSpec.describe RollbackWorker, type: :worker do
         allow(PaasConfig).to receive(:space).and_return('test')
       end
 
-      it 'calls rollback' do
-        allow(TariffSynchronizer).to receive(:rollback)
-
+      it 'invokes rollback' do
+        allow(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
+        allow(CdsSynchronizer).to receive(:rollback)
         described_class.new.perform(date)
 
-        expect(TariffSynchronizer).to have_received(:rollback).with(date, keep: false)
+        expect(TaricSynchronizer).to have_received(:rollback).with(date, keep: false)
       end
 
       it 'does not call rollback_cds' do
-        allow(TariffSynchronizer).to receive(:rollback_cds)
+        allow(CdsSynchronizer).to receive(:rollback)
 
         described_class.new.perform(date)
 
-        expect(TariffSynchronizer).not_to have_received(:rollback_cds)
+        expect(CdsSynchronizer).not_to have_received(:rollback)
       end
 
       it 'refreshes materialized view' do
@@ -39,20 +39,20 @@ RSpec.describe RollbackWorker, type: :worker do
         allow(TradeTariffBackend).to receive(:use_cds?).and_return(true)
       end
 
-      it 'calls rollback_cds' do
-        allow(TariffSynchronizer).to receive(:rollback_cds)
-
+      it 'invokes rollback' do
+        allow(CdsSynchronizer).to receive(:rollback).with(date, keep: false)
+        allow(TaricSynchronizer).to receive(:rollback)
         described_class.new.perform(date)
 
-        expect(TariffSynchronizer).to have_received(:rollback_cds).with(date, keep: false)
+        expect(CdsSynchronizer).to have_received(:rollback).with(date, keep: false)
       end
 
       it 'does not call rollback' do
-        allow(TariffSynchronizer).to receive(:rollback)
+        allow(TaricSynchronizer).to receive(:rollback)
 
         described_class.new.perform(date)
 
-        expect(TariffSynchronizer).not_to have_received(:rollback)
+        expect(TaricSynchronizer).not_to have_received(:rollback)
       end
 
       it 'refreshes materialized view' do

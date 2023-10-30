@@ -27,13 +27,13 @@ module TariffSynchronizer
     end
 
     def import!
-      instrument('apply_cds.tariff_synchronizer', filename:) do
-        @oplog_inserts = CdsImporter.new(self).import
+      @oplog_inserts = CdsImporter.new(self).import
 
-        check_oplog_inserts
-        mark_as_applied
-        store_oplog_inserts
-      end
+      check_oplog_inserts
+      mark_as_applied
+      store_oplog_inserts
+
+      Rails.logger.info "Applied CDS update #{filename}"
     end
 
     # Extract Date from filename

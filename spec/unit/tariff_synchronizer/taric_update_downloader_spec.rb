@@ -3,40 +3,50 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
 
   describe '#perform' do
     it 'Logs the request for the TaricUpdate file' do
-      expect(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
+      allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
         .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
-      tariff_synchronizer_logger_listener
+
+      allow(Rails.logger).to receive(:info)
+
       described_class.new(example_date).perform
-      expect(@logger.logged(:info).size).to eq 1
-      expect(@logger.logged(:info).last).to eq("Checking for TARIC update for #{example_date} at http://example.com/taric/TARIC320100101")
+      expect(Rails.logger).to have_received(:info).with("Checking for TARIC update for #{example_date} at http://example.com/taric/TARIC320100101")
     end
 
     it 'Calls the external server to download file' do
-      expect(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
+      allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
         .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
       described_class.new(example_date).perform
+
+      expect(TariffSynchronizer::TariffUpdatesRequester).to have_received(:perform)
+                                                             .with('http://example.com/taric/TARIC320100101')
     end
 
-    context 'Successful Response' do
+    context 'when successful response' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
-          .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :success, content: "ABC.xml\nXYZ.xml"))
+                                                               .with('http://example.com/taric/TARIC320100101')
+                                                               .and_return(build(:response, :success, content: "ABC.xml\nXYZ.xml"))
       end
 
       it 'Calls TariffDownloader perform for each TARIC update file found' do
-        downlader = instance_double('TariffSynchronizer::TariffDownloader', perform: true)
+        downloader = instance_spy('TariffSynchronizer::TariffDownloader', perform: true)
 
         ['ABC.xml', 'XYZ.xml'].each do |filename|
-          expect(TariffSynchronizer::TariffDownloader).to receive(:new)
-            .with("2010-01-01_#{filename}", "http://example.com/taric/#{filename}", example_date, TariffSynchronizer::TaricUpdate)
-            .and_return(downlader)
+          allow(TariffSynchronizer::TariffDownloader).to receive(:new)
+                                                           .with("2010-01-01_#{filename}", "http://example.com/taric/#{filename}", example_date, TariffSynchronizer::TaricUpdate)
+                                                           .and_return(downloader)
         end
 
         described_class.new(example_date).perform
+
+        ['ABC.xml', 'XYZ.xml'].each do |filename|
+          expect(TariffSynchronizer::TariffDownloader).to have_received(:new)
+                                                            .with("2010-01-01_#{filename}", "http://example.com/taric/#{filename}", example_date, TariffSynchronizer::TaricUpdate)
+        end
       end
     end
 
-    context 'Missing Response' do
+    context 'with missing response' do
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
           .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :not_found))
@@ -45,29 +55,53 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
       it { expect { described_class.new(example_date).perform }.not_to change(TariffSynchronizer::TaricUpdate, :count) }
     end
 
-    context 'Retries Exceeded Response' do
+    context 'with retries exceeded response' do
+      subject(:taric_update) { TariffSynchronizer::TaricUpdate.last }
+
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
           .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :retry_exceeded))
       end
 
-      it 'Creates a record with a failed state' do
+      it 'Creates a record' do
         expect {
           described_class.new(example_date).perform
         }.to change(TariffSynchronizer::TaricUpdate, :count).by(1)
+      end
 
-        taric_update = TariffSynchronizer::TaricUpdate.last
+      it 'Creates a record with a failed state filename' do
+        described_class.new(example_date).perform
         expect(taric_update.filename).to eq('2010-01-01_taric')
+      end
+
+      it 'Creates a record with a failed state file size' do
+        described_class.new(example_date).perform
         expect(taric_update.filesize).to be_nil
+      end
+
+      it 'Creates a record with a failed state issue date' do
+        described_class.new(example_date).perform
         expect(taric_update.issue_date).to eq(example_date)
+      end
+
+      it 'Creates a record with a failed state' do
+        described_class.new(example_date).perform
         expect(taric_update.state).to eq(TariffSynchronizer::BaseUpdate::FAILED_STATE)
+      end
+    end
+
+    context 'when retries exceeded response' do
+      before do
+        allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
+                                                               .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :retry_exceeded))
       end
 
       it 'Logs the creating of the TaricUpdate record with failed state' do
-        tariff_synchronizer_logger_listener
+        allow(Rails.logger).to receive(:warn)
+
         described_class.new(example_date).perform
-        expect(@logger.logged(:warn).size).to eq 1
-        expect(@logger.logged(:warn).last).to eq('Download retry count exceeded for http://example.com/taric/TARIC320100101')
+
+        expect(Rails.logger).to have_received(:warn).with('Download retry count exceeded for http://example.com/taric/TARIC320100101')
       end
 
       it 'Sends a warning email' do
@@ -78,29 +112,51 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
       end
     end
 
-    context 'Blank Response' do
+    context 'when blank response' do
+      subject(:taric_update) { TariffSynchronizer::TaricUpdate.last }
+
       before do
         allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
           .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :blank))
       end
 
-      it 'Creates a record with a missing state' do
-        expect {
-          described_class.new(example_date).perform
-        }.to change(TariffSynchronizer::TaricUpdate, :count).by(1)
+      it 'Creates a record' do
+        expect { described_class.new(example_date).perform }.to change(TariffSynchronizer::TaricUpdate, :count).by(1)
+      end
 
-        taric_update = TariffSynchronizer::TaricUpdate.last
+      it 'Creates a record with a missing state with filename' do
+        described_class.new(example_date).perform
         expect(taric_update.filename).to eq('2010-01-01_taric')
+      end
+
+      it 'Creates a record with a missing state with file size' do
+        described_class.new(example_date).perform
         expect(taric_update.filesize).to be_nil
+      end
+
+      it 'Creates a record with a missing state with issue date' do
+        described_class.new(example_date).perform
         expect(taric_update.issue_date).to eq(example_date)
+      end
+
+      it 'Creates a record with a missing state' do
+        described_class.new(example_date).perform
         expect(taric_update.state).to eq(TariffSynchronizer::BaseUpdate::FAILED_STATE)
+      end
+    end
+
+    context 'when perform with blank response' do
+      before do
+        allow(TariffSynchronizer::TariffUpdatesRequester).to receive(:perform)
+                                                               .with('http://example.com/taric/TARIC320100101').and_return(build(:response, :blank))
       end
 
       it 'Logs the creating of the TaricUpdate record with failed state' do
-        tariff_synchronizer_logger_listener
+        allow(Rails.logger).to receive(:error)
+
         described_class.new(example_date).perform
-        expect(@logger.logged(:error).size).to eq 1
-        expect(@logger.logged(:error).last).to eq('Blank update content received for 2010-01-01: http://example.com/taric/TARIC320100101')
+
+        expect(Rails.logger).to have_received(:error).with('Blank update content received for 2010-01-01: http://example.com/taric/TARIC320100101')
       end
 
       it 'Sends a warning email' do

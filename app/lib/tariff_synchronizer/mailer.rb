@@ -1,7 +1,7 @@
 require 'mailer_environment'
 
 module TariffSynchronizer
-  class Mailer < ActionMailer::Base
+  class Mailer < ApplicationMailer
     include MailerEnvironment
 
     default from: TradeTariffBackend.from_email,
@@ -23,7 +23,6 @@ module TariffSynchronizer
     def failed_download(exception, url)
       @url = url
       @exception = exception
-
       mail subject: "#{subject_prefix(:error)} Trade Tariff download failure"
     end
 
@@ -58,10 +57,9 @@ module TariffSynchronizer
       @update_names = update_names
       @import_warnings = import_warnings
       # if 'presence errors' are ignored during tariff update then we can display them in email body
-      if TariffSynchronizer.ignore_presence_errors
+      if TaricSynchronizer.ignore_presence_errors
         @presence_errors = TariffSynchronizer::TariffUpdatePresenceError.where(tariff_update_filename: update_names)
       end
-
       mail subject: "#{subject_prefix(:info)} Tariff updates applied"
     end
 

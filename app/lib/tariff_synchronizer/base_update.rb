@@ -2,8 +2,6 @@ module TariffSynchronizer
   class BaseUpdate < Sequel::Model(:tariff_updates)
     DOWNLOAD_FROM = 20.days
 
-    delegate :instrument, to: ActiveSupport::Notifications
-
     # Used for TARIC updates only.
     one_to_many :presence_errors, class: TariffUpdatePresenceError, key: :tariff_update_filename
     # Used for CDS updates only.
@@ -168,8 +166,8 @@ module TariffSynchronizer
     class << self
       delegate :instrument, to: ActiveSupport::Notifications
 
-      def sync
-        applicable_download_date_range.each { |date| download(date) }
+      def sync(initial_date:)
+        applicable_download_date_range(initial_date:).each { |date| download(date) }
 
         notify_about_missing_updates if last_updates_are_missing?
       end
@@ -178,8 +176,8 @@ module TariffSynchronizer
         raise 'Update Type should be specified in inheriting class'
       end
 
-      def applicable_download_date_range
-        download_start_date..download_end_date
+      def applicable_download_date_range(initial_date:)
+        download_start_date(initial_date:)..download_end_date
       end
 
       private
@@ -188,9 +186,9 @@ module TariffSynchronizer
         Time.zone.today
       end
 
-      def download_start_date
+      def download_start_date(initial_date:)
         if pending_applied_or_failed.count.zero?
-          TariffSynchronizer.initial_update_date_for(update_type)
+          initial_date
         else
           last_download = (oldest_pending || most_recent_applied || most_recent_failed)
 
@@ -205,9 +203,7 @@ module TariffSynchronizer
       end
 
       def notify_about_missing_updates
-        instrument('missing_updates.tariff_synchronizer',
-                   update_type:,
-                   count: TariffSynchronizer.warning_day_count)
+        TariffLogger.missing_updates(update_type:, count: TariffSynchronizer.warning_day_count)
       end
     end
   end

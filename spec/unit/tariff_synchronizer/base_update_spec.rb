@@ -33,13 +33,23 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       expect(result.size).to eq(1)
     end
 
-    it 'return only the most recen one of each update_type' do
-      date = Date.new(2016, 2, 6)
-      create :taric_update, :applied, issue_date: date
-      create :taric_update, :applied, issue_date: date
-      result = described_class.latest_applied_of_both_kinds.all
-      expect(result.size).to eq(1)
-      expect(result.first.issue_date).to eq(date)
+    context 'when get all' do
+      let(:date) { Date.new(2016, 2, 6) }
+
+      before do
+        create :taric_update, :applied, issue_date: date
+        create :taric_update, :applied, issue_date: date
+      end
+
+      it 'return only the most recent one of each update_type' do
+        result = described_class.latest_applied_of_both_kinds.all
+        expect(result.size).to eq(1)
+      end
+
+      it 'return correct issue date' do
+        result = described_class.latest_applied_of_both_kinds.all
+        expect(result.first.issue_date).to eq(date)
+      end
     end
   end
 
@@ -93,13 +103,13 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     end
 
     it_behaves_like 'an applicable download date range', :taric_update do
-      subject(:applicable_download_date_range) { TariffSynchronizer::TaricUpdate.applicable_download_date_range }
+      subject(:applicable_download_date_range) { TariffSynchronizer::TaricUpdate.applicable_download_date_range(initial_date: Date.new(2012, 6, 6)) }
 
       let(:initial_date) { Date.new(2012, 6, 6) }
     end
 
     it_behaves_like 'an applicable download date range', :cds_update do
-      subject(:applicable_download_date_range) { TariffSynchronizer::CdsUpdate.applicable_download_date_range }
+      subject(:applicable_download_date_range) { TariffSynchronizer::CdsUpdate.applicable_download_date_range(initial_date: Date.new(2020, 9, 1)) }
 
       let(:initial_date) { Date.new(2020, 9, 1) }
     end
@@ -110,10 +120,14 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       create :cds_update, :applied, issue_date: 1.day.ago.to_date
 
       (20.days.ago.to_date..Time.zone.today).each do |download_date|
-        expect(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: nil))
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: nil))
       end
 
-      TariffSynchronizer::CdsUpdate.sync
+      TariffSynchronizer::CdsUpdate.sync(initial_date: 20.days.ago.to_date)
+
+      (20.days.ago.to_date..Time.zone.today).each do |download_date|
+        expect(TariffSynchronizer::CdsUpdateDownloader).to have_received(:new).with(download_date)
+      end
     end
   end
 
@@ -121,14 +135,13 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     context 'with weekends' do
       before do
         travel_to Date.parse('21-05-2017')
+        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
+        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
       end
 
       after do
         travel_back
       end
-
-      let!(:update1) { create :taric_update, :missing, example_date: Time.zone.today }
-      let!(:update2) { create :taric_update, example_date: Time.zone.yesterday }
 
       it 'returns false' do
         expect(described_class.send(:last_updates_are_missing?)).to be_falsey
@@ -138,14 +151,13 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
     context 'without weekends' do
       before do
         travel_to Date.parse('17-05-2017')
+        @missing_update = create(:taric_update, :missing, example_date: Time.zone.today)
+        @pending_update = create(:taric_update, example_date: Time.zone.yesterday)
       end
 
       after do
         travel_back
       end
-
-      let!(:update1) { create :taric_update, :missing, example_date: Time.zone.today }
-      let!(:update2) { create :taric_update, example_date: Time.zone.yesterday }
 
       it 'returns true' do
         expect(described_class.send(:last_updates_are_missing?)).to be_truthy

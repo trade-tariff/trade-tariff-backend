@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleExpectations
 RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   let(:taric_update) { create :taric_update, :pending }
@@ -50,12 +49,11 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     end
 
     it 'logs error message and sends an email' do
-      tariff_synchronizer_logger_listener
-
+      allow(Rails.logger).to receive(:error)
       expect { base_update_importer.apply }.to raise_error(Sequel::Error)
 
-      expect(@logger.logged(:error).size).to eq(1)
-      expect(@logger.logged(:error).last).to include('Update failed: ')
+      expect(Rails.logger).to have_received(:error)
+      expect(Rails.logger).to have_received(:error).with(include('Update failed: '))
 
       expect(ActionMailer::Base.deliveries).not_to be_empty
       email = ActionMailer::Base.deliveries.last
@@ -65,5 +63,4 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
     end
   end
   # rubocop:enable RSpec/MultipleExpectations
-  # rubocop:enable RSpec/InstanceVariable
 end

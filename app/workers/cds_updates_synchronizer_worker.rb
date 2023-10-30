@@ -1,4 +1,4 @@
-class UpdatesSynchronizerWorker
+class CdsUpdatesSynchronizerWorker
   include Sidekiq::Worker
 
   TRY_AGAIN_IN = 20.minutes
@@ -7,25 +7,21 @@ class UpdatesSynchronizerWorker
   sidekiq_options queue: :sync, retry: false
 
   def perform(check_for_todays_file = true, reapply_data_migrations = false)
-    logger.info 'Running UpdatesSynchronizerWorker'
+    return unless TradeTariffBackend.uk?
+
+    logger.info 'Running CdsUpdatesSynchronizerWorker'
     logger.info 'Downloading...'
 
-    if TradeTariffBackend.uk?
-      TariffSynchronizer.download_cds
+    CdsSynchronizer.download
 
-      if check_for_todays_file &&
-          todays_file_has_not_yet_arrived? &&
-          attempt_reschedule!
-        return
-      end
-
-      logger.info 'Applying...'
-      return unless TariffSynchronizer.apply_cds # return if nothing changed
-    elsif TradeTariffBackend.xi?
-      TariffSynchronizer.download
-      logger.info 'Applying...'
-      return unless TariffSynchronizer.apply # return if nothing changed
+    if check_for_todays_file &&
+        todays_file_has_not_yet_arrived? &&
+        attempt_reschedule!
+      return
     end
+
+    logger.info 'Applying...'
+    return unless CdsSynchronizer.apply # return if nothing changed
 
     migrate_data if reapply_data_migrations
     refresh_materialized_view
@@ -54,7 +50,7 @@ private
   end
 
   def todays_file_has_not_yet_arrived?
-    !TariffSynchronizer.downloaded_todays_file_for_cds?
+    !TariffSynchronizer::CdsUpdate.downloaded_todays_file?
   end
 
   def migrate_data

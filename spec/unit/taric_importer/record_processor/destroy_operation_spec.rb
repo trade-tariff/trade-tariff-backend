@@ -31,7 +31,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
   describe '#ignore_presence_errors?' do
     it 'returns true if presence ignored' do
-      allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+      allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       expect(empty_operation.send(:ignore_presence_errors?)).to be_truthy
     end
   end
@@ -39,12 +39,27 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
   describe '#get_model_record' do
     context 'with ignoring presence on destroy' do
       before do
-        allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       end
 
-      it 'gets model record' do
-        expect(LanguageDescription).to receive_message_chain(:filter, :first)
+      it 'gets model filtered record' do
+        filter_result = double
+        allow(LanguageDescription).to receive(:filter).and_return(filter_result)
+        allow(filter_result).to receive(:first)
+
         operation.send(:get_model_record)
+
+        expect(LanguageDescription).to have_received(:filter)
+      end
+
+      it 'gets model first record' do
+        filter_result = double
+        allow(LanguageDescription).to receive(:filter).and_return(filter_result)
+        allow(filter_result).to receive(:first)
+
+        operation.send(:get_model_record)
+
+        expect(filter_result).to have_received(:first)
       end
 
       context 'when record is NOT found' do
@@ -64,20 +79,39 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
         it 'returns a model record' do
           record = operation.send(:get_model_record)
-          expect(record.language_code_id).to eq('FR')
           expect(record).to be_a(LanguageDescription)
+        end
+
+        it 'returns a model record code id' do
+          record = operation.send(:get_model_record)
+          expect(record.language_code_id).to eq('FR')
         end
       end
     end
 
     context 'with NOT ignoring presence on destroy' do
       before do
-        allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(false)
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(false)
       end
 
-      it 'gets model record' do
-        expect(LanguageDescription).to receive_message_chain(:filter, :take)
+      it 'gets model record and filter' do
+        filter_result = double
+        allow(LanguageDescription).to receive(:filter).and_return(filter_result)
+        allow(filter_result).to receive(:take)
+
         operation.send(:get_model_record)
+
+        expect(LanguageDescription).to have_received(:filter)
+      end
+
+      it 'gets model record and called take' do
+        filter_result = double
+        allow(LanguageDescription).to receive(:filter).and_return(filter_result)
+        allow(filter_result).to receive(:take)
+
+        operation.send(:get_model_record)
+
+        expect(filter_result).to have_received(:take)
       end
 
       context 'when record is NOT found' do
@@ -96,15 +130,19 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
         it 'returns a model record' do
           record = operation.send(:get_model_record)
-          expect(record.language_code_id).to eq('FR')
           expect(record).to be_a(LanguageDescription)
+        end
+
+        it 'returns a model record code id' do
+          record = operation.send(:get_model_record)
+          expect(record.language_code_id).to eq('FR')
         end
       end
     end
   end
 
   describe '#call' do
-    context 'if record is found' do
+    context 'when record is found' do
       before do
         LanguageDescription.unrestrict_primary_key
         LanguageDescription.create('language_code_id' => 'FR',
@@ -119,23 +157,29 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       it 'returns the model record' do
         record = operation.call
         expect(record).to be_a(LanguageDescription)
+      end
+
+      it 'returns the model record code id' do
+        record = operation.call
         expect(record.language_code_id).to eq('FR')
       end
 
       it 'does not send presence error events' do
-        expect(operation).not_to receive(:log_presence_error)
+        allow(operation).to receive(:log_presence_error)
         operation.call
+        expect(operation).not_to have_received(:log_presence_error)
       end
     end
 
-    context 'if record is not found' do
+    context 'when record is not found' do
       before do
-        allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+        allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       end
 
       it 'sends presence error events' do
-        expect(operation).to receive(:log_presence_error)
+        allow(operation).to receive(:log_presence_error)
         operation.call
+        expect(operation).to have_received(:log_presence_error)
       end
 
       it 'returns nil' do

@@ -36,7 +36,7 @@ module TariffSynchronizer
       @success = true
 
       update_or_create(filename, BaseUpdate::PENDING_STATE, filesize)
-      instrument('created_tariff.tariff_synchronizer', date:, filename:, type: update_klass.update_type)
+      Rails.logger.info("Created/Updated #{update_klass.update_type.upcase} entry for #{date} and #{filename}")
     end
 
     def file_already_downloaded?
@@ -61,12 +61,12 @@ module TariffSynchronizer
 
     def create_record_for_empty_response
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-      instrument('blank_update.tariff_synchronizer', date:, url:)
+      TariffLogger.blank_update(date:, url:)
     end
 
     def create_record_for_exceeded_response
       update_or_create(filename, BaseUpdate::FAILED_STATE)
-      instrument('retry_exceeded.tariff_synchronizer', date:, url:)
+      TariffLogger.retry_exceeded(date, url)
     end
 
     # We do not create records for missing updates
@@ -88,12 +88,7 @@ module TariffSynchronizer
       if should_write_file?(response_body)
         FileService.write_file(file_path, response_body)
 
-        instrument('downloaded_tariff_update.tariff_synchronizer',
-                   date:,
-                   url:,
-                   type: update_type,
-                   path: file_path,
-                   size: response_body.size)
+        Rails.logger.info("#{update_type.upcase} update for #{date} downloaded from #{url}, to #{file_path} (size: #{response_body.size})")
       else
         persist_exception_for_review(TariffDownloaderZipError.new('Response was not a zip file. Skipping persistence'))
       end

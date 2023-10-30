@@ -1,5 +1,4 @@
 # rubocop:disable RSpec/MultipleExpectations
-# rubocop:disable RSpec/InstanceVariable
 # rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe TaricImporter do
   describe '#import' do
@@ -26,12 +25,11 @@ RSpec.describe TaricImporter do
       end
 
       it 'logs an error event' do
-        tariff_importer_logger do
-          importer = described_class.new(taric_update)
-          expect { importer.import }.to raise_error TaricImporter::ImportException
-          expect(@logger.logged(:error).size).to eq(1)
-          expect(@logger.logged(:error).last).to include('Taric import failed: uninitialized constant')
-        end
+        allow(Rails.logger).to receive(:error)
+        importer = described_class.new(taric_update)
+        expect { importer.import }.to raise_error TaricImporter::ImportException
+        expect(Rails.logger).to have_received(:error)
+        expect(Rails.logger).to have_received(:error).with(include('Taric import failed: uninitialized constant'))
       end
     end
 
@@ -95,26 +93,23 @@ RSpec.describe TaricImporter do
       after { ExplicitAbrogationRegulation.restrict_primary_key }
 
       it 'logs an info event' do
-        tariff_importer_logger do
-          importer = described_class.new(taric_update)
-          importer.import
-          expect(@logger.logged(:info).size).to eq(1)
-          expect(@logger.logged(:info).last).to eq('Successfully imported Taric file: 2013-08-02_TGB13214.xml')
-        end
+        allow(Rails.logger).to receive(:info)
+        importer = described_class.new(taric_update)
+        importer.import
+        expect(Rails.logger).to have_received(:info)
+        expect(Rails.logger).to have_received(:info).with('Successfully imported Taric file: 2013-08-02_TGB13214.xml')
       end
     end
 
     context 'on an unexpected update operation type'
 
     it 'logs an error event' do
-      tariff_importer_logger do
-        importer = described_class.new(taric_update)
-        expect { importer.import }.to raise_error TaricImporter::ImportException
-        expect(@logger.logged(:error).first).to include('Unexpected Taric operation type:')
-      end
+      allow(Rails.logger).to receive(:error)
+      importer = described_class.new(taric_update)
+      expect { importer.import }.to raise_error TaricImporter::ImportException
+      expect(Rails.logger).to have_received(:error).with(include('Unexpected Taric operation type:'))
     end
   end
 end
-# rubocop:enable RSpec/InstanceVariable
 # rubocop:enable RSpec/MultipleExpectations
 # rubocop:enable RSpec/MultipleMemoizedHelpers

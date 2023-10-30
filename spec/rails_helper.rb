@@ -30,7 +30,6 @@ RSpec.configure do |config|
   config.include ControllerSpecHelper, type: :controller
   config.include RequestSpecHelper, type: :request
   config.include SynchronizerHelper
-  config.include LoggerHelper
   config.include RescueHelper
   config.include ActiveSupport::Testing::TimeHelpers
 

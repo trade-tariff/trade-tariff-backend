@@ -1,6 +1,5 @@
 require 'nokogiri'
 
-require 'tariff_importer/logger'
 require 'taric_importer/transaction'
 require 'taric_importer/record_processor'
 require 'taric_importer/xml_parser'
@@ -41,8 +40,18 @@ class TaricImporter
       transaction = Transaction.new(hash_from_node, @issue_date)
       transaction.persist
     rescue StandardError => e
-      ActiveSupport::Notifications.instrument('taric_failed.tariff_importer', exception: e, hash: hash_from_node)
+      taric_failed_log(e, hash_from_node)
       raise ImportException
+    end
+
+    private
+
+    def taric_failed_log(exception, hash)
+      "Taric import failed: #{exception}".tap do |message|
+        message << "\n Failed transaction:\n #{hash}"
+        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
+        Rails.logger.error message
+      end
     end
   end
 
@@ -56,7 +65,7 @@ class TaricImporter
 
   def post_import(file_path:, filename:)
     create_update_entry(file_path:, filename:) if TradeTariffBackend.use_cds?
-    ActiveSupport::Notifications.instrument('taric_imported.tariff_importer', filename: @taric_update.filename)
+    Rails.logger.info "Successfully imported Taric file: #{@taric_update.filename}"
   end
 
   def create_update_entry(file_path:, filename:)

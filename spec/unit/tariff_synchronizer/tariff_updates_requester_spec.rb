@@ -24,16 +24,17 @@ RSpec.describe TariffSynchronizer::TariffUpdatesRequester do
 
       context 'when a 401 response is returned' do
         before do
-          tariff_synchronizer_logger_listener
           stub_request(:get, url).to_return(status: 401)
         end
 
         it { expect(response).to be_retry_count_exceeded }
-        it { expect { response }.to change { @logger.logged(:info).size }.from(0).to(1) }
 
         it 'logs an info event' do
+          allow(Rails.logger).to receive(:info)
+
           response
-          expect(@logger.logged(:info).to_s).to match(/Delaying update fetching/)
+
+          expect(Rails.logger).to have_received(:info).with(include('Delaying update fetching'))
         end
       end
     end

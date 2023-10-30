@@ -33,24 +33,28 @@ namespace :tariff do
   namespace :sync do
     desc 'Update database by downloading and then applying TARIC or CDS updates via worker'
     task download_apply_and_reindex: %i[environment class_eager_load] do
-      UpdatesSynchronizerWorker.perform_async(true, true)
+      if TradeTariffBackend.use_cds?
+        CdsUpdatesSynchronizerWorker.perform_async(true, true)
+      else
+        TaricUpdatesSynchronizerWorker.perform_async(true)
+      end
     end
 
     desc 'Download pending Taric or CDS update files, Update tariff_updates table'
     task download: %i[environment class_eager_load] do
       if TradeTariffBackend.use_cds?
-        TariffSynchronizer.download_cds
+        CdsSynchronizer.download
       else
-        TariffSynchronizer.download
+        TaricSynchronizer.download
       end
     end
 
     desc 'Apply pending updates for Taric or CDS'
     task apply: %i[environment class_eager_load] do
       if TradeTariffBackend.use_cds?
-        TariffSynchronizer.apply_cds
+        CdsSynchronizer.apply
       else
-        TariffSynchronizer.apply
+        TaricSynchronizer.apply
       end
     end
 
@@ -58,9 +62,9 @@ namespace :tariff do
     task rollback: %w[environment class_eager_load] do
       if ENV['DATE']
         if TradeTariffBackend.use_cds?
-          TariffSynchronizer.rollback_cds(ENV['DATE'], keep: ENV['KEEP'])
+          CdsSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
         else
-          TariffSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
+          TaricSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
         end
       else
         raise ArgumentError, "Please set the date using environment variable 'DATE'"

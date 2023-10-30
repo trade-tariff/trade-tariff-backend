@@ -55,7 +55,7 @@ module TariffSynchronizer
     end
 
     def log_request_to_cds_daily_updates
-      instrument('get_cds_daily_updates.tariff_synchronizer', date: request_date)
+      Rails.logger.info "Checking for CDS daily updates for #{request_date}"
     end
 
     def access_token

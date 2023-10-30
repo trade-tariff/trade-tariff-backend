@@ -43,8 +43,8 @@ module TariffSynchronizer
 
     def url_for(update)
       sprintf(
-        TariffSynchronizer.taric_update_url_template,
-        host: TariffSynchronizer.host,
+        TaricSynchronizer.taric_update_url_template,
+        host: TaricSynchronizer.host,
         filename: update.url_filename,
       )
     end

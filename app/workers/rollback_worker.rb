@@ -5,9 +5,9 @@ class RollbackWorker
 
   def perform(date, redownload = false)
     if TradeTariffBackend.use_cds?
-      TariffSynchronizer.rollback_cds(date, keep: redownload)
+      CdsSynchronizer.rollback(date, keep: redownload)
     else
-      TariffSynchronizer.rollback(date, keep: redownload)
+      TaricSynchronizer.rollback(date, keep: redownload)
     end
 
     GoodsNomenclatures::TreeNode.refresh!

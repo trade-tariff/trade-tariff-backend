@@ -43,8 +43,7 @@ class CdsImporter
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
         CdsImporter::XmlParser::Reader.new(xml_stream.read, handler).parse
-
-        ActiveSupport::Notifications.instrument('cds_imported.tariff_importer', filename: @cds_update.filename)
+        Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end
 
@@ -61,11 +60,16 @@ class CdsImporter
 
       CdsImporter::EntityMapper.new(key, hash_from_node).import
     rescue StandardError => e
-      ActiveSupport::Notifications.instrument(
-        'cds_failed.tariff_importer',
-        exception: e, hash: hash_from_node, key:,
-      )
+      cds_failed_log(e, key, hash_from_node)
       raise ImportException
+    end
+
+    def cds_failed_log(exception, key, hash)
+      "Cds import failed: #{exception}".tap do |message|
+        message << "\n Failed object: #{key}\n #{hash}"
+        message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
+        Rails.logger.error message
+      end
     end
   end
 
