@@ -95,10 +95,15 @@ module Reporting
               measure.measure_type_id.in?(MeasureType::THIRD_COUNTRY)
             end
 
-            all_additional_code_measures = candidate_mfns.all?(&:additional_code_sid)
+            # TODO: ME16 violations (mixture of additional code and
+            #      non-additional code measures of the same type) are acceptable
+            #      for the present moment.
+            #
+            #      This is because these aren't going to get fixed in the short term.
+            any_additional_code_measures = candidate_mfns.any?(&:additional_code_sid)
             all_different_type_measures = candidate_mfns.map(&:measure_type_id).uniq.size == 2 && candidate_mfns.size == 2
 
-            next if all_additional_code_measures || all_different_type_measures
+            next if any_additional_code_measures || all_different_type_measures
 
             yield chapter_descendant if candidate_mfns.many?
           end

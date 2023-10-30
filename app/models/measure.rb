@@ -363,6 +363,26 @@ class Measure < Sequel::Model
         end
     end
 
+    def with_seasonal_measures(measure_type_ids, geographical_area_ids)
+      start_of_range = Time.zone.today.beginning_of_year
+      end_of_range = Time.zone.today.end_of_year + 1.year
+
+      select(
+        :measure_sid,
+        :goods_nomenclature_item_id,
+        :measure_type_id,
+        :geographical_area_id,
+        :validity_start_date,
+        :validity_end_date,
+      )
+        .where(measure_type_id: measure_type_ids)
+        .where(geographical_area_id: geographical_area_ids)
+        .exclude(validity_end_date: nil)
+        .where('validity_start_date >= ?', start_of_range)
+        .where('validity_end_date <= ?', end_of_range)
+        .where(Sequel.lit('(validity_end_date::date - validity_start_date::date) NOT IN (364, 365)'))
+    end
+
     def dedupe_similar
       # Needs with_regulation_dates_query and only works within time machine but should be used before not after
       select(Sequel.expr(:measures).*)

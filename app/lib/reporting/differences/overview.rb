@@ -67,10 +67,13 @@ module Reporting
               worksheet_name: 'Incomplete conditions',
             },
             'Omitted duties' => {
-              description: 'Comparing preferential and suspension measures that are present now (16 October 2023) versus those that were present a year before. Ukraine-related measures are omitted, as these changed by design. Not all items listed here will be issues.',
+              description: 'Comparing preferential and suspension measures that are present now (as_of) versus those that were present a year before. Ukraine-related measures are omitted, as these changed by design. Not all items listed here will be issues.',
               worksheet_name: 'Omitted duties',
             },
-            # 'Seasonal duties' => 'Seasonal duties that should be in place (according to the reference documents) but cannot be found',
+            'Seasonal duties' => {
+              description: 'Seasonal duties that should be in place (according to the reference documents) but cannot be found',
+              worksheet_name: 'Seasonal duties',
+            },
           },
         },
         'VAT-related anomalies' => {
@@ -82,14 +85,14 @@ module Reporting
             },
           },
         },
-        'Commodity code description-related anomalies' => {
-          section_colour: '311493',
-          worksheets: {
-            # 'Total number of differences in commodity code descriptions' => 'Covers all difference types - does not imply there is an issue',
-            # 'Descriptions - UK description is missing' => 'Indentation is crucial to get right to avoid measures being unexpectedly assigned or omitted.',
-            # 'Descriptions - Typo or small difference' => 'This tends to be linked to or caused by missing or unwanted codes or indentation issues.',
-          },
-        },
+        # 'Commodity code description-related anomalies' => {
+        #   section_colour: '311493',
+        #   worksheets: {
+        #     # 'Total number of differences in commodity code descriptions' => 'Covers all difference types - does not imply there is an issue',
+        #     # 'Descriptions - UK description is missing' => 'Indentation is crucial to get right to avoid measures being unexpectedly assigned or omitted.',
+        #     # 'Descriptions - Typo or small difference' => 'This tends to be linked to or caused by missing or unwanted codes or indentation issues.',
+        #   },
+        # },
         'Quota-related anomalies' => {
           section_colour: 'CACC43',
           worksheets: {
@@ -216,7 +219,8 @@ module Reporting
             section_header_row[4].style = dashboard_styles['header_view']
 
             config[:worksheets].each do |worksheet, worksheet_config|
-              worksheet_description = worksheet_config[:description].sub('as_of', report.as_of)
+              report_date = report.as_of.to_date.to_fs(:govuk)
+              worksheet_description = worksheet_config[:description].sub('as_of', report_date)
               worksheet_name = worksheet_config[:worksheet_name]
 
               sheet.add_row(

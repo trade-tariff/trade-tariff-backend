@@ -132,6 +132,7 @@ module Reporting
         add_misapplied_action_code_worksheet
         add_incomplete_measure_condition_worksheet
         add_me32_worksheet
+        add_seasonal_worksheet
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
         add_missing_quota_origins_worksheet
@@ -210,6 +211,10 @@ module Reporting
 
     def add_me32_worksheet
       Reporting::Differences::Me32.new(self).add_worksheet
+    end
+
+    def add_seasonal_worksheet
+      Reporting::Differences::Seasonal.new(self).add_worksheet
     end
 
     def add_omitted_duty_measures_worksheet

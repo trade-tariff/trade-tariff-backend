@@ -229,6 +229,65 @@ RSpec.describe Measure do
     end
   end
 
+  describe '.with_seasonal_measures' do
+    subject(:measures) { described_class.with_seasonal_measures(%w[142], %w[AU]).all }
+
+    before do
+      start_date = Time.zone.today.beginning_of_year
+      end_date = Time.zone.today.end_of_year + 1.year
+
+      create(
+        :measure,
+        validity_start_date: start_date,
+        validity_end_date: start_date + 2.days,
+        measure_type_id: '142',
+        geographical_area_id: 'AU',
+      )
+
+      create( # Excluded start date precedes season range
+        :measure,
+        validity_start_date: start_date - 1.day,
+        validity_end_date: start_date + 2.days,
+        measure_type_id: '142',
+        geographical_area_id: 'AU',
+      )
+
+      create( # Excluded missing validity end date
+        :measure,
+        validity_start_date: start_date,
+        validity_end_date: nil,
+        measure_type_id: '142',
+        geographical_area_id: 'AU',
+      )
+
+      create( # Excluded end date exceeds season range
+        :measure,
+        validity_start_date: start_date,
+        validity_end_date: end_date + 1.day,
+        measure_type_id: '142',
+        geographical_area_id: 'AU',
+      )
+
+      create( # Excluded wrong measure_type
+        :measure,
+        validity_start_date: start_date,
+        validity_end_date: start_date + 2.days,
+        measure_type_id: '143',
+        geographical_area_id: 'AU',
+      )
+
+      create( # Excluded wrong geographical_area_id
+        :measure,
+        validity_start_date: start_date,
+        validity_end_date: start_date + 2.days,
+        measure_type_id: '143',
+        geographical_area_id: 'AU',
+      )
+    end
+
+    it { is_expected.to have_attributes length: 1 }
+  end
+
   describe '.dedupe_similar' do
     subject :measures do
       described_class.dedupe_similar.with_regulation_dates_query.all
