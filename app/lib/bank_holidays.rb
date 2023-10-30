@@ -2,15 +2,15 @@ require 'net/http'
 require 'json'
 
 module BankHolidays
-  def self.last(n)
-    [weekends(n), holidays(n)].flatten.compact.uniq.sort.last(n)
+  def self.last(days)
+    [weekends(days), holidays(days)].flatten.compact.uniq.sort.last(days)
   end
 
-  def self.weekends(n)
+  def self.weekends(_days)
     ((Time.zone.today - n + 1)..Time.zone.today).to_a.select { |d| d.saturday? || d.sunday? }
   end
 
-  def self.holidays(n)
+  def self.holidays(_days)
     Holidays.between(Time.zone.today - n, Time.zone.today, :be_nl, :gb)
             .map { |h| h[:date] }
   end

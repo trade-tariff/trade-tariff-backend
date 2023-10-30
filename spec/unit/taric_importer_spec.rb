@@ -56,7 +56,7 @@ RSpec.describe TaricImporter do
         expect(Measure.count).to eq 1
       end
 
-      it 'creates single Measure::Operation(oplog) entry' do
+      it 'creates single Measure::Operation(oplog) entry', :aggregate_failures do
         described_class.new(taric_update).import
 
         expect(Measure::Operation.count).to eq 1
@@ -69,7 +69,7 @@ RSpec.describe TaricImporter do
         ).to be_present
       end
 
-      it 'creates two Measure::Operation(oplog) entries after update' do
+      it 'creates two Measure::Operation(oplog) entries after update', :aggregate_failures do
         described_class.new(taric_update).import
         described_class.new(taric_update2).import
 
@@ -90,7 +90,7 @@ RSpec.describe TaricImporter do
 
       after { ExplicitAbrogationRegulation.restrict_primary_key }
 
-      it 'logs an info event' do
+      it 'logs an info event', :aggregate_failures do
         allow(Rails.logger).to receive(:info)
         importer = described_class.new(taric_update)
         importer.import
@@ -101,7 +101,7 @@ RSpec.describe TaricImporter do
 
     context 'on an unexpected update operation type'
 
-    it 'logs an error event' do
+    it 'logs an error event', :aggregate_failures do
       allow(Rails.logger).to receive(:error)
       importer = described_class.new(taric_update)
       expect { importer.import }.to raise_error TaricImporter::ImportException

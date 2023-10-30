@@ -26,7 +26,6 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
         create_language_description_record
       end
 
-
       it 'identifies as create operation', :aggregate_failures do
         build_update_operation
 
@@ -41,7 +40,6 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
       it 'returns model instance even when the previous record is equal' do
         expect(build_update_operation).to be_kind_of LanguageDescription
       end
-
 
       it 'sets update operation date to operation_date' do
         build_update_operation

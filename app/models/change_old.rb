@@ -7,10 +7,6 @@ class ChangeOld
     end
   end
 
-  def model=(model)
-    @model = model.constantize
-  end
-
   def operation_record
     @operation_record ||= operation_class.find(oid:)
   end
@@ -25,9 +21,7 @@ class ChangeOld
     operation_record.record_class.call(operation_record.values).freeze
   end
 
-  def model_name
-    @model.name
-  end
+  delegate :name, to: :model, prefix: true
 
   def to_partial_path
     "changes/#{model_name.underscore}"

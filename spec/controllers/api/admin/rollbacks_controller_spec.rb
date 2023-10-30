@@ -1,95 +1,97 @@
-RSpec.describe Api::Admin::RollbacksController, 'POST to #create' do
-  before { login_as_api_user }
+RSpec.describe Api::Admin::RollbacksController do
+  describe 'POST to #create' do
+    before { login_as_api_user }
 
-  let(:rollback_attributes) { attributes_for :rollback }
-  let(:record) do
-    create :measure, operation_date: Time.zone.yesterday.to_date
-  end
-
-  context 'when rollback is valid' do
-    before { record }
-
-    it 'responds with success + redirect', :aggregate_failures do
-      post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
-
-      expect(response.status).to eq 201
-      expect(response.location).to eq api_rollbacks_url
+    let(:rollback_attributes) { attributes_for :rollback }
+    let(:record) do
+      create :measure, operation_date: Time.zone.yesterday.to_date
     end
 
-    it 'performs a rollback' do
-      Sidekiq::Testing.inline! do
-        expect {
-          create(:rollback, date: 1.month.ago.beginning_of_day)
-        }.to change(Measure, :count).from(1).to(0)
+    context 'when rollback is valid' do
+      before { record }
+
+      it 'responds with success + redirect', :aggregate_failures do
+        post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
+
+        expect(response.status).to eq 201
+        expect(response.location).to eq api_rollbacks_url
+      end
+
+      it 'performs a rollback' do
+        Sidekiq::Testing.inline! do
+          expect {
+            create(:rollback, date: 1.month.ago.beginning_of_day)
+          }.to change(Measure, :count).from(1).to(0)
+        end
+      end
+    end
+
+    context 'when rollback is not valid' do
+      let(:response_pattern) do
+        {
+          errors: Array,
+        }.ignore_extra_keys!
+      end
+
+      it 'returns errors for rollback', :aggregate_failures do
+        post :create, params: { data: { type: :rollback, attributes: { date: '', keep: '' } } }
+
+        expect(response.status).to eq 422
+        expect(response.body).to match_json_expression response_pattern
       end
     end
   end
 
-  context 'when rollback is not valid' do
+  describe 'GET to #index' do
+    before do
+      login_as_api_user
+    end
+
+    let!(:rollback) { create :rollback }
+
     let(:response_pattern) do
       {
-        errors: Array,
-      }.ignore_extra_keys!
-    end
-
-    it 'returns errors for rollback', :aggregate_failures do
-      post :create, params: { data: { type: :rollback, attributes: { date: '', keep: '' } } }
-
-      expect(response.status).to eq 422
-      expect(response.body).to match_json_expression response_pattern
-    end
-  end
-end
-
-RSpec.describe Api::Admin::RollbacksController, 'GET to #index' do
-  before do
-    login_as_api_user
-  end
-
-  let!(:rollback) { create :rollback }
-
-  let(:response_pattern) do
-    {
-      data: [
-        {
-          id: rollback.id.to_s,
-          type: 'rollback',
-          attributes: {
-            user_id: rollback.user_id,
-            reason: rollback.reason,
-            enqueued_at: wildcard_matcher,
-            date: rollback.date.to_s,
-            keep: rollback.keep,
+        data: [
+          {
+            id: rollback.id.to_s,
+            type: 'rollback',
+            attributes: {
+              user_id: rollback.user_id,
+              reason: rollback.reason,
+              enqueued_at: wildcard_matcher,
+              date: rollback.date.to_s,
+              keep: rollback.keep,
+            },
+          }.ignore_extra_keys!,
+        ].ignore_extra_values!,
+        meta: {
+          pagination: {
+            page: Integer,
+            per_page: Integer,
+            total_count: Integer,
           },
-        }.ignore_extra_keys!,
-      ].ignore_extra_values!,
-      meta: {
-        pagination: {
-          page: Integer,
-          per_page: Integer,
-          total_count: Integer,
         },
-      },
-    }
-  end
-
-  it 'returns scheduled rollbacks', :aggregate_failures do
-    get :index, format: :json
-
-    expect(response.status).to eq 200
-    expect(response.body).to match_json_expression response_pattern
-  end
-
-  context 'when records are not present' do
-    before do
-      rollback.delete
+      }
     end
 
-    it 'returns empty rollbacks array', :aggregate_failures do
+    it 'returns scheduled rollbacks', :aggregate_failures do
       get :index, format: :json
 
       expect(response.status).to eq 200
-      expect(JSON.parse(response.body)['data']).to eq []
+      expect(response.body).to match_json_expression response_pattern
+    end
+
+    context 'when records are not present' do
+      before do
+        rollback.delete
+      end
+
+      it 'returns empty rollbacks array', :aggregate_failures do
+        get :index, format: :json
+
+        expect(response.status).to eq 200
+        expect(JSON.parse(response.body)['data']).to eq []
+      end
     end
   end
 end

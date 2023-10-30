@@ -27,22 +27,38 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
     end
 
     it 'logs request to cds daily updates' do
-      expect(downloader).to receive(:log_request_to_cds_daily_updates)
+      allow(downloader).to receive(:log_request_to_cds_daily_updates)
       downloader.perform
+      expect(downloader).to have_received(:log_request_to_cds_daily_updates)
     end
 
     context 'when response contains example_date' do
       it 'calls TariffDownloader for requested date..5 days ago', :aggregate_failures do
-        expect(TariffSynchronizer::TariffDownloader).to receive(:new).with(
+        allow(TariffSynchronizer::TariffDownloader).to receive(:new).with(
           body[0]['filename'], body[0]['downloadURL'], example_date, TariffSynchronizer::CdsUpdate
         ).and_call_original
-        expect(TariffSynchronizer::TariffDownloader).to receive(:new).with(
+
+        allow(TariffSynchronizer::TariffDownloader).to receive(:new).with(
           body[1]['filename'], body[1]['downloadURL'], example_date - 5.days, TariffSynchronizer::CdsUpdate
         ).and_call_original
-        expect(TariffSynchronizer::TariffDownloader).not_to receive(:new).with(
+
+        allow(TariffSynchronizer::TariffDownloader).not_to receive(:new).with(
           body[2]['filename'], body[2]['downloadURL'], example_date - 6.days, TariffSynchronizer::CdsUpdate
         )
+
         downloader.perform
+
+        expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(
+          body[0]['filename'], body[0]['downloadURL'], example_date, TariffSynchronizer::CdsUpdate
+        ).and_call_original
+
+        expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(
+          body[1]['filename'], body[1]['downloadURL'], example_date - 5.days, TariffSynchronizer::CdsUpdate
+        ).and_call_original
+
+        expect(TariffSynchronizer::TariffDownloader).not_to have_received(:new).with(
+          body[2]['filename'], body[2]['downloadURL'], example_date - 6.days, TariffSynchronizer::CdsUpdate
+        )
       end
 
       it 'does not create missing update record' do

@@ -18,7 +18,7 @@ module TradeTariffBackend
       formatted_number = super(number, opts)
 
       if minimum_decimal_points && precision_for(formatted_number) < minimum_decimal_points
-        "%.#{minimum_decimal_points}f" % formatted_number.to_f
+        sprintf("%.#{minimum_decimal_points}f", formatted_number.to_f)
       else
         formatted_number
       end
