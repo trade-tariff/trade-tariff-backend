@@ -34,9 +34,9 @@ namespace :tariff do
     desc 'Update database by downloading and then applying TARIC or CDS updates via worker'
     task download_apply_and_reindex: %i[environment class_eager_load] do
       if TradeTariffBackend.use_cds?
-        CdsUpdatesSynchronizerWorker.perform(true, true)
+        CdsUpdatesSynchronizerWorker.perform_async(true, true)
       else
-        TaricUpdatesSynchronizerWorker.perform(true)
+        TaricUpdatesSynchronizerWorker.perform_async(true)
       end
     end
 
