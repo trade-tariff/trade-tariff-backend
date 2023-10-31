@@ -32,10 +32,6 @@ module "backend_admin_uk" {
     aws_iam_policy.secrets.arn
   ]
 
-  init_container            = true
-  init_container_entrypoint = [""]
-  init_container_command    = local.init_command
-
   service_environment_config = flatten([
     local.backend_common_vars,
     local.backend_common_worker_vars,

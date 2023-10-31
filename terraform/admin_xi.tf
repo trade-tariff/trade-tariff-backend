@@ -35,10 +35,6 @@ module "backend_admin_xi" {
   container_entrypoint = [""]
   container_command    = local.worker_command
 
-  init_container            = true
-  init_container_entrypoint = [""]
-  init_container_command    = local.init_command
-
   service_environment_config = flatten([
     local.backend_common_vars,
     local.backend_common_worker_vars,
@@ -50,10 +46,6 @@ module "backend_admin_xi" {
       {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-xi-admin-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
-      },
-      {
-        name  = "NEW_RELIC_APP_NAME"
-        value = "tariff-xi-admin-${var.environment}"
       },
       {
         name  = "SERVICE"
