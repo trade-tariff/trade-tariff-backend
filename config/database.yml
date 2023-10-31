@@ -2,7 +2,7 @@ default: &default
   adapter: postgresql
   encoding: utf8
   pool: 12
-  search_path: <%= ENV.fetch("MERGED_XI_UK_DATABASES", "false") == "true" ? "#{ENV.fetch("SERVICE", "uk")}, public" : "public" %>
+  search_path: <%= "#{ENV.fetch("SERVICE", "uk")}, public" %>
 
 development:
   <<: *default
