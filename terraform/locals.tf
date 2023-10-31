@@ -42,10 +42,6 @@ locals {
       value = "6"
     },
     {
-      name  = "MERGED_XI_UK_DATABASES"
-      value = "true"
-    },
-    {
       name  = "NEW_RELIC_AGENT_ENABLED"
       value = "false"
     },
