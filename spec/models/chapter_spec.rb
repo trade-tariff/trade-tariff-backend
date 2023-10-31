@@ -1,7 +1,8 @@
 RSpec.describe Chapter do
-  describe 'associations' do
-    describe 'headings' do
+  describe 'Associations' do
+    context 'with headings' do
       let!(:chapter)  { create :chapter }
+
       let!(:heading1) do
         create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}10000000",
                          validity_start_date: 10.years.ago,
@@ -22,7 +23,11 @@ RSpec.describe Chapter do
                          validity_start_date: 10.years.ago,
                          validity_end_date: nil
       end
-      let!(:hidden_gono) { create :hidden_goods_nomenclature, goods_nomenclature_item_id: heading4.goods_nomenclature_item_id }
+
+      before do
+        # Hidden goods nomenclature
+        create :hidden_goods_nomenclature, goods_nomenclature_item_id: heading4.goods_nomenclature_item_id
+      end
 
       around do |example|
         TimeMachine.at(1.year.ago) do
@@ -57,10 +62,10 @@ RSpec.describe Chapter do
   end
 
   describe '#to_param' do
-    let(:chapter) { create :chapter }
+    let(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
 
-    it 'uses first two digits of goods_nomenclature_item_id as param' do
-      expect(chapter.to_param).to eq chapter.goods_nomenclature_item_id.first(2)
+    it 'returns short_code' do
+      expect(chapter.to_param).to eq(chapter.short_code)
     end
   end
 
@@ -148,27 +153,19 @@ RSpec.describe Chapter do
     end
   end
 
-  describe '#to_param' do
-    let!(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
-
-    it 'returns short_code' do
-      expect(chapter.to_param).to eq(chapter.short_code)
-    end
-  end
-
   describe 'first & last heading' do
-    let!(:chapter)  { create :chapter, goods_nomenclature_item_id: '1200000000' }
+    let(:chapter) { create :chapter, goods_nomenclature_item_id: '1200000000' }
     let!(:heading1) do
       create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}10000000",
                        validity_end_date: nil
     end
     let!(:heading2) do
-      create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000",
-                       validity_end_date: nil
-    end
-    let!(:heading3) do
       create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}30000000",
                        validity_end_date: nil
+    end
+
+    before do
+      create :heading, goods_nomenclature_item_id: "#{chapter.goods_nomenclature_item_id.first(2)}20000000", validity_end_date: nil
     end
 
     describe '#first_heading' do
@@ -179,7 +176,7 @@ RSpec.describe Chapter do
 
     describe '#last_heading' do
       it 'returns last heading ordered by goods_nomenclature_item_id' do
-        expect(chapter.last_heading).to eq(heading3)
+        expect(chapter.last_heading).to eq(heading2)
       end
     end
 
@@ -191,7 +188,7 @@ RSpec.describe Chapter do
 
     describe '#headings_to' do
       it 'returns last heading short_code' do
-        expect(chapter.headings_to).to eq(heading3.short_code)
+        expect(chapter.headings_to).to eq(heading2.short_code)
       end
     end
   end

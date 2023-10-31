@@ -36,8 +36,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     context 'with todays file missing' do
       before do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?)
-                                     .and_return(false)
+        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?).and_return(false)
 
         perform
       end
@@ -160,10 +159,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(CdsSynchronizer).to have_received(:download) }
         it { expect(CdsSynchronizer).to have_received(:apply) }
-<<<<<<< HEAD
-=======
         it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
->>>>>>> 7e356f294 (Fix monetary exchange rates controller and other fixes)
 
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true, true) }

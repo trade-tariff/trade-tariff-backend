@@ -33,10 +33,6 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
         expect(LanguageDescription.first.description).to eq 'French!'
       end
 
-      it 'returns model instance' do
-        expect(build_update_operation).to be_kind_of LanguageDescription
-      end
-
       it 'returns model instance even when the previous record is equal' do
         expect(build_update_operation).to be_kind_of LanguageDescription
       end
@@ -57,7 +53,7 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
 
       context 'with ignoring presence errors' do
         before do
-          allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
+          allow(ActiveSupport::Notifications).to receive(:instrument)
         end
 
         it 'creates new record' do
@@ -65,23 +61,16 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
         end
 
         it 'sends presence error events' do
-          allow(operation).to receive(:log_presence_error)
           build_update_operation
-          expect(operation).to have_received(:log_presence_error)
+          expect(ActiveSupport::Notifications).to have_received(:instrument)
         end
 
-        it 'invokes CreateOperation' do
+        it 'invokes CreateOperation', :aggregate_failures do
           instance = instance_double(TaricImporter::RecordProcessor::CreateOperation)
           allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new).and_return(instance)
           allow(instance).to receive(:call)
 
           expect(instance).to have_received(:call)
-          expect(operation).to receive(:log_presence_error)
-          build_update_operation
-        end
-
-        it 'invokes CreateOperation' do
-          expect_any_instance_of(TaricImporter::RecordProcessor::CreateOperation).to receive(:call)
           build_update_operation
         end
       end

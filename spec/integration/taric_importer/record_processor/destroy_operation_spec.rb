@@ -21,7 +21,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       described_class.new(record, operation_date)
     end
 
-    context 'record present for destroy' do
+    context 'with record present for destroy' do
       before do
         create :language_description, language_code_id: 'FR',
                                       language_id: 'EN',
@@ -49,7 +49,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       end
     end
 
-    context 'record missing for destroy' do
+    context 'when record missing for destroy' do
       it 'raises Sequel::RecordNotFound exception' do
         expect { operation.call }.to raise_error(Sequel::RecordNotFound)
       end

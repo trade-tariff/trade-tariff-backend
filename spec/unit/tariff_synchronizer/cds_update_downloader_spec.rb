@@ -22,8 +22,11 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
     end
 
     before do
-      allow(downloader).to receive(:response) { double('Response', body: body.to_json) }
+      allow(downloader).to receive(:response) { instance_double('Response', body: body.to_json) }
+
+      # rubocop:disable RSpec/AnyInstance
       allow_any_instance_of(TariffSynchronizer::TariffDownloader).to receive(:perform)
+      # rubocop:enable RSpec/AnyInstance
     end
 
     it 'logs request to cds daily updates' do
@@ -70,8 +73,9 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
       let(:body) { [] }
 
       it 'does not call TariffDownloader' do
-        expect(TariffSynchronizer::TariffDownloader).not_to receive(:new)
+        allow(TariffSynchronizer::TariffDownloader).not_to receive(:new)
         downloader.perform
+        expect(TariffSynchronizer::TariffDownloader).not_to have_received(:new)
       end
 
       it 'returns nil' do

@@ -1,7 +1,7 @@
-RSpec.describe 'Auditable sequel plugin' do
+RSpec.describe Sequel::Plugins::Auditable do
   let(:model_with_plugin) { create :section_note, content: 'first content' }
 
-  describe 'Model hooks' do
+  context 'with Model hooks' do
     it 'creates an audit record when updated' do
       expect {
         model_with_plugin.update(content: 'test')

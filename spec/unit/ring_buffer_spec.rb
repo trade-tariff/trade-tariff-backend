@@ -29,7 +29,7 @@ RSpec.describe RingBuffer do
   describe '#full?' do
     let(:ring_buffer) { described_class.new(1) }
 
-    context 'element limit reached' do
+    context 'with element limit reached' do
       before { ring_buffer.push('foo') }
 
       it 'returns true' do
@@ -37,7 +37,7 @@ RSpec.describe RingBuffer do
       end
     end
 
-    context 'element limit not reached' do
+    context 'with element limit not reached' do
       it 'returns false' do
         expect(ring_buffer).not_to be_full
       end

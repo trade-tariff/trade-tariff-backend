@@ -33,7 +33,6 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
 
     it 'returns true if presence ignored' do
       allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
-      allow(TariffSynchronizer).to receive(:ignore_presence_errors).and_return(true)
       expect(operation.send(:ignore_presence_errors?)).to be_truthy
     end
   end
@@ -157,8 +156,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       end
 
       it 'returns the model record' do
-        record = operation.call
-        expect(record).to be_a(LanguageDescription)
+        expect(operation.call).to be_a(LanguageDescription)
       end
 
       it 'returns the model record code id' do
@@ -166,7 +164,8 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         expect(record.language_code_id).to eq('FR')
       end
 
-      it 'does not send presence error events' do
+      # rubocop:disable RSpec/SubjectStub
+      it 'does not sends presence error events' do
         allow(operation).to receive(:log_presence_error)
         operation.call
         expect(operation).not_to have_received(:log_presence_error)
@@ -183,6 +182,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         operation.call
         expect(operation).to have_received(:log_presence_error)
       end
+      # rubocop:enable RSpec/SubjectStub
 
       it 'returns nil' do
         expect(operation.call).to be_nil

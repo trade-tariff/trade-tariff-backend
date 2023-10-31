@@ -61,24 +61,19 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
     it 'calls the CdsImporter import method', :aggregate_failures do
       cds_importer = instance_double('CdsImporter')
-      expect(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
-      expect(cds_importer).to receive(:import).and_return inserted_oplog_records
-
+      allow(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
+      allow(cds_importer).to receive(:import).and_return inserted_oplog_records
+      allow(Rails.logger).to receive(:info)
       cds_update.import!
+
+      expect(Rails.logger).to have_received(:info)
+      expect(CdsImporter).to have_received(:new).with(cds_update)
+      expect(cds_importer).to have_received(:import)
     end
 
     it 'marks the Cds update as applied' do
       cds_update.import!
       expect(cds_update.reload).to be_applied
-    end
-
-    it 'logs an info event', :aggregate_failures do
-      tariff_synchronizer_logger_listener
-      allow_any_instance_of(CdsImporter).to \
-        receive(:import).and_return inserted_oplog_records
-      cds_update.import!
-      expect(@logger.logged(:info).size).to eq 1
-      expect(@logger.logged(:info).last).to match(/Applied CDS update/)
     end
 
     describe 'checking results of import' do

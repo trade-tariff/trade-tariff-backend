@@ -1,3 +1,4 @@
+# rubocop:disable Lint/DuplicateMethods
 class ChangeOld
   attr_accessor :model, :oid, :operation_date, :operation
 
@@ -5,6 +6,10 @@ class ChangeOld
     attributes.each do |attribute, value|
       public_send("#{attribute}=", value) if respond_to?("#{attribute}=")
     end
+  end
+
+  def model=(model)
+    @model = model.constantize
   end
 
   def operation_record
@@ -21,7 +26,9 @@ class ChangeOld
     operation_record.record_class.call(operation_record.values).freeze
   end
 
-  delegate :name, to: :model, prefix: true
+  def model_name
+    @model.name
+  end
 
   def to_partial_path
     "changes/#{model_name.underscore}"
@@ -33,3 +40,4 @@ private
     "#{model}::Operation".constantize
   end
 end
+# rubocop:enable Lint/DuplicateMethods

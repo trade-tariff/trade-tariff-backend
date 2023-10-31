@@ -41,7 +41,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
     before { login_as_api_user }
 
-    context 'save succeeded' do
+    context 'when save succeeded' do
       before do
         post :create, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
       end
@@ -70,7 +70,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       end
     end
 
-    context 'save failed' do
+    context 'when save fails' do
       before do
         post :create, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: '' } } }, format: :json
       end
@@ -98,7 +98,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
 
     before { login_as_api_user }
 
-    context 'save succeeded' do
+    context 'when save succeeded' do
       it 'responds with success' do
         put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: 'test string' } } }, format: :json
 
@@ -112,7 +112,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       end
     end
 
-    context 'save failed' do
+    context 'when save fails' do
       it 'responds with 422 not acceptable' do
         put :update, params: { section_id: section.id, data: { type: 'section_note', attributes: { content: '' } } }, format: :json
 
@@ -140,7 +140,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
   describe 'DELETE to #destroy' do
     before { login_as_api_user }
 
-    context 'deletiong succeeded' do
+    context 'when deleting succeeds' do
       let(:section) { create :section, :with_note }
 
       it 'responds with success (204 no content)' do
@@ -156,7 +156,7 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       end
     end
 
-    context 'deletion failed' do
+    context 'when deletion fails' do
       let(:section) { create :section }
 
       it 'responds with 404 not found' do

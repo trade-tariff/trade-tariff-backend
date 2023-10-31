@@ -71,7 +71,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         allow(Faraday::Connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
       end
 
-      it 'raises original exception ending the process and logs an error event' do
+      it 'raises original exception ending the process and logs an error event', :aggregate_failures do
         allow(Rails.logger).to receive(:error)
 
         expect { described_class.download }.to raise_error Faraday::Error
@@ -79,7 +79,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         expect(Rails.logger).to have_received(:error).with(include('Download failed'))
       end
 
-      it 'sends an email with the exception error' do
+      it 'sends an email with the exception error', :aggregate_failures do
         ActionMailer::Base.deliveries.clear
         expect { described_class.download }.to raise_error(Faraday::Error)
 
@@ -96,7 +96,9 @@ RSpec.describe TaricSynchronizer, truncation: true do
 
     context 'when successful' do
       before do
+        # rubocop:disable RSpec/AnyInstance
         allow_any_instance_of(TaricImporter).to receive(:import)
+        # rubocop:enable RSpec/AnyInstance
         allow(TariffSynchronizer::TariffLogger).to receive(:failed_update)
 
         applied_update
@@ -107,7 +109,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         expect(described_class.apply).to be_truthy
       end
 
-      it 'all pending updates get applied' do
+      it 'all pending updates get applied', :aggregate_failures do
         allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).and_call_original
 
         expect(described_class.apply).to be_truthy
@@ -115,7 +117,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         expect(TariffSynchronizer::BaseUpdateImporter).to have_received(:perform).with(pending_update)
       end
 
-      it 'emails stakeholders' do
+      it 'emails stakeholders', :aggregate_failures do
         allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).and_call_original
         allow(TariffSynchronizer::BaseUpdate).to receive(:pending_or_failed).and_return([])
 
@@ -147,7 +149,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         failed_update
       end
 
-      it 'does not apply pending updates' do
+      it 'does not apply pending updates', :aggregate_failures do
         allow(TariffSynchronizer::TaricUpdate).to receive(:pending_at)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
@@ -155,7 +157,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         expect(TariffSynchronizer::TaricUpdate).not_to have_received(:pending_at)
       end
 
-      it 'logs the error event' do
+      it 'logs the error event', :aggregate_failures do
         allow(Rails.logger).to receive(:error)
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 

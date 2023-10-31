@@ -53,6 +53,8 @@ RSpec.describe TariffSynchronizer::FileService do
 
       allow(Rails).to receive(:env).and_return(string_inquirer)
       allow(Aws::S3::Resource).to receive(:new).and_return(aws_resource)
+      allow(aws_bucket).to receive(:object).with('data/some-file.txt').and_return(aws_object)
+      allow(aws_object).to receive(:put).with(body: 'Hello World')
       allow(aws_resource).to receive(:bucket).with('trade-tariff-backend').and_return(aws_bucket)
     end
 
@@ -60,38 +62,42 @@ RSpec.describe TariffSynchronizer::FileService do
       it 'Saves the file to a S3 bucket in if is the production environment', :aggregate_failures do
         described_class.write_file('data/some-file.txt', 'Hello World')
 
-        expect(aws_bucket).to have_received(:object).with('data/some-file.txt').and_return(aws_object)
+        expect(aws_bucket).to have_received(:object).with('data/some-file.txt')
         expect(aws_object).to have_received(:put).with(body: 'Hello World')
       end
     end
 
     describe '.file_exists?' do
       it 'Saves the file to a S3 bucket in if is the production environment', :aggregate_failures do
+        allow(aws_object).to receive(:exists?).and_return(true)
         described_class.file_exists?('data/some-file.txt')
 
-        expect(aws_bucket).to have_receive(:object).with('data/some-file.txt').and_return(aws_object)
-        expect(aws_object).to have_receive(:exists?)
+        expect(aws_bucket).to have_received(:object).with('data/some-file.txt')
+        expect(aws_object).to have_received(:exists?)
       end
     end
 
     describe '.file_size' do
       it 'returns the file size in the local filesystem', :aggregate_failures do
+        allow(aws_object).to receive(:size).and_return(1)
         described_class.file_size('data/some-file.txt')
 
-        expect(aws_bucket).to have_received(:object).with('data/some-file.txt').and_return(aws_object)
+        expect(aws_bucket).to have_received(:object).with('data/some-file.txt')
         expect(aws_object).to have_received(:size)
       end
     end
 
     describe '.file_as_stringio' do
       it 'calls amazon s3 to get the object with the same file_path and returns a string io', :aggregate_failures do
-        allow(base_update).to receive(:file_path).and_return('data/some-file.txt')
-
         aws_object_output = instance_double('Aws::S3::Types::GetObjectOutput')
 
+        allow(base_update).to receive(:file_path).and_return('data/some-file.txt')
+        allow(aws_object).to receive(:get).and_return(aws_object_output)
+        allow(aws_object_output).to receive(:body)
+
         described_class.file_as_stringio(base_update)
-        expect(aws_bucket).to have_received(:object).with('data/some-file.txt').and_return(aws_object)
-        expect(aws_object).to have_received(:get).and_return(aws_object_output)
+        expect(aws_bucket).to have_received(:object).with('data/some-file.txt')
+        expect(aws_object).to have_received(:get)
         expect(aws_object_output).to have_received(:body)
       end
     end

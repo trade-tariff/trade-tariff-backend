@@ -1,3 +1,4 @@
+# rubocop:disable Style/MissingRespondToMissing
 class NullObject
   def empty?
     true
@@ -11,3 +12,4 @@ class NullObject
     nil
   end
 end
+# rubocop:enable Style/MissingRespondToMissing

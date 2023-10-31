@@ -1,3 +1,4 @@
+# rubocop:disable Lint/MissingSuper
 class RingBuffer < Array
   attr_reader :max_size
 
@@ -5,7 +6,7 @@ class RingBuffer < Array
     @max_size = max_size.to_i
   end
 
-  def <<(el)
+  def <<(_)
     shift if full?
 
     super
@@ -17,3 +18,4 @@ class RingBuffer < Array
     size == @max_size
   end
 end
+# rubocop:enable Lint/MissingSuper

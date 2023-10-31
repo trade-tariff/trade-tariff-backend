@@ -1,14 +1,16 @@
 RSpec.describe QuotaEvent do
   let!(:quota_definition) { create :quota_definition }
-  let!(:balance_event)    do
-    create :quota_balance_event, quota_definition:,
-                                 occurrence_timestamp: 3.days.ago
+
+  before do
+    # Balance_event
+    create :quota_balance_event, quota_definition:, occurrence_timestamp: 3.days.ago
+
+    # Exhaustion_event
+    create :quota_exhaustion_event, quota_definition:, occurrence_timestamp: 25.hours.ago
+
+    # critical_event
+    create :quota_critical_event
   end
-  let!(:exhaustion_event) do
-    create :quota_exhaustion_event, quota_definition:,
-                                    occurrence_timestamp: 25.hours.ago
-  end
-  let!(:critical_event) { create :quota_critical_event }
 
   describe '.for_quota_definition' do
     it 'returns all quota events for specified quota_definition_sid', :aggregate_failures do
