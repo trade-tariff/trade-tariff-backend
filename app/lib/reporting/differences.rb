@@ -1,4 +1,7 @@
 module Reporting
+  # Generates a report which highlights anomolies in the uk Tariff data and
+  # also relies on source date about supplementary units and commodities to compare
+  # the uk and xi data.
   class Differences
     MEASURE_EAGER = [
       {
@@ -315,6 +318,22 @@ module Reporting
           worksheets:,
         )
       end
+    end
+
+    def uk_commodities_link
+      Reporting::Commodities.get_uk_link_today
+    end
+
+    def xi_commodities_link
+      Reporting::Commodities.get_xi_link_today
+    end
+
+    def uk_supplementary_units_link
+      Reporting::SupplementaryUnits.get_uk_link_today
+    end
+
+    def xi_supplementary_units_link
+      Reporting::SupplementaryUnits.get_xi_link_today
     end
 
     class << self

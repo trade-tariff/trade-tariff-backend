@@ -209,6 +209,10 @@ module TradeTariffBackend
       ENV['FRONTEND_HOST']
     end
 
+    def reporting_cdn_host
+      ENV['REPORTING_CDN_HOST']
+    end
+
     def beta_search_max_hits
       ENV['BETA_SEARCH_MAX_HITS']
     end

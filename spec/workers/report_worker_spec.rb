@@ -12,11 +12,6 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
       allow(Reporting::Prohibitions).to receive(:generate)
       allow(Reporting::Differences).to receive(:generate).and_return(differences)
-
-      allow(Reporting::Commodities).to receive(:get_uk_today).and_return('')
-      allow(Reporting::Commodities).to receive(:get_xi_today).and_return('')
-      allow(Reporting::SupplementaryUnits).to receive(:get_uk_today).and_return('')
-      allow(Reporting::SupplementaryUnits).to receive(:get_xi_today).and_return('')
     end
 
     shared_examples 'a report worker' do |service|
