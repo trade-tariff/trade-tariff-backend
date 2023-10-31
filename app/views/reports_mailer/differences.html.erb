@@ -1,0 +1,19 @@
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Hello,</p>
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Please see below the list of potential issues
+    with the UK tariff as of <%= @report_date %>. The details are in the attached Excel spreadsheet.</p>
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Also attached are the following:</p>
+<ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>A list of all
+        UK commodities, as of <%= @report_date %></li>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>A list of all
+        EU commodities, as of <%= @report_date %></li>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>A list of all
+        UK supplementary units, as of <%= @report_date %></li>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>A list of all
+        EU supplementary units, as of <%= @report_date %></li>
+</ul>
+
+<%= render partial: 'reports_mailer/differences/section', collection: @sections, as: :section %>
+
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Thank you,</p>
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>The Online Tariff Team.</p>

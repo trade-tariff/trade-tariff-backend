@@ -256,6 +256,10 @@ module TradeTariffBackend
       ENV['XE_API_PASSWORD']
     end
 
+    def differences_report_to_emails
+      ENV['DIFFERENCES_TO_EMAILS']
+    end
+
     def support_email
       ENV['TARIFF_SUPPORT_EMAIL']
     end

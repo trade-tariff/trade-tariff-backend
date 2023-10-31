@@ -299,11 +299,30 @@ module Reporting
       overview_counts[worksheet_name] += 1
     end
 
+    def sections
+      Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
+        worksheets = Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
+          OpenStruct.new(
+            worksheet:,
+            worksheet_name: config[:worksheet_name],
+            subtext: config[:description].sub('as_of', as_of.to_date.to_fs(:govuk)),
+            issue_count: overview_counts[config[:worksheet_name]],
+          )
+        end
+
+        OpenStruct.new(
+          section:,
+          worksheets:,
+        )
+      end
+    end
+
     class << self
       def generate(only: [])
         return if TradeTariffBackend.xi?
 
-        package = new.generate(only:)
+        report = new
+        package = report.generate(only:)
         package.serialize('differences.xlsx') if Rails.env.development?
 
         if Rails.env.production?
@@ -314,6 +333,8 @@ module Reporting
         end
 
         Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+
+        report
       end
 
       private

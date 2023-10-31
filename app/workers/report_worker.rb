@@ -11,6 +11,18 @@ class ReportWorker
       Reporting::DeclarableDuties.generate
       Reporting::Prohibitions.generate
       Reporting::GeographicalAreaGroups.generate
+
+      mail_differences if TradeTariffBackend.uk?
     end
+  end
+
+  private
+
+  def mail_differences
+    ReportsMailer.differences(differences).deliver_now
+  end
+
+  def differences
+    @differences ||= Reporting::Differences.generate
   end
 end

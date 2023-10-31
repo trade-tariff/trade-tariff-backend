@@ -31,8 +31,6 @@ class CdsUpdatesSynchronizerWorker
     Sidekiq::Client.enqueue(ClearCacheWorker)
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
     attempt_reschedule!
-  ensure
-    Sidekiq::Client.enqueue(ReportWorker)
   end
 
 private
