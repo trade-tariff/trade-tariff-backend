@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 15.4
+-- Dumped by pg_dump version 16.1
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -12250,3 +12250,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230922203255_fix_exchang
 INSERT INTO "schema_migrations" ("filename") VALUES ('20230922144638_create_exchange_rate_country_history.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231003084051_adds_download_and_apply_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231205100020_adds_clear_cache_table.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20231213114821_read_only_user.rb');
