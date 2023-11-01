@@ -87,6 +87,19 @@ class ExchangeRateCurrencyRate < Sequel::Model
       where(rate_type: type)
     end
 
+    def by_currency(currency_code)
+      where(currency_code: currency_code.upcase)
+    end
+
+    def monthly_by_currency_last_year(currency_code, date)
+      by_type(MONTHLY_RATE_TYPE)
+        .by_currency(currency_code.upcase)
+        .where('validity_start_date <= ?', date.end_of_month)
+        .where('validity_end_date <= ?', date.end_of_month)
+        .where('validity_start_date > ?', date.end_of_month - 12.months)
+        .order_by(:validity_start_date)
+    end
+
     def by_year(year)
       where(Sequel.cast(Sequel.function(:date_part, 'year', :applicable_date), Integer) => year)
     end

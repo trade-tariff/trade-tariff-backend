@@ -14,7 +14,7 @@ module ExchangeRates
         raise DataNotFoundError, "No exchange rate data found for month #{sample_date.month} and year #{sample_date.year}."
       end
 
-      ExchangeRates::UploadMonthlyFileService.new(
+      ExchangeRates::UploadFileService.new(
         rates,
         sample_date,
         :spot_csv,

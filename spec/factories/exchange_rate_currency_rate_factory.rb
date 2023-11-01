@@ -22,6 +22,22 @@ FactoryBot.define do
       end
     end
 
+    trait :with_eur do
+      currency_code { 'EUR' }
+
+      after(:create) do |currency_rate|
+        create(
+          :exchange_rate_country_currency,
+          currency_code: currency_rate.currency_code,
+          country_code: 'EU',
+          country_description: 'Eurozone',
+          currency_description: 'Euro',
+          validity_start_date: currency_rate.validity_start_date,
+          validity_end_date: currency_rate.validity_end_date,
+        )
+      end
+    end
+
     trait :monthly_rate do
       rate_type { 'monthly' }
     end

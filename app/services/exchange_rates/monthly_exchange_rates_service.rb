@@ -15,32 +15,33 @@ module ExchangeRates
         raise DataNotFoundError, "No exchange rate data found for month #{date.month} and year #{date.year}."
       end
 
-      ExchangeRates::UploadMonthlyFileService.new(
+      ExchangeRates::UploadFileService.new(
         rates,
         date,
         :monthly_csv,
       ).call
 
-      ExchangeRates::UploadMonthlyFileService.new(
+      ExchangeRates::UploadFileService.new(
         rates,
         date,
         :monthly_xml,
       ).call
 
-      ExchangeRates::UploadMonthlyFileService.new(
+      ExchangeRates::UploadFileService.new(
         rates,
         date,
         :monthly_csv_hmrc,
       ).call
     end
 
+      # Moved this as couldnt find where rates is called outside and as a service should probably have only 1 call action
+    private
+
     def rates
       @rates ||= ::ExchangeRateCurrencyRate
         .for_month(date.month, date.year, ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE)
         .sort_by { |rate| [rate.country_description, rate.currency_description] }
     end
-
-    private
 
     attr_reader :date, :sample_date, :download
   end
