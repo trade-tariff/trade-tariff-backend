@@ -5,9 +5,9 @@ class DownloadWorker
 
   def perform
     if TradeTariffBackend.use_cds?
-      TariffSynchronizer.download_cds
+      CdsSynchronizer.download
     else
-      TariffSynchronizer.download
+      TaricSynchronizer.download
     end
   end
 end

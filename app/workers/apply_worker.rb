@@ -5,9 +5,9 @@ class ApplyWorker
 
   def perform
     if TradeTariffBackend.use_cds?
-      TariffSynchronizer.apply_cds
+      CdsSynchronizer.apply
     else
-      TariffSynchronizer.apply
+      TaricSynchronizer.apply
     end
 
     GoodsNomenclatures::TreeNode.refresh!

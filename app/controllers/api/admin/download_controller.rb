@@ -1,6 +1,6 @@
 module Api
   module Admin
-    class DownloadsController < AdminController
+    class DownloadController < AdminController
       before_action :authenticate_user!
 
       def create
