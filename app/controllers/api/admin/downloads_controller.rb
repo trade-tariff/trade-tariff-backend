@@ -1,9 +1,12 @@
 module Api
   module Admin
-    class DownloadController < AdminController
+    class DownloadsController < AdminController
       before_action :authenticate_user!
 
       def create
+        binding.pry
+        # Curl example: curl -X POST -H "Content-Type: application/json" -d '{"data":{"type":"download","attributes":{"user_id":1}}}' http://localhost:3000/api/admin/downloads
+
         download = Download.new(download_params[:attributes])
 
         if download.valid?
@@ -17,7 +20,9 @@ module Api
       private
 
       def download_params
-        params.require(:data).permit(:type, attributes: %i[user_id])
+        params.require(:data).permit(:type, attributes: %i[user_id]) 
+        
+        # example in url: http://localhost:3000/api/admin/downloads?data[type]=download&data[attributes][user_id]=1
       end
     end
   end

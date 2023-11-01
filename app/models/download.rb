@@ -14,7 +14,7 @@ class Download < Sequel::Model
   end
 
   def before_create
-    self.enqueued_at = Time.zone.current
+    self.enqueued_at = Time.zone.now
     super
   end
 end
