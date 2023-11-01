@@ -8,6 +8,8 @@ Average rates are calculated based on the live countries in the last 12 months f
 
 Should anything fail with the average rate service then it can be force run by the following command:
 
-`ExchangeRates::AverageExchangeRatesService.call(force_run: true, selected_date: '2023-10-25')`
+`ExchangeRates::CreateAverageExchangeRatesService.call(force_run: true, selected_date: Time.zone.today.iso8601)`
 
-You can then navigate to https://www.trade-tariff.service.gov.uk/exchange_rates/average and the latest CSV will be available and a view online option.app/workers/average_exchange_rates_worker.rb
+You can then navigate to https://www.trade-tariff.service.gov.uk/exchange_rates/average and the latest CSV will be available to view online.
+
+You can check the exchange rates for the last year by running this command: `ExchangeRateCurrencyRate.by_type(ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE)`
