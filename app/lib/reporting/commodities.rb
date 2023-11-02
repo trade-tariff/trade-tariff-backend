@@ -30,6 +30,14 @@ module Reporting
         Reporting.get(uk_object_key)
       end
 
+      def get_uk_link_today
+        Reporting.get_link(uk_object_key)
+      end
+
+      def get_xi_link_today
+        Reporting.get_link(xi_object_key)
+      end
+
       private
 
       def goods_nomenclatures

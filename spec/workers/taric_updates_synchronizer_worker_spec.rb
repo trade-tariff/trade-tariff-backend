@@ -4,7 +4,6 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
   shared_examples_for 'a synchronizer worker that queues other workers' do
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearCacheWorker) }
     it { expect(Sidekiq::Client).to have_received(:enqueue).with(ClearInvalidSearchReferences) }
-    it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
   end
 
   describe '#perform' do
@@ -60,7 +59,6 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
 
         it { expect(TaricSynchronizer).to have_received(:download) }
         it { expect(TaricSynchronizer).to have_received(:apply) }
-        it { expect(Sidekiq::Client).to have_received(:enqueue).with(ReportWorker) }
 
         context 'with reapply_data_migrations option' do
           subject(:perform) { described_class.new.perform(true) }

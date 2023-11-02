@@ -1,0 +1,24 @@
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Hello,</p>
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Please see below the list of potential issues
+    with the UK tariff as of <%= @report_date %>. The details are in the attached Excel spreadsheet.</p>
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Also see the following:</p>
+<ul style='font-size:14px;color:#000;margin:0px;padding:0px'>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>
+        A list of all <%= link_to 'UK commodities', @report.uk_commodities_link %>, as of <%= @report_date %>
+    <link rel="" href="" title="" type="">
+    </li>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>
+        A list of all <%= link_to 'EU commodities', @report.xi_commodities_link %>, as of <%= @report_date %>
+    </li>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>
+        A list of all <%= link_to 'UK supplementary units', @report.uk_supplementary_units_link %>, as of <%= @report_date %>
+    </li>
+    <li style='font-size:14px;color:#000;margin:0px;margin-left:1em;font-family:Calibri,Arial,sans-serif;'>
+        A list of all <%= link_to 'EU supplementary units', @report.xi_supplementary_units_link %>, as of <%= @report_date %>
+    </li>
+</ul>
+
+<%= render partial: 'reports_mailer/differences/section', collection: @sections, as: :section %>
+
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Thank you,</p>
+<p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>The Online Tariff Team.</p>

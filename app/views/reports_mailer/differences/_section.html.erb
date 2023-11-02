@@ -1,0 +1,10 @@
+<table cellspacing="0" cellpadding="0" style="width:75%;max-width:800px">
+    <tr>
+        <td colspan="2"
+            style="padding-top:2em;font-weight:bold;font-size:16px;color:#000;text-transform:uppercase;font-family:Calibri,Arial,sans-serif;">
+            <%= section.section %>
+        </td>
+    </tr>
+
+    <%= render partial: 'reports_mailer/differences/worksheet', collection: section.worksheets, as: :worksheet %>
+</table>

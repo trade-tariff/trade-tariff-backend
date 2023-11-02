@@ -1,4 +1,7 @@
 module Reporting
+  # Generates a report which highlights anomolies in the uk Tariff data and
+  # also relies on source date about supplementary units and commodities to compare
+  # the uk and xi data.
   class Differences
     MEASURE_EAGER = [
       {
@@ -299,11 +302,46 @@ module Reporting
       overview_counts[worksheet_name] += 1
     end
 
+    def sections
+      Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
+        worksheets = Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
+          OpenStruct.new(
+            worksheet:,
+            worksheet_name: config[:worksheet_name],
+            subtext: config[:description].sub('as_of', as_of.to_date.to_fs(:govuk)),
+            issue_count: overview_counts[config[:worksheet_name]],
+          )
+        end
+
+        OpenStruct.new(
+          section:,
+          worksheets:,
+        )
+      end
+    end
+
+    def uk_commodities_link
+      Reporting::Commodities.get_uk_link_today
+    end
+
+    def xi_commodities_link
+      Reporting::Commodities.get_xi_link_today
+    end
+
+    def uk_supplementary_units_link
+      Reporting::SupplementaryUnits.get_uk_link_today
+    end
+
+    def xi_supplementary_units_link
+      Reporting::SupplementaryUnits.get_xi_link_today
+    end
+
     class << self
       def generate(only: [])
         return if TradeTariffBackend.xi?
 
-        package = new.generate(only:)
+        report = new
+        package = report.generate(only:)
         package.serialize('differences.xlsx') if Rails.env.development?
 
         if Rails.env.production?
@@ -314,6 +352,8 @@ module Reporting
         end
 
         Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
+
+        report
       end
 
       private

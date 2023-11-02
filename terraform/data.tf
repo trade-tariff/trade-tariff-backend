@@ -64,6 +64,10 @@ data "aws_secretsmanager_secret" "sentry_dsn" {
   name = "backend-sentry-dsn"
 }
 
+data "aws_secretsmanager_secret" "differences_to_emails" {
+  name = "backend-differences-to-emails"
+}
+
 data "aws_secretsmanager_secret" "sync_uk_host" {
   name = "backend-uk-sync-host"
 }

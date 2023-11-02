@@ -209,6 +209,10 @@ module TradeTariffBackend
       ENV['FRONTEND_HOST']
     end
 
+    def reporting_cdn_host
+      ENV['REPORTING_CDN_HOST']
+    end
+
     def beta_search_max_hits
       ENV['BETA_SEARCH_MAX_HITS']
     end
@@ -254,6 +258,10 @@ module TradeTariffBackend
 
     def xe_api_password
       ENV['XE_API_PASSWORD']
+    end
+
+    def differences_report_to_emails
+      ENV['DIFFERENCES_TO_EMAILS']
     end
 
     def support_email

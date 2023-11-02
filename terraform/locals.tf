@@ -109,12 +109,16 @@ locals {
 
   backend_common_worker_vars = [
     {
-      name  = "TARIFF_SYNC_EMAIL"
-      value = "trade-tariff-support@enginegroup.com"
+      name  = "REPORTING_CDN_HOST"
+      value = "https://reporting.trade-tariff.service.gov.uk"
     },
     {
       name  = "SLACK_CHANNEL"
       value = "#tariffs-etl"
+    },
+    {
+      name  = "TARIFF_SYNC_EMAIL"
+      value = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
     },
   ]
 
@@ -133,6 +137,10 @@ locals {
   ]
 
   backend_uk_worker_secrets = [
+    {
+      name      = "DIFFERENCES_TO_EMAILS"
+      valueFrom = data.aws_secretsmanager_secret.differences_to_emails.arn
+    },
     {
       name      = "HMRC_API_HOST"
       valueFrom = data.aws_secretsmanager_secret.sync_uk_host.arn
