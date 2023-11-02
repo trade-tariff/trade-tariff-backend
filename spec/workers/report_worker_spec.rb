@@ -3,6 +3,7 @@ RSpec.describe ReportWorker, type: :worker do
 
   describe '#perform' do
     let(:differences) { Reporting::Differences.new }
+    let(:date) { Time.zone.today.iso8601 }
 
     before do
       allow(Reporting::Commodities).to receive(:generate)
@@ -12,14 +13,18 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
       allow(Reporting::Prohibitions).to receive(:generate)
       allow(Reporting::Differences).to receive(:generate).and_return(differences)
+      allow(TradeTariffBackend).to receive(:service).and_return(service)
+      travel_to Date.parse(date).beginning_of_day
+
+      worker.perform
     end
 
-    shared_examples 'a report worker' do |service|
-      before do
-        allow(TradeTariffBackend).to receive(:service).and_return(service)
+    after do
+      travel_back
+    end
 
-        worker.perform
-      end
+    context 'when on the xi service' do
+      let(:service) { 'xi' }
 
       it { expect(Reporting::Commodities).to have_received(:generate) }
       it { expect(Reporting::Basic).to have_received(:generate) }
@@ -27,17 +32,36 @@ RSpec.describe ReportWorker, type: :worker do
       it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
       it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
       it { expect(Reporting::Prohibitions).to have_received(:generate) }
-
-      if service == 'uk'
-        it { expect(Reporting::Differences).to have_received(:generate) }
-        it { expect(ActionMailer::Base.deliveries.count).to eq(1) }
-      else
-        it { expect(Reporting::Differences).not_to have_received(:generate) }
-        it { expect(ActionMailer::Base.deliveries.count).to eq(0) }
-      end
+      it { expect(Reporting::Differences).not_to have_received(:generate) }
+      it { expect(ActionMailer::Base.deliveries.count).to eq(0) }
     end
 
-    it_behaves_like 'a report worker', 'uk'
-    it_behaves_like 'a report worker', 'xi'
+    context 'when on the uk service and the day is a monday' do
+      let(:service) { 'uk' }
+      let(:date) { '2023-10-30' }
+
+      it { expect(Reporting::Commodities).to have_received(:generate) }
+      it { expect(Reporting::Basic).to have_received(:generate) }
+      it { expect(Reporting::SupplementaryUnits).to have_received(:generate) }
+      it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
+      it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
+      it { expect(Reporting::Prohibitions).to have_received(:generate) }
+      it { expect(Reporting::Differences).to have_received(:generate) }
+      it { expect(ActionMailer::Base.deliveries.count).to eq(1) }
+    end
+
+    context 'when on the uk service and the day is not a monday' do
+      let(:service) { 'uk' }
+      let(:date) { '2023-10-31' }
+
+      it { expect(Reporting::Commodities).to have_received(:generate) }
+      it { expect(Reporting::Basic).to have_received(:generate) }
+      it { expect(Reporting::SupplementaryUnits).to have_received(:generate) }
+      it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
+      it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
+      it { expect(Reporting::Prohibitions).to have_received(:generate) }
+      it { expect(Reporting::Differences).not_to have_received(:generate) }
+      it { expect(ActionMailer::Base.deliveries.count).to eq(0) }
+    end
   end
 end

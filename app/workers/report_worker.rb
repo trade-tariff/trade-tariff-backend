@@ -12,7 +12,7 @@ class ReportWorker
       Reporting::Prohibitions.generate
       Reporting::GeographicalAreaGroups.generate
 
-      mail_differences if TradeTariffBackend.uk?
+      mail_differences if mail_differences?
     end
   end
 
@@ -22,7 +22,15 @@ class ReportWorker
     ReportsMailer.differences(differences).deliver_now
   end
 
+  def mail_differences?
+    TradeTariffBackend.uk? && monday?
+  end
+
   def differences
-    @differences ||= Reporting::Differences.generate
+    Reporting::Differences.generate
+  end
+
+  def monday?
+    Time.zone.now.monday?
   end
 end
