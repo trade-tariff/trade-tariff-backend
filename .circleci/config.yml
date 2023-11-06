@@ -598,98 +598,6 @@ jobs:
           event: fail
           template: basic_fail_1
 
-  deploy-dev:
-    docker:
-      - image: cimg/ruby:3.2.2
-    environment:
-      SENTRY_ENVIRONMENT: "development"
-    parameters:
-      service:
-        type: string
-    steps:
-      - queue/until_front_of_line:
-          time: "10"
-          consider-branch: false
-          dont-quit: true
-      - cf-deploy-docker-tasks:
-          docker_image_tag: dev-$CIRCLE_SHA1
-          space: "development"
-          environment_key: "dev"
-          service: << parameters.service >>
-      - cf-deploy-docker-worker:
-          docker_image_tag: dev-$CIRCLE_SHA1
-          space: "development"
-          environment_key: "dev"
-          service: << parameters.service >>
-      - cf-deploy-docker:
-          docker_image_tag: dev-$CIRCLE_SHA1
-          space: "development"
-          environment_key: "dev"
-          domain_prefix: "dev"
-          app_domain_prefix: "development"
-          service: << parameters.service >>
-      - tariff/sentry-release:
-          environment: development
-
-  deploy-main-to-staging:
-    docker:
-      - image: cimg/ruby:3.2.2
-    environment:
-      SENTRY_ENVIRONMENT: "staging"
-    parameters:
-      service:
-        type: string
-    steps:
-      - queue/until_front_of_line:
-          time: "10"
-          dont-quit: true
-      - cf-deploy-docker-tasks:
-          docker_image_tag: $CIRCLE_SHA1
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
-      - cf-deploy-docker-worker:
-          docker_image_tag: $CIRCLE_SHA1
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
-      - cf-deploy-docker:
-          docker_image_tag: $CIRCLE_SHA1
-          space: "staging"
-          environment_key: "staging"
-          domain_prefix: "staging"
-          app_domain_prefix: "staging"
-          service: << parameters.service >>
-      - tariff/sentry-release:
-          environment: staging
-
-  deploy_release_to_staging:
-    docker:
-      - image: cimg/ruby:3.2.2
-    environment:
-      SENTRY_ENVIRONMENT: "staging"
-    parameters:
-      service:
-        type: string
-    steps:
-      - cf-deploy-docker-tasks:
-          docker_image_tag: $CIRCLE_TAG
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
-      - cf-deploy-docker-worker:
-          docker_image_tag: $CIRCLE_TAG
-          space: "staging"
-          environment_key: "staging"
-          service: << parameters.service >>
-      - cf-deploy-docker:
-          docker_image_tag: $CIRCLE_TAG
-          space: "staging"
-          environment_key: "staging"
-          domain_prefix: "staging"
-          app_domain_prefix: "staging"
-          service: << parameters.service >>
-
   deploy-production:
     docker:
       - image: cimg/ruby:3.2.2
@@ -816,30 +724,12 @@ workflows:
             - fmt-terraform-dev
           <<: *filter-not-main
 
-      - build:
-          name: build-dev
-          context: trade-tariff
-          dev-build: true
-          <<: *filter-not-main
-
       - tariff/build-and-push:
           name: build-and-push-dev
           context: trade-tariff-terraform-aws-development
           environment: development
           image_name: tariff-backend
           ssm_parameter: "/development/BACKEND_ECR_URL"
-          <<: *filter-not-main
-
-      - deploy-dev:
-          matrix:
-            parameters:
-              service:
-                - xi
-                - uk
-          context: trade-tariff
-          requires:
-            - test
-            - build-dev
           <<: *filter-not-main
 
       - apply-terraform:
@@ -852,20 +742,20 @@ workflows:
             - build-and-push-dev
           <<: *filter-not-main
 
+      - sync-opensearch-packages:
+          name: sync-packages-dev
+          space: development
+          bucket: trade-tariff-opensearch-packages-844815912454
+          context: trade-tariff-terraform-aws-development
+          <<: *filter-not-main
+
       - tariff/smoketests:
           name: smoketest-dev
           context: trade-tariff
           url: https://dev.trade-tariff.service.gov.uk
           yarn_run: dev-tariff-backend-smoketests
           requires:
-            - deploy-dev
-          <<: *filter-not-main
-
-      - sync-opensearch-packages:
-          name: sync-packages-dev
-          space: development
-          bucket: trade-tariff-opensearch-packages-development
-          context: trade-tariff
+            - apply-terraform-dev
           <<: *filter-not-main
 
   deploy-to-staging:
@@ -881,11 +771,6 @@ workflows:
           requires:
             - write-docker-tag-staging
           <<: *filter-not-main
-
-      - build:
-          name: build-live
-          context: trade-tariff
-          <<: *filter-main
 
       - tariff/build-and-push:
           name: build-and-push-live
@@ -908,19 +793,8 @@ workflows:
       - sync-opensearch-packages:
           name: sync-packages-staging
           space: staging
-          bucket: trade-tariff-opensearch-packages-staging
-          context: trade-tariff
-          <<: *filter-main
-
-      - deploy-main-to-staging:
-          matrix:
-            parameters:
-              service:
-                - xi
-                - uk
-          context: trade-tariff
-          requires:
-            - build-live
+          bucket: trade-tariff-opensearch-packages-451934005581
+          context: trade-tariff-terraform-aws-staging
           <<: *filter-main
 
       - tariff/smoketests:
@@ -929,7 +803,7 @@ workflows:
           url: https://staging.trade-tariff.service.gov.uk
           yarn_run: staging-tariff-backend-smoketests
           requires:
-            - deploy-main-to-staging
+            - apply-terraform-staging
           <<: *filter-main
 
   deploy-to-production:
@@ -945,6 +819,11 @@ workflows:
           requires:
             - write-docker-tag-prod
           <<: *filter-not-main
+
+      - build:
+          name: build-live
+          context: trade-tariff
+          <<: *filter-main
 
       - promote-to-production?:
           type: approval
@@ -974,6 +853,8 @@ workflows:
                 - xi
                 - uk
           context: trade-tariff
+          requires:
+            - build-live
           <<: *filter-release
 
       - notify-production-deployment:
