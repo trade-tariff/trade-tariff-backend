@@ -1,6 +1,6 @@
 region                                = "eu-west-2"
 environment                           = "staging"
-base_domain                           = "ott-staging.co.uk"
+base_domain                           = "staging.trade-tariff.service.gov.uk"
 cpu                                   = 1024
 memory                                = 2048
 alcohol_coercian_starts_from          = "2022-01-01"
