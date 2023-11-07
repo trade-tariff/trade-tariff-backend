@@ -51,7 +51,7 @@ locals {
     },
     {
       name  = "PLEK_SERVICE_SIGNON_URI"
-      value = "https://signon-dev.london.cloudapps.digital"
+      value = "http://signon.tariff.internal"
     },
     {
       name  = "RACK_TIMEOUT_SERVICE"
