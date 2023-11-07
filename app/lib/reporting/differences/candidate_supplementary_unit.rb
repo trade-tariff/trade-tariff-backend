@@ -30,6 +30,8 @@ module Reporting
       METRIC = 'Supplementary units that should be present'.freeze
       SUBTEXT = 'Excise etc. may require a supp unit that is not provided'.freeze
 
+      IGNORED_UNITS = %w[ASVX SPQ ASV SPQLTR SPQLPA].freeze
+
       def initialize(report)
         @report = report
       end
@@ -78,18 +80,27 @@ module Reporting
           eager_chapter.descendants.each do |chapter_descendant|
             next unless chapter_descendant.declarable?
 
-            supplementary_unit = chapter_descendant.applicable_measures.find(&:supplementary?)
-            next if supplementary_unit.present?
+            supplementary_unit_measures = chapter_descendant.applicable_measures.select(&:supplementary?)
+            relevant_measures = chapter_descendant.applicable_measures - supplementary_unit_measures
+            units = relevant_measures.flat_map(&:units)
 
-            units = chapter_descendant
-              .applicable_measures
-              .flat_map(&:units)
+            units = if supplementary_unit_measures.any?
+                      supplementary_unit_types = supplementary_unit_types_for(supplementary_unit_measures)
+
+                      units.reject do |unit|
+                        type = MeasurementUnit.type_for(
+                          "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier_code]}",
+                        )
+
+                        supplementary_unit_types.include?(type) || ignore_unit?(unit)
+                      end
+                    else
+                      units.reject(&method(:ignore_unit?))
+                    end
+
+            units = units.map { |unit| "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier_code]}" }
 
             next if units.blank?
-
-            units = units.map do |unit|
-              "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier]}"
-            end
 
             yield [
               chapter_descendant.goods_nomenclature_item_id,
@@ -97,6 +108,22 @@ module Reporting
             ]
           end
         end
+      end
+
+      def supplementary_unit_types_for(supplementary_unit_measures)
+        supplementary_unit_measures
+          .flat_map(&:units)
+          .map do |unit|
+            full_unit = "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier_code]}"
+
+            MeasurementUnit.type_for(full_unit)
+          end
+      end
+
+      def ignore_unit?(unit)
+        full_unit = "#{unit[:measurement_unit_code]}#{unit[:measurement_unit_qualifier_code]}"
+
+        MeasurementUnit.coerced_unit_for(full_unit) == 'KGM' || IGNORED_UNITS.include?(full_unit)
       end
     end
   end
