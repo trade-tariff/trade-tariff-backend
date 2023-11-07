@@ -98,9 +98,9 @@
     "unit_question": "What is the weight of dihydrostreptomycin in the goods you will be importing?",
     "unit_hint": "Enter the value in kilograms",
     "unit": "kilograms",
-    "multiplier": "0.01",
-    "coerced_measurement_unit_code": "KGM",
-    "original_unit": "x 100 kg",
+    "multiplier": null,
+    "coerced_measurement_unit_code": null,
+    "original_unit": null,
     "measurement_unit_type": "weight"
   },
   "DTN": {
@@ -297,7 +297,7 @@
     "multiplier": null,
     "coerced_measurement_unit_code": null,
     "original_unit": null,
-    "measurement_unit_type": "number"
+    "measurement_unit_type": "length"
   },
   "KCC": {
     "measurement_unit_code": "KCC",
@@ -453,7 +453,7 @@
     "multiplier": null,
     "coerced_measurement_unit_code": null,
     "original_unit": null,
-    "measurement_unit_type": "number"
+    "measurement_unit_type": "length"
   },
   "KNI": {
     "measurement_unit_code": "KNI",
@@ -622,7 +622,7 @@
     "multiplier": "0.001",
     "coerced_measurement_unit_code": null,
     "original_unit": "x 1,000 pairs",
-    "measurement_unit_type": "number"
+    "measurement_unit_type": "pairs"
   },
   "MTK": {
     "measurement_unit_code": "MTK",
@@ -674,7 +674,7 @@
     "multiplier": null,
     "coerced_measurement_unit_code": null,
     "original_unit": null,
-    "measurement_unit_type": "number"
+    "measurement_unit_type": "length"
   },
   "MWH": {
     "measurement_unit_code": "MWH",
@@ -739,7 +739,7 @@
     "multiplier": null,
     "coerced_measurement_unit_code": null,
     "original_unit": null,
-    "measurement_unit_type": "number"
+    "measurement_unit_type": "pairs"
   },
   "RET": {
     "measurement_unit_code": "RET",
@@ -837,9 +837,9 @@
     "unit_question": "What is the weight of the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNEE": {
@@ -850,9 +850,9 @@
     "unit_question": "What is the net drained weight of the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNEI": {
@@ -863,9 +863,9 @@
     "unit_question": "What is the weight of biodiesel in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNEJ": {
@@ -876,9 +876,9 @@
     "unit_question": "What is the weight of the fuel content in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNEK": {
@@ -889,9 +889,9 @@
     "unit_question": "What is the weight of bioethanol in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNEM": {
@@ -902,9 +902,9 @@
     "unit_question": "What is the weight net of dry matter of the goods you will be importing ?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNER": {
@@ -915,9 +915,9 @@
     "unit_question": "What is the weight net of the standard quality of the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "TNEZ": {
@@ -928,9 +928,9 @@
     "unit_question": "What is the weight per 1% by weight of sucrose in the goods you will be importing?",
     "unit_hint": "Enter the value in tonnes (1,000 kg)",
     "unit": "tonnes",
-    "multiplier": null,
-    "coerced_measurement_unit_code": null,
-    "original_unit": null,
+    "multiplier": "0.001",
+    "coerced_measurement_unit_code": "KGM",
+    "original_unit": "x 1,000 kg",
     "measurement_unit_type": "weight"
   },
   "WAT": {

@@ -118,6 +118,47 @@ RSpec.describe MeasurementUnit do
     end
   end
 
+  describe '.type_for' do
+    subject { described_class.type_for('LTR') }
+
+    it { is_expected.to eq('volume') }
+  end
+
+  describe '.coerced_unit_for' do
+    subject { described_class.coerced_unit_for('DTN') }
+
+    it { is_expected.to eq('KGM') }
+  end
+
+  describe '.coerced_units' do
+    subject { described_class.coerced_units }
+
+    let(:expected_units) do
+      {
+        'DTN' => 'KGM',
+        'DTNE' => 'KGM',
+        'DTNF' => 'KGM',
+        'DTNG' => 'KGM',
+        'DTNL' => 'KGM',
+        'DTNM' => 'KGM',
+        'DTNR' => 'KGM',
+        'DTNS' => 'KGM',
+        'HLT' => 'LTR',
+        'KLT' => 'LTR',
+        'TNE' => 'KGM',
+        'TNEE' => 'KGM',
+        'TNEI' => 'KGM',
+        'TNEJ' => 'KGM',
+        'TNEK' => 'KGM',
+        'TNEM' => 'KGM',
+        'TNER' => 'KGM',
+        'TNEZ' => 'KGM',
+      }
+    end
+
+    it { is_expected.to eq(expected_units) }
+  end
+
   describe '.weight_units' do
     subject { described_class.weight_units.to_a }
 
