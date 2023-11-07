@@ -28,6 +28,20 @@ class MeasurementUnit < Sequel::Model
       end
     end
 
+    def type_for(unit_code)
+      measurement_units.dig(unit_code, 'measurement_unit_type')
+    end
+
+    def coerced_unit_for(unit_code)
+      coerced_units.fetch(unit_code, unit_code)
+    end
+
+    def coerced_units
+      @coerced_units ||= measurement_units.each_with_object({}) do |(k, v), acc|
+        acc[k] = v['coerced_measurement_unit_code'] if v['coerced_measurement_unit_code'].present?
+      end
+    end
+
     def weight_units
       @weight_units ||= begin
         units = measurement_units.select { |_k, v| v['measurement_unit_type'] == 'weight' }.keys
