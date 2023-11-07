@@ -14,152 +14,75 @@ Projects using the Trade Tariff (TT) API:
 
 ### Dependencies
 
-  - Ruby [v3](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
-  - Postgresql v10
-  - ElasticSearch v7
-  - Redis v4
+  - Ruby [v3.2](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
+  - Postgresql v13
+  - OpenSearch v2
+  - Redis
+
+These can be configured by running `docker-compose up` or by manual installation
+
+### Database _(optional)_
+
+If you have access, you can download a copy of the Staging database
+
+1. Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
+2. Check with DevOps to have a cf account created, if you don't have one already
+3. Install [conduit plugin](https://plugins.cloudfoundry.org/#conduit). It allows you to directly connect to the remote service instances in Cloud Foundry.
+4. Ensure you have pg_dump installed
+5. Get a data dump of the DB from our DEV/STAGING environment, by running:
+
+   ```
+   cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
+   ```
+
+   For example:
+
+   ```
+   cf conduit trade-tariff-db -- pg_dump --file trade-tariff-db.psql --no-acl --no-owner --clean --verbose
+   ```
 
 ### Setup
 
-Please go through this updated [setup document](https://github.com/trade-tariff/trade-tariff-backend/blob/main/SETUP.md)
+1. Clone this repo
+2. Install the correct ruby version according to the `.ruby-version` - eg using rbenv or ASDF
+3. Setup the app
+   - If you don't have a db dump then run `bin/setup` without parameters, _NB: this will result in a empty dataset_
+   - If you do have a database dump from Staging, run `bin/setup <path/to/dump/file>`
+     Sidekiq is started to build the search indexes - once the jobs have all finished (10 [done] jobs, one after the other), hit ctrl-c to exit sidekiq
+4. Start the app with `bin/rails s`
 
-1. Setup your environment, by doing the following:
+### Running an XI service
 
-    - Run rails db:create - to create the databases locally
+1. Add `SERVICE=xi` to `.env.development.local`
+2. Rebuild the search indexes
+   - `bin/rake tariff:reindex`
+   - `bundle exec sidekiq`
+3. Run the rails server as normal - `bin/rails s`
 
-    - Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
+### Performing daily updates
 
-    - Check with DevOps to have a cf account created, if you don't have one already
+These are run daily by a background job, CdsUpdatesSynchronizerWorker or TaricUpdatesSynchronizerWorker. Additional environment variables are needed to run these jobs locally.
 
-    - Install [conduit plugin](https://plugins.cloudfoundry.org/#conduit). It allows you to directly connect to the remote service instances in Cloud Foundry.
+These should be added to `.env.development.local` -;
 
-    - Get a data dump of the DB from our DEV/STAGING environment, by running:
-
-       ```
-       cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
-       ```
-
-       For example:
-
-       ```
-       cf conduit trade-tariff-db -- pg_dump --file trade-tariff-db.psql
-       ```
-
-    - Restore the data dump locally, by running:
-
-       ```
-       psql -h localhost tariff_development < <data_dump_file_name>.psql
-       ```
-
-2. Update `.env` file with valid data. To enable the XI version, add the extra flag `SERVICE=xi`. If not added, it will default to the UK version.
-
-3. Start your services:
-
-    #### Manually
-
-    - PostgreSQL Server
-
-    Use the command
-    `postgres -D /usr/local/pgsql/data`
-
-    or
-
-    `pg_ctl start`
-
-    see https://www.postgresql.org/docs/10/server-start.html
-
-    - Redis Server:
-
-    `redis-server`
-
-    - ElasticSearch
-
-    cd to your ElasticSearch folder and run `./bin/elasticseach`
-
-    - Sidekiq
-
-    `bundle exec sidekiq`
-
-    - Rails Server
-
-    `bundle exec rails s`
-
-    #### Using Docker compose
-
-    TT backend contains a docker-compose.yml file to run Redis, ElasticSearch and Postgres:
-
-    To start the services run:
-
-    ```
-    docker-compose up
-    ```
-
-    To stop them run:
-
-    `docker-compose down`
-
-    Notes:
-    - docker-compose help you to start the depentencies, but you still need to run the trade tarif rails service:
-    - Keep in mind the [difference between "up" and "start"](https://docs.docker.com/compose/faq/#whats-the-difference-between-up-run-and-start).
-
-
-    ```
-    bundle exec rails s
-    ```
-
-    This way facilitates development and debugging, allowing easy setup of the other services.
-
-
-4. Verify that the app is up and running.
-
-    E.g open http://localhost:3018/healthcheck
-
-
-## Load database
-
-Check out [wiki article on the subject](https://github.com/trade-tariff/trade-tariff-backend/wiki/System-rebuild-procedure), or get a [recent database snapshot](mailto:trade-tariff-support@enginegroup.com).
-
-
-## Performing daily updates
-
-These are run hourly by a background worker CdsUpdatesSynchronizerWorker or TaricUpdatesSynchronizerWorker.
-
-
-### Sync process
-
-- checking failures (check tariff_synchronizer.rb) - if any of updates failed in the past, sync process will not proceed
-- downloading missing files up to Date.today (check base_update.rb and download methods in taric_update.rb)
-- applying downloaded files
-
-Updates are performed in portions and protected by redis lock (see TariffSynchronizer#apply).
-
-BaseUpdate#apply is responsible for most of the logging/checking job and running
-`import!` methods located in Taric class. Then it runs TaricImporter
-to parse and store xml files.
-
-In case of any errors, changes (per single update) are roll-backed and record itself is marked as failed. The sync would need to be rerun after a rollback.
-
-
-## Manual Deployment (This is automated via CircleCI now)
-
-You can manually deploy to cloud foundry as well, so you need to have the CLI installed, and the following [cf plugin](https://github.com/bluemixgaragelondon/cf-blue-green-deploy) installed:
-
-Set the following ENV variables:
-* CF_USER
-* CF_PASSWORD
-* CF_ORG
-* CF_SPACE
-* CF_APP
-* CF_APP_WORKER
-* SLACK_CHANNEL
-* SLACK_WEBHOOK
-
-Then run
-
-    ./bin/deploy
-
-NB: In the newer Diego architecture from CloudFoundry, no-route skips creating and binding a route for the app, but does not specify which type of health check to perform. If your app does not listen on a port, for example the sidekiq worker, then it does not satisfy the port-based health check and Cloud Foundry marks it as crashed. To prevent this, disable the port-based health check with cf set-health-check APP_NAME none.
-
+```
+AWS_ACCESS_KEY_ID
+AWS_BUCKET_NAME
+AWS_REGION
+AWS_REPORTING_BUCKET_NAME
+AWS_SECRET_ACCESS_KEY
+HMRC_API_HOST
+HMRC_CLIENT_ID
+HMRC_CLIENT_SECRET
+TARIFF_FROM_EMAIL
+TARIFF_IGNORE_PRESENCE_ERRORS
+TARIFF_MANAGEMENT_EMAIL
+TARIFF_SUPPORT_EMAIL
+TARIFF_SYNC_EMAIL
+TARIFF_SYNC_HOST
+TARIFF_SYNC_PASSWORD
+TARIFF_SYNC_USERNAME
+```
 
 ## Scaling the application
 
@@ -187,14 +110,7 @@ To create or update autoscaling policy for your application run:
     cf attach-autoscaling-policy APP_NAME ./policy.json
 
 
-Current autosscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/blob/main/config/autoscale).
-
-
-## Notes
-
-* When writing validators in `app/validators` please run the rake task
-`audit:verify` which runs the validator against existing data.
-
+Current autoscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/tree/main/config/autoscaling).
 
 ## Contributing
 
