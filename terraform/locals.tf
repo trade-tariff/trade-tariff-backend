@@ -82,6 +82,10 @@ locals {
       value = data.aws_s3_bucket.spelling_corrector.bucket
     },
     {
+      name  = "TARIFF_SUPPORT_EMAIL"
+      value = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
+    },
+    {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
       value = var.stemming_exclusion_reference_analyzer
     },
@@ -109,8 +113,12 @@ locals {
 
   backend_common_worker_vars = [
     {
+      name  = "AWS_REPORTING_BUCKET_NAME"
+      value = "trade-tariff-reporting-${local.account_id}"
+    },
+    {
       name  = "REPORTING_CDN_HOST"
-      value = "https://reporting.trade-tariff.service.gov.uk"
+      value = "https://reporting.${var.base_domain}/"
     },
     {
       name  = "SLACK_CHANNEL"

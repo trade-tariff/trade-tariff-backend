@@ -91,7 +91,7 @@ data "aws_iam_policy_document" "task_role_kms_keys" {
     ]
     resources = [
       data.aws_kms_key.opensearch_key.arn,
-      data.aws_kms_key.persistence_key.arn,
+      data.aws_kms_key.s3_key.arn,
     ]
   }
 }
@@ -122,13 +122,14 @@ resource "aws_iam_policy" "exec" {
   policy = data.aws_iam_policy_document.exec.json
 }
 
-data "aws_iam_policy_document" "spelling_corrector_bucket" {
+data "aws_iam_policy_document" "s3_policy" {
   statement {
     effect  = "Allow"
     actions = ["s3:ListBucket"]
     resources = [
       data.aws_s3_bucket.spelling_corrector.arn,
-      data.aws_s3_bucket.persistence.arn
+      data.aws_s3_bucket.persistence.arn,
+      data.aws_s3_bucket.reporting.arn
     ]
   }
 
@@ -140,12 +141,13 @@ data "aws_iam_policy_document" "spelling_corrector_bucket" {
     ]
     resources = [
       "${data.aws_s3_bucket.spelling_corrector.arn}/*",
-      "${data.aws_s3_bucket.persistence.arn}/*"
+      "${data.aws_s3_bucket.persistence.arn}/*",
+      "${data.aws_s3_bucket.reporting.arn}/*"
     ]
   }
 }
 
 resource "aws_iam_policy" "s3" {
   name   = "backend-task-role-s3-policy"
-  policy = data.aws_iam_policy_document.spelling_corrector_bucket.json
+  policy = data.aws_iam_policy_document.s3_policy.json
 }

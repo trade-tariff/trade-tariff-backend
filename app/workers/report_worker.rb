@@ -4,16 +4,14 @@ class ReportWorker
   sidekiq_options retry: false
 
   def perform
-    if TradeTariffBackend.reporting_enabled?
-      Reporting::Commodities.generate
-      Reporting::Basic.generate
-      Reporting::SupplementaryUnits.generate
-      Reporting::DeclarableDuties.generate
-      Reporting::Prohibitions.generate
-      Reporting::GeographicalAreaGroups.generate
+    Reporting::Commodities.generate
+    Reporting::Basic.generate
+    Reporting::SupplementaryUnits.generate
+    Reporting::DeclarableDuties.generate
+    Reporting::Prohibitions.generate
+    Reporting::GeographicalAreaGroups.generate
 
-      mail_differences if mail_differences?
-    end
+    mail_differences if mail_differences?
   end
 
   private

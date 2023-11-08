@@ -225,10 +225,6 @@ module TradeTariffBackend
       ENV.fetch('BETA_SEARCH_GUIDES_ENABLED', 'false') == 'true'
     end
 
-    def reporting_enabled?
-      ENV.fetch('REPORTING_ENABLED', 'false') == 'true'
-    end
-
     def opensearch_client
       @opensearch_client ||= OpenSearch::Client.new(opensearch_configuration)
     end
