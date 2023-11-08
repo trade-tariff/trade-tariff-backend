@@ -40,7 +40,7 @@ data "aws_kms_key" "opensearch_key" {
   key_id = "alias/opensearch-key"
 }
 
-data "aws_kms_key" "persistence_key" {
+data "aws_kms_key" "s3_key" {
   key_id = "alias/s3-key"
 }
 
@@ -106,4 +106,8 @@ data "aws_s3_bucket" "spelling_corrector" {
 
 data "aws_s3_bucket" "persistence" {
   bucket = "trade-tariff-persistence-${local.account_id}"
+}
+
+data "aws_s3_bucket" "reporting" {
+  bucket = "trade-tariff-reporting-${local.account_id}"
 }
