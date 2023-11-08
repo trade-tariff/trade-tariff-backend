@@ -51,7 +51,7 @@ locals {
     },
     {
       name  = "PLEK_SERVICE_SIGNON_URI"
-      value = "http://signon.tariff.internal"
+      value = "http://signon.tariff.internal:8080"
     },
     {
       name  = "RACK_TIMEOUT_SERVICE"
