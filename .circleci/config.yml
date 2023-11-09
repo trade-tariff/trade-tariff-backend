@@ -853,8 +853,6 @@ workflows:
                 - xi
                 - uk
           context: trade-tariff
-          requires:
-            - build-live
           <<: *filter-release
 
       - notify-production-deployment:
