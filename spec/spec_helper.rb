@@ -12,6 +12,7 @@ RSpec.configure do |config|
   config.expose_dsl_globally = false
 
   config.order = :random
+  config.example_status_persistence_file_path = 'spec/support/examples.txt'
 
   # Seed global randomization in this process using the `--seed` CLI option.
   # Setting this allows you to use `--seed` to deterministically reproduce
