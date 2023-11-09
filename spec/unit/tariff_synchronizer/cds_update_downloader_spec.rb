@@ -45,19 +45,15 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
           body[1]['filename'], body[1]['downloadURL'], example_date - 5.days, TariffSynchronizer::CdsUpdate
         ).and_call_original
 
-        allow(TariffSynchronizer::TariffDownloader).not_to receive(:new).with(
-          body[2]['filename'], body[2]['downloadURL'], example_date - 6.days, TariffSynchronizer::CdsUpdate
-        )
-
         downloader.perform
 
         expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(
           body[0]['filename'], body[0]['downloadURL'], example_date, TariffSynchronizer::CdsUpdate
-        ).and_call_original
+        )
 
         expect(TariffSynchronizer::TariffDownloader).to have_received(:new).with(
           body[1]['filename'], body[1]['downloadURL'], example_date - 5.days, TariffSynchronizer::CdsUpdate
-        ).and_call_original
+        )
 
         expect(TariffSynchronizer::TariffDownloader).not_to have_received(:new).with(
           body[2]['filename'], body[2]['downloadURL'], example_date - 6.days, TariffSynchronizer::CdsUpdate
@@ -73,7 +69,7 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
       let(:body) { [] }
 
       it 'does not call TariffDownloader' do
-        allow(TariffSynchronizer::TariffDownloader).not_to receive(:new)
+        allow(TariffSynchronizer::TariffDownloader).to receive(:new)
         downloader.perform
         expect(TariffSynchronizer::TariffDownloader).not_to have_received(:new)
       end

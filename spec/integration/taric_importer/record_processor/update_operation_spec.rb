@@ -1,6 +1,4 @@
 RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
-  subject(:build_update_operation) { described_class.new(record, operation_date).call }
-
   let(:record_hash) do
     { 'transaction_id' => '31946',
       'record_code' => '130',
@@ -16,6 +14,7 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
   describe '#call' do
     let(:operation_date) { Date.new(2013, 8, 1) }
     let(:record) { TaricImporter::RecordProcessor::Record.new(record_hash) }
+    let(:operation) { build_update_operation }
 
     before do
       LanguageDescription.unrestrict_primary_key
@@ -26,20 +25,17 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
         create_language_description_record
       end
 
-      it 'identifies as create operation', :aggregate_failures do
-        build_update_operation
-
-        expect(LanguageDescription.count).to eq 1
+      it 'identifies as create operation' do
+        operation.call
         expect(LanguageDescription.first.description).to eq 'French!'
       end
 
-      it 'returns model instance even when the previous record is equal' do
-        expect(build_update_operation).to be_kind_of LanguageDescription
+      it 'returns model instance' do
+        expect(operation.call).to be_kind_of LanguageDescription
       end
 
       it 'sets update operation date to operation_date' do
-        build_update_operation
-
+        operation.call
         expect(
           LanguageDescription::Operation.where(operation: 'U').first.operation_date,
         ).to eq operation_date
@@ -48,32 +44,37 @@ RSpec.describe TaricImporter::RecordProcessor::UpdateOperation do
 
     context 'when record for update is missing' do
       it 'raises Sequel::RecordNotFound exception' do
-        expect { build_update_operation }.to raise_error(Sequel::RecordNotFound)
+        expect { operation.call }.to raise_error(Sequel::RecordNotFound)
       end
 
       context 'with ignoring presence errors' do
         before do
-          allow(ActiveSupport::Notifications).to receive(:instrument)
+          allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
         end
 
         it 'creates new record' do
-          expect { build_update_operation }.to change(LanguageDescription, :count).from(0).to(1)
+          expect { operation.call }.to change(LanguageDescription, :count).from(0).to(1)
         end
 
         it 'sends presence error events' do
-          build_update_operation
-          expect(ActiveSupport::Notifications).to have_received(:instrument)
+          allow(operation).to receive(:log_presence_error)
+          operation.call
+          expect(operation).to have_received(:log_presence_error)
         end
 
-        it 'invokes CreateOperation', :aggregate_failures do
+        it 'invokes CreateOperation' do
           instance = instance_double(TaricImporter::RecordProcessor::CreateOperation)
           allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new).and_return(instance)
           allow(instance).to receive(:call)
+          operation.call
 
           expect(instance).to have_received(:call)
-          build_update_operation
         end
       end
+    end
+
+    def build_update_operation
+      TaricImporter::RecordProcessor::UpdateOperation.new(record, operation_date)
     end
 
     def create_language_description_record

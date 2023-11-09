@@ -84,12 +84,15 @@ RSpec.describe ApplicationHelper do
                                                   validity_start_date: Time.parse('2010-01-04T00:00:00.000Z'),
                                                   officialjournal_number: 'L 328',
                                                   officialjournal_page: 6)
+          measure.reload
+        end
+
+        let(:base_regulation) do
           create(:base_regulation, base_regulation_id: 'R0912150',
                                    base_regulation_role: 1,
                                    published_date: Date.new(2009, 12, 15),
                                    officialjournal_number: 'L 328',
                                    officialjournal_page: 1)
-          measure.reload
         end
 
         let!(:measure) do

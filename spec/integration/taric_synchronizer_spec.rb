@@ -1,208 +1,165 @@
-RSpec.describe TaricSynchronizer, truncation: true do
-  describe '.initial_update_date' do
-    it 'returns initial update date ' do
-      expect(described_class.initial_update_date).to eq(Date.new(2012, 6, 6))
-    end
-  end
-
-  describe '.download' do
-    context 'when sync variables are set' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(true)
-      end
-
-      it 'invokes update downloading/syncing on all update types' do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
-
-        described_class.download
-
-        expect(TariffSynchronizer::TaricUpdate).to have_received(:sync)
-      end
-
-      it 'logs an info event' do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:sync).and_return(true)
-        allow(Rails.logger).to receive(:info)
-
-        described_class.download
-
-        expect(Rails.logger).to have_received(:info)
-      end
-
-      context 'when patch_broken_taric_downloads is set to true' do
-        before do
-          allow(TradeTariffBackend).to receive(:patch_broken_taric_downloads?).and_return(true)
-        end
-
-        it 'invokes update downloading/syncing on all update types' do
-          allow(TariffSynchronizer::TaricUpdate).to receive(:sync_patched).and_return(true)
-
-          described_class.download
-
-          expect(TariffSynchronizer::TaricUpdate).to have_received(:sync_patched)
-        end
-      end
-    end
-
-    context 'when sync variables are not set' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(false)
-      end
-
-      it 'does not start sync process' do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:sync)
-
-        described_class.download
-
-        expect(TariffSynchronizer::TaricUpdate).not_to have_received(:sync)
-      end
-
-      it 'logs an error event' do
-        allow(Rails.logger).to receive(:error)
-
-        described_class.download
-
-        expect(Rails.logger).to have_received(:error)
-      end
-    end
-
-    context 'when a download exception' do
-      before do
-        allow(described_class).to receive(:sync_variables_set?).and_return(true)
-        allow(Faraday::Connection).to receive(:get).and_raise(Faraday::Error, 'Foo')
-      end
-
-      it 'raises original exception ending the process and logs an error event', :aggregate_failures do
-        allow(Rails.logger).to receive(:error)
-
-        expect { described_class.download }.to raise_error Faraday::Error
-        expect(Rails.logger).to have_received(:error)
-        expect(Rails.logger).to have_received(:error).with(include('Download failed'))
-      end
-
-      it 'sends an email with the exception error', :aggregate_failures do
-        ActionMailer::Base.deliveries.clear
-        expect { described_class.download }.to raise_error(Faraday::Error)
-
-        expect(ActionMailer::Base.deliveries).not_to be_empty
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Backtrace/)
-        expect(ActionMailer::Base.deliveries.last.encoded).to match(/Trade Tariff download failure/)
-      end
-    end
-  end
-
-  describe '.apply' do
-    let(:applied_update) { create(:taric_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:taric_update, :pending, example_date: Time.zone.today) }
-
-    context 'when successful' do
-      before do
-        # rubocop:disable RSpec/AnyInstance
-        allow_any_instance_of(TaricImporter).to receive(:import)
-        # rubocop:enable RSpec/AnyInstance
-        allow(TariffSynchronizer::TariffLogger).to receive(:failed_update)
-
-        applied_update
-        pending_update
-      end
-
-      it 'returns true to mark successful application of updates' do
-        expect(described_class.apply).to be_truthy
-      end
-
-      it 'all pending updates get applied', :aggregate_failures do
-        allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).and_call_original
-
-        expect(described_class.apply).to be_truthy
-
-        expect(TariffSynchronizer::BaseUpdateImporter).to have_received(:perform).with(pending_update)
-      end
-
-      it 'emails stakeholders', :aggregate_failures do
-        allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).and_call_original
-        allow(TariffSynchronizer::BaseUpdate).to receive(:pending_or_failed).and_return([])
-
-        described_class.apply
-
-        expect(ActionMailer::Base.deliveries).not_to be_empty
-        expect(ActionMailer::Base.deliveries.last.subject).to include('Tariff updates applied')
-        expect(ActionMailer::Base.deliveries.last.encoded).to include('No import warnings found.')
-      end
-    end
-
-    context 'when unsuccessful' do
-      before do
-        applied_update
-        pending_update
-
-        allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).with(pending_update).and_raise(Sequel::Rollback)
-      end
-
-      it 'after an error next record is not processed' do
-        expect { described_class.apply }.to raise_error(Sequel::Rollback)
-      end
-    end
-
-    context 'with failed updates present' do
-      let(:failed_update) { create(:taric_update, :failed, example_date: Time.zone.yesterday) }
-
-      before do
-        failed_update
-      end
-
-      it 'does not apply pending updates', :aggregate_failures do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:pending_at)
-
-        expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
-
-        expect(TariffSynchronizer::TaricUpdate).not_to have_received(:pending_at)
-      end
-
-      it 'logs the error event', :aggregate_failures do
-        allow(Rails.logger).to receive(:error)
-        expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
-
-        expect(Rails.logger).to have_received(:error)
-      end
-
-      it 'sends email with the error' do
-        expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
-      end
-    end
-  end
-
-  describe 'check sequence of Taric daily updates' do
-    let(:applied_sequence_number) { 123 }
+RSpec.describe TaricSynchronizer do
+  describe '#apply', truncation: true do
+    let!(:taric_update) { create :taric_update, :pending, example_date: }
 
     before do
-      create(:taric_update, :applied, example_date: Time.zone.yesterday, sequence_number: applied_sequence_number)
-      create(:taric_update, :pending, example_date: Time.zone.today, sequence_number: pending_sequence_number)
-
-      allow(TradeTariffBackend).to receive(:with_redis_lock)
-      allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+      prepare_synchronizer_folders
+      create_taric_file example_date
     end
 
-    context 'when sequence is correct' do
-      let(:pending_sequence_number) { applied_sequence_number + 1 }
+    after do
+      purge_synchronizer_folders
+    end
 
-      it 'runs the update' do
+    context 'when everything is fine' do
+      it 'applies missing updates' do
         described_class.apply
-
-        expect(TradeTariffBackend).to have_received(:with_redis_lock)
+        expect(taric_update.reload).to be_applied
       end
     end
 
-    context 'when sequence is NOT correct', :aggregate_failures do
-      let(:pending_sequence_number) { applied_sequence_number + 2 }
+    context 'when taric fails' do
+      before do
+        instance = instance_double(TaricImporter)
+        allow(TaricImporter).to receive(:new).and_return(instance)
+        allow(instance).to receive(:import).and_raise(TaricImporter::ImportException)
+      end
 
-      it 'raises a wrong sequence error and notifies Slack app' do
-        allow(SlackNotifierService).to receive(:call)
+      it 'marks taric update to be pending' do
+        expect(taric_update).to be_pending
+        rescuing { described_class.apply }
+      end
 
-        expect {
-          described_class.apply
-        }.to raise_error(TariffSynchronizer::FailedUpdatesError)
-
-        expect(SlackNotifierService).to have_received(:call)
+      it 'marks taric update as failed' do
+        rescuing { described_class.apply }
+        expect(taric_update.reload).to be_failed
       end
     end
+
+    context 'when elasticsearch is buggy' do
+      before do
+        instance = instance_double(TaricImporter::Transaction)
+        allow(TaricImporter::Transaction).to receive(:new).and_return(instance)
+
+        allow(instance).to receive(
+          :persist,
+        ).and_raise OpenSearch::Transport::Transport::SnifferTimeoutError
+      end
+
+      it 'stops syncing' do
+        expect(taric_update.reload).not_to be_applied
+      end
+
+      it 'stops syncing and roll back' do
+        expect { described_class.apply }.to raise_error Sequel::Rollback
+      end
+    end
+
+    context 'when we have a timeout' do
+      before do
+        instance = instance_double(TaricImporter::Transaction)
+        allow(TaricImporter::Transaction).to receive(:new).and_return(instance)
+
+        allow(instance).to receive(
+          :persist,
+        ).and_raise Timeout::Error
+      end
+
+      it 'stops syncing' do
+        expect(taric_update.reload).not_to be_applied
+      end
+
+      it 'stops syncing and roll back' do
+        expect { described_class.apply }.to raise_error Sequel::Rollback
+      end
+    end
+  end
+
+  describe '.rollback' do
+    let!(:update) { create :taric_update, :applied, issue_date: Time.zone.today }
+
+    let :data_migrations do
+      DataMigration.unrestrict_primary_key
+      DataMigration.create filename: "#{Time.zone.now.strftime('%Y%m%d%H%M%S')}_today.rb"
+      DataMigration.create filename: "#{2.days.ago.strftime('%Y%m%d%H%M%S')}_older.rb"
+    end
+
+    context 'when successful run' do
+      before do
+        data_migrations
+
+        described_class.rollback(Time.zone.yesterday, keep: true)
+      end
+
+      it 'removes entries from oplog tables' do
+        expect(Measure).to be_none
+      end
+
+      it 'marks Taric updates as pending' do
+        expect(update.reload).to be_pending
+      end
+
+      it 'removes only todays data migration record' do
+        expect(DataMigration.count).to be 1
+      end
+    end
+
+    context 'when encounters an exception' do
+      before do
+        data_migrations
+
+        allow(Measure).to receive(:operation_klass).and_raise(StandardError)
+
+        rescuing { described_class.rollback(Time.zone.yesterday, keep: true) }
+      end
+
+      it 'leaves Taric updates in applid state' do
+        expect(update.reload).to be_applied
+      end
+
+      it 'leaves both todays and the earlier data migration record' do
+        expect(DataMigration.count).to be 2
+      end
+    end
+
+    context 'when forced to redownload by default' do
+      before do
+        described_class.rollback(Time.zone.yesterday)
+      end
+
+      it 'removes entries from oplog derived tables' do
+        expect(Measure).to be_none
+      end
+
+      it 'deletes Taric updates' do
+        expect { update.reload }.to raise_error Sequel::Error
+      end
+    end
+
+    context 'with date passed as string' do
+      let!(:older_update) do
+        create :taric_update, :applied, issue_date: 2.days.ago
+      end
+
+      before do
+        described_class.rollback(Time.zone.yesterday)
+      end
+
+      it 'removes entries from oplog derived tables' do
+        expect(Measure).to be_none
+      end
+
+      it 'deletes Taric updates' do
+        expect { update.reload }.to raise_error Sequel::Error
+      end
+
+      it 'does not remove earlier updates (casts date as string to date)' do
+        expect { older_update.reload }.not_to raise_error
+      end
+    end
+  end
+
+  def example_date
+    @example_date ||= Time.zone.today
   end
 end

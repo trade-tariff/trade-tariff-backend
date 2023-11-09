@@ -20,7 +20,9 @@ module TimeMachine
   def self.at(datetime)
     datetime = Time.current if datetime.blank?
     datetime = begin
-      Time.zone.parse(datetime.to_s)
+      # rubocop:disable Style/DateTime
+      DateTime.parse(datetime.to_s)
+      # rubocop:enable Style/DateTime
     rescue ArgumentError
       Time.current
     end

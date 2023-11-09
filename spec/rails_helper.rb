@@ -30,6 +30,7 @@ RSpec.configure do |config|
   config.include ControllerSpecHelper, type: :controller
   config.include RequestSpecHelper, type: :request
   config.include SynchronizerHelper
+  config.include RescueHelper
   config.include ActiveSupport::Testing::TimeHelpers
 
   config.include_context 'with fake global rules of origin data'
