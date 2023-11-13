@@ -51,7 +51,8 @@ class ExchangeRateFile < Sequel::Model
     end
 
     def filename_for_download(type, format, year, month)
-      month_with_zero = sprintf('%02i', month)
+      # `to_i` is vital, since a number starting with 0 is interpreted as octal.
+      month_with_zero = sprintf('%02i', month.to_i(10))
 
       case type
       when 'monthly_csv_hmrc'

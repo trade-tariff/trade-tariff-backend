@@ -49,6 +49,17 @@ RSpec.describe ExchangeRateFile, type: :model do
     end
   end
 
+  describe '.filename_for_download' do
+    let(:type) { 'monthly_csv_hmrc' }
+    let(:format) { 'csv' }
+    let(:year) { '2023' }
+    let(:month) { '09' }
+
+    it 'returns the correct filename' do
+      expect(described_class.filename_for_download(type, format, year, month)).to eq('202309MonthlyRates.csv')
+    end
+  end
+
   describe '.applicable_files_for' do
     before do
       expected_files
