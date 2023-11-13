@@ -2,3 +2,4 @@
 --require rails_helper
 --tag ~roo_data
 --tag ~flaky
+--format documentation
