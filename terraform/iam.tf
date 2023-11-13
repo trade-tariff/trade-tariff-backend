@@ -151,3 +151,19 @@ resource "aws_iam_policy" "s3" {
   name   = "backend-task-role-s3-policy"
   policy = data.aws_iam_policy_document.s3_policy.json
 }
+
+data "aws_iam_policy_document" "emails" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ses:SendEmail",
+      "ses:SendRawEmail"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "emails" {
+  name   = "frontend-execution-role-emails-policy"
+  policy = data.aws_iam_policy_document.emails.json
+}
