@@ -12,7 +12,7 @@ module ExchangeRates
 
       ExchangeRateCurrencyRate.db.transaction do
         rates = build_rates(response)
-        included_rates = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? ExchangeRateCountryCurrency.distinct(:currency_code).select_map(:currency_code) : ExchangeRateCountryCurrency::SPOT_RATE_CURRENCY_CODES
+        included_rates = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? ExchangeRateCountryCurrency.live_currency_codes : ExchangeRateCountryCurrency::SPOT_RATE_CURRENCY_CODES
         rates = rates.select { |rate| included_rates.include?(rate.currency_code) }
 
         upsert_rates(rates)
