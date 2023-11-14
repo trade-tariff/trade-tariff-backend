@@ -1,4 +1,6 @@
 RSpec.describe TaricImporter::RecordProcessor::CreateOperation do
+  subject(:create_operation) { described_class.new(record, operation_date).call }
+
   let(:record_hash) do
     { 'transaction_id' => '31946',
       'record_code' => '130',
@@ -17,26 +19,22 @@ RSpec.describe TaricImporter::RecordProcessor::CreateOperation do
       TaricImporter::RecordProcessor::Record.new(record_hash)
     end
 
-    let(:operation) do
-      described_class.new(record, operation_date)
-    end
-
     before do
       LanguageDescription.unrestrict_primary_key
     end
 
-    it 'identifies as create operation' do
+    it 'identifies as create operation', :aggregate_failures do
       expect(LanguageDescription.count).to eq 0
-      operation.call
+      create_operation
       expect(LanguageDescription.count).to eq 1
     end
 
     it 'returns model instance' do
-      expect(operation.call).to be_kind_of LanguageDescription
+      expect(create_operation).to be_kind_of LanguageDescription
     end
 
     it 'sets create operation date to operation_date' do
-      operation.call
+      create_operation
 
       expect(
         LanguageDescription::Operation.where(operation: 'C').first.operation_date,

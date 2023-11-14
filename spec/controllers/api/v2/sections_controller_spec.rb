@@ -1,5 +1,6 @@
 RSpec.describe Api::V2::SectionsController do
   # GET /api/v2/sections/:id
+
   describe '#show' do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }
@@ -89,9 +90,10 @@ RSpec.describe Api::V2::SectionsController do
 
   # GET /api/v2/sections
   describe '#index' do
+    before { create :section_note, section_id: section1.id }
+
     let!(:section1)  { create(:chapter, :with_section).section }
     let!(:section2)  { create(:chapter, :with_section).section }
-    let!(:section_note) { create :section_note, section_id: section1.id }
 
     let(:pattern) do
       {

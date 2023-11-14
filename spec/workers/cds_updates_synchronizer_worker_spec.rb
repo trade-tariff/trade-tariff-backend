@@ -36,8 +36,7 @@ RSpec.describe CdsUpdatesSynchronizerWorker, type: :worker do
 
     context 'with todays file missing' do
       before do
-        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?)
-                                     .and_return(false)
+        allow(TariffSynchronizer::CdsUpdate).to receive(:downloaded_todays_file?).and_return(false)
 
         perform
       end

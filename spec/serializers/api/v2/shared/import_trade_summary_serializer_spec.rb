@@ -3,14 +3,7 @@ RSpec.describe Api::V2::Shared::ImportTradeSummarySerializer do
     subject(:serializable_hash) { described_class.new(serializable).serializable_hash }
 
     let(:serializable) do
-      import_measures = [
-        create(
-          :measure,
-          :third_country,
-          :erga_omnes,
-          :with_measure_components,
-        ),
-      ]
+      import_measures = create_list(:measure, 1, :third_country, :erga_omnes, :with_measure_components)
 
       ImportTradeSummary.build(import_measures)
     end

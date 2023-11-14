@@ -22,7 +22,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
   end
 
   describe '.latest_applied_of_both_kinds' do
-    it 'Makes the right sql query' do
+    it 'makes the right sql query' do
       expected_sql = %{SELECT DISTINCT ON ("update_type") "tariff_updates".* FROM "tariff_updates" WHERE (("update_type" != 'TariffSynchronizer::ChiefUpdate') AND ("state" = 'A')) ORDER BY "update_type", "issue_date" DESC}
       expect(described_class.latest_applied_of_both_kinds.sql).to eq(expected_sql)
     end
@@ -41,13 +41,10 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
         create :taric_update, :applied, issue_date: date
       end
 
-      it 'return only the most recent one of each update_type' do
+      it 'return only the most recent one of each update_type', :aggregate_failures do
         result = described_class.latest_applied_of_both_kinds.all
-        expect(result.size).to eq(1)
-      end
 
-      it 'return correct issue date' do
-        result = described_class.latest_applied_of_both_kinds.all
+        expect(result.size).to eq(1)
         expect(result.first.issue_date).to eq(date)
       end
     end

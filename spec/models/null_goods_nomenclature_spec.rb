@@ -1,9 +1,9 @@
 RSpec.describe NullGoodsNomenclature do
-  let(:subject) { described_class.new }
+  subject(:null_goods_nomenclature) { described_class.new }
 
   describe '#description' do
     it 'returns empty string' do
-      expect(subject.description).to eq('')
+      expect(null_goods_nomenclature.description).to eq('')
     end
   end
 end

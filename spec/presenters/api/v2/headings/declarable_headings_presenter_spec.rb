@@ -4,17 +4,17 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
   end
 
   let(:heading) { create(:heading, :declarable) }
-  let(:measures) { [create(:measure)] }
+  let(:measures) { create_list(:measure, 1) }
 
   describe '#meursing_code?' do
     context 'when the import measures have meursing codes' do
-      let(:measures) { [create(:measure, :with_measure_components, :with_meursing)] }
+      let(:measures) { create_list(:measure, 1, :with_measure_components, :with_meursing) }
 
       it { is_expected.to be_meursing_code }
     end
 
     context 'when the import measures do not have meursing codes' do
-      let(:measures) { [create(:measure, :with_measure_components, :without_meursing)] }
+      let(:measures) { create_list(:measure, 1, :with_measure_components, :without_meursing) }
 
       it { is_expected.not_to be_meursing_code }
     end
@@ -151,14 +151,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
   describe '#special_nature?' do
     context 'when heading has at least one measure condition containing special nature certificate' do
       let(:measures) do
-        [
-          create(
-            :measure,
-            :with_measure_conditions,
-            :with_special_nature,
-            goods_nomenclature_sid: heading.goods_nomenclature_sid,
-          ),
-        ]
+        create_list(:measure, 1, :with_measure_conditions, :with_special_nature, goods_nomenclature_sid: heading.goods_nomenclature_sid)
       end
 
       it { is_expected.to be_special_nature }
@@ -166,9 +159,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
 
     context 'when heading does not have any measure conditions containing special nature certificate' do
       let(:measures) do
-        [
-          create(:measure, goods_nomenclature_sid: heading.goods_nomenclature_sid),
-        ]
+        1.times.map { create(:measure, goods_nomenclature_sid: heading.goods_nomenclature_sid) }
       end
 
       it { is_expected.not_to be_special_nature }
@@ -182,13 +173,13 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
       let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: 'CN' }
 
       context 'when heading has at least one measure with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
+        let(:measures) { create_list(:measure, 1, :with_authorised_use_provisions_submission) }
 
         it { is_expected.to be_authorised_use_provisions_submission }
       end
 
       context 'when heading does not have any measures with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure)] }
+        let(:measures) { create_list(:measure, 1) }
 
         it { is_expected.not_to be_authorised_use_provisions_submission }
       end
@@ -196,13 +187,13 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
 
     context 'when not filtering by country' do
       context 'when heading has at least one measure with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure, :with_authorised_use_provisions_submission)] }
+        let(:measures) { create_list(:measure, 1, :with_authorised_use_provisions_submission) }
 
         it { is_expected.not_to be_authorised_use_provisions_submission }
       end
 
       context 'when heading does not have any measures with authorised use submissions measure type id' do
-        let(:measures) { [create(:measure)] }
+        let(:measures) { create_list(:measure, 1) }
 
         it { is_expected.not_to be_authorised_use_provisions_submission }
       end

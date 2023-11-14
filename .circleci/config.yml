@@ -371,10 +371,6 @@ jobs:
             sudo apt install libcurl4-openssl-dev
       - ruby/install-deps
       - run:
-          name: Rubocop changed files
-          when: always
-          command: bundle exec rubocop $(git diff --name-only --diff-filter=ACM $(git merge-base main HEAD)..HEAD | egrep '\.rb|\.rake') Gemfile
-      - run:
           name: Inspecting with Brakeman
           when: always
           command: "bundle exec brakeman -o test-results/brakeman/brakeman.junit -o brakeman.html --no-progress --separate-models"

@@ -2,7 +2,7 @@
 module Sequel
   module Plugins
     module Auditable
-      def self.configure(model, options = {})
+      def self.configure(model, _options = {})
         model.plugin :dirty
 
         # Associations

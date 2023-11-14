@@ -9,7 +9,7 @@ RSpec.describe Chemical do
         expect(chemical.name).to be_a(String)
       end
 
-      it 'can have two names' do
+      it 'can have two names', :aggregate_failures do
         chemical.add_chemical_name({ name: 'water' })
         expect(chemical.chemical_names.count).to eq 2
         expect(chemical.name).to include('water')

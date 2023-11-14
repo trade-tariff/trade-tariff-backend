@@ -14,10 +14,10 @@ class Audit < Sequel::Model
                                              asset.associations[:auditable] = nil
                                              ((id_map[asset.auditable_type] ||= {})[asset.auditable_id] ||= []) << asset
                                            end
-                                           id_map.each do |klass_name, id_map|
+                                           id_map.each do |klass_name, id_map_value|
                                              klass = klass_name.constantize
-                                             klass.where(klass.primary_key => id_map.keys).all do |attach|
-                                               id_map[attach.pk].each do |asset|
+                                             klass.where(klass.primary_key => id_map_value.keys).all do |attach|
+                                               id_map_value[attach.pk].each do |asset|
                                                  asset.associations[:auditable] = attach
                                                end
                                              end
@@ -36,6 +36,6 @@ class Audit < Sequel::Model
   end
 
   def set_created_at
-    self.created_at = DateTime.now
+    self.created_at = Time.zone.now
   end
 end

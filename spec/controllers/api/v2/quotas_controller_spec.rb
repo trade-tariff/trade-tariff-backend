@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleMemoizedHelpers
 RSpec.describe Api::V2::QuotasController, type: :controller do
   describe 'GET /quotas/search.json' do
     let(:validity_start_date) { Date.new(Time.zone.today.year, 1, 1) }
@@ -287,4 +286,3 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
     end
   end
 end
-# rubocop:enable RSpec/MultipleMemoizedHelpers

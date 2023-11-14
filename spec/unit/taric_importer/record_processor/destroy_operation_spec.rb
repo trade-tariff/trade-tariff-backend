@@ -1,6 +1,9 @@
 RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
-  let(:empty_operation) do
-    described_class.new(nil, nil)
+  subject(:operation) { described_class.new(record, date) }
+
+  let(:date) { Time.zone.today }
+  let(:record) do
+    TaricImporter::RecordProcessor::Record.new(record_hash)
   end
 
   let(:record_hash) do
@@ -15,24 +18,22 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
            'description' => 'French' } }
   end
 
-  let(:record) do
-    TaricImporter::RecordProcessor::Record.new(record_hash)
-  end
-
-  let(:operation) do
-    described_class.new(record, Time.zone.today)
-  end
-
   describe '#to_oplog_operation' do
+    let(:date) { nil }
+    let(:record) { nil }
+
     it 'identifies as destroy operation' do
-      expect(empty_operation.to_oplog_operation).to eq :destroy
+      expect(operation.to_oplog_operation).to eq :destroy
     end
   end
 
   describe '#ignore_presence_errors?' do
+    let(:date) { nil }
+    let(:record) { nil }
+
     it 'returns true if presence ignored' do
       allow(TaricSynchronizer).to receive(:ignore_presence_errors).and_return(true)
-      expect(empty_operation.send(:ignore_presence_errors?)).to be_truthy
+      expect(operation.send(:ignore_presence_errors?)).to be_truthy
     end
   end
 
@@ -77,7 +78,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
                                      'description' => 'French')
         end
 
-        it 'returns a model record' do
+        it 'returns a model record', :aggregate_failures do
           record = operation.send(:get_model_record)
           expect(record).to be_a(LanguageDescription)
         end
@@ -128,7 +129,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
                                      'description' => 'French')
         end
 
-        it 'returns a model record' do
+        it 'returns a model record', :aggregate_failures do
           record = operation.send(:get_model_record)
           expect(record).to be_a(LanguageDescription)
         end
@@ -155,8 +156,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       end
 
       it 'returns the model record' do
-        record = operation.call
-        expect(record).to be_a(LanguageDescription)
+        expect(operation.call).to be_a(LanguageDescription)
       end
 
       it 'returns the model record code id' do
@@ -164,7 +164,8 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         expect(record.language_code_id).to eq('FR')
       end
 
-      it 'does not send presence error events' do
+      # rubocop:disable RSpec/SubjectStub
+      it 'does not sends presence error events' do
         allow(operation).to receive(:log_presence_error)
         operation.call
         expect(operation).not_to have_received(:log_presence_error)
@@ -181,6 +182,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
         operation.call
         expect(operation).to have_received(:log_presence_error)
       end
+      # rubocop:enable RSpec/SubjectStub
 
       it 'returns nil' do
         expect(operation.call).to be_nil
