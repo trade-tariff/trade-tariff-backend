@@ -159,7 +159,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
 
     context 'when heading does not have any measure conditions containing special nature certificate' do
       let(:measures) do
-        1.times.map { create(:measure, goods_nomenclature_sid: heading.goods_nomenclature_sid) }
+        create_list(:measure, 1, goods_nomenclature_sid: heading.goods_nomenclature_sid)
       end
 
       it { is_expected.not_to be_special_nature }
