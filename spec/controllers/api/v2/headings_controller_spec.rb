@@ -254,7 +254,6 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       it { expect(do_response.body).to match_json_expression(pattern) }
     end
 
-    # rubocop:disable RSpec/MultipleMemoizedHelpers
     context 'when changes include deleted record' do
       before { measure.destroy }
 
@@ -357,6 +356,5 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
 
       it { expect(do_response.body).to match_json_expression(pattern) }
     end
-    # rubocop:enable RSpec/MultipleMemoizedHelpers
   end
 end

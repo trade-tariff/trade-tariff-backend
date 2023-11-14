@@ -60,7 +60,7 @@ RSpec.describe DescriptionTrimFormatter do
       ).to eq '1'
     end
 
-    it 'return empty string for empty description' do
+    it 'return empty string for empty description', :aggregate_failures do
       expect(
         described_class.format(description: nil),
       ).to eq ''

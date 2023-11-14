@@ -1,3 +1,4 @@
+# rubocop:disable Rails/RakeEnvironment, Style/StringConcatenation
 namespace :sidekiq do
   require 'sidekiq/api'
 
@@ -62,3 +63,4 @@ namespace :sidekiq do
     Sidekiq.redis(&:flushdb)
   end
 end
+# rubocop:enable Rails/RakeEnvironment, Style/StringConcatenation

@@ -1,3 +1,4 @@
+# rubocop:disable Style/MissingRespondToMissing
 class NullObject
   def empty?
     true
@@ -7,7 +8,8 @@ class NullObject
     true
   end
 
-  def method_missing(*args, &block)
+  def method_missing(*_args)
     nil
   end
 end
+# rubocop:enable Style/MissingRespondToMissing

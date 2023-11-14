@@ -2,10 +2,10 @@ module Search
   class SectionSerializer < ::Serializer
     def serializable_hash(_opts = {})
       {
-        id: id,
-        numeral: numeral,
-        title: title,
-        position: position
+        id:,
+        numeral:,
+        title:,
+        position:,
       }
     end
   end

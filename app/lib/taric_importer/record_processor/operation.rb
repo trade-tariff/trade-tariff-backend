@@ -1,7 +1,7 @@
 class TaricImporter
   class RecordProcessor
     class Operation
-      attr_reader :record
+      attr_reader :record, :operation_date
 
       delegate :primary_key, :klass, to: :record
       delegate :instrument, to: ActiveSupport::Notifications
@@ -16,7 +16,7 @@ class TaricImporter
       def attributes
         record.attributes.merge(
           'operation' => to_oplog_operation,
-          'operation_date' => @operation_date,
+          'operation_date' => operation_date,
         )
       end
 
@@ -50,7 +50,7 @@ class TaricImporter
       def log_presence_error
         details = record.attributes.merge(
           transaction_id: record.transaction_id,
-          operation_date: @operation_date,
+          operation_date:,
           operation: to_oplog_operation,
         )
         instrument('presence_error.taric_importer', klass: klass.to_s, details:)

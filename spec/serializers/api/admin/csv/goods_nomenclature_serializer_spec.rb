@@ -1,7 +1,7 @@
 RSpec.describe Api::Admin::Csv::GoodsNomenclatureSerializer do
   subject(:serialized) { described_class.new(serializable).serialized_csv }
 
-  let(:serializable) { [create(:chapter)] }
+  let(:serializable) { create_list(:chapter, 1) }
 
   describe '#serialized_csv' do
     it 'includes the correct headers' do

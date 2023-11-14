@@ -22,16 +22,16 @@ module Search
           guides: chapter.guides.map do |guide|
             {
               title: guide.title,
-              url: guide.url
+              url: guide.url,
             }
-          end
+          end,
         }
 
         if section.present?
           heading_attributes[:section] = {
             numeral: section.numeral,
             title: section.title,
-            position: section.position
+            position: section.position,
           }
         end
       end

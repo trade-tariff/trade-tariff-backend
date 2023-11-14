@@ -1,3 +1,4 @@
+# rubocop:disable Lint/DuplicateMethods
 class ChangeOld
   attr_accessor :model, :oid, :operation_date, :operation
 
@@ -39,3 +40,4 @@ private
     "#{model}::Operation".constantize
   end
 end
+# rubocop:enable Lint/DuplicateMethods

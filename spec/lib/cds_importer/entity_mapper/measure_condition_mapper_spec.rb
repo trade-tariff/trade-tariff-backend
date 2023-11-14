@@ -24,7 +24,7 @@ RSpec.describe CdsImporter::EntityMapper::MeasureConditionMapper do
               'opType' => 'U',
               'transactionDate' => '2017-06-29T20:04:37',
             },
-          }
+          },
         ],
         'metainfo' => {
           'opType' => 'U',

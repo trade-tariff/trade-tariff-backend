@@ -16,10 +16,10 @@ RSpec.describe User do
       user.reload
     end
 
-    it {
+    it 'updates attributes', :aggregate_failures do
       expect(user.name).to eq(attrs[:name])
       expect(user.email).to eq(attrs[:email])
-    }
+    end
   end
 
   describe '#create!' do
@@ -28,11 +28,11 @@ RSpec.describe User do
         attributes_for :user
       end
 
-      it {
+      it 'creates user', :aggregate_failures do
         expect {
           described_class.create!(attrs)
         }.to change(described_class, :count).by(1)
-      }
+      end
     end
 
     describe 'invalid' do
@@ -43,11 +43,11 @@ RSpec.describe User do
         )
       end
 
-      it {
+      it 'raises error', :aggregate_failures do
         expect {
           described_class.create!(attrs)
         }.to raise_error(Sequel::Error)
-      }
+      end
     end
   end
 end
