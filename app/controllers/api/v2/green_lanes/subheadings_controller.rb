@@ -4,7 +4,9 @@ module Api
       class SubheadingsController < ApiController
 
         def show
-          render json: {data: 'Rasika'}
+          subheading = Subheading.actual.where(goods_nomenclature_item_id: "#{params[:id]}0000", producline_suffix: '80').take
+          serializer = Api::V2::GreenLanes::SubheadingSerializer.new(subheading)
+          render json: serializer.serializable_hash
         end
 
       end
