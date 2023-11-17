@@ -3,7 +3,11 @@ module Sequel
     module National
       module DatasetMethods
         def national
-          where(Sequel.qualify(model.table_name, model.primary_key).negative?).order(Sequel.qualify(model.table_name, model.primary_key).desc)
+          pk = Sequel.qualify(model.table_name, model.primary_key)
+
+          # rubocop:disable Style/NumericPredicate
+          where { pk < 0 }.order(pk.desc)
+          # rubocop:enable Style/NumericPredicate
         end
       end
 
