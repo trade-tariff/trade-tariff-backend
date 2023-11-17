@@ -1479,4 +1479,16 @@ RSpec.describe Measure do
       it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N] }
     end
   end
+
+  describe '.national' do
+    let(:national_measure) { create(:measure, :national) }
+    let(:non_national_measure) { create(:measure) }
+
+    before do
+      national_measure
+      non_national_measure
+    end
+
+    it { expect(described_class.national.all).to eq([national_measure]) }
+  end
 end
