@@ -4,15 +4,21 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 
-    before do
-      create :subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
-    end
-
     let :make_request do
       get api_green_lanes_subheading_path(123_456, format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2' }
     end
 
-    it_behaves_like 'a successful jsonapi response', 3
+    context 'when the good nomenclature id is found' do
+      before do
+        create :subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
+      end
+
+      it_behaves_like 'a successful jsonapi response', 3
+    end
+
+    context 'when the good nomenclature id is not found' do
+      it { is_expected.to have_http_status(:not_found) }
+    end
   end
 end
