@@ -1,4 +1,4 @@
-RSpec.describe GreenLanes::SearchSubheadingsService do
+RSpec.describe GreenLanes::FetchSubheadingsService do
   subject(:service) { described_class.new(id) }
 
   describe '#call' do
