@@ -1,5 +1,6 @@
 module GreenLanes
   class SearchSubheadingsService
+    ITEM_ID_LENGTH = 10
     def initialize(goods_nomenclature_item_id)
       @goods_nomenclature_item_id = goods_nomenclature_item_id
     end
@@ -7,8 +8,14 @@ module GreenLanes
     def call
       Subheading
         .actual
-        .where(goods_nomenclature_item_id: "#{@goods_nomenclature_item_id}0000", producline_suffix: '80')
+        .where(goods_nomenclature_item_id: length_adjusted_digit_id, producline_suffix: '80')
         .take
+    end
+
+    private
+
+    def length_adjusted_digit_id
+      @goods_nomenclature_item_id.ljust(ITEM_ID_LENGTH, '0')
     end
   end
 end
