@@ -220,7 +220,7 @@ Rails.application.routes.draw do
 
       scope '/experimental' do
         namespace :green_lanes do
-          resources :subheadings, only: %i[show]
+          resources :subheadings, only: %i[show], constraints: { id: /\d{6,10}/ }
         end
       end
     end
