@@ -38,6 +38,9 @@ RSpec/ContextWording:
     - without
     - for
 
+RSpec/MultipleMemoizedHelpers:
+  Max: 10
+
 RSpec/ExampleLength:
   Enabled: false
 

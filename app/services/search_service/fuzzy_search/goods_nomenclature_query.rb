@@ -14,18 +14,18 @@ class SearchService
                         bool: {
                           must_not: {
                             terms: {
-                              goods_nomenclature_item_id: HiddenGoodsNomenclature.codes
-                            }
-                          }
-                        }
+                              goods_nomenclature_item_id: HiddenGoodsNomenclature.codes,
+                            },
+                          },
+                        },
                       },
                       {
                         # match the search phrase
                         multi_match: {
                           query: query_string,
                           fields: %w[description],
-                          operator: 'and'
-                        }.merge(query_opts)
+                          operator: 'and',
+                        }.merge(query_opts),
                       },
                       {
                         bool: {
@@ -35,9 +35,9 @@ class SearchService
                               bool: {
                                 must: [
                                   { range: { validity_start_date: { lte: date } } },
-                                  { range: { validity_end_date: { gte: date } } }
-                                ]
-                              }
+                                  { range: { validity_end_date: { gte: date } } },
+                                ],
+                              },
                             },
                             # or is greater than item's validity_start_date
                             # and item has blank validity_end_date (is unbounded)
@@ -45,29 +45,29 @@ class SearchService
                               bool: {
                                 must: [
                                   { range: { validity_start_date: { lte: date } } },
-                                  { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
-                                ]
-                              }
+                                  { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
+                                ],
+                              },
                             },
                             # or item has blank validity_start_date and validity_end_date
                             {
                               bool: {
                                 must: [
                                   { bool: { must_not: { exists: { field: 'validity_start_date' } } } },
-                                  { bool: { must_not: { exists: { field: 'validity_end_date' } } } }
-                                ]
-                              }
-                            }
-                          ]
-                        }
-                      }
-                    ]
-                  }
-                }
-              }
+                                  { bool: { must_not: { exists: { field: 'validity_end_date' } } } },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              },
             },
-            size: INDEX_SIZE_MAX
-          }
+            size: INDEX_SIZE_MAX,
+          },
         }
       end
     end

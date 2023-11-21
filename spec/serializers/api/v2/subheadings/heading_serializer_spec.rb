@@ -13,7 +13,7 @@ RSpec.describe Api::V2::Subheadings::HeadingSerializer do
           description: serializable.description,
           formatted_description: serializable.formatted_description,
           validity_start_date: serializable.validity_start_date.strftime('%FT%T.%LZ'),
-          validity_end_date: serializable.validity_end_date
+          validity_end_date: serializable.validity_end_date,
         },
       },
     }

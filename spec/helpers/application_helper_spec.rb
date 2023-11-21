@@ -2,7 +2,7 @@ RSpec.describe ApplicationHelper do
   describe '#regulation_url' do
     context 'for base_regulation' do
       context 'for Official Journal - C (Information and Notices) seria' do
-        let!(:base_regulation) do
+        let(:base_regulation) do
           create(:base_regulation, base_regulation_id: 'I1703530',
                                    base_regulation_role: 1,
                                    published_date: Date.new(2017, 10, 20),
@@ -10,7 +10,7 @@ RSpec.describe ApplicationHelper do
                                    officialjournal_page: 19)
         end
 
-        let!(:measure) do
+        let(:measure) do
           create(:measure, goods_nomenclature_item_id: '8711601000',
                            measure_generating_regulation_id: 'I1703530',
                            base_regulation:)
@@ -26,7 +26,7 @@ RSpec.describe ApplicationHelper do
       end
 
       context 'for Official Journal - L (Legislation) seria' do
-        let!(:base_regulation) do
+        let(:base_regulation) do
           create(:base_regulation, base_regulation_id: 'R1708920',
                                    base_regulation_role: 1,
                                    published_date: Date.new(2017, 0o5, 25),
@@ -34,7 +34,7 @@ RSpec.describe ApplicationHelper do
                                    officialjournal_page: 57)
         end
 
-        let!(:measure) do
+        let(:measure) do
           create(:measure, goods_nomenclature_item_id: '0808108000',
                            measure_generating_regulation_id: 'R1708920',
                            base_regulation:)
@@ -52,28 +52,22 @@ RSpec.describe ApplicationHelper do
 
     context 'for suspending_regulation' do
       context 'for FullTemporaryStopRegulation' do
-        let!(:fts_regulation) do
+        before do
           create(:fts_regulation, full_temporary_stop_regulation_id: 'R9528150',
                                   full_temporary_stop_regulation_role: 8,
                                   published_date: Date.new(1995, 12, 9),
                                   officialjournal_number: 'L 297',
                                   officialjournal_page: 1)
+          create(:fts_regulation_action, fts_regulation_role: 8,
+                                         fts_regulation_id: 'R9528150',
+                                         stopped_regulation_role: 1,
+                                         stopped_regulation_id: 'R9309900')
+          measure.reload
         end
 
         let!(:measure) do
           create(:measure, goods_nomenclature_item_id: '0100000000',
                            measure_generating_regulation_id: 'R9309900')
-        end
-
-        let!(:fts_regulation_action) do
-          create(:fts_regulation_action, fts_regulation_role: 8,
-                                         fts_regulation_id: 'R9528150',
-                                         stopped_regulation_role: 1,
-                                         stopped_regulation_id: 'R9309900')
-        end
-
-        before do
-          measure.reload
         end
 
         it 'generates council regulation url' do
@@ -84,7 +78,16 @@ RSpec.describe ApplicationHelper do
       end
 
       context 'for MeasurePartialTemporaryStop' do
-        let!(:base_regulation) do
+        before do
+          create(:measure_partial_temporary_stop, measure_sid: measure.measure_sid,
+                                                  partial_temporary_stop_regulation_id: 'R0912150',
+                                                  validity_start_date: Time.parse('2010-01-04T00:00:00.000Z'),
+                                                  officialjournal_number: 'L 328',
+                                                  officialjournal_page: 6)
+          measure.reload
+        end
+
+        let(:base_regulation) do
           create(:base_regulation, base_regulation_id: 'R0912150',
                                    base_regulation_role: 1,
                                    published_date: Date.new(2009, 12, 15),
@@ -96,18 +99,6 @@ RSpec.describe ApplicationHelper do
           create(:measure, goods_nomenclature_item_id: '2823000000',
                            measure_generating_regulation_id: 'R0912150',
                            base_regulation:)
-        end
-
-        let!(:measure_partial_temporary_stop) do
-          create(:measure_partial_temporary_stop, measure_sid: measure.measure_sid,
-                                                  partial_temporary_stop_regulation_id: 'R0912150',
-                                                  validity_start_date: Time.parse('2010-01-04T00:00:00.000Z'),
-                                                  officialjournal_number: 'L 328',
-                                                  officialjournal_page: 6)
-        end
-
-        before do
-          measure.reload
         end
 
         it 'generates council regulation url' do

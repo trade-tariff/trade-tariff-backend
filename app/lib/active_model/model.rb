@@ -3,7 +3,7 @@
 
 module ActiveModel
   module Model
-    def self.included(base) #:nodoc:
+    def self.included(base) # :nodoc:
       base.class_eval do
         extend  ActiveModel::Naming
         extend  ActiveModel::Translation
@@ -15,7 +15,7 @@ module ActiveModel
     def initialize(params = {})
       if params
         params.each do |attr, value|
-          self.public_send("#{attr}=", value)
+          public_send("#{attr}=", value)
         end
       end
 

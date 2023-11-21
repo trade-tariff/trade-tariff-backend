@@ -12,7 +12,7 @@ RSpec.describe TariffSynchronizer::Response do
   end
 
   describe '#retry_count_exceeded!' do
-    it 'sets the internal state to exceeded' do
+    it 'sets the internal state to exceeded', :aggregate_failures do
       response = build(:response)
       expect(response).not_to be_retry_count_exceeded
       response.retry_count_exceeded!

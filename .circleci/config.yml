@@ -257,37 +257,6 @@ commands:
             cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails data:migrate" --name "data-migrate" --wait
 
 jobs:
-  dump-search-references:
-    parameters:
-      from_environment_key:
-        type: string
-        default: production
-      from_service:
-        type: string
-        default: uk
-    docker:
-      - image: cimg/base:current-22.04
-    steps:
-      - checkout
-      - tariff/cf-install:
-          space: << parameters.from_environment_key >>
-          version: "7.6.0"
-      - run:
-          name: "Install necessary dependencies"
-          command: |
-            cf install-plugin conduit -r CF-Community -f
-            sudo apt-get update -qq
-            sudo apt-get install postgresql-client
-      - run:
-          name: "Dump search references"
-          command: |
-            mkdir dump
-            cf conduit "tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres" -- pg_dump --file dump/tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql --no-acl --no-owner --clean --verbose --table search_references
-      - persist_to_workspace:
-          root: dump/
-          paths:
-            - tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql
-
   dump-and-persist-database:
     parameters:
       space:
@@ -319,49 +288,10 @@ jobs:
           command: |
             aws s3 cp tariff-merged-<< parameters.space >>.sql.zip s3://$DATABASE_BACKUPS_BUCKET_NAME/snapshots/
 
-  renew-search-references:
-    parameters:
-      from_environment_key:
-        type: string
-        default: production
-      from_service:
-        type: string
-        default: uk
-      to_environment_key:
-        type: string
-      to_service:
-        type: string
-      to_space:
-        type: string
-    docker:
-      - image: cimg/base:current-22.04
-    steps:
-      - checkout
-      - tariff/cf-install:
-          space: << parameters.from_environment_key >>
-          version: "7.6.0"
-      - run:
-          name: "Install necessary dependencies"
-          command: |
-            cf install-plugin conduit -r CF-Community -f
-            sudo apt-get update -qq
-            sudo apt-get install postgresql-client
-      - attach_workspace:
-          at: dump/
-      - run:
-          name: "Restore search references"
-          command: |
-            cf target -s << parameters.to_space >>
-            cf conduit tariff-<< parameters.to_service >>-<< parameters.to_space >>-postgres -- psql $PGDATABASE < dump/tariff-<< parameters.from_service >>-<< parameters.from_environment_key >>-postgres-search_references.psql
-      - run-migrations:
-          service: << parameters.to_service >>
-          space: << parameters.to_space >>
-          environment_key: << parameters.to_environment_key >>
-
   ruby-checks:
     docker:
       - image: cimg/ruby:3.2.2
-    resource_class: small
+    resource_class: medium
     steps:
       - checkout
       - run:
@@ -371,9 +301,9 @@ jobs:
             sudo apt install libcurl4-openssl-dev
       - ruby/install-deps
       - run:
-          name: Rubocop changed files
+          name: Rubocop all files
           when: always
-          command: bundle exec rubocop $(git diff --name-only --diff-filter=ACM $(git merge-base main HEAD)..HEAD | egrep '\.rb|\.rake') Gemfile
+          command: bundle exec rubocop
       - run:
           name: Inspecting with Brakeman
           when: always
@@ -679,14 +609,6 @@ workflows:
               only:
                 - main
     jobs:
-      - dump-and-persist-database:
-          name: development-dump-and-persist-database
-          context: trade-tariff
-          space: development
-      - dump-and-persist-database:
-          name: staging-dump-and-persist-database
-          context: trade-tariff
-          space: staging
       - dump-and-persist-database:
           name: production-dump-and-persist-database
           context: trade-tariff

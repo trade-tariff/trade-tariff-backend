@@ -1,4 +1,6 @@
+# rubocop:disable Naming/FileName
 require 'gds-sso'
+# rubocop:enable Naming/FileName
 
 GDS::SSO.config do |config|
   config.user_model   = 'User'

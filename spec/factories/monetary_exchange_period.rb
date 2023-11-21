@@ -7,7 +7,7 @@ FactoryBot.define do
     validity_start_date { Time.zone.today.at_beginning_of_month }
     operation_date { validity_start_date - 4.days }
 
-    trait :old do
+    trait :six_years_old do
       validity_start_date { Time.zone.today.at_beginning_of_month - 6.years }
     end
   end

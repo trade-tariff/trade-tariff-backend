@@ -50,7 +50,7 @@ RSpec.describe Api::V2::ChangesController do
       let(:change_type) { 'commodity' }
       let(:end_line) { true }
 
-      context 'on the same day' do
+      context 'when on the same day' do
         before { get :index, format: :json }
 
         let(:json) { JSON.parse(response.body) }
@@ -60,7 +60,7 @@ RSpec.describe Api::V2::ChangesController do
         end
       end
 
-      context 'on the previous day' do
+      context 'when on the previous day' do
         before { get :index, params: { as_of: (Time.zone.today - 1.day) }, format: :json }
 
         let(:json) { JSON.parse(response.body) }
@@ -79,7 +79,7 @@ RSpec.describe Api::V2::ChangesController do
       let(:change_type) { 'measure' }
       let(:end_line) { true }
 
-      context 'on the same day' do
+      context 'when on the same day' do
         before { get :index, format: :json }
 
         let(:json) { JSON.parse(response.body) }
@@ -89,7 +89,7 @@ RSpec.describe Api::V2::ChangesController do
         end
       end
 
-      context 'on the previous day' do
+      context 'when on the previous day' do
         before { get :index, params: { as_of: (Time.zone.today - 1.day) }, format: :json }
 
         let(:json) { JSON.parse(response.body) }

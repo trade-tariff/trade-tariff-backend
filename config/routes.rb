@@ -217,6 +217,12 @@ Rails.application.routes.draw do
       get 'goods_nomenclatures/section/:position', to: 'goods_nomenclatures#show_by_section', constraints: { position: /\d+/ }
       get 'goods_nomenclatures/chapter/:chapter_id', to: 'goods_nomenclatures#show_by_chapter', constraints: { chapter_id: /\d{2}/ }
       get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
+
+      scope '/experimental' do
+        namespace :green_lanes do
+          resources :subheadings, only: %i[show], constraints: { id: /\d{6,10}/ }
+        end
+      end
     end
 
     scope module: :v1, constraints: ApiConstraints.new(version: 1) do

@@ -7,9 +7,9 @@ attributes :producline_suffix, :description, :number_indents,
 
 footnotes = (@commodity.footnotes + @commodity.heading.footnotes).uniq
 if footnotes.any?
-  child(footnotes) {
+  child(footnotes) do
     attributes :code, :description, :formatted_description
-  }
+  end
 end
 
 extends 'api/v1/declarables/declarable', object: @commodity, locals: { measures: @measures }
@@ -32,7 +32,7 @@ child @commodity.chapter do |chapter|
   end
 end
 
-child(@commodity.ancestors => :ancestors) {
+child(@commodity.ancestors => :ancestors) do
   attributes :producline_suffix,
              :description,
              :number_indents,
@@ -41,7 +41,7 @@ child(@commodity.ancestors => :ancestors) {
              :uk_vat_rate,
              :formatted_description,
              :description_plain
-}
+end
 
 node(:_response_info) do
   {
@@ -49,7 +49,7 @@ node(:_response_info) do
       { rel: 'self', href: api_link(request.fullpath) },
       { rel: 'heading', href: api_link(api_heading_path(@commodity.heading)) },
       { rel: 'chapter', href: api_link(api_chapter_path(@commodity.chapter)) },
-      { rel: 'section', href: api_link(api_section_path(@commodity.section.position)) }
-    ]
+      { rel: 'section', href: api_link(api_section_path(@commodity.section.position)) },
+    ],
   }
 end

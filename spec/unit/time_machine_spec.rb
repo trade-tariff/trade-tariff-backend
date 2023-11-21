@@ -9,21 +9,21 @@ RSpec.describe TimeMachine do
   end
 
   describe '.at' do
-    it 'sets date to current date if argument is blank' do
+    it 'sets date to current date if argument is blank', :aggregate_failures do
       described_class.at(nil) do
         expect(Commodity.actual.all).to     include commodity1
         expect(Commodity.actual.all).not_to include commodity2
       end
     end
 
-    it 'sets date to current date if argument is errorenous' do
+    it 'sets date to current date if argument is errorenous', :aggregate_failures do
       described_class.at('#&$*(#)') do
         expect(Commodity.actual.all).to     include commodity1
         expect(Commodity.actual.all).not_to include commodity2
       end
     end
 
-    it 'parses and sets valid date from argument' do
+    it 'parses and sets valid date from argument', :aggregate_failures do
       described_class.at(Time.zone.now.ago(15.days).to_s) do
         expect(Commodity.actual.all).not_to include commodity1
         expect(Commodity.actual.all).to     include commodity2
@@ -32,7 +32,7 @@ RSpec.describe TimeMachine do
   end
 
   describe '.now' do
-    it 'sets date to current date' do
+    it 'sets date to current date', :aggregate_failures do
       described_class.now do
         expect(Commodity.actual.all).to     include commodity1
         expect(Commodity.actual.all).not_to include commodity2

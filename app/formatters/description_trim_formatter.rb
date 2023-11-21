@@ -1,6 +1,6 @@
 class DescriptionTrimFormatter
   def self.format(opts = {})
-    raise ArgumentError.new('DescriptionFormatter expects :using arg to be a single value') if opts.keys.many?
+    raise ArgumentError, 'DescriptionFormatter expects :using arg to be a single value' if opts.keys.many?
 
     str = opts.values.first
     return '' if str.blank?
@@ -14,11 +14,11 @@ class DescriptionTrimFormatter
     str.gsub!('!O!', '')
     str.gsub!('!>=!', '')
     str.gsub!('!<=!', '')
-    str.gsub! /@(.)/ do
-      $1.to_s
+    str.gsub!(/@(.)/) do
+      ::Regexp.last_match(1).to_s
     end
-    str.gsub! /\$(.)/ do
-      $1.to_s
+    str.gsub!(/\$(.)/) do
+      ::Regexp.last_match(1).to_s
     end
     str.strip
     str.html_safe

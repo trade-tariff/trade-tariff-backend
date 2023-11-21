@@ -9,9 +9,7 @@ module Api
 
       attributes :footnote_id, :footnote_type_id, :validity_start_date, :validity_end_date
 
-      attribute :description do |footnote|
-        footnote.formatted_description
-      end
+      attribute :description, &:formatted_description
     end
   end
 end
