@@ -3,8 +3,9 @@ module Api
     module GreenLanes
       class SubheadingsController < ApiController
         def show
-          subheading = ::GreenLanes::FetchSubheadingsService.new(params[:id]).call
-          serializer = Api::V2::GreenLanes::SubheadingSerializer.new(subheading)
+          subheading_measures = ::GreenLanes::FetchSubheadingsService.new(params[:id]).call
+          presented_subheading = SubheadingPresenter.new(subheading_measures)
+          serializer = Api::V2::GreenLanes::SubheadingMeasuresSerializer.new(presented_subheading)
 
           render json: serializer.serializable_hash
         end
