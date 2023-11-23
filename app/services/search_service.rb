@@ -82,9 +82,14 @@ class SearchService
   private
 
   def perform
-    @result = if q.present?
-                exact_search.presence || fuzzy_search.presence
-              end || NullSearch.new(q, as_of)
+    @result = if SearchService::RogueSearchService.call(q)
+                NullSearch.new(q, as_of)
+              else
+                if q.present?
+                  exact_search.presence || fuzzy_search.presence
+                end || NullSearch.new(q, as_of)
+              end
+
     @result
   end
 

@@ -14,7 +14,9 @@ module Api
       private
 
       def matching_suggestions
-        return SearchSuggestion.fuzzy_search(params[:q]) if params[:q].present?
+        if !SearchService::RogueSearchService.call(params[:q]) && params[:q].present?
+          return SearchSuggestion.fuzzy_search(params[:q])
+        end
 
         []
       end
