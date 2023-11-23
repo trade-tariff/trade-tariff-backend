@@ -17,7 +17,7 @@ module Api
                    :description_plain,
                    :producline_suffix
 
-        has_many :applicable_measures, record_type: :measure, serializer: Api::V2::Declarable::MeasureSerializer
+        has_many :applicable_measures, record_type: :measure, serializer: Api::V2::MeasureSerializer
       end
     end
   end
