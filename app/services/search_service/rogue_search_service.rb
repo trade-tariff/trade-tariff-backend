@@ -9,7 +9,7 @@ class SearchService
     end
 
     def initialize(query_string)
-      @query_string = query_string
+      @query_string = query_string&.downcase
     end
 
     def call
