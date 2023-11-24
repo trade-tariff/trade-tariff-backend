@@ -11,9 +11,8 @@ RSpec.describe Api::V2::GreenLanes::SubheadingSerializer do
     {
       data: {
         attributes: {
-          goods_nomenclature_item_id: subheading.goods_nomenclature_item_id,
-          goods_nomenclature_sid: subheading.goods_nomenclature_sid,
           goods_nomenclature_item_id: subheading.goods_nomenclature_item_id.to_s,
+          goods_nomenclature_sid: subheading.goods_nomenclature_sid,
           description: be_a(String),
           formatted_description: subheading.formatted_description,
           validity_start_date: subheading.validity_start_date.iso8601,
@@ -21,8 +20,19 @@ RSpec.describe Api::V2::GreenLanes::SubheadingSerializer do
           description_plain: subheading.description_plain,
           producline_suffix: subheading.producline_suffix,
         },
+        "relationships": {
+          "applicable_measures": {
+            "data": [{
+              "id": subheading.applicable_measures.first.id.to_s,
+              type: eq(:measure),
+            }],
+          },
+        },
       },
-      included: {},
+      included: [{
+        id: subheading.applicable_measures.first.id.to_s,
+        type: eq(:measure),
+      }],
     }
   end
 
