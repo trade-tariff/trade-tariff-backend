@@ -1,6 +1,5 @@
 module GreenLanes
   class SubheadingMeasures
-
     attr_accessor :goods_nomenclature_sid,
                   :subheading,
                   :applicable_measures
@@ -16,9 +15,7 @@ module GreenLanes
     end
 
     def applicable_measure_ids
-      @applicable_measures.map do |measure|
-        measure.id
-      end
+      @applicable_measures.map(&:id)
     end
   end
 end
