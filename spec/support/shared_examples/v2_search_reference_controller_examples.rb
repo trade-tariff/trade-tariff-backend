@@ -167,6 +167,45 @@ RSpec.shared_examples_for 'v2 search references controller' do
         expect(response.body).to match_json_expression pattern
       end
     end
+
+    context 'with XLS formulas' do
+      let(:pattern) do
+        {
+          data:
+            {
+              id: String,
+              type: 'search_reference',
+              attributes: {
+                title: String,
+                referenced_id: String,
+                referenced_class: String,
+                goods_nomenclature_item_id: String,
+                productline_suffix: String,
+                goods_nomenclature_sid: Integer,
+              },
+              relationships: Hash,
+            },
+          included: [
+            {
+              id: String,
+              type: String,
+              attributes: Hash,
+            }.ignore_extra_keys!,
+          ],
+        }
+      end
+
+      before do
+        post :create, params: {
+          data: { type: :search_reference, attributes: { title: '=SUM(A1:A2)' } },
+          format: :json,
+        }.merge(collection_query)
+      end
+
+      it 'escapes the formula' do
+        expect(SearchReference.first.title).to eq "'=SUM(A1:A2)"
+      end
+    end
   end
 
   describe 'DELETE #destroy' do

@@ -28,7 +28,8 @@ module Api
 
       def create
         @search_reference = SearchReference.new(
-          search_reference_params[:attributes].merge(search_reference_resource_association_hash),
+          title: sanitized_title,
+          referenced: search_reference_resource_association_hash[:referenced],
         )
 
         if @search_reference.save
@@ -43,9 +44,7 @@ module Api
 
       def update
         @search_reference = search_reference_resource
-        @search_reference.set(
-          search_reference_params[:attributes],
-        )
+        @search_reference.set(title: sanitized_title)
 
         if @search_reference.save
           respond_with @search_reference
@@ -105,6 +104,16 @@ module Api
             per_page:,
           },
         }.to_json
+      end
+
+      def sanitized_title
+        return title unless title.to_s.start_with?('=', '+', '-', '@')
+
+        "'#{title}"
+      end
+
+      def title
+        @title ||= search_reference_params.dig(:attributes, :title)
       end
     end
   end
