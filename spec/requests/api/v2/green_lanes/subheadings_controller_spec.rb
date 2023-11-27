@@ -14,7 +14,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
         create :subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
       end
 
-      it_behaves_like 'a successful jsonapi response', 4
+      it_behaves_like 'a successful jsonapi response'
     end
 
     context 'when the good nomenclature id is not found' do
