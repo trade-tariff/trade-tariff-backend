@@ -197,7 +197,7 @@ RSpec.shared_examples_for 'v2 search references controller' do
 
       before do
         post :create, params: {
-          data: { type: :search_reference, attributes: { title: '=SUM(A1:A2)'} },
+          data: { type: :search_reference, attributes: { title: '=SUM(A1:A2)' } },
           format: :json,
         }.merge(collection_query)
       end
