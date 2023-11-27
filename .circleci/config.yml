@@ -623,8 +623,6 @@ workflows:
       - test:
           context: trade-tariff
           <<: *filter-not-main
-          requires:
-            - ruby-checks
 
       - write-docker-tag:
           name: write-docker-tag-dev
@@ -660,6 +658,7 @@ workflows:
           environment: development
           requires:
             - test
+            - ruby-checks
             - plan-terraform-dev
             - build-and-push-dev
           <<: *filter-not-main
