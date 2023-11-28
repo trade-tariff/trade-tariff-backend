@@ -16,6 +16,8 @@ module Api
                    :validity_end_date,
                    :description_plain,
                    :producline_suffix
+
+        has_many :applicable_measures, record_type: :measure, serializer: Api::V2::MeasureSerializer
       end
     end
   end
