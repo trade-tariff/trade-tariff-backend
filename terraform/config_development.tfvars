@@ -4,5 +4,5 @@ base_domain                           = "dev.trade-tariff.service.gov.uk"
 cpu                                   = 1024
 memory                                = 2048
 alcohol_coercian_starts_from          = "2022-01-01"
-stemming_exclusion_reference_analyzer = "analyzers/F102794475"
-synonym_reference_analyzer            = "analyzers/F135140295"
+stemming_exclusion_reference_analyzer = "analyzers/F159568045"
+synonym_reference_analyzer            = "analyzers/F202143497"
