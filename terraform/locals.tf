@@ -42,14 +42,6 @@ locals {
       value = "6"
     },
     {
-      name  = "NEW_RELIC_AGENT_ENABLED"
-      value = "false"
-    },
-    {
-      name  = "NEW_RELIC_DISTRIBUTED_TRACING"
-      value = "false"
-    },
-    {
       name  = "PLEK_SERVICE_SIGNON_URI"
       value = "http://signon.tariff.internal:8080"
     },
@@ -194,6 +186,10 @@ locals {
     {
       name      = "SECRET_KEY_BASE"
       valueFrom = data.aws_secretsmanager_secret.secret_key_base.arn
+    },
+    {
+      name      = "SLACK_WEB_HOOK_URL"
+      valueFrom = data.aws_secretsmanager_secret.slack_web_hook_url.arn
     },
     {
       name      = "TRADE_TARIFF_OAUTH_ID"

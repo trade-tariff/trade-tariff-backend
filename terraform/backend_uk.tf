@@ -45,12 +45,12 @@ module "backend_uk" {
         value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
-        name  = "NEW_RELIC_APP_NAME"
-        value = "tariff-uk-backend-${var.environment}"
-      },
-      {
         name  = "SERVICE"
         value = "uk"
+      },
+      {
+        name  = "SLACK_USERNAME"
+        value = "UK Backend API ${title(var.environment)}"
       },
       {
         name  = "TARIFF_FROM_EMAIL"
