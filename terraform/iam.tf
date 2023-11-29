@@ -23,6 +23,8 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.sync_xi_host.arn,
       data.aws_secretsmanager_secret.sync_xi_password.arn,
       data.aws_secretsmanager_secret.sync_xi_username.arn,
+      data.aws_secretsmanager_secret.xe_api_password.arn,
+      data.aws_secretsmanager_secret.xe_api_username.arn,
     ]
   }
 

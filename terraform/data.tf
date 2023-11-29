@@ -104,6 +104,14 @@ data "aws_secretsmanager_secret" "oauth_secret" {
   name = "backend-oauth-secret"
 }
 
+data "aws_secretsmanager_secret" "xe_api_username" {
+  name = "backend-xe-api-username"
+}
+
+data "aws_secretsmanager_secret" "xe_api_password" {
+  name = "backend-xe-api-password"
+}
+
 data "aws_s3_bucket" "spelling_corrector" {
   bucket = "trade-tariff-search-configuration-${local.account_id}"
 }

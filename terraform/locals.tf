@@ -120,6 +120,10 @@ locals {
       name  = "TARIFF_SYNC_EMAIL"
       value = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
     },
+    {
+      name  = "XE_API_URL"
+      value = "https://xecdapi.xe.com"
+    },
   ]
 
   backend_uk_common_secrets = [
@@ -198,6 +202,14 @@ locals {
     {
       name      = "TRADE_TARIFF_OAUTH_SECRET"
       valueFrom = data.aws_secretsmanager_secret.oauth_secret.arn
+    },
+    {
+      name      = "XE_API_USERNAME"
+      valueFrom = data.aws_secretsmanager_secret.xe_api_username.arn
+    },
+    {
+      name      = "XE_API_PASSWORD"
+      valueFrom = data.aws_secretsmanager_secret.xe_api_password.arn
     },
   ]
 }
