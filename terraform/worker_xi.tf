@@ -56,12 +56,12 @@ module "worker_xi" {
         value = "tariff-xi-worker-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
-        name  = "NEW_RELIC_APP_NAME"
-        value = "tariff-xi-worker-${var.environment}"
-      },
-      {
         name  = "SERVICE"
         value = "xi"
+      },
+      {
+        name  = "SLACK_USERNAME"
+        value = "XI Backend Worker ${title(var.environment)}"
       },
       {
         name  = "TARIFF_FROM_EMAIL"

@@ -1,6 +1,6 @@
 region                                = "eu-west-2"
 environment                           = "production"
-base_domain                           = "ott-production.co.uk"
+base_domain                           = "tradetesting.net"
 cpu                                   = 1024
 memory                                = 2048
 alcohol_coercian_starts_from          = "2022-01-01"

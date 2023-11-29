@@ -48,12 +48,12 @@ module "backend_xi" {
         value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
-        name  = "NEW_RELIC_APP_NAME"
-        value = "tariff-xi-backend-${var.environment}"
-      },
-      {
         name  = "SERVICE"
         value = "xi"
+      },
+      {
+        name  = "SLACK_USERNAME"
+        value = "XI Backend API ${title(var.environment)}"
       },
       {
         name  = "TARIFF_FROM_EMAIL"

@@ -60,6 +60,10 @@ data "aws_secretsmanager_secret" "secret_key_base" {
   name = "backend-secret-key-base"
 }
 
+data "aws_secretsmanager_secret" "slack_web_hook_url" {
+  name = "slack-web-hook-url"
+}
+
 data "aws_secretsmanager_secret" "sentry_dsn" {
   name = "backend-sentry-dsn"
 }
