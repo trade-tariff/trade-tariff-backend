@@ -38,7 +38,12 @@ variable "max_capacity" {
 }
 
 variable "base_domain" {
-  description = "URL of the service."
+  description = "Host address of the service."
+  type        = string
+}
+
+variable "frontend_base_domain" {
+  description = "Host address of the frontend service."
   type        = string
 }
 
