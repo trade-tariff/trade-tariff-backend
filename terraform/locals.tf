@@ -31,7 +31,7 @@ locals {
     },
     {
       name  = "FRONTEND_HOST"
-      value = "https://${var.base_domain}/"
+      value = "https://${var.frontend_base_domain}/"
     },
     {
       name  = "MALLOC_ARENA_MAX"
@@ -63,7 +63,7 @@ locals {
     },
     {
       name  = "SENTRY_ENVIRONMENT"
-      value = "aws-${var.environment}"
+      value = var.environment
     },
     {
       name  = "SENTRY_PROJECT"
@@ -76,6 +76,10 @@ locals {
     {
       name  = "TARIFF_SUPPORT_EMAIL"
       value = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
+    },
+    {
+      name  = "TARIFF_MANAGEMENT_EMAIL"
+      value = "tariffmanagement@hmrc.gov.uk"
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
