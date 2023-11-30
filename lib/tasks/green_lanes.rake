@@ -7,15 +7,16 @@ namespace :green_lanes do
     @json = @data.map do |row|
       {
         category: row['Primary category'],
-        constraints: {
-          regulation_id: row['Regulation id'].presence.strip,
-          measure_type_id: row['Measure type ID'].presence.strip,
-          geographical_area: row['Geographical area']&.presence&.strip,
-          document_codes: row['Document codes'].to_s.split.map(&:strip),
-          additional_codes: row['Additional codes'].to_s.split.map(&:strip),
-        },
+        regulation_id: row['Regulation id'].presence.strip,
+        measure_type_id: row['Measure type ID'].presence.strip,
+        geographical_area: row['Geographical area']&.presence&.strip,
+        document_codes: row['Document codes'].to_s.split.map(&:strip),
+        additional_codes: row['Additional codes'].to_s.split.map(&:strip),
       }
     end
+
+    path = Rails.root.join('data/green_lanes').to_s
+    Dir.mkdir path unless Dir.exist? path
 
     Rails.root.join('data/green_lanes/categories.json').write \
       JSON.pretty_generate(@json)
