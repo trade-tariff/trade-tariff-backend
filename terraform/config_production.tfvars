@@ -10,3 +10,4 @@ min_capacity                          = 2
 max_capacity                          = 8
 stemming_exclusion_reference_analyzer = "analyzers/F17162632"
 synonym_reference_analyzer            = "analyzers/F262459844"
+management_email                      = "tariffmanagement@hmrc.gov.uk"

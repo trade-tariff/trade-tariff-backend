@@ -79,6 +79,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
 | <a name="input_frontend_base_domain"></a> [frontend\_base\_domain](#input\_frontend\_base\_domain) | Host address of the frontend service. | `string` | n/a | yes |
+| <a name="input_management_email"></a> [management\_email](#input\_management\_email) | Email address for the exchange rate management team. | `string` | n/a | yes |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Largest number of tasks the service can scale-out to. | `number` | `5` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory to allocate in MB. Powers of 2 only. | `number` | n/a | yes |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Smallest number of tasks the service can scale-in to. | `number` | `1` | no |
