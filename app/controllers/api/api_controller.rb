@@ -68,7 +68,10 @@ module Api
 
     def set_cache_etag
       update = TariffSynchronizer::BaseUpdate.most_recent_applied
-      fresh_when last_modified: update.applied_at, etag: update
+
+      if update
+        fresh_when last_modified: update.applied_at, etag: update
+      end
     end
 
     def http_caching_enabled?
