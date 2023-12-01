@@ -72,3 +72,8 @@ variable "synonym_reference_analyzer" {
   description = "Synonym package file path in opensearch"
   type        = string
 }
+
+variable "management_email" {
+  description = "Email address for the exchange rate management team."
+  type        = string
+}

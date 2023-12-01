@@ -79,7 +79,7 @@ locals {
     },
     {
       name  = "TARIFF_MANAGEMENT_EMAIL"
-      value = "tariffmanagement@hmrc.gov.uk"
+      value = var.management_email
     },
     {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
