@@ -1,7 +1,7 @@
 region                                = "eu-west-2"
 environment                           = "production"
-base_domain                           = "tradetesting.net" # trade-tariff.service.gov.uk
-frontend_base_domain                  = "tradetesting.net" # www.trade-tariff.service.gov.uk
+base_domain                           = "trade-tariff.service.gov.uk"
+frontend_base_domain                  = "www.trade-tariff.service.gov.uk"
 cpu                                   = 1024
 memory                                = 2048
 alcohol_coercian_starts_from          = "2022-01-01"
