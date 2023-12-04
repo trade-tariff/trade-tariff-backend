@@ -3,6 +3,7 @@ locals {
   no_reply       = "no-reply@${var.base_domain}"
   worker_command = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
+  signon_url     = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
 
   backend_common_vars = [
     {
@@ -43,7 +44,7 @@ locals {
     },
     {
       name  = "PLEK_SERVICE_SIGNON_URI"
-      value = "http://signon.tariff.internal:8080"
+      value = local.signon_url
     },
     {
       name  = "RACK_TIMEOUT_SERVICE"
