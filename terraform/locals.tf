@@ -189,6 +189,10 @@ locals {
       valueFrom = data.aws_ssm_parameter.elasticsearch_url.arn
     },
     {
+      name      = "FRONTEND_REDIS_URL"
+      valueFrom = data.aws_secretsmanager_secret.redis_frontend_connection_string.arn
+    },
+    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },

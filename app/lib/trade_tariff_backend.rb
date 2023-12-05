@@ -288,5 +288,14 @@ module TradeTariffBackend
         nil
       end
     end
+
+    def frontend_redis
+      @frontend_redis ||= begin
+        url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://localhost:6379')
+        db = Rails.env.test? ? 1 : 0
+
+        Redis.new(url:, db:)
+      end
+    end
   end
 end
