@@ -4,7 +4,6 @@ module Api
       before_action :authenticate_user!
 
       def create
-        # Curl example: curl -X POST -H "Content-Type: application/json" -d '{"data":{"type":"download","attributes":{"user_id":1}}}' http://{host}:{port}/api/admin/downloads
         download = Download.new(download_params[:attributes])
 
         if download.valid?

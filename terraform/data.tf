@@ -52,6 +52,10 @@ data "aws_secretsmanager_secret" "redis_xi_connection_string" {
   name = "redis-backend-xi-connection-string"
 }
 
+data "aws_secretsmanager_secret" "redis_frontend_connection_string" {
+  name = "redis-frontend-connection-string"
+}
+
 data "aws_secretsmanager_secret" "database_connection_string" {
   name = "tradetariffpostgres${var.environment}-connection-string"
 }

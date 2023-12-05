@@ -22,6 +22,7 @@ Rails.application.routes.draw do
 
       resources :updates, only: %i[index show]
       resources :rollbacks, only: %i[create index]
+      resources :clear_caches, only: %i[create]
       resources :downloads, only: %i[create]
       resources :applies, only: %i[create]
       resources :footnotes, only: %i[index show update]
