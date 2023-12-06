@@ -52,6 +52,10 @@ module "backend_admin_xi" {
         value = "xi"
       },
       {
+        name  = "SLACK_USERNAME"
+        value = "XI Backend API ${title(var.environment)}"
+      },
+      {
         name  = "TARIFF_FROM_EMAIL"
         value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
       },
