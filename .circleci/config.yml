@@ -133,6 +133,9 @@ jobs:
           backend_config_file: backends/<< parameters.environment >>.tfbackend
           var_file: config_<< parameters.environment >>.tfvars
           lock-timeout: 5m
+      - run:
+          name: Add curl
+          command: apk --no-cache add curl jq
       - slack/notify:
           channel: deployments
           event: fail
@@ -166,6 +169,7 @@ jobs:
           http.port: 9200
           discovery.type: single-node
           plugins.security.disabled: true
+
     steps:
       - checkout
       - run:
