@@ -42,252 +42,7 @@ executors:
       TF_INPUT: 0
       TF_IN_AUTOMATION: 1
 
-commands:
-  cf-deploy-docker:
-    parameters:
-      docker_image_tag:
-        type: string
-      space:
-        type: string
-      domain_prefix:
-        type: string
-      service:
-        type: string
-      environment_key:
-        type: string
-      app_domain_prefix:
-        type: string
-
-    steps:
-      - checkout
-
-      - tariff/cf-install:
-          space: << parameters.space >>
-          version: "7.6.0"
-
-      - tariff/deploy-dark-app:
-          aws_access_key_id: "$AWS_ACCESS_KEY_ID"
-          aws_secret_access_key: "$AWS_SECRET_ACCESS_KEY"
-          cf_app: tariff-<< parameters.service >>-backend
-          docker_image: tariff-backend
-          docker_tag: << parameters.docker_image_tag >>
-          ecr_repo: "$ECR_REPO"
-          environment_key: << parameters.environment_key >>
-          space: << parameters.space >>
-
-      - run:
-          name: "Map dark routes"
-          command: |
-            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
-              "apps.internal" \
-              --hostname "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
-
-      - run:
-          name: "Create custom network policies for the backend"
-          command: |
-            # Enable routing from this frontend to backend applications which are private
-            cf add-network-policy \
-              "$CF_FRONTEND_APP-<< parameters.environment_key >>" \
-              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
-              --protocol tcp --port 8080
-
-            cf add-network-policy \
-              "$CF_ADMIN_APP-<< parameters.environment_key >>" \
-              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
-              --protocol tcp --port 8080
-
-            cf add-network-policy \
-              "$CF_DUTYCALCULATOR_APP-<< parameters.environment_key >>" \
-              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
-              --protocol tcp --port 8080
-
-            cf add-network-policy \
-              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
-              "tariff-search-query-parser-<< parameters.environment_key >>" \
-              --protocol tcp --port 8080
-
-      - when:
-          condition:
-            equal: ["development", << parameters.space >>]
-          steps:
-            - run:
-                name: "Recreate review app network policies"
-                command: |
-                  for REVIEW_APP in $(cf apps | grep 'tariff-frontend-pr' | cut -d ' ' -f 1)
-                  do
-                    cf add-network-policy $REVIEW_APP tariff-<<parameters.service >>-backend-dev-dark --protocol tcp --port 8080
-                  done
-
-      - run:
-          name: "Verify new version is working on dark URL."
-          command: |
-            APP_NAME="tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
-
-            sleep 15
-
-            HTTPCODE=`cf ssh $APP_NAME -c 'curl -s -o /dev/null -w "%{http_code}" http://localhost:8080/healthcheckz'`
-
-            if [ "$HTTPCODE" -ne 200 ];then
-              echo "dark route not available, failing deploy ($HTTPCODE)"
-              cf logs "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" --recent
-              cf delete -f "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark"
-              exit 1
-            fi
-
-      - run:
-          name: "Attach autoscaling policy"
-          command: |
-            cf attach-autoscaling-policy \
-              "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" \
-              config/autoscaling/<< parameters.space >>-policy.json
-
-      - run:
-          name: "Switch api beta dark app routes live"
-          command: |
-            # Start sending api beta traffic to new version
-            cf map-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>-dark" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
-
-            # Stop sending api beta traffic to previous version
-            cf unmap-route "tariff-<< parameters.service >>-backend-<< parameters.environment_key >>" "<< parameters.domain_prefix >>.trade-tariff.service.gov.uk" --path "/<< parameters.service >>/api/beta/"
-
-      - tariff/pivot-dark-app:
-          app_domain_prefix: << parameters.app_domain_prefix >>
-          cf_app: tariff-<< parameters.service >>-backend
-          environment_key: << parameters.environment_key >>
-          space: << parameters.space >>
-          domain: "apps.internal"
-
-      - run:
-          name: Drain old app
-          command: sleep 30
-
-      - slack/notify:
-          channel: deployments
-          event: fail
-          template: basic_fail_1
-
-      - slack/notify:
-          channel: deployments
-          event: pass
-          template: basic_success_1
-
-  cf-deploy-docker-worker:
-    parameters:
-      docker_image_tag:
-        type: string
-      space:
-        type: string
-      service:
-        type: string
-      environment_key:
-        type: string
-    steps:
-      - checkout
-      - tariff/cf-install:
-          space: << parameters.space >>
-          version: "7.6.0"
-      - run:
-          name: "Fetch existing manifest"
-          command: |
-            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p deploy_manifest.yml
-      - run:
-          name: "Push Worker"
-          command: |
-            export DOCKER_IMAGE=tariff-backend
-            export DOCKER_TAG="<< parameters.docker_image_tag >>"
-            export CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY
-
-            cf push "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" \
-              -f deploy_manifest.yml \
-              --no-route \
-              --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
-              --docker-username "$AWS_ACCESS_KEY_ID"
-
-  cf-deploy-docker-tasks:
-    parameters:
-      docker_image_tag:
-        type: string
-      space:
-        type: string
-      service:
-        type: string
-      environment_key:
-        type: string
-    steps:
-      - checkout
-      - tariff/cf-install:
-          space: << parameters.space >>
-          version: "7.6.0"
-      - run:
-          name: "Create tasks app manifest"
-          command: |
-            cf create-app-manifest "tariff-<< parameters.service >>-backend-worker-<< parameters.environment_key >>" -p tasks_deploy_manifest.yml
-      - run:
-          name: "Push Tasks app"
-          command: |
-            export DOCKER_IMAGE=tariff-backend
-            export DOCKER_TAG="<< parameters.docker_image_tag >>"
-            export CF_DOCKER_PASSWORD=$AWS_SECRET_ACCESS_KEY
-
-            cf push "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" \
-             -f tasks_deploy_manifest.yml \
-             --no-route \
-             --task \
-             --docker-image "$ECR_REPO/$DOCKER_IMAGE:$DOCKER_TAG" \
-             --docker-username "$AWS_ACCESS_KEY_ID"
-
-      - run-migrations:
-          service: << parameters.service >>
-          environment_key: << parameters.environment_key >>
-          space: << parameters.space >>
-
-  run-migrations:
-    parameters:
-      service:
-        type: string
-      environment_key:
-        type: string
-      space:
-        type: string
-    steps:
-      - run:
-          name: "Run Migrations"
-          command: |
-            cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails db:migrate" --name "db-migrate" --wait
-            cf run-task "tariff-<< parameters.service >>-backend-tasks-<< parameters.environment_key >>" --command "cd app && bundle exec rails data:migrate" --name "data-migrate" --wait
-
 jobs:
-  dump-and-persist-database:
-    parameters:
-      space:
-        type: string
-    docker:
-      - image: cimg/base:current-22.04
-    steps:
-      - checkout
-      - aws-cli/install
-      - tariff/cf-install:
-          space: << parameters.space >>
-          version: "7.6.0"
-      - run:
-          name: "Install additional dependencies"
-          command: |
-            cf install-plugin conduit -r CF-Community -f
-            sudo apt-get update -qq
-            sudo apt-get install postgresql-client
-      - run:
-          name: "Dump whole database"
-          command: |
-            cf conduit tariff-merged-<< parameters.space >>-postgres -- pg_dump --file tariff-merged-<< parameters.space >>-postgres.sql --no-acl --no-owner --clean --verbose
-      - run:
-          name: "Compress dump"
-          command: |
-            zip tariff-merged-<< parameters.space >>.sql.zip tariff-merged-<< parameters.space >>-postgres.sql
-      - run:
-          name: "Persist dump"
-          command: |
-            aws s3 cp tariff-merged-<< parameters.space >>.sql.zip s3://$DATABASE_BACKUPS_BUCKET_NAME/snapshots/
-
   ruby-checks:
     docker:
       - image: cimg/ruby:3.2.2
@@ -312,39 +67,6 @@ jobs:
           path: test-results/brakeman/
       - store_artifacts:
           path: brakeman.html
-
-  build:
-    environment:
-      IMAGE_NAME: tariff-backend
-    parameters:
-      dev-build:
-        default: false
-        type: boolean
-    docker:
-      - image: cimg/ruby:3.2.2
-    steps:
-      - checkout
-      - setup_remote_docker:
-          version: 20.10.11
-          docker_layer_caching: false
-      - aws-cli/install
-      - run:
-          name: "Set docker tag"
-          command: |
-            echo "export DOCKER_TAG=<<# parameters.dev-build >>dev-<</ parameters.dev-build >>${CIRCLE_SHA1}" >> $BASH_ENV
-
-      - run:
-          name: "Build Docker image"
-          command: |
-            export GIT_NEW_REVISION=$(git rev-parse --short HEAD)
-            echo $GIT_NEW_REVISION >REVISION
-            docker build -t $IMAGE_NAME:$DOCKER_TAG .
-      - run:
-          name: "Push image"
-          command: |
-            aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin $ECR_REPO
-            docker tag $IMAGE_NAME:$DOCKER_TAG $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
-            docker push $ECR_REPO/$IMAGE_NAME:$DOCKER_TAG
 
   write-docker-tag:
     parameters:
@@ -413,6 +135,14 @@ jobs:
           backend_config_file: backends/<< parameters.environment >>.tfbackend
           var_file: config_<< parameters.environment >>.tfvars
           lock-timeout: 5m
+      - slack/notify:
+          channel: deployments
+          event: fail
+          template: basic_fail_1
+      - slack/notify:
+          channel: deployments
+          event: pass
+          template: basic_success_1
 
   flaky-tests:
     docker:
@@ -528,35 +258,6 @@ jobs:
           event: fail
           template: basic_fail_1
 
-  deploy-production:
-    docker:
-      - image: cimg/ruby:3.2.2
-    environment:
-      SENTRY_ENVIRONMENT: "production"
-    parameters:
-      service:
-        type: string
-    steps:
-      - cf-deploy-docker-tasks:
-          docker_image_tag: $CIRCLE_TAG
-          space: "production"
-          environment_key: "production"
-          service: << parameters.service >>
-      - cf-deploy-docker-worker:
-          docker_image_tag: $CIRCLE_TAG
-          space: "production"
-          environment_key: "production"
-          service: << parameters.service >>
-      - cf-deploy-docker:
-          docker_image_tag: $CIRCLE_TAG
-          space: "production"
-          environment_key: "production"
-          domain_prefix: "www"
-          app_domain_prefix: "www"
-          service: << parameters.service >>
-      - tariff/sentry-release:
-          environment: production
-
   sync-opensearch-packages:
     docker:
       - image: cimg/base:current
@@ -598,21 +299,6 @@ workflows:
     jobs:
       - flaky-tests:
           context: trade-tariff
-
-  sunday:
-    triggers:
-      - schedule:
-          # Every Sunday at 2.30 PM UTC
-          cron: "30 2 * * 0"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - dump-and-persist-database:
-          name: production-dump-and-persist-database
-          context: trade-tariff
-          space: production
 
   deploy-to-development:
     jobs:
@@ -741,11 +427,6 @@ workflows:
             - write-docker-tag-prod
           <<: *filter-not-main
 
-      - build:
-          name: build-live
-          context: trade-tariff
-          <<: *filter-main
-
       - promote-to-production?:
           type: approval
           <<: *filter-main
@@ -767,21 +448,6 @@ workflows:
             - promote-to-production?
           <<: *filter-release
 
-      - deploy-production:
-          matrix:
-            parameters:
-              service:
-                - xi
-                - uk
-          context: trade-tariff
-          <<: *filter-release
-
-      - notify-production-deployment:
-          context: trade-tariff
-          requires:
-            - deploy-production
-          <<: *filter-release
-
       - write-docker-tag:
           name: write-docker-tag-prod-release
           environment: production
@@ -793,4 +459,10 @@ workflows:
           environment: production
           requires:
             - write-docker-tag-prod-release
+          <<: *filter-release
+
+      - notify-production-deployment:
+          context: trade-tariff
+          requires:
+            - apply-terraform-prod
           <<: *filter-release

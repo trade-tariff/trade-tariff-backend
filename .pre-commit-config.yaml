@@ -1,5 +1,10 @@
 ---
-files: ^terraform\/\S+
+files: |
+  (?x)^(
+    ^terraform\/\S+ |
+    .circleci\/\S+
+  )
+
 repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.81.0
