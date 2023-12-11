@@ -435,8 +435,8 @@ workflows:
 
       - tariff/create-production-release:
           name: create-production-release
-          context: trade-tariff
-          image-name: tariff-backend
+          context: trade-tariff-releases
+          image-name: tariff-backend-production
           requires:
             - promote-to-production?
           <<: *filter-main
@@ -464,7 +464,7 @@ workflows:
           <<: *filter-release
 
       - notify-production-deployment:
-          context: trade-tariff
+          context: trade-tariff-releases
           requires:
             - apply-terraform-prod
           <<: *filter-release
