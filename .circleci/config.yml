@@ -360,7 +360,7 @@ workflows:
 
       - tariff/smoketests:
           name: smoketest-dev
-          context: trade-tariff
+          context: trade-tariff-testing
           url: https://dev.trade-tariff.service.gov.uk
           yarn_run: dev-tariff-backend-smoketests
           requires:
