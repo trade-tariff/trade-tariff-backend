@@ -305,11 +305,10 @@ workflows:
   deploy-to-development:
     jobs:
       - ruby-checks:
-          context: trade-tariff
           <<: *filter-not-main
 
       - test:
-          context: trade-tariff
+          context: trade-tariff-notifications
           <<: *filter-not-main
 
       - write-docker-tag:
@@ -408,7 +407,7 @@ workflows:
 
       - tariff/smoketests:
           name: smoketest-staging
-          context: trade-tariff
+          context: trade-tariff-testing
           url: https://staging.trade-tariff.service.gov.uk
           yarn_run: staging-tariff-backend-smoketests
           requires:
