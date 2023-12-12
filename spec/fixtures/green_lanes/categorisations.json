@@ -1,0 +1,134 @@
+[
+  {
+    "category": "1",
+    "regulation_id": "D000001",
+    "measure_type_id": "400",
+    "geographical_area": "1000",
+    "document_codes": [
+      "C004",
+      "N800"
+    ],
+    "additional_codes": [
+      "A5",
+      "R2D2"
+    ]
+  },
+  {
+    "category": "3",
+    "regulation_id": "D000002",
+    "measure_type_id": "410",
+    "geographical_area": "1001",
+    "document_codes": [
+      "C600"
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "1",
+    "regulation_id": "D000003",
+    "measure_type_id": "420",
+    "geographical_area": "1002",
+    "document_codes": [
+
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "3",
+    "regulation_id": "D000004",
+    "measure_type_id": "430",
+    "geographical_area": "US",
+    "document_codes": [
+      "C500"
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "2",
+    "regulation_id": "D000005",
+    "measure_type_id": "410",
+    "geographical_area": "1008",
+    "document_codes": [
+      "C004",
+      "N800"
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "2",
+    "regulation_id": "D000006",
+    "measure_type_id": "410",
+    "geographical_area": "1008",
+    "document_codes": [
+      "C004",
+      "N800"
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "2",
+    "regulation_id": "D000007",
+    "measure_type_id": "410",
+    "geographical_area": "1008",
+    "document_codes": [
+      "Y008",
+      "Y900"
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "2",
+    "regulation_id": "D000008",
+    "measure_type_id": "410",
+    "geographical_area": "EU",
+    "document_codes": [
+      "C600",
+      "Y002",
+      "Y003",
+      "Y007",
+      "Y008",
+      "Y009"
+    ],
+    "additional_codes": [
+
+    ]
+  },
+  {
+    "category": "2",
+    "regulation_id": "D000009",
+    "measure_type_id": "410",
+    "geographical_area": "EU",
+    "document_codes": [
+      "C004"
+    ],
+    "additional_codes": [
+      "N800",
+      "Y000",
+      "Y001"
+    ]
+  },
+  {
+    "category": "2",
+    "regulation_id": "D000010",
+    "measure_type_id": "410",
+    "geographical_area": "EU",
+    "document_codes": [
+
+    ],
+    "additional_codes": [
+
+    ]
+  }
+]
