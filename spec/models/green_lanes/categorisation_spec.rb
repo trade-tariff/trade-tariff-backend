@@ -55,7 +55,7 @@ RSpec.describe GreenLanes::Categorisation do
     subject(:categorisation_file) { described_class.load_from_file test_file }
 
     context 'with valid json file' do
-      let(:test_file) { file_fixture 'green_lanes/categories_231211.json' }
+      let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
       it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
@@ -91,7 +91,7 @@ RSpec.describe GreenLanes::Categorisation do
   describe '.all' do
     before { described_class.load_from_file test_file }
 
-    let(:test_file) { file_fixture 'green_lanes/categories_231211.json' }
+    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
     context 'when all read' do
       subject(:categorisation_all) { described_class.all }
