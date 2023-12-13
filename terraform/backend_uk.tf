@@ -1,7 +1,7 @@
 module "backend_uk" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
-  service_name  = "${var.service_name}-uk"
+  service_name  = "backend-uk"
   service_count = var.service_count
   region        = var.region
 
@@ -66,6 +66,12 @@ module "backend_uk" {
 
   service_secrets_config = flatten([
     local.backend_common_secrets,
-    local.backend_uk_common_secrets
+    local.backend_uk_common_secrets,
+    [
+      {
+        name      = "DATABASE_URL"
+        valueFrom = data.aws_secretsmanager_secret.database_readonly_connection_string.arn
+      }
+    ]
   ])
 }

@@ -1,3 +1,4 @@
+<!-- markdownlint-disable -->
 # trade-tariff-frontend terraform
 
 Terraform to deploy the service into AWS.
@@ -49,6 +50,7 @@ Terraform to deploy the service into AWS.
 | [aws_s3_bucket.reporting](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 | [aws_s3_bucket.spelling_corrector](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 | [aws_secretsmanager_secret.database_connection_string](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
+| [aws_secretsmanager_secret.database_readonly_connection_string](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.differences_to_emails](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.oauth_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.oauth_secret](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
@@ -89,7 +91,6 @@ Terraform to deploy the service into AWS.
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Smallest number of tasks the service can scale-in to. | `number` | `1` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to use. | `string` | n/a | yes |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `2` | no |
-| <a name="input_service_name"></a> [service\_name](#input\_service\_name) | Name of the service | `string` | `"backend"` | no |
 | <a name="input_stemming_exclusion_reference_analyzer"></a> [stemming\_exclusion\_reference\_analyzer](#input\_stemming\_exclusion\_reference\_analyzer) | Stemmer package file path in opensearch | `string` | n/a | yes |
 | <a name="input_synonym_reference_analyzer"></a> [synonym\_reference\_analyzer](#input\_synonym\_reference\_analyzer) | Synonym package file path in opensearch | `string` | n/a | yes |
 
