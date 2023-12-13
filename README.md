@@ -1,55 +1,50 @@
 # Trade Tariff Backend
 
-The Trade Tariff Backend provides an API which allows to search commodity codes for import and export for tax, duty and licences that apply to goods, from and to UK and NI.
-
-It is maintained on https://github.com/trade-tariff/trade-tariff-backend
+The Trade Tariff Backend provides an API which allows to search commodity codes
+for import and export for tax, duty and licences that apply to goods, from and
+to UK and NI.
 
 Projects using the Trade Tariff (TT) API:
 
-* [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
-* [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
-* [Trade Tariff Duty Calculator](https://github.com/trade-tariff/trade-tariff-duty-calculator)
+- [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
+- [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
+- [Trade Tariff Duty Calculator](https://github.com/trade-tariff/trade-tariff-duty-calculator)
 
 ## Development
 
 ### Dependencies
 
-  - Ruby [v3.2](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
-  - Postgresql v13
-  - OpenSearch v2
-  - Redis
+- Ruby [v3.2](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
+- Postgresql v13
+- OpenSearch v2
+- Redis
 
-These can be configured by running `docker-compose up` or by manual installation
-
-### Database _(optional)_
-
-If you have access, you can download a copy of the Staging database
-
-1. Setup your cf CLI: https://docs.cloudfoundry.org/cf-cli/install-go-cli.html
-2. Check with DevOps to have a cf account created, if you don't have one already
-3. Install [conduit plugin](https://plugins.cloudfoundry.org/#conduit). It allows you to directly connect to the remote service instances in Cloud Foundry.
-4. Ensure you have pg_dump installed
-5. Get a data dump of the DB from our DEV/STAGING environment, by running:
-
-   ```
-   cf conduit <target database> -- pg_dump --file <data_dump_file_name>.psql --no-acl --no-owner --clean --verbose
-   ```
-
-   For example:
-
-   ```
-   cf conduit trade-tariff-db -- pg_dump --file trade-tariff-db.psql --no-acl --no-owner --clean --verbose
-   ```
+These can be configured by running `docker-compose up` or by manual installation.
 
 ### Setup
 
 1. Clone this repo
-2. Install the correct ruby version according to the `.ruby-version` - eg using rbenv or ASDF
-3. Setup the app
-   - If you don't have a db dump then run `bin/setup` without parameters, _NB: this will result in a empty dataset_
-   - If you do have a database dump from Staging, run `bin/setup <path/to/dump/file>`
-     Sidekiq is started to build the search indexes - once the jobs have all finished (10 [done] jobs, one after the other), hit ctrl-c to exit sidekiq
-4. Start the app with `bin/rails s`
+2. Install the correct ruby version according to the `.ruby-version` - eg using
+  `rbenv` or `asdf`.
+3. Setup the app:
+    - If you don't have a db dump then run `bin/setup` without parameters.
+      - _NB: this will result in a empty dataset._
+    - If you do have a database dump, run `bin/setup <path/to/dump/ file>`.
+      Sidekiq is started to build the search indexes - once the jobs have all
+      finished (10 `[done]` jobs, one after the other), hit `Ctrl-C` to exit
+      sidekiq.
+4. Start the app with `bin/rails s`.
+
+### Database _(optional)_
+
+If you have access, you can download a database dump from our environments.
+Details of how to fetch a database dump are available on Slack.
+
+To restore the database dump:
+
+```sh
+psql -h localhost tariff_development < tariff-merged-staging.sql
+```
 
 ### Running an XI service
 
@@ -61,11 +56,13 @@ If you have access, you can download a copy of the Staging database
 
 ### Performing daily updates
 
-These are run daily by a background job, CdsUpdatesSynchronizerWorker or TaricUpdatesSynchronizerWorker. Additional environment variables are needed to run these jobs locally.
+These are run daily by a background job, `CdsUpdatesSynchronizerWorker` or
+`TaricUpdatesSynchronizerWorker`. Additional environment variables are needed to
+run these jobs locally.
 
-These should be added to `.env.development.local` -;
+These should be added to `.env.development.local`:
 
-```
+```text
 AWS_ACCESS_KEY_ID
 AWS_BUCKET_NAME
 AWS_REGION
@@ -83,39 +80,6 @@ TARIFF_SYNC_HOST
 TARIFF_SYNC_PASSWORD
 TARIFF_SYNC_USERNAME
 ```
-
-## Scaling the application
-
-We are using CF [AutoScaler](https://github.com/cloudfoundry/app-autoscaler) plugin to perform application autoscaling. Set up guide and documentation are available by links below:
-
-https://docs.cloud.service.gov.uk/managing_apps.html#autoscaling
-
-https://github.com/cloudfoundry/app-autoscaler/blob/develop/docs/Readme.md
-
-
-To check autoscaling history run:
-
-    cf autoscaling-history APPNAME
-
-To check autoscaling metrics run:
-
-    cf autoscaling-metrics APP_NAME METRIC_NAME
-
-To remove autoscaling policy and disable App Autoscaler run:
-
-    cf detach-autoscaling-policy APP_NAME
-
-To create or update autoscaling policy for your application run:
-
-    cf attach-autoscaling-policy APP_NAME ./policy.json
-
-
-Current autoscaling policy files are [here](https://github.com/trade-tariff/trade-tariff-backend/tree/main/config/autoscaling).
-
-## Contributing
-
-Please check out the [Contributing guide](https://github.com/trade-tariff/trade-tariff-backend/blob/main/CONTRIBUTING.md)
-
 
 ## Licence
 
