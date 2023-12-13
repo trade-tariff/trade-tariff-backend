@@ -38,11 +38,11 @@ private
   end
 
   def serialize_errors(errors)
-    # if request.headers['Accept'] == 'application/vnd.uktt.v2'
-    Api::V2::ErrorSerializationService.new.serialized_errors(errors)
-    # else
-    #   Api::V1::ErrorSerializationService.new.serialized_errors(errors)
-    # end
+    if request.headers['Accept'] == 'application/vnd.uktt.v2'
+      Api::V2::ErrorSerializationService.new.serialized_errors(errors)
+    else
+      Api::V1::ErrorSerializationService.new.serialized_errors(errors)
+    end
   end
 end
 # rubocop:enable Rails/ApplicationController
