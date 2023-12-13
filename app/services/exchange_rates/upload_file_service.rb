@@ -1,9 +1,10 @@
 module ExchangeRates
   class UploadFileService
-    def initialize(rates, date, type)
+    def initialize(rates, date, type, sample_date)
       @rates = rates
       @date = date
       @type = type
+      @sample_date = sample_date
     end
 
     def call
@@ -23,7 +24,7 @@ module ExchangeRates
 
     private
 
-    attr_reader :rates, :date, :type
+    attr_reader :rates, :date, :type, :sample_date
 
     def upload_data(format, file_creation_service)
       exchange_rate_file = file_creation_service.call(rates)
@@ -38,7 +39,7 @@ module ExchangeRates
         format:,
         type:,
         file_size:,
-        publication_date: date,
+        publication_date: sample_date,
       )
 
       Rails.logger.info("Generated file name: #{file_path}, size: #{file_size}")
