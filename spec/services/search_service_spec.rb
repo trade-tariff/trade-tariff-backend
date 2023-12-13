@@ -1,5 +1,5 @@
 RSpec.describe SearchService do
-  let(:data_serializer) { Api::V1::SearchSerializationService.new }
+  let(:data_serializer) { Api::V2::SearchSerializationService.new }
 
   describe 'initialization' do
     let(:query) { Forgery(:basic).text }
@@ -40,7 +40,7 @@ RSpec.describe SearchService do
   # Searching in search suggestions or find historic goods nomenclature
   describe 'exact search' do
     subject(:result) do
-      described_class.new(data_serializer, q: query, as_of: Time.zone.today).to_json
+      described_class.new(data_serializer, q: query, as_of: Time.zone.today).to_json[:data][:attributes]
     end
 
     around do |example|
@@ -51,11 +51,11 @@ RSpec.describe SearchService do
       let(:query) { '11' }
       let(:pattern) do
         {
-          type: 'exact_match',
+          type: "exact_match",
           entry: {
-            endpoint: 'chapters',
-            id: '11',
-          },
+            endpoint: "chapters",
+            id:"11"
+          }
         }
       end
 
@@ -222,7 +222,7 @@ RSpec.describe SearchService do
     end
 
     context 'when search references' do
-      subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 'foo').to_json }
+      subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 'foo').to_json[:data][:attributes] }
 
       before do
         create(
@@ -253,7 +253,7 @@ RSpec.describe SearchService do
           data_serializer,
           q: query,
           as_of: Time.zone.today,
-        ).to_json
+        ).to_json[:data][:attributes]
       end
 
       let(:pattern) do
@@ -288,6 +288,8 @@ RSpec.describe SearchService do
   describe 'fuzzy search' do
     context 'when filtering by date' do
       context 'when with goods codes that have bounded validity period' do
+        subject { described_class.new(data_serializer, q: 'water', as_of: date).to_json[:data][:attributes] }
+
         before do
           create :heading, :with_description,
                  goods_nomenclature_item_id: '2851000000',
@@ -311,15 +313,15 @@ RSpec.describe SearchService do
         end
 
         context 'with search date within goods code validity period' do
-          subject { described_class.new(data_serializer, q: 'water', as_of: '2005-01-01').to_json }
+          let(:date) { '2007-01-01' }
 
           around { |example| TimeMachine.at('2005-01-01') { example.run } }
 
-          it { is_expected.to match_json_expression heading_pattern }
+          it { is_expected.not_to match_json_expression heading_pattern }
         end
 
         context 'with search date outside goods code validity period' do
-          subject { described_class.new(data_serializer, q: 'water', as_of: '2007-01-01').to_json }
+          let(:date) { '2005-01-01' }
 
           around { |example| TimeMachine.at('2007-01-01') { example.run } }
 
@@ -328,6 +330,8 @@ RSpec.describe SearchService do
       end
 
       context 'when with goods codes that have unbounded validity period' do
+        subject(:result) { described_class.new(data_serializer, q: 'Live bovine animals', as_of: date).to_json[:data][:attributes] }
+
         before do
           create :heading, :with_description,
                  goods_nomenclature_item_id: '0102000000',
@@ -350,18 +354,16 @@ RSpec.describe SearchService do
           }.ignore_extra_keys!
         end
 
-        it 'returns goods code if search date is greater than start of validity period' do
-          result = described_class.new(data_serializer, q: 'bovine animal',
-                                                        as_of: '2007-01-01').to_json
+        context 'returns goods code if search date is greater than start of validity period' do
+          let(:date) { '2007-01-01' }
 
-          expect(result).to match_json_expression heading_pattern
+          it { is_expected.to match_json_expression heading_pattern }
         end
 
-        it 'does not return goods code if search date is less than start of validity period' do
-          result = described_class.new(data_serializer, q: 'bovine animal',
-                                                        as_of: '1970-01-01').to_json
+        context 'does not return goods code if search date is less than start of validity period' do
+          let(:date) { '1970-01-01' }
 
-          expect(result).not_to match_json_expression heading_pattern
+          it { is_expected.not_to match_json_expression heading_pattern }
         end
       end
     end
@@ -373,15 +375,15 @@ RSpec.describe SearchService do
 
       let(:result) do
         described_class.new(data_serializer, q: '!!! [t_e_s_t][',
-                                             as_of: '1970-01-01')
+                                             as_of: '1970-01-01').to_json[:data][:attributes]
       end
 
       specify 'search does not raise an exception' do
-        expect { result.to_json }.not_to raise_error
+        expect { result }.not_to raise_error
       end
 
       specify 'search returns empty resilt' do
-        expect(result.to_json).to match_json_expression SearchService::BaseSearch::BLANK_RESULT.merge(type: 'fuzzy_match')
+        expect(result).to match_json_expression SearchService::BaseSearch::BLANK_RESULT.merge(type: 'fuzzy_match')
       end
     end
 
@@ -389,6 +391,8 @@ RSpec.describe SearchService do
       # Sections do not have validity periods
       # We have to ensure there is special clause in Elasticsearch
       # query that takes that into account and they get found
+      subject(:result) { described_class.new(data_serializer, q: 'example title', as_of: '1970-01-01').to_json[:data][:attributes] }
+
       before do
         create :section, title: 'example title'
       end
@@ -407,15 +411,15 @@ RSpec.describe SearchService do
       end
 
       it 'finds relevant sections' do
-        result = described_class.new(data_serializer, q: 'example title',
-                                                      as_of: '1970-01-01')
-        expect(result.to_json).to match_json_expression response_pattern
+        expect(result).to match_json_expression response_pattern
       end
     end
   end
 
   context 'when reference search' do
     describe 'validity period function' do
+      subject(:result) { TimeMachine.at(date) { described_class.new(data_serializer, q: 'water').to_json[:data][:attributes] }}
+
       before do
         create :search_suggestion,
                :search_reference,
@@ -441,16 +445,16 @@ RSpec.describe SearchService do
         }.ignore_extra_keys!
       end
 
-      it 'returns goods code if search date falls within validity period' do
-        result = TimeMachine.at('2005-01-01') { described_class.new(data_serializer, q: 'water').to_json }
+      context 'returns goods code if search date falls within validity period' do
+        let(:date) { '2005-01-01' }
 
-        expect(result).to match_json_expression heading_pattern
+        it { is_expected.to match_json_expression heading_pattern }
       end
 
-      it 'does not return goods code if search date does not fall within validity period' do
-        result = TimeMachine.at('2007-01-01') { described_class.new(data_serializer, q: 'water').to_json }
+      context 'does not return goods code if search date does not fall within validity period' do
+        let(:date) { '2007-01-01' }
 
-        expect(result).not_to match_json_expression heading_pattern
+        it { is_expected.not_to match_json_expression heading_pattern }
       end
     end
 
@@ -489,8 +493,7 @@ RSpec.describe SearchService do
       end
 
       it 'only matches exact phrases' do
-        result = described_class.new(data_serializer, q: 'acid oil',
-                                                      as_of: Time.zone.today).to_json
+        result = described_class.new(data_serializer, q: 'acid oil', as_of: Time.zone.today).to_json[:data][:attributes]
 
         expect(result).to match_json_expression heading_pattern
       end
