@@ -51,11 +51,11 @@ RSpec.describe SearchService do
       let(:query) { '11' }
       let(:pattern) do
         {
-          type: "exact_match",
+          type: 'exact_match',
           entry: {
-            endpoint: "chapters",
-            id:"11"
-          }
+            endpoint: 'chapters',
+            id: '11',
+          },
         }
       end
 
@@ -354,13 +354,13 @@ RSpec.describe SearchService do
           }.ignore_extra_keys!
         end
 
-        context 'returns goods code if search date is greater than start of validity period' do
+        context 'with search date greater than start of validity period it returns goods code' do
           let(:date) { '2007-01-01' }
 
           it { is_expected.to match_json_expression heading_pattern }
         end
 
-        context 'does not return goods code if search date is less than start of validity period' do
+        context 'with search date is less than start of validity period does not return goods code' do
           let(:date) { '1970-01-01' }
 
           it { is_expected.not_to match_json_expression heading_pattern }
@@ -418,7 +418,7 @@ RSpec.describe SearchService do
 
   context 'when reference search' do
     describe 'validity period function' do
-      subject(:result) { TimeMachine.at(date) { described_class.new(data_serializer, q: 'water').to_json[:data][:attributes] }}
+      subject(:result) { TimeMachine.at(date) { described_class.new(data_serializer, q: 'water').to_json[:data][:attributes] } }
 
       before do
         create :search_suggestion,
@@ -445,13 +445,13 @@ RSpec.describe SearchService do
         }.ignore_extra_keys!
       end
 
-      context 'returns goods code if search date falls within validity period' do
+      context 'with search date falls within validity period returns goods code' do
         let(:date) { '2005-01-01' }
 
         it { is_expected.to match_json_expression heading_pattern }
       end
 
-      context 'does not return goods code if search date does not fall within validity period' do
+      context 'with search date does not fall within validity period does not return goods code' do
         let(:date) { '2007-01-01' }
 
         it { is_expected.not_to match_json_expression heading_pattern }
