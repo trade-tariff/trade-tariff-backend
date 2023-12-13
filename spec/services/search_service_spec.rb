@@ -445,7 +445,7 @@ RSpec.describe SearchService do
         }.ignore_extra_keys!
       end
 
-      context 'with search date falls within validity period returns goods code' do
+      context 'with search date falls within validity period' do
         let(:date) { '2005-01-01' }
 
         it { is_expected.to match_json_expression heading_pattern }
