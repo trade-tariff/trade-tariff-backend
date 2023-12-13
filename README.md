@@ -35,7 +35,7 @@ These can be configured by running `docker-compose up` or by manual installation
       sidekiq.
 4. Start the app with `bin/rails s`.
 
-### Database _(optional)_
+### Database
 
 If you have access, you can download a database dump from our environments.
 Details of how to fetch a database dump are available on Slack.

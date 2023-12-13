@@ -32,9 +32,6 @@ module "backend_admin_xi" {
     aws_iam_policy.secrets.arn
   ]
 
-  container_entrypoint = [""]
-  container_command    = local.worker_command
-
   service_environment_config = flatten([
     local.backend_common_vars,
     local.backend_common_worker_vars,
