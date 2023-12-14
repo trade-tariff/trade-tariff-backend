@@ -40,8 +40,12 @@ searches_without_match_or_synonym.csv
 # Ignore all json files in the cds dump directory
 /data/cds_dumps/*.json
 
+# Ignore all database dumps, but keep db/structure
+*.psql
+*.psql.gz
+*.sql
+*.sql.gz
+!db/structure.sql
+
 # Ignore Green Lanes categorisation data for now
 /data/green_lanes/categories.json
-
-# Ignore all database dumps
-*.psql
