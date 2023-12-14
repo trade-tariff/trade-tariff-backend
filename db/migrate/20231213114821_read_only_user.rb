@@ -11,7 +11,6 @@ Sequel.migration do
            IF EXISTS (
               SELECT FROM pg_catalog.pg_roles
               WHERE  rolname = '#{user}') THEN
-
               RAISE NOTICE 'Role "#{user}" already exists. Skipping.';
            ELSE
               CREATE ROLE #{user};
@@ -25,10 +24,11 @@ Sequel.migration do
 
   down do
     run %{
+      REVOKE ALL PRIVILEGES ON SCHEMA uk FROM #{user};
       REVOKE ALL PRIVILEGES ON SCHEMA xi FROM #{user};
       REVOKE ALL PRIVILEGES ON SCHEMA public FROM #{user};
-      ALTER DEFAULT PRIVILEGES IN SCHEMA uk GRANT SELECT ON TABLES TO #{user};
-      ALTER DEFAULT PRIVILEGES IN SCHEMA xi GRANT SELECT ON TABLES TO #{user};
+      ALTER DEFAULT PRIVILEGES IN SCHEMA uk REVOKE SELECT ON TABLES FROM #{user};
+      ALTER DEFAULT PRIVILEGES IN SCHEMA xi REVOKE SELECT ON TABLES FROM #{user};
       DROP OWNED BY #{user};
       DROP USER IF EXISTS #{user};
     }
