@@ -222,6 +222,8 @@ Rails.application.routes.draw do
       scope '/experimental' do
         namespace :green_lanes do
           resources :subheadings, only: %i[show], constraints: { id: /\d{6,10}/ }
+
+          resources :categorisations, only: %i[index]
         end
       end
     end

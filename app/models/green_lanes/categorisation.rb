@@ -3,8 +3,12 @@
 module GreenLanes
   class Categorisation
     include ActiveModel::Model
+    include ContentAddressableId
 
     DEFAULT_JSON = 'data/green_lanes/categories.json'
+
+    content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
+
 
     attr_accessor :category,
                   :regulation_id,

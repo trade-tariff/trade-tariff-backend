@@ -21,6 +21,7 @@ RSpec.describe GreenLanes::Categorisation do
       context 'with attributes' do
         subject(:first_element) { categorisation.first }
 
+        it { is_expected.to have_attributes id: a_string_matching(/\A.+\z/)}
         it { is_expected.to have_attributes category: '1' }
         it { is_expected.to have_attributes regulation_id: 'D0000001' }
         it { is_expected.to have_attributes measure_type_id: '400' }
@@ -64,6 +65,7 @@ RSpec.describe GreenLanes::Categorisation do
       context 'with attributes' do
         subject(:first_element) { categorisation_file.first }
 
+        it { is_expected.to have_attributes id: a_string_matching(/\A.+\z/)}
         it { is_expected.to have_attributes category: '1' }
         it { is_expected.to have_attributes regulation_id: 'D000001' }
         it { is_expected.to have_attributes measure_type_id: '400' }
