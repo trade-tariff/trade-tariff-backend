@@ -297,5 +297,9 @@ module TradeTariffBackend
         Redis.new(url:, db:)
       end
     end
+
+    def legacy_search_ancestors_enabled?
+      ENV.fetch('LEGACY_SEARCH_ANCESTORS_ENABLED', 'false') == 'true'
+    end
   end
 end

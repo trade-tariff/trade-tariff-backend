@@ -8,6 +8,7 @@ module Search
         validity_start_date:,
         validity_end_date:,
         description: formatted_description,
+        description_indexed:,
         guides: guides.map do |guide|
           {
             title: guide.title,
