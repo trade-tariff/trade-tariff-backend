@@ -1,9 +1,7 @@
 # rubocop:disable Rails/ApplicationController
 class ErrorsController < ActionController::Base
   def bad_request
-    respond_to_error \
-      :bad_request,
-      'Bad request: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+    respond_to_bad_request
   end
 
   def not_found
@@ -26,7 +24,24 @@ class ErrorsController < ActionController::Base
     respond_to_error :service_unavailable, 'Service is unavailable'
   end
 
+  def method_not_allowed
+    respond_to_bad_request
+  end
+
+  def not_implemented
+    respond_to_bad_request
+  end
+
+  def not_acceptable
+    respond_to_bad_request
+  end
 private
+
+  def respond_to_bad_request
+    respond_to_error \
+      :bad_request,
+      'Bad request: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
 
   def respond_to_error(status, message)
     status_code = Rack::Utils.status_code(status)
