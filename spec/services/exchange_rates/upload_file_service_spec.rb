@@ -1,8 +1,9 @@
 RSpec.describe ExchangeRates::UploadFileService do
-  subject(:call) { described_class.new(rates, date, type).call }
+  subject(:call) { described_class.new(rates, date, type, sample_date).call }
 
   let(:rates) { create_list(:exchange_rate_currency_rate, 1, :with_usa) }
   let(:date) { Time.zone.today }
+  let(:sample_date) { date + 1 }
 
   before do
     allow(TariffSynchronizer::FileService).to receive(:write_file)
@@ -67,5 +68,14 @@ RSpec.describe ExchangeRates::UploadFileService do
       expect(ExchangeRateFile.count).to eq(1)
       expect(ExchangeRates::CreateCsvAverageRatesService).to have_received(:new).with(rates)
     end
+  end
+
+  context 'when saving to database it saves the correct dates' do
+    let(:type) { :monthly_csv }
+
+    it { expect(ExchangeRateFile.count).to eq(1) }
+    it { expect(ExchangeRateFile.first.publication_date).to eq(sample_date) }
+    it { expect(ExchangeRateFile.first.period_year).to eq(date.year) }
+    it { expect(ExchangeRateFile.first.period_month).to eq(date.month) }
   end
 end

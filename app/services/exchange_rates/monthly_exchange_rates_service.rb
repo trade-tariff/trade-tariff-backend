@@ -19,18 +19,21 @@ module ExchangeRates
         rates,
         date,
         :monthly_csv,
+        sample_date,
       ).call
 
       ExchangeRates::UploadFileService.new(
         rates,
         date,
         :monthly_xml,
+        sample_date,
       ).call
 
       ExchangeRates::UploadFileService.new(
         rates,
         date,
         :monthly_csv_hmrc,
+        sample_date,
       ).call
     end
 

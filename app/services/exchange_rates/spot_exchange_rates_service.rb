@@ -18,6 +18,7 @@ module ExchangeRates
         rates,
         sample_date,
         :spot_csv,
+        sample_date,
       ).call
     end
 

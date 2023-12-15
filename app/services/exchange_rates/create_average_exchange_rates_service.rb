@@ -42,6 +42,7 @@ module ExchangeRates
         countries_and_rate,
         selected_date,
         :average_csv,
+        selected_date,
       ).call
     end
 
