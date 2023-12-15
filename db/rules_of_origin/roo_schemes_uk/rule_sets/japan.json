@@ -58,10 +58,8 @@
                               "export": true
                         },
                         {
-                              "rule": "Production in which Atlantic Bluefin tuna (Thunnus thynnus) is subject to caging in farms with subsequent feeding and fattening or farming for a minimum period of three months in a Party. The duration of the fattening or farming shall be established according to the date of the caging operation and the date of harvesting recorded in the electronic Bluefin tuna Catch Document (eBCD) of the International Commission for the Conservation of Atlantic Tunas (I<abbr title='Change of tariff chapter'>CC</abbr>: All non-originating materials used in the production of the good have undergone a change in tariff classification at the 2-digit level (chapter)AT).",
-                              "class": [
-                                    "CC"
-                              ],
+                              "rule": "Production in which Atlantic Bluefin tuna (Thunnus thynnus) is subject to caging in farms with subsequent feeding and fattening or farming for a minimum period of three months in a Party. The duration of the fattening or farming shall be established according to the date of the caging operation and the date of harvesting recorded in the electronic Bluefin tuna Catch Document (eBCD) of the International Commission for the Conservation of Atlantic Tunas (ICCAT).",
+                              "class": [],
                               "footnotes": [],
                               "operator": "or",
                               "quota": false,
@@ -9639,7 +9637,7 @@
                   "max": "7007119999",
                   "rules": [
                         {
-                              "rule": "Tempering of non-originating materials, provided that nonoriginating materials of [heading&nbsp;7007](/headings/7007) are not used.",
+                              "rule": "Tempering of non-originating materials, provided that non-originating materials of [heading&nbsp;7007](/headings/7007) are not used.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
