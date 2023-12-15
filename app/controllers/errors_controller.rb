@@ -1,7 +1,7 @@
 # rubocop:disable Rails/ApplicationController
 class ErrorsController < ActionController::Base
   def bad_request
-    respond_to_bad_request
+    respond_to_bad_request 'Bad request: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 
   def not_found
@@ -25,22 +25,22 @@ class ErrorsController < ActionController::Base
   end
 
   def method_not_allowed
-    respond_to_bad_request
+    respond_to_bad_request 'Method Not Allowed: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 
   def not_implemented
-    respond_to_bad_request
+    respond_to_bad_request 'Not Implemented: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 
   def not_acceptable
-    respond_to_bad_request
+    respond_to_bad_request 'Not Acceptable: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
 private
 
-  def respond_to_bad_request
+  def respond_to_bad_request(message)
     respond_to_error \
       :bad_request,
-      'Bad request: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+      message
   end
 
   def respond_to_error(status, message)
