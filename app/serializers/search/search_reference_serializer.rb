@@ -6,6 +6,7 @@ module Search
       else
         {
           title:,
+          title_indexed:,
           reference_class: referenced_class,
           reference: serializer_instance.serializable_hash.merge(
             class: referenced_class,
@@ -14,7 +15,11 @@ module Search
       end
     end
 
-  private
+    private
+
+    def title_indexed
+      SearchNegationService.new(title).call
+    end
 
     def serializer_for_referenced_class
       "Search::#{referenced.class}Serializer".constantize

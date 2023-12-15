@@ -79,7 +79,8 @@ class SearchService
       end
 
       def search_through_negated_ancestors?
-        TradeTariffBackend.legacy_search_ancestors_enabled?
+        TradeTariffBackend.legacy_search_ancestors_enabled? &&
+          SearchNegationService::NEGATION_TERMS.none? { |term| query_string.include?(term) }
       end
     end
   end
