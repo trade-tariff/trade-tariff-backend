@@ -38,6 +38,10 @@ FactoryBot.define do
     after(:create) do |gono, _evaluator|
       if gono.associations[:goods_nomenclature_indents]
         gono.associations[:goods_nomenclature_indents].all?(&:save)
+        # We clear associations that rely on nested set that might have been
+        # loaded before the nested set tree node view was refreshed
+        gono.associations.clear
+
         GoodsNomenclatures::TreeNode.refresh!
       end
     end

@@ -20,8 +20,8 @@ class BuildIndexPageWorker
         body: serialize_for(:index, index, entries),
       )
     end
-  rescue StandardError => e
-    raise IndexingError, "Failed building index: #{index_namespace}/#{index_name} - page #{page_number} #{e.class}, #{e.backtrace}"
+  rescue StandardError
+    raise IndexingError, "Failed building index: #{index_namespace}/#{index_name} - page #{page_number}"
   end
 
   private

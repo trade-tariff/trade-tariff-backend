@@ -298,8 +298,8 @@ module TradeTariffBackend
       end
     end
 
-    def legacy_search_ancestors_enabled?
-      ENV.fetch('LEGACY_SEARCH_ANCESTORS_ENABLED', 'false') == 'true'
+    def legacy_search_enhancements_enabled?
+      ENV.fetch('LEGACY_SEARCH_ENHANCEMENTS_ENABLED', 'false') == 'true'
     end
   end
 end

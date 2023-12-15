@@ -5,6 +5,7 @@ RSpec.describe Search::SearchReferenceSerializer do
       let(:pattern) do
         {
           title: search_reference.title,
+          title_indexed: search_reference.title,
           reference_class: 'Heading',
           reference: {
             class: 'Heading',
