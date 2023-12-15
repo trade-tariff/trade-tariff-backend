@@ -77,3 +77,8 @@ variable "management_email" {
   description = "Email address for the exchange rate management team."
   type        = string
 }
+
+variable "legacy_search_enhancements_enabled" {
+  description = "Enable legacy search enhancements"
+  type        = bool
+}

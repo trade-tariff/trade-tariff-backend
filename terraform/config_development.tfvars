@@ -8,3 +8,4 @@ alcohol_coercian_starts_from          = "2022-01-01"
 stemming_exclusion_reference_analyzer = "analyzers/F159568045"
 synonym_reference_analyzer            = "analyzers/F202143497"
 management_email                      = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
+legacy_search_enhancements_enabled    = true
