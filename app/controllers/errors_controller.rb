@@ -35,6 +35,7 @@ class ErrorsController < ActionController::Base
   def not_acceptable
     respond_to_bad_request 'Not Acceptable: API documentation is available at https://api.trade-tariff.service.gov.uk/'
   end
+
 private
 
   def respond_to_bad_request(message)
