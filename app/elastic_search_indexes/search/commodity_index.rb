@@ -13,6 +13,7 @@ module Search
             description_indexed: { type: 'text', analyzer: 'snowball' },
             goods_nomenclature_item_id: { type: 'keyword' },
             declarable: { enabled: false },
+            ancestor_descriptions: { enabled: false },
             chapter: {
               dynamic: true,
               properties: {

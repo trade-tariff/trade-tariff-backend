@@ -11,6 +11,7 @@ module Search
         description_indexed:,
         number_indents:,
         declarable: declarable?,
+        ancestor_descriptions:,
       }
 
       commodity_attributes[:section] = section_part if section.present?
@@ -34,6 +35,12 @@ module Search
     def declarable?
       TimeMachine.now do
         super
+      end
+    end
+
+    def ancestor_descriptions
+      TimeMachine.now do
+        classifiable_goods_nomenclatures.reverse.map(&:description)
       end
     end
 
