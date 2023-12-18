@@ -1,5 +1,6 @@
 class SearchNegationService
   NEGATION_TERMS = ['neither', 'other than', 'excluding', 'not', 'except', 'without'].freeze
+  BRACKET_NEGATION_REGEX = /(?<excluded-bracket-area>\((#{NEGATION_TERMS.join('|')}).*\))/
   # (?<optional>,|-)? - This is a named capture group named 'optional' which matches either a comma ',' or a hyphen '-'.
   #                     The '?' makes this group optional, meaning it will match if a comma or hyphen is present, but it's not required.
   #
@@ -15,7 +16,6 @@ class SearchNegationService
   #             The dot '.' matches any character except newline, and the asterisk '*' allows this pattern to repeat any number of times,
   #             effectively matching any sequence of characters that does not contain a hyphen.
   #             This ensures that the regex captures text following the excluded term up until a hyphen, if present.
-  BRACKET_NEGATION_REGEX = /(?<excluded-bracket-area>\((#{NEGATION_TERMS.join('|')}).*\))/
   FULL_NEGATION_REGEX = /(?<optional>,|-)?\s*(?<excluded-term>#{NEGATION_TERMS.join('|')})\s+((?!-).)*/
 
   NO_BREAKING_SPACE = "\u00A0".freeze
