@@ -5,6 +5,7 @@ module Search
         mappings: {
           properties: {
             title: { type: 'text', analyzer: 'snowball' },
+            title_indexed: { type: 'text', analyzer: 'snowball' },
             reference_class: { type: 'keyword' },
             reference: {
               properties: {
