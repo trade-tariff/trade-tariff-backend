@@ -8,6 +8,7 @@ module Api
     CDN_CACHE_LIFETIME = 2.minutes
 
     etag { TradeTariffBackend.revision || Rails.env }
+    etag { actual_date }
     before_action :set_cache_headers, if: :http_caching_enabled?
 
     respond_to :json
