@@ -1,56 +1,33 @@
-The origin declaration is provided on an invoice or any other commercial document that describes the originating product in sufficient detail to enable its identification. The texts of the origin declarations appear in Annexes IVa and IVb of the [Origin Reference document](ord).
+1. For the purpose of obtaining preferential tariff treatment in the importing Party, a proof of origin in the form of an origin declaration in accordance with Annex 4 to this Origin Reference Document must be completed by an exporter in a Party for products originating in any Party and otherwise fulfilling the requirements of this Origin Reference Document.
 
-In the UK, the exporter’s reference number will be the EORI number. If you do not have one, you can [apply for an EORI number](https://www.gov.uk/eori). In Iceland or Norway, Approved Exporters should use their Approved Exporter number as the authorisation number. Other exporters should leave the authorisation number blank.
+2. The origin declaration must be made out using one of the linguistic versions of the text set out in Annex 4 to this Origin Reference Document on an invoice or on any other commercial document that describes the originating product in sufficient detail to enable its identification. The importing Party shall not require the importer to submit a translation of the origin declaration.
 
-Find out more about using [origin declarations](https://www.gov.uk/guidance/get-proof-of-origin-for-your-goods#origin-declaration).
+3. The origin declaration shall bear the original signature of the exporter or the authorised representative under the exporter’s responsibility.
 
-#### Conditions for making out an Origin Declaration or an Origin Declaration EUR-MED
-1. An origin declaration or an origin declaration EUR-MED as referred to in Article 15(1)(c) may be made out:
+4. Notwithstanding paragraph 3, the following are permitted pursuant to this Origin Reference Document:
 
-    (a) by an approved exporter within the meaning of Article 22; or
+   - the use of electronic signatures or identification codes pursuant to paragraph 5 for exporters in the United Kingdom; and
 
-    (b) by any exporter for any consignment consisting of one or more packages containing originating products whose total value does not exceed EUR 6 000.
+   - authorization numbers pursuant to Article 20 (Approved Exporter) for exporters in Iceland or Norway.
 
-2. Without prejudice to paragraph 3, an origin declaration may be made out in the following cases:
+5. An origin declaration may be sent electronically and directly from the exporter in one Party to an importer in another Party.
 
-   - if the products concerned may be considered as products originating in a Party or in one of the countries referred to in Article 3(1) with which cumulation is applicable, without application of cumulation with materials originating in one of the countries referred to in Article 3(2), and fulfil the other requirements of this Origin Reference Document;
+6. The origin declaration may be completed when the products to which it relates are exported, or after exportation. An origin declaration shall be valid one year from the date of completion, or for such longer period as may be provided by the importing Party.
 
-   - if the products concerned may be considered as products originating in one of the countries referred to in Article 3(2) with which cumulation is applicable, without application of cumulation with materials originating in one of the countries referred to in Article 3 and fulfil the other requirements of this Origin Reference Document, provided a certificate EUR-MED or an origin declaration EUR-MED has been issued in the country of origin.
+7. An origin declaration may apply to multiple shipments of identical products imported into a Party within the period specified in the origin declaration, which shall not exceed 12 months.
 
-3. An origin declaration EUR-MED may be made out if the products concerned may be considered as products originating in a Party or in one of the countries referred to in Article 3 with which cumulation is applicable, fulfil the requirements of this Origin Reference Document and:
+8. Notwithstanding paragraph 1, the Parties may allow forwarding agents, customs brokers and other persons to complete an origin declaration. In such cases, such persons must be empowered in writing by the exporter of the product to complete origin declarations. They must submit the said authorisation to the competent authorities, at their request.
 
-   - cumulation was applied with materials originating in one of the countries referred to in Article 3(2), or
+9. An exporter who has completed an origin declaration must keep a copy of the origin declaration and all documents supporting the originating status of the product, in paper or electronic form, for at least three years from the date of completion.
 
-   - the products may be used as materials in the context of cumulation for the manufacture of products for export to one of the countries referred to in Article 3(2), or
+10. If an exporter has completed an origin declaration for a product referred to in paragraph 2 of Article 8 (Cumulation), the exporter must possess a completed and signed supplier’s declaration in accordance with Annex 5 to this Origin Reference Document or Annex 6 to this Origin Reference Document from the supplier of the non-originating materials used in the production of the product. The customs authority of the exporting Party may, subject to its domestic requirements, allow the supplier’s declaration to be completed without signature.
 
-   - the products may be re-exported from the country of destination to one of the countries referred to in Article 3(2).
+#### Approved exporter
 
-4. An origin declaration EUR-MED shall contain one of the following statements in English:
+1. The customs authorities of Iceland or Norway may, subject to domestic requirements, authorise an exporter of that Party (hereinafter referred to as “approved exporter”) to complete origin declarations without signature.
 
-   - if origin has been obtained by application of cumulation with materials originating in one or more of the countries referred to in Article 3:
+2. An exporter who requests such authorisation must offer to the satisfaction of the customs authorities of Iceland or Norway all guarantees necessary to verify the originating status of the products as well as the fulfilment of any other requirement under this Origin Reference Document.
 
-   “CUMULATION APPLIED WITH …” (name of the country/countries)
+3. The customs authorities of Iceland or Norway shall provide, to the approved exporter, an authorisation number to be included in the origin declaration instead of the signature.
 
-   - if origin has been obtained without application of cumulation with materials originating in one or more of the countries referred to in Article 3:
-
-   “NO CUMULATION APPLIED”.
-
-5. The exporter making out an origin declaration or an origin declaration EUR-MED shall be prepared to submit at any time, at the request of the customs authorities of the exporting Party, all appropriate documents proving the originating status of the products concerned as well as the fulfilment of the other requirements of this Origin Reference Document.
-
-6. An origin declaration or an origin declaration EUR-MED shall be made out by the exporter by typing, stamping or printing on the invoice, the delivery note or another commercial document, the declaration, the texts of which appear in Annexes IVa and b, using one of the linguistic versions set out in these Annexes and in accordance with the provisions of the national law of the exporting Party. If the declaration is handwritten, it shall be written in ink in printed characters.
-
-7. Origin declarations and origin declarations EUR-MED shall bear the original signature of the exporter in manuscript. However, an approved exporter within the meaning of Article 22 shall not be required to sign such declarations provided that he gives the customs authorities of the exporting Party a written undertaking that he accepts full responsibility for any origin declaration which identifies him as if it had been signed in manuscript by him.
-
-8. An origin declaration or an origin declaration EUR-MED may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing Party at the latest two years after the importation of the products to which it relates.
-
-#### Approved Exporter
-
-1. The customs authorities of the exporting Party may authorise any exporter (hereinafter referred to as “approved exporter”) who makes frequent shipments of products under the United Kingdom-Iceland Agreement to make out origin declarations or origin declarations EUR-MED irrespective of the value of the products concerned. An exporter seeking such authorisation shall offer to the satisfaction of the customs authorities all guarantees necessary to verify the originating status of the products as well as the fulfilment of the other requirements of this Origin Reference Document.
-
-2. The customs authorities may grant the status of approved exporter subject to any conditions which they consider appropriate.
-
-3. The customs authorities shall grant to the approved exporter a customs authorisation number which shall appear on the origin declaration or on the origin declaration EUR-MED.
-
-4. The customs authorities shall monitor the use of the authorisation by the approved exporter.
-
-5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
+4. The customs authorities of Iceland or Norway shall monitor the proper use of an authorisation and may withdraw it if the exporter no longer meets the conditions or otherwise makes improper use of it.
