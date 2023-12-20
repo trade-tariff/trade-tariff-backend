@@ -24,6 +24,18 @@ FactoryBot.define do
       state { 'M' }
     end
 
+    trait :applied_yesterday do
+      applied
+      issue_date { 2.days.ago.to_date }
+      applied_at { 1.day.ago }
+    end
+
+    trait :applied_today do
+      applied
+      issue_date { 1.day.ago.to_date }
+      applied_at { 10.minutes.ago }
+    end
+
     trait :with_corresponding_data do
       applied
 
