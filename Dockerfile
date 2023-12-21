@@ -22,12 +22,12 @@ COPY . /app/
 
 # Cleanup to save space in the production image
 RUN rm -rf node_modules log tmp && \
-      rm -rf /usr/local/bundle/cache && \
-      rm -rf .env && \
-      find /usr/local/bundle/gems -name "*.c" -delete && \
-      find /usr/local/bundle/gems -name "*.h" -delete && \
-      find /usr/local/bundle/gems -name "*.o" -delete && \
-      find /usr/local/bundle/gems -name "*.html" -delete
+  rm -rf /usr/local/bundle/cache && \
+  rm -rf .env && \
+  find /usr/local/bundle/gems -name "*.c" -delete && \
+  find /usr/local/bundle/gems -name "*.h" -delete && \
+  find /usr/local/bundle/gems -name "*.o" -delete && \
+  find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
 FROM ruby:3.2.2-alpine3.18 as production
@@ -41,11 +41,21 @@ RUN bundle config set without 'development test'
 # The application runs from /app
 WORKDIR /app
 
-ENV RAILS_ENV=production
+ENV RAILS_ENV=production \
+  PORT=8080 \
+  GOVUK_APP_DOMAIN="localhost" \
+  GOVUK_WEBSITE_ROOT="http://localhost/" \
+  DATABASE_URL="postgres://william:@localhost:5432/tariff_development" \
+  TARIFF_FROM_EMAIL="test@localhost" \
+  TARIFF_SYNC_EMAIL="test@localhost" \
+  SECRET_KEY_BASE="8f949e78bd12c534f7d396e28772d1e2b3b744182ac980191f3e62ac25032073ce274fd125cbbeebd0dabc03ccf188f3c3c87bfb3948f037ce4d6f5dec987764" \
+  DEFAULT_API_VERSION="2" \
+  VCAP_APPLICATION="{}"
 
 # Copy files generated in the builder image
 COPY --from=builder /app/ /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+HEALTHCHECK CMD nc -z 0.0.0.0 8080
 
+CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
