@@ -31,6 +31,7 @@ RUN rm -rf node_modules log tmp && \
 
 # Build runtime image
 FROM ruby:3.2.2-alpine3.18 as production
+ARG DATABASE_USER
 
 RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
@@ -45,7 +46,7 @@ ENV RAILS_ENV=production \
   PORT=8080 \
   GOVUK_APP_DOMAIN="localhost" \
   GOVUK_WEBSITE_ROOT="http://localhost/" \
-  DATABASE_URL="postgres://william:@localhost:5432/tariff_development" \
+  DATABASE_URL="postgres://${DATABASE_USER}:@localhost:5432/tariff_development" \
   TARIFF_FROM_EMAIL="test@localhost" \
   TARIFF_SYNC_EMAIL="test@localhost" \
   SECRET_KEY_BASE="8f949e78bd12c534f7d396e28772d1e2b3b744182ac980191f3e62ac25032073ce274fd125cbbeebd0dabc03ccf188f3c3c87bfb3948f037ce4d6f5dec987764" \
@@ -56,6 +57,6 @@ ENV RAILS_ENV=production \
 COPY --from=builder /app/ /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
-HEALTHCHECK CMD nc -z 0.0.0.0 8080
+HEALTHCHECK CMD nc -z 0.0.0.0 $PORT
 
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
