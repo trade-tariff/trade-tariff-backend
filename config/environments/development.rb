@@ -22,6 +22,9 @@ Rails.application.configure do
   # Log error messages when you accidentally call methods on nil.
   config.whiny_nils = true
 
+  # Raise exceptions instead of rendering exception templates.
+  config.action_dispatch.show_exceptions = true
+
   # Show full error reports and disable caching
   config.consider_all_requests_local = true
 

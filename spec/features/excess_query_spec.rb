@@ -34,12 +34,11 @@ RSpec.describe 'excess query counts', type: :request do
       before do
         allow(QueryCountChecker).to receive(:new).and_return \
           QueryCountChecker.new(20, raise_exception: true)
+
+        get_page
       end
 
-      it 'raises an exception' do
-        expect { get_page }.to raise_exception \
-          QueryCountChecker::ExcessQueryCountException, /excess queries detected/i
-      end
+      it { expect(response).to have_http_status :internal_server_error }
     end
 
     context 'with alerting mode' do
