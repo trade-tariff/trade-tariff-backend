@@ -1,3 +1,4 @@
+# rubocop:disable Rails/ApplicationController
 class ErrorsController < ActionController::Base
   def bad_request
     respond_to_error \
@@ -62,3 +63,4 @@ private
     end
   end
 end
+# rubocop:enable Rails/ApplicationController
