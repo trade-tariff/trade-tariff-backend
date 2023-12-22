@@ -4,8 +4,6 @@ RSpec.describe 'Maintenance mode', type: :request do
   subject { response }
 
   describe 'making an API request whilst maintenance mode is enabled' do
-    include_context 'with rescued exceptions'
-
     before do
       allow(ENV).to receive(:[]).and_call_original
       allow(ENV).to receive(:[]).with('MAINTENANCE').and_return 'true'

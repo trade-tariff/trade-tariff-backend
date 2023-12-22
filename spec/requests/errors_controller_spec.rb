@@ -75,4 +75,28 @@ RSpec.describe ErrorsController do
   describe 'GET #serice_unavailable' do
     it_behaves_like 'a csv or json error response', 503, 'Service is unavailable'
   end
+
+  describe 'GET #maintenance' do
+    let(:make_request) { get '/maintenance' }
+
+    it_behaves_like 'a csv or json error response', 503, 'Service is unavailable'
+  end
+
+  describe 'method_not_allowed' do
+    it_behaves_like 'a csv or json error response',
+                    405,
+                    'Method Not Allowed: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
+
+  describe 'not_implemented' do
+    it_behaves_like 'a csv or json error response',
+                    501,
+                    'Not Implemented: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
+
+  describe 'not_acceptable' do
+    it_behaves_like 'a csv or json error response',
+                    406,
+                    'Not Acceptable: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
 end

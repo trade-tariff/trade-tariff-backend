@@ -26,6 +26,24 @@ class ErrorsController < ActionController::Base
     respond_to_error :service_unavailable, 'Service is unavailable'
   end
 
+  def method_not_allowed
+    respond_to_error \
+      :method_not_allowed,
+      'Method Not Allowed: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
+
+  def not_implemented
+    respond_to_error \
+      :not_implemented,
+      'Not Implemented: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
+
+  def not_acceptable
+    respond_to_error \
+      :not_acceptable,
+      'Not Acceptable: API documentation is available at https://api.trade-tariff.service.gov.uk/'
+  end
+
 private
 
   def respond_to_error(status, message)
