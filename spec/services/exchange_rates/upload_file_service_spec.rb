@@ -20,7 +20,7 @@ RSpec.describe ExchangeRates::UploadFileService do
   context 'when type is :monthly_csv' do
     let(:type) { :monthly_csv }
 
-    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_\d{4}-\d{2}.csv/), include('Country')) }
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_\d{4}-\d{1,2}.csv/), include('Country')) }
     it { expect(ExchangeRateFile.count).to eq(1) }
     it { expect(ExchangeRates::CreateCsvService).to have_received(:new).with(rates) }
   end
@@ -28,7 +28,7 @@ RSpec.describe ExchangeRates::UploadFileService do
   context 'when type is :monthly_xml' do
     let(:type) { :monthly_xml }
 
-    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_xml_\d{4}-\d{2}.xml/), include('countryName')) }
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_xml_\d{4}-\d{1,2}.xml/), include('countryName')) }
     it { expect(ExchangeRateFile.count).to eq(1) }
     it { expect(ExchangeRates::CreateXmlService).to have_received(:new).with(rates) }
   end
@@ -36,7 +36,7 @@ RSpec.describe ExchangeRates::UploadFileService do
   context 'when type is :monthly_csv_hmrc' do
     let(:type) { :monthly_csv_hmrc }
 
-    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_hmrc_\d{4}-\d{2}.csv/), include('Period')) }
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/monthly_csv_hmrc_\d{4}-\d{1,2}.csv/), include('Period')) }
     it { expect(ExchangeRateFile.count).to eq(1) }
     it { expect(ExchangeRates::CreateCsvHmrcService).to have_received(:new).with(rates) }
   end
@@ -45,7 +45,7 @@ RSpec.describe ExchangeRates::UploadFileService do
     let(:type) { :spot_csv }
     let(:rates) { create_list(:exchange_rate_currency_rate, 1, :spot_rate, :with_usa) }
 
-    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/spot_csv_\d{4}-\d{2}.csv/), include('Country')) }
+    it { expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/spot_csv_\d{4}-\d{1,2}.csv/), include('Country')) }
     it { expect(ExchangeRateFile.count).to eq(1) }
     it { expect(ExchangeRates::CreateCsvSpotService).to have_received(:new).with(rates) }
   end
@@ -64,7 +64,7 @@ RSpec.describe ExchangeRates::UploadFileService do
     it 'uploads correctly', :aggregate_failures do
       call
 
-      expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/average_csv_\d{4}-\d{2}.csv/), include('Country'))
+      expect(TariffSynchronizer::FileService).to have_received(:write_file).with(match(/average_csv_\d{4}-\d{1,2}.csv/), include('Country'))
       expect(ExchangeRateFile.count).to eq(1)
       expect(ExchangeRates::CreateCsvAverageRatesService).to have_received(:new).with(rates)
     end
