@@ -12,7 +12,6 @@ module Api
                    :geographical_area,
                    :document_codes,
                    :additional_codes
-
       end
     end
   end

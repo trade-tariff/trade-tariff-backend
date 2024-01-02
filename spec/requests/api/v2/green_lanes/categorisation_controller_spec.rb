@@ -10,7 +10,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     end
 
     before do
-      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file test_file)
+      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
     context 'when categorisation data is found' do

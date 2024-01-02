@@ -13,7 +13,6 @@ module GreenLanes
 
     content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
 
-
     attr_accessor :category,
                   :regulation_id,
                   :measure_type_id,
