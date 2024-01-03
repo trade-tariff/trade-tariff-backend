@@ -27,6 +27,8 @@ fingerlings, larvae, parr, or smolts by intervention in the rearing or growth pr
 
 13. goods produced there exclusively from the products specified in points 1 to 12
 
+{{ Article 3 }}
+
 The terms ‘its vessels’ and ‘its factory ships’ shall apply only to vessels and factory ships which meet each of the following requirements:
 
 1. they are registered in the exporting or the importing Party; and
