@@ -101,4 +101,46 @@ RSpec.describe GreenLanes::Categorisation do
       it { is_expected.to have_attributes length: 10 }
     end
   end
+
+  describe '.filter' do
+    before { described_class.load_from_file test_file }
+
+    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
+
+    context 'with matching regulation_id and measure_type_id' do
+      subject(:categorisation_filter) do
+        described_class.filter regulation_id: 'D000004', measure_type_id: '430'
+      end
+
+      it { is_expected.to be_an Array }
+      it { is_expected.to have_attributes length: 1 }
+      it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
+    end
+
+    context 'when regulation_id is blank' do
+      subject(:categorisation_filter) do
+        described_class.filter regulation_id: '', measure_type_id: '430'
+      end
+
+      it { is_expected.to be_an Array }
+      it { is_expected.to be_empty }
+    end
+
+    context 'when geographical_area is specified' do
+      subject(:categorisation_filter) do
+        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'US'
+      end
+
+      it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
+    end
+
+    context 'when geographical_area does not match' do
+      subject(:categorisation_filter) do
+        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'unexisting'
+      end
+
+      it { is_expected.to be_an Array }
+      it { is_expected.to be_empty }
+    end
+  end
 end
