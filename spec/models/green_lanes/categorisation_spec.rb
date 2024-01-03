@@ -103,4 +103,39 @@ RSpec.describe GreenLanes::Categorisation do
       it { is_expected.to have_attributes length: 10 }
     end
   end
+
+  describe '.load_from_s3' do
+    let(:json_string) do
+      '[{
+          "category": "1",
+          "regulation_id": "D0000001",
+          "measure_type_id": "400",
+          "geographical_area": "1000",
+          "document_codes": [],
+          "additional_codes": []
+        }]'
+    end
+
+    context 'when the file exists in S3' do
+      subject(:s3_categories) {described_class.load_from_s3}
+
+      before do
+        allow_any_instance_of(Aws::S3::Object).to receive_message_chain(:get, :body, :read).and_return(json_string)
+      end
+
+      it { is_expected.to be_an Array }
+      it { is_expected.to all be_instance_of described_class }
+      it { is_expected.to have_attributes length: 1 }
+    end
+
+    context 'when the specified file key does not exist in S3' do
+      before do
+        allow_any_instance_of(Aws::S3::Bucket).to receive(:object).and_raise(Aws::S3::Errors::NoSuchKey.new({}, 'File not found'))
+      end
+
+      it 'raise InvalidFile error' do
+        expect { described_class.load_from_s3 }.to raise_error(GreenLanes::Categorisation::InvalidFile)
+      end
+    end
+  end
 end

@@ -4,7 +4,7 @@ class RefreshAppendix5aGuidanceWorker
   sidekiq_options retry: false
 
   def perform
-    if Rails.application.config.chief_cds_guidance_bucket.present?
+    if Rails.application.config.persistence_bucket.present?
       Appendix5aPopulatorService.new.call
     end
   end
