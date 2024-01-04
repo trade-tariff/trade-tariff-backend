@@ -133,14 +133,41 @@ RSpec.describe GreenLanes::Categorisation do
 
       it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
     end
+  end
 
-    context 'when geographical_area does not match' do
-      subject(:categorisation_filter) do
-        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'unexisting'
+  describe '#match?' do
+    subject(:categorisation) do
+      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'US'
+    end
+
+    context 'when the attributes match' do
+      it do
+        expect(categorisation.match?(regulation_id: 'D000004',
+                                     measure_type_id: '430',
+                                     geographical_area: 'US')).to be true
       end
+    end
 
-      it { is_expected.to be_an Array }
-      it { is_expected.to be_empty }
+    context 'when the attributes match and geographical_area is NOT specified' do
+      it do
+        expect(categorisation.match?(regulation_id: 'D000004', measure_type_id: '430')).to be true
+      end
+    end
+
+    context 'when regulation_id does NOT match' do
+      it do
+        expect(categorisation.match?(regulation_id: 'XXX',
+                                     measure_type_id: '430',
+                                     geographical_area: 'US')).to be false
+      end
+    end
+
+    context 'when geographical_area does NOT match' do
+      it do
+        expect(categorisation.match?(regulation_id: 'D000004',
+                                     measure_type_id: '430',
+                                     geographical_area: 'XXX')).to be false
+      end
     end
   end
 end
