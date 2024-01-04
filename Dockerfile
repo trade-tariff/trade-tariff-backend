@@ -11,9 +11,8 @@ RUN apk add --update --no-cache build-base git postgresql-dev shared-mime-info t
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 
-RUN bundle config set without 'development test'
-
 # Install gems defined in Gemfile
+RUN bundle config set without 'development test'
 COPY .ruby-version Gemfile Gemfile.lock /app/
 RUN bundle install --jobs=4 --no-binstubs
 
@@ -44,19 +43,21 @@ WORKDIR /app
 
 ENV RAILS_ENV=production \
   PORT=8080 \
-  GOVUK_APP_DOMAIN="localhost" \
-  GOVUK_WEBSITE_ROOT="http://localhost/" \
-  DATABASE_URL="postgres://${DATABASE_USER}:@localhost:5432/tariff_development" \
-  TARIFF_FROM_EMAIL="test@localhost" \
-  TARIFF_SYNC_EMAIL="test@localhost" \
-  SECRET_KEY_BASE="8f949e78bd12c534f7d396e28772d1e2b3b744182ac980191f3e62ac25032073ce274fd125cbbeebd0dabc03ccf188f3c3c87bfb3948f037ce4d6f5dec987764" \
-  DEFAULT_API_VERSION="2" \
   VCAP_APPLICATION="{}"
 
 # Copy files generated in the builder image
 COPY --from=builder /app/ /app
 COPY --from=builder /usr/local/bundle/ /usr/local/bundle/
 
+RUN bundle config set without 'development test'
+
+RUN addgroup -S tariff && \
+  adduser -S tariff -G tariff && \
+  chown -R tariff:tariff /app && \
+  chown -R tariff:tariff /usr/local/bundle
+
 HEALTHCHECK CMD nc -z 0.0.0.0 $PORT
+
+USER tariff
 
 CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
