@@ -11,7 +11,7 @@ module GreenLanes
                      'data/green_lanes/stub_categories.json'
                    end
 
-    CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'.freeze
+    CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'
 
     content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
 
@@ -32,12 +32,10 @@ module GreenLanes
       end
 
       def load_from_s3
-        begin
-          data = Rails.application.config.persistence_bucket.object(CATEGORISATION_OBJECT_KEY).get.body.read
-          load_from_string data
-        rescue Aws::S3::Errors::NoSuchKey => e
-          raise InvalidFile, "File not found in S3 (#{e.message})"
-        end
+        data = Rails.application.config.persistence_bucket.object(CATEGORISATION_OBJECT_KEY).get.body.read
+        load_from_string data
+      rescue Aws::S3::Errors::NoSuchKey => e
+        raise InvalidFile, "File not found in S3 (#{e.message})"
       end
 
       def load_from_file(file = DEFAULT_JSON)

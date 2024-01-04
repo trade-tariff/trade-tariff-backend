@@ -104,6 +104,7 @@ RSpec.describe GreenLanes::Categorisation do
     end
   end
 
+  # rubocop:disable RSpec/AnyInstance
   describe '.load_from_s3' do
     let(:json_string) do
       '[{
@@ -117,11 +118,13 @@ RSpec.describe GreenLanes::Categorisation do
     end
 
     context 'when the file exists in S3' do
-      subject(:s3_categories) {described_class.load_from_s3}
+      subject(:s3_categories) { described_class.load_from_s3 }
 
+      # rubocop:disable RSpec/MessageChain
       before do
         allow_any_instance_of(Aws::S3::Object).to receive_message_chain(:get, :body, :read).and_return(json_string)
       end
+      # rubocop:enable RSpec/MessageChain
 
       it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
@@ -138,4 +141,5 @@ RSpec.describe GreenLanes::Categorisation do
       end
     end
   end
+  # rubocop:enable RSpec/AnyInstance
 end
