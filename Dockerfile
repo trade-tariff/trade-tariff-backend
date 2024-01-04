@@ -30,7 +30,6 @@ RUN rm -rf node_modules log tmp && \
 
 # Build runtime image
 FROM ruby:3.2.2-alpine3.18 as production
-ARG DATABASE_USER
 
 RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \

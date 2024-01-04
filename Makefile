@@ -5,7 +5,7 @@ IMAGE_NAME := trade-tariff-backend
 all: build
 
 build:
-	docker build --build-arg DATABASE_USER=$(USER) -t $(IMAGE_NAME) .
+	docker build -t $(IMAGE_NAME) .
 
 run:
 	docker run \
