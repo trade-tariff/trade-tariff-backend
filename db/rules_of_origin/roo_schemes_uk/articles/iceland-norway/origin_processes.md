@@ -1,121 +1,296 @@
-## Article 12 - Importation Requirements
+## Article 15 - General requirements
 
-Each Party shall grant preferential tariff treatment in accordance with this Agreement to originating products of a Party imported from a Party, on the basis of a claim for preferential tariff treatment made by the importer based on an origin declaration referred to in Article 19 (Origin Declaration).
+1. Originating products shall, on importation into one of the Parties, benefit from the provisions of the United Kingdom-Iceland Agreement upon submission of one of the following proofs of origin:
 
-An origin declaration must be submitted to the customs authority of the importing Party within one year from its completion or within the validity period provided by the importing Party if longer. The expiration of this period may be suspended as long as the products covered by that origin declaration remain under the customs control of the importing Party. After this period, an origin declaration may be accepted only in exceptional circumstances.
+   1. a movement certificate EUR.1, a specimen of which appears in Annex IIIa;
 
-Notwithstanding paragraph 1, a Party may, in accordance with its domestic law, waive the requirements to present an origin declaration.
+   2. a movement certificate EUR-MED, a specimen of which appears in Annex IIIb;
 
-An importer who has been granted preferential tariff treatment must keep the origin declaration and other relevant documents for three years after the date on which preferential tariff treatment was granted, or longer if required by the law of the importing Party.
+   3. in the cases specified in Article 21(1), a declaration, subsequently referred to as the “origin declaration” or the “origin declaration EUR-MED”, given by the exporter on an invoice, a delivery note or any other commercial document which describes the products concerned in sufficient detail to enable them to be identified; the texts of the origin declarations appear in Annexes IVa and b.
 
-## Article 22 - Delayed Claims for Preferential Treatment
+2. Notwithstanding paragraph 1, originating products within the meaning of this Origin Reference Document shall, in the cases specified in Article 26, benefit from the provisions of the United Kingdom-Iceland Agreement without it being necessary to submit any of the proofs of origin referred to in paragraph 1.
 
-If a product would have qualified for preferential treatment when it was imported into a Party but the importer did not have an origin declaration at the time of importation, the importer of the product having a valid origin declaration may, within a period of time of no less than 2 years after the date of importation, apply in accordance with domestic law for a refund of duties paid as a result of the good not having been accorded preferential tariff treatment.
+3. Notwithstanding paragraph 1, and as an alternative to the provisions regarding the issuance of movement certificates and if agreed by the customs authorities of the exporting and importing Parties, the Parties shall accept electronically issued movement certificates EUR.1 issued by the customs authority of a Party. Paragraphs 1 and 2 of Annex IIIa shall not apply if the movement certificate is issued and validated electronically, and the following applies: 
 
-## Article 23 - Importation by Instalments
+   1. ink stamps used by the customs or competent governmental authorities for the validation of the movement certificate EUR.1 (Box 11) are replaced with an image or electronic stamps; 
 
-Where, at the request of an importer and in accordance with domestic laws, regulations, or published requirements of the importing Party, a dismantled or non-assembled product within the meaning of General Rule 2(a) for the interpretation of the Harmonized System is imported by instalments, a single origin declaration may be submitted to the customs authority upon importation of the first instalment. Alternatively, an origin declaration may be submitted for each imported instalment.
+   2. Boxes 11 and 12 contain facsimile or electronic signatures instead of original signatures; 
 
-## Article 24 - Exemptions from Origin Declaration Requirements
+   3. the information in Box 11 concerning the form and number of the export document shall be indicated where requested by the regulations of the exporting Party; 
 
-Each Party may, in conformity with its law, waive the requirement to present an origin declaration for low value importations of originating goods from the other Party.
+   4. the certificate shall bear a serial number or a code by which it can be identified; and 
 
-Each Party may exclude any importation from the provisions made under paragraph 1 when the importation is part of a series of importations that may reasonably be considered to have been undertaken or arranged for the purpose of avoiding the requirements of this Annex related to origin declarations.
+   5. the certificate may be issued in any of the official languages of the Parties.
 
-Each Party may set value limits for products referred to in paragraph 1 and shall exchange information with the other Parties regarding those limits.
 
-## Article 25 - Record Keeping Requirements
 
-The exporting Party shall require an exporter that has completed an origin declaration to keep, and to provide on request:
+## Article 16 - Procedure for the Issue of a Movement Certificate EUR.1 or EUR-MED
 
-1. a copy of the origin declaration and all supporting documents; and
+1. A movement certificate EUR.1 or EUR-MED shall be issued by the customs authorities of the exporting Party on application having been made in writing by the exporter or, under the exporter's responsibility, by his authorised representative.
 
-2. written statements from producers or suppliers which evidence the origin declaration’s claim that the good is originating,
+2. For this purpose, the exporter or his authorised representative shall fill in both the movement certificate EUR.1 or EUR-MED and the application form, specimens of which appear in Annexes IIIa and b. These forms shall be completed in English, Icelandic or Norwegian and in accordance with the provisions of the national law of the exporting Party. If the forms are handwritten, they shall be completed in ink in printed characters. The description of the products shall be given in the box reserved for this purpose without leaving any blank lines. Where the box is not completely filled, a horizontal line shall be drawn below the last line of the description, the empty space being crossed through.
 
-for three years after the completion of the origin declaration, or for such longer period of time as the exporting Party may specify.
+3. The exporter applying for the issue of a movement certificate EUR.1 or EUR-MED shall be prepared to submit at any time, at the request of the customs authorities of the exporting Party where the movement certificate EUR.1 or EUR-MED is issued, all appropriate documents proving the originating status of the products concerned as well as the fulfilment of the other requirements of this Origin Reference Document.
 
-Each Party shall provide that, if an exporter has based an origin declaration on a written statement from a producer or supplier, that producer or supplier shall be required to maintain records in accordance with paragraph 1.
+4. Without prejudice to paragraph 5, a movement certificate EUR.1 shall be issued by the customs authorities of the exporting Party in the following cases:
 
-The importing Party may require that an importer that has been granted preferential treatment shall keep documentation relating to the importation of the good, including a copy of the origin declaration, for three years after the date of import, or for such longer period of time as that Party may specify.
+   - if the products concerned can be considered as products originating in the exporting Party or in one of the countries referred to in Article 3(1) with which cumulation is applicable, without application of cumulation with materials originating in one of the countries referred to in Article 3(2), and fulfil the other requirements of this Origin Reference Document,
 
-Each Party shall permit, in accordance with that Party’s law, importers, exporters, producers and suppliers in that Party to maintain documentation or records in any medium, provided that the documentation or records can be retrieved and printed.
+   - if the products concerned can be considered as products originating in one of the countries referred to in Article 3(2) with which cumulation is applicable, without application of cumulation with materials originating in one of the countries referred to in Article 3 and fulfil the other requirements of this Origin Reference Document, provided a certificate EUR-MED or an origin declaration EUR-MED has been issued in the country of origin.
 
-A Party may deny preferential treatment to a good that is the subject of a verification of origin when the importer, exporter, producer or supplier of the good that is required to maintain records or documentation under this Article:
+5. A movement certificate EUR-MED shall be issued by the customs authorities of the exporting Party, if the products concerned can be considered as products originating in the exporting Party or in one of the countries referred to in Article 3 with which cumulation is applicable, fulfil the requirements of this Origin Reference Document and:
 
-1. fails to maintain records or documentation in accordance with this Annex; or
+   - cumulation was applied with materials originating in one of the countries referred to in Article 3(2), or
 
-2. denies access to those records or documentation.
+   - the products may be used as materials in the context of cumulation for the manufacture of products for export to one of the countries referred to in Article 3(2), or
 
-## Article 26 - Cooperation of Exporters and Importers with the Customs Authority
+   - the products may be re-exported from the country of destination to one of the countries referred to in Article 3(2).
 
-Each Party shall ensure that exporters and importers benefitting from the Agreement must, within the framework of this Agreement and subject to the law of that Party, cooperate with the customs authority of that Party and submit, upon their request, supporting documents regarding the fulfilment of the requirements of this Annex.
+6. A movement certificate EUR-MED shall contain one of the following statements in English in box 7:
 
-The exporting Party shall ensure that an exporter who has completed an origin declaration must:
+   - if origin has been obtained by application of cumulation with materials originating in one or more of the countries referred to in Article 3:
 
-1. upon request of the customs authority of that Party, submit the documents referred to in paragraph 9 of Article 19 (Origin Declaration) to that authority, which may carry out inspections and verify the exporters’ or the producer’s accounts and take other appropriate measures; and
+       “CUMULATION APPLIED WITH …” (name of the country/countries)
 
-2. when becoming aware of or having reason to believe that an origin declaration contains incorrect information, immediately notify the importer and the customs authority of the exporting Party of any change affecting the originating status of each product covered by that origin declaration.
+   - if origin has been obtained without the application of cumulation with materials originating in one or more of the countries referred to in Article 3:
 
-The importing Party shall ensure that an importer who has requested or has been granted preferential tariff treatment must:
+       “NO CUMULATION APPLIED”
 
-1. upon request of the customs authority of that Party, submit the documents referred to in paragraph 4 of Article 17 (Non-alteration) to that authority; and
+7. The customs authorities issuing movement certificates EUR.1 or EUR-MED shall take any steps necessary to verify the originating status of the products and the fulfilment of the other requirements of this Origin Reference Document. For this purpose, they shall have the right to call for any evidence and to carry out any inspection of the exporter's accounts or any other check considered appropriate. They shall also ensure that the forms referred to in paragraph 2 are duly completed. In particular, they shall check whether the space reserved for the description of the products has been completed in such a manner as to exclude all possibility of fraudulent additions.
 
-2. when becoming aware of or having reason to believe that the origin declaration contains incorrect information, immediately notify the customs authority of that Party of any change affecting the originating status of each product covered by an origin declaration.
+8. The date of issue of the movement certificate EUR.1 or EUR-MED shall be indicated in Box 11 of the certificate.
 
-## Article 27 - Discrepancies
+9. A movement certificate EUR.1 or EUR-MED shall be issued by the customs authorities and made available to the exporter as soon as actual exportation has been effected or ensured.
 
-The customs authority of the importing Party shall not reject a claim for preferential tariff treatment due to minor errors or discrepancies in the origin declaration, or for the sole reason that an invoice was issued in a third country.
 
-## Article 28 - Verification of Origin
 
-The customs authority of the exporting Party shall carry out verifications of origin declarations on request of the importing Party.
+## Article 17 - Movement Certificates EUR.1 or EUR-MED issued Retrospectively
 
-The verification request may question the authenticity of origin declarations, the originating status of the product concerned or the fulfilment of other requirements of this Annex. It shall identify the reasons for the inquiry and include a copy of the origin declaration and, if appropriate, any other document or information giving reason to believe that the origin declaration could be invalid.
+1. Notwithstanding Article 16(9), a movement certificate EUR.1 or EUR-MED may exceptionally be issued after exportation of the products to which it relates if:
 
-The importing Party shall submit the verification request to the exporting Party within 34 months from the completion of the origin declaration. The exporting Party is not obliged to conduct verifications based on verification requests received after that deadline.
+   1. it was not issued at the time of exportation because of errors or involuntary omissions or special circumstances; or
 
-The customs authority of the importing Party may, subject to its domestic law, suspend preferential tariff treatment of a product covered by an origin declaration until the verification procedure has been finalised.
+   2. it is demonstrated to the satisfaction of the customs authorities that a movement certificate EUR.1 or EUR-MED was issued but was not accepted at importation for technical reasons.
 
-The customs authority of the exporting Party may request evidence, carry out inspections at the exporter’s or producer’s premises, check the exporter’s and the producer’s accounts and take other appropriate measures to verify compliance with this Annex.
+2. Notwithstanding Article 16(9), a movement certificate EUR-MED may be issued after exportation of the products to which it relates and for which a movement certificate EUR.1 was issued at the time of exportation, provided that it is demonstrated to the satisfaction of the customs authorities that the conditions referred to in Article 16(5) are satisfied.
 
-The requesting Party shall be informed of the results and findings of the verification within 10 months from the date of the verification request. If the requesting Party receives no reply within that time limit, or if the reply does not clearly state whether a product is originating or whether the origin declaration is valid, the requesting Party may deny preferential tariff treatment to the consignment covered by the origin declaration in question.
+3. For the implementation of paragraphs 1 and 2, the exporter must indicate in his application the place and date of exportation of the products to which the movement certificate EUR.1 or EUR-MED relates, and state the reasons for his request.
 
-Where the requested Party is unable to meet the deadline referred to in paragraph 6, it shall, upon request within that deadline, be granted an extension of the deadline.
+4. The customs authorities may issue a movement certificate EUR.1 or EUR-MED retrospectively only after verifying that the information supplied in the exporter's application complies with that in the corresponding file.
 
-Each Party shall provide that, if there are differences in relation to the verification procedures of this Article or in the interpretation of the rules of origin in determining whether a good qualifies as originating, and these differences cannot be resolved through consultations between the customs authority requesting the verification and the customs authority responsible for performing the verification, and if the customs authority of the importing Party intends to make a determination of origin that is inconsistent with the results and findings of the verification provided by the customs authority of the exporting Party, the customs authority of the importing Party shall notify the customs authority of the exporting Party within 60 days of receiving those results and findings of the verification.
+5. Movement certificates EUR.1 or EUR-MED issued retrospectively shall be endorsed with the following phrase in English:
 
-At the request of either Party, the Parties shall hold and conclude consultations within 90 days from the date of the notification referred to in paragraph 8 to resolve those differences. The period for concluding consultations may be extended on a case-by-case basis by mutual written consent between the Parties. If the differences cannot be settled by consultation between the Parties, each Party may seek to resolve these differences within the Joint Committee.
+    “ISSUED RETROSPECTIVELY”
 
-## Article 29 - Denial of Preferential Tariff Treatment
+    Movement certificates EUR-MED issued retrospectively by application of paragraph 2 shall be endorsed with the following phrase in English:
 
-An importing Party may deny preferential tariff treatment or recover unpaid customs duties in accordance with its domestic law where a product does not meet the requirements of this Annex or where the importer or exporter fails to demonstrate compliance with the relevant requirements.
+    ISSUED RETROSPECTIVELY (Original EUR.1 No …(date and place of issue)
 
-Slight discrepancies between the statements made in the origin declaration and those made in other documents submitted to the customs authority for customs clearance or obvious formal errors, such as typing errors in an origin declaration, shall not as such render the origin declaration invalid.
+6. The endorsement referred to in paragraph 5 shall be inserted in box 7 of the movement certificate EUR.1 or EUR-MED.
 
-In all cases, the settlement of differences between the importer and the customs authority of the importing Party shall be under the law of the importing Party.
 
-## Article 30 - Notifications and cooperation The Parties shall provide each other with:
 
-1. the addresses of their customs authorities responsible for verifications referred to in Article 28 (Verification of Origin) and other issues related to the implementation or application of this Annex;
+## Article 18 - Issue of a Duplicate Movement Certificate EUR.1 or EUR-MED
 
-2. information on the use of electronic signatures and identification codes referred to in Article 19 (Origin Declaration), and authorisation numbers referred to in Article 20 (Approved Exporter); and
+1. In the event of theft, loss or destruction of a movement certificate EUR.1 or EUR-MED, the exporter may apply to the customs authorities which issued it for a duplicate made out on the basis of the export documents in their possession.
 
-3. information on the interpretation, application and administration of this Annex.
+2. The duplicate issued in this way shall be endorsed with the following word in English:
 
-The Parties shall endeavour to resolve technical matters related to the implementation or application of this Annex, to the extent possible, through direct consultations between the customs authorities referred to in subparagraph (1)(a) or in the Sub-Committee on Trade in Goods. Disputes that cannot be settled through such consultations shall be submitted to the Joint Committee.
+    “DUPLICATE”
 
-The Parties shall provide each other with details of the arrangements or agreements, including their dates of entry into effect, and their corresponding rules of origin, which are applied with the other countries referred to in paragraphs 1, 2 and 7 of Article 8 (Cumulation).
 
-## Article 31 - Confidentiality
+3. The endorsement referred to in paragraph 2 shall be inserted in box 7 of the duplicate movement certificate EUR.1 or EUR-MED.
 
-This Annex does not require a Party to furnish or allow access to information, the disclosure of which would impede law enforcement or would be contrary to that Party’s law protecting business information.
+4. The duplicate, which shall bear the date of issue of the original movement certificate EUR.1 or EUR-MED, shall take effect as from that date.
 
-Each Party shall maintain, in conformity with its law, the confidentiality of the information collected pursuant to this Annex and shall protect that information from disclosure that could prejudice the competitive position of the person providing the information. If the Party receiving or obtaining the information is required by its law to disclose the information, that Party shall notify the person or Party who provided that information.
 
-Each Party shall ensure that the confidential information collected pursuant to this Annex shall not be used for purposes other than the administration and enforcement of determinations of origin and of customs matters, except with the permission of the person or Party who provided the confidential information.
 
-Where personal data is transferred pursuant to this Annex, such transfer shall take place in accordance with the transferring Party’s rules on international transfers of personal data. Where needed, each Party shall make best efforts, while respecting its rules on international transfers of personal data, to establish safeguards necessary for the transfer of personal data.
+## Article 19 - Issue of Movement Certificates EUR.1 or EUR-MED on the Basis of a Proof of Origin issued or made out previously
 
-Notwithstanding paragraph 3, a Party may allow information collected pursuant to this Annex to be used in any administrative, judicial, or quasi-judicial proceedings instituted for failure to comply with customs -related law implementing this Annex. A Party shall notify the person or Party who provided the information in advance of such use.
+When originating products are placed under the control of a customs office in a Party, it shall be possible to replace the original proof of origin by one or more movement certificates EUR.1 or EUR-MED for the purpose of sending all or some of these products elsewhere within that Party. The replacement movement certificate(s) EUR.1 or EUR-MED shall be issued by the customs office under whose control the products are placed.
 
-The Parties shall exchange information on their respective laws for the purpose of facilitating the operation and application of paragraph 2.
+
+
+## Article 20 - Accounting Segregation
+
+1. Where considerable cost or material difficulties arise in keeping separate stocks of originating and non-originating materials which are identical and interchangeable, the customs authorities may, at the written request of those concerned, authorise the so-called “accounting segregation” method (hereinafter referred to as the “method”) to be used for managing such stocks.
+
+2. The method must be able to ensure that, for a specific reference period, the number of products obtained which could be considered as “originating” is the same as that which would have been obtained had there been physical segregation of the stocks.
+
+3. The customs authorities may make the grant of authorisation referred to in paragraph 1, subject to any conditions deemed appropriate.
+
+4. The method shall be applied and on the application thereof shall be recorded on the basis of the general accounting principles applicable in the country where the product was manufactured.
+
+5. The beneficiary of the method may make out or apply for proofs of origin, as the case may be, for the quantity of products which may be considered as originating. At the request of the customs authorities, the beneficiary shall provide a statement of how the quantities have been managed.
+
+6. The customs authorities shall monitor the use made of the authorisation and may withdraw it whenever the beneficiary makes improper use of the authorisation in any manner whatsoever or fails to fulfil any of the other conditions laid down in this Origin Reference Document.
+
+
+
+## Article 21 - Conditions for making out an Origin Declaration or an Origin Declaration EUR-MED
+
+1. An origin declaration or an origin declaration EUR-MED as referred to in Article 15(1)(c) may be made out:
+
+   1. by an approved exporter within the meaning of Article 22; or
+
+   2. by any exporter for any consignment consisting of one or more packages containing originating products whose total value does not exceed EUR 6 000.
+
+2. Without prejudice to paragraph 3, an origin declaration may be made out in the following cases:
+
+   - if the products concerned may be considered as products originating in a Party or in one of the countries referred to in Article 3(1) with which cumulation is applicable, without application of cumulation with materials originating in one of the countries referred to in Article 3(2), and fulfil the other requirements of this Origin Reference Document;
+
+   - if the products concerned may be considered as products originating in one of the countries referred to in Article 3(2) with which cumulation is applicable, without application of cumulation with materials originating in one of the countries referred to in Article 3 and fulfil the other requirements of this Origin Reference Document, provided a certificate EUR-MED or an origin declaration EUR-MED has been issued in the country of origin.
+
+3. An origin declaration EUR-MED may be made out if the products concerned may be considered as products originating in a Party or in one of the countries referred to in Article 3 with which cumulation is applicable, fulfil the requirements of this Origin Reference Document and:
+
+   - cumulation was applied with materials originating in one of the countries referred to in Article 3(2), or
+
+   - the products may be used as materials in the context of cumulation for the manufacture of products for export to one of the countries referred to in Article 3(2), or
+
+   - the products may be re-exported from the country of destination to one of the countries referred to in Article 3(2).
+
+4. An origin declaration EUR-MED shall contain one of the following statements in English:
+
+   - if origin has been obtained by application of cumulation with materials originating in one or more of the countries referred to in Article 3:
+
+       “CUMULATION APPLIED WITH …” (name of the country/countries)
+
+   - if origin has been obtained without application of cumulation with materials originating in one or more of the countries referred to in Article 3:
+
+       “NO CUMULATION APPLIED”.
+
+5. The exporter making out an origin declaration or an origin declaration EUR-MED shall be prepared to submit at any time, at the request of the customs authorities of the exporting Party, all appropriate documents proving the originating status of the products concerned as well as the fulfilment of the other requirements of this Origin Reference Document.
+
+6. An origin declaration or an origin declaration EUR-MED shall be made out by the exporter by typing, stamping or printing on the invoice, the delivery note or another commercial document, the declaration, the texts of which appear in Annexes IVa and b, using one of the linguistic versions set out in these Annexes and in accordance with the provisions of the national law of the exporting Party. If the declaration is handwritten, it shall be written in ink in printed characters.
+
+7. Origin declarations and origin declarations EUR-MED shall bear the original signature of the exporter in manuscript. However, an approved exporter within the meaning of Article 22 shall not be required to sign such declarations provided that he gives the customs authorities of the exporting Party a written undertaking that he accepts full responsibility for any origin declaration which identifies him as if it had been signed in manuscript by him.
+
+8. An origin declaration or an origin declaration EUR-MED may be made out by the exporter when the products to which it relates are exported, or after exportation on condition that it is presented in the importing Party at the latest two years after the importation of the products to which it relates.
+
+
+
+## Article 22 - Approved Exporter
+
+1. The customs authorities of the exporting Party may authorise any exporter (hereinafter referred to as “approved exporter”) who makes frequent shipments of products under the United Kingdom-Iceland Agreement to make out origin declarations or origin declarations EUR-MED irrespective of the value of the products concerned. An exporter seeking such authorisation shall offer to the satisfaction of the customs authorities all guarantees necessary to verify the originating status of the products as well as the fulfilment of the other requirements of this Origin Reference Document.
+
+2. The customs authorities may grant the status of approved exporter subject to any conditions which they consider appropriate.
+
+3. The customs authorities shall grant to the approved exporter a customs authorisation number which shall appear on the origin declaration or on the origin declaration EUR-MED.
+
+4. The customs authorities shall monitor the use of the authorisation by the approved exporter.
+
+5. The customs authorities may withdraw the authorisation at any time. They shall do so where the approved exporter no longer offers the guarantees referred to in paragraph 1, no longer fulfils the conditions referred to in paragraph 2 or otherwise makes an incorrect use of the authorisation.
+
+
+
+## Article 23 - Validity of Proof of Origin
+
+1. A proof of origin shall be valid for four months from the date of issue in the exporting Party and shall be submitted within the said period to the customs authorities of the importing Party.
+
+2. Proofs of origin which are submitted to the customs authorities of the importing Party after the final date for presentation specified in paragraph 1 may be accepted for the purpose of applying preferential treatment, where the failure to submit these documents by the final date set is due to exceptional circumstances.
+
+3. In other cases of belated presentation, the customs authorities of the importing Party may accept the proofs of origin where the products have been submitted before the said final date.
+
+
+
+## Article 24 - Submission of Proof of Origin
+
+Proofs of origin shall be submitted to the customs authorities of the importing Party in accordance with the procedures applicable in that country. The said authorities may require a translation of a proof of origin and may also require the import declaration to be accompanied by a statement from the importer to the effect that the products meet the conditions required for the implementation of the United Kingdom-Iceland Agreement.
+
+
+
+## Article 25 - Importation by instalments
+
+Where, at the request of the importer and on the conditions laid down by the customs authorities of the importing Party, dismantled or non-assembled products within the meaning of General Interpretive Rule 2(a) of Part Two, Section 1, of the Tariff of the United Kingdom falling within sections XVI and XVII or headings 7308 and 9406 of HS 2007 are imported by instalments, a single proof of origin for such products shall be submitted to the customs authorities upon importation of the first instalment.
+
+
+
+## Article 26 - Exemptions from proof of origin
+
+1. Products sent as small packages from private persons to private persons or forming part of travellers' personal luggage shall be admitted as originating products without requiring the submission of a proof of origin, provided that such products are not imported by way of trade and have been declared as meeting the requirements of this Origin Reference Document and where there is no doubt as to the veracity of such a declaration. In the case of products sent by post, this declaration can be made on customs declaration CN22/CN23 or on a sheet of paper annexed to that document.
+
+2. Imports which are occasional and consist solely of products for the personal use of the recipients or travellers or their families shall not be considered as imports by way of trade if it is evident from the nature and quantity of the products that no commercial purpose is in view.
+
+3. Furthermore, the total value of these products shall not exceed EUR 500 in the case of small packages or EUR 1 200 in the case of products forming part of travellers' personal luggage.
+
+
+
+## Article 27 - Supplier's Declaration
+
+1. When a movement certificate EUR.1 is issued, or an origin declaration is made out, in one of the Parties for originating products, in the manufacture of which goods coming from other Parties or the European Union which have undergone working or processing in these countries without having obtained preferential originating status have been used, account shall be taken of the supplier's declaration given for these goods in accordance with this Article.
+
+2. The supplier's declaration referred to in paragraph 1 shall serve as evidence of the working or processing undergone in a Party or the European Union by the goods concerned for the purpose of determining whether the products in the manufacture of which these goods are used, may be considered as products originating in the exporting Party and fulfil the other requirements of this Origin Reference Document.
+
+3. A separate supplier's declaration shall, except in cases provided in paragraph 4, be made out by the supplier for each consignment of goods in the form prescribed in Appendix A on a sheet of paper annexed to the invoice, the delivery note or any other commercial document describing the goods concerned in sufficient detail to enable them to be identified.
+
+4. Where a supplier regularly supplies a particular customer with goods for which the working or processing undergone in a Party or the European Union is expected to remain constant for considerable periods of time, he may provide a single supplier's declaration to cover subsequent consignments of those goods, hereinafter referred to as a “long-term supplier's declaration”.
+
+    A long-term supplier's declaration may normally be valid for a period of up to one year from the date of making out the declaration. The customs authorities of the country where the declaration is made out, or of the exporting Party for a supplier’s declaration made out in the European Union, lay down the conditions under which longer periods may be used.
+
+    The long term supplier's declaration shall be made out by the supplier in the form prescribed in Appendix B and shall describe the goods concerned in sufficient detail to enable them to be identified. It shall be provided to the customer concerned before he is supplied with the first consignment of goods covered by this declaration or together with his first consignment.
+
+    The supplier shall inform his customer immediately if the long-term supplier's declaration is no longer applicable to the goods supplied.
+
+5. The supplier's declaration referred to in paragraphs 3 and 4 shall be typed or printed using English, Icelandic or Norwegian, in accordance with the provisions of the national law of the country where it is made out, and shall bear the original signature of the supplier in manuscript. The declaration may also be hand-written; in such a case, it shall be written in ink in printed characters.
+
+6. The supplier making out a declaration must be prepared to submit at any time, at the request of the customs authorities of the country where the declaration is made out, or of the exporting Party for a supplier’s declaration made out in the European Union, all appropriate documents proving that the information given on this declaration is correct.
+
+
+
+## Article 28 - Supporting Documents
+
+The documents referred to in Articles 16(3), 21(5) and 27(6) used for the purpose of proving that products covered by a movement certificate EUR.1 or EUR-MED or an origin declaration or origin declaration EUR-MED may be considered as products originating in a Party or in one of the countries referred to in Article 3 and fulfil the other requirements of this Origin Reference Document and that the information given in a supplier's declaration is correct, may consist, inter alia, of the following:
+
+- direct evidence of the processes carried out by the exporter or supplier to obtain the goods concerned, contained for example in his accounts or internal book keeping;
+
+- documents proving the originating status of materials used, issued or made out in the Party where these documents are used in accordance with national law;
+
+- documents proving the working or processing of materials, issued or made out in the Party where these documents are used in accordance with national law;
+
+- movement certificates EUR.1 or EUR-MED or origin declarations or origin declarations EUR-MED proving the originating status of materials used, issued or made out in the Parties in accordance with this Origin Reference Document, or in one of the countries referred to in Article 3, in accordance with rules of origin which are identical to the rules in this Origin Reference Document.
+
+- supplier's declarations proving the working or processing undergone in a Party or the European Union by materials used, made out in one of these countries in accordance with this Origin Reference Document;
+
+- appropriate evidence concerning working or processing undergone outside the Party by application of Article 11, proving that the requirements of that Article have been satisfied.
+
+
+
+## Article 29 - Preservation of Proof of Origin, Supplier's Declarations and Supporting Documents
+
+1. The exporter applying for the issue of a movement certificate EUR.1 or EUR-MED shall keep for at least three years the documents referred to in Article 16(3).
+
+2. The exporter making out an origin declaration or origin declaration EUR-MED shall keep for at least three years a copy of this origin declaration as well as the documents referred to in Article 21(5).
+
+3. The supplier making out a supplier's declaration shall keep for at least three years copies of the declaration and of the invoice, delivery notes or other commercial document to which this declaration is annexed as well as the documents referred to in Article 27(6).
+
+    The supplier making out a long-term supplier's declaration shall keep for at least three years copies of the declaration and of all the invoices, delivery notes or other commercial documents concerning goods covered by that declaration sent to the customer concerned, as well as the documents referred to in Article 27(6). This period shall begin from the date of expiry of validity of the long-term supplier's declaration.
+
+4. The customs authorities of the exporting Party issuing a movement certificate EUR.1 or EUR-MED shall keep, for at least three years, the application form referred to in Article 16(2).
+
+5. The customs authorities of the importing Party shall keep for at least three years the movement certificates EUR.1 and EUR-MED and the origin declarations and origin declarations EUR-MED submitted to them.
+
+
+
+## Article 30 - Discrepancies and Formal Errors
+
+1. The discovery of slight discrepancies between the statements made in the proof of origin and those made in the documents submitted to the customs office for the purpose of carrying out the formalities for importing the products shall not ipso facto render the proof of origin null and void if it is duly established that this document does correspond to the products submitted.
+
+2. Obvious formal errors such as typing errors on a proof of origin should not cause this document to be rejected if these errors are not such as to create doubts concerning the correctness of the statements made in this document.
+
+
+
+## Article 31 - Amounts Expressed in Euro
+
+1. For the application of the provisions of Article 21(1)(b) and Article 26(3) in cases where products are invoiced in a currency other than euro, amounts in the national currencies of the Parties and of the countries referred to in Article 3 equivalent to the amounts expressed in euro shall be fixed annually by each of the countries concerned.
+
+2. A consignment shall benefit from the provisions of Article 21(1)(b) or Article 26(3) by reference to the currency in which the invoice is drawn up, according to the amount fixed by the country concerned.
+
+3. The amounts to be used in any given national currency shall be the equivalent in that currency of the amounts expressed in euro as at the first working day of October and shall apply from 1 January the following year. The Parties shall notify each other of the relevant amounts.
+
+4. A country may round up or down the amount resulting from the conversion into its national currency of an amount expressed in euro. The rounded-off amount may not differ from the amount resulting from the conversion by more than 5 %. A country may retain unchanged its national currency equivalent of an amount expressed in euro if, at the time of the annual adjustment provided for in paragraph 3, the conversion of that amount, prior to any rounding-off, results in an increase of less than 15 % in the national currency equivalent. The national currency equivalent may be retained unchanged if the conversion were to result in a decrease in that equivalent value.
+
+5. The amounts expressed in euro shall be reviewed by the Joint Committee at the request of the Parties. When carrying out this review, the Joint Committee shall consider the desirability of preserving the effects of the limits concerned in real terms. For this purpose, it may decide to modify the amounts expressed in euro.
+
+
+
+{{ Articles 15 to 31 }}

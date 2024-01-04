@@ -1,34 +1,25 @@
 The following shall be considered as wholly obtained in a Party:
 
-1. mineral products and natural water extracted from its soil or from its seabed;
+1. **mineral products** extracted from their soil or from their seabed;
 
-2. plants, including aquatic plants, and vegetable products grown or harvested there;
+2. **vegetable products** harvested there;
 
-3. live animals born and raised there;
+3. **live animals** born and raised there;
 
-4. products from live animals raised there;
+4. **products from live animals** raised there;
 
-5. products from slaughtered animals born and raised there;
+5. products obtained by **hunting or fishing** conducted there;
 
-6. products obtained by hunting or fishing conducted there;
+6. products of **sea fishing and other products** taken from the sea outside the territorial waters of the Parties by their vessels;
 
-7. products obtained from aquaculture there (applies if aquatic organisms, including fish, molluscs, crustaceans, other aquatic invertebrates and aquatic plants, are born or raised from seed stock such as eggs, roes, fry,
-fingerlings, larvae, parr, or smolts by intervention in the rearing or growth processes to enhance production such as regular stocking, feeding or protection from predators.);
+7. products made aboard their **factory ships** exclusively from products referred to in (f);
 
-8. products of sea fishing and other products taken from the sea outside any territorial sea by its vessels;
+8. used articles collected there fit only for the recovery of **raw materials**, including used tyres fit only for retreading or for use as waste;
 
-9. products made on board its factory ships exclusively from products referred to in point (h);
+9. **waste and scrap** resulting from manufacturing operations conducted there;
 
-10. waste and scrap resulting from manufacturing operations conducted there;
+10. products extracted from **marine soil or subsoil** outside their territorial waters provided that they have sole rights to work that soil or subsoil;
 
-11. used products collected there, fit only for the recovery of raw materials;
+11. goods produced there exclusively from the products specified in (a) to (j).
 
-12. products extracted from the seabed or below the seabed which is situated outside its territorial sea but where it has exclusive exploitation rights; and
-
-13. goods produced there exclusively from the products specified in points 1 to 12
-
-The terms ‘its vessels’ and ‘its factory ships’ shall apply only to vessels and factory ships which meet each of the following requirements:
-
-1. they are registered in the exporting or the importing Party; and
-
-2. they sail under the flag of the exporting or the importing Party;
+{{ Article 4 }}
