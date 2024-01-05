@@ -1,7 +1,7 @@
 module Api
   module V2
     module GreenLanes
-      class CategorisationsController < ApiController
+      class CategorisationsController < BaseController
         def index
           categorisation = ::GreenLanes::Categorisation.load_from_file
           serializer = Api::V2::GreenLanes::CategorisationSerializer.new(categorisation)

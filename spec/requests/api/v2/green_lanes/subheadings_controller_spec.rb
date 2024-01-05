@@ -4,9 +4,16 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 
+    before do
+      stub_const('ENV', {'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test'})
+    end
+
     let :make_request do
+      authorization = ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+
       get api_green_lanes_subheading_path(123_456, format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+          headers: { 'Accept' => 'application/vnd.uktt.v2',
+                     'HTTP_AUTHORIZATION' => authorization}
     end
 
     context 'when the good nomenclature id is found' do
@@ -19,6 +26,85 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
 
     context 'when the good nomenclature id is not found' do
       it { is_expected.to have_http_status(:not_found) }
+    end
+  end
+
+
+  describe 'User authentication' do
+    subject(:rendered) { make_request && response }
+
+    let :make_request do
+      get api_green_lanes_categorisations_path(format: :json),
+          headers: { 'Accept' => 'application/vnd.uktt.v2',
+                     'HTTP_AUTHORIZATION' => authorization}
+    end
+
+    context 'when presence of incorrect token' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('incorrect token')
+      end
+
+      before do
+        stub_const('ENV', {'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test'})
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when blank bearer token' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('')
+      end
+
+      before do
+        stub_const('ENV', {'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test'})
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when blank ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+      end
+
+      before do
+        stub_const('ENV', {'GREEN_LANES_API_TOKENS' => ''})
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when absence of ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when valid ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+      end
+
+      before do
+        stub_const('ENV', {'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test'})
+      end
+
+      it { is_expected.to have_http_status :success }
+    end
+
+    context 'when multiple values in ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('second-token')
+      end
+
+      before do
+        stub_const('ENV', {'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test, second-token'})
+      end
+
+      it { is_expected.to have_http_status :success }
     end
   end
 end
