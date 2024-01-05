@@ -31,6 +31,10 @@ locals {
       value = "20"
     },
     {
+      name  = "DEFAULT_API_VERSION"
+      value = "1"
+    },
+    {
       name  = "FRONTEND_HOST"
       value = "https://${var.frontend_base_domain}/"
     },
