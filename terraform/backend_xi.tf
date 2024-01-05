@@ -60,8 +60,8 @@ module "backend_xi" {
         value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
       },
       {
-        name  = "VCAP_APPLICATION"
-        value = "{}"
+        name  = "ENVIRONMENT"
+        value = var.environment
       }
     ]
   ])
