@@ -1,40 +1,28 @@
-## Origin Declaration
+## Verification of Proofs of Origin
 
-For the purpose of obtaining preferential tariff treatment in the importing Party, a proof of origin in the form of an origin declaration in accordance with Appendix 4 to this Annex must be completed by an exporter in a Party for products originating in any Party and otherwise fulfilling the requirements of this Annex.
+1. Subsequent verifications of proofs of origin shall be carried out at random or whenever the customs authorities of the importing Party have reasonable doubts as to the authenticity of such documents, the originating status of the products concerned or the fulfilment of the other requirements of this Origin Reference Document.
 
-The origin declaration must be made out using one of the linguistic versions of the text set out in Appendix 4 to this Annex on an invoice or on any other commercial document that describes the originating product in sufficient detail to enable its identification. The importing Party shall not require the importer to submit a translation of the origin declaration.
+2. For the purposes of implementing paragraph 1, the customs authorities of the importing Party shall return the movement certificate EUR.1 or EUR-MED and the invoice, if it has been submitted, the origin declaration or the origin declaration EUR-MED, or a copy of these documents, to the customs authorities of the exporting Party giving, where appropriate, the reasons for the request for verification. Any documents and information obtained suggesting that the information given on the proof of origin is incorrect shall be forwarded in support of the request for verification.
 
-The origin declaration shall bear the original signature of the exporter or the authorised representative under the exporter’s responsibility.
+3. The verification shall be carried out by the customs authorities of the exporting Party. For this purpose, they shall have the right to call for any evidence and to carry out any inspection of the exporter's accounts or any other check considered appropriate.
 
-Notwithstanding paragraph 3, the Parties shall allow:
+4. If the customs authorities of the importing Party decide to suspend the granting of preferential treatment to the products concerned while awaiting the results of the verification, release of the products shall be offered to the importer subject to any precautionary measures judged necessary.
+
+5. The customs authorities requesting the verification shall be informed of the results thereof as soon as possible. These results shall indicate clearly whether the documents are authentic and whether the products concerned may be considered as products originating in a Party or in one of the countries referred to in Article 3 and fulfil the other requirements of this Origin Reference Document.
+
+6. If in cases of reasonable doubt there is no reply within 10 months of the date of the verification request or if the reply does not contain sufficient information to determine the authenticity of the document in question or the real origin of the products, the requesting customs authorities shall, except in exceptional circumstances, refuse entitlement to the preferences.
+
+## Verification of supplier's declarations
 
 
-1. the use of electronic signatures or identification codes pursuant to paragraph 5 for exporters in the United Kingdom; and
+1. Subsequent verifications of suppliers' declarations or long-term suppliers' declarations may be carried out at random or whenever the customs authorities of the country, where such declarations have been taken into account to issue a movement certificate EUR.1 or EUR-MED or to make out an origin declaration or origin declaration EUR-MED, have reasonable doubts as to the authenticity of the document or the correctness of the information given in this document.
 
-2. authorisation numbers pursuant to Article 20 (Approved Exporter) for exporters in Iceland or Norway.
+2. For the purposes of implementing paragraph 1, the customs authorities of the country referred to in paragraph 1 shall return the supplier's declaration and invoice(s), delivery note(s) or other commercial documents concerning goods covered by this declaration, to the customs authorities of the country where the declaration was made out, giving, where appropriate, the reasons of substance or form for the request for verification.
 
-Each Party shall permit an origin declaration to be sent electronically and directly from the exporter in one Party to an importer in the other Party. Such an approach will allow the use of electronic signatures or identification codes.
+    They shall forward, in support of the request for subsequent verification, any documents and information that have been obtained suggesting that the information given in the supplier's declaration is incorrect.
 
-The origin declaration may be completed when the products to which it relates are exported, or after exportation. An origin declaration shall be valid one year from the date of completion, or for such longer period as may be provided by the importing Party.
+3. The verification shall be carried out by the customs authorities of the country where the supplier's declaration was made out. For this purpose, they shall have the right to call for any evidence and carry out any inspection of the supplier's accounts or any other check which they consider appropriate.
 
-An origin declaration may apply to multiple shipments of identical products imported into a Party within the period specified in the origin declaration, which shall not exceed 12 months.
+4. The customs authorities requesting the verification shall be informed of the results thereof as soon as possible. These results shall indicate clearly whether the information given in the supplier's declaration is correct and make it possible for them to determine whether and to what extent this supplier's declaration could be taken into account for issuing a movement certificate EUR.1 or EUR-MED or for making out an origin declaration or origin declaration EUR-MED.
 
-Notwithstanding paragraph 1, the Parties may allow forwarding agents, customs brokers and other persons to complete an origin declaration. In such cases, such persons must be empowered in writing by the exporter of the product to complete origin declarations. They must submit the said authorisation to the competent authorities, at their request.
-
-An exporter who has completed an origin declaration must keep a copy of the origin declaration and all documents supporting the originating status of the product, in paper or electronic form, for at least three years from the date of completion.
-
-If an exporter has completed an origin declaration for a product referred to in paragraph 2 of Article 8 (Cumulation), the exporter must possess a completed and signed supplier’s declaration in accordance with Appendix 5 to this Annex or Appendix 6 to this Annex from the supplier of the non-originating materials used in the production of the product. The customs authority of the exporting Party may, subject to its domestic requirements, allow the supplier’s declaration to be completed without signature.
-
-{{ Article 19 }}
-
-## Approved Exporter
-
-The customs authorities of Iceland or Norway may, subject to domestic requirements, authorise an exporter of that Party (hereinafter referred to as “approved exporter”) to complete origin declarations without signature.
-
-An exporter who requests such authorisation must offer to the satisfaction of the customs authorities of Iceland or Norway all guarantees necessary to verify the originating status of the products as well as the fulfilment of any other requirement under this Annex.
-
-The customs authorities of Iceland or Norway shall provide, to the approved exporter, an authorisation number to be included in the origin declaration instead of the signature.
-
-The customs authorities of Iceland or Norway shall monitor the proper use of an authorisation and may withdraw it if the exporter no longer meets the conditions or otherwise makes improper use of it.
-
-{{ Article 20 }}
+{{ Articles 32 and 33 }}
