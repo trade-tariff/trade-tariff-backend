@@ -67,10 +67,6 @@ module TradeTariffBackend
       ENV.fetch('ENVIRONMENT', Rails.env)
     end
 
-    def opensearch_config
-      { url: ENV['ELASTICSEARCH_URL'] }
-    end
-
     def currency
       SERVICE_CURRENCIES.fetch(service, 'GBP')
     end
