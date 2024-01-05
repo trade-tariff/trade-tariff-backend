@@ -60,9 +60,7 @@ RSpec.describe CdsImporter do
 
     context 'when some error appears' do
       before do
-        # rubocop:disable RSpec/AnyInstance
         allow_any_instance_of(CdsImporter::EntityMapper).to receive(:import).and_raise(StandardError)
-        # rubocop:enable RSpec/AnyInstance
       end
 
       it 'raises ImportException' do
