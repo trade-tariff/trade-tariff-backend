@@ -31,4 +31,5 @@ shell:
 		--rm \
 		--name $(IMAGE_NAME)-shell \
 		$(COMMON_ENV) \
+		--no-healthcheck \
 		-it $(IMAGE_NAME) /bin/sh
