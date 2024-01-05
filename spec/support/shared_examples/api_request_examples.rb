@@ -21,6 +21,6 @@ end
 
 RSpec.shared_examples 'a unauthorised response for invalid bearer token' do
   it { is_expected.to have_http_status :unauthorized }
-  it { is_expected.to have_attributes message: "Unauthorized" }
+  it { is_expected.to have_attributes message: 'Unauthorized' }
   it { expect(subject.body).to eq('{"message":"No bearer token was provided"}') }
 end

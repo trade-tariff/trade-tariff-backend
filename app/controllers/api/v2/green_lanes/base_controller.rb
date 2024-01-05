@@ -7,8 +7,9 @@ module Api
         before_action :authenticate
 
         private
+
         def authenticate
-          authenticate_or_request_with_http_token do |provided_token, options|
+          authenticate_or_request_with_http_token do |provided_token, _options|
             api_tokens.any? { |token| ActiveSupport::SecurityUtils.secure_compare(provided_token, token) }
           end
         end
@@ -19,12 +20,11 @@ module Api
 
         def read_tokens
           tokens = ENV['GREEN_LANES_API_TOKENS']
-          if tokens && !tokens.empty?
-            tokens_array = tokens.split(',').map(&:strip)
+          if tokens.present?
+            tokens.split(',').map(&:strip)
           else
-            tokens_array = []
+            []
           end
-          tokens_array
         end
       end
     end
