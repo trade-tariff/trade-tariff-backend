@@ -1,5 +1,4 @@
 # rubocop:disable RSpec/MultipleExpectations
-# rubocop:disable RSpec/AnyInstance
 RSpec.describe TaricSynchronizer, truncation: true do
   describe '.initial_update_date' do
     it 'returns initial update date ' do
@@ -207,4 +206,3 @@ RSpec.describe TaricSynchronizer, truncation: true do
   end
 end
 # rubocop:enable RSpec/MultipleExpectations
-# rubocop:enable RSpec/AnyInstance
