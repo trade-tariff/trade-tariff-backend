@@ -32,8 +32,12 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
   describe 'User authentication' do
     subject(:rendered) { make_request && response }
 
+    before do
+      create :subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
+    end
+
     let :make_request do
-      get api_green_lanes_categorisations_path(format: :json),
+      get api_green_lanes_subheading_path(123_456, format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end

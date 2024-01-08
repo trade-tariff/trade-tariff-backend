@@ -27,11 +27,17 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
   describe 'User authentication' do
     subject(:rendered) { make_request && response }
 
+    before do
+      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+    end
+
     let :make_request do
       get api_green_lanes_categorisations_path(format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end
+
+    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
     context 'when presence of incorrect token' do
       let :authorization do
