@@ -55,10 +55,6 @@ module "backend_admin_xi" {
       {
         name  = "TARIFF_FROM_EMAIL"
         value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
-      },
-      {
-        name  = "VCAP_APPLICATION"
-        value = "{}"
       }
     ]
   ])
