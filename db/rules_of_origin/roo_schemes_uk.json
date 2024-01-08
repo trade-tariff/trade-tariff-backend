@@ -1917,24 +1917,12 @@
             "validity_end_date": null,
             "title": "Agreement on Trade in Goods between Iceland, Norway and the UK",
             "proofs": [
-                {
-                    "summary": "EUR.1 movement certificate",
-                    "subtext": "",
-                    "proof_class": "eur1",
-                    "detail": ""
-                },
-                {
-                    "summary": "EUR-MED movement certificate",
-                    "subtext": "",
-                    "proof_class": "eur-med",
-                    "detail": ""
-                },
-                {
-                    "summary": "Origin declaration",
-                    "subtext": "or origin declaration EUR-MED including UK Approved Exporter number for consignments with a value over £5500  / 6000 euros",
-                    "proof_class": "origin-declaration",
-                    "detail": ""
-                }
+              {
+                "summary": "Origin declaration",
+                "subtext": "",
+                "proof_class": "origin-declaration",
+                "detail": ""
+              }
             ],
             "cumulation_methods": {
                 "bilateral": {

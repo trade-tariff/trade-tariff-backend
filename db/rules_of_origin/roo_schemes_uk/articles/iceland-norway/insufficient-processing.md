@@ -1,4 +1,4 @@
-The following operations shall be considered as insufficient working or processing to confer the status of originating products, whether or not the requirements of Article 5 are satisfied:
+Without prejudice to paragraph 2, the following operations shall be considered to be insufficient working or processing to confer the status of an originating product, whether or not the requirements of Article 5 (Sufficient Working or Processing) are satisfied:
 
 1. preserving operations to ensure that the products remain in good condition during transport and storage;
 
@@ -10,9 +10,9 @@ The following operations shall be considered as insufficient working or processi
 
 5. simple painting and polishing operations;
 
-6. husking, partial or total bleaching, polishing, and glazing of cereals and rice;
+6. husking and partial or total milling of rice; polishing, and glazing of cereals and rice;
 
-7. operations to colour sugar or form sugar lumps;
+7. operations to colour or flavour sugar or form sugar lumps; partial or total milling of crystal sugar;
 
 8. peeling, stoning and shelling, of fruits, nuts and vegetables;
 
@@ -28,12 +28,14 @@ The following operations shall be considered as insufficient working or processi
 
 14. mixing of sugar with any material;
 
-15. simple assembly of parts of articles to constitute a complete article or disassembly of products into parts;
+15. for Chapters 27 to 40 of the Harmonized System, simple addition of water or dilution with water or another substance that does not materially alter the characteristics of the good;
 
-16. a combination of two or more operations specified in (a) to (o);
+16. simple assembly of parts of articles to constitute a complete article or disassembly of products into parts;
 
-17. slaughter of animals.
+17. slaughter of animals; and
 
-All operations carried out in the exporting Party on a given product shall be considered together when determining whether the working or processing undergone by that product is to be regarded as insufficient.
+18. a combination of two or more operations specified in sub-paragraphs 1 to 18.
 
-{{ Article 6 }}
+All the operations carried out in the exporting Party on a given product shall be taken into account when determining whether the working or processing undergone by that product is to be regarded as insufficient within the meaning of paragraph 1.
+
+For the purposes of paragraph 1, operations shall be considered simple if neither special skills nor machines, apparatus or equipment especially produced or installed are needed for carrying out those operations.
