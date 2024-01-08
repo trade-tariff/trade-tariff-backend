@@ -1,3 +1,5 @@
-Where, under paragraph 5 of the Tariff of the United Kingdom, packaging is included with the product for classification purposes, it shall be included for the purposes of determining origin.
+**Packing Materials and Containers for Shipment**
 
-{{ Article 8 }}
+Packing materials and containers for shipment that are used to protect a product during transportation shall be disregarded in determining whether a product is originating.
+
+{{ Article 10 }}
