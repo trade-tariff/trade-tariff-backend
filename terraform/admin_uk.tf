@@ -50,7 +50,7 @@ module "backend_admin_uk" {
       },
       {
         name  = "SLACK_USERNAME"
-        value = "UK Backend API ${title(var.environment)}"
+        value = "UK Backend Admin API ${title(var.environment)}"
       },
       {
         name  = "TARIFF_FROM_EMAIL"
