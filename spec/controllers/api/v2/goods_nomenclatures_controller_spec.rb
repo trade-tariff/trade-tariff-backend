@@ -23,9 +23,11 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
 
     context 'with an incorrect short code' do
-      before { get :show_by_section, params: { position: '99' }, format: :json }
+      subject :do_request do
+        get :show_by_section, params: { position: '99' }, format: :json
+      end
 
-      it { is_expected.to have_http_status :not_found }
+      it { expect { do_request }.to raise_exception Sequel::RecordNotFound }
     end
   end
 
@@ -52,9 +54,11 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
 
     context 'with an incorrect short code' do
-      before { get :show_by_chapter, params: { chapter_id: '99' }, format: :json }
+      subject :do_request do
+        get :show_by_chapter, params: { chapter_id: '99' }, format: :json
+      end
 
-      it { is_expected.to have_http_status :not_found }
+      it { expect { do_request }.to raise_exception Sequel::RecordNotFound }
     end
   end
 
@@ -82,9 +86,11 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
 
     context 'with an incorrect short code' do
-      before { get :show_by_heading, params: { heading_id: '9999' }, format: :json }
+      subject :do_request do
+        get :show_by_heading, params: { heading_id: '9999' }, format: :json
+      end
 
-      it { is_expected.to have_http_status :not_found }
+      it { expect { do_request }.to raise_exception Sequel::RecordNotFound }
     end
   end
 

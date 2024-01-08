@@ -177,25 +177,25 @@ RSpec.describe Api::V2::ChemicalsController, type: :controller do
 
   context 'with an invalid `:id` parameter, GET #show' do
     it 'returns 404' do
-      get :show, params: { id: 'FOOBAR' }, format: :json
-
-      expect(response.code.to_i).to eq 404
+      expect {
+        get :show, params: { id: 'FOOBAR' }, format: :json
+      }.to raise_exception Sequel::RecordNotFound
     end
   end
 
   context 'with an invalid `:cas` parameter, GET #search' do
     it 'returns 404' do
-      get :search, params: { cas: 'FOOBAR' }, format: :json
-
-      expect(response.code.to_i).to eq 404
+      expect {
+        get :search, params: { cas: 'FOOBAR' }, format: :json
+      }.to raise_exception Sequel::RecordNotFound
     end
   end
 
   context 'with an invalid `:name` parameter, GET #search' do
     it 'returns 404' do
-      get :search, params: { name: 'FOOBAR' }, format: :json
-
-      expect(response.code.to_i).to eq 404
+      expect {
+        get :search, params: { name: 'FOOBAR' }, format: :json
+      }.to raise_exception Sequel::RecordNotFound
     end
   end
 end

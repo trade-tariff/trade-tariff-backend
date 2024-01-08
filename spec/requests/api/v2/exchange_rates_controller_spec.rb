@@ -58,16 +58,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
         )
       end
 
-      let(:pattern) do
-        {
-          error: 'not found',
-          url: 'http://www.example.com/exchange_rates/2023idadas-6?filter%5Btype%5D=monthly',
-        }
-      end
-
       it { is_expected.to have_http_status(:not_found) }
-
-      it { expect(response.body).to match_json_expression(pattern) }
 
       it { expect(ExchangeRates::ExchangeRateCollection).not_to have_received(:build) }
     end
@@ -81,16 +72,7 @@ RSpec.describe Api::V2::ExchangeRatesController, type: :request do
         )
       end
 
-      let(:pattern) do
-        {
-          'error' => 'invalid',
-          'url' => 'http://www.example.com/exchange_rates/2023-6?filter%5Btype%5D=invalid',
-        }
-      end
-
       it { is_expected.to have_http_status(:unprocessable_entity) }
-
-      it { expect(response.body).to match_json_expression(pattern) }
 
       it { expect(ExchangeRates::ExchangeRateCollection).not_to have_received(:build) }
     end

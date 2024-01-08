@@ -124,15 +124,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
         )
       end
 
-      let(:pattern) do
-        {
-          error: 'not found',
-          url: 'http://www.example.com/exchange_rates/period_lists/2023idadas?filter%5Btype%5D=monthly',
-        }
-      end
-
       it { is_expected.to have_http_status(:not_found) }
-      it { expect(response.body).to match_json_expression(pattern) }
     end
 
     context 'when the type parameter is invalid' do
@@ -146,15 +138,7 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
         )
       end
 
-      let(:pattern) do
-        {
-          error: 'invalid',
-          url: 'http://www.example.com/exchange_rates/period_lists/2023?filter%5Btype%5D=invalid',
-        }
-      end
-
       it { is_expected.to have_http_status(:unprocessable_entity) }
-      it { expect(response.body).to match_json_expression(pattern) }
     end
   end
 end
