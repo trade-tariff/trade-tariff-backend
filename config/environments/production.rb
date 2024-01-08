@@ -1,5 +1,3 @@
-require_relative '../../app/lib/paas_config'
-
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
 
@@ -58,7 +56,7 @@ Rails.application.configure do
   config.lograge.custom_options = lambda do |event|
     {
       params: event.payload[:params].except('controller', 'action', 'format', 'utf8'),
-    }.merge(JSON.parse(ENV['VCAP_APPLICATION']))
+    }
   end
 
   config.lograge.ignore_actions = [
@@ -67,9 +65,8 @@ Rails.application.configure do
   ]
 
   # Rails cache store
-  # PaasConfig returns url and db
   config.cache_store = :redis_cache_store,
-                       PaasConfig.redis.merge({
+                       TradeTariffBackend.redis_config.merge({
                          expires_in: 1.day,
                          namespace: ENV['GOVUK_APP_DOMAIN'],
                          pool_size: Integer(ENV['MAX_THREADS'] || 5),
