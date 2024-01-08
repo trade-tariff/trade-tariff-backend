@@ -11,12 +11,8 @@ RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
     let(:expected_csv) do
       <<~CSV
         Country,Unit Of Currency,Currency Code,Sterling value of Currency Unit £,Currency Units per £1
-        Australia,Dollar,AUD,0.5264,1.8997
-        Dubai,Dirham,AED,0.2286,4.3747
         Eurozone,Euro,EUR,0.8702,1.1492
-        Kazakhstan,Tenge,USD,0.8154,1.2264
-        Kazakhstan,Euro,EUR,0.8702,1.1492
-        Kazakhstan,Tenge,KZT,0.0018,545.0922
+        Kazakhstan,Dollar,USD,0.8154,1.2264
         United States,Dollar,USD,0.8154,1.2264
       CSV
     end
@@ -37,14 +33,12 @@ RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
 
         avg_rates = ExchangeRateCurrencyRate.by_type(ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE)
 
-        expect(avg_rates.all? { |r| r.validity_start_date == Time.zone.today.beginning_of_month }).to be true
+        expect(avg_rates.count).to eq(2)
+        expect(avg_rates.all? { |r| r.validity_start_date == Time.zone.today.beginning_of_month - 11.months }).to be true
         expect(avg_rates.all? { |r| r.validity_end_date == Time.zone.today.end_of_month }).to be true
 
         expect(avg_rates.by_currency('USD').first.rate).to eq(1.2264056116916666)
         expect(avg_rates.by_currency('EUR').first.rate).to eq(1.1491571170166666)
-        expect(avg_rates.by_currency('AUD').first.rate).to eq(1.8997111260800001)
-        expect(avg_rates.by_currency('AED').first.rate).to eq(4.3747)
-        expect(avg_rates.by_currency('KZT').first.rate).to eq(545.0922)
         expect(TariffSynchronizer::FileService).to have_received(:write_file).with(expected_filepath, expected_csv)
       end
     end
@@ -79,23 +73,29 @@ RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
   end
 
   def setup_data
-    # 13 months of data 1 in the future
+    # 13 months of data 1 in the future for US
     us = create(:exchange_rate_country_currency, :us)
 
-    # 12 months of data
+    # 12 months of data for EU
     eu = create(:exchange_rate_country_currency, :eu)
 
-    # Last 5 months of data with AUD
+    # Last 5 months of data with AU
     au = create(:exchange_rate_country_currency, :au)
 
-    # First 3 months of data
+    # First 3 months of data for DU
     du = create(:exchange_rate_country_currency, :du)
 
-    # First 6 months in USD
+    # First 6 months in Tenge
+    kz = create(:exchange_rate_country_currency, :kz,
+                validity_start_date: Time.zone.today.beginning_of_month - 11.months,
+                validity_end_date: Time.zone.today.end_of_month - 6.months)
+
+    # last 2 months in USD
+    # This would count as the valid currency to produce the avg for USD
     create(:exchange_rate_country_currency, :kz,
            currency_code: us.currency_code,
-           validity_start_date: Time.zone.today.beginning_of_month - 11.months,
-           validity_end_date: Time.zone.today.end_of_month - 6.months)
+           currency_description: us.currency_description,
+           validity_start_date: Time.zone.today.beginning_of_month - 1.month)
 
     # Middle 4 months in EUR
     create(:exchange_rate_country_currency, :kz,
@@ -104,18 +104,14 @@ RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
            validity_start_date: Time.zone.today.beginning_of_month - 5.months,
            validity_end_date: Time.zone.today.end_of_month - 2.months)
 
-    # Last 2 months in Tenge
-    kz = create(:exchange_rate_country_currency, :kz,
-                validity_start_date: Time.zone.today.end_of_month - 1.month)
-
     # Older than 12 months
     zw = create(:exchange_rate_country_currency, :zw,
-                validity_start_date: Time.zone.today.end_of_month - 13.months,
+                validity_start_date: Time.zone.today.beginning_of_month - 13.months,
                 validity_end_date: Time.zone.today.end_of_month - 12.months)
 
     # Not valid till next month
     bd = create(:exchange_rate_country_currency, :bd,
-                validity_start_date: Time.zone.today.end_of_month + 1.month,
+                validity_start_date: Time.zone.today.beginning_of_month + 1.month,
                 validity_end_date: Time.zone.today.end_of_month + 1.month)
 
     # BD

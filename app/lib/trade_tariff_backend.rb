@@ -64,7 +64,7 @@ module TradeTariffBackend
     end
 
     def deployed_environment
-      PaasConfig.space
+      ENV.fetch('ENVIRONMENT', Rails.env)
     end
 
     def currency
@@ -80,8 +80,14 @@ module TradeTariffBackend
       lock.lock!(lock_name, MAX_LOCK_LIFETIME, &block)
     end
 
+    def redis_config
+      db = Rails.env.test? ? 1 : 0
+
+      { url: ENV['REDIS_URL'], db:, id: nil }
+    end
+
     def redis
-      @redis ||= Redis.new(PaasConfig.redis)
+      @redis ||= Redis.new(redis_config)
     end
 
     def reindex(indexer = search_client)
