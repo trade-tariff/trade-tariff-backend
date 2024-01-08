@@ -41,8 +41,7 @@ RUN bundle config set without 'development test'
 WORKDIR /app
 
 ENV RAILS_ENV=production \
-  PORT=8080 \
-  VCAP_APPLICATION="{}"
+  PORT=8080
 
 # Copy files generated in the builder image
 COPY --from=builder /app/ /app

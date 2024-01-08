@@ -7,10 +7,6 @@ RSpec.describe RollbackWorker, type: :worker do
 
   describe '#perform' do
     context 'for all envs' do
-      before do
-        allow(PaasConfig).to receive(:space).and_return('test')
-      end
-
       it 'invokes rollback' do
         allow(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
         allow(CdsSynchronizer).to receive(:rollback)
