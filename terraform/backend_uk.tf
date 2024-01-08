@@ -57,8 +57,8 @@ module "backend_uk" {
         value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
       },
       {
-        name  = "VCAP_APPLICATION"
-        value = "{}"
+        name  = "ENVIRONMENT"
+        value = var.environment
       }
     ]
   ])

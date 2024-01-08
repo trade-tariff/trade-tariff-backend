@@ -16,7 +16,7 @@ class ExchangeRateCountryCurrency < Sequel::Model(:exchange_rate_countries_curre
 
   def self.live_currency_codes
     # Criteria:
-    # Countries that are live in the current month
+    # Currency codes that are live in the current month
 
     where(
       (Sequel[:validity_end_date] =~ (Time.zone.today.beginning_of_month..Time.zone.today.end_of_month)) |
@@ -25,16 +25,14 @@ class ExchangeRateCountryCurrency < Sequel::Model(:exchange_rate_countries_curre
     ).distinct(:currency_code).select_map(:currency_code)
   end
 
-  def self.live_last_twelve_months(date)
+  def self.live_countries
     # Criteria:
-    # Countries that have had a live rate in the last 12 months whole months
-    # So end of the current month minus 12 months
+    # ExchangeRateCountryCurrency objects that are live in the current month
 
     where(
-      (Sequel[:validity_start_date] <= date.end_of_month) &
-      (Sequel[:validity_end_date] =~ nil) |
-      (Sequel[:validity_start_date] <= date.end_of_month) &
-      (Sequel[:validity_end_date] >= date.beginning_of_month - 11.months),
-    ).order_by(:country_description)
+      (Sequel[:validity_end_date] =~ (Time.zone.today.beginning_of_month..Time.zone.today.end_of_month)) |
+      (Sequel[:validity_end_date] =~ nil) &
+      (Sequel[:validity_start_date] <= Time.zone.today.end_of_month),
+    ).order(:country_description)
   end
 end
