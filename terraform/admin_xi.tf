@@ -50,7 +50,7 @@ module "backend_admin_xi" {
       },
       {
         name  = "SLACK_USERNAME"
-        value = "XI Backend API ${title(var.environment)}"
+        value = "XI Backend Admin API ${title(var.environment)}"
       },
       {
         name  = "TARIFF_FROM_EMAIL"
@@ -62,6 +62,11 @@ module "backend_admin_xi" {
   service_secrets_config = flatten([
     local.backend_common_secrets,
     local.backend_xi_common_secrets,
-    local.backend_xi_worker_secrets,
+    [
+      {
+        name      = "DATABASE_URL"
+        valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+      }
+    ]
   ])
 }
