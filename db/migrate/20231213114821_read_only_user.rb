@@ -13,7 +13,7 @@ Sequel.migration do
               WHERE  rolname = '#{user}') THEN
               RAISE NOTICE 'Role "#{user}" already exists. Skipping.';
            ELSE
-              CREATE USER #{user};
+              CREATE USER #{user} WITH PASSWORD 'tariff';
               ALTER DEFAULT PRIVILEGES IN SCHEMA uk GRANT SELECT ON TABLES TO #{user};
               ALTER DEFAULT PRIVILEGES IN SCHEMA xi GRANT SELECT ON TABLES TO #{user};
               ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO #{user};
