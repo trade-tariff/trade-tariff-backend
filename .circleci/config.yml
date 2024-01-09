@@ -339,15 +339,21 @@ workflows:
           ssm_parameter: "/development/BACKEND_ECR_URL"
           <<: *filter-not-main
 
-      - apply-terraform:
-          name: apply-terraform-dev
-          context: trade-tariff-terraform-aws-development
-          environment: development
+      - confirm-deploy-for-qa?:
+          type: approval
           requires:
             - test
             - ruby-checks
             - plan-terraform-dev
             - build-and-push-dev
+          <<: *filter-not-main
+
+      - apply-terraform:
+          name: apply-terraform-dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
+          requires:
+            - confirm-deploy-for-qa?
           <<: *filter-not-main
 
       - sync-opensearch-packages:
