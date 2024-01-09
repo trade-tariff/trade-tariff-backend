@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::CategorisationsController do
+  before do
+    allow(ENV).to receive(:[]).and_call_original
+  end
+
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 
@@ -13,7 +17,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     end
 
     before do
-      stub_const('ENV', { 'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test' })
+      allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
       allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
@@ -45,7 +49,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        stub_const('ENV', { 'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test' })
+        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -57,7 +61,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        stub_const('ENV', { 'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test' })
+        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -69,7 +73,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        stub_const('ENV', { 'GREEN_LANES_API_TOKENS' => '' })
+        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return ''
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -89,7 +93,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        stub_const('ENV', { 'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test' })
+        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
       end
 
       it { is_expected.to have_http_status :success }
@@ -101,7 +105,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        stub_const('ENV', { 'GREEN_LANES_API_TOKENS' => 'Trade-Tariff-Test, second-token' })
+        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test, second-token'
       end
 
       it { is_expected.to have_http_status :success }
