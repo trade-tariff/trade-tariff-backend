@@ -33,6 +33,8 @@ RSpec.configure do |config|
   config.include RescueHelper
   config.include ActiveSupport::Testing::TimeHelpers
 
+  RSpec::Matchers.define_negated_matcher :not_change, :change
+
   config.include_context 'with fake global rules of origin data'
 
   config.around do |example|

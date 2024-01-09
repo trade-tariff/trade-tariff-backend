@@ -64,9 +64,9 @@ RSpec.describe Api::Admin::FootnotesController do
     end
 
     specify 'does not return non-national footnote' do
-      get :show, params: { id: non_national_footnote.pk.join }, format: :json
-
-      expect(response.status).to eq 404
+      expect {
+        get :show, params: { id: non_national_footnote.pk.join }, format: :json
+      }.to raise_exception Sequel::NoMatchingRow
     end
   end
 
@@ -83,9 +83,9 @@ RSpec.describe Api::Admin::FootnotesController do
     end
 
     specify 'does not update non-national footnote' do
-      put :update, params: { id: non_national_footnote.pk.join, data: {} }, format: :json
-
-      expect(response.status).to eq 404
+      expect {
+        put :update, params: { id: non_national_footnote.pk.join, data: {} }, format: :json
+      }.to raise_exception Sequel::NoMatchingRow
     end
   end
 end

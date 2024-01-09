@@ -70,14 +70,7 @@ RSpec.describe Api::Admin::UpdatesController do
     context 'when records are not present' do
       subject(:do_request) { get :show, params: { id: 'foo', format: :json } }
 
-      let(:pattern) do
-        {
-          error: 'not found',
-          url: 'http://test.host/admin/updates/foo',
-        }
-      end
-
-      it { expect(do_request.body).to match_json_expression pattern }
+      it { expect { do_request.body }.to raise_exception Sequel::RecordNotFound }
     end
   end
 end
