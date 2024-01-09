@@ -189,10 +189,6 @@ locals {
 
   backend_common_secrets = [
     {
-      name      = "DATABASE_URL"
-      valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
-    },
-    {
       name      = "ELASTICSEARCH_URL"
       valueFrom = data.aws_ssm_parameter.elasticsearch_url.arn
     },
@@ -229,4 +225,5 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.xe_api_password.arn
     },
   ]
+
 }

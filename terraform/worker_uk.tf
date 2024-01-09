@@ -74,11 +74,15 @@ module "worker_uk" {
     ]
   ])
 
-  service_secrets_config = flatten(
+  service_secrets_config = flatten([
+    local.backend_common_secrets,
+    local.backend_uk_common_secrets,
+    local.backend_uk_worker_secrets,
     [
-      local.backend_common_secrets,
-      local.backend_uk_common_secrets,
-      local.backend_uk_worker_secrets,
+      {
+        name      = "DATABASE_URL"
+        valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+      }
     ]
-  )
+  ])
 }

@@ -60,6 +60,10 @@ data "aws_secretsmanager_secret" "database_connection_string" {
   name = "tradetariffpostgres${var.environment}-connection-string"
 }
 
+data "aws_secretsmanager_secret" "database_readonly_connection_string" {
+  name = "postgres-read-only"
+}
+
 data "aws_secretsmanager_secret" "secret_key_base" {
   name = "backend-secret-key-base"
 }

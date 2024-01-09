@@ -2,12 +2,14 @@
 files: |
   (?x)^(
     ^terraform\/\S+ |
-    .circleci\/\S+
+    .circleci\/\S+  |
+    docs\/\S+       |
+    README.md
   )
 
 repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.81.0
+    rev: v1.84.0
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
@@ -19,8 +21,14 @@ repos:
           - --hook-config=--create-file-if-not-exist=true
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-yaml
+
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint
+        args: ["--fix"]
