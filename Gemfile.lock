@@ -120,7 +120,7 @@ GEM
     aws-sigv4 (1.8.0)
       aws-eventstream (~> 1, >= 1.0.2)
     base64 (0.2.0)
-    bigdecimal (3.1.4)
+    bigdecimal (3.1.5)
     bootsnap (1.17.0)
       msgpack (~> 1.2)
     brakeman (6.1.0)
@@ -388,7 +388,7 @@ GEM
       sidekiq (>= 3.0)
     sequel (5.74.0)
       bigdecimal
-    sequel-rails (1.2.1)
+    sequel-rails (1.2.2)
       actionpack (>= 4.0.0)
       activemodel (>= 4.0.0)
       railties (>= 4.0.0)
