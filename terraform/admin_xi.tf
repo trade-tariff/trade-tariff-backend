@@ -1,7 +1,7 @@
-module "worker_xi" {
+module "backend_admin_xi" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
-  service_name  = "worker-xi"
+  service_name  = "backend-admin-xi"
   service_count = var.service_count
   region        = var.region
 
@@ -20,28 +20,17 @@ module "worker_xi" {
   container_port        = 8080
   private_dns_namespace = "tariff.internal"
 
-  cpu    = 2048
-  memory = 5120
+  cpu    = var.cpu
+  memory = var.memory
 
   task_role_policy_arns = [
-    aws_iam_policy.exec.arn,
     aws_iam_policy.s3.arn,
-    aws_iam_policy.task_role_kms_keys.arn,
-    aws_iam_policy.emails.arn
+    aws_iam_policy.task_role_kms_keys.arn
   ]
 
   execution_role_policy_arns = [
     aws_iam_policy.secrets.arn
   ]
-
-  enable_ecs_exec = true
-
-  container_entrypoint = [""]
-  container_command    = local.worker_command
-
-  init_container            = true
-  init_container_entrypoint = [""]
-  init_container_command    = local.init_command
 
   service_environment_config = flatten([
     local.backend_common_vars,
@@ -53,7 +42,7 @@ module "worker_xi" {
       },
       {
         name  = "GOVUK_APP_DOMAIN"
-        value = "tariff-xi-worker-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
+        value = "tariff-xi-admin-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
         name  = "SERVICE"
@@ -61,15 +50,11 @@ module "worker_xi" {
       },
       {
         name  = "SLACK_USERNAME"
-        value = "XI Backend Worker ${title(var.environment)}"
+        value = "XI Backend Admin API ${title(var.environment)}"
       },
       {
         name  = "TARIFF_FROM_EMAIL"
         value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
-      },
-      {
-        name  = "ENVIRONMENT"
-        value = var.environment
       }
     ]
   ])
@@ -77,7 +62,6 @@ module "worker_xi" {
   service_secrets_config = flatten([
     local.backend_common_secrets,
     local.backend_xi_common_secrets,
-    local.backend_xi_worker_secrets,
     [
       {
         name      = "DATABASE_URL"
