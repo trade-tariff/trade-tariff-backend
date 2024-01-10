@@ -12251,3 +12251,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20230922144638_create_exch
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231003084051_adds_download_and_apply_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231205100020_adds_clear_cache_table.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231213114821_read_only_user.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240110120545_adds_user_privileges.rb');
