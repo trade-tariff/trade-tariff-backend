@@ -9,12 +9,13 @@ data "aws_iam_policy_document" "secrets" {
     ]
     resources = [
       data.aws_secretsmanager_secret.database_connection_string.arn,
+      data.aws_secretsmanager_secret.database_readonly_connection_string.arn,
       data.aws_secretsmanager_secret.differences_to_emails.arn,
       data.aws_secretsmanager_secret.oauth_id.arn,
       data.aws_secretsmanager_secret.oauth_secret.arn,
+      data.aws_secretsmanager_secret.redis_frontend_connection_string.arn,
       data.aws_secretsmanager_secret.redis_uk_connection_string.arn,
       data.aws_secretsmanager_secret.redis_xi_connection_string.arn,
-      data.aws_secretsmanager_secret.redis_frontend_connection_string.arn,
       data.aws_secretsmanager_secret.secret_key_base.arn,
       data.aws_secretsmanager_secret.sentry_dsn.arn,
       data.aws_secretsmanager_secret.slack_web_hook_url.arn,

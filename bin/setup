@@ -27,7 +27,7 @@ FileUtils.chdir APP_ROOT do
 
   if ARGV[0]
     puts "\n== Importing database dump =="
-    system! "psql tariff_development < #{ARGV[0]}"
+    system! "psql -h localhost tariff_development < #{ARGV[0]}"
   else
     puts "\n== Loading database structure =="
     system! "bin/rake db:structure:load"
