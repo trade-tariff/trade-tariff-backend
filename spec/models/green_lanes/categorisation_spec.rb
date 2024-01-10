@@ -104,6 +104,7 @@ RSpec.describe GreenLanes::Categorisation do
     end
   end
 
+  # rubocop:disable RSpec/AnyInstance
   describe '.load_from_s3' do
     let(:json_string) do
       '[{
@@ -138,6 +139,7 @@ RSpec.describe GreenLanes::Categorisation do
       end
     end
   end
+  # rubocop:enable RSpec/AnyInstance
 
   describe '.filter' do
     before { described_class.load_from_file test_file }

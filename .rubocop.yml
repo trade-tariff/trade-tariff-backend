@@ -78,8 +78,5 @@ Style/OptionalBooleanParameter:
 Style/StringLiterals:
   EnforcedStyle: single_quotes
 
-RSpec/AnyInstance:
-  Enabled: false
-
 RSpec/MessageChain:
   Enabled: false
