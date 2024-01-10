@@ -13,6 +13,8 @@ module Api
                  :goods_nomenclature_item_id,
                  :productline_suffix,
                  :goods_nomenclature_sid
+
+      attribute :negated_title, &:title_indexed
     end
   end
 end
