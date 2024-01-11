@@ -15,6 +15,7 @@ RSpec.describe Api::V2::SearchReferencesController do
               type: String,
               attributes: {
                 title: String,
+                negated_title: String,
                 referenced_class: 'Commodity',
                 referenced_id: String,
                 productline_suffix: String,
@@ -27,6 +28,7 @@ RSpec.describe Api::V2::SearchReferencesController do
               type: String,
               attributes: {
                 title: String,
+                negated_title: String,
                 referenced_class: 'Chapter',
                 referenced_id: String,
                 productline_suffix: String,
