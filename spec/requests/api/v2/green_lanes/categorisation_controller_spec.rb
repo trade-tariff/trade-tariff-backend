@@ -9,11 +9,13 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      authorization = ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
-
       get api_green_lanes_categorisations_path(format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
+    end
+
+    let :authorization do
+      ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
     end
 
     before do
@@ -43,7 +45,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
 
     let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
-    context 'when presence of incorrect token' do
+    context 'when presence of incorrect bearer token' do
       let :authorization do
         ActionController::HttpAuthentication::Token.encode_credentials('incorrect token')
       end
@@ -55,9 +57,9 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
 
-    context 'when blank bearer token' do
+    context 'when absence of bearer token' do
       let :authorization do
-        ActionController::HttpAuthentication::Token.encode_credentials('')
+        ActionController::HttpAuthentication::Token.encode_credentials(nil)
       end
 
       before do
@@ -67,13 +69,13 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
 
-    context 'when blank ENV VAR' do
+    context 'when presence of incorrect ENV VAR' do
       let :authorization do
         ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return ''
+        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'incorrect'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
