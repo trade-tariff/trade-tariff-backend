@@ -12,6 +12,8 @@ module Api
 
     respond_to :json
 
+    binding.pry
+
     rescue_from Sequel::NoMatchingRow, Sequel::RecordNotFound do |_exception|
       serializer = TradeTariffBackend.error_serializer(request)
       render json: serializer.serialized_errors({ error: 'not found', url: request.url }), status: :not_found

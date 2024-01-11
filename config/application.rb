@@ -1,9 +1,18 @@
-require_relative 'boot'
-require_relative '../lib/core_ext/object'
+require_relative "boot"
 
-require 'action_controller/railtie'
-require 'action_mailer/railtie'
-# require "sprockets/railtie"
+require "rails"
+# Pick the frameworks you want:
+require "active_model/railtie"
+require "active_job/railtie"
+# require "active_record/railtie"
+# require "active_storage/engine"
+require "action_controller/railtie"
+require "action_mailer/railtie"
+# require "action_mailbox/engine"
+# require "action_text/engine"
+require "action_view/railtie"
+# require "action_cable/engine"
+# require "rails/test_unit/railtie"
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -11,43 +20,25 @@ Bundler.require(*Rails.groups)
 
 module TradeTariffBackend
   class Application < Rails::Application
-    config.api_only = true
-    config.debug_exception_response_format = :default
-
+    # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 6.1
 
-    config.generators do |g|
-      g.view_specs     false
-      g.helper_specs   false
-      g.test_framework false
-    end
+    # Please, add to the `ignore` list any other `lib` subdirectories that do
+    # not contain `.rb` files, or that should not be reloaded or eager loaded.
+    # Common ones are `templates`, `generators`, or `middleware`, for example.
+    config.autoload_lib(ignore: %w(assets tasks))
 
-    config.time_zone = 'UTC'
+    # Configuration for the application, engines, and railties goes here.
+    #
+    # These settings can be overridden in specific environments using the files
+    # in config/environments, which are processed later.
+    #
+    # config.time_zone = "Central Time (US & Canada)"
+    # config.eager_load_paths << Rails.root.join("extras")
 
-    config.intercept_messages = config_for(:intercept_messages)
-
+    # Only loads a smaller set of middleware suitable for API only apps.
+    # Middleware like session, flash, cookies can be added back manually.
+    # Skip views, helpers and assets when generating a new resource.
     config.api_only = true
-
-    config.sequel.schema_format = :sql
-    config.sequel.default_timezone = :utc
-
-    config.sequel.after_connect = proc do
-      Sequel::Model.plugin :take
-      Sequel::Model.plugin :validation_class_methods
-
-      Sequel::Model.db.extension :pagination
-      Sequel::Model.db.extension :server_block
-      Sequel::Model.db.extension :auto_literal_strings
-      Sequel::Model.db.extension :pg_array
-      Sequel::Model.db.extension :null_dataset
-    end
-
-    # Tells Rails to serve error pages from the app itself, rather than using static error pages in public/
-    config.exceptions_app = routes
-
-    config.sequel.allow_missing_migration_files = \
-      (ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true')
   end
-
-  Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
 end
