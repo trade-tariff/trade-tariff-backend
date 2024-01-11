@@ -61,9 +61,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
     end
 
     context 'when absence of bearer token' do
-      let :authorization do
-        ActionController::HttpAuthentication::Token.encode_credentials(nil)
-      end
+      let(:authorization) { nil }
 
       before do
         allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
