@@ -7,8 +7,8 @@ class Appendix5a < Sequel::Model(:appendix_5as)
   plugin :dirty
 
   def self.fetch_latest
-    if Rails.application.config.chief_cds_guidance_bucket.present?
-      guidance = Rails.application.config.chief_cds_guidance_bucket.object(CDS_GUIDANCE_OBJECT_KEY).get.body.read
+    if Rails.application.config.persistence_bucket.present?
+      guidance = Rails.application.config.persistence_bucket.object(CDS_GUIDANCE_OBJECT_KEY).get.body.read
       JSON.parse(guidance)
     end
   rescue JSON::ParserError, Aws::S3::Errors::ServiceError

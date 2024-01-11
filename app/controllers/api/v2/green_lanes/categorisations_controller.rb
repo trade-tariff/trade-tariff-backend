@@ -3,7 +3,7 @@ module Api
     module GreenLanes
       class CategorisationsController < ApiController
         def index
-          categorisation = ::GreenLanes::Categorisation.load_from_file
+          categorisation = ::GreenLanes::Categorisation.load_categorisation
           serializer = Api::V2::GreenLanes::CategorisationSerializer.new(categorisation)
 
           render json: serializer.serializable_hash

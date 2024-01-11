@@ -16,6 +16,6 @@ RSpec.shared_context 'with a stubbed appendix 5a guidance s3 bucket' do
     Rails
       .application
       .config
-      .chief_cds_guidance_bucket
+      .persistence_bucket
   end
 end

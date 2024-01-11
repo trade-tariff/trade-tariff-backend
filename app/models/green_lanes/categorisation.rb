@@ -11,6 +11,8 @@ module GreenLanes
                      'data/green_lanes/stub_categories.json'
                    end
 
+    CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'
+
     content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
 
     attr_accessor :category,
@@ -21,6 +23,21 @@ module GreenLanes
                   :additional_codes
 
     class << self
+      def load_categorisation
+        if Rails.application.config.persistence_bucket.present?
+          load_from_s3
+        else
+          load_from_file
+        end
+      end
+
+      def load_from_s3
+        data = Rails.application.config.persistence_bucket.object(CATEGORISATION_OBJECT_KEY).get.body.read
+        load_from_string data
+      rescue Aws::S3::Errors::NoSuchKey => e
+        raise InvalidFile, "File not found in S3 (#{e.message})"
+      end
+
       def load_from_file(file = DEFAULT_JSON)
         source_file = Pathname.new(file)
         unless source_file.extname == '.json' && source_file.file? && source_file.exist?
@@ -36,7 +53,7 @@ module GreenLanes
       end
 
       def all
-        @all ||= load_from_file
+        @all ||= load_categorisation
       end
 
       def filter(regulation_id:, measure_type_id:, geographical_area: nil)
