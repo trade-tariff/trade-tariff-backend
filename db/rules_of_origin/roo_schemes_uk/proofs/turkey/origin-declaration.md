@@ -1,4 +1,4 @@
-The origin declaration is provided on an invoice or any other commercial document that describes the originating product in sufficient detail to enable its identification. The texts of the origin declarations appear in Annexes IVa and b of the [Origin Reference document](ord).
+The origin declaration is provided on an invoice or any other commercial document that describes the originating product in sufficient detail to enable its identification. The texts of the origin declarations appear in Annexes IVa and b of the {ord_url}.
 
 In the UK, the exporter’s reference number will be the EORI number. If you do not have one, you can [apply for an EORI number](https://www.gov.uk/eori). In Turkey, Approved Exporters should use their Approved Exporter number as the authorisation number. Other exporters should leave the authorisation number blank.
 
