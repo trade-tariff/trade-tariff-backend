@@ -1,17 +1,17 @@
 module "worker_uk" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
-  service_name  = "worker-uk"
-  service_count = var.service_count
-  region        = var.region
+  service_name = "worker-uk"
+  region       = var.region
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  min_capacity = var.min_capacity
-  max_capacity = var.max_capacity
+  service_count = 1
+  min_capacity  = 1
+  max_capacity  = var.max_capacity
 
   docker_image = data.aws_ssm_parameter.ecr_url.value
   docker_tag   = var.docker_tag
