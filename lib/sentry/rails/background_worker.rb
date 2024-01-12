@@ -1,7 +1,9 @@
 module Sentry
-  class BackgroundWorker
-    def _perform(&block)
-      block.call
+  module Rails
+    class BackgroundWorker
+      def _perform(&block)
+        block.call
+      end
     end
   end
 end
