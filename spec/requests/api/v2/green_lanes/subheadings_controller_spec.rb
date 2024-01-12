@@ -1,15 +1,11 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::SubheadingsController do
-  before do
-    allow(ENV).to receive(:[]).and_call_original
-  end
-
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 
     before do
-      allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+      allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
     end
 
     let :make_request do
@@ -54,7 +50,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -64,7 +60,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
       let(:authorization) { nil }
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -76,7 +72,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'incorrect'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'incorrect'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -96,7 +92,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it { is_expected.to have_http_status :success }
@@ -108,7 +104,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test, second-token'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test, second-token'
       end
 
       it { is_expected.to have_http_status :success }

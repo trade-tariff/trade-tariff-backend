@@ -278,6 +278,10 @@ module TradeTariffBackend
       ENV.fetch('OPENSEARCH_DEBUG', 'false') == 'true'
     end
 
+    def green_lanes_api_tokens
+      ENV['GREEN_LANES_API_TOKENS']
+    end
+
     def excise_alcohol_coercian_starts_from
       @excise_alcohol_coercian_starts_from ||= Date.parse(
         ENV.fetch(
