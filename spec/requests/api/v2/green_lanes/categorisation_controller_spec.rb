@@ -6,10 +6,16 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
 
     let :make_request do
       get api_green_lanes_categorisations_path(format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+          headers: { 'Accept' => 'application/vnd.uktt.v2',
+                     'HTTP_AUTHORIZATION' => authorization }
+    end
+
+    let :authorization do
+      ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
     end
 
     before do
+      allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
@@ -17,6 +23,88 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       it_behaves_like 'a successful jsonapi response' do
         let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
       end
+    end
+  end
+
+  describe 'User authentication' do
+    subject(:rendered) { make_request && response }
+
+    before do
+      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+    end
+
+    let :make_request do
+      get api_green_lanes_categorisations_path(format: :json),
+          headers: { 'Accept' => 'application/vnd.uktt.v2',
+                     'HTTP_AUTHORIZATION' => authorization }
+    end
+
+    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
+
+    context 'when presence of incorrect bearer token' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('incorrect token')
+      end
+
+      before do
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when absence of bearer token' do
+      let(:authorization) { nil }
+
+      before do
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when presence of incorrect ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+      end
+
+      before do
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'incorrect'
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when absence of ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+      end
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when valid ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
+      end
+
+      before do
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+      end
+
+      it { is_expected.to have_http_status :success }
+    end
+
+    context 'when multiple values in ENV VAR' do
+      let :authorization do
+        ActionController::HttpAuthentication::Token.encode_credentials('second-token')
+      end
+
+      before do
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test, second-token'
+      end
+
+      it { is_expected.to have_http_status :success }
     end
   end
 end
