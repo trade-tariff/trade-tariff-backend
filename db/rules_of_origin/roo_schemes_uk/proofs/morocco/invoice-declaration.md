@@ -1,4 +1,4 @@
-The invoice declaration is provided on an invoice or any other commercial document that describes the originating product in sufficient detail to enable its identification. The texts of the origin declarations appear in Annexes IVa and IVb of the {ord_url}.
+The invoice declaration is provided on an invoice or any other commercial document that describes the originating product in sufficient detail to enable its identification. The texts of the origin declarations appear in Annexes IVa and IVb of the [Origin Reference Document]({ord_url}).
 
 An invoice declaration may be made out:
 
