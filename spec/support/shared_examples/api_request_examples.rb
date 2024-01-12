@@ -18,3 +18,9 @@ RSpec.shared_examples 'a successful csv response' do
   it { is_expected.to have_attributes media_type: /csv/ }
   it { expect { CSV.parse(subject.body) }.not_to raise_error }
 end
+
+RSpec.shared_examples 'a unauthorised response for invalid bearer token' do
+  it { is_expected.to have_http_status :unauthorized }
+  it { is_expected.to have_attributes message: 'Unauthorized' }
+  it { expect(subject.body).to eq('{"message":"No bearer token was provided"}') }
+end
