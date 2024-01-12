@@ -13,7 +13,7 @@ module TradeTariffBackend
     config.debug_exception_response_format = :default
 
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
+    config.load_defaults 7.0
 
     config.generators do |g|
       g.view_specs     false
@@ -28,18 +28,7 @@ module TradeTariffBackend
     # Please, add to the `ignore` list any other `lib` subdirectories that do
     # not contain `.rb` files, or that should not be reloaded or eager loaded.
     # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
-
-
-
-  
-    # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults 6.1
-
-    # Please, add to the `ignore` list any other `lib` subdirectories that do
-    # not contain `.rb` files, or that should not be reloaded or eager loaded.
-    # Common ones are `templates`, `generators`, or `middleware`, for example.
-    config.autoload_lib(ignore: %w(assets tasks))
+    config.autoload_lib(ignore: %w[assets tasks])
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -71,8 +60,7 @@ module TradeTariffBackend
     # Tells Rails to serve error pages from the app itself, rather than using static error pages in public/
     config.exceptions_app = routes
 
-    config.sequel.allow_missing_migration_files = \
-      (ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true')
+    config.sequel.allow_missing_migration_files = ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true'
   end
 
   Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
