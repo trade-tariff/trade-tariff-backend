@@ -20,7 +20,7 @@ module Api
         end
 
         def read_tokens
-          tokens = ENV['GREEN_LANES_API_TOKENS']
+          tokens = TradeTariffBackend.green_lanes_api_tokens
           if tokens.present?
             tokens.split(',').map(&:strip)
           else

@@ -2,6 +2,8 @@ module Api
   module V2
     module ExchangeRates
       class BaseController < ApiController
+        include NoCaching
+
         before_action :validate_exchange_rate_type
 
         private

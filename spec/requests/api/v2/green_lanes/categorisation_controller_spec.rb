@@ -19,8 +19,8 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     end
 
     before do
-      allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
-      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+      allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
     context 'when categorisation data is found' do
@@ -34,7 +34,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     subject(:rendered) { make_request && response }
 
     before do
-      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
     let :make_request do
@@ -51,7 +51,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -61,7 +61,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       let(:authorization) { nil }
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -73,7 +73,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'incorrect'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'incorrect'
       end
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
@@ -93,7 +93,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
       end
 
       it { is_expected.to have_http_status :success }
@@ -105,7 +105,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       end
 
       before do
-        allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test, second-token'
+        allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test, second-token'
       end
 
       it { is_expected.to have_http_status :success }
