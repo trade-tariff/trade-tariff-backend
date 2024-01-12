@@ -1,10 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::SubheadingsController do
-  before do
-    allow(ENV).to receive(:[]).and_call_original
-  end
-
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 

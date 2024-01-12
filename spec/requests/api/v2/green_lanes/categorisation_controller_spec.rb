@@ -1,10 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::CategorisationsController do
-  before do
-    allow(ENV).to receive(:[]).and_call_original
-  end
-
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 
