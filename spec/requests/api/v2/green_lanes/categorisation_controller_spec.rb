@@ -20,7 +20,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
 
     before do
       allow(ENV).to receive(:[]).with('GREEN_LANES_API_TOKENS').and_return 'Trade-Tariff-Test'
-      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
     context 'when categorisation data is found' do
@@ -34,7 +34,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     subject(:rendered) { make_request && response }
 
     before do
-      allow(::GreenLanes::Categorisation).to receive(:load_from_file).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
     end
 
     let :make_request do

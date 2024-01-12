@@ -8,4 +8,4 @@ s3_bucket = if Rails.env.test?
               Aws::S3::Resource.new.bucket(s3_bucket_name)
             end
 
-Rails.application.config.chief_cds_guidance_bucket = s3_bucket
+Rails.application.config.persistence_bucket = s3_bucket
