@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::SubheadingsController do
+  before do
+    allow(TradeTariffBackend).to receive(:service).and_return 'xi'
+  end
+
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 
@@ -27,6 +31,14 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
     end
 
     context 'when the good nomenclature id is not found' do
+      it { is_expected.to have_http_status(:not_found) }
+    end
+
+    context 'when request on uk service' do
+      before do
+        allow(TradeTariffBackend).to receive(:service).and_return 'uk'
+      end
+
       it { is_expected.to have_http_status(:not_found) }
     end
   end
