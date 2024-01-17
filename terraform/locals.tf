@@ -197,6 +197,10 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.redis_frontend_connection_string.arn
     },
     {
+      name      = "GREEN_LANES_API_TOKENS"
+      valueFrom = data.aws_secretsmanager_secret.green_lanes_api_tokens.arn
+    },
+    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
@@ -225,5 +229,4 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.xe_api_password.arn
     },
   ]
-
 }
