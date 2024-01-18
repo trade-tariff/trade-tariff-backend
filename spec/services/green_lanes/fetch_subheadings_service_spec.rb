@@ -3,8 +3,8 @@ RSpec.describe GreenLanes::FetchGoodsNomenclatureService do
 
   describe '#call' do
     before do
-      create(:goods_nomenclature, goods_nomenclature_item_id: '0101210000' )
-      create(:goods_nomenclature, goods_nomenclature_item_id: '0101214200' )
+      create(:goods_nomenclature, goods_nomenclature_item_id: '0101210000')
+      create(:goods_nomenclature, goods_nomenclature_item_id: '0101214200')
       create(:goods_nomenclature, goods_nomenclature_item_id: '0101214264')
     end
 
