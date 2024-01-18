@@ -3,7 +3,7 @@ module Api
     module GreenLanes
       class GoodsNomenclaturesController < BaseController
         def show
-          subheading = ::GreenLanes::FetchSubheadingsService.new(params[:id]).call
+          subheading = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
           presented_subheading = SubheadingPresenter.new(subheading)
           serializer = Api::V2::GreenLanes::SubheadingSerializer.new(presented_subheading, include: %w[applicable_measures])
 
