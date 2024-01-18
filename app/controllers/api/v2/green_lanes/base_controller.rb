@@ -4,9 +4,15 @@ module Api
       class BaseController < ApiController
         include ActionController::HttpAuthentication::Token::ControllerMethods
 
-        before_action :authenticate
+        before_action :check_service, :authenticate
 
         private
+
+        def check_service
+          if TradeTariffBackend.uk?
+            raise ActionController::RoutingError, 'Invalid service'
+          end
+        end
 
         def authenticate
           authenticate_or_request_with_http_token do |provided_token, _options|

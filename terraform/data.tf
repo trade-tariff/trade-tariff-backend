@@ -120,6 +120,10 @@ data "aws_secretsmanager_secret" "xe_api_password" {
   name = "backend-xe-api-password"
 }
 
+data "aws_secretsmanager_secret" "green_lanes_api_tokens" {
+  name = "backend-green-lanes-api-tokens"
+}
+
 data "aws_s3_bucket" "spelling_corrector" {
   bucket = "trade-tariff-search-configuration-${local.account_id}"
 }

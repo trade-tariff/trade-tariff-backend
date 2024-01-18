@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::CategorisationsController do
+  before do
+    allow(TradeTariffBackend).to receive(:service).and_return 'xi'
+  end
+
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 
@@ -23,6 +27,16 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
       it_behaves_like 'a successful jsonapi response' do
         let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
       end
+    end
+
+    context 'when request on uk service' do
+      before do
+        allow(TradeTariffBackend).to receive(:service).and_return 'uk'
+      end
+
+      let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
+
+      it { is_expected.to have_http_status(:not_found) }
     end
   end
 
