@@ -1,4 +1,4 @@
-An 'origin declaration', given by the exporter on an invoice, a delivery note or any other commercial document describes the products concerned in sufficient detail to enable them to be identified. The text of the invoice declaration appears in Annex IV of the [origin reference document](ord).
+An 'origin declaration', given by the exporter on an invoice, a delivery note or any other commercial document describes the products concerned in sufficient detail to enable them to be identified. The text of the invoice declaration appears in Annex IV of the [Origin Reference Document]({ord_url}).
 
 An origin declaration may be made out:
 
