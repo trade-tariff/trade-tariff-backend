@@ -6,6 +6,8 @@ module Api
 
         set_type :green_lanes_categorisation
 
+        set_id :id
+
         attributes :category,
                    :regulation_id,
                    :measure_type_id,
