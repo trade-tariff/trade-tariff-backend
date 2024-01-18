@@ -4,8 +4,20 @@ module Api
   module V2
     module GreenLanes
       class GoodsNomenclaturePresenter < SimpleDelegator
+
+        attr_reader :possible_categorisations
+
+        def initialize(subheading, categories)
+          super(subheading)
+          @possible_categorisations = categories
+        end
+
         def applicable_measure_ids
           applicable_measures.map(&:id)
+        end
+
+        def possible_categorisation_ids
+          @category_ids ||= @possible_categorisations.map(&:id)
         end
 
         def applicable_measures
