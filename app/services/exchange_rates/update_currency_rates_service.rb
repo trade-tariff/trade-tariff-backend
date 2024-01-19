@@ -1,7 +1,9 @@
 module ExchangeRates
   class UpdateCurrencyRatesService
     def initialize(date, sample_date, type)
+      # Date is where the rates are taken from
       @date = date
+      # Sample date is when the dates are published for
       @sample_date = sample_date
       @type = type
       @xe_api = ::ExchangeRates::XeApi.new(date: sample_date)
@@ -12,6 +14,7 @@ module ExchangeRates
 
       ExchangeRateCurrencyRate.db.transaction do
         rates = build_rates(response)
+        # This will only get rates for the current live rates so you cant pull historic data
         included_rates = @type == ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE ? ExchangeRateCountryCurrency.live_currency_codes : ExchangeRateCountryCurrency::SPOT_RATE_CURRENCY_CODES
         rates = rates.select { |rate| included_rates.include?(rate.currency_code) }
 
