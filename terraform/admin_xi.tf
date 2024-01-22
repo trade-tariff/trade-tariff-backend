@@ -38,7 +38,7 @@ module "backend_admin_xi" {
     [
       {
         name  = "CDS"
-        value = "true"
+        value = "false"
       },
       {
         name  = "GOVUK_APP_DOMAIN"
