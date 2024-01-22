@@ -52,10 +52,10 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         id: subheading.applicable_measures.first.id.to_s,
         type: eq(:measure),
       },
-      {
-        id: GreenLanes::Categorisation.all[0].id,
-        type: eq(:green_lanes_categorisation),
-      }],
+                 {
+                   id: GreenLanes::Categorisation.all[0].id,
+                   type: eq(:green_lanes_categorisation),
+                 }],
     }
   end
 

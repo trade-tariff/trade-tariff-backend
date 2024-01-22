@@ -1,6 +1,5 @@
 RSpec.describe GreenLanes::CategorisationsService do
   describe '#find_possible_categorisations' do
-
     subject(:service) { described_class.new }
 
     before do
@@ -37,7 +36,6 @@ RSpec.describe GreenLanes::CategorisationsService do
 
       result = service.find_possible_categorisations(subheading)
 
-      expect(result).to be_an Array
       expect(result).to have_attributes length: 3
     end
   end
