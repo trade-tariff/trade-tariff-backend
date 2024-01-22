@@ -34,6 +34,47 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
       it { is_expected.to have_http_status(:not_found) }
     end
 
+    context 'when the good nomenclature has applicable measures' do
+      before do
+        measure1 = create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400')
+        measure2 = create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500')
+        subheading = create(:subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
+
+        allow(subheading).to receive(:applicable_measures).and_return [measure1, measure2]
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
+    context 'when the good nomenclature has applicable measures with categorisation' do
+      before do
+        measure1 = create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400')
+        measure2 = create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500')
+        subheading = create(:subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
+
+        allow(subheading).to receive(:applicable_measures).and_return [measure1, measure2]
+
+        GreenLanes::Categorisation.load_from_string json_string
+      end
+
+      let(:json_string) do
+        '[{
+          "category": "1",
+          "regulation_id": "D0000001",
+          "measure_type_id": "400",
+          "geographical_area": "1000"
+        },
+        {
+          "category": "1",
+          "regulation_id": "D0000002",
+          "measure_type_id": "500",
+          "geographical_area": "1000"
+        }]'
+      end
+
+      it_behaves_like 'a successful jsonapi response'
+    end
+
     context 'when request on uk service' do
       before do
         allow(TradeTariffBackend).to receive(:service).and_return 'uk'

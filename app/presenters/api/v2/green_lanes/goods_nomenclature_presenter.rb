@@ -17,7 +17,7 @@ module Api
         end
 
         def possible_categorisation_ids
-          @category_ids ||= @possible_categorisations.map(&:id)
+          @possible_categorisation_ids ||= @possible_categorisations.map(&:id)
         end
 
         def applicable_measures
