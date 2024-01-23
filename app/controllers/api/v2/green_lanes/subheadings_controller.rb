@@ -4,7 +4,7 @@ module Api
       class SubheadingsController < BaseController
         def show
           subheading = ::GreenLanes::FetchSubheadingsService.new(params[:id]).call
-          possible_categorisations = ::GreenLanes::CategorisationsService.new.find_possible_categorisations(subheading)
+          possible_categorisations = ::GreenLanes::FindCategorisationsService.new.call(subheading)
           presented_subheading = SubheadingPresenter.new(subheading, possible_categorisations)
           serializer = Api::V2::GreenLanes::SubheadingSerializer.new(presented_subheading, include: %w[applicable_measures possible_categorisations])
 

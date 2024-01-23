@@ -1,4 +1,4 @@
-RSpec.describe GreenLanes::CategorisationsService do
+RSpec.describe GreenLanes::FindCategorisationsService do
   describe '#find_possible_categorisations' do
     subject(:service) { described_class.new }
 
@@ -34,7 +34,7 @@ RSpec.describe GreenLanes::CategorisationsService do
 
       allow(subheading).to receive(:applicable_measures).and_return [measure1, measure2]
 
-      result = service.find_possible_categorisations(subheading)
+      result = service.call(subheading)
 
       expect(result).to have_attributes length: 3
     end
