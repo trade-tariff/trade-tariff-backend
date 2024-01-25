@@ -1,4 +1,4 @@
-RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
+RSpec.describe Search::GoodsNomenclatureSerializer do
   describe '#serializable_hash' do
     context 'when the goods nomenclature is declarable' do
       subject(:serializable_hash) { described_class.new(goods_nomenclature).serializable_hash }
@@ -15,8 +15,8 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           producline_suffix: '80',
           goods_nomenclature_class: 'Commodity',
           description: 'Horses, other than lemmings',
-          description_indexed: 'Horses',
-          description_indexed_shingled: 'Horses',
+          description_indexed: 'horses',
+          description_indexed_shingled: 'horses',
           formatted_description: 'Horses, other than lemmings',
           search_references: 'chapter search reference heading search reference commodity search reference',
           search_intercept_terms: 'donkey baz',
@@ -28,7 +28,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
               producline_suffix: '80',
               goods_nomenclature_class: 'Chapter',
               description: 'Live horses, asses, mules and hinnies',
-              description_indexed: 'Live horses, asses, mules and hinnies',
+              description_indexed: 'live horses, asses, mules and hinnies',
               validity_start_date: '2020-10-21T00:00:00.000Z',
               validity_end_date: nil,
               declarable: false,
@@ -48,7 +48,7 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
               producline_suffix: '80',
               goods_nomenclature_class: 'Heading',
               description: 'Live animals',
-              description_indexed: 'Live animals',
+              description_indexed: 'live animals',
               validity_start_date: '2020-10-21T00:00:00.000Z',
               validity_end_date: nil,
               declarable: false,
@@ -63,8 +63,8 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           ],
           validity_start_date: '2020-06-29T00:00:00Z',
           validity_end_date: nil,
-          ancestor_1_description_indexed: 'Live horses, asses, mules and hinnies',
-          ancestor_2_description_indexed: 'Live animals',
+          ancestor_1_description_indexed: 'live horses, asses, mules and hinnies',
+          ancestor_2_description_indexed: 'live animals',
           ancestor_3_description_indexed: nil,
           ancestor_4_description_indexed: nil,
           ancestor_5_description_indexed: nil,
@@ -76,8 +76,8 @@ RSpec.describe Search::GoodsNomenclatureSerializer, flaky: true do
           ancestor_11_description_indexed: nil,
           ancestor_12_description_indexed: nil,
           ancestor_13_description_indexed: nil,
-          ancestor_1_description_indexed_shingled: 'Live horses, asses, mules and hinnies',
-          ancestor_2_description_indexed_shingled: 'Live animals',
+          ancestor_1_description_indexed_shingled: 'live horses, asses, mules and hinnies',
+          ancestor_2_description_indexed_shingled: 'live animals',
           ancestor_3_description_indexed_shingled: nil,
           ancestor_4_description_indexed_shingled: nil,
           ancestor_5_description_indexed_shingled: nil,
