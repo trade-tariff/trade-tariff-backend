@@ -4,7 +4,6 @@ module Api
   module V2
     module GreenLanes
       class GoodsNomenclaturePresenter < SimpleDelegator
-
         attr_reader :possible_categorisations
 
         def initialize(subheading, categories)
