@@ -4,7 +4,7 @@ module Api
       class GoodsNomenclaturesController < BaseController
         def show
           gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
-          possible_categorisations = ::GreenLanes::CategorisationsService.new.find_possible_categorisations(gn)
+          possible_categorisations = ::GreenLanes::FindCategorisationsService.new.call(gn)
           presented_gn = GoodsNomenclaturePresenter.new(gn, possible_categorisations)
           serializer = Api::V2::GreenLanes::GoodsNomenclatureSerializer.new(presented_gn, include: %w[applicable_measures possible_categorisations])
 
