@@ -1,9 +1,9 @@
-RSpec.describe Api::V2::GreenLanes::SubheadingSerializer do
+RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    described_class.new(subheading_presenter, include: %w[applicable_measures]).serializable_hash
+    described_class.new(gn_presenter, include: %w[applicable_measures]).serializable_hash
   end
 
-  let(:subheading_presenter) { Api::V2::GreenLanes::SubheadingPresenter.new(subheading) }
+  let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading) }
 
   let(:subheading) { create :subheading, :with_measures }
 

@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Api::V2::GreenLanes::SubheadingsController do
+RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
@@ -13,7 +13,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
     end
 
     let :make_request do
-      get api_green_lanes_subheading_path(123_456, format: :json),
+      get api_green_lanes_goods_nomenclature_path(123_456, format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end
@@ -51,7 +51,7 @@ RSpec.describe Api::V2::GreenLanes::SubheadingsController do
     end
 
     let :make_request do
-      get api_green_lanes_subheading_path(123_456, format: :json),
+      get api_green_lanes_goods_nomenclature_path(123_456, format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end

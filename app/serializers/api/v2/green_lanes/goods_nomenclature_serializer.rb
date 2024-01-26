@@ -1,10 +1,10 @@
 module Api
   module V2
     module GreenLanes
-      class SubheadingSerializer
+      class GoodsNomenclatureSerializer
         include JSONAPI::Serializer
 
-        set_type :subheading
+        set_type :goods_nomenclature
 
         set_id :goods_nomenclature_sid
 
