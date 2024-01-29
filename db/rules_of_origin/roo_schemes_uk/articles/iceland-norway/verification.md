@@ -25,8 +25,6 @@ An exporter who has completed an origin declaration must keep a copy of the orig
 
 If an exporter has completed an origin declaration for a product referred to in paragraph 2 of Article 8 (Cumulation), the exporter must possess a completed and signed supplier’s declaration in accordance with Appendix 5 to this Annex or Appendix 6 to this Annex from the supplier of the non-originating materials used in the production of the product. The customs authority of the exporting Party may, subject to its domestic requirements, allow the supplier’s declaration to be completed without signature.
 
-{{ Article 19 }}
-
 ## Approved Exporter
 
 The customs authorities of Iceland or Norway may, subject to domestic requirements, authorise an exporter of that Party (hereinafter referred to as “approved exporter”) to complete origin declarations without signature.
@@ -37,4 +35,4 @@ The customs authorities of Iceland or Norway shall provide, to the approved expo
 
 The customs authorities of Iceland or Norway shall monitor the proper use of an authorisation and may withdraw it if the exporter no longer meets the conditions or otherwise makes improper use of it.
 
-{{ Article 20 }}
+{{ Articles 19 and 20 }}

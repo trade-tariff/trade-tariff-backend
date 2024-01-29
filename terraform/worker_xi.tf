@@ -49,7 +49,7 @@ module "worker_xi" {
     [
       {
         name  = "CDS"
-        value = "true"
+        value = "false"
       },
       {
         name  = "GOVUK_APP_DOMAIN"

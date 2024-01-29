@@ -3,7 +3,7 @@
 module Api
   module V2
     module GreenLanes
-      class SubheadingPresenter < SimpleDelegator
+      class GoodsNomenclaturePresenter < SimpleDelegator
         def applicable_measure_ids
           applicable_measures.map(&:id)
         end

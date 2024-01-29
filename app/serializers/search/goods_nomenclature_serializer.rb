@@ -15,7 +15,7 @@ module Search
           description:,
           description_indexed:,
           description_indexed_shingled: description_indexed,
-          formatted_description:,
+          formatted_description: formatted_description || '',
           search_references:,
           search_intercept_terms:,
           ancestors:,
@@ -23,7 +23,7 @@ module Search
           validity_end_date:,
           guides:,
           guide_ids:,
-          declarable: true,
+          declarable: declarable?,
         }
 
         1.upto(MAX_ANCESTORS) do |i|
