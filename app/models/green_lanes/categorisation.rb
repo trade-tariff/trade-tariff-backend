@@ -20,7 +20,8 @@ module GreenLanes
                   :measure_type_id,
                   :geographical_area,
                   :document_codes,
-                  :additional_codes
+                  :additional_codes,
+                  :theme
 
     class << self
       def load_categorisation
