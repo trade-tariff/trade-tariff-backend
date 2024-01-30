@@ -1,12 +1,12 @@
 module GreenLanes
-  class FetchSubheadingsService
+  class FetchGoodsNomenclatureService
     ITEM_ID_LENGTH = 10
     def initialize(goods_nomenclature_item_id)
       @goods_nomenclature_item_id = goods_nomenclature_item_id
     end
 
     def call
-      Subheading
+      GoodsNomenclature
         .actual
         .where(goods_nomenclature_item_id: length_adjusted_digit_id, producline_suffix: '80')
         .take
