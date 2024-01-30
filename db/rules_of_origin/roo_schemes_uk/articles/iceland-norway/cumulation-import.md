@@ -26,4 +26,4 @@ Where preferential trade agreements are in effect between the exporting Party an
 
 4. The Parties shall use their best endeavours to ensure that the Joint Committee shall reach an appropriate decision promptly on the request of any Party and, if that decision lays down further conditions, that such conditions shall be the least trade-restrictive conditions reasonable in the circumstances.
 
-{{ Article 9 }}
+{{ Article 8 }}
