@@ -58,7 +58,7 @@ Rails.application.configure do
   config.cache_store = :redis_cache_store,
                        TradeTariffBackend.redis_config.merge({
                          expires_in: 1.day,
-                         namespace: ENV['GOVUK_APP_DOMAIN'],
+                         namespace: "rails-cache-#{ENV['SERVICE'].presence || 'uk'}",
                          pool: { size: Integer(ENV['MAX_THREADS'] || 5) },
                        })
 

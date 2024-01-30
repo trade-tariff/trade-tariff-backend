@@ -10,7 +10,8 @@ RSpec.describe GreenLanes::Categorisation do
           "measure_type_id": "400",
           "geographical_area": "1000",
           "document_codes": [],
-          "additional_codes": []
+          "additional_codes": [],
+          "theme": "1.1 Sanctions"
         }]'
       end
 
@@ -28,6 +29,7 @@ RSpec.describe GreenLanes::Categorisation do
         it { is_expected.to have_attributes geographical_area: '1000' }
         it { is_expected.to have_attributes document_codes: [] }
         it { is_expected.to have_attributes additional_codes: [] }
+        it { is_expected.to have_attributes theme: '1.1 Sanctions' }
       end
     end
 
@@ -72,6 +74,7 @@ RSpec.describe GreenLanes::Categorisation do
         it { is_expected.to have_attributes geographical_area: '1000' }
         it { is_expected.to have_attributes document_codes: %w[C004 N800] }
         it { is_expected.to have_attributes additional_codes: %w[A5 R2D2] }
+        it { is_expected.to have_attributes theme: nil }
       end
     end
 
