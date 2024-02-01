@@ -88,14 +88,14 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
       it { is_expected.to have_http_status(:not_found) }
     end
 
-    context 'when origin is provided' do
-      let(:params) { { origin: 'AU' } }
+    context 'when the filter "origin" is provided' do
+      let(:params) { { filter: { origin: 'AU' } } }
 
       before do
         allow(GreenLanes::FindCategorisationsService).to receive(:call).and_call_original
       end
 
-      it 'call FindCategorisationsService with correct params' do
+      it 'calls FindCategorisationsService with correct params' do
         gn = create(:commodity, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
 
         make_request

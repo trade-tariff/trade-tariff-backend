@@ -4,8 +4,10 @@ module Api
       class GoodsNomenclaturesController < BaseController
         def show
           gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
-          applicable_category_assessments = ::GreenLanes::FindCategoryAssessmentsService.call(goods_nomenclature: gn,
-                                                                                       origin: param_origin)
+          applicable_category_assessments = ::GreenLanes::FindCategorisationsService.call(
+            goods_nomenclature: gn,
+            origin: filter_params[:origin],
+          )
 
           presented_gn = GoodsNomenclaturePresenter.new(gn, applicable_category_assessments)
           serializer = Api::V2::GreenLanes::GoodsNomenclatureSerializer.new(
@@ -15,8 +17,9 @@ module Api
           render json: serializer.serializable_hash
         end
 
-        def param_origin
-          params.fetch(:origin, nil)
+        def filter_params
+          params.fetch(:filter, {})
+                .permit(:origin)
         end
       end
     end
