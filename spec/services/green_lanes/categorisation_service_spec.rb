@@ -1,9 +1,9 @@
-RSpec.describe GreenLanes::FindCategorisationsService do
+RSpec.describe GreenLanes::FindCategoryAssessmentsService do
   describe '#find_possible_categorisations' do
     subject(:service) { described_class.new }
 
     before do
-      GreenLanes::Categorisation.load_from_string json_string
+      GreenLanes::CategoryAssessment.load_from_string json_string
     end
 
     let(:json_string) do

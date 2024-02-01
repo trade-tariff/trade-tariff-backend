@@ -7,7 +7,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
 
   let(:subheading) { create :subheading, :with_measures }
 
-  let(:categorisations) { GreenLanes::Categorisation.load_from_string(json_string) }
+  let(:categorisations) { GreenLanes::CategoryAssessment.load_from_string(json_string) }
 
   let(:json_string) do
     '[{
@@ -42,8 +42,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           },
           "possible_categorisations": {
             "data": [{
-              "id": GreenLanes::Categorisation.all[0].id,
-              type: eq(:green_lanes_categorisation),
+              "id": GreenLanes::CategoryAssessment.all[0].id,
+              type: eq(:green_lanes_category_assessment),
             }],
           },
         },
@@ -53,8 +53,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         type: eq(:measure),
       },
                  {
-                   id: GreenLanes::Categorisation.all[0].id,
-                   type: eq(:green_lanes_categorisation),
+                   id: GreenLanes::CategoryAssessment.all[0].id,
+                   type: eq(:green_lanes_category_assessment),
                  }],
     }
   end

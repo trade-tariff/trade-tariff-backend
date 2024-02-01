@@ -1,6 +1,6 @@
-RSpec.describe Api::V2::GreenLanes::CategorisationSerializer do
+RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   subject(:serialized) do
-    described_class.new(::GreenLanes::Categorisation.load_from_string(json_string)).serializable_hash.as_json
+    described_class.new(::GreenLanes::CategoryAssessment.load_from_string(json_string)).serializable_hash.as_json
   end
 
   let(:json_string) do
@@ -18,7 +18,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationSerializer do
     {
       data: [
         id: be_a(String),
-        type: 'green_lanes_categorisation',
+        type: 'green_lanes_category_assessment',
         attributes: {
           category: '1',
           regulation_id: 'D0000001',

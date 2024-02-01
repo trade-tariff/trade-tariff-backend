@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GreenLanes
-  class Categorisation
+  class CategoryAssessment
     include ActiveModel::Model
     include ContentAddressableId
 
@@ -24,7 +24,7 @@ module GreenLanes
                   :theme
 
     class << self
-      def load_categorisation
+      def load_category_assessment
         if Rails.application.config.persistence_bucket.present?
           load_from_s3
         else
@@ -54,7 +54,7 @@ module GreenLanes
       end
 
       def all
-        @all ||= load_categorisation
+        @all ||= load_category_assessment
       end
 
       def filter(regulation_id:, measure_type_id:, geographical_area: nil)

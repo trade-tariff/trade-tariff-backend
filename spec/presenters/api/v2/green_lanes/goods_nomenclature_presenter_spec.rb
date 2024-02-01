@@ -1,5 +1,5 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
-  subject(:presenter) { described_class.new(gn, GreenLanes::Categorisation.load_from_string(json_string)) }
+  subject(:presenter) { described_class.new(gn, GreenLanes::CategoryAssessment.load_from_string(json_string)) }
 
   let(:gn) { create :goods_nomenclature, :with_measures }
   let(:json_string) do
@@ -20,7 +20,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   end
 
   it 'includes possible categorisation ids' do
-    expect(presenter.possible_categorisation_ids).to eq [GreenLanes::Categorisation.all[0].id]
+    expect(presenter.possible_categorisation_ids).to eq [GreenLanes::CategoryAssessment.all[0].id]
   end
 
   describe '#applicable_measures' do
@@ -34,8 +34,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   describe '#possible_categorisations' do
     subject(:possible_categorisations) { presenter.possible_categorisations }
 
-    it { is_expected.to all(be_an(GreenLanes::Categorisation)) }
+    it { is_expected.to all(be_an(GreenLanes::CategoryAssessment)) }
 
-    it { expect(possible_categorisations.first.id).to eq(GreenLanes::Categorisation.all[0].id) }
+    it { expect(possible_categorisations.first.id).to eq(GreenLanes::CategoryAssessment.all[0].id) }
   end
 end
