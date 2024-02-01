@@ -3,20 +3,20 @@ module Api
     module GreenLanes
       class GoodsNomenclaturesController < BaseController
         def show
-          # Excluding the origin param continues to supply the same categorisation information as previously
-          # Including an origin param
-          # - includes categorisations which match the origin,
-          #   or which do not have a geographical area restriction = geographical_area: nil or
-          # - param excludes categorisations for geographical areas not matching the origin param
-          # 1. pass in the origin param
-          # 2. filter the geographical area code using the origin param
-
           gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
-          applicable_category_assessments = ::GreenLanes::FindCategoryAssessmentsService.new.call(gn)
+          applicable_category_assessments = ::GreenLanes::FindCategoryAssessmentsService.call(goods_nomenclature: gn,
+                                                                                       origin: param_origin)
+
           presented_gn = GoodsNomenclaturePresenter.new(gn, applicable_category_assessments)
-          serializer = Api::V2::GreenLanes::GoodsNomenclatureSerializer.new(presented_gn, include: %w[applicable_measures applicable_category_assessments])
+          serializer = Api::V2::GreenLanes::GoodsNomenclatureSerializer.new(
+            presented_gn, include: %w[applicable_measures applicable_category_assessments]
+          )
 
           render json: serializer.serializable_hash
+        end
+
+        def param_origin
+          params.fetch(:origin, nil)
         end
       end
     end
