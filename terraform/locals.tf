@@ -5,6 +5,22 @@ locals {
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
   signon_url     = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
 
+  image = "${data.aws_ssm_parameter.ecr_url.value}:${var.docker_tag}"
+
+  portMappings = [{
+    protocol      = "tcp"
+    containerPort = 8080
+  }]
+
+  logConfiguration = {
+    logDriver = "awslogs"
+    options = {
+      awslogs-region        = var.region
+      awslogs-stream-prefix = "ecs"
+      awslogs-group         = "platform-logs-${var.environment}"
+    }
+  }
+
   backend_common_vars = [
     {
       name  = "PORT"

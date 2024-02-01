@@ -1,12 +1,12 @@
-module "uk" {
+module "xi" {
   source = "./modules/service"
 
-  service_name     = "backend-uk"
+  service_name     = "backend-xi"
   service_count    = var.service_count
   cluster_name     = "trade-tariff-cluster-${var.environment}"
   security_groups  = [data.aws_security_group.this.id]
   subnet_ids       = data.aws_subnets.private.ids
-  target_group_arn = data.aws_lb_target_group.this[0].arn
+  target_group_arn = data.aws_lb_target_group.this[1].arn
 
   private_dns_namespace = "tariff.internal"
 
@@ -30,7 +30,7 @@ module "uk" {
 
   container_definitions = [
     {
-      name      = "backend-uk-init"
+      name      = "backend-xi-init"
       image     = local.image
       essential = false
       command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
@@ -42,24 +42,20 @@ module "uk" {
         local.backend_common_vars,
         [
           {
-            name  = "CDS"
-            value = "true"
-          },
-          {
             name  = "GOVUK_APP_DOMAIN"
-            value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
+            value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
           },
           {
             name  = "SERVICE"
-            value = "uk"
+            value = "xi"
           },
           {
             name  = "SLACK_USERNAME"
-            value = "UK Backend API ${title(var.environment)}"
+            value = "XI Backend API ${title(var.environment)}"
           },
           {
             name  = "TARIFF_FROM_EMAIL"
-            value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
+            value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
           },
           {
             name  = "ENVIRONMENT"
@@ -71,7 +67,7 @@ module "uk" {
 
       secrets = flatten([
         local.backend_common_secrets,
-        local.backend_uk_common_secrets,
+        local.backend_xi_common_secrets,
         [
           {
             name      = "DATABASE_URL"
@@ -81,7 +77,7 @@ module "uk" {
       ])
     },
     {
-      name      = "backend-uk"
+      name      = "backend-xi"
       image     = local.image
       essential = true
 
@@ -89,7 +85,7 @@ module "uk" {
       logConfiguration = local.logConfiguration
 
       dependsOn = [{
-        containerName = "backend-uk-init"
+        containerName = "backend-xi-init"
         condition     = "SUCCESS"
       }]
 
@@ -97,24 +93,20 @@ module "uk" {
         local.backend_common_vars,
         [
           {
-            name  = "CDS"
-            value = "true"
-          },
-          {
             name  = "GOVUK_APP_DOMAIN"
-            value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
+            value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
           },
           {
             name  = "SERVICE"
-            value = "uk"
+            value = "xi"
           },
           {
             name  = "SLACK_USERNAME"
-            value = "UK Backend API ${title(var.environment)}"
+            value = "XI Backend API ${title(var.environment)}"
           },
           {
             name  = "TARIFF_FROM_EMAIL"
-            value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
+            value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
           },
           {
             name  = "ENVIRONMENT"
@@ -126,7 +118,7 @@ module "uk" {
 
       secrets = flatten([
         local.backend_common_secrets,
-        local.backend_uk_common_secrets,
+        local.backend_xi_common_secrets,
         [
           {
             name      = "DATABASE_URL"
@@ -136,7 +128,7 @@ module "uk" {
       ])
     },
     {
-      name      = "worker-uk"
+      name      = "worker-xi"
       image     = local.image
       essential = true
 
@@ -144,7 +136,7 @@ module "uk" {
       logConfiguration = local.logConfiguration
 
       dependsOn = [{
-        containerName = "backend-uk-init"
+        containerName = "backend-xi-init"
         condition     = "SUCCESS"
       }]
 
@@ -152,24 +144,20 @@ module "uk" {
         local.backend_common_vars,
         [
           {
-            name  = "CDS"
-            value = "true"
-          },
-          {
             name  = "GOVUK_APP_DOMAIN"
-            value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
+            value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
           },
           {
             name  = "SERVICE"
-            value = "uk"
+            value = "xi"
           },
           {
             name  = "SLACK_USERNAME"
-            value = "UK Backend API ${title(var.environment)}"
+            value = "XI Backend API ${title(var.environment)}"
           },
           {
             name  = "TARIFF_FROM_EMAIL"
-            value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
+            value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
           },
           {
             name  = "ENVIRONMENT"
@@ -181,7 +169,7 @@ module "uk" {
 
       secrets = flatten([
         local.backend_common_secrets,
-        local.backend_uk_common_secrets,
+        local.backend_xi_common_secrets,
         [
           {
             name      = "DATABASE_URL"
@@ -191,7 +179,7 @@ module "uk" {
       ])
     },
     {
-      name      = "admin-uk"
+      name      = "admin-xi"
       image     = local.image
       essential = true
 
@@ -199,7 +187,7 @@ module "uk" {
       logConfiguration = local.logConfiguration
 
       dependsOn = [{
-        containerName = "backend-uk-init"
+        containerName = "backend-xi-init"
         condition     = "SUCCESS"
       }]
 
@@ -207,24 +195,20 @@ module "uk" {
         local.backend_common_vars,
         [
           {
-            name  = "CDS"
-            value = "true"
-          },
-          {
             name  = "GOVUK_APP_DOMAIN"
-            value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
+            value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
           },
           {
             name  = "SERVICE"
-            value = "uk"
+            value = "xi"
           },
           {
             name  = "SLACK_USERNAME"
-            value = "UK Backend API ${title(var.environment)}"
+            value = "XI Backend API ${title(var.environment)}"
           },
           {
             name  = "TARIFF_FROM_EMAIL"
-            value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
+            value = "Tariff XI [${title(var.environment)}] <${local.no_reply}>"
           },
           {
             name  = "ENVIRONMENT"
@@ -236,7 +220,7 @@ module "uk" {
 
       secrets = flatten([
         local.backend_common_secrets,
-        local.backend_uk_common_secrets,
+        local.backend_xi_common_secrets,
         [
           {
             name      = "DATABASE_URL"

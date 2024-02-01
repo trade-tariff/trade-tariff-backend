@@ -1,5 +1,5 @@
 <!-- markdownlint-disable -->
-# trade-tariff-frontend terraform
+# trade-tariff-backend terraform
 
 Terraform to deploy the service into AWS.
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
@@ -27,6 +27,7 @@ Terraform to deploy the service into AWS.
 | <a name="module_uk"></a> [uk](#module\_uk) | ./modules/service | n/a |
 | <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
 | <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
+| <a name="module_xi"></a> [xi](#module\_xi) | ./modules/service | n/a |
 
 ## Resources
 
