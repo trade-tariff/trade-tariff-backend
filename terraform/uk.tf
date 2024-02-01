@@ -6,7 +6,7 @@ module "uk" {
   cluster_name     = "trade-tariff-cluster-${var.environment}"
   security_groups  = [data.aws_security_group.this.id]
   subnet_ids       = data.aws_subnets.private.ids
-  target_group_arn = data.aws_lb_target_group.this[0].arn
+  target_group_arn = data.aws_lb_target_group.this["backend-uk"].arn
 
   private_dns_namespace = "tariff.internal"
 
@@ -19,7 +19,7 @@ module "uk" {
   memory         = var.memory
 
   execution_role_policy_arns = [
-    aws_iam_policy.secrets
+    aws_iam_policy.secrets.arn
   ]
 
   task_role_policy_arns = [
@@ -32,7 +32,7 @@ module "uk" {
     {
       name      = "backend-uk-init"
       image     = local.image
-      essential = false
+      essential = "false"
       command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
       portMappings     = local.portMappings
@@ -83,7 +83,7 @@ module "uk" {
     {
       name      = "backend-uk"
       image     = local.image
-      essential = true
+      essential = "true"
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -138,7 +138,7 @@ module "uk" {
     {
       name      = "worker-uk"
       image     = local.image
-      essential = true
+      essential = "true"
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -193,7 +193,7 @@ module "uk" {
     {
       name      = "admin-uk"
       image     = local.image
-      essential = true
+      essential = "true"
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration

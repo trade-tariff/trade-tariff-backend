@@ -6,7 +6,7 @@ module "xi" {
   cluster_name     = "trade-tariff-cluster-${var.environment}"
   security_groups  = [data.aws_security_group.this.id]
   subnet_ids       = data.aws_subnets.private.ids
-  target_group_arn = data.aws_lb_target_group.this[1].arn
+  target_group_arn = data.aws_lb_target_group.this["backend-xi"].arn
 
   private_dns_namespace = "tariff.internal"
 
@@ -19,7 +19,7 @@ module "xi" {
   memory         = var.memory
 
   execution_role_policy_arns = [
-    aws_iam_policy.secrets
+    aws_iam_policy.secrets.arn
   ]
 
   task_role_policy_arns = [
@@ -32,7 +32,7 @@ module "xi" {
     {
       name      = "backend-xi-init"
       image     = local.image
-      essential = false
+      essential = "false"
       command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
       portMappings     = local.portMappings
@@ -79,7 +79,7 @@ module "xi" {
     {
       name      = "backend-xi"
       image     = local.image
-      essential = true
+      essential = "true"
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -130,7 +130,7 @@ module "xi" {
     {
       name      = "worker-xi"
       image     = local.image
-      essential = true
+      essential = "true"
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -181,7 +181,7 @@ module "xi" {
     {
       name      = "admin-xi"
       image     = local.image
-      essential = true
+      essential = "true"
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
