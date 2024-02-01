@@ -23,8 +23,7 @@ RSpec.describe SynchronizerCheckWorker, type: :worker do
         let(:created_at) { 10.days.ago }
 
         it 'alerts with the failing service' do
-          expect(Sentry).to have_received(:capture_message).with \
-            %r{Potential sync problem on UK service}
+          expect(Sentry).to have_received(:capture_message).with %r{CDS sync problem}
         end
       end
     end
@@ -33,8 +32,7 @@ RSpec.describe SynchronizerCheckWorker, type: :worker do
       before { described_class.new.perform }
 
       it 'alerts with the failing service' do
-        expect(Sentry).to have_received(:capture_message).with \
-          %r{Potential sync problem on UK service}
+        expect(Sentry).to have_received(:capture_message).with %r{CDS sync problem}
       end
     end
   end
