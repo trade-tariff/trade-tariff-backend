@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    described_class.new(gn_presenter, include: %w[applicable_measures possible_categorisations]).serializable_hash
+    described_class.new(gn_presenter, include: %w[applicable_measures applicable_category_assessments]).serializable_hash
   end
 
   let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, categorisations) }
@@ -40,7 +40,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
               type: eq(:measure),
             }],
           },
-          "possible_categorisations": {
+          "applicable_category_assessments": {
             "data": [{
               "id": GreenLanes::CategoryAssessment.all[0].id,
               type: eq(:green_lanes_category_assessment),
