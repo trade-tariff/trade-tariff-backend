@@ -15,7 +15,6 @@ module Api
         end
 
         def authenticate
-          puts TradeTariffBackend.deployed_environment
           unless TradeTariffBackend.deployed_environment == 'development'
             authenticate_or_request_with_http_token do |provided_token, _options|
               Rails.logger.debug provided_token
