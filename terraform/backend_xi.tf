@@ -40,10 +40,6 @@ module "backend_xi" {
   service_environment_config = flatten([local.backend_common_vars,
     [
       {
-        name  = "CDS"
-        value = "false"
-      },
-      {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },

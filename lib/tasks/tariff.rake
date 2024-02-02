@@ -33,7 +33,7 @@ namespace :tariff do
   namespace :sync do
     desc 'Update database by downloading and then applying TARIC or CDS updates via worker'
     task download_apply_and_reindex: %i[environment class_eager_load] do
-      if TradeTariffBackend.use_cds?
+      if TradeTariffBackend.uk?
         CdsUpdatesSynchronizerWorker.perform_async(true, true)
       else
         TaricUpdatesSynchronizerWorker.perform_async(true)
@@ -42,7 +42,7 @@ namespace :tariff do
 
     desc 'Download pending Taric or CDS update files, Update tariff_updates table'
     task download: %i[environment class_eager_load] do
-      if TradeTariffBackend.use_cds?
+      if TradeTariffBackend.uk?
         CdsSynchronizer.download
       else
         TaricSynchronizer.download
@@ -51,7 +51,7 @@ namespace :tariff do
 
     desc 'Apply pending updates for Taric or CDS'
     task apply: %i[environment class_eager_load] do
-      if TradeTariffBackend.use_cds?
+      if TradeTariffBackend.uk?
         CdsSynchronizer.apply
       else
         TaricSynchronizer.apply
@@ -61,7 +61,7 @@ namespace :tariff do
     desc 'Rollback to specific date in the past'
     task rollback: %w[environment class_eager_load] do
       if ENV['DATE']
-        if TradeTariffBackend.use_cds?
+        if TradeTariffBackend.uk?
           CdsSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
         else
           TaricSynchronizer.rollback(ENV['DATE'], keep: ENV['KEEP'])
