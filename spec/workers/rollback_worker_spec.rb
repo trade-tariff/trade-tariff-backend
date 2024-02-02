@@ -12,7 +12,6 @@ RSpec.describe RollbackWorker, type: :worker do
         allow(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
         allow(CdsSynchronizer).to receive(:rollback)
       end
-
       it 'invokes rollback' do
         described_class.new.perform(date)
         expect(TaricSynchronizer).to have_received(:rollback).with(date, keep: false)
@@ -28,14 +27,12 @@ RSpec.describe RollbackWorker, type: :worker do
         expect(GoodsNomenclatures::TreeNode).to have_received(:refresh!)
       end
     end
-
     context 'for uk' do
       before do
         allow(TradeTariffBackend).to receive(:uk?).and_return(true)
         allow(TaricSynchronizer).to receive(:rollback)
         allow(CdsSynchronizer).to receive(:rollback).with(date, keep: false)
       end
-
       it 'invokes rollback' do
         described_class.new.perform(date)
         expect(CdsSynchronizer).to have_received(:rollback).with(date, keep: false)
