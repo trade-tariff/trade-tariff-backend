@@ -1,7 +1,7 @@
 class SynchronizerCheckWorker
   include Sidekiq::Worker
 
-  RECENCY_THRESHOLD = 5 # days ago
+  RECENCY_THRESHOLD = 4 # days ago
 
   def perform(check_since = RECENCY_THRESHOLD)
     latest_qbe = QuotaBalanceEvent::Operation.order_by(Sequel.desc(:oid)).first
