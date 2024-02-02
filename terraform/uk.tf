@@ -32,7 +32,7 @@ module "uk" {
     {
       name      = "backend-uk-init"
       image     = local.image
-      essential = "false"
+      essential = false
       command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
       portMappings     = local.portMappings
@@ -83,7 +83,7 @@ module "uk" {
     {
       name      = "backend-uk"
       image     = local.image
-      essential = "true"
+      essential = true
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -138,7 +138,7 @@ module "uk" {
     {
       name      = "worker-uk"
       image     = local.image
-      essential = "true"
+      essential = true
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -193,7 +193,7 @@ module "uk" {
     {
       name      = "admin-uk"
       image     = local.image
-      essential = "true"
+      essential = true
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration

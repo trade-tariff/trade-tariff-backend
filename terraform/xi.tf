@@ -32,7 +32,7 @@ module "xi" {
     {
       name      = "backend-xi-init"
       image     = local.image
-      essential = "false"
+      essential = false
       command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
       portMappings     = local.portMappings
@@ -79,7 +79,7 @@ module "xi" {
     {
       name      = "backend-xi"
       image     = local.image
-      essential = "true"
+      essential = true
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -130,7 +130,7 @@ module "xi" {
     {
       name      = "worker-xi"
       image     = local.image
-      essential = "true"
+      essential = true
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -181,7 +181,7 @@ module "xi" {
     {
       name      = "admin-xi"
       image     = local.image
-      essential = "true"
+      essential = true
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration

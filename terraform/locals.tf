@@ -56,7 +56,7 @@ locals {
     },
     {
       name  = "LEGACY_SEARCH_ENHANCEMENTS_ENABLED"
-      value = var.legacy_search_enhancements_enabled
+      value = tostring(var.legacy_search_enhancements_enabled)
     },
     {
       name  = "MALLOC_ARENA_MAX"
@@ -83,7 +83,7 @@ locals {
       value = "100"
     },
     {
-      name  = "RUBYOPT",
+      name  = "RUBYOPT"
       value = "--enable-yjit"
     },
     {
