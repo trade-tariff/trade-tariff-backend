@@ -38,6 +38,10 @@ module "backend_uk" {
     local.backend_common_vars,
     [
       {
+        name  = "CDS"
+        value = "true"
+      },
+      {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },

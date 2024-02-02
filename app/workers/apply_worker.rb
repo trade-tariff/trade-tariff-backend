@@ -4,7 +4,7 @@ class ApplyWorker
   sidekiq_options queue: :rollbacks, retry: false
 
   def perform
-    if TradeTariffBackend.uk?
+    if TradeTariffBackend.use_cds?
       CdsSynchronizer.apply
     else
       TaricSynchronizer.apply

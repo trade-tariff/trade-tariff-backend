@@ -4,7 +4,7 @@ class DownloadWorker
   sidekiq_options queue: :rollbacks, retry: false
 
   def perform
-    if TradeTariffBackend.uk?
+    if TradeTariffBackend.use_cds?
       CdsSynchronizer.download
     else
       TaricSynchronizer.download
