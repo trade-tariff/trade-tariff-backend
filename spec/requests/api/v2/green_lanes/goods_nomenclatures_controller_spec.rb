@@ -92,7 +92,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
       let(:params) { { filter: { origin: 'AU' } } }
 
       before do
-        allow(GreenLanes::FindCategorisationsService).to receive(:call).and_call_original
+        allow(GreenLanes::FindCategoryAssessmentsService).to receive(:call).and_call_original
       end
 
       it 'calls FindCategorisationsService with correct params' do
@@ -100,7 +100,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
         make_request
 
-        expect(GreenLanes::FindCategorisationsService)
+        expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)
           .with(goods_nomenclature: gn, origin: 'AU')
       end
