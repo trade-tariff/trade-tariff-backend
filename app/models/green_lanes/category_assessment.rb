@@ -94,6 +94,14 @@ module GreenLanes
         .all
     end
 
+    def excluded_geographical_areas
+      []
+    end
+
+    def exemptions
+      []
+    end
+
     class InvalidFile < RuntimeError; end
   end
 end
