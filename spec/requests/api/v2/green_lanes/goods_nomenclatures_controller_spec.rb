@@ -15,16 +15,19 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
     let :make_request do
       get api_green_lanes_goods_nomenclature_path(123_456, format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
-                     'HTTP_AUTHORIZATION' => authorization }
+                     'HTTP_AUTHORIZATION' => authorization },
+          params:
     end
 
     let :authorization do
       ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
     end
 
+    let(:params) { {} }
+
     context 'when the good nomenclature id is found' do
       before do
-        create :subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
+        create :goods_nomenclature, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -36,11 +39,14 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
     context 'when the good nomenclature has applicable measures' do
       before do
-        measure1 = create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400')
-        measure2 = create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500')
-        subheading = create(:subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
+        measures = [create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400'),
+                    create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500')]
 
-        allow(subheading).to receive(:applicable_measures).and_return [measure1, measure2]
+        goods_nomenclature = create(:goods_nomenclature,
+                                    goods_nomenclature_item_id: '1234560000',
+                                    producline_suffix: '80')
+
+        allow(goods_nomenclature).to receive(:applicable_measures).and_return measures
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -48,13 +54,12 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
     context 'when the good nomenclature has applicable measures with categorisation' do
       before do
-        measure1 = create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400')
-        measure2 = create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500')
-        subheading = create(:subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
+        create(:goods_nomenclature,
+               :with_measures,
+               goods_nomenclature_item_id: '1234560000',
+               producline_suffix: '80')
 
-        allow(subheading).to receive(:applicable_measures).and_return [measure1, measure2]
-
-        GreenLanes::Categorisation.load_from_string json_string
+        GreenLanes::CategoryAssessment.load_from_string json_string
       end
 
       let(:json_string) do
@@ -82,13 +87,31 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
       it { is_expected.to have_http_status(:not_found) }
     end
+
+    context 'when the filter "origin" is provided' do
+      let(:params) { { filter: { origin: 'AU' } } }
+
+      before do
+        allow(GreenLanes::FindCategoryAssessmentsService).to receive(:call).and_call_original
+      end
+
+      it 'calls FindCategorisationsService with correct params' do
+        gn = create(:commodity, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
+
+        make_request
+
+        expect(GreenLanes::FindCategoryAssessmentsService)
+          .to have_received(:call)
+          .with(goods_nomenclature: gn, origin: 'AU')
+      end
+    end
   end
 
   describe 'User authentication' do
     subject(:rendered) { make_request && response }
 
     before do
-      create :subheading, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
+      create :goods_nomenclature, goods_nomenclature_item_id: '1234560000', producline_suffix: '80'
     end
 
     let :make_request do

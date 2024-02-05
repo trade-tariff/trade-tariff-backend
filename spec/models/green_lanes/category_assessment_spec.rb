@@ -1,4 +1,4 @@
-RSpec.describe GreenLanes::Categorisation do
+RSpec.describe GreenLanes::CategoryAssessment do
   describe '.load_from_string' do
     subject(:categorisation) { described_class.load_from_string json_string }
 
@@ -138,7 +138,7 @@ RSpec.describe GreenLanes::Categorisation do
       end
 
       it 'raise InvalidFile error' do
-        expect { described_class.load_from_s3 }.to raise_error(GreenLanes::Categorisation::InvalidFile)
+        expect { described_class.load_from_s3 }.to raise_error(GreenLanes::CategoryAssessment::InvalidFile)
       end
     end
   end
@@ -179,8 +179,10 @@ RSpec.describe GreenLanes::Categorisation do
 
   describe '#match?' do
     subject(:categorisation) do
-      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'US'
+      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area:
     end
+
+    let(:geographical_area) { 'US' }
 
     context 'when the attributes match' do
       it do
@@ -193,6 +195,16 @@ RSpec.describe GreenLanes::Categorisation do
     context 'when the attributes match and geographical_area is NOT specified' do
       it do
         expect(categorisation.match?(regulation_id: 'D000004', measure_type_id: '430')).to be true
+      end
+    end
+
+    context 'when the attributes match and geographical_area is ERGA OMNES' do
+      let(:geographical_area) { GeographicalArea::ERGA_OMNES_ID }
+
+      it 'matches any origin with Erga Omnes' do
+        expect(categorisation.match?(regulation_id: 'D000004',
+                                     measure_type_id: '430',
+                                     geographical_area: 'IT')).to be true
       end
     end
 

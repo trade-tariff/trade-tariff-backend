@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GreenLanes
-  class Categorisation
+  class CategoryAssessment
     include ActiveModel::Model
     include ContentAddressableId
 
@@ -24,7 +24,7 @@ module GreenLanes
                   :theme
 
     class << self
-      def load_categorisation
+      def load_category_assessment
         if Rails.application.config.persistence_bucket.present?
           load_from_s3
         else
@@ -54,20 +54,22 @@ module GreenLanes
       end
 
       def all
-        @all ||= load_categorisation
+        @all ||= load_category_assessment
       end
 
       def filter(regulation_id:, measure_type_id:, geographical_area: nil)
         return [] if regulation_id.blank? || measure_type_id.blank?
 
-        all.select { |c| c.match?(regulation_id:, measure_type_id:, geographical_area:) }
+        all.select { |cat| cat.match?(regulation_id:, measure_type_id:, geographical_area:) }
       end
     end
 
     def match?(regulation_id:, measure_type_id:, geographical_area: nil)
       regulation_id == self.regulation_id &&
         measure_type_id == self.measure_type_id &&
-        (geographical_area.nil? || geographical_area == self.geographical_area)
+        (geographical_area == self.geographical_area ||
+          geographical_area.nil? ||
+          self.geographical_area == GeographicalArea::ERGA_OMNES_ID)
     end
 
     class InvalidFile < RuntimeError; end

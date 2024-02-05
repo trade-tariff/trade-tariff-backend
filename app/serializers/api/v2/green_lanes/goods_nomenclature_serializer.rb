@@ -18,7 +18,7 @@ module Api
                    :producline_suffix
 
         has_many :applicable_measures, record_type: :measure, serializer: Api::V2::MeasureSerializer
-        has_many :possible_categorisations, record_type: :green_lanes_categorisation, serializer: Api::V2::GreenLanes::CategorisationSerializer
+        has_many :applicable_category_assessments, record_type: :green_lanes_category_assessment, serializer: Api::V2::GreenLanes::CategoryAssessmentSerializer
       end
     end
   end
