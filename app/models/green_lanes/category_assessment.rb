@@ -18,10 +18,19 @@ module GreenLanes
     attr_accessor :category,
                   :regulation_id,
                   :measure_type_id,
-                  :geographical_area,
+                  :geographical_area_id,
                   :document_codes,
                   :additional_codes,
                   :theme
+
+    def initialize(params = {})
+     super(scheme)
+
+     @geographical_area = GeographicalArea
+                            .actual
+                            .where(geographical_area_sid: geographical_area_id)
+                            .take
+    end
 
     class << self
       def load_category_assessment
@@ -100,6 +109,10 @@ module GreenLanes
 
     def exemptions
       []
+    end
+
+    def geographical_area
+      @geographical_area
     end
 
     class InvalidFile < RuntimeError; end
