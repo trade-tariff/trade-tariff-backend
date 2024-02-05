@@ -1,5 +1,6 @@
 Sequel.default_timezone = :utc
 Sequel.extension :pg_json
+Sequel.extension :connection_validator
 Sequel.split_symbols = true
 
 # TimeMachine is incompatible with caching of associations dataset objects. This
