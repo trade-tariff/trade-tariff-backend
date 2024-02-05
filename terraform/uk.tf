@@ -33,7 +33,7 @@ module "uk" {
       name      = "backend-uk-init"
       image     = local.image
       essential = false
-      command   = local.init_command
+      command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -84,7 +84,6 @@ module "uk" {
       name      = "backend-uk"
       image     = local.image
       essential = true
-      command   = local.worker_command
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -151,7 +150,6 @@ module "uk" {
 
       environment = flatten([
         local.backend_common_vars,
-        local.backend_common_worker_vars,
         [
           {
             name  = "CDS"
@@ -184,7 +182,6 @@ module "uk" {
       secrets = flatten([
         local.backend_common_secrets,
         local.backend_uk_common_secrets,
-        local.backend_uk_worker_secrets,
         [
           {
             name      = "DATABASE_URL"
