@@ -1,10 +1,10 @@
 module Api
   module V2
     module GreenLanes
-      class CategorisationSerializer
+      class CategoryAssessmentSerializer
         include JSONAPI::Serializer
 
-        set_type :green_lanes_categorisation
+        set_type :green_lanes_category_assessment
 
         set_id :id
 
