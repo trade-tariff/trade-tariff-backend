@@ -11,6 +11,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
       'geographical_area' => '1000',
       'document_codes' => [],
       'additional_codes' => [],
+      'theme' => '1.1 Sanctions'
     }].to_json
   end
 
@@ -21,11 +22,12 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
         type: 'green_lanes_category_assessment',
         attributes: {
           category: '1',
-          regulation_id: 'D0000001',
-          measure_type_id: '400',
           geographical_area: '1000',
           document_codes: [],
           additional_codes: [],
+          excluded_geographical_areas: [],
+          exemptions: [],
+          theme: '1.1 Sanctions'
         },
       ],
     }

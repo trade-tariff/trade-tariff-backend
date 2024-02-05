@@ -70,6 +70,14 @@ module GreenLanes
         (geographical_area.nil? || geographical_area == self.geographical_area)
     end
 
+    def excluded_geographical_areas
+      []
+    end
+
+    def exemptions
+      []
+    end
+
     class InvalidFile < RuntimeError; end
   end
 end

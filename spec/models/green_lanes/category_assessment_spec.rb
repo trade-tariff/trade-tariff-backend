@@ -29,6 +29,8 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.to have_attributes geographical_area: '1000' }
         it { is_expected.to have_attributes document_codes: [] }
         it { is_expected.to have_attributes additional_codes: [] }
+        it { is_expected.to have_attributes excluded_geographical_areas: [] }
+        it { is_expected.to have_attributes exemptions: [] }
         it { is_expected.to have_attributes theme: '1.1 Sanctions' }
       end
     end
@@ -75,6 +77,8 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.to have_attributes document_codes: %w[C004 N800] }
         it { is_expected.to have_attributes additional_codes: %w[A5 R2D2] }
         it { is_expected.to have_attributes theme: nil }
+        it { is_expected.to have_attributes excluded_geographical_areas: [] }
+        it { is_expected.to have_attributes exemptions: [] }
       end
     end
 

@@ -9,11 +9,12 @@ module Api
         set_id :id
 
         attributes :category,
-                   :regulation_id,
-                   :measure_type_id,
                    :geographical_area,
+                   :excluded_geographical_areas,
                    :document_codes,
-                   :additional_codes
+                   :additional_codes,
+                   :exemptions,
+                   :theme
       end
     end
   end
