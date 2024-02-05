@@ -24,12 +24,9 @@ module GreenLanes
                   :theme
 
     def initialize(params = {})
-     super(scheme)
+     super(params)
 
-     @geographical_area = GeographicalArea
-                            .actual
-                            .where(geographical_area_sid: geographical_area_id)
-                            .take
+     @geographical_area = GeographicalArea.where(geographical_area_id: geographical_area_id).take
     end
 
     class << self
