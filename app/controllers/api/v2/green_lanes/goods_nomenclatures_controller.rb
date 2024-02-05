@@ -4,7 +4,7 @@ module Api
       class GoodsNomenclaturesController < BaseController
         def show
           gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
-          applicable_category_assessments = ::GreenLanes::FindCategorisationsService.call(
+          applicable_category_assessments = ::GreenLanes::FindCategoryAssessmentsService.call(
             goods_nomenclature: gn,
             origin: filter_params[:origin],
           )
