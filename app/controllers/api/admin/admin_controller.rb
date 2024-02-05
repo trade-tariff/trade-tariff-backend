@@ -1,7 +1,7 @@
 module Api
   module Admin
     class AdminController < ApiController
-      include NoCaching
+      no_caching
     end
   end
 end
