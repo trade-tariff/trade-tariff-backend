@@ -1,7 +1,7 @@
 module "uk" {
   source = "./modules/service"
 
-  service_name     = "backend-uk"
+  service_name     = "uk-backend"
   service_count    = var.service_count
   cluster_name     = "trade-tariff-cluster-${var.environment}"
   security_groups  = [data.aws_security_group.this.id]
@@ -33,7 +33,7 @@ module "uk" {
       name      = "backend-uk-init"
       image     = local.image
       essential = false
-      command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
+      command   = local.init_command
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -139,6 +139,7 @@ module "uk" {
       name      = "worker-uk"
       image     = local.image
       essential = true
+      command   = local.worker_command
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -150,6 +151,7 @@ module "uk" {
 
       environment = flatten([
         local.backend_common_vars,
+        local.backend_common_worker_vars,
         [
           {
             name  = "CDS"
@@ -182,6 +184,7 @@ module "uk" {
       secrets = flatten([
         local.backend_common_secrets,
         local.backend_uk_common_secrets,
+        local.backend_uk_worker_secrets,
         [
           {
             name      = "DATABASE_URL"

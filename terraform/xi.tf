@@ -1,7 +1,7 @@
 module "xi" {
   source = "./modules/service"
 
-  service_name     = "backend-xi"
+  service_name     = "xi-backend"
   service_count    = var.service_count
   cluster_name     = "trade-tariff-cluster-${var.environment}"
   security_groups  = [data.aws_security_group.this.id]
@@ -33,7 +33,7 @@ module "xi" {
       name      = "backend-xi-init"
       image     = local.image
       essential = false
-      command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
+      command   = local.init_command
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -131,6 +131,7 @@ module "xi" {
       name      = "worker-xi"
       image     = local.image
       essential = true
+      command   = local.worker_command
 
       portMappings     = local.portMappings
       logConfiguration = local.logConfiguration
@@ -142,6 +143,7 @@ module "xi" {
 
       environment = flatten([
         local.backend_common_vars,
+        local.backend_common_worker_vars,
         [
           {
             name  = "GOVUK_APP_DOMAIN"
@@ -170,6 +172,7 @@ module "xi" {
       secrets = flatten([
         local.backend_common_secrets,
         local.backend_xi_common_secrets,
+        local.backend_xi_worker_secrets,
         [
           {
             name      = "DATABASE_URL"
