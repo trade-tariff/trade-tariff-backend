@@ -83,3 +83,6 @@
     AverageExchangeRatesWorker:
       cron: '0 21 31 3,12 *' # Runs on end of March and December
       description: Creates average rates from downloaded data and uploads file to S3
+    SynchronizerCheckWorker:
+      cron: "30 08 * * *"
+      description: Checks we have recent Quota Balance Events - this is an early warning that our sync process has a potential issue
