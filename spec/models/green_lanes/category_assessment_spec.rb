@@ -1,4 +1,4 @@
-RSpec.describe GreenLanes::Categorisation do
+RSpec.describe GreenLanes::CategoryAssessment do
   describe '.load_from_string' do
     subject(:categorisation) { described_class.load_from_string json_string }
 
@@ -138,7 +138,7 @@ RSpec.describe GreenLanes::Categorisation do
       end
 
       it 'raise InvalidFile error' do
-        expect { described_class.load_from_s3 }.to raise_error(GreenLanes::Categorisation::InvalidFile)
+        expect { described_class.load_from_s3 }.to raise_error(GreenLanes::CategoryAssessment::InvalidFile)
       end
     end
   end

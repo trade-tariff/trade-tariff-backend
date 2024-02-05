@@ -54,7 +54,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
         allow(subheading).to receive(:applicable_measures).and_return [measure1, measure2]
 
-        GreenLanes::Categorisation.load_from_string json_string
+        GreenLanes::CategoryAssessment.load_from_string json_string
       end
 
       let(:json_string) do

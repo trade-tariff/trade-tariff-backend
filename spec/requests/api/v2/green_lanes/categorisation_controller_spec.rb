@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-RSpec.describe Api::V2::GreenLanes::CategorisationsController do
+RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
   end
@@ -9,7 +9,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      get api_green_lanes_categorisations_path(format: :json),
+      get api_green_lanes_category_assessments_path(format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end
@@ -20,7 +20,7 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
 
     before do
       allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
-      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+      allow(::GreenLanes::CategoryAssessment).to receive(:load_category_assessment).and_return(::GreenLanes::CategoryAssessment.load_from_file(test_file))
     end
 
     context 'when categorisation data is found' do
@@ -44,11 +44,11 @@ RSpec.describe Api::V2::GreenLanes::CategorisationsController do
     subject(:rendered) { make_request && response }
 
     before do
-      allow(::GreenLanes::Categorisation).to receive(:load_categorisation).and_return(::GreenLanes::Categorisation.load_from_file(test_file))
+      allow(::GreenLanes::CategoryAssessment).to receive(:load_category_assessment).and_return(::GreenLanes::CategoryAssessment.load_from_file(test_file))
     end
 
     let :make_request do
-      get api_green_lanes_categorisations_path(format: :json),
+      get api_green_lanes_category_assessments_path(format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end

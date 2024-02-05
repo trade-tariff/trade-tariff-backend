@@ -222,7 +222,7 @@ Rails.application.routes.draw do
       namespace :green_lanes do
         resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{6,10}/ }
 
-        resources :categorisations, only: %i[index]
+        resources :category_assessments, only: %i[index]
       end
     end
 
