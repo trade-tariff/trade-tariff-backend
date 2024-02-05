@@ -9,7 +9,7 @@ namespace :green_lanes do
         category: row['Primary category'],
         regulation_id: row['Regulation id'].presence&.strip,
         measure_type_id: row['Measure type ID'].presence&.strip,
-        geographical_area: row['Geographical area']&.presence&.strip,
+        geographical_area_id: row['Geographical area']&.presence&.strip,
         document_codes: row['Document codes'].to_s.split.map(&:strip),
         additional_codes: row['Additional codes'].to_s.split.map(&:strip),
         theme: row['Theme'].to_s.strip,
