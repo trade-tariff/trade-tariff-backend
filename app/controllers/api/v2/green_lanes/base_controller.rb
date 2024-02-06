@@ -15,9 +15,11 @@ module Api
         end
 
         def authenticate
-          authenticate_or_request_with_http_token do |provided_token, _options|
-            Rails.logger.debug provided_token
-            api_tokens.any? { |token| ActiveSupport::SecurityUtils.secure_compare(provided_token, token) }
+          unless Rails.env.development? && TradeTariffBackend.green_lanes_api_tokens.blank?
+            authenticate_or_request_with_http_token do |provided_token, _options|
+              Rails.logger.debug provided_token
+              api_tokens.any? { |token| ActiveSupport::SecurityUtils.secure_compare(provided_token, token) }
+            end
           end
         end
 
