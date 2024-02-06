@@ -54,6 +54,26 @@ module TariffSynchronizer
         Aws::S3::Resource.new.bucket(ENV['AWS_BUCKET_NAME'])
       end
 
+      # Note currently the worker only has access to delete in the *persistence-bucket*/data/exchange_rates/*
+      def delete_file(file_path, verify)
+        return unless verify
+
+        if Rails.env.production? && file_exists?(file_path)
+          begin
+            s3_client = Aws::S3::Client.new
+            s3_client.delete_object(bucket: bucket.name, key: bucket.object(file_path).key)
+          rescue Aws::S3::Errors::ServiceError => e
+            Rails.logger.debug "Error deleting object from S3: #{e.message}"
+          end
+        else
+          begin
+            File.delete(file_path)
+          rescue Errno::ENOENT => e
+            Rails.logger.debug "File not found: #{e.message}"
+          end
+        end
+      end
+
       def download_and_gunzip(source:, destination:)
         directory = File.dirname(destination)
 
