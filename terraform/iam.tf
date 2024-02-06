@@ -151,6 +151,14 @@ data "aws_iam_policy_document" "s3_policy" {
       "${data.aws_s3_bucket.reporting.arn}/*"
     ]
   }
+
+  statement {
+    effect  = "Allow"
+    actions = ["s3:DeleteObject"]
+    resources = [
+      "${data.aws_s3_bucket.persistence.arn}/data/exchange_rates/*",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "s3" {
