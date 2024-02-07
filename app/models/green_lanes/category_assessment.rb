@@ -23,12 +23,6 @@ module GreenLanes
                   :additional_codes,
                   :theme
 
-    def initialize(params = {})
-     super(params)
-
-     @geographical_area = GeographicalArea.where(geographical_area_id: geographical_area_id).take
-    end
-
     class << self
       def load_category_assessment
         if Rails.application.config.persistence_bucket.present?
@@ -78,10 +72,6 @@ module GreenLanes
           self.geographical_area == GeographicalArea::ERGA_OMNES_ID)
     end
 
-    def excluded_geographical_areas
-      []
-    end
-
     def exemptions
       certificates + additional_code_instances
     end
@@ -104,12 +94,12 @@ module GreenLanes
       []
     end
 
-    def exemptions
-      []
+    def excluded_geographical_area_ids
+      excluded_geographical_areas.map(&:geographical_area_id)
     end
 
     def geographical_area
-      @geographical_area
+      GeographicalArea.where(geographical_area_id: geographical_area_id).take
     end
 
     class InvalidFile < RuntimeError; end
