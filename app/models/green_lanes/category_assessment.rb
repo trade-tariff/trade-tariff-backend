@@ -13,7 +13,7 @@ module GreenLanes
 
     CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'
 
-    content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
+    content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area_id', 'document_codes', 'additional_codes'
 
     attr_accessor :category,
                   :regulation_id,
@@ -67,9 +67,9 @@ module GreenLanes
     def match?(regulation_id:, measure_type_id:, geographical_area: nil)
       regulation_id == self.regulation_id &&
         measure_type_id == self.measure_type_id &&
-        (geographical_area == self.geographical_area ||
+        (geographical_area == self.geographical_area_id ||
           geographical_area.nil? ||
-          self.geographical_area == GeographicalArea::ERGA_OMNES_ID)
+          self.geographical_area_id == GeographicalArea::ERGA_OMNES_ID)
     end
 
     def exemptions

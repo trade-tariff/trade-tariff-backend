@@ -3,7 +3,7 @@
     "category": "1",
     "regulation_id": "D000001",
     "measure_type_id": "400",
-    "geographical_area": "1000",
+    "geographical_area_id": "EU",
     "document_codes": [
       "C004",
       "N800"
@@ -11,25 +11,27 @@
     "additional_codes": [
       "A5",
       "R2D2"
-    ]
+    ],
+    "theme": "1.1 Sanctions"
   },
   {
     "category": "3",
     "regulation_id": "D000002",
     "measure_type_id": "410",
-    "geographical_area": "1001",
+    "geographical_area_id": "1001",
     "document_codes": [
       "C600"
     ],
     "additional_codes": [
 
-    ]
+    ],
+    "theme": "1.1 Sanctions"
   },
   {
     "category": "1",
     "regulation_id": "D000003",
     "measure_type_id": "420",
-    "geographical_area": "1002",
+    "geographical_area_id": "1002",
     "document_codes": [
 
     ],
@@ -41,7 +43,7 @@
     "category": "3",
     "regulation_id": "D000004",
     "measure_type_id": "430",
-    "geographical_area": "US",
+    "geographical_area_id": "US",
     "document_codes": [
       "C500"
     ],
@@ -53,7 +55,7 @@
     "category": "2",
     "regulation_id": "D000005",
     "measure_type_id": "410",
-    "geographical_area": "1008",
+    "geographical_area_id": "1008",
     "document_codes": [
       "C004",
       "N800"
@@ -66,7 +68,7 @@
     "category": "2",
     "regulation_id": "D000006",
     "measure_type_id": "410",
-    "geographical_area": "1008",
+    "geographical_area_id": "1008",
     "document_codes": [
       "C004",
       "N800"
@@ -79,7 +81,7 @@
     "category": "2",
     "regulation_id": "D000007",
     "measure_type_id": "410",
-    "geographical_area": "1008",
+    "geographical_area_id": "1008",
     "document_codes": [
       "Y008",
       "Y900"
@@ -92,7 +94,7 @@
     "category": "2",
     "regulation_id": "D000008",
     "measure_type_id": "410",
-    "geographical_area": "EU",
+    "geographical_area_id": "EU",
     "document_codes": [
       "C600",
       "Y002",
@@ -109,7 +111,7 @@
     "category": "2",
     "regulation_id": "D000009",
     "measure_type_id": "410",
-    "geographical_area": "EU",
+    "geographical_area_id": "EU",
     "document_codes": [
       "C004"
     ],
@@ -123,7 +125,7 @@
     "category": "2",
     "regulation_id": "D000010",
     "measure_type_id": "410",
-    "geographical_area": "EU",
+    "geographical_area_id": "EU",
     "document_codes": [
 
     ],

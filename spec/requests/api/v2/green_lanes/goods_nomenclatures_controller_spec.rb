@@ -67,13 +67,13 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
           "category": "1",
           "regulation_id": "D0000001",
           "measure_type_id": "400",
-          "geographical_area": "1000"
+          "geographical_area_id": "1000"
         },
         {
           "category": "1",
           "regulation_id": "D0000002",
           "measure_type_id": "500",
-          "geographical_area": "1000"
+          "geographical_area_id": "1000"
         }]'
       end
 
