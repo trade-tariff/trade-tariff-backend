@@ -21,7 +21,7 @@ module "worker_uk" {
   private_dns_namespace = "tariff.internal"
 
   cpu    = 2048
-  memory = 5120
+  memory = 8192
 
   task_role_policy_arns = [
     aws_iam_policy.exec.arn,
