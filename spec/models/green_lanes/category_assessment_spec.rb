@@ -85,7 +85,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.to have_attributes measure_type_id: '400' }
         it { is_expected.to have_attributes document_codes: %w[C004 N800] }
         it { is_expected.to have_attributes additional_codes: %w[A5 R2D2] }
-        it { is_expected.to have_attributes theme: "1.1 Sanctions" }
+        it { is_expected.to have_attributes theme: '1.1 Sanctions' }
         it { is_expected.to have_attributes excluded_geographical_areas: [] }
 
         it 'returns an instance of GeographicalArea' do

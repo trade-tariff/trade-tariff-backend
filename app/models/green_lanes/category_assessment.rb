@@ -67,9 +67,9 @@ module GreenLanes
     def match?(regulation_id:, measure_type_id:, geographical_area: nil)
       regulation_id == self.regulation_id &&
         measure_type_id == self.measure_type_id &&
-        (geographical_area == self.geographical_area_id ||
+        (geographical_area == geographical_area_id ||
           geographical_area.nil? ||
-          self.geographical_area_id == GeographicalArea::ERGA_OMNES_ID)
+          geographical_area_id == GeographicalArea::ERGA_OMNES_ID)
     end
 
     def exemptions
@@ -99,7 +99,7 @@ module GreenLanes
     end
 
     def geographical_area
-      GeographicalArea.where(geographical_area_id: geographical_area_id).take
+      GeographicalArea.where(geographical_area_id:).take
     end
 
     class InvalidFile < RuntimeError; end

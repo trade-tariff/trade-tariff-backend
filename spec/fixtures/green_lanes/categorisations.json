@@ -18,7 +18,7 @@
     "category": "3",
     "regulation_id": "D000002",
     "measure_type_id": "410",
-    "geographical_area_id": "1001",
+    "geographical_area_id": "1008",
     "document_codes": [
       "C600"
     ],
@@ -31,7 +31,7 @@
     "category": "1",
     "regulation_id": "D000003",
     "measure_type_id": "420",
-    "geographical_area_id": "1002",
+    "geographical_area_id": "1008",
     "document_codes": [
 
     ],
@@ -43,7 +43,7 @@
     "category": "3",
     "regulation_id": "D000004",
     "measure_type_id": "430",
-    "geographical_area_id": "US",
+    "geographical_area_id": "EU",
     "document_codes": [
       "C500"
     ],

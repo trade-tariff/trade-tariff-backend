@@ -67,16 +67,16 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           },
         },
         {
-          "id": "EU",
-          "type": "geographical_area",
+          "id": 'EU',
+          "type": 'geographical_area',
           "attributes": {
-            "id": "EU",
-            "description": "Lorem ipsum dolor sit amet, consectetuer adipiscing elit.",
-            "geographical_area_id": "EU",
-            "geographical_area_sid": 1
-          }
-        }
-      ]
+            "id": 'EU',
+            "description": 'Lorem ipsum dolor sit amet, consectetuer adipiscing elit.',
+            "geographical_area_id": 'EU',
+            "geographical_area_sid": 1,
+          },
+        },
+      ],
     }
   end
 

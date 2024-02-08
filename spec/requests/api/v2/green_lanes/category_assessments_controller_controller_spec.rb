@@ -3,6 +3,8 @@ require 'rails_helper'
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
+    create(:geographical_area, :with_reference_group_and_members, :with_description)
+    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1008')
   end
 
   describe 'GET #index' do
