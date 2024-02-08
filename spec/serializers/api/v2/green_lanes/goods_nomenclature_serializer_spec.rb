@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    described_class.new(gn_presenter, include: %w[applicable_measures applicable_category_assessments]).serializable_hash
+    described_class.new(gn_presenter, include: %w[applicable_measures applicable_category_assessments applicable_category_assessments.geographical_area]).serializable_hash
   end
 
   let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, categorisations) }
@@ -9,12 +9,16 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
 
   let(:categorisations) { GreenLanes::CategoryAssessment.load_from_string(json_string) }
 
+  before do
+    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1000')
+  end
+
   let(:json_string) do
     '[{
           "category": "1",
           "regulation_id": "D0000001",
           "measure_type_id": "400",
-          "geographical_area": "1000",
+          "geographical_area_id": "1000",
           "document_codes": [],
           "additional_codes": []
         }]'
@@ -48,14 +52,20 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           },
         },
       },
-      included: [{
-        id: subheading.applicable_measures.first.id.to_s,
-        type: eq(:measure),
-      },
-                 {
-                   id: GreenLanes::CategoryAssessment.all[0].id,
-                   type: eq(:green_lanes_category_assessment),
-                 }],
+      included: [
+        {
+          id: subheading.applicable_measures.first.id.to_s,
+          type: eq(:measure),
+        },
+        {
+          id: '1000',
+          type: eq(:geographical_area),
+        },
+        {
+          id: GreenLanes::CategoryAssessment.all[0].id,
+          type: eq(:green_lanes_category_assessment),
+        }
+      ],
     }
   end
 

@@ -187,7 +187,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
     context 'when geographical_area is specified' do
       subject(:categorisation_filter) do
-        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'US'
+        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'EU'
       end
 
       it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
