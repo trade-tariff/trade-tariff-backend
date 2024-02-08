@@ -228,4 +228,56 @@ RSpec.describe GreenLanes::CategoryAssessment do
       end
     end
   end
+
+  describe '#certificates' do
+    subject { described_class.new(document_codes:).certificates }
+
+    before { certs }
+
+    let(:document_codes) { %w[Y123 999L] }
+
+    let :certs do
+      [
+        create(:certificate, certificate_type_code: 'Y', certificate_code: '123'),
+        create(:certificate, certificate_type_code: '9', certificate_code: '99L'),
+      ]
+    end
+
+    it { is_expected.to match_array certs }
+  end
+
+  describe '#additional_code_instances' do
+    subject { described_class.new(additional_codes:).additional_code_instances }
+
+    before { codes }
+
+    let(:additional_codes) { %w[X987 ABCD] }
+
+    let :codes do
+      [
+        create(:additional_code, additional_code_type_id: 'X', additional_code: '987'),
+        create(:additional_code, additional_code_type_id: 'A', additional_code: 'BCD'),
+      ]
+    end
+
+    it { is_expected.to match_array codes }
+  end
+
+  describe '#exemptions' do
+    subject { described_class.new(document_codes:, additional_codes:).exemptions }
+
+    before { exemptions }
+
+    let(:document_codes) { %w[Y123] }
+    let(:additional_codes) { %w[X987] }
+
+    let :exemptions do
+      [
+        create(:certificate, certificate_type_code: 'Y', certificate_code: '123'),
+        create(:additional_code, additional_code_type_id: 'X', additional_code: '987'),
+      ]
+    end
+
+    it { is_expected.to match_array exemptions }
+  end
 end

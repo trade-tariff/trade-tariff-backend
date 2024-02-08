@@ -77,7 +77,21 @@ module GreenLanes
     end
 
     def exemptions
-      []
+      certificates + additional_code_instances
+    end
+
+    def certificates
+      Certificate
+        .actual
+        .where(Sequel.function(:concat, :certificate_type_code, :certificate_code) => document_codes)
+        .all
+    end
+
+    def additional_code_instances
+      AdditionalCode
+        .actual
+        .where(Sequel.function(:concat, :additional_code_type_id, :additional_code) => additional_codes)
+        .all
     end
 
     class InvalidFile < RuntimeError; end
