@@ -72,6 +72,10 @@ module GreenLanes
           self.geographical_area == GeographicalArea::ERGA_OMNES_ID)
     end
 
+    def excluded_geographical_areas
+      []
+    end
+
     def exemptions
       certificates + additional_code_instances
     end

@@ -9,11 +9,11 @@ module Api
         set_id :id
 
         attributes :category,
-                   :regulation_id,
-                   :measure_type_id,
                    :geographical_area,
+                   :excluded_geographical_areas,
                    :document_codes,
-                   :additional_codes
+                   :additional_codes,
+                   :theme
 
         has_many :exemptions, serializer: proc { |record, _params|
           case record
