@@ -4,15 +4,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   end
 
   let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, categorisations) }
-
-  let(:subheading) { create :subheading, :with_measures }
-
-  let(:categorisations) { GreenLanes::CategoryAssessment.load_from_string(json_string) }
-
-  before do
-    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1000')
-  end
-
   let(:json_string) do
     '[{
           "category": "1",
@@ -23,7 +14,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           "additional_codes": []
         }]'
   end
-
   let(:expected_pattern) do
     {
       data: {
@@ -64,9 +54,17 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         {
           id: GreenLanes::CategoryAssessment.all[0].id,
           type: eq(:green_lanes_category_assessment),
-        }
+        },
       ],
     }
+  end
+
+  let(:subheading) { create :subheading, :with_measures }
+
+  let(:categorisations) { GreenLanes::CategoryAssessment.load_from_string(json_string) }
+
+  before do
+    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1000')
   end
 
   it { is_expected.to include_json(expected_pattern) }
