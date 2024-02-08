@@ -6,6 +6,8 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
 
   before do
     create(:geographical_area, :with_reference_group_and_members, :with_description)
+    create(:certificate, :with_description, certificate_type_code: 'Y', certificate_code: '123')
+    create(:additional_code, :with_description, additional_code_type_id: 'B', additional_code: '456')
   end
 
   let(:json_string) do
@@ -13,10 +15,10 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
       'category' => '1',
       'regulation_id' => 'D0000001',
       'measure_type_id' => '400',
-      'geographical_area' => 'EU',
+      'geographical_area_id' => 'EU',
       'document_codes' => %w[Y123],
       'additional_codes' => %w[B456],
-      'theme' => '1.1 Sanctions'
+      'theme' => '1.1 Sanctions',
     }].to_json
   end
 
@@ -40,10 +42,10 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           },
           "geographical_area": {
             "data": {
-              "id": "EU",
-              "type": "geographical_area"
-            }
-          }
+              "id": 'EU',
+              "type": 'geographical_area',
+            },
+          },
         },
       ],
       included: [
@@ -78,11 +80,6 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
         },
       ],
     }
-  end
-
-  before do
-    create(:certificate, :with_description, certificate_type_code: 'Y', certificate_code: '123')
-    create(:additional_code, :with_description, additional_code_type_id: 'B', additional_code: '456')
   end
 
   it { expect(serialized).to include_json(expected_pattern) }
