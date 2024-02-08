@@ -22,9 +22,9 @@ class TaricImporter
   end
 
   def import
-
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
+
     handler = XmlProcessor.new(@taric_update.issue_date)
 
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
@@ -78,7 +78,7 @@ class TaricImporter
                  end
     TariffSynchronizer::TaricUpdate.find_or_create(
       filename: filename[0, 30],
-      issue_date:issue_date,
+      issue_date:,
       filesize: file_size,
       state: 'A',
       applied_at: Time.zone.now,
