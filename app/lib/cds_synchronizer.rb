@@ -78,9 +78,6 @@ class CdsSynchronizer
                    .where(Sequel.lit('operation_date > ?', date_for_rollback))
                    .delete
             end
-            # Look for migrations after the end of the
-            # date_for_rollback day and remove them
-            DataMigration.since(date.end_of_day).delete
           end
         end
 
@@ -93,6 +90,10 @@ class CdsSynchronizer
           cds_update.cds_errors_dataset.destroy
           cds_update.delete unless keep
         end
+
+        # Look for migrations after the end of the
+        # date_for_rollback day and remove them
+        DataMigration.since(date.end_of_day).delete
 
         Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{keep}"
       end
