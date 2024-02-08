@@ -22,10 +22,11 @@ class TaricImporter
   end
 
   def import
+
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
-
     handler = XmlProcessor.new(@taric_update.issue_date)
+
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     XmlParser::Reader.new(file, 'record', handler).parse
     post_import(file_path: @taric_update.file_path, filename:)
@@ -58,22 +59,26 @@ class TaricImporter
   private
 
   def proceed_with_import?(filename)
-    return true unless TradeTariffBackend.use_cds?
-
     TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).blank?
   end
 
   def post_import(file_path:, filename:)
-    create_update_entry(file_path:, filename:) if TradeTariffBackend.use_cds?
+    create_update_entry(file_path:, filename:)
     Rails.logger.info "Successfully imported Taric file: #{@taric_update.filename}"
   end
 
   def create_update_entry(file_path:, filename:)
     file_size = determine_file_size(file_path)
-    issue_date = Date.parse(filename.scan(/[0-9]{8}/).last)
+    # handle a filename that doesn't have a date in the expected format of YYYY-MM-DD
+    date_match = filename.scan(/[0-9_-]{10}/).last
+    issue_date = if date_match
+                   Date.parse(date_match)
+                 else
+                   Time.zone.today
+                 end
     TariffSynchronizer::TaricUpdate.find_or_create(
       filename: filename[0, 30],
-      issue_date:,
+      issue_date:issue_date,
       filesize: file_size,
       state: 'A',
       applied_at: Time.zone.now,

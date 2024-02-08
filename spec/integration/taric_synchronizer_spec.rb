@@ -44,6 +44,8 @@ RSpec.describe TaricSynchronizer do
         allow(instance).to receive(
           :persist,
         ).and_raise OpenSearch::Transport::Transport::SnifferTimeoutError
+
+        allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
       end
 
       it 'stops syncing' do
@@ -63,6 +65,8 @@ RSpec.describe TaricSynchronizer do
         allow(instance).to receive(
           :persist,
         ).and_raise Timeout::Error
+
+        allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
       end
 
       it 'stops syncing' do
