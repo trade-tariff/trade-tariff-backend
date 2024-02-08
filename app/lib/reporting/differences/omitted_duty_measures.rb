@@ -91,89 +91,117 @@ module Reporting
 
       attr_reader :report
 
+      def past_as_of
+        @past_as_of ||= (Time.zone.today - 1.year).iso8601
+      end
+
+      def today_as_of
+        @today_as_of ||= Time.zone.today.iso8601
+      end
+
       def each_row
         start_time = Time.zone.now
 
-        non_continuous_measures = Set.new
+        non_continuous_measure_sids = Set.new
 
-        past_declarables_and_measures.each do |declarable, past_measures|
-          current_measures = current_declarables_and_measures[declarable]
+        each_chapter_from_past do |chapter|
+          current_chapter_measures = current_declarables_and_measures_for_chapter(chapter)
 
-          next if current_measures.nil?
+          past_declarables_and_measures_for_chapter(chapter).each do |declarable, past_measures|
+            current_declarable_measures = current_chapter_measures[declarable]
 
-          past_measures.each do |past_measure, _|
-            non_continuous_measures << past_measure unless current_measures.include?(past_measure)
+            next if current_declarable_measures.nil?
+
+            past_measures.each do |past_measure, _|
+              next if current_declarable_measures.include?(past_measure)
+              next if non_continuous_measure_sids.include?(past_measure.measure_sid)
+
+              non_continuous_measure_sids << past_measure.measure_sid
+              yield build_row_for(past_measure)
+            end
           end
         end
-
-        non_continuous_measures.each { |measure| yield build_row_for(measure) }
 
         end_time = Time.zone.now
         Rails.logger.debug("Time taken for each_row: #{end_time - start_time} seconds")
       end
 
-      def current_declarables_and_measures
-        @current_declarables_and_measures ||= begin
-          start_time = Time.zone.now
-          acc = {}
-
-          as_of = Time.zone.today.iso8601
-          Rails.logger.debug("Processing current_declarables_and_measures for date: #{as_of}")
-
-          each_declarable(as_of) do |declarable|
-            declarable.applicable_measures.each do |measure|
-              measure = PresentedMeasure.new(measure)
-
-              next unless INCLUDED_MEASURE_TYPES.include?(measure.measure_type_id)
-              next if EXCLUDED_GEOGRAPHICAL_AREA_IDS.include?(measure.geographical_area_id)
-
-              acc[declarable] ||= Set.new
-              acc[declarable] << measure
-            end
-          end
-
-          end_time = Time.zone.now
-          Rails.logger.debug("Time taken for current_declarables_and_measures: #{end_time - start_time} seconds")
-
-          acc
+      def each_chapter_from_past(&block)
+        TimeMachine.at(past_as_of) do
+          Chapter
+            .non_hidden
+            .non_classifieds
+            .actual
+            .all
+            .each(&block)
         end
       end
 
-      def past_declarables_and_measures
-        @past_declarables_and_measures ||= begin
-          start_time = Time.zone.now
-          acc = {}
-
-          as_of = (Time.zone.today - 1.year).iso8601
-          Rails.logger.debug("Processing past_declarables_and_measures for date: #{as_of}")
-
-          each_declarable(as_of) do |declarable|
-            declarable.applicable_measures.each do |measure|
-              measure = PresentedMeasure.new(measure)
-
-              next unless INCLUDED_MEASURE_TYPES.include?(measure.measure_type_id)
-              next if EXCLUDED_GEOGRAPHICAL_AREA_IDS.include?(measure.geographical_area_id)
-
-              acc[declarable] ||= Set.new
-              acc[declarable] << measure
-            end
-          end
-          end_time = Time.zone.now
-          Rails.logger.debug("Time taken for past_declarables_and_measures: #{end_time - start_time} seconds")
-
-          acc
-        end
-      end
-
-      def each_declarable(as_of)
+      def current_declarables_and_measures_for_chapter(chapter)
         start_time = Time.zone.now
-        each_chapter(eager: Differences::GOODS_NOMENCLATURE_MEASURE_EAGER, as_of:) do |eager_chapter|
-          eager_chapter.descendants.each do |chapter_descendant|
-            next unless chapter_descendant.declarable?
+        acc = {}
 
-            yield PresentedDeclarable.new(chapter_descendant)
+        Rails.logger.debug("Processing current_declarables_and_measures for date: #{today_as_of}")
+
+        each_declarable_and_measures_for_chapter(chapter, today_as_of) do |declarable|
+          declarable.applicable_measures.each do |measure|
+            measure = PresentedMeasure.new(measure)
+
+            next unless INCLUDED_MEASURE_TYPES.include?(measure.measure_type_id)
+            next if EXCLUDED_GEOGRAPHICAL_AREA_IDS.include?(measure.geographical_area_id)
+
+            acc[declarable] ||= Set.new
+            acc[declarable] << measure
           end
         end
+
+        end_time = Time.zone.now
+        Rails.logger.debug("Time taken for current_declarables_and_measures: #{end_time - start_time} seconds")
+
+        acc
+      end
+
+      def past_declarables_and_measures_for_chapter(chapter)
+        start_time = Time.zone.now
+        acc = {}
+
+        Rails.logger.debug("Processing past_declarables_and_measures for date: #{past_as_of}")
+
+        each_declarable_and_measures_for_chapter(chapter, past_as_of) do |declarable|
+          declarable.applicable_measures.each do |measure|
+            measure = PresentedMeasure.new(measure)
+
+            next unless INCLUDED_MEASURE_TYPES.include?(measure.measure_type_id)
+            next if EXCLUDED_GEOGRAPHICAL_AREA_IDS.include?(measure.geographical_area_id)
+
+            acc[declarable] ||= Set.new
+            acc[declarable] << measure
+          end
+        end
+        end_time = Time.zone.now
+        Rails.logger.debug("Time taken for past_declarables_and_measures: #{end_time - start_time} seconds")
+
+        acc
+      end
+
+      def each_declarable_and_measures_for_chapter(chapter, as_of)
+        start_time = Time.zone.now
+        TimeMachine.at(as_of) do
+          Chapter
+            .actual
+            .where(goods_nomenclature_item_id: chapter.goods_nomenclature_item_id,
+                   producline_suffix: chapter.producline_suffix)
+            .non_hidden
+            .non_classifieds
+            .eager(Differences::GOODS_NOMENCLATURE_MEASURE_EAGER)
+            .take
+            .descendants
+            .select(&:declarable?)
+            .each do |chapter_descendant|
+              yield PresentedDeclarable.new(chapter_descendant)
+            end
+        end
+
         end_time = Time.zone.now
         Rails.logger.debug("Time taken for each_declarable: #{end_time - start_time} seconds")
       end
