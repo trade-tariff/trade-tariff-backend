@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   subject(:serialized) do
     described_class.new(::GreenLanes::CategoryAssessment.load_from_string(json_string),
-                        include: %w[exemptions geographical_area]).serializable_hash.as_json
+                        include: %w[exemptions geographical_area excluded_geographical_areas]).serializable_hash.as_json
   end
 
   before do
@@ -45,6 +45,9 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
               "id": 'EU',
               "type": 'geographical_area',
             },
+          },
+          "excluded_geographical_areas": {
+            "data": [],
           },
         },
       ],
