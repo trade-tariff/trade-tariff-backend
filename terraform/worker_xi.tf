@@ -1,5 +1,5 @@
 module "worker_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=49ff4f2"
 
   service_name = "worker-xi"
   region       = var.region
