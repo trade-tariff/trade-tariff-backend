@@ -17,19 +17,21 @@ module Api
         private
 
         def period_type
-          match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv|spot_csv)_/)
+          regexp = Regexp.new("^(#{ExchangeRateFile::APPLICABLE_TYPES.join('|')})_")
+          match_data = param_id.match(regexp)
+
           match_data[1] if match_data
         end
 
         def month
-          @month ||= params[:id].split('-').last
+          @month ||= param_id.split('-').last
         end
 
         def year
-          @year ||= params[:id].split('-').first.split('_').last
+          @year ||= param_id.split('-').first.split('_').last
         end
 
-        def id
+        def param_id
           params[:id].to_s
         end
 
@@ -58,7 +60,7 @@ module Api
         end
 
         def validate_params!
-          if period_type.nil? # && ExchangeRateFile::APPLICABLE_TYPES.include?(period_type)
+          if period_type.nil?
             raise ArgumentError,
                   "Invalid file type. Expected one of: #{ExchangeRateFile::APPLICABLE_TYPES.join(', ')}"
           end

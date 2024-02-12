@@ -1,5 +1,5 @@
 class ExchangeRateFile < Sequel::Model
-  APPLICABLE_TYPES = %w[monthly_csv monthly_xml spot_csv average_csv monthly_csv_hmrc].freeze
+  APPLICABLE_TYPES = %w[monthly_csv_hmrc monthly_csv monthly_xml spot_csv average_csv].freeze
   OBJECT_KEY_PREFIX = 'data/exchange_rates'.freeze
 
   include ContentAddressableId
