@@ -74,6 +74,8 @@ RSpec.configure do |config|
     # things like nomenclature item id's risk wrapping otherwise
     FactoryBot.rewind_sequences
   end
+
+  config.after { travel_back }
 end
 
 def silence

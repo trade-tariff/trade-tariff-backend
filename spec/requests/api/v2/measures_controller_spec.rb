@@ -18,5 +18,11 @@ RSpec.describe Api::V2::MeasuresController do
 
       it { is_expected.to have_http_status :not_found }
     end
+
+    context 'for negative measure' do
+      let(:measure) { create(:measure, measure_sid: -2000) }
+
+      it_behaves_like 'a successful jsonapi response'
+    end
   end
 end
