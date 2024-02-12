@@ -5,16 +5,18 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
     let(:data) { 'foo,bar\nqux,qul' }
 
     before do
-      create(:exchange_rate_file, type:, format:, period_year: year, period_month: month)
+      create(:exchange_rate_file, type: period_type, format:, period_year: year, period_month: month)
       allow(TariffSynchronizer::FileService).to receive(:get).and_call_original
-      allow(TariffSynchronizer::FileService).to receive(:get).with("data/exchange_rates/#{year}/#{month}/#{type}_#{year}-#{month}.#{format}").and_return(StringIO.new(data))
+      allow(TariffSynchronizer::FileService).to receive(:get)
+        .with("data/exchange_rates/#{year}/#{month}/#{period_type}_#{year}-#{month}.#{format}")
+        .and_return(StringIO.new(data))
     end
 
     context 'when requesting CSV format' do
-      let(:type) { 'monthly_csv' }
+      let(:period_type) { 'monthly_csv' }
       let(:format) { 'csv' }
 
-      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
+      before { get api_exchange_rates_file_path("#{period_type}_#{year}-#{month}", format: :csv) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -34,10 +36,10 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
     end
 
     context 'when requesting XML format' do
-      let(:type) { 'monthly_xml' }
+      let(:period_type) { 'monthly_xml' }
       let(:format) { 'xml' }
 
-      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :xml) }
+      before { get api_exchange_rates_file_path("#{period_type}_#{year}-#{month}", format: :xml) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -57,10 +59,10 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
     end
 
     context 'when requesting HMRC CSV format' do
-      let(:type) { 'monthly_csv_hmrc' }
+      let(:period_type) { 'monthly_csv_hmrc' }
       let(:format) { 'csv' }
 
-      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
+      before { get api_exchange_rates_file_path("#{period_type}_#{year}-#{month}", format: :csv) }
 
       it 'returns HTTP status :ok' do
         expect(response).to have_http_status(:ok)
@@ -79,14 +81,27 @@ RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
       end
     end
 
-    context 'when requesting invalid type' do
-      let(:type) { 'non_existing_type' }
+    context 'when file not found' do
+      let(:period_type) { 'monthly_csv' }
       let(:format) { 'csv' }
 
-      before { get api_exchange_rates_file_path("#{type}_#{year}-#{month}", format: :csv) }
+      let(:wrong_year) { 2010 }
 
-      it 'returns HTTP status :not_found' do
+      before { get api_exchange_rates_file_path("#{period_type}_#{wrong_year}-#{month}", format: :csv) }
+
+      it 'returns HTTP 404  :not_found' do
         expect(response).to have_http_status(:not_found)
+      end
+    end
+
+    context 'when requesting invalid period type' do
+      let(:period_type) { 'invalid_period_type' }
+      let(:format) { 'csv' }
+
+      before { get api_exchange_rates_file_path("#{period_type}_#{year}-#{month}", format:) }
+
+      it 'returns HTTP 400 bad request' do
+        expect(response).to have_http_status(:bad_request)
       end
     end
   end

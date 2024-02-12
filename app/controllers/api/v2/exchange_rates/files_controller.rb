@@ -3,7 +3,9 @@ module Api
     module ExchangeRates
       class FilesController < ApiController
         def show
-          filename = ExchangeRateFile.filename_for_download(type, format, year, month)
+          validate_params!
+
+          filename = ExchangeRateFile.filename_for_download(period_type, format, year, month)
 
           send_data(
             file_data,
@@ -14,7 +16,7 @@ module Api
 
         private
 
-        def type
+        def period_type
           match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv|spot_csv)_/)
           match_data[1] if match_data
         end
@@ -48,11 +50,18 @@ module Api
 
         def file
           @file ||= ExchangeRateFile.where(
-            type:,
+            type: period_type,
             period_year: year,
             period_month: month,
             format: format.to_s,
           ).take
+        end
+
+        def validate_params!
+          if period_type.nil? # && ExchangeRateFile::APPLICABLE_TYPES.include?(period_type)
+            raise ArgumentError,
+                  "Invalid file type. Expected one of: #{ExchangeRateFile::APPLICABLE_TYPES.join(', ')}"
+          end
         end
       end
     end
