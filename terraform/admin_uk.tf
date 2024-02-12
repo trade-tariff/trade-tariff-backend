@@ -1,6 +1,8 @@
 module "backend_admin_uk" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
+  depends_on = [module.worker_uk]
+
   service_name  = "backend-admin-uk"
   service_count = var.service_count
   region        = var.region
