@@ -9,8 +9,6 @@ module Api
         set_id :id
 
         attributes :category,
-                   :geographical_area,
-                   :excluded_geographical_areas,
                    :document_codes,
                    :additional_codes,
                    :theme
@@ -25,6 +23,8 @@ module Api
             raise 'Unknown type'
           end
         }
+        has_one :geographical_area, record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
+        has_many :excluded_geographical_areas, record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
       end
     end
   end

@@ -1,7 +1,7 @@
 module Api
   module V2
     class SearchController < ApiController
-      include NoCaching
+      no_caching
 
       def search
         render json: SearchService.new(Api::V2::SearchSerializationService.new, params).to_json

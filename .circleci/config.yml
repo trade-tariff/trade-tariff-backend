@@ -5,7 +5,6 @@ filter-not-main: &filter-not-main
     branches:
       ignore:
         - main
-        - /^dependabot/(?!docker/).*/
         - /^hotfix\/.+/
 
 filter-main: &filter-main

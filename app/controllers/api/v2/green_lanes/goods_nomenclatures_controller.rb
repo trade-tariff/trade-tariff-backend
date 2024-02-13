@@ -15,6 +15,8 @@ module Api
               applicable_measures
               applicable_category_assessments
               applicable_category_assessments.exemptions
+              applicable_category_assessments.geographical_area
+              applicable_category_assessments.excluded_geographical_areas
             ]
           )
 

@@ -2,13 +2,17 @@ RSpec.describe GreenLanes::CategoryAssessment do
   describe '.load_from_string' do
     subject(:categorisation) { described_class.load_from_string json_string }
 
+    before do
+      create(:geographical_area, :with_reference_group_and_members, :with_description)
+    end
+
     context 'with valid json array' do
       let(:json_string) do
         '[{
           "category": "1",
           "regulation_id": "D0000001",
           "measure_type_id": "400",
-          "geographical_area": "1000",
+          "geographical_area_id": "EU",
           "document_codes": [],
           "additional_codes": [],
           "theme": "1.1 Sanctions"
@@ -26,12 +30,14 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.to have_attributes category: '1' }
         it { is_expected.to have_attributes regulation_id: 'D0000001' }
         it { is_expected.to have_attributes measure_type_id: '400' }
-        it { is_expected.to have_attributes geographical_area: '1000' }
         it { is_expected.to have_attributes document_codes: [] }
         it { is_expected.to have_attributes additional_codes: [] }
         it { is_expected.to have_attributes excluded_geographical_areas: [] }
-        it { is_expected.to have_attributes exemptions: [] }
         it { is_expected.to have_attributes theme: '1.1 Sanctions' }
+
+        it 'returns an instance of GeographicalArea' do
+          expect(first_element.geographical_area).to be_instance_of(GeographicalArea)
+        end
       end
     end
 
@@ -59,6 +65,10 @@ RSpec.describe GreenLanes::CategoryAssessment do
   describe '.load_from_file' do
     subject(:categorisation_file) { described_class.load_from_file test_file }
 
+    before do
+      create(:geographical_area, :with_reference_group_and_members, :with_description)
+    end
+
     context 'with valid json file' do
       let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
@@ -73,12 +83,14 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.to have_attributes category: '1' }
         it { is_expected.to have_attributes regulation_id: 'D000001' }
         it { is_expected.to have_attributes measure_type_id: '400' }
-        it { is_expected.to have_attributes geographical_area: '1000' }
         it { is_expected.to have_attributes document_codes: %w[C004 N800] }
         it { is_expected.to have_attributes additional_codes: %w[A5 R2D2] }
-        it { is_expected.to have_attributes theme: nil }
+        it { is_expected.to have_attributes theme: '1.1 Sanctions' }
         it { is_expected.to have_attributes excluded_geographical_areas: [] }
-        it { is_expected.to have_attributes exemptions: [] }
+
+        it 'returns an instance of GeographicalArea' do
+          expect(first_element.geographical_area).to be_instance_of(GeographicalArea)
+        end
       end
     end
 
@@ -118,9 +130,10 @@ RSpec.describe GreenLanes::CategoryAssessment do
           "category": "1",
           "regulation_id": "D0000001",
           "measure_type_id": "400",
-          "geographical_area": "1000",
+          "geographical_area_id": "EU",
           "document_codes": [],
-          "additional_codes": []
+          "additional_codes": [],
+          "theme": "1.1 Sanctions"
         }]'
     end
 
@@ -174,7 +187,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
     context 'when geographical_area is specified' do
       subject(:categorisation_filter) do
-        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'US'
+        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'EU'
       end
 
       it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
@@ -183,10 +196,10 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
   describe '#match?' do
     subject(:categorisation) do
-      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area:
+      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area_id:
     end
 
-    let(:geographical_area) { 'US' }
+    let(:geographical_area_id) { 'US' }
 
     context 'when the attributes match' do
       it do
@@ -203,7 +216,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
     end
 
     context 'when the attributes match and geographical_area is ERGA OMNES' do
-      let(:geographical_area) { GeographicalArea::ERGA_OMNES_ID }
+      let(:geographical_area_id) { GeographicalArea::ERGA_OMNES_ID }
 
       it 'matches any origin with Erga Omnes' do
         expect(categorisation.match?(regulation_id: 'D000004',
