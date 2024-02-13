@@ -41,15 +41,22 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
 
     context 'without origin filter' do
       it { is_expected.to have_attributes length: 4 }
+
+      it { expect(matches[0][1]).to match_array [measures[0]] }
+      it { expect(matches[1][1]).to match_array [measures[0]] }
+      it { expect(matches[2][1]).to match_array [measures[1]] }
+      it { expect(matches[3][1]).to match_array [measures[2]] }
     end
 
-    context 'when geographical_area_id is provided' do
-      subject { described_class.call(goods_nomenclature:, geographical_area_id: 'AU') }
+    context 'when origin is provided' do
+      subject(:matches) { described_class.call(goods_nomenclature:, geographical_area_id: 'AU') }
 
       it { is_expected.to have_attributes length: 2 }
+      it { expect(matches[0][1]).to match_array [measures[0]] }
+      it { expect(matches[1][1]).to match_array [measures[2]] }
     end
 
-    context 'with duplicate measures' do
+    context 'with multiple measures' do
       let(:measures) do
         [
           create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500'),
@@ -58,13 +65,16 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         ]
       end
 
-      let(:matched_regulation_ids) { matches.map(&:regulation_id) }
+      let(:matched_regulation_ids) { matches.map(&:first).map(&:regulation_id) }
 
       it { is_expected.to have_attributes length: 2 }
 
       it 'includes expected category assessments' do
         expect(matched_regulation_ids).to match_array %w[D0000002 D0000003]
       end
+
+      it { expect(matches[0][1]).to match_array [measures[0]] }
+      it { expect(matches[1][1]).to match_array [measures[1], measures[2]] }
     end
   end
 end
