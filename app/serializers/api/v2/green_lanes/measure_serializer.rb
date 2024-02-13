@@ -8,6 +8,8 @@ module Api
 
         attributes :effective_start_date,
                    :effective_end_date
+
+        has_many :footnotes, type: :footnote, serializer: Api::V2::Measures::FootnoteSerializer
       end
     end
   end

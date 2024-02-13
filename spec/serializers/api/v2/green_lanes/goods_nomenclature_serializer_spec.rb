@@ -5,6 +5,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
     gn_presenter = \
       Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading,
                                                           assessments_with_measures)
+
     described_class.new(
       gn_presenter,
       include: %w[applicable_measures

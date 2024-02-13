@@ -1,7 +1,8 @@
 RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
-  subject { described_class.new(measure).serializable_hash.as_json }
+  subject { described_class.new(presented).serializable_hash.as_json }
 
-  let(:measure) { create :measure }
+  let(:presented) { Api::V2::GreenLanes::MeasurePresenter.new measure }
+  let(:measure) { create :measure, :with_footnote_association }
 
   let :expected_pattern do
     {
@@ -11,6 +12,13 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
         attributes: {
           effective_start_date: measure.effective_start_date,
           effective_end_date: measure.effective_end_date,
+        },
+        relationships: {
+          footnotes: {
+            data: [
+              { id: measure.footnotes.first.code.to_s, type: 'footnote' },
+            ],
+          },
         },
       },
     }

@@ -19,6 +19,7 @@ module Api
               applicable_category_assessments.geographical_area
               applicable_category_assessments.excluded_geographical_areas
               applicable_category_assessments.measures
+              applicable_category_assessments.measures.footnotes
             ]
           )
 

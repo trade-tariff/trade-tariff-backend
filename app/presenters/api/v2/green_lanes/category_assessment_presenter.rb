@@ -6,7 +6,7 @@ module Api
 
         def initialize(category_assessment, measures)
           super(category_assessment)
-          @measures = measures
+          @measures = MeasurePresenter.wrap(measures)
         end
 
         def measure_ids
