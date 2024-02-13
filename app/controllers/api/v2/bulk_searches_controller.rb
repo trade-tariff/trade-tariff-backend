@@ -1,7 +1,7 @@
 module Api
   module V2
     class BulkSearchesController < ApiController
-      include NoCaching
+      no_caching
 
       def create
         @result = ::BulkSearch::ResultCollection.enqueue(bulk_search_params)
