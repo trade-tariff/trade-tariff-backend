@@ -88,8 +88,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
       it { is_expected.to have_http_status(:not_found) }
     end
 
-    context 'when the filter "origin" is provided' do
-      let(:params) { { filter: { origin: 'AU' } } }
+    context 'when the filter "geographical_area_id" is provided' do
+      let(:params) { { filter: { geographical_area_id: 'AU' } } }
 
       before do
         allow(GreenLanes::FindCategoryAssessmentsService).to receive(:call).and_call_original
@@ -102,7 +102,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
         expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)
-          .with(goods_nomenclature: gn, origin: 'AU')
+          .with(goods_nomenclature: gn, geographical_area_id: 'AU')
       end
     end
   end
