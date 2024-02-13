@@ -14,6 +14,9 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
           effective_end_date: measure.effective_end_date,
         },
         relationships: {
+          measure_type: {
+            data: { id: measure.measure_type.measure_type_id.to_s, type: 'measure_type' },
+          },
           footnotes: {
             data: [
               { id: measure.footnotes.first.code.to_s, type: 'footnote' },
