@@ -7,7 +7,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
           "category": "1",
           "regulation_id": "D0000001",
           "measure_type_id": "400",
-          "geographical_area": "1000",
+          "geographical_area_id": "1000",
           "document_codes": [],
           "additional_codes": []
         }]'

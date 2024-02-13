@@ -13,12 +13,12 @@ module GreenLanes
 
     CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'
 
-    content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
+    content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area_id', 'document_codes', 'additional_codes'
 
     attr_accessor :category,
                   :regulation_id,
                   :measure_type_id,
-                  :geographical_area,
+                  :geographical_area_id,
                   :document_codes,
                   :additional_codes,
                   :theme
@@ -67,13 +67,9 @@ module GreenLanes
     def match?(regulation_id:, measure_type_id:, geographical_area: nil)
       regulation_id == self.regulation_id &&
         measure_type_id == self.measure_type_id &&
-        (geographical_area == self.geographical_area ||
+        (geographical_area == geographical_area_id ||
           geographical_area.nil? ||
-          self.geographical_area == GeographicalArea::ERGA_OMNES_ID)
-    end
-
-    def excluded_geographical_areas
-      []
+          geographical_area_id == GeographicalArea::ERGA_OMNES_ID)
     end
 
     def exemptions
@@ -92,6 +88,18 @@ module GreenLanes
         .actual
         .where(Sequel.function(:concat, :additional_code_type_id, :additional_code) => additional_codes)
         .all
+    end
+
+    def excluded_geographical_areas
+      []
+    end
+
+    def excluded_geographical_area_ids
+      excluded_geographical_areas.map(&:geographical_area_id)
+    end
+
+    def geographical_area
+      GeographicalArea.where(geographical_area_id:).take
     end
 
     class InvalidFile < RuntimeError; end

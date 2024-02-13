@@ -21,25 +21,25 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         "category": '1',
         "regulation_id": 'D0000001',
         "measure_type_id": '400',
-        "geographical_area": 'CH',
+        "geographical_area_id": 'CH',
       },
        {
          "category": '2',
          "regulation_id": 'D0000001',
          "measure_type_id": '400',
-         "geographical_area": 'AU',
+         "geographical_area_id": 'AU',
        },
        {
          "category": '1',
          "regulation_id": 'D0000002',
          "measure_type_id": '500',
-         "geographical_area": 'CH',
+         "geographical_area_id": 'CH',
        },
        {
          "category": '2',
          "regulation_id": 'D0000003',
          "measure_type_id": '713',
-         "geographical_area": '1011', # Erga Omnes
+         "geographical_area_id": '1011', # Erga Omnes
        }].to_json
     end
 
