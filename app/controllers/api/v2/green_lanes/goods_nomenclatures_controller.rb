@@ -12,7 +12,6 @@ module Api
           presented_gn = GoodsNomenclaturePresenter.new(gn, applicable_category_assessments)
           serializer = Api::V2::GreenLanes::GoodsNomenclatureSerializer.new(
             presented_gn, include: %w[
-              applicable_measures
               applicable_category_assessments
               applicable_category_assessments.exemptions
               applicable_category_assessments.geographical_area

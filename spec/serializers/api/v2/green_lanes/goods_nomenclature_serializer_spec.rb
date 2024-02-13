@@ -1,6 +1,6 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    described_class.new(gn_presenter, include: %w[applicable_measures applicable_category_assessments applicable_category_assessments.geographical_area]).serializable_hash
+    described_class.new(gn_presenter, include: %w[applicable_category_assessments applicable_category_assessments.geographical_area]).serializable_hash
   end
 
   let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, categorisations) }
@@ -28,12 +28,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           producline_suffix: subheading.producline_suffix,
         },
         "relationships": {
-          "applicable_measures": {
-            "data": [{
-              "id": subheading.applicable_measures.first.id.to_s,
-              type: eq(:measure),
-            }],
-          },
           "applicable_category_assessments": {
             "data": [{
               "id": GreenLanes::CategoryAssessment.all[0].id,
@@ -43,10 +37,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         },
       },
       included: [
-        {
-          id: subheading.applicable_measures.first.id.to_s,
-          type: eq(:measure),
-        },
         {
           id: '1000',
           type: eq(:geographical_area),
