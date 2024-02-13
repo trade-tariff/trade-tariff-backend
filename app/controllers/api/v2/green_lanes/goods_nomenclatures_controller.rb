@@ -10,7 +10,7 @@ module Api
               geographical_area_id: filter_params[:geographical_area_id],
             )
 
-          presented_gn = GoodsNomenclaturePresenter.new(gn, applicable_assessments_and_measures.map(&:first))
+          presented_gn = GoodsNomenclaturePresenter.new(gn, applicable_assessments_and_measures)
           serializer = Api::V2::GreenLanes::GoodsNomenclatureSerializer.new(
             presented_gn, include: %w[
               applicable_measures

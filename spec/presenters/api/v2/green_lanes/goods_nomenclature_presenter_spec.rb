@@ -34,7 +34,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   describe '#applicable_category_assessments' do
     subject(:applicable_category_assessments) { presenter.applicable_category_assessments }
 
-    it { is_expected.to all(be_an(GreenLanes::CategoryAssessment)) }
+    it { is_expected.to all(be_an(Api::V2::GreenLanes::CategoryAssessmentPresenter)) }
 
     it { expect(applicable_category_assessments.first.id).to eq(GreenLanes::CategoryAssessment.all[0].id) }
   end
