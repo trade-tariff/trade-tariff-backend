@@ -126,7 +126,7 @@ class TaricSynchronizer
           end
         end
 
-        Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{!!keep}"
+        Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{!keep.nil?}"
       end
     rescue Redlock::LockError
       Rails.logger.warn("Failed to acquire Redis lock for rollback to #{rollback_date}. Keep records: #{keep}")
