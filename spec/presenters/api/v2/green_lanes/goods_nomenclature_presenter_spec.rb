@@ -1,16 +1,17 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
-  subject(:presenter) { described_class.new(gn, GreenLanes::CategoryAssessment.load_from_string(json_string)) }
+  subject(:presenter) { described_class.new(gn, [assessment_and_measures]) }
 
   let(:gn) { create :goods_nomenclature, :with_measures }
-  let(:json_string) do
-    '[{
-          "category": "1",
-          "regulation_id": "D0000001",
-          "measure_type_id": "400",
-          "geographical_area_id": "1000",
-          "document_codes": [],
-          "additional_codes": []
-        }]'
+  let(:first_measure) { gn.measures.first }
+  let(:assessment_and_measures) { [category_assessment, [first_measure]] }
+
+  let(:category_assessment) do
+    GreenLanes::CategoryAssessment.new \
+      regulation_id: first_measure.measure_generating_regulation_id,
+      measure_type_id: first_measure.measure_type_id,
+      geographical_area_id: '1000',
+      document_codes: [],
+      additional_codes: []
   end
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
@@ -20,7 +21,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   end
 
   it 'includes applicable category assessment ids' do
-    expect(presenter.applicable_category_assessment_ids).to eq [GreenLanes::CategoryAssessment.all[0].id]
+    expect(presenter.applicable_category_assessment_ids).to eq [category_assessment.id]
   end
 
   describe '#applicable_measures' do
@@ -36,6 +37,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
     it { is_expected.to all(be_an(Api::V2::GreenLanes::CategoryAssessmentPresenter)) }
 
-    it { expect(applicable_category_assessments.first.id).to eq(GreenLanes::CategoryAssessment.all[0].id) }
+    it { expect(applicable_category_assessments.first.id).to eq(category_assessment.id) }
   end
 end

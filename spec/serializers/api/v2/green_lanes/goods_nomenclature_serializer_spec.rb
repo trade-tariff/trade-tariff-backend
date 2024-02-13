@@ -1,19 +1,22 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    described_class.new(gn_presenter, include: %w[applicable_measures applicable_category_assessments applicable_category_assessments.geographical_area]).serializable_hash
+    assessments_with_measures = [[category_assessment, [first_measure]]]
+
+    gn_presenter = \
+      Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading,
+                                                          assessments_with_measures)
+    described_class.new(
+      gn_presenter,
+      include: %w[applicable_measures
+                  applicable_category_assessments
+                  applicable_category_assessments.geographical_area],
+    ).serializable_hash
   end
 
-  let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, categorisations) }
-  let(:json_string) do
-    '[{
-          "category": "1",
-          "regulation_id": "D0000001",
-          "measure_type_id": "400",
-          "geographical_area_id": "1000",
-          "document_codes": [],
-          "additional_codes": []
-        }]'
+  before do
+    allow(GreenLanes::CategoryAssessment).to receive(:all).and_return([category_assessment])
   end
+
   let(:expected_pattern) do
     {
       data: {
@@ -30,7 +33,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         "relationships": {
           "applicable_measures": {
             "data": [{
-              "id": subheading.applicable_measures.first.id.to_s,
+              "id": first_measure.id.to_s,
               type: eq(:measure),
             }],
           },
@@ -54,16 +57,34 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         {
           id: GreenLanes::CategoryAssessment.all[0].id,
           type: eq(:green_lanes_category_assessment),
+          relationships: {
+            measures: {
+              data: [
+                {
+                  id: first_measure.measure_sid.to_s,
+                  type: eq(:measure),
+                },
+              ],
+            },
+          },
         },
       ],
     }
   end
 
   let(:subheading) { create :subheading, :with_measures }
+  let(:first_measure) { subheading.applicable_measures.first }
 
-  let(:categorisations) { GreenLanes::CategoryAssessment.load_from_string(json_string) }
+  let :category_assessment do
+    GreenLanes::CategoryAssessment.new \
+      regulation_id: first_measure.measure_generating_regulation_id,
+      measure_type_id: first_measure.measure_type_id,
+      geographical_area_id: geographical_area.geographical_area_id,
+      document_codes: [],
+      additional_codes: []
+  end
 
-  before do
+  let :geographical_area do
     create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1000')
   end
 

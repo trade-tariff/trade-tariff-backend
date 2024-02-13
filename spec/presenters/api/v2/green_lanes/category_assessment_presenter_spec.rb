@@ -1,5 +1,5 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
-  subject { described_class.new(category_assessment, measures) }
+  subject(:presented) { described_class.new(category_assessment, measures) }
 
   let :category_assessment do
     GreenLanes::CategoryAssessment.new(category: 1,
@@ -14,6 +14,5 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
   end
 
   it { is_expected.to have_attributes id: category_assessment.id }
-  it { is_expected.to have_attributes measures: }
   it { is_expected.to have_attributes measure_ids: measures.map(&:measure_sid) }
 end
