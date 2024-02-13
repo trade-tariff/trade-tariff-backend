@@ -8,7 +8,7 @@ RSpec.describe RollbackWorker, type: :worker do
   describe '#perform' do
     context 'for xi' do
       before do
-        allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
         allow(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
         allow(CdsSynchronizer).to receive(:rollback)
       end
@@ -31,7 +31,7 @@ RSpec.describe RollbackWorker, type: :worker do
 
     context 'for uk' do
       before do
-        allow(TradeTariffBackend).to receive(:uk?).and_return(true)
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
         allow(TaricSynchronizer).to receive(:rollback)
         allow(CdsSynchronizer).to receive(:rollback).with(date, keep: false)
       end

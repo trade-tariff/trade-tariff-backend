@@ -47,6 +47,8 @@ class TaricSynchronizer
     end
 
     def apply
+      raise WrongEnvironmentError unless TradeTariffBackend.xi?
+
       check_tariff_updates_failures
       check_sequence
 
@@ -78,6 +80,8 @@ class TaricSynchronizer
     #
     # NOTE: this does not remove records from initial seed
     def rollback(rollback_date, keep: false)
+      raise WrongEnvironmentError unless TradeTariffBackend.xi?
+
       TradeTariffBackend.with_redis_lock do
         date = Date.parse(rollback_date.to_s)
 

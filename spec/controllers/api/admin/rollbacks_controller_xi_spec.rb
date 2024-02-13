@@ -2,7 +2,7 @@ RSpec.describe Api::Admin::RollbacksController do
   describe 'xi POST to #create' do
     before do
       login_as_api_user
-      allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
     end
 
     let(:rollback_attributes) { attributes_for :rollback }

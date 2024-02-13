@@ -1,5 +1,6 @@
 module TariffSynchronizer
   class FailedUpdatesError < StandardError; end
+  class WrongEnvironmentError < StandardError; end
 
   delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 

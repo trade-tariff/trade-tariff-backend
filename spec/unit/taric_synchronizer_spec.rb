@@ -100,7 +100,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
       before do
         allow_any_instance_of(TaricImporter).to receive(:import)
         allow(TariffSynchronizer::TariffLogger).to receive(:failed_update)
-
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
         applied_update
         pending_update
       end
@@ -133,7 +133,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
       before do
         applied_update
         pending_update
-
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
         allow(TariffSynchronizer::BaseUpdateImporter).to receive(:perform).with(pending_update).and_raise(Sequel::Rollback)
       end
 
@@ -147,6 +147,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
 
       before do
         failed_update
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
       end
 
       it 'does not apply pending updates' do
@@ -168,6 +169,16 @@ RSpec.describe TaricSynchronizer, truncation: true do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
     end
+
+    context 'fails when worker is a uk worker' do
+      before do
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+      end
+
+      it 'raises a wrong environment error' do
+        expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
+      end
+    end
   end
 
   describe 'check sequence of Taric daily updates' do
@@ -178,7 +189,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
       create(:taric_update, :pending, example_date: Time.zone.today, sequence_number: pending_sequence_number)
 
       allow(TradeTariffBackend).to receive(:with_redis_lock)
-      allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
     end
 
     context 'when sequence is correct' do
@@ -202,6 +213,34 @@ RSpec.describe TaricSynchronizer, truncation: true do
         }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
         expect(SlackNotifierService).to have_received(:call)
+      end
+    end
+  end
+
+  describe '.rollback' do
+    let(:rollback_attributes) { attributes_for :rollback }
+    let(:record) do
+      create :measure, operation_date: Time.zone.yesterday.to_date
+    end
+
+    before do
+      record
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+    end
+
+    context 'a uk worker attempts' do
+      it 'raises a wrong environment error' do
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
+        expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
+      end
+    end
+
+    it 'performs a rollback' do
+      Sidekiq::Testing.inline! do
+        expect {
+          create(:rollback, date: 1.month.ago.beginning_of_day)
+        }.to change(Measure, :count).from(1).to(0)
       end
     end
   end
