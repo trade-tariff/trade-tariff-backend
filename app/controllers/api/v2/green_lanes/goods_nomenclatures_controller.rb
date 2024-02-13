@@ -6,7 +6,7 @@ module Api
           gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
           applicable_category_assessments = ::GreenLanes::FindCategoryAssessmentsService.call(
             goods_nomenclature: gn,
-            origin: filter_params[:origin],
+            geographical_area_id: filter_params[:geographical_area_id],
           )
 
           presented_gn = GoodsNomenclaturePresenter.new(gn, applicable_category_assessments)
@@ -25,7 +25,7 @@ module Api
 
         def filter_params
           params.fetch(:filter, {})
-                .permit(:origin)
+                .permit(:geographical_area_id)
         end
       end
     end

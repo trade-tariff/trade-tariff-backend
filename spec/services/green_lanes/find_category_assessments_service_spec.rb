@@ -49,9 +49,9 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
       expect(result).to have_attributes length: 4
     end
 
-    context 'when origin is provided' do
-      it 'filter categorisations based on origin' do
-        result = service.call(goods_nomenclature: subheading, origin: 'AU')
+    context 'when geographical_area_id is provided' do
+      it 'filter categorisations by geographical_area_id' do
+        result = service.call(goods_nomenclature: subheading, geographical_area_id: 'AU')
 
         expect(result).to have_attributes length: 2
       end
