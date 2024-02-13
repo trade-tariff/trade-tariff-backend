@@ -6,7 +6,7 @@ module GreenLanes
           CategoryAssessment.filter(regulation_id: measure.measure_generating_regulation_id,
                                     measure_type_id: measure.measure_type_id,
                                     geographical_area: geographical_area_id)
-        }.uniq
+        }.uniq(&:id)
       end
     end
   end

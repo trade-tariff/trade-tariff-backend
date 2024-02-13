@@ -3,7 +3,7 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
     subject(:matches) { described_class.call goods_nomenclature: }
 
     before do
-      GreenLanes::CategoryAssessment.load_from_string json_categorisations
+      allow(GreenLanes::CategoryAssessment).to receive(:all).and_return(category_assessments)
 
       allow(goods_nomenclature).to receive(:applicable_measures).and_return measures
     end
@@ -18,31 +18,25 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
       ]
     end
 
-    let(:json_categorisations) do
-      [{
-        "category": '1',
-        "regulation_id": 'D0000001',
-        "measure_type_id": '400',
-        "geographical_area_id": 'CH',
-      },
-       {
-         "category": '2',
-         "regulation_id": 'D0000001',
-         "measure_type_id": '400',
-         "geographical_area_id": 'AU',
-       },
-       {
-         "category": '1',
-         "regulation_id": 'D0000002',
-         "measure_type_id": '500',
-         "geographical_area_id": 'CH',
-       },
-       {
-         "category": '2',
-         "regulation_id": 'D0000003',
-         "measure_type_id": '713',
-         "geographical_area_id": '1011', # Erga Omnes
-       }].to_json
+    let :category_assessments do
+      [
+        GreenLanes::CategoryAssessment.new(category: 1,
+                                           regulation_id: 'D0000001',
+                                           measure_type_id: '400',
+                                           geographical_area_id: 'CH'),
+        GreenLanes::CategoryAssessment.new(category: 1,
+                                           regulation_id: 'D0000001',
+                                           measure_type_id: '400',
+                                           geographical_area_id: 'AU'),
+        GreenLanes::CategoryAssessment.new(category: 1,
+                                           regulation_id: 'D0000002',
+                                           measure_type_id: '500',
+                                           geographical_area_id: 'CH'),
+        GreenLanes::CategoryAssessment.new(category: 1,
+                                           regulation_id: 'D0000003',
+                                           measure_type_id: '713',
+                                           geographical_area_id: '1011'),
+      ]
     end
 
     context 'without origin filter' do
