@@ -6,12 +6,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   let(:assessment_and_measures) { [category_assessment, [first_measure]] }
 
   let(:category_assessment) do
-    GreenLanes::CategoryAssessment.new \
-      regulation_id: first_measure.measure_generating_regulation_id,
-      measure_type_id: first_measure.measure_type_id,
-      geographical_area_id: '1000',
-      document_codes: [],
-      additional_codes: []
+    build :category_assessment, measure: first_measure,
+                                geographical_area_id: '1000'
   end
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }

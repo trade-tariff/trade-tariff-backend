@@ -20,22 +20,18 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
 
     let :category_assessments do
       [
-        GreenLanes::CategoryAssessment.new(category: 1,
-                                           regulation_id: 'D0000001',
-                                           measure_type_id: '400',
-                                           geographical_area_id: 'CH'),
-        GreenLanes::CategoryAssessment.new(category: 1,
-                                           regulation_id: 'D0000001',
-                                           measure_type_id: '400',
-                                           geographical_area_id: 'AU'),
-        GreenLanes::CategoryAssessment.new(category: 1,
-                                           regulation_id: 'D0000002',
-                                           measure_type_id: '500',
-                                           geographical_area_id: 'CH'),
-        GreenLanes::CategoryAssessment.new(category: 1,
-                                           regulation_id: 'D0000003',
-                                           measure_type_id: '713',
-                                           geographical_area_id: '1011'),
+        build(:category_assessment, regulation_id: 'D0000001',
+                                    measure_type_id: '400',
+                                    geographical_area_id: 'CH'),
+        build(:category_assessment, regulation_id: 'D0000001',
+                                    measure_type_id: '400',
+                                    geographical_area_id: 'AU'),
+        build(:category_assessment, regulation_id: 'D0000002',
+                                    measure_type_id: '500',
+                                    geographical_area_id: 'CH'),
+        build(:category_assessment, regulation_id: 'D0000003',
+                                    measure_type_id: '713',
+                                    geographical_area_id: '1011'),
       ]
     end
 

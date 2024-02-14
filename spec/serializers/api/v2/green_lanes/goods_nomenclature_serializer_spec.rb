@@ -77,12 +77,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   let(:first_measure) { subheading.applicable_measures.first }
 
   let :category_assessment do
-    GreenLanes::CategoryAssessment.new \
-      regulation_id: first_measure.measure_generating_regulation_id,
-      measure_type_id: first_measure.measure_type_id,
-      geographical_area_id: geographical_area.geographical_area_id,
-      document_codes: [],
-      additional_codes: []
+    build :category_assessment, measure: first_measure, geographical_area:
   end
 
   let :geographical_area do

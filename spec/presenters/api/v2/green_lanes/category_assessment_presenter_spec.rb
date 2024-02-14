@@ -2,10 +2,8 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
   subject(:presented) { described_class.new(category_assessment, measures) }
 
   let :category_assessment do
-    GreenLanes::CategoryAssessment.new(category: 1,
-                                       regulation_id: 'D0000001',
-                                       measure_type_id: '400',
-                                       geographical_area_id: 'CH')
+    build(:category_assessment, measure: measures.first,
+                                geographical_area_id: 'CH')
   end
 
   let :measures do
