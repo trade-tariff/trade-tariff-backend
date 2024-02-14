@@ -223,7 +223,6 @@ RSpec.describe TaricSynchronizer, truncation: true do
     before do
       record
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
-      allow(TradeTariffBackend).to receive(:service).and_return('xi')
     end
 
     context 'with uk service' do

@@ -66,6 +66,8 @@ class CdsSynchronizer
     end
 
     def rollback(rollback_date, keep: false)
+      raise WrongEnvironmentError unless TradeTariffBackend.uk?
+
       Rails.autoloaders.main.eager_load
 
       TradeTariffBackend.with_redis_lock do
