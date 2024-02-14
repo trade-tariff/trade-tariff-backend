@@ -29,6 +29,8 @@ class CdsSynchronizer
     end
 
     def apply
+      raise WrongEnvironmentError unless TradeTariffBackend.uk?
+
       check_tariff_updates_failures
       check_sequence
 
