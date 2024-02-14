@@ -9,7 +9,9 @@ module GreenLanes
                                        geographical_area: geographical_area_id)
           end
 
-          matches.any? ? [category_assessment, matches] : nil
+          if matches.any?
+            ::Api::V2::GreenLanes::CategoryAssessmentPresenter.new(category_assessment, matches)
+          end
         }.compact
       end
     end

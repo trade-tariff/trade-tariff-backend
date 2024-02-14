@@ -1,10 +1,11 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    assessments_with_measures = [[category_assessment, [first_measure]]]
+    presented_assessments = [
+      ::Api::V2::GreenLanes::CategoryAssessmentPresenter.new(category_assessment, [first_measure]),
+    ]
 
     gn_presenter = \
-      Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading,
-                                                          assessments_with_measures)
+      Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, presented_assessments)
 
     described_class.new(
       gn_presenter,

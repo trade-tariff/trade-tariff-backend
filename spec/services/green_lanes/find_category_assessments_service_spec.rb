@@ -38,18 +38,18 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
     context 'without origin filter' do
       it { is_expected.to have_attributes length: 4 }
 
-      it { expect(matches[0][1]).to match_array [measures[0]] }
-      it { expect(matches[1][1]).to match_array [measures[0]] }
-      it { expect(matches[2][1]).to match_array [measures[1]] }
-      it { expect(matches[3][1]).to match_array [measures[2]] }
+      it { expect(matches[0].measure_ids).to match_array [measures[0].measure_sid] }
+      it { expect(matches[1].measure_ids).to match_array [measures[0].measure_sid] }
+      it { expect(matches[2].measure_ids).to match_array [measures[1].measure_sid] }
+      it { expect(matches[3].measure_ids).to match_array [measures[2].measure_sid] }
     end
 
     context 'when origin is provided' do
       subject(:matches) { described_class.call(goods_nomenclature:, geographical_area_id: 'AU') }
 
       it { is_expected.to have_attributes length: 2 }
-      it { expect(matches[0][1]).to match_array [measures[0]] }
-      it { expect(matches[1][1]).to match_array [measures[2]] }
+      it { expect(matches[0].measure_ids).to match_array [measures[0].measure_sid] }
+      it { expect(matches[1].measure_ids).to match_array [measures[2].measure_sid] }
     end
 
     context 'with multiple measures' do
@@ -61,7 +61,7 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         ]
       end
 
-      let(:matched_regulation_ids) { matches.map(&:first).map(&:regulation_id) }
+      let(:matched_regulation_ids) { matches.map(&:regulation_id) }
 
       it { is_expected.to have_attributes length: 2 }
 
@@ -69,8 +69,8 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         expect(matched_regulation_ids).to match_array %w[D0000002 D0000003]
       end
 
-      it { expect(matches[0][1]).to match_array [measures[0]] }
-      it { expect(matches[1][1]).to match_array [measures[1], measures[2]] }
+      it { expect(matches[0].measure_ids).to match_array [measures[0].measure_sid] }
+      it { expect(matches[1].measure_ids).to match_array [measures[1].measure_sid, measures[2].measure_sid] }
     end
   end
 end

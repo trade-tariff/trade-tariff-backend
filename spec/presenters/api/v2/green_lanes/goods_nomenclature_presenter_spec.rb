@@ -1,9 +1,12 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
-  subject(:presenter) { described_class.new(gn, [assessment_and_measures]) }
+  subject(:presenter) { described_class.new(gn, [presented_category_assessment]) }
 
   let(:gn) { create :goods_nomenclature, :with_measures }
   let(:first_measure) { gn.measures.first }
-  let(:assessment_and_measures) { [category_assessment, [first_measure]] }
+
+  let :presented_category_assessment do
+    ::Api::V2::GreenLanes::CategoryAssessmentPresenter.new category_assessment, [first_measure]
+  end
 
   let(:category_assessment) do
     build :category_assessment, measure: first_measure,

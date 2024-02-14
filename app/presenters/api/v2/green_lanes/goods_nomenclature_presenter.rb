@@ -6,11 +6,9 @@ module Api
       class GoodsNomenclaturePresenter < SimpleDelegator
         attr_reader :applicable_category_assessments
 
-        def initialize(goods_nomenclature, categories_and_measures)
+        def initialize(goods_nomenclature, presented_category_assessments)
           super(goods_nomenclature)
-          @applicable_category_assessments = categories_and_measures.map do |ca, measures|
-            CategoryAssessmentPresenter.new(ca, measures)
-          end
+          @applicable_category_assessments = presented_category_assessments
         end
 
         def applicable_measure_ids
