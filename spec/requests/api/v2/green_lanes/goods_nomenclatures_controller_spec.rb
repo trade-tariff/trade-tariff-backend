@@ -3,7 +3,10 @@ require 'rails_helper'
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
+    allow(GreenLanes::CategoryAssessment).to receive(:all).and_return(category_assessments)
   end
+
+  let(:category_assessments) { build_pair :category_assessment }
 
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
@@ -58,23 +61,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
                :with_measures,
                goods_nomenclature_item_id: '1234560000',
                producline_suffix: '80')
-
-        GreenLanes::CategoryAssessment.load_from_string json_string
-      end
-
-      let(:json_string) do
-        '[{
-          "category": "1",
-          "regulation_id": "D0000001",
-          "measure_type_id": "400",
-          "geographical_area_id": "1000"
-        },
-        {
-          "category": "1",
-          "regulation_id": "D0000002",
-          "measure_type_id": "500",
-          "geographical_area_id": "1000"
-        }]'
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -88,8 +74,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
       it { is_expected.to have_http_status(:not_found) }
     end
 
-    context 'when the filter "origin" is provided' do
-      let(:params) { { filter: { origin: 'AU' } } }
+    context 'when the filter "geographical_area_id" is provided' do
+      let(:params) { { filter: { geographical_area_id: 'AU' } } }
 
       before do
         allow(GreenLanes::FindCategoryAssessmentsService).to receive(:call).and_call_original
@@ -102,7 +88,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
         expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)
-          .with(goods_nomenclature: gn, origin: 'AU')
+          .with(goods_nomenclature: gn, geographical_area_id: 'AU')
       end
     end
   end

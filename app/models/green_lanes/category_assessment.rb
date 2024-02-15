@@ -50,7 +50,7 @@ module GreenLanes
 
       def load_from_string(data)
         json_array = JSON.parse(data)
-        @all = json_array.map { |json| new(json) }
+        @all = json_array.map { |json| new(json).tap(&:id).tap(&:freeze) }
       end
 
       def all
