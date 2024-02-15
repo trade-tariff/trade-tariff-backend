@@ -30,8 +30,6 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
         attributes: {
           category: '1',
           theme: '1.1 Sanctions',
-          document_codes: %w[Y123],
-          additional_codes: %w[B456],
         },
         relationships: {
           exemptions: {

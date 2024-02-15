@@ -9,8 +9,6 @@ module Api
         set_id :id
 
         attributes :category,
-                   :document_codes,
-                   :additional_codes,
                    :theme
 
         has_many :exemptions, serializer: proc { |record, _params|
