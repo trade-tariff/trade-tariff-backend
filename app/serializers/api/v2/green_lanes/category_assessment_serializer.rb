@@ -4,7 +4,7 @@ module Api
       class CategoryAssessmentSerializer
         include JSONAPI::Serializer
 
-        set_type :green_lanes_category_assessment
+        set_type :category_assessment
 
         set_id :id
 

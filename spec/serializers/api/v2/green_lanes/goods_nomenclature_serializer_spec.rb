@@ -35,7 +35,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           "applicable_category_assessments": {
             "data": [{
               "id": GreenLanes::CategoryAssessment.all[0].id,
-              type: eq(:green_lanes_category_assessment),
+              type: eq(:category_assessment),
             }],
           },
         },
@@ -47,7 +47,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         },
         {
           id: GreenLanes::CategoryAssessment.all[0].id,
-          type: eq(:green_lanes_category_assessment),
+          type: eq(:category_assessment),
           relationships: {
             measures: {
               data: [
