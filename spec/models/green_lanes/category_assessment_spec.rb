@@ -74,6 +74,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
       it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
+      it { is_expected.to all be_frozen }
       it { is_expected.to have_attributes length: 10 }
 
       context 'with attributes' do
@@ -146,6 +147,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
       it { is_expected.to be_an Array }
       it { is_expected.to all be_instance_of described_class }
+      it { is_expected.to all be_frozen }
       it { is_expected.to have_attributes length: 1 }
     end
 
