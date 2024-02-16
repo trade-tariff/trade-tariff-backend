@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module GreenLanes
-  class CategoryAssessment
+  class CategoryAssessmentJson
     include ActiveModel::Model
     include ContentAddressableId
 

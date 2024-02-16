@@ -9,8 +9,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   end
 
   let(:category_assessment) do
-    build :category_assessment, measure: first_measure,
-                                geographical_area_id: '1000'
+    build :category_assessment_json, measure: first_measure,
+                                     geographical_area_id: '1000'
   end
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }

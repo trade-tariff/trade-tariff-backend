@@ -1,7 +1,9 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   subject(:serialized) do
-    described_class.new(::GreenLanes::CategoryAssessment.load_from_string(json_string),
-                        include: %w[exemptions geographical_area excluded_geographical_areas]).serializable_hash.as_json
+    described_class.new(
+      category_assessment,
+      include: %w[exemptions geographical_area excluded_geographical_areas],
+    ).serializable_hash.as_json
   end
 
   before do
@@ -10,25 +12,22 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
     create(:additional_code, :with_description, additional_code_type_id: 'B', additional_code: '456')
   end
 
-  let(:json_string) do
-    [{
-      'category' => '1',
-      'regulation_id' => 'D0000001',
-      'measure_type_id' => '400',
-      'geographical_area_id' => 'EU',
-      'document_codes' => %w[Y123],
-      'additional_codes' => %w[B456],
-      'theme' => '1.1 Sanctions',
-    }].to_json
+  let(:category_assessment) do
+    build :category_assessment_json, regulation_id: 'D0000001',
+                                     measure_type_id: '400',
+                                     geographical_area_id: 'EU',
+                                     document_codes: %w[Y123],
+                                     additional_codes: %w[B456],
+                                     theme: '1.1 Sanctions'
   end
 
   let(:expected_pattern) do
     {
-      data: [
+      data: {
         id: be_a(String),
         type: 'category_assessment',
         attributes: {
-          category: '1',
+          category: 1,
           theme: '1.1 Sanctions',
         },
         relationships: {
@@ -48,7 +47,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
             "data": [],
           },
         },
-      ],
+      },
       included: [
         {
           id: 'Y123',
@@ -83,5 +82,5 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
     }
   end
 
-  it { expect(serialized).to include_json(expected_pattern) }
+  it { is_expected.to include_json(expected_pattern) }
 end
