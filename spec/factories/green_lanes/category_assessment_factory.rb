@@ -24,18 +24,18 @@ FactoryBot.define do
         (400 + index + 1).to_s
     end
 
-    theme_id { create(:green_lanes_theme).id }
+    theme { create :green_lanes_theme }
 
     trait :category1 do
-      theme_id { create(:green_lanes_theme, :category1).id }
+      theme { create :green_lanes_theme, :category1 }
     end
 
     trait :category2 do
-      theme_id { create(:green_lanes_theme, :category2).id }
+      theme { create :green_lanes_theme, :category2 }
     end
 
     trait :category3 do
-      theme_id { create(:green_lanes_theme, :category3).id }
+      theme { create :green_lanes_theme, :category3 }
     end
   end
 end

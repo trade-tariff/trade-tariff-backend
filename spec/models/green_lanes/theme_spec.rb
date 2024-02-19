@@ -46,4 +46,23 @@ RSpec.describe GreenLanes::Theme do
     it { is_expected.to have_attributes created_at: be_within(1.minute).of(Time.zone.now) }
     it { is_expected.to have_attributes updated_at: be_within(1.minute).of(Time.zone.now) }
   end
+
+  describe 'associations' do
+    describe '#category_assessments' do
+      subject { theme.reload.category_assessments }
+
+      before { category_assessment }
+
+      let(:theme) { create :green_lanes_theme }
+      let(:category_assessment) { create :category_assessment, theme: }
+
+      it { is_expected.to include category_assessment }
+
+      context 'with for different theme' do
+        subject { create(:green_lanes_theme).reload.category_assessments }
+
+        it { is_expected.not_to include category_assessment }
+      end
+    end
+  end
 end
