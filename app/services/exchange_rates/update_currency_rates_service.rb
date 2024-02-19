@@ -1,9 +1,9 @@
 module ExchangeRates
   class UpdateCurrencyRatesService
     def initialize(date, sample_date, type)
-      # Date is where the rates are taken from
+      # This is the date representing the month for which the rates will be valid.
       @date = date
-      # Sample date is when the dates are published for
+      # The sample date is the date where the rates are collected from/ or sampled.
       @sample_date = sample_date
       @type = type
       @xe_api = ::ExchangeRates::XeApi.new(date: sample_date)

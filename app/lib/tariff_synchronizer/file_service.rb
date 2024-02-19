@@ -59,18 +59,10 @@ module TariffSynchronizer
         return unless verify
 
         if Rails.env.production? && file_exists?(file_path)
-          begin
-            s3_client = Aws::S3::Client.new
-            s3_client.delete_object(bucket: bucket.name, key: bucket.object(file_path).key)
-          rescue Aws::S3::Errors::ServiceError => e
-            Rails.logger.debug "Error deleting object from S3: #{e.message}"
-          end
+          s3_client = Aws::S3::Client.new
+          s3_client.delete_object(bucket: bucket.name, key: bucket.object(file_path).key)
         else
-          begin
-            File.delete(file_path)
-          rescue Errno::ENOENT => e
-            Rails.logger.debug "File not found: #{e.message}"
-          end
+          File.delete(file_path)
         end
       end
 

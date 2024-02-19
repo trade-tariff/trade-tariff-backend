@@ -25,25 +25,27 @@ namespace :exchange_rates do
 
     file_types = %w[monthly_csv monthly_xml monthly_csv_hmrc]
 
-    file_types.each do |file_type|
-      months_and_years_between.each do |month_and_year|
-        month = month_and_year[0]
-        year = month_and_year[1]
+    Sequel::Model.db.transaction do
+      file_types.each do |file_type|
+        months_and_years_between.each do |month_and_year|
+          month = month_and_year[0]
+          year = month_and_year[1]
 
-        # Get DB file object
-        file = ExchangeRateFile.where(type: file_type,
-                                      period_month: month,
-                                      period_year: year).first
-        next unless file
+          # Get DB file object
+          file = ExchangeRateFile.where(type: file_type,
+                                        period_month: month,
+                                        period_year: year).first
+          next unless file
 
-        # S3 object location
-        s3_file_path = file.object_key
+          # S3 object location
+          s3_file_path = file.object_key
 
-        # Delete DB object
-        file.delete
+          # Delete DB object
+          file.delete
 
-        # Delete file in S3
-        TariffSynchronizer::FileService.delete_file(s3_file_path, true)
+          # Delete file in S3
+          TariffSynchronizer::FileService.delete_file(s3_file_path, true)
+        end
       end
     end
 
@@ -52,10 +54,12 @@ namespace :exchange_rates do
       year = month_and_year[1]
       date = Date.new(year, month, 1)
 
-      # publication_date
+      # This bit of code is to generate the dat on which the rates were sampled from and is our published date
+      # We have the month for where the rates are valid for but this will give us the wednesday before
+      # the penultimute thursday of the previous month.
       last_day_of_previous_month = date - 1
-      last_thursday = last_day_of_previous_month.downto(1).find { |d| d.wday == 4 }
-      sample_date = last_thursday - 8
+      last_thursday_of_month_before = last_day_of_previous_month.downto(1).find { |d| d.wday == 4 }
+      sample_date = last_thursday_of_month_before - 8
 
       # Note we dont download from XE new rates
       ExchangeRates::MonthlyExchangeRatesService.new(date, sample_date, download: false).call
