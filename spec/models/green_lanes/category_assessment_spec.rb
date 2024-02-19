@@ -98,5 +98,20 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.not_to eq second_theme }
       end
     end
+
+    describe '#measure_type' do
+      subject { category_assessment.reload.measure_type }
+
+      let(:category_assessment) { create :category_assessment, measure_type: }
+      let(:measure_type) { create :measure_type }
+
+      it { is_expected.to eq measure_type }
+
+      context 'with for different measure_type' do
+        let(:second_measure_type) { create :measure_type }
+
+        it { is_expected.not_to eq second_measure_type }
+      end
+    end
   end
 end

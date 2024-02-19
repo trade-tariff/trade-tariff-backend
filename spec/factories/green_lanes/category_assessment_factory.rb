@@ -2,7 +2,6 @@ FactoryBot.define do
   factory :category_assessment, class: 'GreenLanes::CategoryAssessment' do
     transient do
       regulation { nil }
-      measure_type { nil }
       measure { nil }
     end
 
@@ -18,12 +17,7 @@ FactoryBot.define do
         1
     end
 
-    sequence(:measure_type_id) do |index|
-      measure_type&.measure_type_id ||
-        measure&.measure_type_id ||
-        (400 + index + 1).to_s
-    end
-
+    measure_type { measure&.measure_type_id || create(:measure_type) }
     theme { create :green_lanes_theme }
 
     trait :category1 do

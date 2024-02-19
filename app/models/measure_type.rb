@@ -65,6 +65,8 @@ class MeasureType < Sequel::Model
 
   many_to_one :measure_type_series_description, key: :measure_type_series_id
 
+  one_to_many :green_lanes_category_assessments, class: :'GreenLanes::CategoryAssessment'
+
   delegate :description, to: :measure_type_description
 
   dataset_module do
