@@ -3,8 +3,8 @@ module Api
     module GreenLanes
       class CategoryAssessmentsController < BaseController
         def index
-          category_assessment = ::GreenLanes::CategoryAssessment.load_category_assessment
-          serializer = Api::V2::GreenLanes::CategoryAssessmentSerializer.new(category_assessment, include: %w[geographical_area excluded_geographical_areas])
+          category_assessments = ::GreenLanes::CategoryAssessment.all
+          serializer = Api::V2::GreenLanes::CategoryAssessmentSerializer.new(category_assessments, include: %w[geographical_area excluded_geographical_areas])
 
           render json: serializer.serializable_hash
         end

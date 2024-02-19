@@ -26,12 +26,10 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
     {
       data: [
         id: be_a(String),
-        type: 'green_lanes_category_assessment',
+        type: 'category_assessment',
         attributes: {
           category: '1',
           theme: '1.1 Sanctions',
-          document_codes: %w[Y123],
-          additional_codes: %w[B456],
         },
         relationships: {
           exemptions: {
