@@ -144,4 +144,89 @@ RSpec.describe GreenLanes::CategoryAssessment do
       end
     end
   end
+
+  describe '#regulation' do
+    subject { assessment.reload.regulation }
+
+    let :assessment do
+      create :category_assessment, regulation_id: regulation&.regulation_id,
+                                   regulation_role: regulation&.role
+    end
+
+    context 'without regulation' do
+      let(:regulation) { nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with modification regulation' do
+      let(:regulation) { create :base_regulation }
+
+      it { is_expected.to eq regulation }
+    end
+
+    context 'with base regulation' do
+      let(:regulation) { create :modification_regulation }
+
+      it { is_expected.to eq regulation }
+    end
+  end
+
+  describe '#regulation=' do
+    subject { assessment }
+
+    before { assessment.regulation = new_regulation }
+
+    let(:persisted) { assessment.tap(&:save).reload }
+    let(:regulation) { create :base_regulation }
+
+    let :assessment do
+      create :category_assessment, regulation_id: regulation&.regulation_id,
+                                   regulation_role: regulation&.role
+    end
+
+    context 'with nil' do
+      let(:new_regulation) { nil }
+
+      it { is_expected.to have_attributes base_regulation: nil }
+      it { is_expected.to have_attributes modification_regulation: nil }
+      it { is_expected.to have_attributes regulation_id: nil, regulation_role: nil }
+      it { expect(persisted).to have_attributes regulation_id: nil, regulation_role: nil }
+    end
+
+    context 'with modification regulation' do
+      let(:new_regulation) { create :modification_regulation }
+
+      it { is_expected.to have_attributes base_regulation: nil }
+      it { is_expected.to have_attributes modification_regulation: new_regulation }
+
+      it 'is updates relationship attributes' do
+        expect(assessment).to have_attributes regulation_id: new_regulation.regulation_id,
+                                              regulation_role: new_regulation.role
+      end
+
+      it 'is is still updated after save and reload' do
+        expect(persisted).to have_attributes regulation_id: new_regulation.regulation_id,
+                                             regulation_role: new_regulation.role
+      end
+    end
+
+    context 'with base regulation' do
+      let(:regulation) { create :modification_regulation }
+      let(:new_regulation) { create :base_regulation }
+
+      it { is_expected.to have_attributes base_regulation: new_regulation }
+      it { is_expected.to have_attributes modification_regulation: nil }
+
+      it 'is updates relationship attributes' do
+        expect(assessment).to have_attributes regulation_id: new_regulation.regulation_id,
+                                              regulation_role: new_regulation.role
+      end
+
+      it 'is is still updated after save and reload' do
+        expect(persisted).to have_attributes regulation_id: new_regulation.regulation_id,
+                                             regulation_role: new_regulation.role
+      end
+    end
+  end
 end

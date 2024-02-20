@@ -1,23 +1,11 @@
 FactoryBot.define do
   factory :category_assessment, class: 'GreenLanes::CategoryAssessment' do
     transient do
-      regulation { nil }
       measure { nil }
     end
 
-    sequence(:regulation_id) do |index|
-      regulation&.regulation_id ||
-        measure&.measure_generating_regulation_id ||
-        sprintf('D%07d', index + 1)
-    end
-
-    regulation_role do
-      regulation&.regulation_role ||
-        measure&.measure_generating_regulation_role ||
-        1
-    end
-
-    measure_type { measure&.measure_type_id || create(:measure_type) }
+    regulation { measure&.regulation || create(:base_regulation) }
+    measure_type { measure&.measure_type || create(:measure_type) }
     theme { create :green_lanes_theme }
 
     trait :category1 do

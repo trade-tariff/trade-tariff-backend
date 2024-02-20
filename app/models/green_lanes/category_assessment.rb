@@ -24,5 +24,26 @@ module GreenLanes
         end
       end)
     end
+
+    def regulation
+      case regulation_role
+      when nil then nil
+      when Measure::MODIFICATION_REGULATION_ROLE then modification_regulation
+      else base_regulation
+      end
+    end
+
+    def regulation=(regulation)
+      case regulation
+      when nil
+        self.base_regulation = self.modification_regulation = nil
+      when ModificationRegulation
+        self.base_regulation = nil
+        self.modification_regulation = regulation
+      else
+        self.modification_regulation = nil
+        self.base_regulation = regulation
+      end
+    end
   end
 end
