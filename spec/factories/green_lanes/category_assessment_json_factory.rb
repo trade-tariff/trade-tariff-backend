@@ -1,5 +1,5 @@
 FactoryBot.define do
-  factory :category_assessment, class: 'GreenLanes::CategoryAssessment' do
+  factory :category_assessment_json, class: 'GreenLanes::CategoryAssessmentJson' do
     transient do
       regulation { nil }
       measure_type { nil }

@@ -3,10 +3,10 @@ require 'rails_helper'
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
-    allow(GreenLanes::CategoryAssessment).to receive(:all).and_return(category_assessments)
+    allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return(category_assessments)
   end
 
-  let(:category_assessments) { build_pair :category_assessment }
+  let(:category_assessments) { build_pair :category_assessment_json }
 
   describe 'GET #show' do
     subject(:rendered) { make_request && response }

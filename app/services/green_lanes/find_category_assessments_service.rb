@@ -12,9 +12,9 @@ module GreenLanes
     end
 
     def call
-      CategoryAssessment.all
-                        .map(&method(:presented_matching_assessment))
-                        .compact
+      CategoryAssessmentJson.all
+                            .map(&method(:presented_matching_assessment))
+                            .compact
     end
 
   private

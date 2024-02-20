@@ -15,7 +15,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   end
 
   before do
-    allow(GreenLanes::CategoryAssessment).to receive(:all).and_return([category_assessment])
+    allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return([category_assessment])
   end
 
   let(:expected_pattern) do
@@ -34,7 +34,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
         "relationships": {
           "applicable_category_assessments": {
             "data": [{
-              "id": GreenLanes::CategoryAssessment.all[0].id,
+              "id": GreenLanes::CategoryAssessmentJson.all[0].id,
               type: eq(:category_assessment),
             }],
           },
@@ -46,7 +46,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           type: eq(:geographical_area),
         },
         {
-          id: GreenLanes::CategoryAssessment.all[0].id,
+          id: GreenLanes::CategoryAssessmentJson.all[0].id,
           type: eq(:category_assessment),
           relationships: {
             measures: {
@@ -67,7 +67,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   let(:first_measure) { subheading.applicable_measures.first }
 
   let :category_assessment do
-    build :category_assessment, measure: first_measure, geographical_area:
+    build :category_assessment_json, measure: first_measure, geographical_area:
   end
 
   let :geographical_area do
