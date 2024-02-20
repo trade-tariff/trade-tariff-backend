@@ -30,9 +30,9 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
       let(:chapter) { create :chapter }
 
       it 'returns not found if record was not found' do
-        get :show, params: { chapter_id: chapter.to_param }, format: :json
-
-        expect(response.status).to eq 404
+        expect {
+          get :show, params: { chapter_id: chapter.to_param }, format: :json
+        }.to raise_exception Sequel::RecordNotFound
       end
     end
   end
@@ -162,9 +162,9 @@ RSpec.describe Api::Admin::Chapters::ChapterNotesController do
       let(:chapter) { create :chapter }
 
       it 'responds with 404 not found' do
-        delete :destroy, params: { chapter_id: chapter.to_param }, format: :json
-
-        expect(response.status).to eq 404
+        expect {
+          delete :destroy, params: { chapter_id: chapter.to_param }, format: :json
+        }.to raise_exception Sequel::RecordNotFound
       end
     end
   end

@@ -70,12 +70,12 @@ RSpec.describe Api::V2::CommoditiesController do
     context 'when fetching a commodity that does not exist' do
       subject(:do_response) { get :show, params: { id: commodity.goods_nomenclature_item_id.next } }
 
-      it { is_expected.to have_http_status(:not_found) }
+      it { expect { do_response }.to raise_exception Sequel::RecordNotFound }
     end
   end
 
   context 'when record is hidden' do
-    before do
+    subject :do_request do
       create(
         :hidden_goods_nomenclature,
         goods_nomenclature_item_id: commodity.goods_nomenclature_item_id,
@@ -84,11 +84,11 @@ RSpec.describe Api::V2::CommoditiesController do
       get :show, params: { id: commodity.goods_nomenclature_item_id }, format: :json
     end
 
-    it { expect(response).to have_http_status(:not_found) }
+    it { expect { do_request }.to raise_exception Sequel::RecordNotFound }
   end
 
   context 'when commodity has children' do
-    before do
+    subject :do_request do
       create :goods_nomenclature, goods_nomenclature_item_id: '3903000000'
 
       create :commodity, :with_indent,
@@ -105,7 +105,9 @@ RSpec.describe Api::V2::CommoditiesController do
       get :show, params: { id: parent_commodity.goods_nomenclature_item_id }, format: :json
     end
 
-    it { expect(response).to have_http_status(:not_found) }
+    it 'raises an RecordNotFound exception' do
+      expect { do_request }.to raise_exception Sequel::RecordNotFound
+    end
   end
 
   describe 'GET /changes' do

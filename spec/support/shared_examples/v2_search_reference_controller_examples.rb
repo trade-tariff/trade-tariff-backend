@@ -230,16 +230,17 @@ RSpec.shared_examples_for 'v2 search references controller' do
             id: bogus_search_ref_id,
             format: :json,
           }.merge(collection_query)
-        }.not_to change(SearchReference, :count)
+        }.to raise_exception(Sequel::NoMatchingRow)
+        .and not_change(SearchReference, :count)
       end
 
       it 'returns 404 response' do
-        delete :destroy, params: {
-          id: bogus_search_ref_id,
-          format: :json,
-        }.merge(collection_query)
-
-        expect(response.status).to eq 404
+        expect {
+          delete :destroy, params: {
+            id: bogus_search_ref_id,
+            format: :json,
+          }.merge(collection_query)
+        }.to raise_exception(Sequel::NoMatchingRow)
       end
     end
   end
