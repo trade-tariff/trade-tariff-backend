@@ -4,6 +4,10 @@ module GreenLanes
     plugin :auto_validations, not_null: :presence
 
     many_to_one :measure_type, class: :MeasureType
+    many_to_one :base_regulation, class: :BaseRegulation,
+                                  key: %i[regulation_id regulation_role]
+    many_to_one :modification_regulation, class: :ModificationRegulation,
+                                          key: %i[regulation_id regulation_role]
     many_to_one :theme
 
     def validate

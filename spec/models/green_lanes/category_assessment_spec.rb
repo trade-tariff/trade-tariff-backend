@@ -107,10 +107,40 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
       it { is_expected.to eq measure_type }
 
-      context 'with for different measure_type' do
+      context 'with different measure_type' do
         let(:second_measure_type) { create :measure_type }
 
         it { is_expected.not_to eq second_measure_type }
+      end
+    end
+
+    describe '#base_regulation' do
+      subject { category_assessment.reload.base_regulation }
+
+      let(:category_assessment) { create :category_assessment, base_regulation: }
+      let(:base_regulation) { create :base_regulation }
+
+      it { is_expected.to eq base_regulation }
+
+      context 'with different base_regulation' do
+        let(:second_regulation) { create :base_regulation }
+
+        it { is_expected.not_to eq second_regulation }
+      end
+    end
+
+    describe '#modification_regulation' do
+      subject { category_assessment.reload.modification_regulation }
+
+      let(:category_assessment) { create :category_assessment, modification_regulation: }
+      let(:modification_regulation) { create :modification_regulation }
+
+      it { is_expected.to eq modification_regulation }
+
+      context 'with different modification_regulation' do
+        let(:second_regulation) { create :modification_regulation }
+
+        it { is_expected.not_to eq second_regulation }
       end
     end
   end
