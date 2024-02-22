@@ -1,4 +1,23 @@
 RSpec.describe MeasureType do
+  describe 'associations' do
+    describe '#category_assessments' do
+      subject { measure_type.reload.green_lanes_category_assessments }
+
+      before { category_assessment }
+
+      let(:measure_type) { create :measure_type }
+      let(:category_assessment) { create :category_assessment, measure_type: }
+
+      it { is_expected.to include category_assessment }
+
+      context 'with for different measure type' do
+        subject { create(:measure_type).reload.green_lanes_category_assessments }
+
+        it { is_expected.not_to include category_assessment }
+      end
+    end
+  end
+
   describe '.excluded_measure_types' do
     subject(:excluded_measure_types) { described_class.excluded_measure_types }
 
