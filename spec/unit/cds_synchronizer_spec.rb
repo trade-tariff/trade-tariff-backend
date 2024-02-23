@@ -109,7 +109,7 @@ RSpec.describe CdsSynchronizer, truncation: true do
     end
 
     context 'with xi service' do
-      it 'will raise an wrong environment error' do
+      it 'raises a wrong environment error' do
         allow(TradeTariffBackend).to receive(:service).and_return('xi')
         expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
@@ -118,17 +118,15 @@ RSpec.describe CdsSynchronizer, truncation: true do
 
   describe '.rollback' do
     let(:rollback_attributes) { attributes_for :rollback }
-    let(:record) do
-      create :measure, operation_date: Time.zone.yesterday.to_date
-    end
 
     before do
-      record
       allow(TradeTariffBackend).to receive(:service).and_return('uk')
+      create :cds_update, :applied, :with_measure, example_date: Date.yesterday
+      create :cds_update, :applied, :with_measure, example_date: Time.zone.today
     end
 
     context 'with xi service' do
-      it 'will raise an wrong environment error' do
+      it 'raises a wrong environment error' do
         allow(TradeTariffBackend).to receive(:service).and_return('xi')
         expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
@@ -137,8 +135,8 @@ RSpec.describe CdsSynchronizer, truncation: true do
     it 'performs a rollback' do
       Sidekiq::Testing.inline! do
         expect {
-          create(:rollback, date: 1.month.ago.beginning_of_day)
-        }.to change(Measure, :count).from(1).to(0)
+          create(:rollback, date: Date.yesterday.beginning_of_day)
+        }.to change(Measure, :count).from(2).to(1)
       end
     end
   end

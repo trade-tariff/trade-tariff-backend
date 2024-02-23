@@ -72,32 +72,32 @@ class CdsSynchronizer
 
       TradeTariffBackend.with_redis_lock do
         date = Date.parse(rollback_date.to_s)
+
         updates = TariffSynchronizer::CdsUpdate.where { issue_date > date }
         update_filenames = updates.pluck(:filename)
-        (date..Time.zone.today).to_a.reverse.each do |date_for_rollback|
-          Sequel::Model.db.transaction do
-            # Delete actual data
-            oplog_based_models.each do |model|
-              model.operation_klass
-                   .where(Sequel.lit('operation_date > ?', date_for_rollback))
-                   .delete
-            end
+        Sequel::Model.db.transaction do
+          # Delete actual data
+          oplog_based_models.each do |model|
+            model.operation_klass
+                 .where(filename: update_filenames)
+                 .delete
           end
-        end
 
-        update_filenames.each do |filename|
-          Rails.logger.info "Rolling back CDS file: #{filename}"
-        end
-        updates.each do |cds_update|
-          cds_update.mark_as_pending
-          cds_update.clear_applied_at
-          cds_update.cds_errors_dataset.destroy
-          cds_update.delete unless keep
-        end
+          update_filenames.each do |filename|
+            Rails.logger.info "Rolling back CDS file: #{filename}"
+          end
 
-        # Look for migrations after the end of the
-        # date_for_rollback day and remove them
-        DataMigration.since(date.end_of_day).delete
+          updates.each do |cds_update|
+            cds_update.mark_as_pending
+            cds_update.clear_applied_at
+            cds_update.cds_errors_dataset.destroy
+            cds_update.delete unless keep
+          end
+
+          # Look for migrations after the end of the
+          # date_for_rollback day and remove them
+          DataMigration.since(date.end_of_day).delete
+        end
 
         Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{keep}"
       end
