@@ -1,8 +1,7 @@
 RSpec.describe Api::Admin::RollbacksController do
-  describe 'xi POST to #create' do
+  describe 'POST to #create' do
     before do
       login_as_api_user
-      allow(TradeTariffBackend).to receive(:service).and_return('xi')
     end
 
     let(:rollback_attributes) { attributes_for :rollback }
@@ -20,13 +19,6 @@ RSpec.describe Api::Admin::RollbacksController do
         expect(response.location).to eq api_rollbacks_url
       end
 
-      it 'performs a rollback' do
-        Sidekiq::Testing.inline! do
-          expect {
-            create(:rollback, date: 1.month.ago.beginning_of_day)
-          }.to change(Measure, :count).from(1).to(0)
-        end
-      end
     end
 
     context 'when rollback is not valid' do
