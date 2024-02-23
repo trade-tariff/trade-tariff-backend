@@ -10,7 +10,7 @@ module Api
                    :effective_end_date
 
         has_one :measure_type, type: :measure_type, serializer: Api::V2::Measures::MeasureTypeSerializer
-        has_one :goods_nomenclature, type: :goods_nomenclature, serializer: Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer
+        has_one :goods_nomenclature, type: :goods_nomenclature, serializer: Api::V2::GreenLanes::ReferencedGoodsNomenclatureSerializer
         has_many :footnotes, type: :footnote, serializer: Api::V2::Measures::FootnoteSerializer
       end
     end
