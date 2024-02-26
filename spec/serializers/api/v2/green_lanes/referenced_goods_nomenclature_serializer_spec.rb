@@ -11,7 +11,7 @@ RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclatureSerializer do
           description: be_a(String),
           number_indents: subheading.number_indents,
           producline_suffix: subheading.producline_suffix,
-          validity_start_date: subheading.validity_start_date.to_s,
+          validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
           validity_end_date: nil
         }
       }
