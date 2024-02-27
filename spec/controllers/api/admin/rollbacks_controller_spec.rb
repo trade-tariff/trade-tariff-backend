@@ -18,7 +18,6 @@ RSpec.describe Api::Admin::RollbacksController do
         expect(response.status).to eq 201
         expect(response.location).to eq api_rollbacks_url
       end
-
     end
 
     context 'when rollback is not valid' do
