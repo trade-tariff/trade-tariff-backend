@@ -18,5 +18,11 @@ FactoryBot.define do
     trait :failed do
       state { 'F' }
     end
+
+    trait :with_measure do
+      after :create do |cds_update, _evaluator|
+        create :measure, operation_date: cds_update.issue_date, filename: cds_update.filename
+      end
+    end
   end
 end

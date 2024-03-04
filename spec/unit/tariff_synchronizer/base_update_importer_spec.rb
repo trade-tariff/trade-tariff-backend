@@ -4,6 +4,11 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   let(:base_update_importer) { described_class.new(taric_update) }
 
   describe '#apply', truncation: true do
+    before do
+      allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil) # Assuming no existing record
+    end
+
     it 'calls the import! method to the object' do
       allow(taric_update).to receive(:import!)
 

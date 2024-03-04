@@ -11,6 +11,7 @@ RSpec.describe TaricSynchronizer, '.rollback' do
     first_rolled_back_update
     second_rolled_back_update
     non_rolled_back_update
+    allow(TradeTariffBackend).to receive(:service).and_return('xi')
   end
 
   it { is_expected.to have_rolled_back(first_rolled_back_update) }
