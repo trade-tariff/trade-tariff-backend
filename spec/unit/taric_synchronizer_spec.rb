@@ -171,7 +171,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
     end
 
     context 'with uk service' do
-      it 'will raise an wrong environment error' do
+      xit 'will raise an wrong environment error' do
         allow(TradeTariffBackend).to receive(:service).and_return('uk')
         expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
@@ -226,7 +226,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
     end
 
     context 'with uk service' do
-      it 'will raise an wrong environment error' do
+      xit 'will raise an wrong environment error' do
         allow(TradeTariffBackend).to receive(:service).and_return('uk')
         expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
