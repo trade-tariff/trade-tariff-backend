@@ -15,7 +15,6 @@ module Api
                    :producline_suffix,
                    :validity_start_date,
                    :validity_end_date
-
       end
     end
   end
