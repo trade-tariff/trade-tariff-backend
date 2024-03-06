@@ -1,6 +1,8 @@
 RSpec.describe Api::Admin::RollbacksController do
   describe 'POST to #create' do
-    before { login_as_api_user }
+    before do
+      login_as_api_user
+    end
 
     let(:rollback_attributes) { attributes_for :rollback }
     let(:record) do
@@ -11,18 +13,11 @@ RSpec.describe Api::Admin::RollbacksController do
       before { record }
 
       it 'responds with success + redirect', :aggregate_failures do
-        post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
-
+        expect {
+          post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
+        }.to change(Rollback, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq api_rollbacks_url
-      end
-
-      it 'performs a rollback' do
-        Sidekiq::Testing.inline! do
-          expect {
-            create(:rollback, date: 1.month.ago.beginning_of_day)
-          }.to change(Measure, :count).from(1).to(0)
-        end
       end
     end
 

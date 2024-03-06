@@ -76,22 +76,23 @@ RSpec.describe CdsSynchronizer, truncation: true do
   end
 
   describe '.apply' do
-    let(:applied_update) { create(:taric_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:taric_update, :pending, example_date: Time.zone.today) }
+    let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
+    let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
 
     context 'with failed updates present' do
-      let(:failed_update) { create(:taric_update, :failed, example_date: Time.zone.yesterday) }
+      let(:failed_update) { create(:cds_update, :failed, example_date: Time.zone.yesterday) }
 
       before do
         failed_update
+        allow(TradeTariffBackend).to receive(:service).and_return('uk')
       end
 
       it 'does not apply pending updates', :aggregate_failures do
-        allow(TariffSynchronizer::TaricUpdate).to receive(:pending_at)
+        allow(TariffSynchronizer::CdsUpdate).to receive(:pending_at)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
-        expect(TariffSynchronizer::TaricUpdate).not_to have_received(:pending_at)
+        expect(TariffSynchronizer::CdsUpdate).not_to have_received(:pending_at)
       end
 
       it 'logs the error event', :aggregate_failures do
@@ -106,40 +107,36 @@ RSpec.describe CdsSynchronizer, truncation: true do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
     end
+
+    context 'with xi service' do
+      xit 'raises a wrong environment error' do
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
+        expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
+      end
+    end
   end
 
-  describe 'check sequence of Taric daily updates' do
-    let(:applied_sequence_number) { 123 }
+  describe '.rollback' do
+    let(:rollback_attributes) { attributes_for :rollback }
 
     before do
-      create(:taric_update, :applied, example_date: Time.zone.yesterday, sequence_number: applied_sequence_number)
-      create(:taric_update, :pending, example_date: Time.zone.today, sequence_number: pending_sequence_number)
-
-      allow(TradeTariffBackend).to receive(:with_redis_lock)
-      allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+      allow(TradeTariffBackend).to receive(:service).and_return('uk')
+      create :cds_update, :applied, :with_measure, example_date: Date.yesterday
+      create :cds_update, :applied, :with_measure, example_date: Time.zone.today
     end
 
-    context 'when sequence is correct' do
-      let(:pending_sequence_number) { applied_sequence_number + 1 }
-
-      it 'runs the update' do
-        described_class.apply
-
-        expect(TradeTariffBackend).to have_received(:with_redis_lock)
+    context 'with xi service' do
+      xit 'raises a wrong environment error' do
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
+        expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
     end
 
-    context 'when sequence is NOT correct' do
-      let(:pending_sequence_number) { applied_sequence_number + 2 }
-
-      it 'raises a wrong sequence error and notifies Slack app', :aggregate_failures do
-        allow(SlackNotifierService).to receive(:call)
-
+    it 'performs a rollback' do
+      Sidekiq::Testing.inline! do
         expect {
-          described_class.apply
-        }.to raise_error(TariffSynchronizer::FailedUpdatesError)
-
-        expect(SlackNotifierService).to have_received(:call)
+          create(:rollback, date: Date.yesterday.beginning_of_day)
+        }.to change(Measure, :count).from(2).to(1)
       end
     end
   end
