@@ -210,7 +210,7 @@ RSpec.describe DescriptionFormatter do
 
     context 'when xi' do
       before do
-        allow(TradeTariffBackend).to receive(:uk?).and_return(false)
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
       end
 
       it 'does not replace , with .' do
