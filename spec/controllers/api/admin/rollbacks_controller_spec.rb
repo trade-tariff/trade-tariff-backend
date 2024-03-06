@@ -13,8 +13,9 @@ RSpec.describe Api::Admin::RollbacksController do
       before { record }
 
       it 'responds with success + redirect', :aggregate_failures do
-        post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
-
+        expect {
+          post :create, params: { data: { type: :rollback, attributes: rollback_attributes } }
+        }.to change(Rollback, :count).by(1)
         expect(response.status).to eq 201
         expect(response.location).to eq api_rollbacks_url
       end
