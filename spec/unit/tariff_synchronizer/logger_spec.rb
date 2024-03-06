@@ -1,6 +1,10 @@
 RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
   include BankHolidaysHelper
 
+  before do
+    allow(TradeTariffBackend).to receive(:service).and_return('xi')
+  end
+
   describe '#rollback_lock_error' do
     before do
       allow(TradeTariffBackend).to receive(
