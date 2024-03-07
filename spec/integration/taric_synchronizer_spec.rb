@@ -15,6 +15,7 @@ RSpec.describe TaricSynchronizer do
 
       context 'when everything is fine' do
         it 'applies missing updates' do
+          # Calls taric_importer.rb and needs Create_Update_Entry!
           described_class.apply
           expect(taric_update.reload).to be_applied
         end

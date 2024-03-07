@@ -63,6 +63,7 @@ class TaricImporter
   end
 
   def post_import(file_path:, filename:)
+    #This is required see spec/integration/taric_synchronizer_spec.rb:17
     create_update_entry(file_path:, filename:)
     Rails.logger.info "Successfully imported Taric file: #{@taric_update.filename}"
   end
