@@ -78,26 +78,20 @@ RSpec.describe CdsSynchronizer, truncation: true do
   describe '.apply' do
     let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
     let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
-    let(:applied_update) { create(:cds_update, :applied, example_date: Time.zone.yesterday) }
-    let(:pending_update) { create(:cds_update, :pending, example_date: Time.zone.today) }
 
     context 'with failed updates present' do
-      let(:failed_update) { create(:cds_update, :failed, example_date: Time.zone.yesterday) }
       let(:failed_update) { create(:cds_update, :failed, example_date: Time.zone.yesterday) }
 
       before do
         failed_update
         allow(TradeTariffBackend).to receive(:service).and_return('uk')
-        allow(TradeTariffBackend).to receive(:service).and_return('uk')
       end
 
       it 'does not apply pending updates', :aggregate_failures do
         allow(TariffSynchronizer::CdsUpdate).to receive(:pending_at)
-        allow(TariffSynchronizer::CdsUpdate).to receive(:pending_at)
 
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
 
-        expect(TariffSynchronizer::CdsUpdate).not_to have_received(:pending_at)
         expect(TariffSynchronizer::CdsUpdate).not_to have_received(:pending_at)
       end
 
@@ -124,8 +118,6 @@ RSpec.describe CdsSynchronizer, truncation: true do
 
   describe '.rollback' do
     let(:rollback_attributes) { attributes_for :rollback }
-  describe '.rollback' do
-    let(:rollback_attributes) { attributes_for :rollback }
 
     before do
       allow(TradeTariffBackend).to receive(:service).and_return('uk')
@@ -140,8 +132,6 @@ RSpec.describe CdsSynchronizer, truncation: true do
       end
     end
 
-    it 'performs a rollback' do
-      Sidekiq::Testing.inline! do
     it 'performs a rollback' do
       Sidekiq::Testing.inline! do
         expect {

@@ -9,14 +9,8 @@ RSpec.describe RollbackWorker, type: :worker do
     context 'for xi' do
       before do
         allow(TradeTariffBackend).to receive(:service).and_return('xi')
-    context 'for xi' do
-      before do
-        allow(TradeTariffBackend).to receive(:service).and_return('xi')
         allow(TaricSynchronizer).to receive(:rollback).with(date, keep: false)
         allow(CdsSynchronizer).to receive(:rollback)
-      end
-
-      it 'invokes rollback' do
       end
 
       it 'invokes rollback' do
@@ -36,7 +30,6 @@ RSpec.describe RollbackWorker, type: :worker do
     end
 
     context 'for uk' do
-    context 'for uk' do
       before do
         allow(TradeTariffBackend).to receive(:service).and_return('uk')
         allow(TaricSynchronizer).to receive(:rollback)
@@ -48,7 +41,6 @@ RSpec.describe RollbackWorker, type: :worker do
         expect(CdsSynchronizer).to have_received(:rollback).with(date, keep: false)
       end
 
-      it 'does not call rollback_cds' do
       it 'does not call rollback_cds' do
         described_class.new.perform(date)
         expect(TaricSynchronizer).not_to have_received(:rollback)
