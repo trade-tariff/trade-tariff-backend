@@ -69,6 +69,7 @@ module GreenLanes
         measure_type_id == self.measure_type_id &&
         (geographical_area == geographical_area_id ||
           geographical_area.nil? ||
+          geographical_area.empty? ||
           geographical_area_id == GeographicalArea::ERGA_OMNES_ID)
     end
 
