@@ -1,7 +1,7 @@
 module Api
   module V2
     class SearchReferencesController < ApiController
-      include SimpleCaching
+      time_based_caching
 
       def index
         render json: serialized_search_references

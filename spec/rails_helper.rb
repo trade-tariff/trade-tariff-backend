@@ -16,6 +16,8 @@ require 'json_expressions/rspec'
 require 'fakefs/spec_helpers'
 require 'sidekiq/testing'
 
+Rails.application.load_tasks
+
 Dir[Rails.root.join('spec/support/**/*.rb')].sort.each { |f| require f }
 
 RSpec.configure do |config|
@@ -74,6 +76,8 @@ RSpec.configure do |config|
     # things like nomenclature item id's risk wrapping otherwise
     FactoryBot.rewind_sequences
   end
+
+  config.after { travel_back }
 end
 
 def silence

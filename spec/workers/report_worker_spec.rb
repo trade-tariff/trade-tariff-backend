@@ -2,8 +2,7 @@ RSpec.describe ReportWorker, type: :worker do
   subject(:worker) { described_class.new }
 
   describe '#perform' do
-    let(:differences) { Reporting::Differences.new }
-    let(:date) { Time.zone.today.iso8601 }
+    let(:date) { '2023-10-30' } # a monday
 
     before do
       allow(Reporting::Commodities).to receive(:generate)
@@ -12,56 +11,53 @@ RSpec.describe ReportWorker, type: :worker do
       allow(Reporting::DeclarableDuties).to receive(:generate)
       allow(Reporting::GeographicalAreaGroups).to receive(:generate)
       allow(Reporting::Prohibitions).to receive(:generate)
-      allow(Reporting::Differences).to receive(:generate).and_return(differences)
+      allow(DifferencesReportWorker).to receive(:perform_in).and_call_original
       allow(TradeTariffBackend).to receive(:service).and_return(service)
       travel_to Date.parse(date).beginning_of_day
-
-      worker.perform
     end
 
-    after do
-      travel_back
-    end
-
-    context 'when on the xi service' do
-      let(:service) { 'xi' }
-
+    shared_examples 'all reports are generated' do
       it { expect(Reporting::Commodities).to have_received(:generate) }
       it { expect(Reporting::Basic).to have_received(:generate) }
       it { expect(Reporting::SupplementaryUnits).to have_received(:generate) }
       it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
       it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
       it { expect(Reporting::Prohibitions).to have_received(:generate) }
-      it { expect(Reporting::Differences).not_to have_received(:generate) }
-      it { expect(ActionMailer::Base.deliveries.count).to eq(0) }
     end
 
-    context 'when on the uk service and the day is a monday' do
+    context 'with default behaviour' do
+      before { worker.perform }
+
+      context 'when on the xi service' do
+        let(:service) { 'xi' }
+
+        it_behaves_like 'all reports are generated'
+        it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
+      end
+
+      context 'when on the uk service and the day is a monday' do
+        let(:service) { 'uk' }
+
+        it_behaves_like 'all reports are generated'
+        it { expect(DifferencesReportWorker).to have_received(:perform_in) }
+      end
+
+      context 'when on the uk service and the day is not a monday' do
+        let(:service) { 'uk' }
+        let(:date) { '2023-10-31' }
+
+        it_behaves_like 'all reports are generated'
+        it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
+      end
+    end
+
+    context 'without scheduling differences report' do
+      before { worker.perform(false) }
+
       let(:service) { 'uk' }
-      let(:date) { '2023-10-30' }
 
-      it { expect(Reporting::Commodities).to have_received(:generate) }
-      it { expect(Reporting::Basic).to have_received(:generate) }
-      it { expect(Reporting::SupplementaryUnits).to have_received(:generate) }
-      it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
-      it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
-      it { expect(Reporting::Prohibitions).to have_received(:generate) }
-      it { expect(Reporting::Differences).to have_received(:generate) }
-      it { expect(ActionMailer::Base.deliveries.count).to eq(1) }
-    end
-
-    context 'when on the uk service and the day is not a monday' do
-      let(:service) { 'uk' }
-      let(:date) { '2023-10-31' }
-
-      it { expect(Reporting::Commodities).to have_received(:generate) }
-      it { expect(Reporting::Basic).to have_received(:generate) }
-      it { expect(Reporting::SupplementaryUnits).to have_received(:generate) }
-      it { expect(Reporting::DeclarableDuties).to have_received(:generate) }
-      it { expect(Reporting::GeographicalAreaGroups).to have_received(:generate) }
-      it { expect(Reporting::Prohibitions).to have_received(:generate) }
-      it { expect(Reporting::Differences).not_to have_received(:generate) }
-      it { expect(ActionMailer::Base.deliveries.count).to eq(0) }
+      it_behaves_like 'all reports are generated'
+      it { expect(DifferencesReportWorker).not_to have_received(:perform_in) }
     end
   end
 end

@@ -1,99 +1,49 @@
-# frozen_string_literal: true
-
 module GreenLanes
-  class CategoryAssessment
-    include ActiveModel::Model
-    include ContentAddressableId
+  class CategoryAssessment < Sequel::Model(:green_lanes_category_assessments)
+    plugin :timestamps, update_on_create: true
+    plugin :auto_validations, not_null: :presence
 
-    DEFAULT_JSON = if Rails.env.development?
-                     'data/green_lanes/categories.json'
-                   else
-                     'data/green_lanes/stub_categories.json'
-                   end
+    many_to_one :measure_type, class: :MeasureType
+    many_to_one :base_regulation, class: :BaseRegulation,
+                                  key: %i[regulation_id regulation_role]
+    many_to_one :modification_regulation, class: :ModificationRegulation,
+                                          key: %i[regulation_id regulation_role]
+    many_to_one :theme
 
-    CATEGORISATION_OBJECT_KEY = 'data/categorisation/categories.json'
+    def validate
+      super
 
-    content_addressable_fields 'regulation_id', 'measure_type_id', 'geographical_area', 'document_codes', 'additional_codes'
+      validates_presence :regulation_role if regulation_id.present?
+      validates_presence :regulation_id if regulation_role.present?
 
-    attr_accessor :category,
-                  :regulation_id,
-                  :measure_type_id,
-                  :geographical_area,
-                  :document_codes,
-                  :additional_codes,
-                  :theme
-
-    class << self
-      def load_category_assessment
-        if Rails.application.config.persistence_bucket.present?
-          load_from_s3
+      validates_unique %i[measure_type_id regulation_id regulation_role], where: (lambda do |ds, obj, _cols|
+        if obj.regulation_id.blank?
+          ds.where(measure_type_id: obj.measure_type_id)
         else
-          load_from_file
+          ds.where(measure_type_id: obj.measure_type_id, regulation_id: nil, regulation_role: nil)
         end
-      end
+      end)
+    end
 
-      def load_from_s3
-        data = Rails.application.config.persistence_bucket.object(CATEGORISATION_OBJECT_KEY).get.body.read
-        load_from_string data
-      rescue Aws::S3::Errors::NoSuchKey => e
-        raise InvalidFile, "File not found in S3 (#{e.message})"
-      end
-
-      def load_from_file(file = DEFAULT_JSON)
-        source_file = Pathname.new(file)
-        unless source_file.extname == '.json' && source_file.file? && source_file.exist?
-          raise InvalidFile, 'Requires a path to a JSON file'
-        end
-
-        load_from_string File.read(file)
-      end
-
-      def load_from_string(data)
-        json_array = JSON.parse(data)
-        @all = json_array.map { |json| new(json) }
-      end
-
-      def all
-        @all ||= load_category_assessment
-      end
-
-      def filter(regulation_id:, measure_type_id:, geographical_area: nil)
-        return [] if regulation_id.blank? || measure_type_id.blank?
-
-        all.select { |cat| cat.match?(regulation_id:, measure_type_id:, geographical_area:) }
+    def regulation
+      case regulation_role
+      when nil then nil
+      when Measure::MODIFICATION_REGULATION_ROLE then modification_regulation
+      else base_regulation
       end
     end
 
-    def match?(regulation_id:, measure_type_id:, geographical_area: nil)
-      regulation_id == self.regulation_id &&
-        measure_type_id == self.measure_type_id &&
-        (geographical_area == self.geographical_area ||
-          geographical_area.nil? ||
-          self.geographical_area == GeographicalArea::ERGA_OMNES_ID)
+    def regulation=(regulation)
+      case regulation
+      when nil
+        self.base_regulation = self.modification_regulation = nil
+      when ModificationRegulation
+        self.base_regulation = nil
+        self.modification_regulation = regulation
+      else
+        self.modification_regulation = nil
+        self.base_regulation = regulation
+      end
     end
-
-    def excluded_geographical_areas
-      []
-    end
-
-    def exemptions
-      certificates + additional_code_instances
-    end
-
-    def certificates
-      Certificate
-        .actual
-        .where(Sequel.function(:concat, :certificate_type_code, :certificate_code) => document_codes)
-        .all
-    end
-
-    def additional_code_instances
-      AdditionalCode
-        .actual
-        .where(Sequel.function(:concat, :additional_code_type_id, :additional_code) => additional_codes)
-        .all
-    end
-
-    class InvalidFile < RuntimeError; end
   end
 end

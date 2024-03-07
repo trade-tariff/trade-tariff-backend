@@ -4,15 +4,11 @@ module Api
       class CategoryAssessmentSerializer
         include JSONAPI::Serializer
 
-        set_type :green_lanes_category_assessment
+        set_type :category_assessment
 
         set_id :id
 
         attributes :category,
-                   :geographical_area,
-                   :excluded_geographical_areas,
-                   :document_codes,
-                   :additional_codes,
                    :theme
 
         has_many :exemptions, serializer: proc { |record, _params|
@@ -25,6 +21,12 @@ module Api
             raise 'Unknown type'
           end
         }
+
+        has_one :geographical_area, record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
+        has_many :excluded_geographical_areas, record_type: :geographical_area, serializer: Api::V2::GeographicalAreaSerializer
+        has_many :measures, record_type: :measure,
+                            serializer: Api::V2::GreenLanes::MeasureSerializer,
+                            if: ->(record) { record.is_a? Api::V2::GreenLanes::CategoryAssessmentPresenter }
       end
     end
   end

@@ -3,7 +3,13 @@ require 'rails_helper'
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
   before do
     allow(TradeTariffBackend).to receive(:service).and_return 'xi'
+    create(:geographical_area, :with_reference_group_and_members, :with_description)
+    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1008')
+    allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return(category_assessments)
   end
+
+  let(:category_assessments) { build_pair :category_assessment_json, geographical_area: }
+  let(:geographical_area) { create :geographical_area, :erga_omnes, :with_description }
 
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
@@ -20,21 +26,16 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
 
     before do
       allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
-      allow(::GreenLanes::CategoryAssessment).to receive(:load_category_assessment).and_return(::GreenLanes::CategoryAssessment.load_from_file(test_file))
     end
 
     context 'when categorisation data is found' do
-      it_behaves_like 'a successful jsonapi response' do
-        let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
-      end
+      it_behaves_like 'a successful jsonapi response'
     end
 
     context 'when request on uk service' do
       before do
         allow(TradeTariffBackend).to receive(:service).and_return 'uk'
       end
-
-      let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
       it { is_expected.to have_http_status(:not_found) }
     end
@@ -43,17 +44,11 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
   describe 'User authentication' do
     subject(:rendered) { make_request && response }
 
-    before do
-      allow(::GreenLanes::CategoryAssessment).to receive(:load_category_assessment).and_return(::GreenLanes::CategoryAssessment.load_from_file(test_file))
-    end
-
     let :make_request do
       get api_green_lanes_category_assessments_path(format: :json),
           headers: { 'Accept' => 'application/vnd.uktt.v2',
                      'HTTP_AUTHORIZATION' => authorization }
     end
-
-    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
 
     context 'when presence of incorrect bearer token' do
       let :authorization do

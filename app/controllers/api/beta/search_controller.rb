@@ -1,7 +1,7 @@
 module Api
   module Beta
     class SearchController < ApiController
-      include NoCaching
+      no_caching
 
       DEFAULT_INCLUDES = [
         'hits.ancestors',

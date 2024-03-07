@@ -1,23 +1,21 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
   subject(:serialized) do
-    described_class.new(gn_presenter, include: %w[applicable_measures applicable_category_assessments]).serializable_hash
+    presented_assessments = [
+      ::Api::V2::GreenLanes::CategoryAssessmentPresenter.new(category_assessment, [first_measure]),
+    ]
+
+    gn_presenter = \
+      Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, presented_assessments)
+
+    described_class.new(
+      gn_presenter,
+      include: %w[applicable_category_assessments
+                  applicable_category_assessments.geographical_area],
+    ).serializable_hash
   end
 
-  let(:gn_presenter) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, categorisations) }
-
-  let(:subheading) { create :subheading, :with_measures }
-
-  let(:categorisations) { GreenLanes::CategoryAssessment.load_from_string(json_string) }
-
-  let(:json_string) do
-    '[{
-          "category": "1",
-          "regulation_id": "D0000001",
-          "measure_type_id": "400",
-          "geographical_area": "1000",
-          "document_codes": [],
-          "additional_codes": []
-        }]'
+  before do
+    allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return([category_assessment])
   end
 
   let(:expected_pattern) do
@@ -34,29 +32,46 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           producline_suffix: subheading.producline_suffix,
         },
         "relationships": {
-          "applicable_measures": {
-            "data": [{
-              "id": subheading.applicable_measures.first.id.to_s,
-              type: eq(:measure),
-            }],
-          },
           "applicable_category_assessments": {
             "data": [{
-              "id": GreenLanes::CategoryAssessment.all[0].id,
-              type: eq(:green_lanes_category_assessment),
+              "id": GreenLanes::CategoryAssessmentJson.all[0].id,
+              type: eq(:category_assessment),
             }],
           },
         },
       },
-      included: [{
-        id: subheading.applicable_measures.first.id.to_s,
-        type: eq(:measure),
-      },
-                 {
-                   id: GreenLanes::CategoryAssessment.all[0].id,
-                   type: eq(:green_lanes_category_assessment),
-                 }],
+      included: [
+        {
+          id: '1000',
+          type: eq(:geographical_area),
+        },
+        {
+          id: GreenLanes::CategoryAssessmentJson.all[0].id,
+          type: eq(:category_assessment),
+          relationships: {
+            measures: {
+              data: [
+                {
+                  id: first_measure.measure_sid.to_s,
+                  type: eq(:measure),
+                },
+              ],
+            },
+          },
+        },
+      ],
     }
+  end
+
+  let(:subheading) { create :subheading, :with_measures }
+  let(:first_measure) { subheading.applicable_measures.first }
+
+  let :category_assessment do
+    build :category_assessment_json, measure: first_measure, geographical_area:
+  end
+
+  let :geographical_area do
+    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1000')
   end
 
   it { is_expected.to include_json(expected_pattern) }

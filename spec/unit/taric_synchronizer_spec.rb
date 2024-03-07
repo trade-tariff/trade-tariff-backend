@@ -101,6 +101,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
         allow_any_instance_of(TaricImporter).to receive(:import)
         allow(TariffSynchronizer::TariffLogger).to receive(:failed_update)
         allow(TradeTariffBackend).to receive(:service).and_return('xi')
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
         applied_update
         pending_update
       end
@@ -147,6 +148,7 @@ RSpec.describe TaricSynchronizer, truncation: true do
 
       before do
         failed_update
+        allow(TradeTariffBackend).to receive(:service).and_return('xi')
         allow(TradeTariffBackend).to receive(:service).and_return('xi')
       end
 

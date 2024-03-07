@@ -111,6 +111,12 @@ class ExchangeRateCurrencyRate < Sequel::Model
       )
       .order(Sequel.desc(:applicable_date))
     end
+
+    # This query removes country/currency pairings where the country/currency
+    # is expiring before the end of the rate
+    def without_expired_countries
+      where(Sequel[:exchange_rate_currency_rates][:validity_end_date] <= (Sequel.function(:COALESCE, Sequel[:exchange_rate_countries_currencies][:validity_end_date], Sequel.lit("'infinity'"))))
+    end
   end
 
   class << self
@@ -154,6 +160,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
         .by_month_and_year(month, year)
         .by_type(type)
         .with_exchange_rate_country_currency
+        .without_expired_countries
         .all
         .group_by { |rate| [rate.currency_code, rate.country_code] }
         .map { |_, rates| rates.max_by(&:country_currency_validity_start_date) }

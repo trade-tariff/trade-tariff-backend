@@ -1,283 +1,232 @@
+require 'rails_helper'
+
 RSpec.describe GreenLanes::CategoryAssessment do
-  describe '.load_from_string' do
-    subject(:categorisation) { described_class.load_from_string json_string }
+  describe 'attributes' do
+    it { is_expected.to respond_to :id }
+    it { is_expected.to respond_to :measure_type_id }
+    it { is_expected.to respond_to :regulation_id }
+    it { is_expected.to respond_to :theme_id }
+    it { is_expected.to respond_to :created_at }
+    it { is_expected.to respond_to :updated_at }
+  end
 
-    context 'with valid json array' do
-      let(:json_string) do
-        '[{
-          "category": "1",
-          "regulation_id": "D0000001",
-          "measure_type_id": "400",
-          "geographical_area": "1000",
-          "document_codes": [],
-          "additional_codes": [],
-          "theme": "1.1 Sanctions"
-        }]'
-      end
+  describe 'validations' do
+    subject(:errors) { instance.tap(&:valid?).errors }
 
-      it { is_expected.to be_an Array }
-      it { is_expected.to all be_instance_of described_class }
-      it { is_expected.to have_attributes length: 1 }
+    let(:instance) { described_class.new }
 
-      context 'with attributes' do
-        subject(:first_element) { categorisation.first }
+    it { is_expected.to include measure_type_id: ['is not present'] }
+    it { is_expected.not_to include :regulation_id }
+    it { is_expected.not_to include :regulation_role }
+    it { is_expected.to include theme_id: ['is not present'] }
 
-        it { is_expected.to have_attributes id: a_string_matching(/\A.+\z/) }
-        it { is_expected.to have_attributes category: '1' }
-        it { is_expected.to have_attributes regulation_id: 'D0000001' }
-        it { is_expected.to have_attributes measure_type_id: '400' }
-        it { is_expected.to have_attributes geographical_area: '1000' }
-        it { is_expected.to have_attributes document_codes: [] }
-        it { is_expected.to have_attributes additional_codes: [] }
-        it { is_expected.to have_attributes excluded_geographical_areas: [] }
-        it { is_expected.to have_attributes exemptions: [] }
-        it { is_expected.to have_attributes theme: '1.1 Sanctions' }
-      end
+    context 'with regulation_id but not regulation_role' do
+      let(:instance) { described_class.new regulation_id: 1 }
+
+      it { is_expected.to include regulation_role: ['is not present'] }
     end
 
-    context 'with valid json array with multiple elements' do
-      let(:json_string) do
-        '[
-          {
-            "category": "2"
-          },
-          {
-            "category": "3"
-          },
-          {
-            "category": "1"
-          }
-        ]'
+    context 'without regulation_id but with regulation_role' do
+      let(:instance) { described_class.new regulation_role: 1 }
+
+      it { is_expected.to include regulation_id: ['is not present'] }
+    end
+
+    context 'with duplicate measure_type_id and regulation_id' do
+      let(:existing) { create :category_assessment }
+
+      let :instance do
+        described_class.new measure_type_id: existing.measure_type_id,
+                            regulation_id: existing.regulation_id,
+                            regulation_role: existing.regulation_role
       end
 
-      it { is_expected.to be_an Array }
-      it { is_expected.to all be_instance_of described_class }
-      it { is_expected.to have_attributes length: 3 }
+      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
+    end
+
+    context 'with new category assessment for specific regulation and with existing category assessment for all regulations' do
+      let(:existing) { create :category_assessment, regulation_id: nil, regulation_role: nil }
+      let(:instance) { build :category_assessment, measure_type_id: existing.measure_type_id }
+
+      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
+    end
+
+    context 'with new category assessment for all regulations and existing assessment for specific regulations' do
+      let(:existing) { create :category_assessment }
+
+      let :instance do
+        build :category_assessment, measure_type_id: existing.measure_type_id,
+                                    regulation_id: nil,
+                                    regulation_role: nil
+      end
+
+      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
+    end
+
+    context 'with new category assessment for all regulations and existing assessment for all regulations' do
+      let(:existing) { create :category_assessment, regulation_id: nil, regulation_role: nil }
+
+      let :instance do
+        build :category_assessment, measure_type_id: existing.measure_type_id,
+                                    regulation_id: nil,
+                                    regulation_role: nil
+      end
+
+      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
     end
   end
 
-  describe '.load_from_file' do
-    subject(:categorisation_file) { described_class.load_from_file test_file }
+  describe 'date fields' do
+    subject { create(:category_assessment).reload }
 
-    context 'with valid json file' do
-      let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
-
-      it { is_expected.to be_an Array }
-      it { is_expected.to all be_instance_of described_class }
-      it { is_expected.to have_attributes length: 10 }
-
-      context 'with attributes' do
-        subject(:first_element) { categorisation_file.first }
-
-        it { is_expected.to have_attributes id: a_string_matching(/\A.+\z/) }
-        it { is_expected.to have_attributes category: '1' }
-        it { is_expected.to have_attributes regulation_id: 'D000001' }
-        it { is_expected.to have_attributes measure_type_id: '400' }
-        it { is_expected.to have_attributes geographical_area: '1000' }
-        it { is_expected.to have_attributes document_codes: %w[C004 N800] }
-        it { is_expected.to have_attributes additional_codes: %w[A5 R2D2] }
-        it { is_expected.to have_attributes theme: nil }
-        it { is_expected.to have_attributes excluded_geographical_areas: [] }
-        it { is_expected.to have_attributes exemptions: [] }
-      end
-    end
-
-    context 'with missing file' do
-      let(:test_file) do
-        Rails.root.join(file_fixture_path).join 'green_lanes/random.json'
-      end
-
-      it { expect { categorisation_file }.to raise_exception described_class::InvalidFile }
-    end
-
-    context 'with non-JSON file' do
-      let(:test_file) { file_fixture 'green_lanes/invalid.csv' }
-
-      it { expect { categorisation_file }.to raise_exception described_class::InvalidFile }
-    end
+    it { is_expected.to have_attributes created_at: be_within(1.minute).of(Time.zone.now) }
+    it { is_expected.to have_attributes updated_at: be_within(1.minute).of(Time.zone.now) }
   end
 
-  describe '.all' do
-    before { described_class.load_from_file test_file }
+  describe 'associations' do
+    describe '#theme' do
+      subject { category_assessment.reload.theme }
 
-    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
+      let(:category_assessment) { create :category_assessment, theme: }
+      let(:theme) { create :green_lanes_theme }
 
-    context 'when all read' do
-      subject(:categorisation_all) { described_class.all }
+      it { is_expected.to eq theme }
 
-      it { is_expected.to be_an Array }
-      it { is_expected.to all be_instance_of described_class }
-      it { is_expected.to have_attributes length: 10 }
-    end
-  end
+      context 'with for different theme' do
+        let(:second_theme) { create :green_lanes_theme }
 
-  # rubocop:disable RSpec/AnyInstance
-  describe '.load_from_s3' do
-    let(:json_string) do
-      '[{
-          "category": "1",
-          "regulation_id": "D0000001",
-          "measure_type_id": "400",
-          "geographical_area": "1000",
-          "document_codes": [],
-          "additional_codes": []
-        }]'
-    end
-
-    context 'when the file exists in S3' do
-      subject(:s3_categories) { described_class.load_from_s3 }
-
-      before do
-        allow_any_instance_of(Aws::S3::Object).to receive_message_chain(:get, :body, :read).and_return(json_string)
-      end
-
-      it { is_expected.to be_an Array }
-      it { is_expected.to all be_instance_of described_class }
-      it { is_expected.to have_attributes length: 1 }
-    end
-
-    context 'when the specified file key does not exist in S3' do
-      before do
-        allow_any_instance_of(Aws::S3::Bucket).to receive(:object).and_raise(Aws::S3::Errors::NoSuchKey.new({}, 'File not found'))
-      end
-
-      it 'raise InvalidFile error' do
-        expect { described_class.load_from_s3 }.to raise_error(GreenLanes::CategoryAssessment::InvalidFile)
-      end
-    end
-  end
-  # rubocop:enable RSpec/AnyInstance
-
-  describe '.filter' do
-    before { described_class.load_from_file test_file }
-
-    let(:test_file) { file_fixture 'green_lanes/categorisations.json' }
-
-    context 'with matching regulation_id and measure_type_id' do
-      subject(:categorisation_filter) do
-        described_class.filter regulation_id: 'D000004', measure_type_id: '430'
-      end
-
-      it { is_expected.to be_an Array }
-      it { is_expected.to have_attributes length: 1 }
-      it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
-    end
-
-    context 'when regulation_id is blank' do
-      subject(:categorisation_filter) do
-        described_class.filter regulation_id: '', measure_type_id: '430'
-      end
-
-      it { is_expected.to be_an Array }
-      it { is_expected.to be_empty }
-    end
-
-    context 'when geographical_area is specified' do
-      subject(:categorisation_filter) do
-        described_class.filter regulation_id: 'D000004', measure_type_id: '430', geographical_area: 'US'
-      end
-
-      it { expect(categorisation_filter.first).to have_attributes regulation_id: 'D000004', measure_type_id: '430' }
-    end
-  end
-
-  describe '#match?' do
-    subject(:categorisation) do
-      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area:
-    end
-
-    let(:geographical_area) { 'US' }
-
-    context 'when the attributes match' do
-      it do
-        expect(categorisation.match?(regulation_id: 'D000004',
-                                     measure_type_id: '430',
-                                     geographical_area: 'US')).to be true
+        it { is_expected.not_to eq second_theme }
       end
     end
 
-    context 'when the attributes match and geographical_area is NOT specified' do
-      it do
-        expect(categorisation.match?(regulation_id: 'D000004', measure_type_id: '430')).to be true
+    describe '#measure_type' do
+      subject { category_assessment.reload.measure_type }
+
+      let(:category_assessment) { create :category_assessment, measure_type: }
+      let(:measure_type) { create :measure_type }
+
+      it { is_expected.to eq measure_type }
+
+      context 'with different measure_type' do
+        let(:second_measure_type) { create :measure_type }
+
+        it { is_expected.not_to eq second_measure_type }
       end
     end
 
-    context 'when the attributes match and geographical_area is ERGA OMNES' do
-      let(:geographical_area) { GeographicalArea::ERGA_OMNES_ID }
+    describe '#base_regulation' do
+      subject { category_assessment.reload.base_regulation }
 
-      it 'matches any origin with Erga Omnes' do
-        expect(categorisation.match?(regulation_id: 'D000004',
-                                     measure_type_id: '430',
-                                     geographical_area: 'IT')).to be true
+      let(:category_assessment) { create :category_assessment, base_regulation: }
+      let(:base_regulation) { create :base_regulation }
+
+      it { is_expected.to eq base_regulation }
+
+      context 'with different base_regulation' do
+        let(:second_regulation) { create :base_regulation }
+
+        it { is_expected.not_to eq second_regulation }
       end
     end
 
-    context 'when regulation_id does NOT match' do
-      it do
-        expect(categorisation.match?(regulation_id: 'XXX',
-                                     measure_type_id: '430',
-                                     geographical_area: 'US')).to be false
-      end
-    end
+    describe '#modification_regulation' do
+      subject { category_assessment.reload.modification_regulation }
 
-    context 'when geographical_area does NOT match' do
-      it do
-        expect(categorisation.match?(regulation_id: 'D000004',
-                                     measure_type_id: '430',
-                                     geographical_area: 'XXX')).to be false
+      let(:category_assessment) { create :category_assessment, modification_regulation: }
+      let(:modification_regulation) { create :modification_regulation }
+
+      it { is_expected.to eq modification_regulation }
+
+      context 'with different modification_regulation' do
+        let(:second_regulation) { create :modification_regulation }
+
+        it { is_expected.not_to eq second_regulation }
       end
     end
   end
 
-  describe '#certificates' do
-    subject { described_class.new(document_codes:).certificates }
+  describe '#regulation' do
+    subject { assessment.reload.regulation }
 
-    before { certs }
-
-    let(:document_codes) { %w[Y123 999L] }
-
-    let :certs do
-      [
-        create(:certificate, certificate_type_code: 'Y', certificate_code: '123'),
-        create(:certificate, certificate_type_code: '9', certificate_code: '99L'),
-      ]
+    let :assessment do
+      create :category_assessment, regulation_id: regulation&.regulation_id,
+                                   regulation_role: regulation&.role
     end
 
-    it { is_expected.to match_array certs }
+    context 'without regulation' do
+      let(:regulation) { nil }
+
+      it { is_expected.to be_nil }
+    end
+
+    context 'with modification regulation' do
+      let(:regulation) { create :base_regulation }
+
+      it { is_expected.to eq regulation }
+    end
+
+    context 'with base regulation' do
+      let(:regulation) { create :modification_regulation }
+
+      it { is_expected.to eq regulation }
+    end
   end
 
-  describe '#additional_code_instances' do
-    subject { described_class.new(additional_codes:).additional_code_instances }
+  describe '#regulation=' do
+    subject { assessment }
 
-    before { codes }
+    before { assessment.regulation = new_regulation }
 
-    let(:additional_codes) { %w[X987 ABCD] }
+    let(:persisted) { assessment.tap(&:save).reload }
+    let(:regulation) { create :base_regulation }
 
-    let :codes do
-      [
-        create(:additional_code, additional_code_type_id: 'X', additional_code: '987'),
-        create(:additional_code, additional_code_type_id: 'A', additional_code: 'BCD'),
-      ]
+    let :assessment do
+      create :category_assessment, regulation_id: regulation&.regulation_id,
+                                   regulation_role: regulation&.role
     end
 
-    it { is_expected.to match_array codes }
-  end
+    context 'with nil' do
+      let(:new_regulation) { nil }
 
-  describe '#exemptions' do
-    subject { described_class.new(document_codes:, additional_codes:).exemptions }
-
-    before { exemptions }
-
-    let(:document_codes) { %w[Y123] }
-    let(:additional_codes) { %w[X987] }
-
-    let :exemptions do
-      [
-        create(:certificate, certificate_type_code: 'Y', certificate_code: '123'),
-        create(:additional_code, additional_code_type_id: 'X', additional_code: '987'),
-      ]
+      it { is_expected.to have_attributes base_regulation: nil }
+      it { is_expected.to have_attributes modification_regulation: nil }
+      it { is_expected.to have_attributes regulation_id: nil, regulation_role: nil }
+      it { expect(persisted).to have_attributes regulation_id: nil, regulation_role: nil }
     end
 
-    it { is_expected.to match_array exemptions }
+    context 'with modification regulation' do
+      let(:new_regulation) { create :modification_regulation }
+
+      it { is_expected.to have_attributes base_regulation: nil }
+      it { is_expected.to have_attributes modification_regulation: new_regulation }
+
+      it 'is updates relationship attributes' do
+        expect(assessment).to have_attributes regulation_id: new_regulation.regulation_id,
+                                              regulation_role: new_regulation.role
+      end
+
+      it 'is is still updated after save and reload' do
+        expect(persisted).to have_attributes regulation_id: new_regulation.regulation_id,
+                                             regulation_role: new_regulation.role
+      end
+    end
+
+    context 'with base regulation' do
+      let(:regulation) { create :modification_regulation }
+      let(:new_regulation) { create :base_regulation }
+
+      it { is_expected.to have_attributes base_regulation: new_regulation }
+      it { is_expected.to have_attributes modification_regulation: nil }
+
+      it 'is updates relationship attributes' do
+        expect(assessment).to have_attributes regulation_id: new_regulation.regulation_id,
+                                              regulation_role: new_regulation.role
+      end
+
+      it 'is is still updated after save and reload' do
+        expect(persisted).to have_attributes regulation_id: new_regulation.regulation_id,
+                                             regulation_role: new_regulation.role
+      end
+    end
   end
 end

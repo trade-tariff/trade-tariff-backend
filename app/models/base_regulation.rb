@@ -7,6 +7,9 @@ class BaseRegulation < Sequel::Model
   one_to_one :complete_abrogation_regulation, key: %i[complete_abrogation_regulation_id
                                                       complete_abrogation_regulation_role]
 
+  one_to_many :green_lanes_category_assessments, class: :'GreenLanes::CategoryAssessment',
+                                                 key: %i[regulation_id regulation_role]
+
   def regulation_id
     base_regulation_id
   end
