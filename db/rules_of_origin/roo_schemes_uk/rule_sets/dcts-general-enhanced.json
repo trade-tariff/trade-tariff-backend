@@ -345,7 +345,7 @@
                   "max": "1199999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11), [heading&nbsp;0701](/headings/0701) and [heading&nbsp;2303](/headings/2303), and [subheading&nbsp;071010](/subheading/0710100000-80) used are wholly obtained in the country or territory.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11), [heading&nbsp;0701](/headings/0701) and [heading&nbsp;2303](/headings/2303), and [subheading&nbsp;071010](/subheadings/0710100000-80) used are wholly obtained in the country or territory.",
                               "class": [
                                     "WO"
                               ],
@@ -809,7 +809,7 @@
                   "max": "2299999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the good and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\n- all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained in the country or territory, *and*\n\n- the individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final good, *and*\n\n- the total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of the final good.",
+                              "rule": "Manufacture from materials of any heading, except that of the good and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\n- all the materials of [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80), [subheading&nbsp;200969](/subheadings/2009690000-80) used are wholly obtained in the country or territory, *and*\n\n- the individual weight of sugar and of the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **40%** of the weight of the final good, *and*\n\n- the total combined weight of sugar and the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **60%** of the weight of the final good.",
                               "class": [
                                     "WO"
                               ],
