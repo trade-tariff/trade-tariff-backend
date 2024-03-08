@@ -1358,7 +1358,7 @@
                   "max": "1704999999",
                   "rules": [
                         {
-                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and*\n\n- in which the value of all the materials of [chapter&nbsp;17](/chapters/17), except of materials from [subheading&nbsp;170230](/subheading/1702300000-80), used does not exceed **30%** of the ex-works price of the product.",
+                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and*\n\n- in which the value of all the materials of [chapter&nbsp;17](/chapters/17), except of materials from [subheading&nbsp;170230](/subheadings/1702300000-80), used does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
                                     "CTH"
@@ -1380,7 +1380,7 @@
                   "max": "1899999999",
                   "rules": [
                         {
-                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and*\n\n- in which the value of all the materials of [chapter&nbsp;17](/chapters/17), except of materials from [subheading&nbsp;170230](/subheading/1702300000-80), used does not exceed **30%** of the ex-works price of the product.",
+                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product, *and*\n\n- in which the value of all the materials of [chapter&nbsp;17](/chapters/17), except of materials from [subheading&nbsp;170230](/subheadings/1702300000-80), used does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
                                     "CTH"
@@ -19775,7 +19775,7 @@
                   "max": "9608999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of [subheading&nbsp;960891](/subheading/9608910000-80) or [subheading&nbsp;960899](/subheading/9608990000-80) may be used.",
+                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of [subheading&nbsp;960891](/subheadings/9608910000-80) or [subheading&nbsp;960899](/subheadings/9608990000-80) may be used.",
                               "class": [
                                     "CTH TOLERANCE MAY BE USED"
                               ],
