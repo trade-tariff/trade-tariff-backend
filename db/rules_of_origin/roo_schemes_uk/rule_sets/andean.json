@@ -6398,7 +6398,7 @@
                   "max": "3907999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product, *or*\n\nManufacture from polycarbonate of tetrabromo (bisphenol A) of [subheading&nbsp;390740](/subheading/3907400000-80).",
+                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of the same heading as the product may be used, provided that their total value does not exceed **20%** of the ex-works price of the product, *or*\n\nManufacture from polycarbonate of tetrabromo (bisphenol A) of [subheading&nbsp;390740](/subheadings/3907400000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -9449,7 +9449,7 @@
                   "max": "5607509999",
                   "rules": [
                         {
-                              "rule": "Manufacture from high tenacity filament yarn classified in [subheading&nbsp;540211](/subheading/5402110000-80), [subheading&nbsp;540219](/subheading/5402190000-80) or [subheading&nbsp;540220](/subheading/5402200000-80).",
+                              "rule": "Manufacture from high tenacity filament yarn classified in [subheading&nbsp;540211](/subheadings/5402110000-80), [subheading&nbsp;540219](/subheadings/5402190000-80) or [subheading&nbsp;540220](/subheadings/5402200000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -9489,7 +9489,7 @@
                   "max": "5608999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from high tenacity filament yarn classified in [subheading&nbsp;540211](/subheading/5402110000-80), [subheading&nbsp;540219](/subheading/5402190000-80) or [subheading&nbsp;540220](/subheading/5402200000-80).",
+                              "rule": "Manufacture from high tenacity filament yarn classified in [subheading&nbsp;540211](/subheadings/5402110000-80), [subheading&nbsp;540219](/subheadings/5402190000-80) or [subheading&nbsp;540220](/subheadings/5402200000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
