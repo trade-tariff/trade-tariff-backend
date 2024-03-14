@@ -169,131 +169,6 @@ CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
 $$;
 
 
---
--- Name: forbid_ddl_reader(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.forbid_ddl_reader() RETURNS event_trigger
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	begin
-		-- do not execute if member of rds_superuser
-		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
-		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if superuser
-		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if member of manager role
-		IF pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager', 'member') THEN
-			RETURN;
-		END IF;
-
-		IF pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader', 'member') THEN
-			RAISE EXCEPTION 'executing % is disabled for read only bindings', tg_tag;
-		END IF;
-	end
-$$;
-
-
---
--- Name: make_readable(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.make_readable() RETURNS event_trigger
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	begin
-		IF EXISTS (SELECT 1 FROM pg_event_trigger_ddl_commands() WHERE schema_name NOT LIKE 'pg_temp%') THEN
-			EXECUTE 'select make_readable_generic()';
-			RETURN;
-		END IF;
-	end
-	$$;
-
-
---
--- Name: make_readable_generic(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.make_readable_generic() RETURNS void
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	declare
-		r record;
-	begin
-		-- do not execute if member of rds_superuser
-		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
-		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if superuser
-		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager', 'member') THEN
-			RETURN;
-		END IF;
-
-		FOR r in (select schema_name from information_schema.schemata) LOOP
-			BEGIN
-				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader');
-				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader');
-				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader');
-
-				RAISE NOTICE 'GRANTED READ ONLY IN SCHEMA %s', r.schema_name;
-			EXCEPTION WHEN OTHERS THEN
-			  -- brrr
-			END;
-		END LOOP;
-
-		RETURN;
-	end
-$$;
-
-
---
--- Name: reassign_owned(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.reassign_owned() RETURNS event_trigger
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	begin
-		-- do not execute if member of rds_superuser
-		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
-		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if superuser
-		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager', 'member') THEN
-			RETURN;
-		END IF;
-
-		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager');
-
-		RETURN;
-	end
-$$;
-
-
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -2009,18 +1884,6 @@ ALTER SEQUENCE uk.duty_expressions_oid_seq OWNED BY uk.duty_expressions_oplog.oi
 
 
 --
--- Name: exchange_rate_countries; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.exchange_rate_countries (
-    currency_code character varying(10),
-    country character varying(200),
-    country_code character varying(10) NOT NULL,
-    active boolean
-);
-
-
---
 -- Name: exchange_rate_countries_currencies; Type: TABLE; Schema: uk; Owner: -
 --
 
@@ -2048,17 +1911,6 @@ ALTER TABLE uk.exchange_rate_countries_currencies ALTER COLUMN id ADD GENERATED 
     NO MINVALUE
     NO MAXVALUE
     CACHE 1
-);
-
-
---
--- Name: exchange_rate_currencies; Type: TABLE; Schema: uk; Owner: -
---
-
-CREATE TABLE uk.exchange_rate_currencies (
-    currency_code character varying(10) NOT NULL,
-    currency_description character varying(200),
-    spot_rate_required boolean DEFAULT false
 );
 
 
@@ -8682,22 +8534,6 @@ ALTER TABLE ONLY uk.exchange_rate_countries_currencies
 
 
 --
--- Name: exchange_rate_countries exchange_rate_countries_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.exchange_rate_countries
-    ADD CONSTRAINT exchange_rate_countries_pkey PRIMARY KEY (country_code);
-
-
---
--- Name: exchange_rate_currencies exchange_rate_currencies_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.exchange_rate_currencies
-    ADD CONSTRAINT exchange_rate_currencies_pkey PRIMARY KEY (currency_code);
-
-
---
 -- Name: exchange_rate_currency_rates exchange_rate_currency_rates_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -10052,13 +9888,6 @@ CREATE INDEX erno_exprefnomopl_ortundreslog_operation_date ON uk.export_refund_n
 
 
 --
--- Name: exchange_rate_countries_country_code_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX exchange_rate_countries_country_code_index ON uk.exchange_rate_countries USING btree (country_code);
-
-
---
 -- Name: exchange_rate_countries_currencies_currency_code_country_code_v; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -10084,20 +9913,6 @@ CREATE INDEX exchange_rate_countries_currencies_validity_end_date_index ON uk.ex
 --
 
 CREATE INDEX exchange_rate_countries_currencies_validity_start_date_index ON uk.exchange_rate_countries_currencies USING btree (validity_start_date);
-
-
---
--- Name: exchange_rate_countries_currency_code_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX exchange_rate_countries_currency_code_index ON uk.exchange_rate_countries USING btree (currency_code);
-
-
---
--- Name: exchange_rate_currencies_currency_code_index; Type: INDEX; Schema: uk; Owner: -
---
-
-CREATE INDEX exchange_rate_currencies_currency_code_index ON uk.exchange_rate_currencies USING btree (currency_code);
 
 
 --
@@ -12351,3 +12166,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20231205100020_adds_clear_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231213114821_read_only_user.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240110120545_adds_user_privileges.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240129180350_add_green_lanes_tables.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240314140653_drop_exchange_rate_tables.rb');
