@@ -190,7 +190,7 @@ Rails.application.routes.draw do
             as: :product_specific_rules
       end
 
-      if TradeTariffBackend.uk?
+      if TradeTariffBackend.uk? || Rails.env.development?
         namespace :news do
           resources :items, only: %i[index show]
           resources :years, only: %i[index]
