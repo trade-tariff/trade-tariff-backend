@@ -107,7 +107,7 @@
                   "max": "0401999999",
                   "rules": [
                         {
-                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheading/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained.",
+                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheadings/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained.",
                               "class": [
                                     "WO",
                                     "CC EXCEPT RESTRICTION WO"
@@ -128,7 +128,7 @@
                   "max": "0402199999",
                   "rules": [
                         {
-                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheading/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that:\n\n- all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained, and \n\n- the net weight of non-originating sugar used in production does not exceed **40%** of the net weight of the product.",
+                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheadings/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that:\n\n- all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained, and \n\n- the net weight of non-originating sugar used in production does not exceed **40%** of the net weight of the product.",
                               "class": [
                                     "WO"
                               ],
@@ -148,7 +148,7 @@
                   "max": "0402999999",
                   "rules": [
                         {
-                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheading/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that: \n\n- all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained, and \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheadings/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that: \n\n- all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained, and \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
                               "class": [
                                     "WO"
                               ],
@@ -168,7 +168,7 @@
                   "max": "0406999999",
                   "rules": [
                         {
-                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheading/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that: \n\n- all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained, *and*\n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change from any other chapter, except from dairy preparations of [subheading&nbsp;190190](/subheadings/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that: \n\n- all the material of [chapter&nbsp;4](/chapters/04) used is wholly obtained, *and*\n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
                               "class": [
                                     "WO"
                               ],
@@ -355,7 +355,7 @@
                               "export": true
                         },
                         {
-                              "rule": "For any other product of [subheading&nbsp;071290](/subheading/0712900000-80), production in which all the material of [chapter&nbsp;7](/chapters/07) used is wholly obtained.",
+                              "rule": "For any other product of [subheading&nbsp;071290](/subheadings/0712900000-80), production in which all the material of [chapter&nbsp;7](/chapters/07) used is wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -573,7 +573,7 @@
                   "max": "1109999999",
                   "rules": [
                         {
-                              "rule": "Production in which all the material of [heading&nbsp;0701](/headings/0701), [subheading&nbsp;071010](/subheading/0710100000-80), [chapter&nbsp;10](/chapters/10) or [chapter&nbsp;11](/chapters/11), or [heading&nbsp;2302](/headings/2302) or [heading&nbsp;2303](/headings/2303) used is wholly obtained.",
+                              "rule": "Production in which all the material of [heading&nbsp;0701](/headings/0701), [subheading&nbsp;071010](/subheadings/0710100000-80), [chapter&nbsp;10](/chapters/10) or [chapter&nbsp;11](/chapters/11), or [heading&nbsp;2302](/headings/2302) or [heading&nbsp;2303](/headings/2303) used is wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -693,7 +693,7 @@
                   "max": "1302299999",
                   "rules": [
                         {
-                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheading/1701910000-80) through 170199.",
+                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) through 170199.",
                               "class": [
                                     "CTSH"
                               ],
@@ -933,7 +933,7 @@
                   "max": "1517999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [heading&nbsp;1507](/headings/1507) to [heading&nbsp;1515](/headings/1515), [subheading&nbsp;151620](/subheading/1516200000-80) or [heading&nbsp;1518](/headings/1518).",
+                              "rule": "A change from any other heading, except from [heading&nbsp;1507](/headings/1507) to [heading&nbsp;1515](/headings/1515), [subheading&nbsp;151620](/subheadings/1516200000-80) or [heading&nbsp;1518](/headings/1518).",
                               "class": [
                                     "CTH",
                                     "CTH EXCEPT"
@@ -1232,7 +1232,7 @@
                   "max": "1702999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;170191](/subheading/1701910000-80) or [subheading&nbsp;170199](/subheading/1701990000-80), provided that the net weight of non-originating material of [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [subheading&nbsp;170111](/subheading/1701110000-80) or [subheading&nbsp;170112](/subheading/1701120000-80) or [heading&nbsp;1703](/headings/1703) used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) or [subheading&nbsp;170199](/subheadings/1701990000-80), provided that the net weight of non-originating material of [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [subheading&nbsp;170111](/subheadings/1701110000-80) or [subheading&nbsp;170112](/subheadings/1701120000-80) or [heading&nbsp;1703](/headings/1703) used in production does not exceed **20%** of the net weight of the product.",
                               "class": [
                                     "CTH",
                                     "MAXNOM",
@@ -1374,7 +1374,7 @@
                   "max": "1806199999",
                   "rules": [
                         {
-                              "rule": "A change from any other subheading, except from [subheading&nbsp;170191](/subheading/1701910000-80) through 170199.",
+                              "rule": "A change from any other subheading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) through 170199.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -1412,7 +1412,7 @@
                   "max": "1806299999",
                   "rules": [
                         {
-                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheading/1701910000-80) through 170199.",
+                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) through 170199.",
                               "class": [
                                     "CTSH"
                               ],
@@ -2145,7 +2145,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;200799](/subheading/2007990000-80) from any other heading provided that the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change to any other product of [subheading&nbsp;200799](/subheadings/2007990000-80) from any other heading provided that the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2322,7 +2322,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;200897](/subheading/2008970000-80) from any other heading, provided that the net weight of non-originating sugar used in production does not exceed **40%** of the net weight of the product.\n\n**Note:**\n\nFor the purposes of the rules of origin for preparations of blueberries, cherries, cranberries, loganberries, raspberries, Saskatoon berries or strawberries of [heading&nbsp;2008](/headings/2008), the net weight of the product may be the net weight of all material used in production of the product excluding the net weight of water of [heading&nbsp;2201](/headings/2201) that is added during the production of the product. The net weight of any fruit used in production may be the net weight of the fruit whether or not frozen or cut but not further processed.",
+                              "rule": "A change to any other product of [subheading&nbsp;200897](/subheadings/2008970000-80) from any other heading, provided that the net weight of non-originating sugar used in production does not exceed **40%** of the net weight of the product.\n\n**Note:**\n\nFor the purposes of the rules of origin for preparations of blueberries, cherries, cranberries, loganberries, raspberries, Saskatoon berries or strawberries of [heading&nbsp;2008](/headings/2008), the net weight of the product may be the net weight of all material used in production of the product excluding the net weight of water of [heading&nbsp;2201](/headings/2201) that is added during the production of the product. The net weight of any fruit used in production may be the net weight of the fruit whether or not frozen or cut but not further processed.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2351,7 +2351,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;200899](/subheading/2008990000-80) from any other heading, provided that the net weight of non-originating sugar used in production does not exceed 20 percent of the net weight of the product.\n\n**Note:**\n\nFor the purposes of the rules of origin for preparations of blueberries, cherries, cranberries, loganberries, raspberries, Saskatoon berries or strawberries of [heading&nbsp;2008](/headings/2008), the net weight of the product may be the net weight of all material used in production of the product excluding the net weight of water of [heading&nbsp;2201](/headings/2201) that is added during the production of the product. The net weight of any fruit used in production may be the net weight of the fruit whether or not frozen or cut but not further processed.",
+                              "rule": "A change to any other product of [subheading&nbsp;200899](/subheadings/2008990000-80) from any other heading, provided that the net weight of non-originating sugar used in production does not exceed 20 percent of the net weight of the product.\n\n**Note:**\n\nFor the purposes of the rules of origin for preparations of blueberries, cherries, cranberries, loganberries, raspberries, Saskatoon berries or strawberries of [heading&nbsp;2008](/headings/2008), the net weight of the product may be the net weight of all material used in production of the product excluding the net weight of water of [heading&nbsp;2201](/headings/2201) that is added during the production of the product. The net weight of any fruit used in production may be the net weight of the fruit whether or not frozen or cut but not further processed.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2484,7 +2484,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;200990](/subheading/2009900000-80) from any other heading, provided that net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change to any other product of [subheading&nbsp;200990](/subheadings/2009900000-80) from any other heading, provided that net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2520,7 +2520,7 @@
                   "max": "2101129999",
                   "rules": [
                         {
-                              "rule": "A change from any other subheading, except from [subheading&nbsp;170191](/subheading/1701910000-80) through 170199.",
+                              "rule": "A change from any other subheading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) through 170199.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -2594,7 +2594,7 @@
                   "max": "2102299999",
                   "rules": [
                         {
-                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheading/1701910000-80) through 170199.",
+                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) through 170199.",
                               "class": [
                                     "CTSH"
                               ],
@@ -2681,7 +2681,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;210320](/subheading/2103200000-80) from any other subheading, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, *and*\n\n- the net weight of non-originating material of [heading&nbsp;0407](/headings/0407) to [heading&nbsp;0410](/headings/0410) used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change to any other product of [subheading&nbsp;210320](/subheadings/2103200000-80) from any other subheading, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, *and*\n\n- the net weight of non-originating material of [heading&nbsp;0407](/headings/0407) to [heading&nbsp;0410](/headings/0410) used in production does not exceed **20%** of the net weight of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2717,7 +2717,7 @@
                   "max": "2103999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading.\n\n**Note:**\n\nFor the purposes of the rule of origin for [subheading&nbsp;210390](/subheading/2103900000-80), mixed condiments and mixed seasonings are food preparations that may be added to a food in order to enhance or impart flavour during the food's manufacture or preparation before it is served, or after the food has been served.",
+                              "rule": "A change from any other heading.\n\n**Note:**\n\nFor the purposes of the rule of origin for [subheading&nbsp;210390](/subheadings/2103900000-80), mixed condiments and mixed seasonings are food preparations that may be added to a food in order to enhance or impart flavour during the food's manufacture or preparation before it is served, or after the food has been served.",
                               "class": [
                                     "CTH"
                               ],
@@ -2746,7 +2746,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;210390](/subheading/2103900000-80) from any other subheading, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, *and*\n\n- the net weight of non-originating material of [heading&nbsp;0407](/headings/0407) to [heading&nbsp;0410](/headings/0410) used in production does not exceed **20%** of the net weight of the product.\n\n**Note:**\n\nFor the purposes of the rule of origin for [subheading&nbsp;210390](/subheading/2103900000-80), mixed condiments and mixed seasonings are food preparations that may be added to a food in order to enhance or impart flavour during the food's manufacture or preparation before it is served, or after the food has been served.",
+                              "rule": "A change to any other product of [subheading&nbsp;210390](/subheadings/2103900000-80) from any other subheading, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, *and*\n\n- the net weight of non-originating material of [heading&nbsp;0407](/headings/0407) to [heading&nbsp;0410](/headings/0410) used in production does not exceed **20%** of the net weight of the product.\n\n**Note:**\n\nFor the purposes of the rule of origin for [subheading&nbsp;210390](/subheadings/2103900000-80), mixed condiments and mixed seasonings are food preparations that may be added to a food in order to enhance or impart flavour during the food's manufacture or preparation before it is served, or after the food has been served.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2832,7 +2832,7 @@
                   "max": "2106999999",
                   "rules": [
                         {
-                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheading/1701910000-80) through 170199.",
+                              "rule": "A change from within this subheading or any other subheading, except from [subheading&nbsp;170191](/subheadings/1701910000-80) through 170199.",
                               "class": [
                                     "CTSH"
                               ],
@@ -2943,7 +2943,7 @@
                   "max": "2202999999",
                   "rules": [
                         {
-                              "rule": "A change to beverages containing milk from any other heading, except from [heading&nbsp;0401](/headings/0401) to [heading&nbsp;0406](/headings/0406) or dairy preparations of [subheading&nbsp;190190](/subheading/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, and \n\n- the net weight of non-originating material of [heading&nbsp;0407](/headings/0407) to [heading&nbsp;0410](/headings/0410) used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change to beverages containing milk from any other heading, except from [heading&nbsp;0401](/headings/0401) to [heading&nbsp;0406](/headings/0406) or dairy preparations of [subheading&nbsp;190190](/subheadings/1901900000-80) containing more than **10%** by dry weight of milk solids, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, and \n\n- the net weight of non-originating material of [heading&nbsp;0407](/headings/0407) to [heading&nbsp;0410](/headings/0410) used in production does not exceed **20%** of the net weight of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -2952,7 +2952,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;220290](/subheading/2202900000-80) from any other heading, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, *and*\n\n- the net weight of non-originating material of [chapter&nbsp;4](/chapters/04) used in production does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change to any other product of [subheading&nbsp;220290](/subheadings/2202900000-80) from any other heading, provided that: \n\n- the net weight of non-originating sugar used in production does not exceed **20%** of the net weight of the product, *and*\n\n- the net weight of non-originating material of [chapter&nbsp;4](/chapters/04) used in production does not exceed **20%** of the net weight of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -2990,7 +2990,7 @@
                   "max": "2204999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80) or [subheading&nbsp;200969](/subheading/2009690000-80), [heading&nbsp;2207](/headings/2207) or [heading&nbsp;2208](/headings/2208).",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80) or [subheading&nbsp;200969](/subheadings/2009690000-80), [heading&nbsp;2207](/headings/2207) or [heading&nbsp;2208](/headings/2208).",
                               "class": [
                                     "CTH",
                                     "CTH EXCEPT"
@@ -3156,7 +3156,7 @@
                   "max": "2309199999",
                   "rules": [
                         {
-                              "rule": "A change from [subheading&nbsp;230990](/subheading/2309900000-80) or any other heading, except from dog or cat food of [subheading&nbsp;230990](/subheading/2309900000-80).",
+                              "rule": "A change from [subheading&nbsp;230990](/subheadings/2309900000-80) or any other heading, except from dog or cat food of [subheading&nbsp;230990](/subheadings/2309900000-80).",
                               "class": [
                                     "CTH"
                               ],
@@ -3260,7 +3260,7 @@
                   "max": "2402299999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;240310](/subheading/2403100000-80), provided that the net weight of the material of [heading&nbsp;2401](/headings/2401) that is wholly obtained is at least **10%** by net weight of all the material of [chapter&nbsp;24](/chapters/24) used in the production of the product.",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;240310](/subheadings/2403100000-80), provided that the net weight of the material of [heading&nbsp;2401](/headings/2401) that is wholly obtained is at least **10%** by net weight of all the material of [chapter&nbsp;24](/chapters/24) used in the production of the product.",
                               "class": [
                                     "WO",
                                     "CTH EXCEPT RESTRICTION MAXWEIGHT"
@@ -3565,7 +3565,7 @@
                   "max": "2710999999",
                   "rules": [
                         {
-                              "rule": "A change from within this heading or any other heading, except from biodiesel of [subheading&nbsp;382490](/subheading/3824900000-80) or [heading&nbsp;3826](/headings/3826).",
+                              "rule": "A change from within this heading or any other heading, except from biodiesel of [subheading&nbsp;382490](/subheadings/3824900000-80) or [heading&nbsp;3826](/headings/3826).",
                               "class": [
                                     "AH EXCEPT"
                               ],
@@ -4139,7 +4139,7 @@
                   "max": "3401399999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;340290](/subheading/3402900000-80).",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;340290](/subheadings/3402900000-80).",
                               "class": [
                                     "CTH",
                                     "CTH EXCEPT"
@@ -4151,7 +4151,7 @@
                               "export": true
                         },
                         {
-                              "rule": "Change from within this heading, whether or not there is also a change from any other heading except [subheading&nbsp;340290](/subheading/3402900000-80), provided that the value of non-originating materials of this heading does not exceed **20%** of the transaction value or ex-works price of the product.",
+                              "rule": "Change from within this heading, whether or not there is also a change from any other heading except [subheading&nbsp;340290](/subheadings/3402900000-80), provided that the value of non-originating materials of this heading does not exceed **20%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -4202,7 +4202,7 @@
                   "max": "3402299999",
                   "rules": [
                         {
-                              "rule": "A change from any other subheading, except from [subheading&nbsp;340290](/subheading/3402900000-80).",
+                              "rule": "A change from any other subheading, except from [subheading&nbsp;340290](/subheadings/3402900000-80).",
                               "class": [
                                     "CTSH EXCEPT"
                               ],
@@ -4397,7 +4397,7 @@
                   "max": "3504999999",
                   "rules": [
                         {
-                              "rule": "A change to milk protein substances from any other heading, except from [chapter&nbsp;4](/chapters/04) or dairy preparations of [subheading&nbsp;190190](/subheading/1901900000-80) containing more than **10%** by dry weight of milk solids.",
+                              "rule": "A change to milk protein substances from any other heading, except from [chapter&nbsp;4](/chapters/04) or dairy preparations of [subheading&nbsp;190190](/subheadings/1901900000-80) containing more than **10%** by dry weight of milk solids.",
                               "class": [
                                     "CTH EXCEPT"
                               ],
@@ -4716,7 +4716,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;380510](/subheading/3805100000-80) from any other subheading.",
+                              "rule": "A change to any other product of [subheading&nbsp;380510](/subheadings/3805100000-80) from any other subheading.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -5028,7 +5028,7 @@
                   "max": "3820999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;290531](/subheading/2905310000-80) or [subheading&nbsp;290549](/subheading/2905490000-80).",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;290531](/subheadings/2905310000-80) or [subheading&nbsp;290549](/subheadings/2905490000-80).",
                               "class": [
                                     "CTH",
                                     "CTH EXCEPT"
@@ -5040,7 +5040,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;290531](/subheading/2905310000-80) or [subheading&nbsp;290549](/subheading/2905490000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;290531](/subheading/2905310000-80) or [subheading&nbsp;290549](/subheading/2905490000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;290531](/subheadings/2905310000-80) or [subheading&nbsp;290549](/subheadings/2905490000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;290531](/subheadings/2905310000-80) or [subheading&nbsp;290549](/subheadings/2905490000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -5142,7 +5142,7 @@
                   "max": "3824699999",
                   "rules": [
                         {
-                              "rule": "A change from any other subheading, except from [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [heading&nbsp;1701](/headings/1701), [heading&nbsp;1702](/headings/1702) or [subheading&nbsp;290544](/subheading/2905440000-80).",
+                              "rule": "A change from any other subheading, except from [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [heading&nbsp;1701](/headings/1701), [heading&nbsp;1702](/headings/1702) or [subheading&nbsp;290544](/subheadings/2905440000-80).",
                               "class": [
                                     "CTSH EXCEPT"
                               ],
@@ -5153,7 +5153,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [heading&nbsp;1701](/headings/1701), [heading&nbsp;1702](/headings/1702) or [subheading&nbsp;290544](/subheading/2905440000-80), whether or not there is also a change from any other subheading, provided that the weight of non-originating material of [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [heading&nbsp;1701](/headings/1701), [heading&nbsp;1702](/headings/1702) or [subheading&nbsp;290544](/subheading/2905440000-80) does not exceed **20%** of the net weight of the product.",
+                              "rule": "A change from [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [heading&nbsp;1701](/headings/1701), [heading&nbsp;1702](/headings/1702) or [subheading&nbsp;290544](/subheadings/2905440000-80), whether or not there is also a change from any other subheading, provided that the weight of non-originating material of [heading&nbsp;1101](/headings/1101) to [heading&nbsp;1108](/headings/1108), [heading&nbsp;1701](/headings/1701), [heading&nbsp;1702](/headings/1702) or [subheading&nbsp;290544](/subheadings/2905440000-80) does not exceed **20%** of the net weight of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -5202,7 +5202,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to products containing ethanol from any other heading, except from ethanol of [heading&nbsp;2207](/headings/2207) or [subheading&nbsp;220890](/subheading/2208900000-80).",
+                              "rule": "A change to products containing ethanol from any other heading, except from ethanol of [heading&nbsp;2207](/headings/2207) or [subheading&nbsp;220890](/subheadings/2208900000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -5211,7 +5211,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to any other product of [subheading&nbsp;382490](/subheading/3824900000-80) from any other heading.",
+                              "rule": "A change to any other product of [subheading&nbsp;382490](/subheadings/3824900000-80) from any other heading.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -5671,7 +5671,7 @@
                   "max": "4113999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;410441](/subheading/4104410000-80), [subheading&nbsp;410449](/subheading/4104490000-80), [subheading&nbsp;410530](/subheading/4105300000-80), [subheading&nbsp;410622](/subheading/4106220000-80), [subheading&nbsp;410632](/subheading/4106320000-80) or [subheading&nbsp;410692](/subheading/4106920000-80).",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;410441](/subheadings/4104410000-80), [subheading&nbsp;410449](/subheadings/4104490000-80), [subheading&nbsp;410530](/subheadings/4105300000-80), [subheading&nbsp;410622](/subheadings/4106220000-80), [subheading&nbsp;410632](/subheadings/4106320000-80) or [subheading&nbsp;410692](/subheadings/4106920000-80).",
                               "class": [
                                     "CTH",
                                     "CTH EXCEPT"
@@ -5683,7 +5683,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;410441](/subheading/4104410000-80), [subheading&nbsp;410449](/subheading/4104490000-80), [subheading&nbsp;410530](/subheading/4105300000-80), [subheading&nbsp;410622](/subheading/4106220000-80), [subheading&nbsp;410632](/subheading/4106320000-80) or [subheading&nbsp;410692](/subheading/4106920000-80), whether or not there is also a change from any other heading, provided that materials of [subheading&nbsp;410441](/subheading/4104410000-80), [subheading&nbsp;410449](/subheading/4104490000-80), [subheading&nbsp;410530](/subheading/4105300000-80), [subheading&nbsp;410622](/subheading/4106220000-80), [subheading&nbsp;410632](/subheading/4106320000-80) or [subheading&nbsp;410692](/subheading/4106920000-80) undergo a retanning operation in the territory of a Party.",
+                              "rule": "A change from [subheading&nbsp;410441](/subheadings/4104410000-80), [subheading&nbsp;410449](/subheadings/4104490000-80), [subheading&nbsp;410530](/subheadings/4105300000-80), [subheading&nbsp;410622](/subheadings/4106220000-80), [subheading&nbsp;410632](/subheadings/4106320000-80) or [subheading&nbsp;410692](/subheadings/4106920000-80), whether or not there is also a change from any other heading, provided that materials of [subheading&nbsp;410441](/subheadings/4104410000-80), [subheading&nbsp;410449](/subheadings/4104490000-80), [subheading&nbsp;410530](/subheadings/4105300000-80), [subheading&nbsp;410622](/subheadings/4106220000-80), [subheading&nbsp;410632](/subheadings/4106320000-80) or [subheading&nbsp;410692](/subheadings/4106920000-80) undergo a retanning operation in the territory of a Party.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -10951,7 +10951,7 @@
                   "max": "7019519999",
                   "rules": [
                         {
-                              "rule": "A change from any other subheading, except from [subheading&nbsp;701952](/subheading/7019520000-80) through 701959.",
+                              "rule": "A change from any other subheading, except from [subheading&nbsp;701952](/subheadings/7019520000-80) through 701959.",
                               "class": [
                                     "CTSH EXCEPT"
                               ],
@@ -11051,7 +11051,7 @@
                   "max": "7102399999",
                   "rules": [
                         {
-                              "rule": "A change from any other subheading, except from [subheading&nbsp;710210](/subheading/7102100000-80).",
+                              "rule": "A change from any other subheading, except from [subheading&nbsp;710210](/subheadings/7102100000-80).",
                               "class": [
                                     "CTSH EXCEPT"
                               ],
@@ -11619,7 +11619,7 @@
                   "max": "7308999999",
                   "rules": [
                         {
-                              "rule": "A change from any other heading, except from [subheading&nbsp;730120](/subheading/7301200000-80).",
+                              "rule": "A change from any other heading, except from [subheading&nbsp;730120](/subheadings/7301200000-80).",
                               "class": [
                                     "CTH",
                                     "CTH EXCEPT"
@@ -11631,7 +11631,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;730120](/subheading/7301200000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;730120](/subheading/7301200000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;730120](/subheadings/7301200000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;730120](/subheadings/7301200000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -12157,7 +12157,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from within this heading, except from [subheading&nbsp;820590](/subheading/8205900000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of this heading, other than [subheading&nbsp;820590](/subheading/8205900000-80), does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from within this heading, except from [subheading&nbsp;820590](/subheadings/8205900000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of this heading, other than [subheading&nbsp;820590](/subheadings/8205900000-80), does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -12188,7 +12188,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to anvils, portable forges, hand or pedal-operated grinding wheels from within this heading, except from a set of [subheading&nbsp;820590](/subheading/8205900000-80), whether or not there is also a change from any other heading, provided that the value of the non-originating materials of this heading, other than a set of [subheading&nbsp;820590](/subheading/8205900000-80), does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change to anvils, portable forges, hand or pedal-operated grinding wheels from within this heading, except from a set of [subheading&nbsp;820590](/subheadings/8205900000-80), whether or not there is also a change from any other heading, provided that the value of the non-originating materials of this heading, other than a set of [subheading&nbsp;820590](/subheadings/8205900000-80), does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -12257,7 +12257,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;820719](/subheading/8207190000-80) or [heading&nbsp;8209](/headings/8209), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;820719](/subheading/8207190000-80) or [heading&nbsp;8209](/headings/8209) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;820719](/subheadings/8207190000-80) or [heading&nbsp;8209](/headings/8209), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;820719](/subheadings/8207190000-80) or [heading&nbsp;8209](/headings/8209) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -12339,7 +12339,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;821191](/subheading/8211910000-80) through 821195, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;821191](/subheading/8211910000-80) through 821193 does not exceed **25%** of the transaction value or ex-works price of the set.",
+                              "rule": "A change from [subheading&nbsp;821191](/subheadings/8211910000-80) through 821195, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;821191](/subheadings/8211910000-80) through 821193 does not exceed **25%** of the transaction value or ex-works price of the set.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -12368,7 +12368,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;821194](/subheading/8211940000-80) or [subheading&nbsp;821195](/subheading/8211950000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;821194](/subheading/8211940000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;821194](/subheadings/8211940000-80) or [subheading&nbsp;821195](/subheadings/8211950000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;821194](/subheadings/8211940000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -12459,7 +12459,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change to a set of [subheading&nbsp;821420](/subheading/8214200000-80) from within this subheading, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;821420](/subheading/8214200000-80) does not exceed **25%** of the transaction value or ex-works price of the set.",
+                              "rule": "A change to a set of [subheading&nbsp;821420](/subheadings/8214200000-80) from within this subheading, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;821420](/subheadings/8214200000-80) does not exceed **25%** of the transaction value or ex-works price of the set.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -12508,7 +12508,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;821591](/subheading/8215910000-80) through 821599, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;821591](/subheading/8215910000-80) through 821599 does not exceed **25%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;821591](/subheadings/8215910000-80) through 821599, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;821591](/subheadings/8215910000-80) through 821599 does not exceed **25%** of the transaction value or ex-works price of the product.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -12557,7 +12557,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;830160](/subheading/8301600000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;830160](/subheading/8301600000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;830160](/subheadings/8301600000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;830160](/subheadings/8301600000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -12730,7 +12730,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;830590](/subheading/8305900000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;830590](/subheading/8305900000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;830590](/subheadings/8305900000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;830590](/subheadings/8305900000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -12812,7 +12812,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;830890](/subheading/8308900000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;830890](/subheading/8308900000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;830890](/subheadings/8308900000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;830890](/subheadings/8308900000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -15119,7 +15119,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;950639](/subheading/9506390000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;950639](/subheading/9506390000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from [subheading&nbsp;950639](/subheadings/9506390000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of [subheading&nbsp;950639](/subheadings/9506390000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -15294,7 +15294,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from within this heading, except from [subheading&nbsp;960850](/subheading/9608500000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of this heading other than [subheading&nbsp;960850](/subheading/9608500000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from within this heading, except from [subheading&nbsp;960850](/subheadings/9608500000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of this heading other than [subheading&nbsp;960850](/subheadings/9608500000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -15325,7 +15325,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from [subheading&nbsp;960810](/subheading/9608100000-80) through 960840 or 960860 through 960899, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;960810](/subheading/9608100000-80) through 960840 or 960860 through 960899 does not exceed **25%** of the transaction value or ex-works price of the set.",
+                              "rule": "A change from [subheading&nbsp;960810](/subheadings/9608100000-80) through 960840 or 960860 through 960899, whether or not there is also a change from any other heading, provided that the value of the non-originating component products of [subheading&nbsp;960810](/subheadings/9608100000-80) through 960840 or 960860 through 960899 does not exceed **25%** of the transaction value or ex-works price of the set.",
                               "class": [],
                               "footnotes": [],
                               "operator": "or",
@@ -15354,7 +15354,7 @@
                               "export": true
                         },
                         {
-                              "rule": "A change from within this heading, except from [subheading&nbsp;960850](/subheading/9608500000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of this heading other than [subheading&nbsp;960850](/subheading/9608500000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
+                              "rule": "A change from within this heading, except from [subheading&nbsp;960850](/subheadings/9608500000-80), whether or not there is also a change from any other heading, provided that the value of non-originating materials of this heading other than [subheading&nbsp;960850](/subheadings/9608500000-80) does not exceed **50%** of the transaction value or ex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
