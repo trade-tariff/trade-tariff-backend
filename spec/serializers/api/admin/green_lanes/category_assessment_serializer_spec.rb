@@ -18,7 +18,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentSerializer do
           created_at: category.created_at,
           updated_at: category.updated_at,
         },
-      }
+      },
     }
   end
 

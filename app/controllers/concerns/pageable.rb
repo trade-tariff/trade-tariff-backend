@@ -7,7 +7,7 @@ module Pageable
         meta: {
           pagination: {
             page: current_page,
-            per_page: per_page,
+            per_page:,
             total_count: record_count,
           },
         },
