@@ -4,7 +4,7 @@ module Api
       class CategoryAssessmentsController < AdminController
         include Pageable
 
-        before_action :authenticate_user!
+        before_action :check_service, :authenticate_user!
 
         def index
           render json: serialize(category_assessments.to_a, pagination_meta)
@@ -22,6 +22,12 @@ module Api
 
         def serialize(*args)
           Api::Admin::GreenLanes::CategoryAssessmentSerializer.new(*args).serializable_hash
+        end
+
+        def check_service
+          if TradeTariffBackend.uk?
+            raise ActionController::RoutingError, 'Invalid service'
+          end
         end
       end
     end

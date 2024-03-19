@@ -1,6 +1,10 @@
 RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
   subject(:page_response) { make_request && response }
 
+  before do
+    allow(TradeTariffBackend).to receive(:service).and_return 'xi'
+  end
+
   let(:json_response) { JSON.parse(page_response.body) }
   let(:category) { create :category_assessment }
 
