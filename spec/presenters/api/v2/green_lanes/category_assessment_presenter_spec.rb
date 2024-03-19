@@ -1,16 +1,29 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
-  subject(:presented) { described_class.new(category_assessment, measures) }
+  subject(:presented) { described_class.new(assessment, assessment.measures) }
 
-  let :category_assessment do
-    build(:category_assessment_json, measure: measures.first,
-                                     geographical_area_id: 'CH')
+  let(:assessment) { create :category_assessment, :with_measures }
+
+  it { is_expected.to have_attributes id: assessment.id }
+  it { is_expected.to have_attributes measure_ids: assessment.measures.map(&:measure_sid) }
+
+  describe '.wrap' do
+    subject(:wrapped) { described_class.wrap [assessment] }
+
+    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to all be_instance_of described_class }
+
+    context 'with first presented category assessment' do
+      subject { wrapped.first }
+
+      it { is_expected.to have_attributes id: assessment.id }
+      it { is_expected.to have_attributes measure_ids: assessment.measures.map(&:measure_sid) }
+    end
   end
 
-  let :measures do
-    create_list(:measure, 1, measure_generating_regulation_id: 'D0000001',
-                             measure_type_id: '400')
-  end
+  describe '#measures' do
+    subject(:measures) { presented.measures }
 
-  it { is_expected.to have_attributes id: category_assessment.id }
-  it { is_expected.to have_attributes measure_ids: measures.map(&:measure_sid) }
+    it { is_expected.to all be_instance_of Api::V2::GreenLanes::MeasurePresenter }
+    it { expect(measures.map(&:measure_sid)).to eq assessment.measures.map(&:measure_sid) }
+  end
 end
