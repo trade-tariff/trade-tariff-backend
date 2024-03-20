@@ -495,7 +495,7 @@
                   "max": "1302199999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except those of [subheading&nbsp;121120](/subheading/1211200000-80).",
+                              "rule": "Manufacture from materials of any heading, except those of [subheading&nbsp;121120](/subheadings/1211200000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -1600,7 +1600,7 @@
                   "max": "2106999999",
                   "rules": [
                         {
-                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product,\n\nin which all the materials of [subheading&nbsp;121120](/subheading/1211200000-80) and [subheading&nbsp;130219](/subheading/1302190000-80) used are wholly obtained, *and*\n\nin which the value of all the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **30%** of the ex-works price of the product, *and*\n\nthe value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
+                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product,\n\nin which all the materials of [subheading&nbsp;121120](/subheadings/1211200000-80) and [subheading&nbsp;130219](/subheadings/1302190000-80) used are wholly obtained, *and*\n\nin which the value of all the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **30%** of the ex-works price of the product, *and*\n\nthe value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
                                     "CTH",
@@ -1623,7 +1623,7 @@
                   "max": "2106999999",
                   "rules": [
                         {
-                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product,\n\nin which all the materials of [subheading&nbsp;121120](/subheading/1211200000-80) and [subheading&nbsp;130219](/subheading/1302190000-80) used are wholly obtained, *and*\n\nin which the value of all the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **30%** of the ex-works price of the product, *and*\n\nthe value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
+                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product,\n\nin which all the materials of [subheading&nbsp;121120](/subheadings/1211200000-80) and [subheading&nbsp;130219](/subheadings/1302190000-80) used are wholly obtained, *and*\n\nin which the value of all the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **30%** of the ex-works price of the product, *and*\n\nthe value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
                               "class": [
                                     "MAXNOM",
                                     "CTH",
@@ -1668,7 +1668,7 @@
                   "max": "2202999999",
                   "rules": [
                         {
-                              "rule": "Manufacture:\n\nfrom materials of any heading, except that of the product,\n\nin which the value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product,\n\nin which all the fruit juice used (except that of pineapple, lime or grapefruit) of [heading&nbsp;2009](/headings/2009) is originating, *and*\n\nin which all the materials of [subheading&nbsp;121120](/subheading/1211200000-80) and [subheading&nbsp;130219](/subheading/1302190000-80) used are wholly obtained.",
+                              "rule": "Manufacture:\n\nfrom materials of any heading, except that of the product,\n\nin which the value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product,\n\nin which all the fruit juice used (except that of pineapple, lime or grapefruit) of [heading&nbsp;2009](/headings/2009) is originating, *and*\n\nin which all the materials of [subheading&nbsp;121120](/subheadings/1211200000-80) and [subheading&nbsp;130219](/subheadings/1302190000-80) used are wholly obtained.",
                               "class": [
                                     "MAXNOM",
                                     "CTH",
