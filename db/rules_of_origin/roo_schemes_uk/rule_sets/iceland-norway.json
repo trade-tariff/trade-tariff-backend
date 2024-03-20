@@ -260,7 +260,7 @@
                   "max": "1199999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;8](/chapters/08), [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11), [heading&nbsp;0701](/headings/0701), [heading&nbsp;0714](/headings/0714), [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303), and [subheading&nbsp;071010](/subheading/0710100000-80) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;8](/chapters/08), [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11), [heading&nbsp;0701](/headings/0701), [heading&nbsp;0714](/headings/0714), [heading&nbsp;2302](/headings/2302) and [heading&nbsp;2303](/headings/2303), and [subheading&nbsp;071010](/subheadings/0710100000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1257,7 +1257,7 @@
                   "max": "2201999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which all the materials of [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80), [subheading&nbsp;200969](/subheadings/2009690000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1299,7 +1299,7 @@
                   "max": "2206999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which all the materials of [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80), [subheading&nbsp;200969](/subheadings/2009690000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1320,7 +1320,7 @@
                   "max": "2208999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except [heading&nbsp;2207](/headings/2207) or [heading&nbsp;2208](/headings/2208), in which all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained.",
+                              "rule": "Manufacture from materials of any heading, except [heading&nbsp;2207](/headings/2207) or [heading&nbsp;2208](/headings/2208), in which all the materials of [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80), [subheading&nbsp;200969](/subheadings/2009690000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1341,7 +1341,7 @@
                   "max": "2209999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product, in which all the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained.",
+                              "rule": "Manufacture from materials of any heading, except that of the product, in which all the materials of [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80), [subheading&nbsp;200969](/subheadings/2009690000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1425,7 +1425,7 @@
                   "max": "2402999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product and of smoking tobacco of [subheading&nbsp;240319](/subheading/2403190000-80), in which at least **10%** by weight of all materials of [heading&nbsp;2401](/headings/2401) used is wholly obtained.",
+                              "rule": "Manufacture from materials of any heading, except that of the product and of smoking tobacco of [subheading&nbsp;240319](/subheadings/2403190000-80), in which at least **10%** by weight of all materials of [heading&nbsp;2401](/headings/2401) used is wholly obtained.",
                               "class": [
                                     "WO"
                               ],

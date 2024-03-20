@@ -678,7 +678,7 @@
                   "max": "1199999999",
                   "rules": [
                         {
-                              "rule": "Manufacture in which all the materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11), [heading&nbsp;0701](/headings/0701), 071410 and 2303, and [subheading&nbsp;071010](/subheading/0710100000-80) used are wholly obtained.",
+                              "rule": "Manufacture in which all the materials of [chapter&nbsp;10](/chapters/10) and [chapter&nbsp;11](/chapters/11), [heading&nbsp;0701](/headings/0701), 071410 and 2303, and [subheading&nbsp;071010](/subheadings/0710100000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -1753,7 +1753,7 @@
                   "max": "2299999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\nall the materials of [subheading&nbsp;080610](/subheading/0806100000-80), [subheading&nbsp;200961](/subheading/2009610000-80), [subheading&nbsp;200969](/subheading/2009690000-80) used are wholly obtained.",
+                              "rule": "Manufacture from materials of any heading, except that of the product and [heading&nbsp;2207](/headings/2207) and [heading&nbsp;2208](/headings/2208), in which:\n\nall the materials of [subheading&nbsp;080610](/subheadings/0806100000-80), [subheading&nbsp;200961](/subheadings/2009610000-80), [subheading&nbsp;200969](/subheadings/2009690000-80) used are wholly obtained.",
                               "class": [
                                     "WO"
                               ],
@@ -2046,7 +2046,7 @@
                   "max": "2402999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading except that of the product and of smoking tobacco of [subheading&nbsp;240319](/subheading/2403190000-80) in which at least **10%** by weight of all materials of [chapter&nbsp;24](/chapters/24) used is wholly obtained unmanufactured tobacco or tobacco refuse of [heading&nbsp;2401](/headings/2401).",
+                              "rule": "Manufacture from materials of any heading except that of the product and of smoking tobacco of [subheading&nbsp;240319](/subheadings/2403190000-80) in which at least **10%** by weight of all materials of [chapter&nbsp;24](/chapters/24) used is wholly obtained unmanufactured tobacco or tobacco refuse of [heading&nbsp;2401](/headings/2401).",
                               "class": [
                                     "WO",
                                     "CTH EXCEPT",
@@ -4106,7 +4106,7 @@
                   "max": "3824609999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any subheading, except that of the product and except materials of [subheading&nbsp;290544](/subheading/2905440000-80). However, materials of the same subheading as the product may be used, provided that their total value does not exceed **20%** of the\n\nex-works price of the product.",
+                              "rule": "Manufacture from materials of any subheading, except that of the product and except materials of [subheading&nbsp;290544](/subheadings/2905440000-80). However, materials of the same subheading as the product may be used, provided that their total value does not exceed **20%** of the\n\nex-works price of the product.",
                               "class": [
                                     "MAXNOM"
                               ],
@@ -4835,7 +4835,7 @@
                   "max": "4106999999",
                   "rules": [
                         {
-                              "rule": "Re-tanning of tanned or pre-tanned hides and skins of [subheading&nbsp;410411](/subheading/4104110000-80), [subheading&nbsp;410419](/subheading/4104190000-80), [subheading&nbsp;410510](/subheading/4105100000-80), [subheading&nbsp;410621](/subheading/4106210000-80), [subheading&nbsp;410631](/subheading/4106310000-80) or [subheading&nbsp;410691](/subheading/4106910000-80).",
+                              "rule": "Re-tanning of tanned or pre-tanned hides and skins of [subheading&nbsp;410411](/subheadings/4104110000-80), [subheading&nbsp;410419](/subheadings/4104190000-80), [subheading&nbsp;410510](/subheadings/4105100000-80), [subheading&nbsp;410621](/subheadings/4106210000-80), [subheading&nbsp;410631](/subheadings/4106310000-80) or [subheading&nbsp;410691](/subheadings/4106910000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -4865,7 +4865,7 @@
                   "max": "4107999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of [subheading&nbsp;410441](/subheading/4104410000-80), [subheading&nbsp;410449](/subheading/4104490000-80), [subheading&nbsp;410530](/subheading/4105300000-80), [subheading&nbsp;410622](/subheading/4106220000-80), [subheading&nbsp;410632](/subheading/4106320000-80) and [subheading&nbsp;410692](/subheading/4106920000-80) may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place.",
+                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of [subheading&nbsp;410441](/subheadings/4104410000-80), [subheading&nbsp;410449](/subheadings/4104490000-80), [subheading&nbsp;410530](/subheadings/4105300000-80), [subheading&nbsp;410622](/subheadings/4106220000-80), [subheading&nbsp;410632](/subheadings/4106320000-80) and [subheading&nbsp;410692](/subheadings/4106920000-80) may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -4884,7 +4884,7 @@
                   "max": "4113999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of [subheading&nbsp;410441](/subheading/4104410000-80), [subheading&nbsp;410449](/subheading/4104490000-80), [subheading&nbsp;410530](/subheading/4105300000-80), [subheading&nbsp;410622](/subheading/4106220000-80), [subheading&nbsp;410632](/subheading/4106320000-80) and [subheading&nbsp;410692](/subheading/4106920000-80) may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place.",
+                              "rule": "Manufacture from materials of any heading, except that of the product. However, materials of [subheading&nbsp;410441](/subheadings/4104410000-80), [subheading&nbsp;410449](/subheadings/4104490000-80), [subheading&nbsp;410530](/subheadings/4105300000-80), [subheading&nbsp;410622](/subheadings/4106220000-80), [subheading&nbsp;410632](/subheadings/4106320000-80) and [subheading&nbsp;410692](/subheadings/4106920000-80) may be used only if a re-tanning operation of the tanned or crust hides and skins in the dry state takes place.",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -11465,7 +11465,7 @@
                   "max": "7218919999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of heading [heading&nbsp;7201](/headings/7201), [heading&nbsp;7202](/headings/7202), [heading&nbsp;7203](/headings/7203), [heading&nbsp;7204](/headings/7204),\n\n[heading&nbsp;7205](/headings/7205) or [subheading&nbsp;721810](/subheading/7218100000-80).",
+                              "rule": "Manufacture from materials of heading [heading&nbsp;7201](/headings/7201), [heading&nbsp;7202](/headings/7202), [heading&nbsp;7203](/headings/7203), [heading&nbsp;7204](/headings/7204),\n\n[heading&nbsp;7205](/headings/7205) or [subheading&nbsp;721810](/subheadings/7218100000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -11484,7 +11484,7 @@
                   "max": "7218999999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of [heading&nbsp;7201](/headings/7201), [heading&nbsp;7202](/headings/7202), [heading&nbsp;7203](/headings/7203), [heading&nbsp;7204](/headings/7204), [heading&nbsp;7205](/headings/7205) or [subheading&nbsp;721810](/subheading/7218100000-80).",
+                              "rule": "Manufacture from materials of [heading&nbsp;7201](/headings/7201), [heading&nbsp;7202](/headings/7202), [heading&nbsp;7203](/headings/7203), [heading&nbsp;7204](/headings/7204), [heading&nbsp;7205](/headings/7205) or [subheading&nbsp;721810](/subheadings/7218100000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
@@ -11566,7 +11566,7 @@
                   "max": "7224909999",
                   "rules": [
                         {
-                              "rule": "Manufacture from materials of [heading&nbsp;7201](/headings/7201), [heading&nbsp;7202](/headings/7202), [heading&nbsp;7203](/headings/7203), [heading&nbsp;7204](/headings/7204), [heading&nbsp;7205](/headings/7205) or [subheading&nbsp;722410](/subheading/7224100000-80).",
+                              "rule": "Manufacture from materials of [heading&nbsp;7201](/headings/7201), [heading&nbsp;7202](/headings/7202), [heading&nbsp;7203](/headings/7203), [heading&nbsp;7204](/headings/7204), [heading&nbsp;7205](/headings/7205) or [subheading&nbsp;722410](/subheadings/7224100000-80).",
                               "class": [],
                               "footnotes": [],
                               "operator": null,
