@@ -61,6 +61,10 @@ module Api
           @category_assessment.theme.category
         end
 
+        def category_assessment_id
+          @category_assessment.id
+        end
+
         def excluded_geographical_areas
           [] # ignore for now to match existing api behaviour
         end

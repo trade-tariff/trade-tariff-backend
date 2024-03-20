@@ -2,10 +2,11 @@ FactoryBot.define do
   factory :category_assessment, class: 'GreenLanes::CategoryAssessment' do
     transient do
       measures_count { 1 }
+      measure { nil }
     end
 
-    regulation { create(:base_regulation) }
-    measure_type { create(:measure_type) }
+    regulation { measure&.generating_regulation || create(:base_regulation) }
+    measure_type { measure&.measure_type || create(:measure_type) }
     theme { create :green_lanes_theme }
 
     trait :category1 do

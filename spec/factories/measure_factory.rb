@@ -22,6 +22,7 @@ FactoryBot.define do
       default_start_date { 3.years.ago.beginning_of_day }
       additional_code { nil }
       goods_nomenclature { nil }
+      for_geo_area { nil }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
@@ -35,8 +36,8 @@ FactoryBot.define do
     additional_code_type_id { additional_code&.additional_code_type_id || '1' }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || 10.times.map { Random.rand(9) }.join }
-    geographical_area_sid { generate(:geographical_area_sid) }
-    geographical_area_id { generate(:geographical_area_id) }
+    geographical_area_sid { for_geo_area&.geographical_area_sid || generate(:geographical_area_sid) }
+    geographical_area_id { for_geo_area&.geographical_area_id || generate(:geographical_area_id) }
     validity_start_date { default_start_date }
     validity_end_date   { nil }
     reduction_indicator { 1 }
@@ -51,7 +52,7 @@ FactoryBot.define do
     end
 
     geographical_area do
-      create(
+      for_geo_area || create(
         :geographical_area,
         :with_description,
         geographical_area_sid:,

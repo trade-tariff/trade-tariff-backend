@@ -8,6 +8,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
   end
 
   it { is_expected.to have_attributes id: /^[0-9a-f]{32}$/ }
+  it { is_expected.to have_attributes category_assessment_id: assessment.id }
   it { is_expected.to have_attributes measure_ids: assessment.measures.map(&:measure_sid) }
 
   describe '.wrap' do
