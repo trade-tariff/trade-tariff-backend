@@ -27,24 +27,32 @@ namespace :green_lanes do
   task import_themes: :environment do
     raise 'Not in XI environment' unless TradeTariffBackend.xi?
 
-    source_file = Rails.root.join('data/green_lanes/themes.csv')
+    source_file = Rails.root.join('data/green_lanes/themes.html')
     raise "Cannot read file '#{source_file}'" unless File.file?(source_file)
 
     @existing_themes = GreenLanes::Theme.all.index_by { |t| [t.section, t.subsection] }
 
     GreenLanes::Theme.db.transaction do
-      CSV.foreach(source_file, headers: true) do |row|
-        section, theme = row['Theme'].split(' ', 2)
-        theme = theme.strip
-        section = section.strip.gsub(/^(\d+\.\d+)\./, '\1')
-        section, subsection = section.split('.').map(&:to_i)
+      section = nil
+      source_doc = Nokogiri::HTML(source_file.open)
+      source_doc.css('div#anx_IV p.oj-ti-grseq-1,div#anx_IV table').each do |node|
+        case node.name
+        when 'p'
+          section = node.content.strip.gsub(/Category /, '').to_i
+        when 'table'
+          cells = node.css('td')
+          subsection = cells[0].content.strip.gsub(/\.$/, '').to_i
+          description = cells[1].content.strip
 
-        instance = @existing_themes[[section, subsection]]
-        instance ||= GreenLanes::Theme.new(section:, subsection:)
-        instance.theme = theme
-        instance.description = row['Full description']
-        instance.category = row['Category implied']
-        instance.save(raise_on_failure: true)
+          instance = @existing_themes[[section, subsection]]
+          instance ||= GreenLanes::Theme.new(section:, subsection:)
+          instance.theme = description.slice(0, 254)
+          instance.description = description
+          instance.category = section
+          instance.save(raise_on_failure: true)
+        else
+          puts 'Unknown element, skipping'
+        end
       end
     end
   end
