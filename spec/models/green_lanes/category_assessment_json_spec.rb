@@ -217,6 +217,14 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
       end
     end
 
+    context 'when the attributes match and geographical_area is empty' do
+      it do
+        expect(categorisation.match?(regulation_id: 'D000004',
+                                     measure_type_id: '430',
+                                     geographical_area: '')).to be true
+      end
+    end
+
     context 'when the attributes match and geographical_area is ERGA OMNES' do
       let(:geographical_area_id) { GeographicalArea::ERGA_OMNES_ID }
 
