@@ -2,7 +2,8 @@ module Api
   module V2
     module GreenLanes
       class CategoryAssessmentPresenter < SimpleDelegator
-        attr_reader :measures
+        include ContentAddressableId
+        attr_reader :measures, :permutation_key
 
         delegate :geographical_area_id,
                  :geographical_area,
@@ -11,19 +12,32 @@ module Api
                  :exemptions,
                  to: :first_measure
 
+        content_addressable_fields do |ca|
+          ca.permutation_key.map(&:to_s).join("\n")
+        end
+
         class << self
           def wrap(category_assessments)
             category_assessments.flat_map do |assessment|
-              assessment.measure_permutations.map do |_key, permutation|
-                new assessment, permutation
+              permutations(assessment).map do |key, measures|
+                new assessment, key, measures
               end
             end
           end
+
+          private
+
+          def permutations(assessment)
+            ::GreenLanes::PermutationCalculatorService
+              .new(assessment.measures)
+              .call
+          end
         end
 
-        def initialize(category_assessment, measures)
+        def initialize(category_assessment, permutation_key, measures)
           super(category_assessment)
           @category_assessment = category_assessment
+          @permutation_key = permutation_key
           @measures = MeasurePresenter.wrap(measures)
         end
 

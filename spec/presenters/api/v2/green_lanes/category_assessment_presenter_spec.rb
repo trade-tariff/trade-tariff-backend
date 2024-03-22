@@ -1,9 +1,13 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
-  subject(:presented) { described_class.new(assessment, assessment.measures) }
+  subject(:presented) { described_class.new(assessment, *permutations.first) }
 
   let(:assessment) { create :category_assessment, :with_measures }
 
-  it { is_expected.to have_attributes id: assessment.id }
+  let :permutations do
+    GreenLanes::PermutationCalculatorService.new(assessment.measures).call
+  end
+
+  it { is_expected.to have_attributes id: /^[0-9a-f]{32}$/ }
   it { is_expected.to have_attributes measure_ids: assessment.measures.map(&:measure_sid) }
 
   describe '.wrap' do
@@ -15,7 +19,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     context 'with first presented category assessment' do
       subject { wrapped.first }
 
-      it { is_expected.to have_attributes id: assessment.id }
+      it { is_expected.to have_attributes id: /^[0-9a-f]{32}$/ }
       it { is_expected.to have_attributes measure_ids: assessment.measures.map(&:measure_sid) }
     end
   end
