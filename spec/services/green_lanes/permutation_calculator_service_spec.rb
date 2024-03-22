@@ -1,5 +1,5 @@
 RSpec.describe GreenLanes::PermutationCalculatorService do
-  subject(:permutations) { described_class.new(measures).call }
+  subject(:permutations) { described_class.new(measures).call.values }
 
   describe '.call' do
     let(:measures) { create_list :measure, 1 }

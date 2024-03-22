@@ -5,7 +5,7 @@ module GreenLanes
     end
 
     def call
-      @measures.group_by(&method(:permutation_key)).values
+      @measures.group_by(&method(:permutation_key))
     end
 
   private
@@ -16,10 +16,10 @@ module GreenLanes
         measure.measure_generating_regulation_id,
         measure.measure_generating_regulation_role,
         measure.geographical_area_id,
-        measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort,
+        measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort.join('|'),
         measure.additional_code_type_id,
         measure.additional_code_id,
-        measure.measure_conditions.map(&:document_code).reject(&:blank?),
+        measure.measure_conditions.map(&:document_code).reject(&:blank?).sort.join('|'),
       ]
     end
   end
