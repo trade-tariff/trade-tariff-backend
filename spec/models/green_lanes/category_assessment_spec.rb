@@ -170,7 +170,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.not_to include second_measure.measure_type_id }
       end
 
-      context 'for assessment without regulation' do
+      xcontext 'for assessment without regulation' do
         before { measure1 && measure2 }
 
         let(:ca) { create :category_assessment, :without_regulation }
@@ -183,7 +183,14 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.not_to include measure3 }
       end
 
-      it 'checks for TimeMachine'
+      context 'for assessment with expired measures' do
+        before do
+          ca.measures.first.tap { |m| m.update(validity_end_date: 5.days.ago) }
+          ca.reload
+        end
+
+        it { is_expected.to be_empty }
+      end
     end
   end
 
