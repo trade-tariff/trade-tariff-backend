@@ -53,6 +53,14 @@ module Api
           @category_assessment.theme.category
         end
 
+        def excluded_geographical_areas
+          [] # ignore for now to match existing api behaviour
+        end
+
+        def excluded_geographical_area_ids
+          [] # ignore for now to match existing api behaviour
+        end
+
       private
 
         def first_measure
