@@ -46,8 +46,6 @@ RSpec.describe TaricSynchronizer do
           allow(instance).to receive(
             :persist,
           ).and_raise OpenSearch::Transport::Transport::SnifferTimeoutError
-
-          allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
         end
 
         it 'stops syncing' do
@@ -67,8 +65,6 @@ RSpec.describe TaricSynchronizer do
           allow(instance).to receive(
             :persist,
           ).and_raise Timeout::Error
-
-          allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil)
         end
 
         it 'stops syncing' do
@@ -175,13 +171,13 @@ RSpec.describe TaricSynchronizer do
     end
 
     describe '#apply', truncation: true do
-      xit 'raises a wrong environment error' do
+      it 'raises a wrong environment error' do
         expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
     end
 
     describe '#rollback', truncation: true do
-      xit 'raises a wrong environment error' do
+      it 'raises a wrong environment error' do
         expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
     end

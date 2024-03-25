@@ -29,6 +29,8 @@ class CdsSynchronizer
     end
 
     def apply
+      raise WrongEnvironmentError unless TradeTariffBackend.uk?
+
       check_tariff_updates_failures
       check_sequence
 
@@ -64,6 +66,8 @@ class CdsSynchronizer
     end
 
     def rollback(rollback_date, keep: false)
+      raise WrongEnvironmentError unless TradeTariffBackend.uk?
+
       Rails.autoloaders.main.eager_load
 
       TradeTariffBackend.with_redis_lock do
@@ -71,7 +75,6 @@ class CdsSynchronizer
 
         updates = TariffSynchronizer::CdsUpdate.where { issue_date > date }
         update_filenames = updates.pluck(:filename)
-
         Sequel::Model.db.transaction do
           # Delete actual data
           oplog_based_models.each do |model|

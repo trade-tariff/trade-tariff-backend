@@ -47,6 +47,8 @@ class TaricSynchronizer
     end
 
     def apply
+      raise WrongEnvironmentError unless TradeTariffBackend.xi?
+
       check_tariff_updates_failures
       check_sequence
 
@@ -78,6 +80,8 @@ class TaricSynchronizer
     #
     # NOTE: this does not remove records from initial seed
     def rollback(rollback_date, keep: false)
+      raise WrongEnvironmentError unless TradeTariffBackend.xi?
+
       TradeTariffBackend.with_redis_lock do
         date = Date.parse(rollback_date.to_s)
 
@@ -122,7 +126,7 @@ class TaricSynchronizer
           end
         end
 
-        Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{!!keep}"
+        Rails.logger.info "Rolled back to #{date}. Forced keeping records: #{!keep.nil?}"
       end
     rescue Redlock::LockError
       Rails.logger.warn("Failed to acquire Redis lock for rollback to #{rollback_date}. Keep records: #{keep}")

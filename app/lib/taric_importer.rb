@@ -22,13 +22,12 @@ class TaricImporter
   end
 
   def import
-    filename = determine_filename(@taric_update.file_path)
-    return unless proceed_with_import?(filename)
-
     handler = XmlProcessor.new(@taric_update.issue_date)
+
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     XmlParser::Reader.new(file, 'record', handler).parse
-    post_import(file_path: @taric_update.file_path, filename:)
+
+    Rails.logger.info "Successfully imported Taric file: #{@taric_update.filename}"
   end
 
   class XmlProcessor
@@ -53,42 +52,5 @@ class TaricImporter
         Rails.logger.error message
       end
     end
-  end
-
-  private
-
-  def proceed_with_import?(filename)
-    return true unless TradeTariffBackend.use_cds?
-
-    TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).blank?
-  end
-
-  def post_import(file_path:, filename:)
-    create_update_entry(file_path:, filename:) if TradeTariffBackend.use_cds?
-    Rails.logger.info "Successfully imported Taric file: #{@taric_update.filename}"
-  end
-
-  def create_update_entry(file_path:, filename:)
-    file_size = determine_file_size(file_path)
-    issue_date = Date.parse(filename.scan(/[0-9]{8}/).last)
-    TariffSynchronizer::TaricUpdate.find_or_create(
-      filename: filename[0, 30],
-      issue_date:,
-      filesize: file_size,
-      state: 'A',
-      applied_at: Time.zone.now,
-      updated_at: Time.zone.now,
-    )
-  end
-
-  def determine_file_size(file_path)
-    file_size = File.size(file_path)
-    return file_size if file_size <= 214_748_364_7
-
-    file_size / 1024
-  end
-
-  def determine_filename(file_path)
-    File.basename(file_path)
   end
 end

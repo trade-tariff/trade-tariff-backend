@@ -6,6 +6,9 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   describe '#apply', truncation: true do
     before do
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
+      # Setting :FIND to NIL as Taric_Importer.rb checks a file doesn't exist to Proceed_With_Import?
+      # SEE SPECS ON LINES 39 & 58.
+      allow(TariffSynchronizer::TaricUpdate).to receive(:find).and_return(nil) # Assuming no existing record
     end
 
     it 'calls the import! method to the object' do

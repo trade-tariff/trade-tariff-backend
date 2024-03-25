@@ -37,10 +37,6 @@ module "backend_admin_uk" {
     local.backend_common_worker_vars,
     [
       {
-        name  = "CDS"
-        value = "true"
-      },
-      {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-uk-admin-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },

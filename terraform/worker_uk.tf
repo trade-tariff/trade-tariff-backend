@@ -48,10 +48,6 @@ module "worker_uk" {
     local.backend_common_worker_vars,
     [
       {
-        name  = "CDS"
-        value = "true"
-      },
-      {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-uk-worker-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
