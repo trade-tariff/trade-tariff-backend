@@ -1,3 +1,11 @@
+# There is a One to Many mapping between Category Assessments and their Presented
+# versions
+#
+# This is because we include exemptions and geographical areas in the serialized
+# category assessments but they can vary depending upon the measures
+#
+# This means the presented versions get hashed ids including the various params
+# used for their differentation (the 'permutation key')
 module Api
   module V2
     module GreenLanes
