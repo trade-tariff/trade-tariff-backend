@@ -1,12 +1,13 @@
 FactoryBot.define do
   sequence(:additional_code_sid) { |n| n }
   sequence(:additional_code_description_period_sid) { |n| n }
+  sequence(:additional_code_id) { |n| 'AAA'.tap { |ac| n.times { ac.next! } } }
   sequence(:meursing_additional_code_sid) { |n| n }
 
   factory :additional_code do
     additional_code_sid     { generate(:additional_code_sid) }
     additional_code_type_id { '1' }
-    additional_code         { Forgery(:basic).text(exactly: 3) }
+    additional_code         { generate(:additional_code_id) }
     validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }
 

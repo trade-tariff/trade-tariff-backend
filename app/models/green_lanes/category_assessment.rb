@@ -8,6 +8,12 @@ module GreenLanes
                                   key: %i[regulation_id regulation_role]
     many_to_one :modification_regulation, class: :ModificationRegulation,
                                           key: %i[regulation_id regulation_role]
+    one_to_many :measures, class: :Measure,
+                           read_only: true,
+                           primary_key: %i[measure_type_id regulation_id regulation_role],
+                           key: %i[measure_type_id
+                                   measure_generating_regulation_id
+                                   measure_generating_regulation_role]
     many_to_one :theme
 
     def validate

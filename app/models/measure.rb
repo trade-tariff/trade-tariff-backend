@@ -102,6 +102,15 @@ class Measure < Sequel::Model
                                                    ds.with_actual(FullTemporaryStopRegulation)
                                                  end
 
+  many_to_one :category_assessment,
+              class: 'CategoryAssessment',
+              class_namespace: 'GreenLanes',
+              read_only: true,
+              primary_key: %i[measure_type_id regulation_id regulation_role],
+              key: %i[measure_type_id
+                      measure_generating_regulation_id
+                      measure_generating_regulation_role]
+
   delegate :rules_of_origin_apply?,
            :third_country?,
            :excise?,
