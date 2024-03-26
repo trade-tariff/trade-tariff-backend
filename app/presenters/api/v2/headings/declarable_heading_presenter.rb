@@ -81,7 +81,7 @@ module Api
           ImportTradeSummary.build(import_measures)
         end
 
-        def special_nature?(_presented_measure = nil) #temporary fix
+        def special_nature?(_presented_measure = nil)
           @special_nature ||= import_measures.any?(&:special_nature?)
         end
 
