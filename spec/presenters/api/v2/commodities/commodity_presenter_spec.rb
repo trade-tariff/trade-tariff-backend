@@ -139,7 +139,7 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
           create_list(
             :measure, 1,
             :with_measure_conditions,
-            goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+            goods_nomenclature_sid: commodity.goods_nomenclature_sid
           )
         end
 
