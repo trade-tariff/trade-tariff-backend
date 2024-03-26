@@ -9,6 +9,14 @@ module Api
         def goods_nomenclature_id
           @goods_nomenclature_id = goods_nomenclature.goods_nomenclature_sid
         end
+
+        def exemptions
+          []
+        end
+
+        def excluded_geographical_area_ids
+          []
+        end
       end
     end
   end

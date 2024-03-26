@@ -487,10 +487,11 @@ FactoryBot.define do
           :additional_code,
           :with_description,
           additional_code_type_id: measure.additional_code_type_id,
-          additional_code: evaluator.additional_code_id,
+          additional_code: evaluator.additional_code_id.presence || generate(:additional_code_id),
           additional_code_description: evaluator.additional_code_description,
         )
         measure.additional_code_sid = adco.additional_code_sid
+        measure.additional_code_id = adco.additional_code
         measure.additional_code_type_id = adco.additional_code_type_id
         measure.save
       end

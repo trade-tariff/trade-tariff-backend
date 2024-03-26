@@ -3,12 +3,21 @@ module GreenLanes
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
 
+    many_to_one :theme
     many_to_one :measure_type, class: :MeasureType
     many_to_one :base_regulation, class: :BaseRegulation,
                                   key: %i[regulation_id regulation_role]
     many_to_one :modification_regulation, class: :ModificationRegulation,
                                           key: %i[regulation_id regulation_role]
-    many_to_one :theme
+    one_to_many :measures, class: :Measure,
+                           read_only: true,
+                           primary_key: %i[measure_type_id regulation_id regulation_role],
+                           key: %i[measure_type_id
+                                   measure_generating_regulation_id
+                                   measure_generating_regulation_role] do |ds|
+      ds.with_actual(Measure)
+        .with_regulation_dates_query
+    end
 
     def validate
       super
