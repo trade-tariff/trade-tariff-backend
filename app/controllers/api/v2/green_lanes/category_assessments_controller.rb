@@ -8,12 +8,11 @@ module Api
               .eager(
                 theme: [],
                 measures: {
-                  additional_code: [],
-                  measure_conditions: :certificate,
+                  additional_code: :additional_code_descriptions,
+                  measure_conditions: { certificate: :certificate_descriptions },
                   geographical_area: :geographical_area_descriptions,
-                  measure_excluded_geographical_areas: {
-                    geographical_area: :geographical_area_descriptions,
-                  },
+                  measure_excluded_geographical_areas: [],
+                  excluded_geographical_areas: :geographical_area_descriptions,
                 },
               )
               .all
