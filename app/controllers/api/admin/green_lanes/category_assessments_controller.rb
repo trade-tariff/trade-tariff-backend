@@ -57,7 +57,7 @@ module Api
             :regulation_role,
             :measure_type_id,
             :theme_id,
-            )
+          )
         end
 
         def record_count
@@ -72,8 +72,8 @@ module Api
           Api::Admin::GreenLanes::CategoryAssessmentSerializer.new(*args).serializable_hash
         end
 
-        def serialize_errors(ca)
-          Api::Admin::ErrorSerializationService.new(ca).call
+        def serialize_errors(category_assessment)
+          Api::Admin::ErrorSerializationService.new(category_assessment).call
         end
 
         def check_service
