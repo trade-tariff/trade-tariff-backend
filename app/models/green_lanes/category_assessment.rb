@@ -51,9 +51,5 @@ module GreenLanes
         self.base_regulation = regulation
       end
     end
-
-    def measure_permutations
-      @measure_permutations ||= PermutationCalculatorService.new(measures).call
-    end
   end
 end
