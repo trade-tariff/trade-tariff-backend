@@ -16,10 +16,10 @@ module GreenLanes
         measure.measure_generating_regulation_id,
         measure.measure_generating_regulation_role,
         measure.geographical_area_id,
-        measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort.join('|'),
+        measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort.uniq.join('|'),
         measure.additional_code_type_id,
         measure.additional_code_id,
-        measure.measure_conditions.map(&:document_code).reject(&:blank?).sort.join('|'),
+        measure.measure_conditions.map(&:document_code).reject(&:blank?).sort.uniq.join('|'),
       ]
     end
   end
