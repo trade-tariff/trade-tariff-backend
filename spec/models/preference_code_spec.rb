@@ -54,6 +54,7 @@ RSpec.describe PreferenceCode do
               :with_measure_conditions,
               :with_special_nature,
               goods_nomenclature_sid: declarable.goods_nomenclature_sid,
+              geographical_area_id: measure.geographical_area_id,
             )
 
             [measure, special_nature_measure]
@@ -121,6 +122,7 @@ RSpec.describe PreferenceCode do
               :with_measure_conditions,
               :with_special_nature,
               goods_nomenclature_sid: declarable.goods_nomenclature_sid,
+              geographical_area_id: measure.geographical_area_id,
             )
 
             [measure, special_nature_measure]
