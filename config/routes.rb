@@ -64,7 +64,7 @@ Rails.application.routes.draw do
                                controller: 'news/items'
       end
 
-      resources :category_assessments, module: 'green_lanes', only: %i[index]
+      resources :category_assessments, module: 'green_lanes', only: %i[index show create update destroy]
     end
   end
 
