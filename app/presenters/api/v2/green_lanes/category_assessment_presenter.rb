@@ -15,7 +15,6 @@ module Api
 
         delegate :geographical_area_id,
                  :geographical_area,
-                 :excluded_geographical_area_ids,
                  :excluded_geographical_areas,
                  :exemptions,
                  to: :first_measure
@@ -54,23 +53,19 @@ module Api
         end
 
         def theme
-          @category_assessment.theme.theme
+          @category_assessment.theme.to_s
         end
 
         def category
-          @category_assessment.theme.category
+          @category_assessment.theme.category.to_s
         end
 
         def category_assessment_id
           @category_assessment.id
         end
 
-        def excluded_geographical_areas
-          [] # ignore for now to match existing api behaviour
-        end
-
         def excluded_geographical_area_ids
-          [] # ignore for now to match existing api behaviour
+          excluded_geographical_areas.map(&:geographical_area_id)
         end
 
       private
