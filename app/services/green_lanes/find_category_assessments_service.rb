@@ -12,30 +12,45 @@ module GreenLanes
     end
 
     def call
-      CategoryAssessmentJson.all
-                            .map(&method(:presented_matching_assessment))
-                            .compact
+      @goods_nomenclature
+        .applicable_measures
+        .select(&:category_assessment)
+        .select(&method(:filter_by_geographical_area))
+        .group_by(&:category_assessment)
+        .flat_map do |assessment, measures_for_assessment|
+          compute_assessment_permutations(assessment, measures_for_assessment)
+        end
     end
 
   private
 
-    def assessment_matches_measure?(category_assessment, measure)
-      category_assessment.match?(regulation_id: measure.measure_generating_regulation_id,
-                                 measure_type_id: measure.measure_type_id,
-                                 geographical_area: @geographical_area_id)
+    def compute_assessment_permutations(assessment, applicable_measures)
+      permutations_for_assessment(applicable_measures)
+        .map do |key, permutation|
+          present_assessment(assessment, key, permutation)
+        end
     end
 
-    def matching_measures(category_assessment)
-      @goods_nomenclature.applicable_measures.select do |measure|
-        assessment_matches_measure?(category_assessment, measure)
-      end
+    def permutations_for_assessment(applicable_measures)
+      PermutationCalculatorService.new(applicable_measures).call
     end
 
-    def presented_matching_assessment(category_assessment)
-      matches = matching_measures(category_assessment)
-      return if matches.empty?
+    def present_assessment(assessment, key, permutation)
+      ::Api::V2::GreenLanes::CategoryAssessmentPresenter
+        .new(assessment, key, permutation)
+    end
 
-      ::Api::V2::GreenLanes::CategoryAssessmentPresenter.new(category_assessment, matches)
+    def filter_by_geographical_area(measure)
+      return true if @geographical_area_id.blank?
+
+      measure.relevant_for_country? geographical_area.geographical_area_id
+    end
+
+    def geographical_area
+      @geographical_area ||= GeographicalArea
+        .actual
+        .where(geographical_area_id: @geographical_area_id)
+        .take
     end
   end
 end

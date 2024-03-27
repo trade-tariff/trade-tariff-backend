@@ -3,10 +3,24 @@ FactoryBot.define do
   sequence(:geographical_area_id)  { |n| n }
 
   factory :geographical_area do
+    transient do
+      members { [] }
+    end
+
     geographical_area_sid { generate(:geographical_area_sid) }
     geographical_area_id  { Forgery(:basic).text(exactly: 2) }
     validity_start_date   { 3.years.ago.beginning_of_day }
     validity_end_date     { nil }
+
+    after(:create) do |geographical_area, evaluator|
+      Array.wrap(evaluator.members).each do |member|
+        create(
+          :geographical_area_membership,
+          geographical_area_group_sid: geographical_area.geographical_area_sid,
+          geographical_area_sid: member.geographical_area_sid,
+        )
+      end
+    end
 
     trait :erga_omnes do
       geographical_area_id { '1011' }
@@ -51,19 +65,11 @@ FactoryBot.define do
     end
 
     trait :with_members do
-      after(:create) do |geographical_area, _evaluator|
-        member = create(
-          :geographical_area,
-          :with_description,
-          :country,
-          geographical_area_id: 'RO',
-        )
-
-        create(
-          :geographical_area_membership,
-          geographical_area_group_sid: geographical_area.geographical_area_sid,
-          geographical_area_sid: member.geographical_area_sid,
-        )
+      members do
+        create_list(:geographical_area, 1,
+                    :with_description,
+                    :country,
+                    geographical_area_id: 'RO')
       end
     end
 

@@ -65,4 +65,16 @@ RSpec.describe GreenLanes::Theme do
       end
     end
   end
+
+  describe '#to_s' do
+    subject do
+      described_class.create(section: 1,
+                             subsection: 2,
+                             category: 1,
+                             theme: 'Short desc',
+                             description: 'Long description').to_s
+    end
+
+    it { is_expected.to eq '1.2. Long description' }
+  end
 end
