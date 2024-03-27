@@ -16,7 +16,8 @@ module Api
         delegate :geographical_area_id,
                  :geographical_area,
                  :excluded_geographical_areas,
-                 :exemptions,
+                 :measure_conditions,
+                 :additional_code,
                  to: :first_measure
 
         content_addressable_fields do |ca|
@@ -66,6 +67,18 @@ module Api
 
         def excluded_geographical_area_ids
           excluded_geographical_areas.map(&:geographical_area_id)
+        end
+
+        def exemptions
+          certificates + additional_codes
+        end
+
+        def certificates
+          measure_conditions.select(&:certificate).map(&:certificate)
+        end
+
+        def additional_codes
+          Array.wrap(additional_code)
         end
 
       private
