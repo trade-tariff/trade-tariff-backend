@@ -1,6 +1,5 @@
 module GreenLanes
   class FindCategoryAssessmentsService
-
     FILTERED_CATEGORY = Set.new([1, 2]).freeze
     class << self
       def call(goods_nomenclature:, geographical_area_id: nil)
