@@ -2,6 +2,8 @@ module Api
   module V2
     module Commodities
       class CommodityPresenter < SimpleDelegator
+        include SpecialNature
+
         attr_reader :commodity,
                     :footnotes,
                     :import_measures,
@@ -99,16 +101,6 @@ module Api
 
         def import_trade_summary
           ImportTradeSummary.build(import_measures)
-        end
-
-        def special_nature?(presented_measure)
-          if @filtering_by_country
-            @special_nature ||= import_measures.any?(&:special_nature?)
-          else
-            filtered_measures = import_measures.reject { |measure| measure.geographical_area_id != presented_measure.geographical_area_id && measure.geographical_area_id != GeographicalArea::ERGA_OMNES_ID }
-
-            @special_nature ||= filtered_measures.any?(&:special_nature?)
-          end
         end
 
         def authorised_use_provisions_submission?

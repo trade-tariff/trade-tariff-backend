@@ -91,65 +91,48 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
   describe '#special_nature?' do
     let(:presenter) { described_class.new(commodity.reload, measure_collection) }
 
+    let(:measures_special_nature) do
+      create_list(
+        :measure, 1,
+        :with_measure_conditions,
+        :with_special_nature,
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        geographical_area_id: 'PK'
+      )
+    end
+
+    let(:measures_not_special_nature) do
+      create_list(
+        :measure, 1,
+        :with_measure_conditions,
+        goods_nomenclature_sid: commodity.goods_nomenclature_sid,
+        geographical_area_id: 'CN'
+      )
+    end
+
     context 'when filtering by country' do
-      let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: 'CN' }
+      let(:geographical_area_id) { 'CN' }
 
       context 'when commodity has at least one measure condition containing special nature certificate' do
-        let(:measures) do
-          create_list(
-            :measure, 1,
-            :with_measure_conditions,
-            :with_special_nature,
-            goods_nomenclature_sid: commodity.goods_nomenclature_sid
-          )
-        end
+        let(:measure_collection) { MeasureCollection.new measures_special_nature, geographical_area_id: }
 
-        it { expect(presenter.special_nature?(measures.first)).to eq(true) }
+        it { expect(presenter.special_nature?(measures_special_nature.first)).to eq(true) }
       end
 
       context 'when commodity does not have any measure conditions containing special nature certificate' do
-        let(:measures) do
-          create_list(:measure, 1, goods_nomenclature_sid: commodity.goods_nomenclature_sid)
-        end
+        let(:measure_collection) { MeasureCollection.new measures_not_special_nature, geographical_area_id: }
 
-        it { expect(presenter.special_nature?(measures.first)).to eq(false) }
+        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to eq(false) }
       end
     end
 
     context 'when not filtering by country' do
+      let(:geographical_area_id) { nil }
+
       context 'when commodity has at least one measure condition containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures }
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: }
 
         let(:measures) do
-          create_list(
-            :measure, 1,
-            :with_measure_conditions,
-            :with_special_nature,
-            goods_nomenclature_sid: commodity.goods_nomenclature_sid
-          )
-        end
-
-        it { expect(presenter.special_nature?(measures.first)).to eq(true) }
-      end
-
-      context 'when commodity does not have any measure conditions containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures }
-
-        let(:measures) do
-          create_list(
-            :measure, 1,
-            :with_measure_conditions,
-            goods_nomenclature_sid: commodity.goods_nomenclature_sid
-          )
-        end
-
-        it { expect(presenter.special_nature?(measures.first)).to eq(false) }
-      end
-
-      context 'when commodity has some measure conditions containing special nature certificate' do
-        let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature }
-
-        let(:measures_special_nature) do
           create_list(
             :measure, 1,
             :with_measure_conditions,
@@ -159,16 +142,34 @@ RSpec.describe Api::V2::Commodities::CommodityPresenter do
           )
         end
 
-        let(:measures_not_special_nature) do
+        it { expect(presenter.special_nature?(measures.first)).to eq(true) }
+      end
+
+      context 'when commodity does not have any measure conditions containing special nature certificate' do
+        let(:measure_collection) { MeasureCollection.new measures, geographical_area_id: }
+
+        let(:measures) do
           create_list(
             :measure, 1,
             :with_measure_conditions,
             goods_nomenclature_sid: commodity.goods_nomenclature_sid,
-            geographical_area_id: 'CN'
+            geographical_area_id: 'PK'
           )
         end
 
+        it { expect(presenter.special_nature?(measures.first)).to eq(false) }
+      end
+
+      context 'when commodity has some non country specific measure conditions containing special nature certificate' do
+        let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature, geographical_area_id: }
+
         it { expect(presenter.special_nature?(measures_not_special_nature.first)).to eq(false) }
+      end
+
+      context 'when commodity has some country specific measure conditions containing special nature certificate' do
+        let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature, geographical_area_id: }
+
+        it { expect(presenter.special_nature?(measures_special_nature.first)).to eq(true) }
       end
     end
   end
