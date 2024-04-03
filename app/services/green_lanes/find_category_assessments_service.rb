@@ -1,5 +1,7 @@
 module GreenLanes
   class FindCategoryAssessmentsService
+
+    FILTERED_CATEGORY = Set.new([1, 2]).freeze
     class << self
       def call(goods_nomenclature:, geographical_area_id: nil)
         new(goods_nomenclature, geographical_area_id).call
@@ -22,7 +24,8 @@ module GreenLanes
     def assessment_matches_measure?(category_assessment, measure)
       category_assessment.match?(regulation_id: measure.measure_generating_regulation_id,
                                  measure_type_id: measure.measure_type_id,
-                                 geographical_area: @geographical_area_id)
+                                 geographical_area: @geographical_area_id,
+                                 filtered_category: FILTERED_CATEGORY)
     end
 
     def matching_measures(category_assessment)

@@ -64,7 +64,8 @@ module GreenLanes
       end
     end
 
-    def match?(regulation_id:, measure_type_id:, geographical_area: nil)
+    def match?(regulation_id:, measure_type_id:, geographical_area: nil, filtered_category: nil)
+      (filtered_category == nil || self.category.in?(filtered_category)) &&
       regulation_id == self.regulation_id &&
         measure_type_id == self.measure_type_id &&
         (geographical_area == geographical_area_id ||

@@ -198,7 +198,7 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
 
   describe '#match?' do
     subject(:categorisation) do
-      described_class.new regulation_id: 'D000004', measure_type_id: '430', geographical_area_id:
+      described_class.new category: 1, regulation_id: 'D000004', measure_type_id: '430', geographical_area_id:
     end
 
     let(:geographical_area_id) { 'US' }
@@ -207,11 +207,12 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
       it do
         expect(categorisation.match?(regulation_id: 'D000004',
                                      measure_type_id: '430',
-                                     geographical_area: 'US')).to be true
+                                     geographical_area: 'US',
+                                     filtered_category: Set.new([1]).freeze)).to be true
       end
     end
 
-    context 'when the attributes match and geographical_area is NOT specified' do
+    context 'when the attributes match and geographical_area and category are NOT specified' do
       it do
         expect(categorisation.match?(regulation_id: 'D000004', measure_type_id: '430')).to be true
       end
@@ -248,6 +249,15 @@ RSpec.describe GreenLanes::CategoryAssessmentJson do
         expect(categorisation.match?(regulation_id: 'D000004',
                                      measure_type_id: '430',
                                      geographical_area: 'XXX')).to be false
+      end
+    end
+
+    context 'when the category filter does NOT match' do
+      it do
+        expect(categorisation.match?(regulation_id: 'D000004',
+                                     measure_type_id: '430',
+                                     geographical_area: 'US',
+                                     filtered_category: Set.new([2]).freeze)).to be false
       end
     end
   end

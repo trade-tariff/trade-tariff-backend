@@ -15,6 +15,7 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400'),
         create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500'),
         create(:measure, measure_generating_regulation_id: 'D0000003', measure_type_id: '713'),
+        create(:measure, measure_generating_regulation_id: 'D0000004', measure_type_id: '800'),
       ]
     end
 
@@ -32,6 +33,10 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         build(:category_assessment_json, regulation_id: 'D0000003',
                                          measure_type_id: '713',
                                          geographical_area_id: '1011'),
+        build(:category_assessment_json, :category3,
+                                          regulation_id: 'D0000004',
+                                          measure_type_id: '800',
+                                          geographical_area_id: 'NK'),
       ]
     end
 
