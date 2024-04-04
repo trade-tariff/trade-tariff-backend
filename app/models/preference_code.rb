@@ -16,10 +16,10 @@ class PreferenceCode
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['117'] = ->(_, _) { '140' }
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['119'] = ->(_, _) { '119' }
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['123'] = ->(_, _) { '123' }
-    MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['103'] = lambda do |presented_declarable, _measure|
+    MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['103'] = lambda do |presented_declarable, measure|
       if presented_declarable.authorised_use_provisions_submission?
         '140'
-      elsif presented_declarable.special_nature?
+      elsif presented_declarable.special_nature?(measure)
         '150'
       else
         '100'
@@ -29,7 +29,7 @@ class PreferenceCode
       measure.authorised_use? ? '115' : '110'
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['122'] = lambda do |presented_declarable, measure|
-      if presented_declarable.special_nature?
+      if presented_declarable.special_nature?(measure)
         '125'
       elsif measure.authorised_use?
         '123'
@@ -49,14 +49,14 @@ class PreferenceCode
     end
     MEASURE_TYPE_ID_PREFERENCE_CODE_MAPPING['143'] = lambda do |presented_declarable, measure|
       if measure.gsp_or_dcts?
-        if presented_declarable.special_nature?
+        if presented_declarable.special_nature?(measure)
           '255'
         elsif measure.authorised_use?
           '223'
         else
           '220'
         end
-      elsif presented_declarable.special_nature?
+      elsif presented_declarable.special_nature?(measure)
         '325'
       elsif measure.authorised_use?
         '323'
