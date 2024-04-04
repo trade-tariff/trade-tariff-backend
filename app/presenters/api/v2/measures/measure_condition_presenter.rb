@@ -24,7 +24,9 @@ module Api
           return super if super.blank?
 
           if apply_coerced_condition_duty_amount_conversion_factor?
-            super * COERCED_ASV_REQUIREMENT_CONVERSION_FACTOR
+            amount = super * COERCED_ASV_REQUIREMENT_CONVERSION_FACTOR
+
+            amount.round(2)
           else
             super
           end
