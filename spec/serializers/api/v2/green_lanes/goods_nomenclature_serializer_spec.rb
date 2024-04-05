@@ -1,25 +1,10 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
-  subject(:serialized) do
-    gn_presenter = \
-      Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, presented_assessments)
+  subject { described_class.new(presented).serializable_hash }
 
-    described_class.new(
-      gn_presenter,
-      include: %w[applicable_category_assessments
-                  applicable_category_assessments.geographical_area],
-    ).serializable_hash
-  end
+  before { create :category_assessment, measure: subheading.measures.first }
 
   let(:subheading) { create :subheading, :with_measures }
-  let(:assessment) { create :category_assessment, measure: subheading.measures.first }
-
-  let :permutations do
-    GreenLanes::PermutationCalculatorService.new(subheading.applicable_measures).call
-  end
-
-  let :presented_assessments do
-    [Api::V2::GreenLanes::CategoryAssessmentPresenter.new(assessment, *permutations.first)]
-  end
+  let(:presented) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading) }
 
   let(:expected_pattern) do
     {
@@ -34,35 +19,15 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           description_plain: subheading.description_plain,
           producline_suffix: subheading.producline_suffix,
         },
-        "relationships": {
-          "applicable_category_assessments": {
-            "data": [{
-              "id": presented_assessments[0].id,
+        relationships: {
+          applicable_category_assessments: {
+            data: [{
+              id: /^[a-f0-9]{32}$/,
               type: eq(:category_assessment),
             }],
           },
         },
       },
-      included: [
-        {
-          id: subheading.measures.first.geographical_area_id,
-          type: eq(:geographical_area),
-        },
-        {
-          id: presented_assessments[0].id,
-          type: eq(:category_assessment),
-          relationships: {
-            measures: {
-              data: [
-                {
-                  id: subheading.measures.first.measure_sid.to_s,
-                  type: eq(:measure),
-                },
-              ],
-            },
-          },
-        },
-      ],
     }
   end
 

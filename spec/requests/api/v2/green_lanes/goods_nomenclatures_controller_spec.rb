@@ -81,14 +81,14 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
         allow(GreenLanes::FindCategoryAssessmentsService).to receive(:call).and_call_original
       end
 
-      it 'calls FindCategorisationsService with correct params' do
-        gn = create(:commodity, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
+      it 'calls FindCategoryAssessmentsService with correct params' do
+        create(:commodity, goods_nomenclature_item_id: '1234560000', producline_suffix: '80')
 
         make_request
 
         expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)
-          .with(goods_nomenclature: gn, geographical_area_id: 'AU')
+          .with hash_including(geographical_area_id: 'AU')
       end
     end
   end

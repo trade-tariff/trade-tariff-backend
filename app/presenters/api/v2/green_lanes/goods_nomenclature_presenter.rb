@@ -4,15 +4,20 @@ module Api
   module V2
     module GreenLanes
       class GoodsNomenclaturePresenter < SimpleDelegator
-        attr_reader :applicable_category_assessments
-
-        def initialize(goods_nomenclature, presented_category_assessments)
+        def initialize(goods_nomenclature, geographical_area_id = nil)
           super(goods_nomenclature)
-          @applicable_category_assessments = presented_category_assessments
+          @geographical_area_id = geographical_area_id.presence
         end
 
         def applicable_category_assessment_ids
-          @applicable_category_assessment_ids ||= @applicable_category_assessments.map(&:id)
+          @applicable_category_assessment_ids ||= applicable_category_assessments.map(&:id)
+        end
+
+        def applicable_category_assessments
+          @applicable_category_assessments ||=
+            ::GreenLanes::FindCategoryAssessmentsService.call \
+              goods_nomenclature: self,
+              geographical_area_id: @geographical_area_id
         end
       end
     end
