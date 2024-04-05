@@ -19,6 +19,22 @@ module Api
               goods_nomenclature: self,
               geographical_area_id: @geographical_area_id
         end
+
+        def ancestor_ids
+          @ancestor_ids ||= ancestors.map(&:goods_nomenclature_sid)
+        end
+
+        def ancestors
+          @ancestors ||= ReferencedGoodsNomenclaturePresenter.wrap(super)
+        end
+
+        def measure_ids
+          @measure_ids ||= measures.map(&:measure_sid)
+        end
+
+        def measures
+          @measures ||= MeasurePresenter.wrap(super)
+        end
       end
     end
   end

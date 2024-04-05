@@ -21,7 +21,7 @@ module Api
             CategoryAssessmentPresenter.wrap(category_assessments)
 
           serializer =
-            Api::V2::GreenLanes::CategoryAssessmentSerializer
+            CategoryAssessmentSerializer
               .new(presented_assessments,
                    include: %w[geographical_area excluded_geographical_areas])
 

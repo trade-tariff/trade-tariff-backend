@@ -3,10 +3,12 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
   before { create :category_assessment, measure: gn.measures.first }
 
-  let(:gn) { create :goods_nomenclature, :with_measures }
+  let(:gn) { create :goods_nomenclature, :with_parent, :with_measures }
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
   it { is_expected.to have_attributes applicable_category_assessment_ids: presenter.applicable_category_assessments.map(&:id) }
+  it { is_expected.to have_attributes ancestor_ids: [gn.parent.goods_nomenclature_sid] }
+  it { is_expected.to have_attributes measure_ids: [gn.measures.first.measure_sid] }
 
   describe '#applicable_category_assessments' do
     subject { presenter.applicable_category_assessments }
@@ -41,5 +43,19 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
       it { is_expected.to have_attributes length: 1 }
     end
+  end
+
+  describe '#ancestors' do
+    subject { presenter.ancestors }
+
+    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to all be_an Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter }
+  end
+
+  describe '#measures' do
+    subject { presenter.measures }
+
+    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to all be_an Api::V2::GreenLanes::MeasurePresenter }
   end
 end

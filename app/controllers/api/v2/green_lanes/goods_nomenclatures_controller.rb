@@ -25,6 +25,13 @@ module Api
             applicable_category_assessments.measures
             applicable_category_assessments.measures.measure_types
             applicable_category_assessments.measures.footnotes
+            ancestors
+            ancestors.measures
+            ancestors.measures.measure_types
+            ancestors.measures.footnotes
+            measures
+            measures.measure_types
+            measures.footnotes
           ])
         end
       end

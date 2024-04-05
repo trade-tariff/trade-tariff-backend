@@ -15,6 +15,8 @@ module Api
                    :producline_suffix,
                    :validity_start_date,
                    :validity_end_date
+
+        has_many :measures, serializer: GreenLanes::MeasureSerializer
       end
     end
   end

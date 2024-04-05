@@ -17,9 +17,6 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
           measure_type: {
             data: { id: measure.measure_type.measure_type_id.to_s, type: 'measure_type' },
           },
-          goods_nomenclature: {
-            data: { id: measure.goods_nomenclature.goods_nomenclature_sid.to_s, type: 'goods_nomenclature' },
-          },
           footnotes: {
             data: [
               { id: measure.footnotes.first.code.to_s, type: 'footnote' },
