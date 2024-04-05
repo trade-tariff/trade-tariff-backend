@@ -3,12 +3,12 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
   before { create :category_assessment, measure: gn.measures.first }
 
-  let(:gn) { create :goods_nomenclature, :with_parent, :with_measures }
+  let(:gn) { create :goods_nomenclature, :with_ancestors, :with_children, :with_measures }
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
   it { is_expected.to have_attributes parent_sid: gn.parent.goods_nomenclature_sid }
   it { is_expected.to have_attributes applicable_category_assessment_ids: presenter.applicable_category_assessments.map(&:id) }
-  it { is_expected.to have_attributes ancestor_ids: [gn.parent.goods_nomenclature_sid] }
+  it { is_expected.to have_attributes ancestor_ids: gn.ancestors.map(&:goods_nomenclature_sid) }
   it { is_expected.to have_attributes measure_ids: [gn.measures.first.measure_sid] }
 
   describe '#applicable_category_assessments' do
@@ -22,7 +22,14 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   describe '#ancestors' do
     subject { presenter.ancestors }
 
-    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to have_attributes length: 2 }
+    it { is_expected.to all be_an Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter }
+  end
+
+  describe '#descendants' do
+    subject { presenter.descendants }
+
+    it { is_expected.to have_attributes length: 2 }
     it { is_expected.to all be_an Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter }
   end
 
@@ -66,6 +73,22 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
           expect(Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter).to \
             have_received(:wrap).with(gn.ancestors, geo_area_id)
+        end
+      end
+
+      describe '#descendants' do
+        subject(:descendants) { presented.descendants }
+
+        before do
+          allow(Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter).to \
+            receive(:wrap).and_call_original
+        end
+
+        it 'passes geo area to ancestors presenter' do
+          descendants
+
+          expect(Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter).to \
+            have_received(:wrap).with(gn.descendants, geo_area_id)
         end
       end
     end

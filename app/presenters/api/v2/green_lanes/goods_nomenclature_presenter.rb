@@ -29,7 +29,17 @@ module Api
         end
 
         def ancestors
-          @ancestors ||= ReferencedGoodsNomenclaturePresenter.wrap(super, @geographical_area_id)
+          @ancestors ||=
+            ReferencedGoodsNomenclaturePresenter.wrap(super, @geographical_area_id)
+        end
+
+        def descendant_ids
+          @descendant_ids ||= descendants.map(&:goods_nomenclature_sid)
+        end
+
+        def descendants
+          @descendants ||=
+            ReferencedGoodsNomenclaturePresenter.wrap(super, @geographical_area_id)
         end
 
         def measure_ids

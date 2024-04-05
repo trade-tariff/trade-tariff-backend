@@ -32,6 +32,10 @@ module Api
             measures
             measures.measure_types
             measures.footnotes
+            descendants
+            descendants.measures
+            descendants.measures.measure_types
+            descendants.measures.footnotes
           ])
         end
       end
