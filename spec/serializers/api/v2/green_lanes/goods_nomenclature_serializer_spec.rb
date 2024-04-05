@@ -18,6 +18,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           validity_end_date: nil,
           description_plain: subheading.description_plain,
           producline_suffix: subheading.producline_suffix,
+          parent_sid: subheading.parent.goods_nomenclature_sid,
         },
         relationships: {
           applicable_category_assessments: {

@@ -15,7 +15,8 @@ module Api
                    :validity_start_date,
                    :validity_end_date,
                    :description_plain,
-                   :producline_suffix
+                   :producline_suffix,
+                   :parent_sid
 
         has_many :applicable_category_assessments, serializer: CategoryAssessmentSerializer
         has_many :ancestors, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer

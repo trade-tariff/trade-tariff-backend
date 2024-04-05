@@ -19,6 +19,7 @@ RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclatureSerializer do
           producline_suffix: subheading.producline_suffix,
           validity_start_date: /\d{4}-\d{2}-\d{2}T00:00:00.000Z/,
           validity_end_date: nil,
+          parent_sid: nil,
         },
         relationships: {
           measures: {

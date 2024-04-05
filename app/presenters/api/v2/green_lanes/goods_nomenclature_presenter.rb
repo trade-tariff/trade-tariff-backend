@@ -9,6 +9,10 @@ module Api
           @geographical_area_id = geographical_area_id.presence
         end
 
+        def parent_sid
+          parent&.goods_nomenclature_sid
+        end
+
         def applicable_category_assessment_ids
           @applicable_category_assessment_ids ||= applicable_category_assessments.map(&:id)
         end

@@ -6,6 +6,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   let(:gn) { create :goods_nomenclature, :with_parent, :with_measures }
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
+  it { is_expected.to have_attributes parent_sid: gn.parent.goods_nomenclature_sid }
   it { is_expected.to have_attributes applicable_category_assessment_ids: presenter.applicable_category_assessments.map(&:id) }
   it { is_expected.to have_attributes ancestor_ids: [gn.parent.goods_nomenclature_sid] }
   it { is_expected.to have_attributes measure_ids: [gn.measures.first.measure_sid] }

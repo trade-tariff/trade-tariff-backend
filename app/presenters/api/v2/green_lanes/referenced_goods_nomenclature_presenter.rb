@@ -4,6 +4,10 @@ module Api
   module V2
     module GreenLanes
       class ReferencedGoodsNomenclaturePresenter < WrapDelegator
+        def parent_sid
+          parent&.goods_nomenclature_sid
+        end
+
         def measure_ids
           @measure_ids ||= measures.map(&:measure_sid)
         end
