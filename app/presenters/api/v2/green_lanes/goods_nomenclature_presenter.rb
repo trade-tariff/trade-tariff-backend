@@ -29,7 +29,7 @@ module Api
         end
 
         def ancestors
-          @ancestors ||= ReferencedGoodsNomenclaturePresenter.wrap(super)
+          @ancestors ||= ReferencedGoodsNomenclaturePresenter.wrap(super, @geographical_area_id)
         end
 
         def measure_ids
@@ -37,7 +37,18 @@ module Api
         end
 
         def measures
-          @measures ||= MeasurePresenter.wrap(super)
+          @measures ||=
+            MeasurePresenter.wrap(filter_measures_by_geographical_area(super))
+        end
+
+      private
+
+        def filter_measures_by_geographical_area(unfiltered_measures)
+          return unfiltered_measures if @geographical_area_id.blank?
+
+          unfiltered_measures.select do |measure|
+            measure.relevant_for_country? @geographical_area_id
+          end
         end
       end
     end
