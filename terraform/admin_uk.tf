@@ -45,6 +45,10 @@ module "backend_admin_uk" {
         value = "tariff-uk-admin-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
+        name  = "ENABLE_ADMIN"
+        value = "true"
+      },
+      {
         name  = "SERVICE"
         value = "uk"
       },
