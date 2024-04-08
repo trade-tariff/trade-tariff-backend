@@ -20,8 +20,8 @@ module Api
         def applicable_category_assessments
           @applicable_category_assessments ||=
             ::GreenLanes::FindCategoryAssessmentsService.call \
-              goods_nomenclature: self,
-              geographical_area_id: @geographical_area_id
+              applicable_measures,
+              @geographical_area_id
         end
 
         def ancestor_ids
