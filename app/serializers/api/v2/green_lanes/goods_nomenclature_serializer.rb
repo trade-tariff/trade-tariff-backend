@@ -19,6 +19,7 @@ module Api
                    :parent_sid
 
         has_many :applicable_category_assessments, serializer: CategoryAssessmentSerializer
+        has_many :descendant_category_assessments, serializer: CategoryAssessmentSerializer
         has_many :ancestors, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer
         has_many :descendants, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer
         has_many :measures, serializer: GreenLanes::MeasureSerializer
