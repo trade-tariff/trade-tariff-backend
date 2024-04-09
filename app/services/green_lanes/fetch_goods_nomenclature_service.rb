@@ -18,6 +18,10 @@ module GreenLanes
         measures: MEASURES_EAGER,
         goods_nomenclature_descriptions: [],
       },
+      descendants: {
+        measures: MEASURES_EAGER,
+        goods_nomenclature_descriptions: [],
+      },
       measures: MEASURES_EAGER,
       goods_nomenclature_descriptions: [],
     }.freeze
