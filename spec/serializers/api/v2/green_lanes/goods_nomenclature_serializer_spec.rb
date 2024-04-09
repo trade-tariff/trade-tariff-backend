@@ -3,7 +3,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
 
   before { create :category_assessment, measure: subheading.measures.first }
 
-  let(:subheading) { create :subheading, :with_measures }
+  let(:subheading) { create :subheading, :with_parent, :with_measures }
   let(:presented) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading) }
 
   let(:expected_pattern) do
@@ -18,6 +18,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           validity_end_date: nil,
           description_plain: subheading.description_plain,
           producline_suffix: subheading.producline_suffix,
+          parent_sid: subheading.parent.goods_nomenclature_sid,
         },
         relationships: {
           applicable_category_assessments: {
@@ -25,6 +26,22 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
               id: /^[a-f0-9]{32}$/,
               type: eq(:category_assessment),
             }],
+          },
+          ancestors: {
+            data: [
+              {
+                id: subheading.parent.goods_nomenclature_sid.to_s,
+                type: eq(:goods_nomenclature),
+              },
+            ],
+          },
+          measures: {
+            data: [
+              {
+                id: subheading.measures.first.measure_sid.to_s,
+                type: eq(:measure),
+              },
+            ],
           },
         },
       },
