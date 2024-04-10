@@ -66,6 +66,7 @@ Rails.application.routes.draw do
         end
 
         resources :category_assessments, module: 'green_lanes', only: %i[index show create update destroy]
+        resources :themes, module: 'green_lanes', only: %i[index]
       end
     end
   end

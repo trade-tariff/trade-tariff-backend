@@ -22,7 +22,7 @@ services:
        - hmrc-postgres13:/var/lib/postgresql/data
   hmrc-opensearch:
     container_name: hmrc-opensearch
-    image: opensearchproject/opensearch:2
+    image: opensearchproject/opensearch:2.11.0
     ports:
       - 127.0.0.1:9200:9200
       - 127.0.0.1:9300:9300
