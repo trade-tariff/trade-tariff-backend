@@ -2,7 +2,6 @@ module Api
   module Admin
     module GreenLanes
       class ThemesController < AdminController
-
         before_action :check_service, :authenticate_user!
 
         def index
