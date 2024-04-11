@@ -17,6 +17,10 @@ module Api
         def excluded_geographical_area_ids
           []
         end
+
+        def additional_code_id
+          additional_code&.additional_code_sid
+        end
       end
     end
   end
