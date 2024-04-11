@@ -91,7 +91,7 @@ locals {
       value = var.management_email
     },
     {
-      name      = "REPORTING_COMPARISON_DAYS_AGO"
+      name = "REPORTING_COMPARISON_DAYS_AGO"
       value = "7"
     },
     {
