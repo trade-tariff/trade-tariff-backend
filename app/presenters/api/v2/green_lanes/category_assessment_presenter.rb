@@ -26,7 +26,7 @@ module Api
 
         class << self
           def wrap(category_assessments)
-            category_assessments.flat_map do |assessment|
+            Array.wrap(category_assessments).flat_map do |assessment|
               permutations(assessment).map do |key, measures|
                 new assessment, key, measures
               end

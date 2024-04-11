@@ -23,6 +23,7 @@ FactoryBot.define do
       additional_code { nil }
       goods_nomenclature { nil }
       for_geo_area { nil }
+      certificate { nil }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
@@ -59,6 +60,12 @@ FactoryBot.define do
         geographical_area_id:,
         validity_start_date: (validity_start_date || default_start_date) - 1.day,
       )
+    end
+
+    after(:create) do |measure, evaluator|
+      if evaluator.certificate
+        create :measure_condition, measure:, certificate: evaluator.certificate
+      end
     end
 
     trait :with_gsp do
