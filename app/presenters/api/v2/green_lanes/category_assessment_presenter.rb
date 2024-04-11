@@ -74,7 +74,7 @@ module Api
         end
 
         def certificates
-          measure_conditions.select(&:certificate).map(&:certificate)
+          measure_conditions.select(&:exemption_class?).map(&:certificate)
         end
 
         def additional_codes
