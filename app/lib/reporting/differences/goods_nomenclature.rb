@@ -7,6 +7,8 @@ module Reporting
                :centered_style,
                :uk_goods_nomenclatures,
                :xi_goods_nomenclatures,
+               :uk_goods_nomenclatures_for_comparison,
+               :xi_goods_nomenclatures_for_comparison,
                to: :report
 
       WORKSHEET_NAME_EU = 'Commodities in EU, not in UK'.freeze
@@ -21,6 +23,7 @@ module Reporting
         'Indentation',
         'End line',
         'Description',
+        'New',
       ].freeze
 
       TAB_COLOR = 'cc0000'.freeze
@@ -36,6 +39,7 @@ module Reporting
         12, # Indentation
         12, # End line
         80, # Description
+        12, # New
       ].freeze
 
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
@@ -59,6 +63,9 @@ module Reporting
 
           rows.each do |row|
             report.increment_count(name)
+            if row[8] # This is the PresentedGoodsNomenclature Object new_issue bool property
+              report.increment_new_issue_count(name)
+            end
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             sheet.rows.last.tap do |last_row|
               last_row.cells[5].style = centered_style # Indentation
@@ -87,8 +94,9 @@ module Reporting
 
       def build_row_for(missing)
         missing_goods_nomenclature = source_goods_nomenclatures[missing]
-
-        PresentedGoodsNomenclature.new(missing_goods_nomenclature).to_row
+        # Check offset source report for the missing target record's ItemIDPlusPLS to show whether the issue existed n days ago. (For n see REPORTING_COMPARISON_DAYS_AGO)
+        new_issue = !source_goods_nomenclatures_for_comparison.include?(missing_goods_nomenclature['ItemIDPlusPLS'])
+        PresentedGoodsNomenclature.new(missing_goods_nomenclature, new_issue).to_row
       end
 
       def target_goods_nomenclatures
@@ -103,6 +111,12 @@ module Reporting
         end
       end
 
+      def source_goods_nomenclatures_for_comparison
+        @source_goods_nomenclatures_for_comparison ||= read_source_for_comparison.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
+      end
+
       def read_source
         public_send("#{source}_goods_nomenclatures")
       end
@@ -111,14 +125,19 @@ module Reporting
         public_send("#{target}_goods_nomenclatures")
       end
 
+      def read_source_for_comparison
+        public_send("#{source}_goods_nomenclatures_for_comparison")
+      end
+
       def handle_csv(csv)
         CSV.parse(csv, headers: true).map(&:to_h)
       end
     end
 
     class PresentedGoodsNomenclature
-      def initialize(goods_nomenclature)
+      def initialize(goods_nomenclature, new_issue)
         @goods_nomenclature = goods_nomenclature
+        @new_issue = new_issue
       end
 
       def to_row
@@ -131,12 +150,13 @@ module Reporting
           indentation,
           end_line,
           description,
+          new_issue,
         ]
       end
 
       private
 
-      attr_reader :goods_nomenclature
+      attr_reader :goods_nomenclature, :new_issue
 
       def sid
         goods_nomenclature['SID']

@@ -266,6 +266,10 @@ module TradeTariffBackend
       ENV['DIFFERENCES_TO_EMAILS']
     end
 
+    def reporting_comparison_days_ago
+      ENV['REPORTING_COMPARISON_DAYS_AGO'] || 7
+    end
+
     def support_email
       ENV['TARIFF_SUPPORT_EMAIL']
     end

@@ -91,6 +91,10 @@ locals {
       value = var.management_email
     },
     {
+      name      = "REPORTING_COMPARISON_DAYS_AGO"
+      value = "7"
+    },
+    {
       name  = "STEMMING_EXCLUSION_REFERENCE_ANALYZER"
       value = var.stemming_exclusion_reference_analyzer
     },

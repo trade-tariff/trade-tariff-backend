@@ -149,6 +149,7 @@ module Reporting
         4,  # Section square
         90, # Dashboard section/worksheet
         10, # Count
+        10, # New
         90, # About this metric
         10, # View issues
       ].freeze
@@ -208,15 +209,16 @@ module Reporting
 
         workbook.add_worksheet(name:) do |sheet|
           OVERVIEW_SECTION_CONFIG.each do |section, config|
-            sheet.add_row([nil, section, 'Count', 'About this metric', nil])
+            sheet.add_row([nil, section, 'Count', 'New', 'About this metric', nil])
             colour = config[:section_colour]
 
             section_header_row = sheet.rows.last
             section_header_row[0].style = dashboard_styles[colour]
             section_header_row[1].style = dashboard_styles['header_section']
             section_header_row[2].style = dashboard_styles['header_count']
-            section_header_row[3].style = dashboard_styles['header_about']
-            section_header_row[4].style = dashboard_styles['header_view']
+            section_header_row[3].style = dashboard_styles['header_count']
+            section_header_row[4].style = dashboard_styles['header_about']
+            section_header_row[5].style = dashboard_styles['header_view']
 
             config[:worksheets].each do |worksheet, worksheet_config|
               report_date = report.as_of.to_date.to_fs(:govuk)
@@ -228,6 +230,7 @@ module Reporting
                   nil,
                   worksheet,
                   report.overview_counts[worksheet_name],
+                  report.overview_new_issue_counts[worksheet_name],
                   worksheet_description,
                   'View issues',
                   nil,
@@ -238,12 +241,13 @@ module Reporting
 
               worksheet_row[1].style = regular_style
               worksheet_row[2].style = centered_style
-              worksheet_row[3].style = regular_style
+              worksheet_row[3].style = centered_style
+              worksheet_row[4].style = regular_style
 
               sheet.add_hyperlink(
                 location: "'#{worksheet_name}'!A1",
                 target: :sheet,
-                ref: worksheet_row[4].r,
+                ref: worksheet_row[5].r,
               )
             end
 

@@ -78,7 +78,8 @@ module Reporting
                 :centered_style,
                 :print_style,
                 :as_of,
-                :overview_counts
+                :overview_counts,
+                :overview_new_issue_counts
 
     def initialize
       @package = Axlsx::Package.new
@@ -117,6 +118,8 @@ module Reporting
       )
       @as_of = Time.zone.today.iso8601
       @overview_counts = Hash.new(0)
+      @overview_new_issue_counts = Hash.new(0)
+      @reporting_comparison_days_ago = TradeTariffBackend.reporting_comparison_days_ago.to_i
     end
 
     def generate(only: [])
@@ -125,29 +128,34 @@ module Reporting
       methods = %i[
         add_missing_from_uk_worksheet
         add_missing_from_xi_worksheet
-        add_indentation_worksheet
-        add_hierarchy_worksheet
-        add_endline_worksheet
-        add_start_date_worksheet
-        add_end_date_worksheet
-        add_mfn_missing_worksheet
-        add_mfn_duplicated_worksheet
-        add_misapplied_action_code_worksheet
-        add_incomplete_measure_condition_worksheet
-        add_me32_worksheet
-        add_seasonal_worksheet
-        add_omitted_duty_measures_worksheet
-        add_missing_vat_measure_worksheet
-        add_missing_quota_origins_worksheet
-        add_measure_quota_coverage_worksheet
-        add_bad_quota_association_worksheet
-        add_quota_exclusion_misalignment_worksheet
-        add_missing_supplementary_units_from_uk_worksheet
-        add_missing_supplementary_units_from_xi_worksheet
-        add_candidate_supplementary_units
-        add_me16_worksheet
         add_overview_worksheet
       ]
+      # methods = %i[
+      # add_missing_from_uk_worksheet
+      # add_missing_from_xi_worksheet
+      # add_indentation_worksheet
+      # add_hierarchy_worksheet
+      # add_endline_worksheet
+      # add_start_date_worksheet
+      # add_end_date_worksheet
+      # add_mfn_missing_worksheet
+      # add_mfn_duplicated_worksheet
+      # add_misapplied_action_code_worksheet
+      # add_incomplete_measure_condition_worksheet
+      # add_me32_worksheet
+      # add_seasonal_worksheet
+      # add_omitted_duty_measures_worksheet
+      # add_missing_vat_measure_worksheet
+      # add_missing_quota_origins_worksheet
+      # add_measure_quota_coverage_worksheet
+      # add_bad_quota_association_worksheet
+      # add_quota_exclusion_misalignment_worksheet
+      # add_missing_supplementary_units_from_uk_worksheet
+      # add_missing_supplementary_units_from_xi_worksheet
+      # add_candidate_supplementary_units
+      # add_me16_worksheet
+      # add_overview_worksheet
+      # ]
 
       methods = (methods & only) if only.any?
 
@@ -268,6 +276,14 @@ module Reporting
       @xi_goods_nomenclatures ||= handle_csv(Reporting::Commodities.get_xi_today)
     end
 
+    def uk_goods_nomenclatures_for_comparison
+      @uk_goods_nomenclatures_for_comparison ||= handle_csv(Reporting::Commodities.get_uk_days_ago(@reporting_comparison_days_ago))
+    end
+
+    def xi_goods_nomenclatures_for_comparison
+      @xi_goods_nomenclatures_for_comparison ||= handle_csv(Reporting::Commodities.get_xi_days_ago(@reporting_comparison_days_ago))
+    end
+
     def uk_supplementary_unit_measures
       @uk_supplementary_unit_measures ||= handle_csv(Reporting::SupplementaryUnits.get_uk_today)
     end
@@ -300,6 +316,10 @@ module Reporting
 
     def increment_count(worksheet_name)
       overview_counts[worksheet_name] += 1
+    end
+
+    def increment_new_issue_count(worksheet_name)
+      overview_new_issue_counts[worksheet_name] += 1
     end
 
     def sections

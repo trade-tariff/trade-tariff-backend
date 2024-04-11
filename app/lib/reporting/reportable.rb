@@ -12,18 +12,20 @@ module Reporting
 
     delegate :service, to: TradeTariffBackend
 
-    def day
-      now.day.to_s.rjust(2, '0')
+    def day(days_ago = 0)
+      now(days_ago).day.to_s.rjust(2, '0')
     end
 
-    def month
-      now.month.to_s.rjust(2, '0')
+    def month(days_ago = 0)
+      now(days_ago).month.to_s.rjust(2, '0')
     end
 
-    delegate :year, to: :now
+    def year(days_ago = 0)
+      now(days_ago).year.to_s.rjust(4, '0')
+    end
 
-    def now
-      Time.zone.today
+    def now(days_ago = 0)
+      Time.zone.today - days_ago
     end
   end
 end
