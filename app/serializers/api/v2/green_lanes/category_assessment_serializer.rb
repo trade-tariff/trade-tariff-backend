@@ -8,9 +8,6 @@ module Api
 
         set_id :id
 
-        attributes :category,
-                   :theme
-
         has_many :exemptions, serializer: lambda { |record, _params|
           case record
           when Certificate
@@ -22,6 +19,7 @@ module Api
           end
         }
 
+        has_one :theme, serializer: ThemeSerializer
         has_one :geographical_area, serializer: GeographicalAreaSerializer
         has_many :excluded_geographical_areas, serializer: GeographicalAreaSerializer
         has_many :measures, serializer: GreenLanes::MeasureSerializer,

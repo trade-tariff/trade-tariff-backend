@@ -49,16 +49,12 @@ module Api
           @measures = MeasurePresenter.wrap(measures)
         end
 
+        def theme_id
+          theme&.code
+        end
+
         def measure_ids
           @measure_ids = measures.map(&:measure_sid)
-        end
-
-        def theme
-          @category_assessment.theme.to_s
-        end
-
-        def category
-          @category_assessment.theme.category.to_s
         end
 
         def category_assessment_id
