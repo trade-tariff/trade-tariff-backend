@@ -6,6 +6,8 @@ module Reporting
                :bold_style,
                :uk_goods_nomenclatures,
                :xi_goods_nomenclatures,
+               :uk_goods_nomenclatures_for_comparison,
+               :xi_goods_nomenclatures_for_comparison,
                to: :report
 
       WORKSHEET_NAME = 'Hierarchy differences'.freeze
@@ -14,6 +16,7 @@ module Reporting
         'Commodity code (PLS)',
         'UK hiearchy',
         'EU hierarchy',
+        'New',
       ].freeze
 
       TAB_COLOR = 'cc0000'.freeze
@@ -24,9 +27,12 @@ module Reporting
         20, # Commodity code (PLS)
         20, # UK hierarchy
         20, # EU hierarchy
+        20, # New
       ].freeze
 
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
+
+      @new_issue = false
 
       def initialize(report)
         @report = report
@@ -44,6 +50,9 @@ module Reporting
 
           rows.compact.each do |row|
             report.increment_count(name)
+            if @new_issue
+              report.increment_new_issue_count(name)
+            end
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
           end
 
@@ -79,10 +88,13 @@ module Reporting
 
         item_id, pls = matching_uk_goods_nomenclature['ItemIDPlusPLS'].split('_')
 
+        @new_issue = !uk_goods_nomenclature_ids_for_comparison.include?(matching_uk_goods_nomenclature['ItemIDPlusPLS']) ||
+          !xi_goods_nomenclature_ids_for_comparison.include?(matching_xi_goods_nomenclature['ItemIDPlusPLS'])
         [
           "#{item_id} (#{pls})",
           matching_uk_goods_nomenclature['Hierarchy'],
           matching_xi_goods_nomenclature['Hierarchy'],
+          @new_issue,
         ]
       end
 
@@ -94,6 +106,18 @@ module Reporting
 
       def xi_goods_nomenclature_ids
         @xi_goods_nomenclature_ids ||= xi_goods_nomenclatures.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
+      end
+
+      def uk_goods_nomenclature_ids_for_comparison
+        @uk_goods_nomenclature_ids_for_comparison ||= uk_goods_nomenclatures_for_comparison.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
+      end
+
+      def xi_goods_nomenclature_ids_for_comparison
+        @xi_goods_nomenclature_ids_for_comparison ||= xi_goods_nomenclatures_for_comparison.index_by do |goods_nomenclature|
           goods_nomenclature['ItemIDPlusPLS']
         end
       end
