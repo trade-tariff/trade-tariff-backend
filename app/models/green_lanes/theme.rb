@@ -6,7 +6,11 @@ module GreenLanes
     one_to_many :category_assessments
 
     def to_s
-      "#{section}.#{subsection}. #{description}"
+      "#{code}. #{description}"
+    end
+
+    def code
+      "#{section}.#{subsection}"
     end
   end
 end
