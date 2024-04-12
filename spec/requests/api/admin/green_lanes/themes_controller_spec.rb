@@ -10,13 +10,11 @@ RSpec.describe Api::Admin::GreenLanes::ThemesController do
 
   describe 'GET to #index' do
     let(:make_request) do
-      authenticated_get api_admin_themes_path(format: :json)
+      authenticated_get api_admin_green_lanes_themes_path(format: :json)
     end
 
     context 'with some themes' do
-      before do
-        theme
-      end
+      before { theme }
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }

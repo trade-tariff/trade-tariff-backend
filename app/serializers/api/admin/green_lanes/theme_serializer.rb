@@ -12,9 +12,7 @@ module Api
                    :subsection,
                    :theme,
                    :description,
-                   :category,
-                   :created_at,
-                   :updated_at
+                   :category
       end
     end
   end

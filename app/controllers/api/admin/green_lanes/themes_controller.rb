@@ -11,15 +11,11 @@ module Api
         private
 
         def themes
-          @themes ||= ::GreenLanes::Theme.order(Sequel.desc(:id))
+          @themes ||= ::GreenLanes::Theme.order(Sequel.asc(:section), Sequel.asc(:subsection))
         end
 
         def serialize(*args)
           Api::Admin::GreenLanes::ThemeSerializer.new(*args).serializable_hash
-        end
-
-        def serialize_errors(theme)
-          Api::Admin::ErrorSerializationService.new(theme).call
         end
 
         def check_service

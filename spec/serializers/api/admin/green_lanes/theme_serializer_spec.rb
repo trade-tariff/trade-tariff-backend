@@ -16,8 +16,6 @@ RSpec.describe Api::Admin::GreenLanes::ThemeSerializer do
           theme: theme.theme,
           description: theme.description,
           category: theme.category,
-          created_at: theme.created_at,
-          updated_at: theme.updated_at,
         },
       },
     }
