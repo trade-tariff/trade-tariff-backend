@@ -49,7 +49,7 @@ module Reporting
 
           rows.compact.each do |row|
             report.increment_count(name)
-            if @new_issue
+            if row.last # last value in a row array is new_issue
               report.increment_new_issue_count(name)
             end
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
@@ -90,13 +90,19 @@ module Reporting
         uk_endline_status = matching_uk_goods_nomenclature['End line'] == 'true' ? '1' : '0'
         eu_endline_status = matching_xi_goods_nomenclature['End line'] == 'true' ? '1' : '0'
 
-        @new_issue = !uk_goods_nomenclature_ids_for_comparison.include?(matching_uk_goods_nomenclature['ItemIDPlusPLS']) ||
-          !xi_goods_nomenclature_ids_for_comparison.include?(matching_xi_goods_nomenclature['ItemIDPlusPLS'])
+        matching_uk_goods_nomenclature_for_comparison = uk_goods_nomenclature_ids_for_comparison[matching]
+        matching_xi_goods_nomenclature_for_comparison = xi_goods_nomenclature_ids_for_comparison[matching]
+
+        new_issue = if matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil?
+                      true
+                    else
+                      matching_uk_goods_nomenclature_for_comparison['End line'] == matching_xi_goods_nomenclature_for_comparison['End line']
+                    end
         [
           "#{item_id} (#{pls})",
           uk_endline_status,
           eu_endline_status,
-          @new_issue,
+          new_issue,
         ]
       end
 
