@@ -7,6 +7,8 @@ module Reporting
                :centered_style,
                :uk_goods_nomenclatures,
                :xi_goods_nomenclatures,
+               :uk_goods_nomenclatures_for_comparison,
+               :xi_goods_nomenclatures_for_comparison,
                to: :report
 
       WORKSHEET_NAME = 'End line differences'.freeze
@@ -15,6 +17,7 @@ module Reporting
         'Commodity code (PLS)',
         'UK endline status',
         'EU endline status',
+        'New',
       ].freeze
 
       TAB_COLOR = 'cc0000'.freeze
@@ -25,6 +28,7 @@ module Reporting
         20, # Commodity code (PLS)
         20, # UK endline status
         20, # EU endline status
+        20, # New
       ].freeze
 
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
@@ -45,6 +49,9 @@ module Reporting
 
           rows.compact.each do |row|
             report.increment_count(name)
+            if @new_issue
+              report.increment_new_issue_count(name)
+            end
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             sheet.rows.last.tap do |last_row|
               last_row.cells[1].style = centered_style # UK endline status
@@ -77,16 +84,19 @@ module Reporting
         matching_uk_goods_nomenclature = uk_goods_nomenclature_ids[matching]
         matching_xi_goods_nomenclature = xi_goods_nomenclature_ids[matching]
 
-        return nil if matching_uk_goods_nomenclature['End line'] == matching_xi_goods_nomenclature['End line']
+        return nil if matching_uk_goods_nomenclature['End line'] != matching_xi_goods_nomenclature['End line']
 
         item_id, pls = matching_uk_goods_nomenclature['ItemIDPlusPLS'].split('_')
         uk_endline_status = matching_uk_goods_nomenclature['End line'] == 'true' ? '1' : '0'
         eu_endline_status = matching_xi_goods_nomenclature['End line'] == 'true' ? '1' : '0'
 
+        @new_issue = !uk_goods_nomenclature_ids_for_comparison.include?(matching_uk_goods_nomenclature['ItemIDPlusPLS']) ||
+          !xi_goods_nomenclature_ids_for_comparison.include?(matching_xi_goods_nomenclature['ItemIDPlusPLS'])
         [
           "#{item_id} (#{pls})",
           uk_endline_status,
           eu_endline_status,
+          @new_issue,
         ]
       end
 
@@ -98,6 +108,18 @@ module Reporting
 
       def xi_goods_nomenclature_ids
         @xi_goods_nomenclature_ids ||= xi_goods_nomenclatures.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
+      end
+
+      def uk_goods_nomenclature_ids_for_comparison
+        @uk_goods_nomenclature_ids_for_comparison ||= uk_goods_nomenclatures_for_comparison.index_by do |goods_nomenclature|
+          goods_nomenclature['ItemIDPlusPLS']
+        end
+      end
+
+      def xi_goods_nomenclature_ids_for_comparison
+        @xi_goods_nomenclature_ids_for_comparison ||= xi_goods_nomenclatures_for_comparison.index_by do |goods_nomenclature|
           goods_nomenclature['ItemIDPlusPLS']
         end
       end
