@@ -129,8 +129,8 @@ module Reporting
         add_missing_from_uk_worksheet
         add_missing_from_xi_worksheet
         add_indentation_worksheet
-        add_overview_worksheet
         add_hierarchy_worksheet
+        add_overview_worksheet
       ]
       # methods = %i[
       # add_missing_from_uk_worksheet
