@@ -13,11 +13,11 @@ We utilise caching to avoid doing repeated work whilst presenting a largely read
 Working from 'inside' out, we cache at multiple levels
 
 * Backend uses a Redis backed Rails cache to store **some** API responses
-	- this avoids repeated and sometimes expensive database queries
-	- cleared after a Tariff sync occurs
+  * this avoids repeated and sometimes expensive database queries
+  * cleared after a Tariff sync occurs
 * Backend sets HTTP cache headers instructing its clients how its responses may be cached
-  - by default this is set to cache for 2 minutes then revalidate for anything older. 
-  - A response is valid unless a backend Deployment or a Sync has happened
+  * by default this is set to cache for 2 minutes then revalidate for anything older.
+  * A response is valid unless a backend Deployment or a Sync has happened
 * Frontend uses these cache headers to control how it caches responses in it API client
 * CDN ignores the cache headers and caches anything under `/api`, eg `/api/v2/sections.json` for 30 minutes
 * CDN does not cache HTML pages from the frontend
@@ -26,13 +26,13 @@ Working from 'inside' out, we cache at multiple levels
 
 Our rails cache is backed by Redis on the AWS servers, and an in memory cache for local development.
 
-Some high load API endpoints are manually cached by writing the API response to the rails cache prior to delivery, eg in `CachedCommodityService`. Requests will check for a cached response, and deliver this if present and if not, will render and store the response. 
+Some high load API endpoints are manually cached by writing the API response to the rails cache prior to delivery, eg in `CachedCommodityService`. Requests will check for a cached response, and deliver this if present and if not, will render and store the response.
 
 These cached responses, along with any other contents of Rails.cache, are cleared by the background job after we download our daily data update from CDS / Taric.
 
 _Note: the in-memory cache used in local development is cleared automatically when the application is restarted._
 
-Headings and Subheadings are pre-cached for the current day, ie generated ahead of time and written to the Rails.cache. This is done because the API outputs for Headings and Subheadings can be generated from the same set of loaded data meaning it only takes a couple of minutes to pre-render _every_ heading and subheading response. 
+Headings and Subheadings are pre-cached for the current day, ie generated ahead of time and written to the Rails.cache. This is done because the API outputs for Headings and Subheadings can be generated from the same set of loaded data meaning it only takes a couple of minutes to pre-render _every_ heading and subheading response.
 
 These responses are pre-cached for the following day at 10pm, and then regenerated again on the day after the Tariff sync (if one occurs).
 
@@ -51,7 +51,7 @@ end
 
 ## HTTP caching
 
-Where as the Rails Cache holds responses on the server, HTTP caching works by telling the HTTP client (or a proxy in the middle) what responses can be cached and it is up to the HTTP client to perform that caching. 
+Where as the Rails Cache holds responses on the server, HTTP caching works by telling the HTTP client (or a proxy in the middle) what responses can be cached and it is up to the HTTP client to perform that caching.
 
 Server controls, Client implements. It combines 2 concepts
 
@@ -66,7 +66,7 @@ This is currently set to **2 minutes** and is set via a constant in the `EtagCac
 
 ### Response Validity
 
-Determining whether a response stored by the client is still valid and can continue to be used. This is controlled via the combination of the `Last-Modified` header and more crucially the `ETag` header. 
+Determining whether a response stored by the client is still valid and can continue to be used. This is controlled via the combination of the `Last-Modified` header and more crucially the `ETag` header.
 
 An ETag is a hashed identifier for the response contents, it is passed back to the HTTP server during the HTTP request, and the server determines whether the response is still valid.
 
@@ -88,7 +88,7 @@ When any of the above change, then the ETag changes and the HTTP client will dow
 
 ### Alternative: Caching for a fixed period of time
 
-You can force a controller to only cache its responses for a fixed period of time, after which the full response will be rendered 
+You can force a controller to only cache its responses for a fixed period of time, after which the full response will be rendered
 
 * if this matches what the client already had then it is determined to be valid and an empty `304` returned
 * if it doesn't then a regular `200` is returned
@@ -137,9 +137,9 @@ We have 2 http clients we control - our Frontend app and our CDN
 
 ### Frontend
 
-Our API requests happen via Faraday and we include Faraday's HTTP caching plugin. This plugin follows the defined by our backend described above. 
+Our API requests happen via Faraday and we include Faraday's HTTP caching plugin. This plugin follows the defined by our backend described above.
 
-In practical terms, this means something like a call to `Commodity.find('1234567890')` will request all the Sections from the backend. 
+In practical terms, this means something like a call to `Commodity.find('1234567890')` will request all the Sections from the backend.
 
 A subsequent call under 2 minutes later, will return the cached response. A call _after 2 minutes_ will re-request data from the backend
 

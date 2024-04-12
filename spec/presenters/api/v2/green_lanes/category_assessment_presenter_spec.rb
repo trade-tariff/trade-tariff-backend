@@ -40,15 +40,34 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     it { expect(measures.map(&:measure_sid)).to eq assessment.measures.map(&:measure_sid) }
   end
 
+  describe '#certificates' do
+    subject { presented.certificates }
+
+    before do
+      create :measure_condition, measure: assessment.measures.first, certificate:
+    end
+
+    context 'with exemption certificate' do
+      let(:certificate) { create :certificate, :exemption }
+
+      it { is_expected.to include certificate }
+    end
+
+    context 'with license certificate' do
+      let(:certificate) { create :certificate, :license }
+
+      it { is_expected.not_to include certificate }
+    end
+  end
+
   describe '#exemptions' do
     subject { presented.exemptions }
 
     let :certificates do
-      create_pair(:certificate).each do |cert|
+      create_pair(:certificate, :exemption).each do |certificate|
         create :measure_condition,
-               measure_sid: assessment.measures.first.measure_sid,
-               certificate_type_code: cert.certificate_type_code,
-               certificate_code: cert.certificate_code
+               measure: assessment.measures.first,
+               certificate:
       end
     end
 

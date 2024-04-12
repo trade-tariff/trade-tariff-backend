@@ -12,56 +12,60 @@ Rails.application.routes.draw do
     end
   end
 
-  namespace :api, defaults: { format: 'json' }, path: '/admin' do
-    scope module: :admin do
-      resources :sections, only: %i[index show] do
-        scope module: 'sections', constraints: { id: /\d+/ } do
-          resource :section_note, only: %i[show create update destroy]
+  if TradeTariffBackend.enable_admin?
+    namespace :api, defaults: { format: 'json' }, path: '/admin' do
+      scope module: :admin do
+        resources :sections, only: %i[index show] do
+          scope module: 'sections', constraints: { id: /\d+/ } do
+            resource :section_note, only: %i[show create update destroy]
+          end
+        end
+
+        resources :updates, only: %i[index show]
+        resources :rollbacks, only: %i[create index]
+        resources :clear_caches, only: %i[create]
+        resources :downloads, only: %i[create]
+        resources :applies, only: %i[create]
+        resources :footnotes, only: %i[index show update]
+        resources :search_references, only: [:index]
+
+        resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
+          scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
+            resource :chapter_note, only: %i[show create update destroy]
+            resources :search_references, only: %i[show index destroy create update]
+          end
+        end
+
+        resources :headings, only: [:show], constraints: { id: /\d{4}/ } do
+          scope module: 'headings', constraints: { heading_id: /\d{4}/, id: /\d+/ } do
+            resources :search_references, only: %i[show index destroy create update]
+          end
+        end
+
+        resources :commodities, only: %i[show index] do
+          scope module: 'commodities' do
+            resources :search_references, only: %i[show index destroy create update]
+          end
+        end
+
+        resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
+          resources :quota_definitions, only: %i[index show]
         end
       end
 
-      resources :updates, only: %i[index show]
-      resources :rollbacks, only: %i[create index]
-      resources :clear_caches, only: %i[create]
-      resources :downloads, only: %i[create]
-      resources :applies, only: %i[create]
-      resources :footnotes, only: %i[index show update]
-      resources :search_references, only: [:index]
+      # avoid admin named routes clashing with public api named routes
+      namespace :admin, path: '' do
+        if TradeTariffBackend.uk?
+          namespace :news do
+            resources :items, only: %i[index show create update destroy]
+            resources :collections, only: %i[index show create update]
+          end
 
-      resources :chapters, only: %i[index show], constraints: { id: /\d{2}/ } do
-        scope module: 'chapters', constraints: { chapter_id: /\d{2}/, id: /\d+/ } do
-          resource :chapter_note, only: %i[show create update destroy]
-          resources :search_references, only: %i[show index destroy create update]
-        end
-      end
-
-      resources :headings, only: [:show], constraints: { id: /\d{4}/ } do
-        scope module: 'headings', constraints: { heading_id: /\d{4}/, id: /\d+/ } do
-          resources :search_references, only: %i[show index destroy create update]
-        end
-      end
-
-      resources :commodities, only: %i[show index] do
-        scope module: 'commodities' do
-          resources :search_references, only: %i[show index destroy create update]
-        end
-      end
-
-      resources :quota_order_numbers, module: 'quota_order_numbers', only: %i[] do
-        resources :quota_definitions, only: %i[index show]
-      end
-    end
-
-    # avoid admin named routes clashing with public api named routes
-    namespace :admin, path: '' do
-      if TradeTariffBackend.uk?
-        namespace :news do
-          resources :items, only: %i[index show create update destroy]
-          resources :collections, only: %i[index show create update]
+          resources :news_items, only: %i[index show create update destroy],
+                                 controller: 'news/items'
         end
 
-        resources :news_items, only: %i[index show create update destroy],
-                               controller: 'news/items'
+        resources :category_assessments, module: 'green_lanes', only: %i[index show create update destroy]
       end
     end
   end

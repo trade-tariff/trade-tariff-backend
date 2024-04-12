@@ -13,6 +13,6 @@ It has happened too often that data has had to be adjusted in the DB
 
 Average rates are calculated based on the live countries in the last 12 months from the date selected in the `ExchangeRates::AverageExchangeRatesService` class. Normally the worker class `AverageExchangeRatesWorker` Will run on the 31st March and 31st Dec. It will select all the countries that have had a live rate for the last year through working out the end of the month date selected *(eg. if the service is run on the 12th May then it will use 31st May for that year going back to the 1st of June for the previous year hgathering all country and currency parings).* This solved the issue if a country might have multiple currencies in one year and we have to display the average for currencies that country has had even if its just one day.
 
-You can then navigate to https://www.trade-tariff.service.gov.uk/exchange_rates/average and the latest data will be available to view online plus files.
+You can then navigate to <https://www.trade-tariff.service.gov.uk/exchange_rates/average> and the latest data will be available to view online plus files.
 
 You can check the exchange rates for the last year by running this command: `ExchangeRateCurrencyRate.by_type(ExchangeRateCurrencyRate::AVERAGE_RATE_TYPE).where(validity_end_date: Date.new(2023,12,31)).all` Chnaging the date to the end of the period you are checking for (this example uses end of dec 2023)

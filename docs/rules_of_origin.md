@@ -2,7 +2,7 @@
 
 ## Rules of Origin API
 
-The primary API endpoint for rules of origin is 
+The primary API endpoint for rules of origin is
 
 ```
 /rules_of_origin_schemes/<commodity_code>/<country_code>
@@ -10,7 +10,7 @@ The primary API endpoint for rules of origin is
 
 This will return a JSON-API response containing a list of all applicable schemes and their rules which are relevant to the `commodity_code`
 
-There are also; 
+There are also;
 
 ```
 /rules_of_origin_schemes/<commodity_code>
@@ -92,8 +92,8 @@ for Northern Ireland,
 /roo_schemes_xi/articles/<scheme_code>/<article_name>
 ```
 
-
 ## How to validate the RoO data files
+
 Two rake tasks are available to validate the RoO files:
 
 ```bash
