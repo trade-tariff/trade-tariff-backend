@@ -4,5 +4,9 @@ module GreenLanes
     plugin :auto_validations, not_null: :presence
 
     one_to_many :category_assessments
+
+    def to_s
+      "#{section}.#{subsection}. #{description}"
+    end
   end
 end

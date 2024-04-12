@@ -1,76 +1,106 @@
 RSpec.describe GreenLanes::FindCategoryAssessmentsService do
   describe '#call' do
-    subject(:matches) { described_class.call goods_nomenclature: }
-
-    before do
-      allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return(category_assessments)
-
-      allow(goods_nomenclature).to receive(:applicable_measures).and_return measures
+    subject :presented_assessments do
+      described_class.call(goods_nomenclature:, geographical_area_id:)
+                     .group_by(&:category_assessment_id)
     end
+
+    before { category_assessments }
 
     let(:goods_nomenclature) { create(:subheading) }
+    let(:category_assessments) { measures.map { |m| create :category_assessment, measure: m } }
+    let(:geographical_area_id) { nil }
 
-    let(:measures) do
-      [
-        create(:measure, measure_generating_regulation_id: 'D0000001', measure_type_id: '400'),
-        create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500'),
-        create(:measure, measure_generating_regulation_id: 'D0000003', measure_type_id: '713'),
-      ]
+    let :measures do
+      create_list(:measure, 2, :with_base_regulation,
+                  goods_nomenclature:,
+                  for_geo_area: countries[:switzerland]) +
+        create_list(:measure, 1, :with_base_regulation,
+                    goods_nomenclature:,
+                    for_geo_area: countries[:erga_omnes])
     end
 
-    let :category_assessments do
-      [
-        build(:category_assessment_json, regulation_id: 'D0000001',
-                                         measure_type_id: '400',
-                                         geographical_area_id: 'CH'),
-        build(:category_assessment_json, regulation_id: 'D0000001',
-                                         measure_type_id: '400',
-                                         geographical_area_id: 'AU'),
-        build(:category_assessment_json, regulation_id: 'D0000002',
-                                         measure_type_id: '500',
-                                         geographical_area_id: 'CH'),
-        build(:category_assessment_json, regulation_id: 'D0000003',
-                                         measure_type_id: '713',
-                                         geographical_area_id: '1011'),
-      ]
+    let :countries do
+      switzerland = create(:geographical_area, geographical_area_id: 'CH')
+      france = create(:geographical_area, geographical_area_id: 'FR')
+      erga_omnes = create(:geographical_area, :erga_omnes, members: [switzerland, france])
+
+      { erga_omnes:, switzerland:, france: }
     end
 
     context 'without origin filter' do
-      it { is_expected.to have_attributes length: 4 }
+      it { is_expected.to have_attributes length: 3 }
 
-      it { expect(matches[0].measure_ids).to match_array [measures[0].measure_sid] }
-      it { expect(matches[1].measure_ids).to match_array [measures[0].measure_sid] }
-      it { expect(matches[2].measure_ids).to match_array [measures[1].measure_sid] }
-      it { expect(matches[3].measure_ids).to match_array [measures[2].measure_sid] }
-    end
+      context 'for swiss assessment' do
+        subject { presented_assessments[category_assessments[0].id].first }
 
-    context 'when origin is provided' do
-      subject(:matches) { described_class.call(goods_nomenclature:, geographical_area_id: 'AU') }
-
-      it { is_expected.to have_attributes length: 2 }
-      it { expect(matches[0].measure_ids).to match_array [measures[0].measure_sid] }
-      it { expect(matches[1].measure_ids).to match_array [measures[2].measure_sid] }
-    end
-
-    context 'with multiple measures' do
-      let(:measures) do
-        [
-          create(:measure, measure_generating_regulation_id: 'D0000002', measure_type_id: '500'),
-          create(:measure, measure_generating_regulation_id: 'D0000003', measure_type_id: '713'),
-          create(:measure, measure_generating_regulation_id: 'D0000003', measure_type_id: '713'),
-        ]
+        it { is_expected.to have_attributes measure_ids: [measures[0].measure_sid] }
       end
 
-      let(:matched_regulation_ids) { matches.map(&:regulation_id) }
+      context 'for erga omnes assessment' do
+        subject { presented_assessments[category_assessments[2].id].first }
 
-      it { is_expected.to have_attributes length: 2 }
+        it { is_expected.to have_attributes measure_ids: [measures[2].measure_sid] }
+      end
+    end
 
-      it 'includes expected category assessments' do
-        expect(matched_regulation_ids).to match_array %w[D0000002 D0000003]
+    context 'when origin is matches measure countries' do
+      let(:geographical_area_id) { countries[:switzerland].geographical_area_id }
+
+      it { is_expected.to have_attributes length: 3 }
+
+      context 'for swiss assessment' do
+        subject { presented_assessments[category_assessments[0].id].first }
+
+        it { is_expected.to have_attributes measure_ids: [measures[0].measure_sid] }
       end
 
-      it { expect(matches[0].measure_ids).to match_array [measures[0].measure_sid] }
-      it { expect(matches[1].measure_ids).to match_array [measures[1].measure_sid, measures[2].measure_sid] }
+      context 'for erga omnes assessment' do
+        subject { presented_assessments[category_assessments[2].id].first }
+
+        it { is_expected.to have_attributes measure_ids: [measures[2].measure_sid] }
+      end
+    end
+
+    context 'when origin is does not match measure countries' do
+      let(:geographical_area_id) { 'FR' }
+
+      it { is_expected.to have_attributes length: 1 }
+      it { is_expected.not_to include category_assessments[0].id }
+      it { is_expected.not_to include category_assessments[1].id }
+      it { is_expected.to include category_assessments[2].id }
+
+      context 'for erga omnes assessment' do
+        subject { presented_assessments[category_assessments[2].id].first }
+
+        it { is_expected.to have_attributes measure_ids: [measures[2].measure_sid] }
+      end
+    end
+
+    context 'with multiple measures for category assessments' do
+      before do
+        australia = create(:geographical_area, geographical_area_id: 'AU')
+
+        measures << create(:measure,
+                           generating_regulation: measures[0].generating_regulation,
+                           measure_type_id: measures[0].measure_type_id,
+                           for_geo_area: australia,
+                           goods_nomenclature:)
+      end
+
+      it { is_expected.to have_attributes length: 3 }
+
+      context 'for first assessment' do
+        subject(:first) { presented_assessments[category_assessments[0].id] }
+
+        it { is_expected.to have_attributes length: 2 }
+
+        describe 'presented measure groups' do
+          subject { first.map(&:measure_ids) }
+
+          it { is_expected.to match_array [[measures[0].measure_sid], [measures[3].measure_sid]] }
+        end
+      end
     end
   end
 end

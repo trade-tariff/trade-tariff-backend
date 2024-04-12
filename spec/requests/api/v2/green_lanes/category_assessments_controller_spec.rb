@@ -1,14 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
-  before do
-    allow(TradeTariffBackend).to receive(:service).and_return 'xi'
-    create(:geographical_area, :with_reference_group_and_members, :with_description)
-    create(:geographical_area, :with_reference_group_and_members, :with_description, geographical_area_id: '1008')
-    allow(GreenLanes::CategoryAssessmentJson).to receive(:all).and_return(category_assessments)
-  end
+  before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 
-  let(:category_assessments) { build_pair :category_assessment_json, geographical_area: }
+  let(:category_assessments) { build_pair :category_assessment, geographical_area: }
   let(:geographical_area) { create :geographical_area, :erga_omnes, :with_description }
 
   describe 'GET #index' do
