@@ -1,29 +1,25 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
-  subject(:presenter) { described_class.new(gn, [presented_category_assessment]) }
+  subject(:presenter) { described_class.new(gn, [presented_assessment]) }
 
   let(:gn) { create :goods_nomenclature, :with_measures }
-  let(:first_measure) { gn.measures.first }
+  let(:assessment) { create :category_assessment, measure: gn.measures.first }
 
-  let :presented_category_assessment do
-    ::Api::V2::GreenLanes::CategoryAssessmentPresenter.new category_assessment, [first_measure]
+  let :permutations do
+    GreenLanes::PermutationCalculatorService.new(gn.applicable_measures).call
   end
 
-  let(:category_assessment) do
-    build :category_assessment_json, measure: first_measure,
-                                     geographical_area_id: '1000'
+  let :presented_assessment do
+    Api::V2::GreenLanes::CategoryAssessmentPresenter.new(assessment, *permutations.first)
   end
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
-
-  it 'includes applicable category assessment ids' do
-    expect(presenter.applicable_category_assessment_ids).to eq [category_assessment.id]
-  end
+  it { is_expected.to have_attributes applicable_category_assessment_ids: [presented_assessment.id] }
 
   describe '#applicable_category_assessments' do
-    subject(:applicable_category_assessments) { presenter.applicable_category_assessments }
+    subject { presenter.applicable_category_assessments }
 
-    it { is_expected.to all(be_an(Api::V2::GreenLanes::CategoryAssessmentPresenter)) }
-
-    it { expect(applicable_category_assessments.first.id).to eq(category_assessment.id) }
+    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to all be_an Api::V2::GreenLanes::CategoryAssessmentPresenter }
+    it { is_expected.to all have_attributes id: presented_assessment.id }
   end
 end

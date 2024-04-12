@@ -143,6 +143,55 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.not_to eq second_regulation }
       end
     end
+
+    describe '#measures' do
+      subject(:measures) { ca.reload.measures }
+
+      let(:ca) { create :category_assessment, :with_measures }
+
+      context :first_measure do
+        subject { measures.first }
+
+        it { is_expected.to have_attributes measure_type_id: ca.measure_type_id }
+        it { is_expected.to have_attributes measure_generating_regulation_id: ca.regulation_id }
+        it { is_expected.to have_attributes measure_generating_regulation_role: ca.regulation_role }
+      end
+
+      context :random_measure do
+        subject { measures.map(&:measure_type_id) }
+
+        let :second_measure do
+          create :measure,
+                 measure_type_id: MeasureType.first.measure_type_id.to_i + 10,
+                 measure_generating_regulation_id: BaseRegulation.first.base_regulation_id,
+                 measure_generating_regulation_role: BaseRegulation.first.base_regulation_role
+        end
+
+        it { is_expected.not_to include second_measure.measure_type_id }
+      end
+
+      xcontext 'for assessment without regulation' do
+        before { measure1 && measure2 }
+
+        let(:ca) { create :category_assessment, :without_regulation }
+        let(:measure1) { create :measure, measure_type_id: ca.measure_type_id }
+        let(:measure2) { create :measure, measure_type_id: ca.measure_type_id }
+        let(:measure3) { create :measure, measure_type_id: ca.measure_type_id.to_i + 1 }
+
+        xit { is_expected.to include measure1 }
+        xit { is_expected.to include measure2 }
+        it { is_expected.not_to include measure3 }
+      end
+
+      context 'for assessment with expired measures' do
+        before do
+          ca.measures.first.tap { |m| m.update(validity_end_date: 5.days.ago) }
+          ca.reload
+        end
+
+        it { is_expected.to be_empty }
+      end
+    end
   end
 
   describe '#regulation' do
