@@ -33,8 +33,6 @@ module Reporting
 
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      # @new_issue = false
-
       def initialize(report)
         @report = report
       end
