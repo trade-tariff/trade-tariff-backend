@@ -51,8 +51,11 @@ FactoryBot.define do
     end
 
     trait :exemption do
-      certificate_code { '005' }
       certificate_type_code { 'Y' }
+    end
+
+    trait :license do
+      certificate_type_code { 'L' }
     end
   end
 
