@@ -84,7 +84,7 @@ module Reporting
         matching_uk_goods_nomenclature = uk_goods_nomenclature_ids[matching]
         matching_xi_goods_nomenclature = xi_goods_nomenclature_ids[matching]
 
-        return nil if matching_uk_goods_nomenclature['End line'] != matching_xi_goods_nomenclature['End line']
+        return nil if matching_uk_goods_nomenclature['End line'] == matching_xi_goods_nomenclature['End line']
 
         item_id, pls = matching_uk_goods_nomenclature['ItemIDPlusPLS'].split('_')
         uk_endline_status = matching_uk_goods_nomenclature['End line'] == 'true' ? '1' : '0'
