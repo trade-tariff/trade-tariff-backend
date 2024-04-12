@@ -64,6 +64,7 @@ The primary index used for hierarchy lookups is `depth` + `position`.
 `validity_start_date` and `validity_end_date` are not in the index because once the Postgres has filtered by `depth` and `position`, there are not many records to walk through so there is not much performance benefit. There would be a memory cost though, because every entry in the index would also require 2 dates that will be much larger then the `int` + `bigint` for `depth` + `position`
 
 There are also 2 other indexes
+
 * `goods_nomenclature_sid` - this allows for efficient JOINs to the goods_nomenclatures table
 * `oid` (unique) - this is the `oid` from the indents table. Refreshing a materialized view concurrently (ie without blocking reads from the view) requires the materialized view to have a unique index.
 
@@ -74,12 +75,14 @@ There are also 2 other indexes
 ### Ancestors
 
 These can be queried by fetching the maximium `position` at every `depth`, where -;
+
 * `depth` is less than the `depth` of the origin `tree_node` record
 * and the `position` is less than the `position` of the origin record
 
 ### Next sibling
 
 The `tree_nodes` record with
+
 * same `depth` as the origin record
 * the lowest `position` that is still greater than the origin records `position`
 
@@ -88,12 +91,14 @@ The `tree_nodes` record with
 _Note: Due to how we read the tree this is less useful then next sibling_
 
 The `tree_nodes` record with
+
 * same `depth` as the origin record
 * and has the highest `position` that is still less than the origin records `position`
 
 ### Children
 
 This is every `tree_nodes` record where -;
+
 * the child nodes `depth` is exactly 1 greater than the `depth` of the origin record
 * and the child nodes `position` is greater than the `position` of the origin `tree_nodes` record
 * and the child nodes `position` is less than the `position` of next sibling of the origin record
@@ -101,6 +106,7 @@ This is every `tree_nodes` record where -;
 ### Descendents
 
 This is every `tree_nodes` record where -;
+
 * the child nodes `depth` is greater than the `depth` of the origin record
 * and the child nodes `position` is greater than the `position` of the origin `tree_nodes` record
 * and the child nodes `position` is less than the `position` of next sibling of the origin record
@@ -135,9 +141,9 @@ GoodsNomenclature records loaded for one relationship are often relevant to othe
 
 * `ancestors` also populates `parent` on self and all ancestors
 * `descendants` also populates
-    * `parent` for all descendants
-    * `children` for self plus all descendants
-    * `ancestors` for all descendants _if_ self already has ancestors loaded
+  * `parent` for all descendants
+  * `children` for self plus all descendants
+  * `ancestors` for all descendants _if_ self already has ancestors loaded
 
 The above means you can get a nice recursive tree of children, so in the following example the first line will generate 2 queries and the second line will generate 0 queries.
 
@@ -205,7 +211,7 @@ If you need to eager load relationships below measures, you'll need to duplicate
 
 ```
 MEASURE_EAGER = {
-	measures: [:measure_type,
+ measures: [:measure_type,
                  { measure_conditions: :measure_condition_code }]
 }
 Chapter.actual

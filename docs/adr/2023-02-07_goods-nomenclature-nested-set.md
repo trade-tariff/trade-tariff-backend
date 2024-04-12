@@ -22,4 +22,3 @@ Move to accessing the Goods Nomenclatures hierarchy via a modified nested set pa
 * We can remove the slow overnight generation of the Headings cache in Elastic Search - replacing with direct querying of the database.
 * Our interpretation of the hierarchy when presented with invalid data via CDS or Taric may change, eg if indent levels are incorrect.
 * We have the tools to optimise other parts of the codebase such as Additional Code search
-

@@ -311,5 +311,9 @@ module TradeTariffBackend
     def legacy_search_enhancements_enabled?
       ENV.fetch('LEGACY_SEARCH_ENHANCEMENTS_ENABLED', 'false') == 'true'
     end
+
+    def enable_admin?
+      ENV['ENABLE_ADMIN'].to_s == 'true'
+    end
   end
 end

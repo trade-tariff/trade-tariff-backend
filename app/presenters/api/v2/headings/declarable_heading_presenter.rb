@@ -2,6 +2,8 @@ module Api
   module V2
     module Headings
       class DeclarableHeadingPresenter < SimpleDelegator
+        include SpecialNature
+
         attr_reader :heading,
                     :import_measures,
                     :export_measures,
@@ -79,10 +81,6 @@ module Api
 
         def import_trade_summary
           ImportTradeSummary.build(import_measures)
-        end
-
-        def special_nature?
-          @special_nature ||= import_measures.any?(&:special_nature?)
         end
 
         def authorised_use_provisions_submission?

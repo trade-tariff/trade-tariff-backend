@@ -56,6 +56,10 @@ module "worker_xi" {
         value = "tariff-xi-worker-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
       {
+        name  = "PATCH_BROKEN_TARIC_DOWNLOADS",
+        value = "true"
+      },
+      {
         name  = "SERVICE"
         value = "xi"
       },
