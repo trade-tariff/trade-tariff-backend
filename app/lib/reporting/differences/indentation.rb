@@ -33,8 +33,6 @@ module Reporting
 
       FROZEN_VIEW_STARTING_CELL = 'A2'.freeze
 
-      @new_issue = false
-
       def initialize(report)
         @report = report
       end
@@ -51,7 +49,7 @@ module Reporting
 
           rows.compact.each do |row|
             report.increment_count(name)
-            if @new_issue
+            if row.last # last value in a row array is new_issue
               report.increment_new_issue_count(name)
             end
             sheet.add_row(row, types: CELL_TYPES, style: regular_style)
@@ -90,13 +88,20 @@ module Reporting
 
         item_id, pls = matching_uk_goods_nomenclature['ItemIDPlusPLS'].split('_')
 
-        @new_issue = !uk_goods_nomenclature_ids_for_comparison.include?(matching_uk_goods_nomenclature['ItemIDPlusPLS']) ||
-          !xi_goods_nomenclature_ids_for_comparison.include?(matching_xi_goods_nomenclature['ItemIDPlusPLS'])
+        matching_uk_goods_nomenclature_for_comparison = uk_goods_nomenclature_ids_for_comparison[matching]
+        matching_xi_goods_nomenclature_for_comparison = xi_goods_nomenclature_ids_for_comparison[matching]
+
+        new_issue = if matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil?
+                      true
+                    else
+                      matching_uk_goods_nomenclature_for_comparison['Indentation'] == matching_xi_goods_nomenclature_for_comparison['Indentation']
+                    end
+
         [
           "#{item_id} (#{pls})",
           matching_uk_goods_nomenclature['Indentation'],
           matching_xi_goods_nomenclature['Indentation'],
-          @new_issue,
+          new_issue,
         ]
       end
 
