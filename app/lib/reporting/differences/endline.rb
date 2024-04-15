@@ -93,8 +93,8 @@ module Reporting
         matching_uk_goods_nomenclature_for_comparison = uk_goods_nomenclature_ids_for_comparison[matching]
         matching_xi_goods_nomenclature_for_comparison = xi_goods_nomenclature_ids_for_comparison[matching]
 
-        new_issue = matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil? || matching_uk_goods_nomenclature_for_comparison['End line'] != matching_xi_goods_nomenclature_for_comparison['End line']      
-        
+        new_issue = matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil? || matching_uk_goods_nomenclature_for_comparison['End line'] != matching_xi_goods_nomenclature_for_comparison['End line']
+
         [
           "#{item_id} (#{pls})",
           uk_endline_status,
