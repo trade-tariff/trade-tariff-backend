@@ -109,6 +109,24 @@ FactoryBot.define do
       end
     end
 
+    trait :with_expired_quota_suspension_period do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_suspension_period, quota_definition_sid: quota_definition.quota_definition_sid, suspension_end_date: 1.year.ago.beginning_of_day)
+      end
+    end
+
+    trait :with_quota_blocking_period do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_blocking_period, quota_definition_sid: quota_definition.quota_definition_sid)
+      end
+    end
+
+    trait :with_expired_quota_blocking_period do
+      after(:create) do |quota_definition, _evaluator|
+        create(:quota_blocking_period, quota_definition_sid: quota_definition.quota_definition_sid, blocking_end_date: 1.year.ago.beginning_of_day)
+      end
+    end
+
     trait :xml do
       validity_start_date             { 3.years.ago.beginning_of_day }
       validity_end_date               { 1.year.ago.beginning_of_day }
@@ -268,7 +286,7 @@ FactoryBot.define do
     quota_blocking_period_sid  { Forgery(:basic).number }
     quota_definition_sid       { Forgery(:basic).number }
     blocking_start_date        { 1.year.ago.beginning_of_day }
-    blocking_end_date          { 1.year.ago.beginning_of_day }
+    blocking_end_date          { 1.year.from_now.beginning_of_day }
     blocking_period_type       { Forgery(:basic).number }
     description                { Forgery(:lorem_ipsum).sentence }
   end
@@ -327,7 +345,7 @@ FactoryBot.define do
     quota_suspension_period_sid  { generate(:sid) }
     quota_definition_sid         { generate(:sid) }
     suspension_start_date        { 1.year.ago.beginning_of_day }
-    suspension_end_date          { 1.year.ago.beginning_of_day }
+    suspension_end_date          { 1.year.from_now.beginning_of_day }
     description                  { Forgery(:lorem_ipsum).sentence }
   end
 
