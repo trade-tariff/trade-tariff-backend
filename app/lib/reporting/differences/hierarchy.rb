@@ -89,7 +89,7 @@ module Reporting
         matching_uk_goods_nomenclature_for_comparison = uk_goods_nomenclature_ids_for_comparison[matching]
         matching_xi_goods_nomenclature_for_comparison = xi_goods_nomenclature_ids_for_comparison[matching]
 
-        new_issue = matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil? || matching_uk_goods_nomenclature_for_comparison['Hierarchy'] != matching_xi_goods_nomenclature_for_comparison['Hierarchy']
+        new_issue = matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil? || matching_uk_goods_nomenclature_for_comparison['Hierarchy'] == matching_xi_goods_nomenclature_for_comparison['Hierarchy']
 
         [
           "#{item_id} (#{pls})",
