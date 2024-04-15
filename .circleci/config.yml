@@ -167,7 +167,7 @@ jobs:
           network.host: 127.0.0.1
           http.port: 9200
           discovery.type: single-node
-          plugins.security.disabled: true
+          DISABLE_SECURITY_PLUGIN: true
 
     steps:
       - checkout
@@ -213,15 +213,15 @@ jobs:
           POSTGRES_PASSWORD: postgres
       - image: cimg/redis:6.2
         environment:
-          - REDIS_URL: "redis://localhost:6379/"
-      - image: opensearchproject/opensearch:1.2.4
+          REDIS_URL: "redis://localhost:6379/"
+      - image: opensearchproject/opensearch:2
         environment:
-          - cluster.name: elasticsearch
-          - transport.host: localhost
-          - network.host: 127.0.0.1
-          - http.port: 9200
-          - discovery.type: single-node
-          - plugins.security.disabled: true
+          cluster.name: elasticsearch
+          transport.host: localhost
+          network.host: 127.0.0.1
+          http.port: 9200
+          discovery.type: single-node
+          DISABLE_SECURITY_PLUGIN: true
     steps:
       - checkout
       - run:
