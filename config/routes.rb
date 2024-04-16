@@ -100,7 +100,14 @@ Rails.application.routes.draw do
 
       namespace :exchange_rates do
         get 'period_lists(/:year)', to: 'period_lists#show', as: :period_list
-        resources :files, only: [:show]
+
+        get 'files/(:type)_:year-:month', to: 'files#show',
+                                          as: :file,
+                                          constraints: {
+                                            type: ExchangeRateFile.type_check_regexp,
+                                            year: /20\d\d/,
+                                            month: /[01]?\d/,
+                                          }
       end
 
       resources :exchange_rates, only: [:show]

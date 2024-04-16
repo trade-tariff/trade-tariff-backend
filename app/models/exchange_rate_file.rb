@@ -1,5 +1,6 @@
 class ExchangeRateFile < Sequel::Model
   APPLICABLE_TYPES = %w[monthly_csv monthly_xml spot_csv average_csv].freeze
+  HISTORIC_TYPES = %w[monthly_csv_hmrc].freeze
   OBJECT_KEY_PREFIX = 'data/exchange_rates'.freeze
 
   include ContentAddressableId
@@ -39,6 +40,10 @@ class ExchangeRateFile < Sequel::Model
   end
 
   class << self
+    def type_check_regexp
+      %r{(#{(HISTORIC_TYPES + APPLICABLE_TYPES).join('|')})}
+    end
+
     def filepath_for(type, format, year, month)
       object_key_prefix = "#{OBJECT_KEY_PREFIX}/#{year}/#{month}/"
       filename = filename_for(type, format, year, month)
