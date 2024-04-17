@@ -90,12 +90,12 @@ module Reporting
         matching_uk_goods_nomenclature_for_comparison = uk_goods_nomenclature_ids_for_comparison[matching]
         matching_xi_goods_nomenclature_for_comparison = xi_goods_nomenclature_ids_for_comparison[matching]
 
-        if matching_uk_goods_nomenclature_for_comparison.nil? || matching_xi_goods_nomenclature_for_comparison.nil?
-          new_issue = true
-        else
+        if matching_uk_goods_nomenclature_for_comparison.present? && matching_xi_goods_nomenclature_for_comparison.present?
           uk_end_date_for_comparison = matching_uk_goods_nomenclature_for_comparison['End date']&.to_date&.strftime('%d/%m/%Y')
           eu_end_date_for_comparison = matching_xi_goods_nomenclature_for_comparison['End date']&.to_date&.strftime('%d/%m/%Y')
           new_issue = uk_end_date_for_comparison == eu_end_date_for_comparison
+        else
+          new_issue = true
         end
 
         [

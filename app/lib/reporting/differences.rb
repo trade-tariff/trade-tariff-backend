@@ -129,35 +129,28 @@ module Reporting
         add_missing_from_uk_worksheet
         add_missing_from_xi_worksheet
         add_indentation_worksheet
+        add_hierarchy_worksheet
+        add_endline_worksheet
+        add_start_date_worksheet
         add_end_date_worksheet
+        add_mfn_missing_worksheet
+        add_mfn_duplicated_worksheet
+        add_misapplied_action_code_worksheet
+        add_incomplete_measure_condition_worksheet
+        add_me32_worksheet
+        add_seasonal_worksheet
+        add_omitted_duty_measures_worksheet
+        add_missing_vat_measure_worksheet
+        add_missing_quota_origins_worksheet
+        add_measure_quota_coverage_worksheet
+        add_bad_quota_association_worksheet
+        add_quota_exclusion_misalignment_worksheet
+        add_missing_supplementary_units_from_uk_worksheet
+        add_missing_supplementary_units_from_xi_worksheet
+        add_candidate_supplementary_units
+        add_me16_worksheet
         add_overview_worksheet
       ]
-      # methods = %i[
-      # add_missing_from_uk_worksheet
-      # add_missing_from_xi_worksheet
-      # add_indentation_worksheet
-      # add_hierarchy_worksheet
-      # add_endline_worksheet
-      # add_start_date_worksheet
-      # add_end_date_worksheet
-      # add_mfn_missing_worksheet
-      # add_mfn_duplicated_worksheet
-      # add_misapplied_action_code_worksheet
-      # add_incomplete_measure_condition_worksheet
-      # add_me32_worksheet
-      # add_seasonal_worksheet
-      # add_omitted_duty_measures_worksheet
-      # add_missing_vat_measure_worksheet
-      # add_missing_quota_origins_worksheet
-      # add_measure_quota_coverage_worksheet
-      # add_bad_quota_association_worksheet
-      # add_quota_exclusion_misalignment_worksheet
-      # add_missing_supplementary_units_from_uk_worksheet
-      # add_missing_supplementary_units_from_xi_worksheet
-      # add_candidate_supplementary_units
-      # add_me16_worksheet
-      # add_overview_worksheet
-      # ]
 
       methods = (methods & only) if only.any?
 
