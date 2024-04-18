@@ -6,7 +6,7 @@ module Api
 
         set_id :code
 
-        attribute :id, &:code
+        attribute :section, &:code
         attribute :theme, &:description
         attribute :category
       end
