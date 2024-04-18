@@ -77,4 +77,10 @@ RSpec.describe GreenLanes::Theme do
 
     it { is_expected.to eq '1.2. Long description' }
   end
+
+  describe '#code' do
+    subject { create(:green_lanes_theme, section: 2, subsection: 3).code }
+
+    it { is_expected.to eq '2.3' }
+  end
 end

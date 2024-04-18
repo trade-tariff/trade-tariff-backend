@@ -20,8 +20,19 @@ module Api
         def applicable_category_assessments
           @applicable_category_assessments ||=
             ::GreenLanes::FindCategoryAssessmentsService.call \
-              goods_nomenclature: self,
-              geographical_area_id: @geographical_area_id
+              applicable_measures,
+              @geographical_area_id
+        end
+
+        def descendant_category_assessment_ids
+          @descendant_category_assessment_ids ||= descendant_category_assessments.map(&:id)
+        end
+
+        def descendant_category_assessments
+          @descendant_category_assessments ||=
+            ::GreenLanes::FindCategoryAssessmentsService.call \
+              all_descendant_measures,
+              @geographical_area_id
         end
 
         def ancestor_ids
@@ -59,6 +70,10 @@ module Api
           unfiltered_measures.select do |measure|
             measure.relevant_for_country? @geographical_area_id
           end
+        end
+
+        def all_descendant_measures
+          descendants.flat_map(&:measures)
         end
       end
     end

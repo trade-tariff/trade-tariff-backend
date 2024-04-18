@@ -39,6 +39,18 @@ RSpec.describe Api::V2::Measures::MeasureConditionPresenter do
       end
     end
 
+    it_behaves_like 'a measure condition presented condition duty amount', 14.5, 0.145 do
+      let(:measure) { create(:measure, :excise) }
+      let(:measure_condition) do
+        create(
+          :measure_condition,
+          measure:,
+          condition_measurement_unit_code: 'ASV',
+          condition_duty_amount: 0.145,
+        )
+      end
+    end
+
     it_behaves_like 'a measure condition presented condition duty amount', 0.01, 0.01 do
       let(:measure) { create(:measure) }
       let(:measure_condition) do

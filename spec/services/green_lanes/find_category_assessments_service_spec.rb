@@ -1,7 +1,7 @@
 RSpec.describe GreenLanes::FindCategoryAssessmentsService do
   describe '#call' do
     subject :presented_assessments do
-      described_class.call(goods_nomenclature:, geographical_area_id:)
+      described_class.call(goods_nomenclature.applicable_measures, geographical_area_id)
                      .group_by(&:category_assessment_id)
     end
 

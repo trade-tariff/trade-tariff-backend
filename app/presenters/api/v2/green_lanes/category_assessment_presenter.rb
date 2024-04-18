@@ -26,7 +26,7 @@ module Api
 
         class << self
           def wrap(category_assessments)
-            category_assessments.flat_map do |assessment|
+            Array.wrap(category_assessments).flat_map do |assessment|
               permutations(assessment).map do |key, measures|
                 new assessment, key, measures
               end
@@ -49,16 +49,12 @@ module Api
           @measures = MeasurePresenter.wrap(measures)
         end
 
+        def theme_id
+          theme&.code
+        end
+
         def measure_ids
           @measure_ids = measures.map(&:measure_sid)
-        end
-
-        def theme
-          @category_assessment.theme.to_s
-        end
-
-        def category
-          @category_assessment.theme.category.to_s
         end
 
         def category_assessment_id
@@ -74,7 +70,7 @@ module Api
         end
 
         def certificates
-          measure_conditions.select(&:certificate).map(&:certificate)
+          measure_conditions.select(&:exemption_class?).map(&:certificate)
         end
 
         def additional_codes
