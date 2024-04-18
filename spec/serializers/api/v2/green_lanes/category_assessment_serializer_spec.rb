@@ -2,7 +2,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   subject(:serialized) do
     described_class.new(
       presented,
-      include: %w[exemptions geographical_area excluded_geographical_areas],
+      include: %w[theme exemptions geographical_area excluded_geographical_areas],
     ).serializable_hash.as_json
   end
 
@@ -19,11 +19,10 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
       data: {
         id: be_a(String),
         type: 'category_assessment',
-        attributes: {
-          category: category_assessment.theme.category.to_s,
-          theme: category_assessment.theme.to_s,
-        },
         relationships: {
+          theme: {
+            data: { id: category_assessment.theme.code, type: 'theme' },
+          },
           exemptions: {
             data: [
               { id: certificate.id, type: 'certificate' },
@@ -42,6 +41,15 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
         },
       },
       included: [
+        {
+          id: category_assessment.theme.code,
+          type: 'theme',
+          attributes: {
+            id: category_assessment.theme.code,
+            theme: category_assessment.theme.description,
+            category: category_assessment.theme.category,
+          },
+        },
         {
           id: certificate.id,
           type: 'certificate',
