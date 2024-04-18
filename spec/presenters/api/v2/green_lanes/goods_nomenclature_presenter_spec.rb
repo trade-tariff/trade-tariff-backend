@@ -1,9 +1,13 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   subject(:presenter) { described_class.new(gn) }
 
-  before { create :category_assessment, measure: gn.measures.first }
+  before { category_assessments }
 
   let(:gn) { create :goods_nomenclature, :with_ancestors, :with_children, :with_measures }
+
+  let :category_assessments do
+    create_list :category_assessment, 1, measure: gn.measures.first
+  end
 
   it { is_expected.to have_attributes goods_nomenclature_sid: gn.goods_nomenclature_sid }
   it { is_expected.to have_attributes parent_sid: gn.parent.goods_nomenclature_sid }
@@ -107,6 +111,58 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
       it { expect(presented.applicable_category_assessments).to have_attributes length: 1 }
       it { expect(presented.measures).to have_attributes length: 1 }
+    end
+  end
+
+  describe '#descendant_category_assessments' do
+    subject { presenter.descendant_category_assessments }
+
+    let(:gn) { create :goods_nomenclature, :with_ancestors, :with_children }
+    let(:measures) { [measure, measure2] }
+
+    let :measure do
+      create :measure, goods_nomenclature: gn.children.first,
+                       generating_regulation: create(:base_regulation)
+    end
+
+    let :measure2 do
+      create :measure, goods_nomenclature: gn.children.first.children.first,
+                       generating_regulation: create(:base_regulation)
+    end
+
+    let :category_assessments do
+      measures.map { |m| create :category_assessment, measure: m }
+    end
+
+    it { is_expected.to have_attributes length: 2 }
+
+    context 'with same assessment on multiple descendants' do
+      let :category_assessments do
+        create_list :category_assessment, 1, measure: measures.first
+      end
+
+      let :measure2 do
+        create :measure, goods_nomenclature: gn.children.first.children.first,
+                         measure_type_id: measure.measure_type_id,
+                         generating_regulation: measure.generating_regulation,
+                         geographical_area_id: measure.geographical_area_id
+      end
+
+      it { is_expected.to have_attributes length: 1 }
+    end
+
+    context 'with non matching geo area' do
+      let :category_assessments do
+        create_list :category_assessment, 1, measure: measures.first
+      end
+
+      let :measure2 do
+        create :measure, goods_nomenclature: gn.children.first.children.first,
+                         measure_type_id: measure.measure_type_id,
+                         generating_regulation: measure.generating_regulation
+      end
+
+      it { is_expected.to have_attributes length: 2 }
     end
   end
 end
