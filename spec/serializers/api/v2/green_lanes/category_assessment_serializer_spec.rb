@@ -45,7 +45,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           id: category_assessment.theme.code,
           type: 'theme',
           attributes: {
-            id: category_assessment.theme.code,
+            section: category_assessment.theme.code,
             theme: category_assessment.theme.description,
             category: category_assessment.theme.category,
           },
