@@ -13,6 +13,7 @@ RSpec.describe Api::V2::GreenLanes::CertificateSerializer do
         id: certificate.id,
         type: 'certificate',
         attributes: {
+          code: certificate.id,
           certificate_type_code: certificate.certificate_type_code,
           certificate_code: certificate.certificate_code,
           description: certificate.description,

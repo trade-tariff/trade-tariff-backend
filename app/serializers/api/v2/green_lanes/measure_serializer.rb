@@ -10,6 +10,7 @@ module Api
                    :effective_end_date
 
         has_one :measure_type, serializer: Measures::MeasureTypeSerializer
+        has_one :additional_code, serializer: AdditionalCodeSerializer
         has_many :footnotes, serializer: Measures::FootnoteSerializer
       end
     end

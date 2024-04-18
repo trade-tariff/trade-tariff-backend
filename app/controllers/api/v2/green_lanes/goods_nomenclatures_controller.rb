@@ -25,6 +25,7 @@ module Api
             applicable_category_assessments.measures
             applicable_category_assessments.measures.measure_types
             applicable_category_assessments.measures.footnotes
+            applicable_category_assessments.measures.additional_codes
             descendant_category_assessments
             descendant_category_assessments.exemptions
             descendant_category_assessments.geographical_area
@@ -32,17 +33,21 @@ module Api
             descendant_category_assessments.measures
             descendant_category_assessments.measures.measure_types
             descendant_category_assessments.measures.footnotes
+            descendant_category_assessments.measures.additional_codes
             ancestors
             ancestors.measures
             ancestors.measures.measure_types
             ancestors.measures.footnotes
+            ancestors.measures.additional_codes
             measures
             measures.measure_types
             measures.footnotes
+            measures.additional_codes
             descendants
             descendants.measures
             descendants.measures.measure_types
             descendants.measures.footnotes
+            descendants.measures.additional_codes
           ])
         end
       end
