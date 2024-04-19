@@ -2,6 +2,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   subject(:serialized) do
     described_class.new(
       presented,
+      params: {},
       include: %w[theme exemptions geographical_area excluded_geographical_areas],
     ).serializable_hash.as_json
   end
@@ -84,4 +85,22 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   end
 
   it { is_expected.to include_json(expected_pattern) }
+
+  describe 'measures relationship' do
+    context 'with measures' do
+      subject do
+        described_class.new(presented, params: { with_measures: true })
+                       .serializable_hash
+                       .as_json['data']['relationships']
+      end
+
+      it { is_expected.to include 'measures' }
+    end
+
+    context 'without measures' do
+      subject { serialized['data']['relationships'] }
+
+      it { is_expected.not_to include 'measures' }
+    end
+  end
 end
