@@ -22,6 +22,8 @@ module Api
         has_one :theme, serializer: ThemeSerializer
         has_one :geographical_area, serializer: GeographicalAreaSerializer
         has_many :excluded_geographical_areas, serializer: GeographicalAreaSerializer
+        has_one :measure_type, serializer: Measures::MeasureTypeSerializer
+        has_one :regulation, serializer: Measures::MeasureLegalActSerializer
         has_many :measures, serializer: GreenLanes::MeasureSerializer,
                             if: ->(_record, params) { params[:with_measures] }
       end

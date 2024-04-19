@@ -21,6 +21,10 @@ module Api
         def additional_code_id
           additional_code&.additional_code_sid
         end
+
+        def generating_regulation
+          RegulationPresenter.new(super)
+        end
       end
     end
   end

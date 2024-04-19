@@ -39,6 +39,12 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           excluded_geographical_areas: {
             data: [],
           },
+          measure_type: {
+            data: { id: category_assessment.measure_type_id, type: 'measure_type' },
+          },
+          regulation: {
+            data: { id: category_assessment.regulation_id, type: 'legal_act' },
+          },
         },
       },
       included: [
