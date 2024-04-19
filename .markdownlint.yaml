@@ -1,0 +1,14 @@
+default: true
+line-length: false
+first-line-h1: false
+first-header-h1: false
+ol-prefix: false
+fenced-code-language: false
+commands-show-output: false
+list-indent: false
+no-duplicate-header: false
+no-trailing-punctuation: false
+no-multiple-space-blockquote: false
+no-bare-urls: false
+no-inline-html: false
+ul-indent: false

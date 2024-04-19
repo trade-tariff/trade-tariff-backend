@@ -88,7 +88,7 @@ The `tree_nodes` record with
 
 ### Previous sibling
 
-_Note: Due to how we read the tree this is less useful then next sibling_
+> Note: Due to how we read the tree this is less useful then next sibling
 
 The `tree_nodes` record with
 
@@ -126,7 +126,7 @@ The above describes how `tree_nodes` can be related to each other. To find relat
 
 There are abstractions for all for the above encapsulated in the Sequel relationships on the `GoodsNomenclatures` model
 
-_Note: These are all eager loadable_
+> Note: These are all eager loadable
 
 ### Tree relationships
 

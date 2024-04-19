@@ -12,6 +12,8 @@ Projects using the Trade Tariff (TT) API:
 
 ## Development
 
+> Make sure you install and enable all pre-commit hooks https://pre-commit.com/
+
 ### Dependencies
 
 - Ruby [v3.2](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
