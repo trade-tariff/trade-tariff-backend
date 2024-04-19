@@ -1,7 +1,7 @@
 <%= CSV.generate_line(['SID','Goods Nomenclature Item ID','Indents','Description','Product Line Suffix','Href'], {row_sep: ""}) %>
 <%- @commodities.each do |c| -%>
 <%= CSV.generate_line([
-  c.goods_nomenclature_sid, 
+  c.goods_nomenclature_sid,
   c.goods_nomenclature_item_id,
   c.number_indents,
   c.description,
