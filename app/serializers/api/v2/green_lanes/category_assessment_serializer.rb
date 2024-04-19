@@ -23,7 +23,7 @@ module Api
         has_one :geographical_area, serializer: GeographicalAreaSerializer
         has_many :excluded_geographical_areas, serializer: GeographicalAreaSerializer
         has_many :measures, serializer: GreenLanes::MeasureSerializer,
-                            if: ->(record) { record.is_a? CategoryAssessmentPresenter }
+                            if: ->(_record, params) { params[:with_measures] }
       end
     end
   end
