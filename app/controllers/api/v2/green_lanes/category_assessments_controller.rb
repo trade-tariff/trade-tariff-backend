@@ -23,7 +23,7 @@ module Api
           serializer =
             CategoryAssessmentSerializer
               .new(presented_assessments,
-                   include: %w[geographical_area excluded_geographical_areas])
+                   include: %w[geographical_area excluded_geographical_areas theme])
 
           render json: serializer.serializable_hash
         end
