@@ -1,0 +1,61 @@
+version: "2"
+services:
+  redis:
+    container_name: redis
+    image: redis
+    ports:
+      - 127.0.0.1:6379:6379
+    volumes:
+      - dev-env-redis-volume:/data
+  hmrc-postgres:
+    container_name: postgres
+    image: postgres:13
+    environment:
+      - PGDATA=/var/lib/postgresql/data/pgdata
+      - POSTGRES_USER=${USER}
+      - POSTGRES_PASSWORD=
+      - LANG=C.UTF-8
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+       - hmrc-postgres13:/var/lib/postgresql/data
+  hmrc-opensearch:
+    container_name: hmrc-opensearch
+    image: opensearchproject/opensearch:2
+    ports:
+      - 127.0.0.1:9200:9200
+      - 127.0.0.1:9300:9300
+    environment:
+      - bootstrap.memory_lock=true
+      - discovery.type=single-node
+      - "OPENSEARCH_JAVA_OPTS=-Xms500m -Xmx500m"
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - plugins.security.disabled=true
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    healthcheck:
+      interval: 60s
+      retries: 10
+      test: curl -s http://localhost:9200/_cluster/health | grep -vq '"status":"red"'
+    volumes:
+      - hmrc-os:/usr/share/opensearch/data
+      - ./config/opensearch/synonyms_all.txt:/usr/share/opensearch/config/synonyms_all.txt:z
+      - ./config/opensearch/stemming_exclusions_all.txt:/usr/share/opensearch/config/stemming_exclusions_all.txt:z
+
+volumes:
+  dev-env-redis-volume:
+    driver: local
+  postgres:
+    driver: local
+  hmrc-postgres:
+    driver: local
+  hmrc-postgres13:
+    driver: local
+  hmrc-os:
+    driver: local
