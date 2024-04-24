@@ -22,8 +22,8 @@ module GreenLanes
     def validate
       super
 
-      validates_presence :regulation_role if regulation_id.present?
-      validates_presence :regulation_id if regulation_role.present?
+      validates_presence :regulation_role
+      validates_presence :regulation_id
 
       validates_unique %i[measure_type_id regulation_id regulation_role], where: (lambda do |ds, obj, _cols|
         if obj.regulation_id.blank?
