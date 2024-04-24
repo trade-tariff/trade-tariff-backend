@@ -1,12 +1,4 @@
 ---
-files: |
-  (?x)^(
-    ^terraform\/\S+ |
-    .circleci\/\S+  |
-    docs\/\S+       |
-    README.md
-  )
-
 repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
     rev: v1.84.0
@@ -24,11 +16,37 @@ repos:
     rev: v4.5.0
     hooks:
       - id: trailing-whitespace
+        exclude: ^db/
       - id: end-of-file-fixer
+        exclude: ^db/
       - id: check-yaml
+        exclude: ^db/|config/sidekiq.yml
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
     rev: v0.38.0
     hooks:
       - id: markdownlint
-        args: ["--fix"]
+        args:
+          - "--fix"
+          - "--ignore"
+          - terraform
+          - "--ignore"
+          - db/
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.10.0
+    hooks:
+      - id: shellcheck
+        args: ["--severity=warning"]
+
+  - repo: https://github.com/zahorniak/pre-commit-circleci.git
+    rev: v0.6
+    hooks:
+      - id: circleci_validate
+        args:
+          - --org-id=da607531-93bb-4321-90ed-08710434ce1c
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.16.1
+    hooks:
+      - id: gitleaks
