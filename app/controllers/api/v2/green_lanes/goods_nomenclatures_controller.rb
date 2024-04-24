@@ -22,9 +22,11 @@ module Api
             params: { with_measures: true },
             include: %w[
               applicable_category_assessments
-              applicable_category_assessments.exemptions
+              applicable_category_assessments.regulation
+              applicable_category_assessments.measure_type
               applicable_category_assessments.geographical_area
               applicable_category_assessments.excluded_geographical_areas
+              applicable_category_assessments.exemptions
               applicable_category_assessments.measures
               applicable_category_assessments.measures.measure_types
               applicable_category_assessments.measures.footnotes

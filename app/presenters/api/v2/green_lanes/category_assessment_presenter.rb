@@ -77,6 +77,10 @@ module Api
           Array.wrap(additional_code)
         end
 
+        def regulation
+          RegulationPresenter.new(super)
+        end
+
       private
 
         def first_measure
