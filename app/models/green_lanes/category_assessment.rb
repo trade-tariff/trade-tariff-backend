@@ -2,6 +2,7 @@ module GreenLanes
   class CategoryAssessment < Sequel::Model(:green_lanes_category_assessments)
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
+    plugin :association_pks
 
     many_to_one :theme
     many_to_one :measure_type, class: :MeasureType
@@ -15,9 +16,12 @@ module GreenLanes
                            key: %i[measure_type_id
                                    measure_generating_regulation_id
                                    measure_generating_regulation_role] do |ds|
-      ds.with_actual(Measure)
+      ds.with_actual(::Measure)
         .with_regulation_dates_query
     end
+
+    one_to_many :green_lanes_measures, class: 'Measure', class_namespace: 'GreenLanes'
+    many_to_many :exemptions, join_table: :green_lanes_category_assessments_exemptions
 
     def validate
       super
@@ -37,7 +41,7 @@ module GreenLanes
     def regulation
       case regulation_role
       when nil then nil
-      when Measure::MODIFICATION_REGULATION_ROLE then modification_regulation
+      when ::Measure::MODIFICATION_REGULATION_ROLE then modification_regulation
       else base_regulation
       end
     end
