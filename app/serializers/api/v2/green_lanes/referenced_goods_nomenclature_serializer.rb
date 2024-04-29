@@ -16,8 +16,6 @@ module Api
                    :validity_start_date,
                    :validity_end_date,
                    :parent_sid
-
-        has_many :measures, serializer: GreenLanes::MeasureSerializer
       end
     end
   end

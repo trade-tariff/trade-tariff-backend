@@ -51,14 +51,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
               },
             ],
           },
-          measures: {
-            data: [
-              {
-                id: subheading.measures.first.measure_sid.to_s,
-                type: eq(:measure),
-              },
-            ],
-          },
           descendants: {
             data: [
               {
