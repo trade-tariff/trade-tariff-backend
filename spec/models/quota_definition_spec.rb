@@ -59,6 +59,36 @@ RSpec.describe QuotaDefinition do
 
       it { is_expected.to eq 'Open' }
     end
+
+    context 'when there is a valid suspension period it doenst overide the quota exausted status' do
+      subject(:status) { create(:quota_definition, :with_quota_exhaustion_events, :with_quota_suspension_period).reload.status }
+
+      it { is_expected.to eq 'Exhausted' }
+    end
+
+    context 'when there is a valid suspension period' do
+      subject(:status) { create(:quota_definition, :with_quota_suspension_period).reload.status }
+
+      it { is_expected.to eq 'Suspended' }
+    end
+
+    context 'when there is a expired suspension period' do
+      subject(:status) { create(:quota_definition, :with_expired_quota_suspension_period).reload.status }
+
+      it { is_expected.to eq 'Open' }
+    end
+
+    context 'when there is a valid blocking period' do
+      subject(:status) { create(:quota_definition, :with_quota_blocking_period).reload.status }
+
+      it { is_expected.to eq 'Blocked' }
+    end
+
+    context 'when there is a expired blocking period' do
+      subject(:status) { create(:quota_definition, :with_expired_quota_blocking_period).reload.status }
+
+      it { is_expected.to eq 'Open' }
+    end
   end
 
   describe '#quota_balance_event_ids' do
