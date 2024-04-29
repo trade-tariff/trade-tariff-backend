@@ -28,18 +28,14 @@ module Api
               applicable_category_assessments.excluded_geographical_areas
               applicable_category_assessments.exemptions
               applicable_category_assessments.measures
-              applicable_category_assessments.measures.measure_types
               applicable_category_assessments.measures.footnotes
-              applicable_category_assessments.measures.additional_codes
               applicable_category_assessments.theme
               descendant_category_assessments
               descendant_category_assessments.exemptions
               descendant_category_assessments.geographical_area
               descendant_category_assessments.excluded_geographical_areas
               descendant_category_assessments.measures
-              descendant_category_assessments.measures.measure_types
               descendant_category_assessments.measures.footnotes
-              descendant_category_assessments.measures.additional_codes
               descendant_category_assessments.theme
               ancestors
               descendants

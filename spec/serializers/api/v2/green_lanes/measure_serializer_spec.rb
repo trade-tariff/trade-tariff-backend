@@ -23,19 +23,10 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
           measure_type: {
             data: { id: measure.measure_type.measure_type_id.to_s, type: 'measure_type' },
           },
-          measure_generating_regulation: {
-            data: { id: measure.measure_generating_regulation_id.to_s, type: 'legal_act' },
-          },
           footnotes: {
             data: [
               { id: measure.footnotes.first.code.to_s, type: 'footnote' },
             ],
-          },
-          additional_code: {
-            data: {
-              id: measure.additional_code.additional_code_sid.to_s,
-              type: 'additional_code',
-            },
           },
         },
       },
