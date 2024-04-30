@@ -16,21 +16,9 @@ RSpec.describe GreenLanes::CategoryAssessment do
     let(:instance) { described_class.new }
 
     it { is_expected.to include measure_type_id: ['is not present'] }
-    it { is_expected.not_to include :regulation_id }
-    it { is_expected.not_to include :regulation_role }
+    it { is_expected.to include regulation_id: ['is not present'] }
+    it { is_expected.to include regulation_role: ['is not present'] }
     it { is_expected.to include theme_id: ['is not present'] }
-
-    context 'with regulation_id but not regulation_role' do
-      let(:instance) { described_class.new regulation_id: 1 }
-
-      it { is_expected.to include regulation_role: ['is not present'] }
-    end
-
-    context 'without regulation_id but with regulation_role' do
-      let(:instance) { described_class.new regulation_role: 1 }
-
-      it { is_expected.to include regulation_id: ['is not present'] }
-    end
 
     context 'with duplicate measure_type_id and regulation_id' do
       let(:existing) { create :category_assessment }
@@ -39,37 +27,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
         described_class.new measure_type_id: existing.measure_type_id,
                             regulation_id: existing.regulation_id,
                             regulation_role: existing.regulation_role
-      end
-
-      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
-    end
-
-    context 'with new category assessment for specific regulation and with existing category assessment for all regulations' do
-      let(:existing) { create :category_assessment, regulation_id: nil, regulation_role: nil }
-      let(:instance) { build :category_assessment, measure_type_id: existing.measure_type_id }
-
-      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
-    end
-
-    context 'with new category assessment for all regulations and existing assessment for specific regulations' do
-      let(:existing) { create :category_assessment }
-
-      let :instance do
-        build :category_assessment, measure_type_id: existing.measure_type_id,
-                                    regulation_id: nil,
-                                    regulation_role: nil
-      end
-
-      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
-    end
-
-    context 'with new category assessment for all regulations and existing assessment for all regulations' do
-      let(:existing) { create :category_assessment, regulation_id: nil, regulation_role: nil }
-
-      let :instance do
-        build :category_assessment, measure_type_id: existing.measure_type_id,
-                                    regulation_id: nil,
-                                    regulation_role: nil
       end
 
       it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
@@ -202,12 +159,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
                                    regulation_role: regulation&.role
     end
 
-    context 'without regulation' do
-      let(:regulation) { nil }
-
-      it { is_expected.to be_nil }
-    end
-
     context 'with modification regulation' do
       let(:regulation) { create :base_regulation }
 
@@ -232,15 +183,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
     let :assessment do
       create :category_assessment, regulation_id: regulation&.regulation_id,
                                    regulation_role: regulation&.role
-    end
-
-    context 'with nil' do
-      let(:new_regulation) { nil }
-
-      it { is_expected.to have_attributes base_regulation: nil }
-      it { is_expected.to have_attributes modification_regulation: nil }
-      it { is_expected.to have_attributes regulation_id: nil, regulation_role: nil }
-      it { expect(persisted).to have_attributes regulation_id: nil, regulation_role: nil }
     end
 
     context 'with modification regulation' do

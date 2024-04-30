@@ -112,7 +112,13 @@ class QuotaDefinition < Sequel::Model
   #       We've explicitly excluded the QuotaClosedAndTransferredEvent since this event isn't relevant
   #       to the quota definition that we're transferring a balance from.
   def status
-    if last_event.present?
+    return QuotaExhaustionEvent.status if has_exhausted_event?
+
+    if suspension_period_active?
+      QuotaSuspensionPeriod.status
+    elsif blocking_period_active?
+      QuotaBlockingPeriod.status
+    elsif last_event.present?
       return QuotaCriticalEvent.status if has_active_critical_event?
 
       last_event.status
@@ -179,9 +185,29 @@ class QuotaDefinition < Sequel::Model
 
   private
 
+  def suspension_period_active?
+    if last_suspension_period.present?
+      today = Time.zone.today
+
+      return true if today >= last_suspension_period.suspension_start_date && today <= last_suspension_period.suspension_end_date
+    end
+  end
+
+  def blocking_period_active?
+    if last_blocking_period.present?
+      today = Time.zone.today
+
+      return true if today >= last_blocking_period.blocking_start_date && today <= last_blocking_period.blocking_end_date
+    end
+  end
+
   # We only care about Open, Exhausted and Critical statuses from a UI perspective
   def has_active_critical_event?
     last_event.status == QuotaBalanceEvent.status && last_critical_event&.active?
+  end
+
+  def has_exhausted_event?
+    last_event.status == QuotaExhaustionEvent.status
   end
 
   def last_critical_event

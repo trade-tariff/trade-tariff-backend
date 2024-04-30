@@ -2,7 +2,7 @@ FactoryBot.define do
   sequence(:base_regulation_sid) { |n| n }
 
   factory :base_regulation do
-    base_regulation_id   { generate(:sid) }
+    base_regulation_id   { sprintf 'R%07d', generate(:sid) }
     base_regulation_role { 1 }
     validity_start_date { 3.years.ago.beginning_of_day }
     validity_end_date   { nil }

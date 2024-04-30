@@ -10,7 +10,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
   describe 'GET to #index' do
     let(:make_request) do
-      authenticated_get api_admin_category_assessments_path(format: :json)
+      authenticated_get api_admin_green_lanes_category_assessments_path(format: :json)
     end
 
     context 'with some category assessments' do
@@ -31,7 +31,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
   describe 'GET to #show' do
     let(:make_request) do
-      authenticated_get api_admin_category_assessment_path(id, format: :json)
+      authenticated_get api_admin_green_lanes_category_assessment_path(id, format: :json)
     end
 
     context 'with existent category assessment' do
@@ -50,7 +50,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
   describe 'POST to #create' do
     let(:make_request) do
-      authenticated_post api_admin_category_assessments_path(format: :json), params: ca_data
+      authenticated_post api_admin_green_lanes_category_assessments_path(format: :json), params: ca_data
     end
 
     let :ca_data do
@@ -66,7 +66,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
       let(:ca_attrs) { build(:category_assessment).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_admin_category_assessment_url(GreenLanes::CategoryAssessment.last.id) }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_category_assessment_url(GreenLanes::CategoryAssessment.last.id) }
       it { expect { page_response }.to change(GreenLanes::CategoryAssessment, :count).by(1) }
     end
 
@@ -88,7 +88,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
     let(:updated_regulation) { '3' }
 
     let(:make_request) do
-      authenticated_patch api_admin_category_assessment_path(id, format: :json), params: {
+      authenticated_patch api_admin_green_lanes_category_assessment_path(id, format: :json), params: {
         data: {
           type: :category_assessment,
           attributes: { regulation_role: updated_regulation },
@@ -98,7 +98,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
     context 'with valid params' do
       it { is_expected.to have_http_status :success }
-      it { is_expected.to have_attributes location: api_admin_category_assessment_url(category.id) }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_category_assessment_url(category.id) }
       it { expect { page_response }.not_to change(category.reload, :regulation_role) }
     end
 
@@ -124,7 +124,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
   describe 'DELETE to #destroy' do
     let :make_request do
-      authenticated_delete api_admin_category_assessment_path(id, format: :json)
+      authenticated_delete api_admin_green_lanes_category_assessment_path(id, format: :json)
     end
 
     context 'with known category assessment' do

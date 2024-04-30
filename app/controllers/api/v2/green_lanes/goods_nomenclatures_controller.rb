@@ -17,26 +17,29 @@ module Api
         end
 
         def serializer_for(goods_nomenclature)
-          GreenLanes::GoodsNomenclatureSerializer.new(goods_nomenclature, include: %w[
-            applicable_category_assessments
-            applicable_category_assessments.exemptions
-            applicable_category_assessments.geographical_area
-            applicable_category_assessments.excluded_geographical_areas
-            applicable_category_assessments.measures
-            applicable_category_assessments.measures.measure_types
-            applicable_category_assessments.measures.footnotes
-            ancestors
-            ancestors.measures
-            ancestors.measures.measure_types
-            ancestors.measures.footnotes
-            measures
-            measures.measure_types
-            measures.footnotes
-            descendants
-            descendants.measures
-            descendants.measures.measure_types
-            descendants.measures.footnotes
-          ])
+          GreenLanes::GoodsNomenclatureSerializer.new \
+            goods_nomenclature,
+            params: { with_measures: true },
+            include: %w[
+              applicable_category_assessments
+              applicable_category_assessments.regulation
+              applicable_category_assessments.measure_type
+              applicable_category_assessments.geographical_area
+              applicable_category_assessments.excluded_geographical_areas
+              applicable_category_assessments.exemptions
+              applicable_category_assessments.measures
+              applicable_category_assessments.measures.footnotes
+              applicable_category_assessments.theme
+              descendant_category_assessments
+              descendant_category_assessments.exemptions
+              descendant_category_assessments.geographical_area
+              descendant_category_assessments.excluded_geographical_areas
+              descendant_category_assessments.measures
+              descendant_category_assessments.measures.footnotes
+              descendant_category_assessments.theme
+              ancestors
+              descendants
+            ]
         end
       end
     end

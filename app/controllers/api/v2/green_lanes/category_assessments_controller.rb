@@ -7,6 +7,9 @@ module Api
             ::GreenLanes::CategoryAssessment
               .eager(
                 theme: [],
+                base_regulation: [],
+                modification_regulation: [],
+                measure_type: :measure_type_description,
                 measures: {
                   additional_code: :additional_code_descriptions,
                   measure_conditions: { certificate: :certificate_descriptions },
@@ -23,7 +26,11 @@ module Api
           serializer =
             CategoryAssessmentSerializer
               .new(presented_assessments,
-                   include: %w[geographical_area excluded_geographical_areas])
+                   include: %w[geographical_area
+                               excluded_geographical_areas
+                               theme
+                               regulation
+                               measure_type])
 
           render json: serializer.serializable_hash
         end

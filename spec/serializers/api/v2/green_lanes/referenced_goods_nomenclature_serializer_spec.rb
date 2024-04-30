@@ -21,13 +21,6 @@ RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclatureSerializer do
           validity_end_date: nil,
           parent_sid: nil,
         },
-        relationships: {
-          measures: {
-            data: [
-              { type: 'measure', id: subheading.measures.first.id.to_s },
-            ],
-          },
-        },
       },
     }
   end

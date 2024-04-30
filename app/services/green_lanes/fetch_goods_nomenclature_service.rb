@@ -10,7 +10,8 @@ module GreenLanes
       measure_excluded_geographical_areas: [],
       excluded_geographical_areas: :geographical_area_descriptions,
       measure_conditions: { certificate: :certificate_descriptions },
-      category_assessment: :theme,
+      category_assessment: (%i[theme base_regulation modification_regulation] +
+                            [{ measure_type: :measure_type_description }]),
     }.freeze
 
     EAGER_LOAD = {

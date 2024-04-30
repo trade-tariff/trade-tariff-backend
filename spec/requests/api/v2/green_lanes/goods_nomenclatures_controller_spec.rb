@@ -58,7 +58,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
         expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)
-          .with hash_including(geographical_area_id: 'AU')
+          .with(gn.applicable_measures, 'AU')
       end
     end
   end
