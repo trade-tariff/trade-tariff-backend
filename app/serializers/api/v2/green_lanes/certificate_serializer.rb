@@ -6,6 +6,8 @@ module Api
 
         set_id :id
 
+        attribute :code, &:id
+
         attributes :certificate_type_code,
                    :certificate_code,
                    :description,

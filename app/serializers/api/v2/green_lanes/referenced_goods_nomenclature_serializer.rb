@@ -14,7 +14,8 @@ module Api
                    :number_indents,
                    :producline_suffix,
                    :validity_start_date,
-                   :validity_end_date
+                   :validity_end_date,
+                   :parent_sid
       end
     end
   end
