@@ -1,25 +1,16 @@
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
-  subject(:serialized) do
-    gn_presenter = \
-      Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading, presented_assessments)
+  subject { described_class.new(presented).serializable_hash }
 
-    described_class.new(
-      gn_presenter,
-      include: %w[applicable_category_assessments
-                  applicable_category_assessments.geographical_area],
-    ).serializable_hash
+  before do
+    measure = subheading.measures.first
+    create(:category_assessment, measure:)
+    create(:measure, goods_nomenclature: subheading.children.first,
+                     measure_type_id: measure.measure_type_id,
+                     generating_regulation: measure.generating_regulation)
   end
 
-  let(:subheading) { create :subheading, :with_measures }
-  let(:assessment) { create :category_assessment, measure: subheading.measures.first }
-
-  let :permutations do
-    GreenLanes::PermutationCalculatorService.new(subheading.applicable_measures).call
-  end
-
-  let :presented_assessments do
-    [Api::V2::GreenLanes::CategoryAssessmentPresenter.new(assessment, *permutations.first)]
-  end
+  let(:subheading) { create :goods_nomenclature, :with_ancestors, :with_children, :with_measures }
+  let(:presented) { Api::V2::GreenLanes::GoodsNomenclaturePresenter.new(subheading) }
 
   let(:expected_pattern) do
     {
@@ -33,36 +24,47 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclatureSerializer do
           validity_end_date: nil,
           description_plain: subheading.description_plain,
           producline_suffix: subheading.producline_suffix,
+          parent_sid: subheading.parent.goods_nomenclature_sid,
         },
-        "relationships": {
-          "applicable_category_assessments": {
-            "data": [{
-              "id": presented_assessments[0].id,
+        relationships: {
+          applicable_category_assessments: {
+            data: [{
+              id: /^[a-f0-9]{32}$/,
               type: eq(:category_assessment),
             }],
           },
-        },
-      },
-      included: [
-        {
-          id: subheading.measures.first.geographical_area_id,
-          type: eq(:geographical_area),
-        },
-        {
-          id: presented_assessments[0].id,
-          type: eq(:category_assessment),
-          relationships: {
-            measures: {
-              data: [
-                {
-                  id: subheading.measures.first.measure_sid.to_s,
-                  type: eq(:measure),
-                },
-              ],
-            },
+          descendant_category_assessments: {
+            data: [{
+              id: /^[a-f0-9]{32}$/,
+              type: eq(:category_assessment),
+            }],
+          },
+          ancestors: {
+            data: [
+              {
+                id: subheading.parent.parent.goods_nomenclature_sid.to_s,
+                type: eq(:goods_nomenclature),
+              },
+              {
+                id: subheading.parent.goods_nomenclature_sid.to_s,
+                type: eq(:goods_nomenclature),
+              },
+            ],
+          },
+          descendants: {
+            data: [
+              {
+                id: subheading.descendants.first.goods_nomenclature_sid.to_s,
+                type: eq(:goods_nomenclature),
+              },
+              {
+                id: subheading.descendants.second.goods_nomenclature_sid.to_s,
+                type: eq(:goods_nomenclature),
+              },
+            ],
           },
         },
-      ],
+      },
     }
   end
 

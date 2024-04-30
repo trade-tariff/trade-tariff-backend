@@ -2,7 +2,13 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
   subject { described_class.new(presented).serializable_hash.as_json }
 
   let(:presented) { Api::V2::GreenLanes::MeasurePresenter.new measure }
-  let(:measure) { create :measure, :with_footnote_association, :with_goods_nomenclature }
+
+  let :measure do
+    create :measure,
+           :with_footnote_association,
+           :with_goods_nomenclature,
+           :with_additional_code
+  end
 
   let :expected_pattern do
     {
@@ -16,9 +22,6 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
         relationships: {
           measure_type: {
             data: { id: measure.measure_type.measure_type_id.to_s, type: 'measure_type' },
-          },
-          goods_nomenclature: {
-            data: { id: measure.goods_nomenclature.goods_nomenclature_sid.to_s, type: 'goods_nomenclature' },
           },
           footnotes: {
             data: [

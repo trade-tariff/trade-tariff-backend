@@ -4,15 +4,76 @@ module Api
   module V2
     module GreenLanes
       class GoodsNomenclaturePresenter < SimpleDelegator
-        attr_reader :applicable_category_assessments
-
-        def initialize(goods_nomenclature, presented_category_assessments)
+        def initialize(goods_nomenclature, geographical_area_id = nil)
           super(goods_nomenclature)
-          @applicable_category_assessments = presented_category_assessments
+          @geographical_area_id = geographical_area_id.presence
+        end
+
+        def parent_sid
+          parent&.goods_nomenclature_sid
         end
 
         def applicable_category_assessment_ids
-          @applicable_category_assessment_ids ||= @applicable_category_assessments.map(&:id)
+          @applicable_category_assessment_ids ||= applicable_category_assessments.map(&:id)
+        end
+
+        def applicable_category_assessments
+          @applicable_category_assessments ||=
+            ::GreenLanes::FindCategoryAssessmentsService.call \
+              applicable_measures,
+              @geographical_area_id
+        end
+
+        def descendant_category_assessment_ids
+          @descendant_category_assessment_ids ||= descendant_category_assessments.map(&:id)
+        end
+
+        def descendant_category_assessments
+          @descendant_category_assessments ||=
+            ::GreenLanes::FindCategoryAssessmentsService.call \
+              all_descendant_measures,
+              @geographical_area_id
+        end
+
+        def ancestor_ids
+          @ancestor_ids ||= ancestors.map(&:goods_nomenclature_sid)
+        end
+
+        def ancestors
+          @ancestors ||=
+            ReferencedGoodsNomenclaturePresenter.wrap(super, @geographical_area_id)
+        end
+
+        def descendant_ids
+          @descendant_ids ||= descendants.map(&:goods_nomenclature_sid)
+        end
+
+        def descendants
+          @descendants ||=
+            ReferencedGoodsNomenclaturePresenter.wrap(super, @geographical_area_id)
+        end
+
+        def measure_ids
+          @measure_ids ||= measures.map(&:measure_sid)
+        end
+
+        def measures
+          @measures ||=
+            MeasurePresenter.wrap(filter_measures_by_geographical_area(super))
+        end
+
+      private
+
+        def filter_measures_by_geographical_area(unfiltered_measures)
+          return unfiltered_measures if @geographical_area_id.blank?
+
+          unfiltered_measures.select do |measure|
+            measure.relevant_for_country? @geographical_area_id
+          end
+        end
+
+        def all_descendant_measures
+          descendants.flat_map(&:measures)
         end
       end
     end

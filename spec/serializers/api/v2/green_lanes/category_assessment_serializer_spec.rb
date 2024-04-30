@@ -2,7 +2,8 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   subject(:serialized) do
     described_class.new(
       presented,
-      include: %w[exemptions geographical_area excluded_geographical_areas],
+      params: {},
+      include: %w[theme exemptions geographical_area excluded_geographical_areas],
     ).serializable_hash.as_json
   end
 
@@ -19,11 +20,10 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
       data: {
         id: be_a(String),
         type: 'category_assessment',
-        attributes: {
-          category: category_assessment.theme.category.to_s,
-          theme: category_assessment.theme.to_s,
-        },
         relationships: {
+          theme: {
+            data: { id: category_assessment.theme.code, type: 'theme' },
+          },
           exemptions: {
             data: [
               { id: certificate.id, type: 'certificate' },
@@ -39,9 +39,24 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           excluded_geographical_areas: {
             data: [],
           },
+          measure_type: {
+            data: { id: category_assessment.measure_type_id, type: 'measure_type' },
+          },
+          regulation: {
+            data: { id: category_assessment.regulation_id, type: 'legal_act' },
+          },
         },
       },
       included: [
+        {
+          id: category_assessment.theme.code,
+          type: 'theme',
+          attributes: {
+            id: category_assessment.theme.code,
+            theme: category_assessment.theme.description,
+            category: category_assessment.theme.category,
+          },
+        },
         {
           id: certificate.id,
           type: 'certificate',
@@ -76,4 +91,22 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
   end
 
   it { is_expected.to include_json(expected_pattern) }
+
+  describe 'measures relationship' do
+    context 'with measures' do
+      subject do
+        described_class.new(presented, params: { with_measures: true })
+                       .serializable_hash
+                       .as_json['data']['relationships']
+      end
+
+      it { is_expected.to include 'measures' }
+    end
+
+    context 'without measures' do
+      subject { serialized['data']['relationships'] }
+
+      it { is_expected.not_to include 'measures' }
+    end
+  end
 end
