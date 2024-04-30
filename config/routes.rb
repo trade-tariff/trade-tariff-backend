@@ -230,6 +230,8 @@ Rails.application.routes.draw do
         resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{6,10}/ }
 
         resources :category_assessments, only: %i[index]
+
+        resources :themes, only: %i[index]
       end
     end
 
