@@ -9,7 +9,7 @@ RSpec.describe Api::V2::GreenLanes::ThemeSerializer do
         id: theme.code,
         type: 'theme',
         attributes: {
-          id: theme.code,
+          section: theme.code,
           theme: theme.description,
           category: theme.category,
         },
