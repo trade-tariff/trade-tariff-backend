@@ -259,4 +259,33 @@ RSpec.describe GreenLanes::CategoryAssessment do
       end
     end
   end
+
+  describe '#combined_measures' do
+    subject { category_assessment.combined_measures }
+
+    let(:tariff_measure) { create :measure, :with_base_regulation }
+    let(:category_assessment) { create :category_assessment, measure: tariff_measure }
+
+    context 'with tariff measure' do
+      it { is_expected.to include tariff_measure }
+    end
+
+    context 'with green lanes measure' do
+      before { green_lanes_measure }
+
+      let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
+      let(:category_assessment) { create :category_assessment }
+
+      it { is_expected.to include green_lanes_measure }
+    end
+
+    context 'with both types of measure' do
+      before { green_lanes_measure }
+
+      let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
+
+      it { is_expected.to include tariff_measure }
+      it { is_expected.to include green_lanes_measure }
+    end
+  end
 end

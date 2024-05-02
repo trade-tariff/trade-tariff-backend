@@ -116,6 +116,21 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
       it { is_expected.to include 'measures' }
     end
 
+    context 'with green lanes measures' do
+      subject(:relationships) do
+        described_class.new(presented, params: { with_measures: true })
+                       .serializable_hash
+                       .as_json['data']['relationships']
+      end
+
+      before { create :green_lanes_measure, category_assessment: }
+
+      let(:category_assessment) { create :category_assessment }
+
+      it { is_expected.to include 'measures' }
+      it { expect(relationships['measures']['data'].pluck('id')).to include %r{gl\d+} }
+    end
+
     context 'without measures' do
       subject { serialized['data']['relationships'] }
 

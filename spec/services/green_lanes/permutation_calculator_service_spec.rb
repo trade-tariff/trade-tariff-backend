@@ -3,12 +3,17 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
 
   describe '.call' do
     let(:measures) { create_list :measure, 1 }
-    let(:measure) { create :measure, :with_measure_type, :with_base_regulation }
+    let(:measure) { create :measure, :with_measure_type, :with_base_regulation, :erga_omnes }
 
     shared_examples 'two segregated lists' do
       it { is_expected.to have_attributes length: 2 }
       it { expect(permutations[0]).to eq_pk [measures[0]] }
       it { expect(permutations[1]).to eq_pk [measures[1]] }
+    end
+
+    shared_examples 'a single list' do
+      it { is_expected.to have_attributes length: 1 }
+      it { expect(permutations[0]).to eq_pk measures }
     end
 
     context 'with unrelated measures' do
@@ -33,8 +38,7 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
                          geographical_area_id: measure.geographical_area_id
       end
 
-      it { is_expected.to have_attributes length: 1 }
-      it { expect(permutations[0]).to eq_pk measures }
+      it_behaves_like 'a single list'
     end
 
     context 'with mixture of related and unrelated' do
@@ -190,6 +194,14 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
       end
 
       it_behaves_like 'two segregated lists'
+    end
+
+    context 'with green lanes measures' do
+      let(:measures) { [measure, gl_measure] }
+      let(:gl_measure) { create(:green_lanes_measure, category_assessment:) }
+      let(:category_assessment) { create :category_assessment, measure: }
+
+      it_behaves_like 'a single list'
     end
   end
 end
