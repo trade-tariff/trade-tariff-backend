@@ -7368,7 +7368,7 @@ CREATE TABLE uk.sections (
     id integer NOT NULL,
     "position" integer,
     numeral character varying(255),
-    title character varying(255),
+    title character varying(500),
     created_at timestamp without time zone NOT NULL,
     updated_at timestamp without time zone
 );
@@ -12393,4 +12393,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20231205100020_adds_clear_
 INSERT INTO "schema_migrations" ("filename") VALUES ('20231213114821_read_only_user.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240110120545_adds_user_privileges.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240129180350_add_green_lanes_tables.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240429125446_change_title_limit_in_sections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240429135110_create_green_lanes_exempting_certificate_overrides.rb');
