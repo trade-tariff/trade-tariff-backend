@@ -29,20 +29,6 @@ module Api
           end
         end
 
-        def update
-          eco = ::GreenLanes::ExemptingCertificateOverride.with_pk!(params[:id])
-          eco.set eco_params
-
-          if eco.valid? && eco.save
-            render json: serialize(eco),
-                   location: api_admin_green_lanes_exempting_certificate_override_url(eco.id),
-                   status: :ok
-          else
-            render json: serialize_errors(eco),
-                   status: :unprocessable_entity
-          end
-        end
-
         def destroy
           eco = ::GreenLanes::ExemptingCertificateOverride.with_pk!(params[:id])
           eco.destroy

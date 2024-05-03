@@ -83,45 +83,6 @@ RSpec.describe Api::Admin::GreenLanes::ExemptingCertificateOverridesController d
     end
   end
 
-  describe 'PATCH to #update' do
-    let(:id) { override.id }
-    let(:certificate_code) { '3' }
-
-    let(:make_request) do
-      authenticated_patch api_admin_green_lanes_exempting_certificate_override_path(id, format: :json), params: {
-        data: {
-          type: :exempting_certificate_override,
-          attributes: { certificate_code: },
-        },
-      }
-    end
-
-    context 'with valid params' do
-      it { is_expected.to have_http_status :success }
-      it { is_expected.to have_attributes location: api_admin_green_lanes_exempting_certificate_override_url(override.id) }
-      it { expect { page_response }.not_to change(override.reload, :certificate_code) }
-    end
-
-    context 'with invalid params' do
-      let(:certificate_code) { nil }
-
-      it { is_expected.to have_http_status :unprocessable_entity }
-
-      it 'returns errors for category assessment' do
-        expect(json_response).to include('errors')
-      end
-
-      it { expect { page_response }.not_to change(override.reload, :certificate_code) }
-    end
-
-    context 'with unknown category assessment' do
-      let(:id) { 9999 }
-
-      it { is_expected.to have_http_status :not_found }
-      it { expect { page_response }.not_to change(override.reload, :certificate_code) }
-    end
-  end
-
   describe 'DELETE to #destroy' do
     let :make_request do
       authenticated_delete api_admin_green_lanes_exempting_certificate_override_path(id, format: :json)
