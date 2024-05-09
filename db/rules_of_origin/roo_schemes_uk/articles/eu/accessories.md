@@ -6,4 +6,4 @@
 
 2. Accessories, spare parts, tools and instructional or other information materials referred to in paragraph 1 shall be disregarded in determining the origin of the product except for the purposes of calculating the value of non-originating materials if a product is subject to a maximum value of non-originating materials as set out in the Trade and Cooperation Agreement.
 
-{{ Article 11 }}
+{{ Article 10 }}
