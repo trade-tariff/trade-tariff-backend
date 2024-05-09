@@ -370,6 +370,7 @@ FactoryBot.define do
         condition_code { 'B' }
         certificate_type_code { nil }
         certificate_code { nil }
+        exempting_certificate_override { false }
       end
 
       after(:build) do |measure, evaluator|
@@ -415,6 +416,7 @@ FactoryBot.define do
             :certificate,
             certificate_type_code: evaluator.certificate_type_code,
             certificate_code: evaluator.certificate_code,
+            exempting_certificate_override: evaluator.exempting_certificate_override,
           )
         end
       end

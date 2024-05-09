@@ -188,6 +188,10 @@ class MeasureCondition < Sequel::Model
     document_code.blank?
   end
 
+  def is_exempting_with_certificate_overridden?
+    (exemption_class? && !is_exempting_certificate_overridden?) || (!exemption_class? && is_exempting_certificate_overridden?)
+  end
+
   private
 
   def is_threshold?
@@ -216,5 +220,9 @@ class MeasureCondition < Sequel::Model
 
   def is_eps_condition?
     entry_price_system? && is_price_condition? && is_weight_condition?
+  end
+
+  def is_exempting_certificate_overridden?
+    certificate.present? && certificate.exempting_certificate_override.present?
   end
 end
