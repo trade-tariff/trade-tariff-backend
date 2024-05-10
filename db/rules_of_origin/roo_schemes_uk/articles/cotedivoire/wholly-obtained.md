@@ -8,8 +8,7 @@ The following shall be considered as wholly obtained in Côte d'Ivoire or in the
 
 4. **products from live animals** raised there;
 
-5. 
-   1. products obtained by **hunting or fishing** conducted there;
+5. 1. products obtained by **hunting or fishing** conducted there;
 
    2. products of **aquaculture**, including mariculture, where the animals are raised from eggs, spawn, larvae or fry;
 
