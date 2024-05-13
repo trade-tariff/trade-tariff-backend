@@ -8,10 +8,5 @@ module GreenLanes
                              primary_key: %i[certificate_type_code certificate_code] do |ds|
       ds.with_actual(Certificate)
     end
-
-    def validate
-      super
-      validates_unique %i[certificate_type_code certificate_code]
-    end
   end
 end
