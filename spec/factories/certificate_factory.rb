@@ -5,12 +5,21 @@ FactoryBot.define do
   factory :certificate do
     transient do
       description { Forgery(:basic).text }
+      exempting_certificate_override { false }
     end
 
     certificate_type_code { generate(:certificate_type_code) }
     certificate_code      { Forgery(:basic).text(exactly: 3) }
     validity_start_date   { 2.years.ago.beginning_of_day }
     validity_end_date     { nil }
+
+    after(:build) do |certificate, evaluator|
+      if evaluator.exempting_certificate_override
+        create(:exempting_certificate_override,
+               certificate_type_code: certificate.certificate_type_code,
+               certificate_code: certificate.certificate_code)
+      end
+    end
 
     trait :with_description do
       after(:create) do |certificate, _evaluator|
