@@ -8,10 +8,9 @@ For the purposes of Article 2(a), the following shall be considered as wholly ob
 
 4. **products from live animals** raised there;
 
-5. 
-   1. products obtained by hunting, trapping within the land territory or fishing, conducted within the land waters or within the territorial sea of a Party;
+5. i. products obtained by hunting, trapping within the land territory or fishing, conducted within the land waters or within the territorial sea of a Party;
 
-   2. Products of **aquaculture**, where the fish, crustaceans and mollusc are born and raised there;
+   ii. Products of **aquaculture**, where the fish, crustaceans and mollusc are born and raised there;
 
 6. products of **sea fishing and other products** taken from the sea outside the territorial sea of a Party by its vessels;
 

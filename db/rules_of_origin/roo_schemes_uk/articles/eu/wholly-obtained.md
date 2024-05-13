@@ -26,4 +26,4 @@ The following products shall be considered as wholly obtained in a Party:
 
 13. products produced there exclusively from the products specified in points (a) to (l).
 
-{{ Article 5 }}
+{{ Article 4 }}

@@ -26,4 +26,4 @@
 
 6. If the customs authority of the importing Party decides to suspend the granting of preferential tariff treatment to the product concerned while awaiting the results of the verification, the release of the products shall be offered to the importer subject to appropriate precautionary measures including guarantees. Any suspension of preferential tariff treatment shall be terminated as soon as possible after the customs authority of the importing Party has ascertained the originating status of the products concerned, or the fulfilment of the other requirements of this Chapter.
 
-{{ Article 24 }}
+{{ Article 23 }}
