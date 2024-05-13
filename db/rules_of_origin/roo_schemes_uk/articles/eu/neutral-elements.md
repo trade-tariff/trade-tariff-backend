@@ -14,4 +14,4 @@ In order to determine whether a product is originating in a Party, it shall not 
 
 - other materials used in the production which are not incorporated into the product nor intended to be incorporated into the final composition of the product.
 
-{{ Article 13 }}
+{{ Article 12 }}
