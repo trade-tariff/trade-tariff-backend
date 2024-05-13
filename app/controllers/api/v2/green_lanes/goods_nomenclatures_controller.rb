@@ -3,7 +3,6 @@ module Api
     module GreenLanes
       class GoodsNomenclaturesController < BaseController
         def show
-          binding.pry
           if validate_id(params[:id])
             gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
             presented_gn = GoodsNomenclaturePresenter.new(gn, filter_params[:geographical_area_id])
