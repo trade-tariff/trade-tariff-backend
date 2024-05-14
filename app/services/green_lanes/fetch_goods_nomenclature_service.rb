@@ -9,7 +9,7 @@ module GreenLanes
       geographical_area: %i[geographical_area_descriptions contained_geographical_areas],
       measure_excluded_geographical_areas: [],
       excluded_geographical_areas: :geographical_area_descriptions,
-      measure_conditions: { certificate: :certificate_descriptions },
+      measure_conditions: { certificate: %i[certificate_descriptions exempting_certificate_override] },
       category_assessment: (%i[theme base_regulation modification_regulation] +
                             [{ measure_type: :measure_type_description }]),
     }.freeze

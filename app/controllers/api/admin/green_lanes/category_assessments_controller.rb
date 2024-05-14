@@ -3,6 +3,7 @@ module Api
     module GreenLanes
       class CategoryAssessmentsController < AdminController
         include Pageable
+        include XiOnly
 
         before_action :check_service, :authenticate_user!
 
@@ -74,12 +75,6 @@ module Api
 
         def serialize_errors(category_assessment)
           Api::Admin::ErrorSerializationService.new(category_assessment).call
-        end
-
-        def check_service
-          if TradeTariffBackend.uk?
-            raise ActionController::RoutingError, 'Invalid service'
-          end
         end
       end
     end
