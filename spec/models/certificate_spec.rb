@@ -75,4 +75,25 @@ RSpec.describe Certificate do
       it { is_expected.not_to be_authorised_use }
     end
   end
+
+  describe '#exempting_certificate_override' do
+    subject { certificate.reload.exempting_certificate_override }
+
+    let(:certificate) { create :certificate }
+
+    context 'with matching exempting_certificate_override' do
+      before { exempting_certificate_override }
+
+      let :exempting_certificate_override do
+        create :exempting_certificate_override, certificate_type_code: certificate.certificate_type_code,
+                                                certificate_code: certificate.certificate_code
+      end
+
+      it { is_expected.to eq_pk exempting_certificate_override }
+    end
+
+    context 'without matching exempting_certificate_override' do
+      it { is_expected.to be_nil }
+    end
+  end
 end

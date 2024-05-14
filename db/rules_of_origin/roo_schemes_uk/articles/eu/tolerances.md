@@ -10,4 +10,4 @@
 
 3. Paragraph 1 of this Article does not apply to products wholly obtained in a Party within the meaning of Article 5. If the Product-specific rules of origin require that the materials used in the production of a product are wholly obtained, paragraphs 1 and 2 of this Article apply.
 
-{{ Article 6 }}
+{{ Article 5 }}

@@ -37,6 +37,12 @@ class Certificate < Sequel::Model
     ds.with_actual(CertificateType)
   end
 
+  one_to_one :exempting_certificate_override,
+             class: 'ExemptingCertificateOverride',
+             class_namespace: 'GreenLanes',
+             primary_key: %i[certificate_type_code certificate_code],
+             key: %i[certificate_type_code certificate_code]
+
   def special_nature?
     certificate_type_code.in?(SPECIAL_NATURE_TYPE_CODE)
   end

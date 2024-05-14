@@ -1,4 +1,4 @@
-## Article 18 - Claim for Preferential Tariff Treatment
+## Article 16 - Claim for Preferential Tariff Treatment
 
 1. The importing Party, on importation, shall grant preferential tariff treatment to a product originating in the other Party within the meaning of this Origin Reference Document on the basis of a claim by the importer for preferential tariff treatment. The importer shall be responsible for the correctness of the claim for preferential tariff treatment and for compliance with the requirements provided for in this Origin Reference Document.
 
@@ -12,7 +12,7 @@
 
 
 
-## Article 18a - Time of the Claim for Preferential Tariff Treatment
+## Article 17 - Time of the Claim for Preferential Tariff Treatment
 
 1. A claim for preferential tariff treatment and the basis for that claim as referred to in Article 18(2) shall be included in the customs import declaration in accordance with the laws and regulations of the importing Party.
 
@@ -28,7 +28,7 @@
 
 
 
-## Article 19 - Statement on Origin
+## Article 18 - Statement on Origin
 
 1. A statement on origin shall be made out by an exporter of a product on the basis of information demonstrating that the product is originating, including information on the originating status of materials used in the production of the product. The exporter shall be responsible for the correctness of the statement on origin and the information provided.
 
@@ -46,13 +46,13 @@
 
 
 
-## Article 20 - Discrepancies
+## Article 19 - Discrepancies
 
 The customs authority of the importing Party shall not reject a claim for preferential tariff treatment due to minor errors or discrepancies in the statement on origin, or for the sole reason that an invoice was issued in a third country.
 
 
 
-## Article 21 - Importer's Knowledge
+## Article 20 - Importer's Knowledge
 
 1. For the purposes of a claim for preferential tariff treatment that is made under point (b) of Article 18(2), the importer's knowledge that a product is originating in the exporting Party shall be based on information demonstrating that the product is originating and satisfies the requirements provided for in this Origin Reference Document.
 
@@ -60,7 +60,7 @@ The customs authority of the importing Party shall not reject a claim for prefer
 
 
 
-## Article 22 - Record-Keeping Requirements
+## Article 21 - Record-Keeping Requirements
 
 1. For a minimum of three years after the date of importation of the product, an importer making a claim for preferential tariff treatment for a product imported into the importing Party shall keep:
 
@@ -74,7 +74,7 @@ The customs authority of the importing Party shall not reject a claim for prefer
 
 
 
-## Article 23 - Small Consignments
+## Article 22 - Small Consignments
 
 1. By way of derogation from Articles 18 to 21, provided that the product has been declared as meeting the requirements of this Origin Reference Document and the customs authority of the importing Party has no doubts as to the veracity of that declaration, the importing Party shall grant preferential tariff treatment to:
 
@@ -100,4 +100,4 @@ The customs authority of the importing Party shall not reject a claim for prefer
 
 
 
-{{ Articles 18 to 23 }}
+{{ Articles 16 to 22 }}

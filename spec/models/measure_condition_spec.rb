@@ -295,4 +295,40 @@ RSpec.describe MeasureCondition do
       it { expect(measure_condition.threshold_unit_type).to eq nil }
     end
   end
+
+  describe '#is_exempting_with_certificate_overridden?' do
+    context 'when the condition is exemption class and certificate has not been overridden' do
+      subject(:measure_condition) { create :measure_condition, certificate: }
+
+      let(:certificate) { create(:certificate, certificate_code: '005', certificate_type_code: 'Y') }
+
+      it { is_expected.to be_is_exempting_with_certificate_overridden }
+    end
+
+    context 'when the condition is exemption class and certificate has been overridden' do
+      subject(:measure_condition) { create :measure_condition, certificate: }
+
+      let(:certificate) { create(:certificate, certificate_code: '005', certificate_type_code: 'Y', exempting_certificate_override:) }
+      let(:exempting_certificate_override) { create :exempting_certificate_override }
+
+      it { is_expected.not_to be_is_exempting_with_certificate_overridden }
+    end
+
+    context 'when the condition is not exemption class and certificate has not been overridden' do
+      subject(:measure_condition) { create :measure_condition, certificate: }
+
+      let(:certificate) { create(:certificate, certificate_code: '005', certificate_type_code: 'C') }
+
+      it { is_expected.not_to be_is_exempting_with_certificate_overridden }
+    end
+
+    context 'when the condition is not exemption class and certificate has been overridden' do
+      subject(:measure_condition) { create :measure_condition, certificate: }
+
+      let(:certificate) { create(:certificate, certificate_code: '005', certificate_type_code: 'C', exempting_certificate_override:) }
+      let(:exempting_certificate_override) { create :exempting_certificate_override }
+
+      it { is_expected.to be_is_exempting_with_certificate_overridden }
+    end
+  end
 end

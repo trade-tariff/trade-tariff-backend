@@ -52,10 +52,22 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       it { is_expected.to include certificate }
     end
 
+    context 'with exemption certificate and overridden' do
+      let(:certificate) { create :certificate, :exemption, exempting_certificate_override: true }
+
+      it { is_expected.not_to include certificate }
+    end
+
     context 'with license certificate' do
       let(:certificate) { create :certificate, :license }
 
       it { is_expected.not_to include certificate }
+    end
+
+    context 'with license certificate and overridden' do
+      let(:certificate) { create :certificate, :license, exempting_certificate_override: true }
+
+      it { is_expected.to include certificate }
     end
   end
 
