@@ -11,7 +11,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionSerializer do
         id: exemption.id.to_s,
         type: :green_lanes_exemption,
         attributes: {
-          theme: exemption.code,
+          code: exemption.code,
           description: exemption.description,
         },
       },
