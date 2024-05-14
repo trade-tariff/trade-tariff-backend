@@ -23,7 +23,7 @@ RSpec.describe GreenLanes::ExemptingCertificateOverride do
                             certificate_code: existing.certificate_code
       end
 
-      it { is_expected.to include %i[certificate_type_code certificate_code] => ['is already taken'] }
+      it { is_expected.to include %i[certificate_code certificate_type_code] => ['is already taken'] }
     end
   end
 
