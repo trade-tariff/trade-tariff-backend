@@ -69,6 +69,7 @@ Rails.application.routes.draw do
           resources :category_assessments, only: %i[index show create update destroy]
           resources :themes, only: %i[index]
           resources :exempting_certificate_overrides, only: %i[index show create destroy]
+          resources :pseudo_exemptions, only: %i[index]
         end
       end
     end
