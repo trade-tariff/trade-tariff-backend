@@ -13,14 +13,15 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
       authenticated_get api_admin_green_lanes_exemptions_path(format: :json)
     end
 
-    context 'with some exemption' do
+    context 'with some exemptions' do
       before { exemption }
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
+      it { expect(json_response['data'].first['type']).to include('green_lanes_exemption') }
     end
 
-    context 'without any exemption' do
+    context 'without any exemptions' do
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data' => []) }
     end
