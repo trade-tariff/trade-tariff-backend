@@ -25,4 +25,78 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
       it { expect(json_response).to include('data' => []) }
     end
   end
+
+  describe 'POST to #create' do
+    let(:make_request) do
+      authenticated_post api_admin_green_lanes_exemptions_path(format: :json), params: exemption_data
+    end
+
+    let :exemption_data do
+      {
+        data: {
+          type: :green_lanes_exemption,
+          attributes: ex_attrs,
+        },
+      }
+    end
+
+    context 'with valid params' do
+      let(:ex_attrs) { build(:green_lanes_exemption).to_hash }
+
+      it { is_expected.to have_http_status :created }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_exemption_url(GreenLanes::Exemption.last.id) }
+      it { expect { page_response }.to change(GreenLanes::Exemption, :count).by(1) }
+    end
+
+    context 'with invalid params' do
+      let(:ex_attrs) { build(:green_lanes_exemption, code: nil).to_hash }
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+
+      it 'returns errors for category assessment' do
+        expect(json_response).to include('errors')
+      end
+
+      it { expect { page_response }.not_to change(GreenLanes::Exemption, :count) }
+    end
+  end
+
+  describe 'PATCH to #update' do
+    let(:id) { exemption.id }
+    let(:updated_description) { 'new description' }
+
+    let(:make_request) do
+      authenticated_patch api_admin_green_lanes_exemption_path(id, format: :json), params: {
+        data: {
+          type: :green_lanes_exemption,
+          attributes: { description: updated_description },
+        },
+      }
+    end
+
+    context 'with valid params' do
+      it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_exemption_url(exemption.id) }
+      it { expect { page_response }.not_to change(exemption.reload, :description) }
+    end
+
+    context 'with invalid params' do
+      let(:updated_description) { nil }
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+
+      it 'returns errors for category assessment' do
+        expect(json_response).to include('errors')
+      end
+
+      it { expect { page_response }.not_to change(exemption.reload, :description) }
+    end
+
+    context 'with unknown exemption' do
+      let(:id) { 9999 }
+
+      it { is_expected.to have_http_status :not_found }
+      it { expect { page_response }.not_to change(exemption.reload, :description) }
+    end
+  end
 end
