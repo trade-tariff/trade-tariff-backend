@@ -37,6 +37,13 @@ module Api
           end
         end
 
+        def destroy
+          ex = ::GreenLanes::Exemption.with_pk!(params[:id])
+          ex.destroy
+
+          head :no_content
+        end
+
         private
 
         def exemption_params
