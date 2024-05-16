@@ -53,7 +53,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
 
       it { is_expected.to have_http_status :unprocessable_entity }
 
-      it 'returns errors for category assessment' do
+      it 'returns errors for exemption' do
         expect(json_response).to include('errors')
       end
 
@@ -85,7 +85,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
 
       it { is_expected.to have_http_status :unprocessable_entity }
 
-      it 'returns errors for category assessment' do
+      it 'returns errors for exemption' do
         expect(json_response).to include('errors')
       end
 
