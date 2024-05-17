@@ -10,6 +10,11 @@ module Api
           render json: serialize(exemptions.to_a)
         end
 
+        def show
+          ex = ::GreenLanes::Exemption.with_pk!(params[:id])
+          render json: serialize(ex)
+        end
+
         private
 
         def exemptions
