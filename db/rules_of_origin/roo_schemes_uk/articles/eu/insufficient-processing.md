@@ -34,4 +34,4 @@ A product will not be considered as originating in a Party if the production of 
 
 Operations shall be considered simple if neither special skills nor machines, apparatus or equipment especially produced or installed are needed for carrying out those operations.
 
-{{ Article 7 }}
+{{ Article 6 }}

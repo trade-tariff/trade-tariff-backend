@@ -92,6 +92,24 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
       it_behaves_like 'two segregated lists'
     end
 
+    context 'with different exemption certificates and certificate is overridden' do
+      let :measures do
+        [
+          measure,
+          create(:measure, :with_measure_conditions,
+                 generating_regulation: measure.generating_regulation,
+                 measure_type_id: measure.measure_type_id,
+                 geographical_area_id: measure.geographical_area_id,
+                 certificate_type_code: 'Y',
+                 certificate_code: '123',
+                 exempting_certificate_override: true),
+        ]
+      end
+
+      it { is_expected.to have_attributes length: 1 }
+      it { expect(permutations[0]).to eq_pk measures }
+    end
+
     context 'with non exemption certificates' do
       let :measures do
         [
@@ -107,6 +125,23 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
 
       it { is_expected.to have_attributes length: 1 }
       it { expect(permutations[0]).to eq_pk measures }
+    end
+
+    context 'with non exemption certificates and certificate is overridden' do
+      let :measures do
+        [
+          measure,
+          create(:measure, :with_measure_conditions,
+                 generating_regulation: measure.generating_regulation,
+                 measure_type_id: measure.measure_type_id,
+                 geographical_area_id: measure.geographical_area_id,
+                 certificate_type_code: 'L',
+                 certificate_code: '123',
+                 exempting_certificate_override: true),
+        ]
+      end
+
+      it_behaves_like 'two segregated lists'
     end
 
     context 'with different geographical area' do

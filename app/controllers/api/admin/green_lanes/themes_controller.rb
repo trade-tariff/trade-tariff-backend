@@ -2,6 +2,8 @@ module Api
   module Admin
     module GreenLanes
       class ThemesController < AdminController
+        include XiOnly
+
         before_action :check_service, :authenticate_user!
 
         def index
@@ -16,12 +18,6 @@ module Api
 
         def serialize(*args)
           Api::Admin::GreenLanes::ThemeSerializer.new(*args).serializable_hash
-        end
-
-        def check_service
-          if TradeTariffBackend.uk?
-            raise ActionController::RoutingError, 'Invalid service'
-          end
         end
       end
     end
