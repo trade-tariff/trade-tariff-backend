@@ -13,16 +13,36 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
       authenticated_get api_admin_green_lanes_exemptions_path(format: :json)
     end
 
-    context 'with some exemption' do
+    context 'with some exemptions' do
       before { exemption }
+
+      it { is_expected.to have_http_status :success }
+      it { expect(json_response).to include('data') }
+      it { expect(json_response['data'].first['type']).to include('green_lanes_exemption') }
+    end
+
+    context 'without any exemptions' do
+      it { is_expected.to have_http_status :success }
+      it { expect(json_response).to include('data' => []) }
+    end
+  end
+
+  describe 'GET to #show' do
+    let(:make_request) do
+      authenticated_get api_admin_green_lanes_exemption_path(id, format: :json)
+    end
+
+    context 'with existent exemption' do
+      let(:id) { exemption.id }
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
     end
 
-    context 'without any exemption' do
-      it { is_expected.to have_http_status :success }
-      it { expect(json_response).to include('data' => []) }
+    context 'with non-existent exemption' do
+      let(:id) { 1001 }
+
+      it { is_expected.to have_http_status :not_found }
     end
   end
 
