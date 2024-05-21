@@ -14,6 +14,8 @@ module Api
                    :theme_id,
                    :created_at,
                    :updated_at
+
+        has_many :green_lanes_measures, serializer: Api::Admin::GreenLanes::MeasureSerializer
       end
     end
   end
