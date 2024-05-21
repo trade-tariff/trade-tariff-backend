@@ -54,5 +54,9 @@ module GreenLanes
         self.base_regulation = regulation
       end
     end
+
+    def green_lanes_measure_ids
+      green_lanes_measures.map(&:id)
+    end
   end
 end

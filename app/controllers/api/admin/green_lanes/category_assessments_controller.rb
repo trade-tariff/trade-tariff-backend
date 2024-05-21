@@ -70,7 +70,9 @@ module Api
         end
 
         def serialize(*args)
-          Api::Admin::GreenLanes::CategoryAssessmentSerializer.new(*args).serializable_hash
+          Api::Admin::GreenLanes::CategoryAssessmentSerializer.new(
+            *args, include: %w[green_lanes_measures]
+          ).serializable_hash
         end
 
         def serialize_errors(category_assessment)
