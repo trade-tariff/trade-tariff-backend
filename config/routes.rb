@@ -70,6 +70,7 @@ Rails.application.routes.draw do
           resources :themes, only: %i[index]
           resources :exempting_certificate_overrides, only: %i[index show create destroy]
           resources :exemptions, only: %i[index show create update destroy]
+          resources :measures, only: %i[index]
         end
       end
     end
