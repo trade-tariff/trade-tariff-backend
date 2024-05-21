@@ -12,7 +12,6 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentSerializer do
           measure_type_id: category.measure_type_id,
           regulation_id: category.regulation_id,
           regulation_role: category.regulation_role,
-          theme_id: category.theme_id,
         },
         relationships: {
           theme: {
