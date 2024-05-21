@@ -488,4 +488,16 @@ RSpec.describe GoodsNomenclature do
       it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N] }
     end
   end
+
+  describe '#green_lanes_measures' do
+    subject { goods_nomenclature.green_lanes_measures }
+
+    let :goods_nomenclature do
+      create(:commodity).tap do |gn|
+        create :green_lanes_measure, goods_nomenclature: gn
+      end
+    end
+
+    it { is_expected.to include instance_of GreenLanes::Measure }
+  end
 end
