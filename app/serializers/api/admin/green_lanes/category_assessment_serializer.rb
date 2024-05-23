@@ -10,7 +10,8 @@ module Api
 
         attributes :measure_type_id,
                    :regulation_id,
-                   :regulation_role
+                   :regulation_role,
+                   :theme_id
 
         has_one :theme, serializer: ThemeSerializer
       end
