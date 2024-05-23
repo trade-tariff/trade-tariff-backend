@@ -41,9 +41,10 @@ module Api
         end
 
         def area_relevant_applicable_measures
-          applicable_measures.select do |measure|
-            measure.relevant_for_country?(requested_geo_area_with_fallback)
-          end
+          @area_relevant_applicable_measures ||=
+            applicable_measures.select do |measure|
+              measure.relevant_for_country?(requested_geo_area_with_fallback)
+            end
         end
 
         def requested_geo_area_with_fallback
