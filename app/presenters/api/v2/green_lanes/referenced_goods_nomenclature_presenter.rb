@@ -4,6 +4,8 @@ module Api
   module V2
     module GreenLanes
       class ReferencedGoodsNomenclaturePresenter < WrapDelegator
+        LICENCE_TYPE_CODE = 'L'
+
         def initialize(goods_nomenclature, geographical_area_id = nil)
           super(goods_nomenclature)
           @geographical_area_id = geographical_area_id.presence
@@ -24,6 +26,18 @@ module Api
 
         def supplementary_measure_unit
           supplementary_measure&.supplementary_unit_duty_expression
+        end
+
+        def licences
+          @licences ||=
+            area_relevant_applicable_measures
+              .flat_map(&:measure_conditions)
+              .select { |mc| mc.certificate_type_code == LICENCE_TYPE_CODE }
+              .map(&:certificate)
+        end
+
+        def licence_ids
+          licences.map(&:id)
         end
 
       private

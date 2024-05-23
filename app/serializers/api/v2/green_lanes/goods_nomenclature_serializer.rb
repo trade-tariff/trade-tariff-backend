@@ -21,8 +21,9 @@ module Api
 
         has_many :applicable_category_assessments, serializer: CategoryAssessmentSerializer
         has_many :descendant_category_assessments, serializer: CategoryAssessmentSerializer
-        has_many :ancestors, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer
-        has_many :descendants, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer
+        has_many :ancestors, serializer: ReferencedGoodsNomenclatureSerializer
+        has_many :descendants, serializer: ReferencedGoodsNomenclatureSerializer
+        has_many :licences, serializer: CertificateSerializer
       end
     end
   end

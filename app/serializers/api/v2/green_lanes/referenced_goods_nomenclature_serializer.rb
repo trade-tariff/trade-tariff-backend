@@ -17,6 +17,8 @@ module Api
                    :validity_end_date,
                    :parent_sid,
                    :supplementary_measure_unit
+
+        has_many :licences, serializer: CertificateSerializer
       end
     end
   end
