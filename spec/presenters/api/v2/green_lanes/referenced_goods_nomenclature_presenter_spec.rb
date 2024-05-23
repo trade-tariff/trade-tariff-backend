@@ -36,4 +36,43 @@ RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter do
       end
     end
   end
+
+  describe '#supplementary_measure_unit' do
+    subject(:presented) { described_class.new(gn, requested_geo_area) }
+
+    before do
+      create :measure,
+             :supplementary,
+             :with_base_regulation,
+             goods_nomenclature: gn,
+             for_geo_area: geo_area
+    end
+
+    let(:geo_area) { create :geographical_area, geographical_area_id: 'FR' }
+
+    context 'with origin filter which does match' do
+      let(:requested_geo_area) { 'FR' }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
+    end
+
+    context 'with origin filter which does not match' do
+      let(:requested_geo_area) { 'DE' }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: nil }
+    end
+
+    context 'without origin filter' do
+      let(:requested_geo_area) { '' }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: nil }
+    end
+
+    context 'without origin filter but with Erga Omnes Supplementary Measure' do
+      let(:requested_geo_area) { '' }
+      let(:geo_area) { create :geographical_area, :erga_omnes }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
+    end
+  end
 end

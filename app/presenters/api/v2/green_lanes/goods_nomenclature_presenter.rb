@@ -62,6 +62,10 @@ module Api
             MeasurePresenter.wrap(filter_measures_by_geographical_area(super))
         end
 
+        def supplementary_measure_unit
+          supplementary_measure&.supplementary_unit_duty_expression
+        end
+
       private
 
         def filter_measures_by_geographical_area(unfiltered_measures)
@@ -81,6 +85,20 @@ module Api
           applicable_measures +
             green_lanes_measures +
             ancestors.flat_map(&:green_lanes_measures)
+        end
+
+        def supplementary_measure
+          area_relevant_applicable_measures.find(&:supplementary?)
+        end
+
+        def area_relevant_applicable_measures
+          applicable_measures.select do |measure|
+            measure.relevant_for_country?(requested_geo_area_with_fallback)
+          end
+        end
+
+        def requested_geo_area_with_fallback
+          @geographical_area_id || GeographicalArea::ERGA_OMNES_ID
         end
       end
     end

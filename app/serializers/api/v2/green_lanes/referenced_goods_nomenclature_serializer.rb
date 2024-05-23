@@ -15,7 +15,8 @@ module Api
                    :producline_suffix,
                    :validity_start_date,
                    :validity_end_date,
-                   :parent_sid
+                   :parent_sid,
+                   :supplementary_measure_unit
       end
     end
   end
