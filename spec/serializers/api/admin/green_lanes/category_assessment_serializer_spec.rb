@@ -1,7 +1,15 @@
 RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentSerializer do
-  subject { described_class.new(category).serializable_hash.as_json }
+  subject do
+    described_class.new(presented,
+                        params: { with_measures: true, with_exemptions: true },
+                        include: %w[green_lanes_measures exemptions]).serializable_hash.as_json
+  end
 
-  let(:category) { create :category_assessment }
+  let(:category) { create :category_assessment, :with_green_lanes_measure, :with_exemption }
+
+  let :presented do
+    Api::Admin::GreenLanes::CategoryAssessmentPresenter.new(category)
+  end
 
   let :expected do
     {
@@ -16,6 +24,18 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentSerializer do
         relationships: {
           theme: {
             data: { id: category.theme_id.to_s, type: 'theme' },
+          },
+          green_lanes_measures: {
+            data: [
+              { id: '1', type: 'green_lanes_measure' },
+              { id: '2', type: 'green_lanes_measure' },
+            ],
+          },
+          exemptions: {
+            data: [
+              { id: '1', type: 'green_lanes_exemption' },
+              { id: '2', type: 'green_lanes_exemption' },
+            ],
           },
         },
       },

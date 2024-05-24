@@ -14,6 +14,8 @@ module Api
                    :theme_id
 
         has_one :theme, serializer: ThemeSerializer
+        has_many :green_lanes_measures, serializer: MeasureSerializer, if: ->(_record, params) { params[:with_measures] }
+        has_many :exemptions, serializer: ExemptionSerializer, if: ->(_record, params) { params[:with_exemptions] }
       end
     end
   end

@@ -6,7 +6,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
   end
 
   let(:json_response) { JSON.parse(page_response.body) }
-  let(:category) { create :category_assessment }
+  let(:category) { create :category_assessment, :with_green_lanes_measure, :with_exemption }
 
   describe 'GET to #index' do
     let(:make_request) do

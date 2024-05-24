@@ -12,8 +12,12 @@ module Api
         end
 
         def show
+          options = { is_collection: false }
+          options[:include] = %i[green_lanes_measures exemptions]
+          options[:params] = { with_measures: true, with_exemptions: true }
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
-          render json: serialize(ca)
+
+          render json: serialize(CategoryAssessmentPresenter.new(ca), options)
         end
 
         def create
@@ -30,6 +34,7 @@ module Api
         end
 
         def update
+          binding.pry
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
           ca.set ca_params
 
@@ -44,6 +49,7 @@ module Api
         end
 
         def destroy
+          binding.pry
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
           ca.destroy
 
