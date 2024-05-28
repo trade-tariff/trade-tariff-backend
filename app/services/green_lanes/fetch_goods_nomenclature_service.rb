@@ -2,30 +2,32 @@ module GreenLanes
   class FetchGoodsNomenclatureService
     ITEM_ID_LENGTH = 10
 
-    MEASURES_EAGER = {
-      additional_code: :additional_code_descriptions,
-      goods_nomenclature: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
-      footnotes: :footnote_descriptions,
-      geographical_area: %i[geographical_area_descriptions contained_geographical_areas],
-      measure_excluded_geographical_areas: [],
-      excluded_geographical_areas: :geographical_area_descriptions,
-      measure_conditions: { certificate: %i[certificate_descriptions exempting_certificate_override] },
-      category_assessment: (%i[theme base_regulation modification_regulation] +
-                            [{ measure_type: :measure_type_description }]),
+    ASSESSMENT_EAGER = [
+      :theme,
+      :base_regulation,
+      :modification_regulation,
+      :exemptions,
+      { measure_type: %i[measure_type_description measure_type_series_description] },
+    ].freeze
+
+    GN_EAGER_LOAD = {
+      measures: {
+        additional_code: :additional_code_descriptions,
+        footnotes: :footnote_descriptions,
+        geographical_area: %i[geographical_area_descriptions contained_geographical_areas],
+        measure_excluded_geographical_areas: [],
+        excluded_geographical_areas: :geographical_area_descriptions,
+        measure_conditions: { certificate: %i[certificate_descriptions exempting_certificate_override] },
+        category_assessment: ASSESSMENT_EAGER,
+      },
+      green_lanes_measures: { category_assessment: ASSESSMENT_EAGER },
+      goods_nomenclature_descriptions: [],
     }.freeze
 
     EAGER_LOAD = {
-      ancestors: {
-        measures: MEASURES_EAGER,
-        goods_nomenclature_descriptions: [],
-      },
-      descendants: {
-        measures: MEASURES_EAGER,
-        goods_nomenclature_descriptions: [],
-      },
-      measures: MEASURES_EAGER,
-      goods_nomenclature_descriptions: [],
-    }.freeze
+      ancestors: GN_EAGER_LOAD,
+      descendants: GN_EAGER_LOAD,
+    }.merge(GN_EAGER_LOAD).freeze
 
     def initialize(goods_nomenclature_item_id)
       @goods_nomenclature_item_id = goods_nomenclature_item_id
