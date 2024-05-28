@@ -5,8 +5,9 @@ module Api
         include JSONAPI::Serializer
 
         set_type :category_assessment
-
         set_id :id
+
+        attribute :category_assessment_id if Rails.env.development?
 
         has_many :exemptions, serializer: lambda { |record, _params|
           case record
@@ -14,6 +15,8 @@ module Api
             GreenLanes::CertificateSerializer
           when AdditionalCode
             AdditionalCodeSerializer
+          when ExemptionPresenter
+            GreenLanes::ExemptionSerializer
           else
             raise 'Unknown type'
           end

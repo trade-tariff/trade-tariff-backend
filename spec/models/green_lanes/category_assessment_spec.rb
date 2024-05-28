@@ -149,6 +149,45 @@ RSpec.describe GreenLanes::CategoryAssessment do
         it { is_expected.to be_empty }
       end
     end
+
+    describe '#green_lanes_measures' do
+      subject { assessment.green_lanes_measures }
+
+      let :assessment do
+        create(:category_assessment).tap do |ca|
+          create :green_lanes_measure, category_assessment_id: ca.id
+        end
+      end
+
+      it { is_expected.to include instance_of GreenLanes::Measure }
+    end
+
+    describe '#exemptions' do
+      subject { assessment.reload.exemptions }
+
+      let :assessment do
+        create(:category_assessment).tap do |ca|
+          ca.add_exemption create(:green_lanes_exemption)
+        end
+      end
+
+      it { is_expected.to include instance_of GreenLanes::Exemption }
+    end
+
+    describe '#exemption_ids' do
+      subject { assessment.reload.exemption_pks }
+
+      let :assessment do
+        create(:category_assessment).tap do |ca|
+          ca.exemption_pks = exemptions.map(&:pk)
+          ca.save
+        end
+      end
+
+      let(:exemptions) { create_list :green_lanes_exemption, 1 }
+
+      it { is_expected.to match_array exemptions.map(&:id) }
+    end
   end
 
   describe '#regulation' do
@@ -218,6 +257,35 @@ RSpec.describe GreenLanes::CategoryAssessment do
         expect(persisted).to have_attributes regulation_id: new_regulation.regulation_id,
                                              regulation_role: new_regulation.role
       end
+    end
+  end
+
+  describe '#combined_measures' do
+    subject { category_assessment.combined_measures }
+
+    let(:tariff_measure) { create :measure, :with_base_regulation }
+    let(:category_assessment) { create :category_assessment, measure: tariff_measure }
+
+    context 'with tariff measure' do
+      it { is_expected.to include tariff_measure }
+    end
+
+    context 'with green lanes measure' do
+      before { green_lanes_measure }
+
+      let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
+      let(:category_assessment) { create :category_assessment }
+
+      it { is_expected.to include green_lanes_measure }
+    end
+
+    context 'with both types of measure' do
+      before { green_lanes_measure }
+
+      let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
+
+      it { is_expected.to include tariff_measure }
+      it { is_expected.to include green_lanes_measure }
     end
   end
 end

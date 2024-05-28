@@ -20,7 +20,7 @@ module Api
         def applicable_category_assessments
           @applicable_category_assessments ||=
             ::GreenLanes::FindCategoryAssessmentsService.call \
-              applicable_measures,
+              combined_applicable_measures,
               @geographical_area_id
         end
 
@@ -31,7 +31,7 @@ module Api
         def descendant_category_assessments
           @descendant_category_assessments ||=
             ::GreenLanes::FindCategoryAssessmentsService.call \
-              all_descendant_measures,
+              combined_descendant_measures,
               @geographical_area_id
         end
 
@@ -72,8 +72,15 @@ module Api
           end
         end
 
-        def all_descendant_measures
-          descendants.flat_map(&:measures)
+        def combined_descendant_measures
+          descendants.flat_map(&:measures) +
+            descendants.flat_map(&:green_lanes_measures)
+        end
+
+        def combined_applicable_measures
+          applicable_measures +
+            green_lanes_measures +
+            ancestors.flat_map(&:green_lanes_measures)
         end
       end
     end

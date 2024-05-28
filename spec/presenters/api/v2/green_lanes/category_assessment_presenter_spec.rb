@@ -106,7 +106,13 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       it { is_expected.to match_array certificates << additional_code }
     end
 
-    context 'with neither' do
+    context 'with pseudo exemption' do
+      before { assessment.add_exemption create(:green_lanes_exemption) }
+
+      it { is_expected.to include instance_of Api::V2::GreenLanes::ExemptionPresenter }
+    end
+
+    context 'with no exemptions' do
       it { is_expected.to be_empty }
     end
   end
