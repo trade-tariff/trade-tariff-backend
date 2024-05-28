@@ -1,11 +1,6 @@
 {
     "scope": "uk",
-    "links": [
-        {
-            "text": "Check your goods meet the rules of origin",
-            "url": "https://www.gov.uk/guidance/check-your-goods-meet-the-rules-of-origin"
-        }
-    ],
+    "links": [],
     "schemes": [
         {
             "scheme_code": "eu",
