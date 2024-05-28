@@ -37,8 +37,11 @@ module Api
               descendant_category_assessments.measures
               descendant_category_assessments.measures.footnotes
               descendant_category_assessments.theme
+              licences
               ancestors
+              ancestors.licences
               descendants
+              descendants.licences
             ]
         end
       end
