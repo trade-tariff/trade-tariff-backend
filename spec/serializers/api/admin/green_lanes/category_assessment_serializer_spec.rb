@@ -27,14 +27,14 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentSerializer do
           },
           green_lanes_measures: {
             data: [
-              { id: '1', type: 'green_lanes_measure' },
-              { id: '2', type: 'green_lanes_measure' },
+              { id: /\A\d+\z/, type: 'green_lanes_measure' },
+              { id: /\A\d+\z/, type: 'green_lanes_measure' },
             ],
           },
           exemptions: {
             data: [
-              { id: '1', type: 'green_lanes_exemption' },
-              { id: '2', type: 'green_lanes_exemption' },
+              { id: /\A\d+\z/, type: 'green_lanes_exemption' },
+              { id: /\A\d+\z/, type: 'green_lanes_exemption' },
             ],
           },
         },
