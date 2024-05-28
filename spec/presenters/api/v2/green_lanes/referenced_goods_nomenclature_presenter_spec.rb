@@ -51,6 +51,12 @@ RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter do
 
       it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
     end
+
+    context 'with export measure' do
+      before { MeasureType::Operation.dataset.update trade_movement_code: 1 }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: nil }
+    end
   end
 
   describe '#licences' do
@@ -104,6 +110,12 @@ RSpec.describe Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter do
       let(:child) { create :goods_nomenclature, parent: gn }
 
       it { is_expected.to have_attributes licences: [certificate] }
+    end
+
+    context 'with export measure' do
+      before { MeasureType::Operation.dataset.update trade_movement_code: 1 }
+
+      it { is_expected.to have_attributes licences: [] }
     end
   end
 end

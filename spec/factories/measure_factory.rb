@@ -582,6 +582,7 @@ FactoryBot.define do
     validity_end_date      { nil }
     measure_explosion_level { 10 }
     order_number_capture_code { 10 }
+    trade_movement_code { 0 }
 
     trait :export do
       trade_movement_code { 1 }

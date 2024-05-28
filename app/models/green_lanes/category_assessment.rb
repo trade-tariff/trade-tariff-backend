@@ -64,7 +64,7 @@ module GreenLanes
     end
 
     def combined_measures
-      measures + green_lanes_measures
+      measures.select(&:import) + green_lanes_measures
     end
   end
 end

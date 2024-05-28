@@ -191,6 +191,12 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
       it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
     end
+
+    context 'with export measure' do
+      before { MeasureType::Operation.dataset.update trade_movement_code: 1 }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: nil }
+    end
   end
 
   describe '#licences' do
@@ -242,6 +248,12 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
       subject(:presented) { described_class.new(gn.descendants.first, requested_geo_area) }
 
       it { is_expected.to have_attributes licences: [certificate] }
+    end
+
+    context 'with export measure' do
+      before { MeasureType::Operation.dataset.update trade_movement_code: 1 }
+
+      it { is_expected.to have_attributes licences: [] }
     end
   end
 end
