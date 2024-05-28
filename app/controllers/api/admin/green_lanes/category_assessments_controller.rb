@@ -34,7 +34,6 @@ module Api
         end
 
         def update
-          binding.pry
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
           ca.set ca_params
 
@@ -49,7 +48,6 @@ module Api
         end
 
         def destroy
-          binding.pry
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
           ca.destroy
 
