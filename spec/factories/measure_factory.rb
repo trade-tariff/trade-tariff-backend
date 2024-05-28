@@ -34,7 +34,7 @@ FactoryBot.define do
     measure_generating_regulation_role { generating_regulation&.role || Measure::BASE_REGULATION_ROLE }
     additional_code_id { additional_code&.additional_code }
     additional_code_sid { additional_code&.additional_code_sid }
-    additional_code_type_id { additional_code&.additional_code_type_id || '1' }
+    additional_code_type_id { additional_code&.additional_code_type_id }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
     goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || 10.times.map { Random.rand(9) }.join }
     geographical_area_sid { for_geo_area&.geographical_area_sid || generate(:geographical_area_sid) }
