@@ -7,9 +7,12 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
     ).serializable_hash.as_json
   end
 
+  before { category_assessment.add_exemption exemption }
+
   let(:category_assessment) { create :category_assessment, measure: }
   let(:certificate) { create :certificate, :exemption, :with_certificate_type, :with_description }
   let(:measure) { create :measure, :with_additional_code, :with_base_regulation, certificate: }
+  let(:exemption) { create :green_lanes_exemption }
 
   let :presented do
     Api::V2::GreenLanes::CategoryAssessmentPresenter.wrap(category_assessment).first
@@ -28,6 +31,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
             data: [
               { id: certificate.id, type: 'certificate' },
               { id: measure.additional_code.id.to_s, type: 'additional_code' },
+              { id: exemption.code, type: 'exemption' },
             ],
           },
           geographical_area: {
@@ -72,6 +76,15 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           type: 'additional_code',
           attributes: {
             code: measure.additional_code.code,
+            description: be_a(String),
+            formatted_description: be_a(String),
+          },
+        },
+        {
+          id: exemption.code,
+          type: 'exemption',
+          attributes: {
+            code: exemption.code,
             description: be_a(String),
             formatted_description: be_a(String),
           },

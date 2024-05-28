@@ -17,6 +17,26 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
       it { is_expected.to eq(measures.map { |m| [m] }) }
     end
 
+    context 'with related measures' do
+      let(:measures) { [measure, measure2] }
+
+      let :measure do
+        create :measure, :with_additional_code, :with_measure_type, :with_base_regulation
+      end
+
+      let :measure2 do
+        create :measure, measure_type_id: measure.measure_type_id,
+                         generating_regulation: measure.generating_regulation,
+                         additional_code_sid: measure.additional_code_sid,
+                         additional_code_id: measure.additional_code_id,
+                         additional_code_type_id: measure.additional_code_type_id,
+                         geographical_area_id: measure.geographical_area_id
+      end
+
+      it { is_expected.to have_attributes length: 1 }
+      it { expect(permutations[0]).to eq_pk measures }
+    end
+
     context 'with mixture of related and unrelated' do
       let :measures do
         measures = create_list(:measure, 2, :with_measure_type, :with_base_regulation)

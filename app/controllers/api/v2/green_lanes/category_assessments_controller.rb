@@ -28,6 +28,7 @@ module Api
               .new(presented_assessments,
                    include: %w[geographical_area
                                excluded_geographical_areas
+                               exemptions
                                theme
                                regulation
                                measure_type])

@@ -66,7 +66,7 @@ module Api
         end
 
         def exemptions
-          certificates + additional_codes
+          @exemptions ||= (certificates + additional_codes + pseudo_exemptions)
         end
 
         def certificates
@@ -75,6 +75,10 @@ module Api
 
         def additional_codes
           Array.wrap(additional_code)
+        end
+
+        def pseudo_exemptions
+          ExemptionPresenter.wrap(@category_assessment.exemptions)
         end
 
         def regulation
