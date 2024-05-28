@@ -154,7 +154,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
       subject { assessment.green_lanes_measures }
 
       let :assessment do
-        create(:category_assessment).tap do |ca|
+        create(:category_assessment, :with_green_lanes_measure).tap do |ca|
           create :green_lanes_measure, category_assessment_id: ca.id
         end
       end
