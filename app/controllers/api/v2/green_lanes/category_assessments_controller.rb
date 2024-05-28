@@ -9,7 +9,7 @@ module Api
                 theme: [],
                 base_regulation: [],
                 modification_regulation: [],
-                measure_type: :measure_type_description,
+                measure_type: %i[measure_type_description measure_type_series_description],
                 measures: {
                   additional_code: :additional_code_descriptions,
                   measure_conditions: { certificate: :certificate_descriptions },
@@ -17,6 +17,8 @@ module Api
                   measure_excluded_geographical_areas: [],
                   excluded_geographical_areas: :geographical_area_descriptions,
                 },
+                green_lanes_measures: [],
+                exemptions: [],
               )
               .all
 

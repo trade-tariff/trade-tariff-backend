@@ -37,7 +37,7 @@ module Api
 
           def permutations(assessment)
             ::GreenLanes::PermutationCalculatorService
-              .new(assessment.measures)
+              .new(assessment.combined_measures)
               .call
           end
         end
