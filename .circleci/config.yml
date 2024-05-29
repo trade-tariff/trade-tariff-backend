@@ -32,17 +32,20 @@ orbs:
 executors:
   terraform:
     docker:
-      - image: hashicorp/terraform:1.5.5
+      - image: hashicorp/terraform:1.8.2
     resource_class: small
     working_directory: "/tmp/terraform"
     environment:
       TF_INPUT: 0
       TF_IN_AUTOMATION: 1
+  python-executor:
+    docker:
+      - image: circleci/python:latest
 
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
     resource_class: medium
     steps:
       - checkout
@@ -64,6 +67,55 @@ jobs:
           path: test-results/brakeman/
       - store_artifacts:
           path: brakeman.html
+
+  pre-commit:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Install pre-commit
+          command: pip install pre-commit
+      - run:
+          name: Install Terraform
+          command: |
+            TERRAFORM_VERSION=$(cat terraform/versions.tf | grep required_version | awk '{print $3}' | sed 's/"//g')
+
+            mkdir build
+            pushd build
+            wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+            unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
+            sudo mv terraform /usr/local/bin/
+
+            popd
+
+            terraform --version
+
+            pushd terraform
+            terraform init -backend=false
+            popd
+
+      - run:
+          name: Install terraform-docs
+          command: |
+            TERRAFORM_DOCS_VERSION="0.17.0"
+            wget https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz
+            tar -xzf terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz
+            sudo mv terraform-docs /usr/local/bin/
+            terraform-docs --version
+      - run:
+          name: Install tflint
+          command: |
+            TFLINT_VERSION="0.50.3"
+            wget https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip
+            unzip tflint_linux_amd64.zip
+            sudo mv tflint /usr/local/bin/
+            tflint --version
+
+      - run:
+          name: Run pre-commit
+          command: |
+            export SKIP=markdownlint-docker,shellcheck,rubocop
+            pre-commit run --all-files
 
   write-docker-tag:
     parameters:
@@ -146,7 +198,7 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -200,7 +252,7 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -277,7 +329,7 @@ jobs:
 
   notify-production-deployment:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
     steps:
       - checkout
       - tariff/notify-production-release:
@@ -305,6 +357,9 @@ workflows:
   deploy-to-development:
     jobs:
       - ruby-checks:
+          <<: *filter-not-main
+
+      - pre-commit:
           <<: *filter-not-main
 
       - test:
@@ -344,6 +399,7 @@ workflows:
           requires:
             - test
             - ruby-checks
+            - pre-commit
             - plan-terraform-dev
             - build-and-push-dev
           <<: *filter-not-main
