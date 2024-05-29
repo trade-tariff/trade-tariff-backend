@@ -1,6 +1,6 @@
 ### Jira link
 
-HOTT-<TODO>
+OTT-<TODO>
 
 ### What?
 

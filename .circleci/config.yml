@@ -71,51 +71,7 @@ jobs:
   pre-commit:
     executor: python-executor
     steps:
-      - checkout
-      - run:
-          name: Install pre-commit
-          command: pip install pre-commit
-      - run:
-          name: Install Terraform
-          command: |
-            TERRAFORM_VERSION=$(cat terraform/versions.tf | grep required_version | awk '{print $3}' | sed 's/"//g')
-
-            mkdir build
-            pushd build
-            wget https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-            unzip terraform_${TERRAFORM_VERSION}_linux_amd64.zip
-            sudo mv terraform /usr/local/bin/
-
-            popd
-
-            terraform --version
-
-            pushd terraform
-            terraform init -backend=false
-            popd
-
-      - run:
-          name: Install terraform-docs
-          command: |
-            TERRAFORM_DOCS_VERSION="0.17.0"
-            wget https://github.com/terraform-docs/terraform-docs/releases/download/v${TERRAFORM_DOCS_VERSION}/terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz
-            tar -xzf terraform-docs-v${TERRAFORM_DOCS_VERSION}-linux-amd64.tar.gz
-            sudo mv terraform-docs /usr/local/bin/
-            terraform-docs --version
-      - run:
-          name: Install tflint
-          command: |
-            TFLINT_VERSION="0.50.3"
-            wget https://github.com/terraform-linters/tflint/releases/download/v${TFLINT_VERSION}/tflint_linux_amd64.zip
-            unzip tflint_linux_amd64.zip
-            sudo mv tflint /usr/local/bin/
-            tflint --version
-
-      - run:
-          name: Run pre-commit
-          command: |
-            export SKIP=markdownlint-docker,shellcheck,rubocop
-            pre-commit run --all-files
+      - tariff/pre-commit
 
   write-docker-tag:
     parameters:
