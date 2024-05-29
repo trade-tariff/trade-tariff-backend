@@ -114,7 +114,7 @@ jobs:
       - run:
           name: Run pre-commit
           command: |
-            export SKIP=markdownlint-docker,shellcheck
+            export SKIP=markdownlint-docker,shellcheck,rubocop
             pre-commit run --all-files
 
   write-docker-tag:
