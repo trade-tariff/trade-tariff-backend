@@ -50,3 +50,9 @@ repos:
     rev: v8.16.1
     hooks:
       - id: gitleaks
+
+  - repo: https://github.com/mattlqx/pre-commit-ruby
+    rev: v1.3.5
+    hooks:
+      - id: rubocop
+        args: ["--auto-correct"]
