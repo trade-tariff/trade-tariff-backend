@@ -33,7 +33,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
     context 'when the good nomenclature id is not a subheading' do
       let(:request_item_id) { '1234000000' }
 
-      it { is_expected.to have_http_status(:bad_request) }
+      it { is_expected.to have_http_status(:not_found) }
     end
 
     context 'when the good nomenclature id is not found' do

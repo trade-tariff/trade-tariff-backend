@@ -3,14 +3,10 @@ module Api
     module GreenLanes
       class GoodsNomenclaturesController < BaseController
         def show
-          if validate_id(params[:id])
-            gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
-            presented_gn = GoodsNomenclaturePresenter.new(gn, filter_params[:geographical_area_id])
+          gn = ::GreenLanes::FetchGoodsNomenclatureService.new(params[:id]).call
+          presented_gn = GoodsNomenclaturePresenter.new(gn, filter_params[:geographical_area_id])
 
-            render json: serializer_for(presented_gn).serializable_hash
-          else
-            raise ArgumentError, "Error: invalid params, commodity id is not a declarable: #{params[:id]}"
-          end
+          render json: serializer_for(presented_gn).serializable_hash
         end
 
       private
@@ -18,10 +14,6 @@ module Api
         def filter_params
           params.fetch(:filter, {})
                 .permit(:geographical_area_id)
-        end
-
-        def validate_id(id)
-          id.present? && id.length > 4 && id[4..].each_char.any? { |char| char != '0' }
         end
 
         def serializer_for(goods_nomenclature)
