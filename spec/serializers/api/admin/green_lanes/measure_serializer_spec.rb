@@ -16,7 +16,7 @@ RSpec.describe Api::Admin::GreenLanes::MeasureSerializer do
             data: { id: measure.category_assessment.id.to_s, type: 'category_assessment' },
           },
           goods_nomenclature: {
-            data: { id: measure.goods_nomenclature.goods_nomenclature_item_id.to_s, type: 'green_lanes_goods_nomenclature' },
+            data: { id: measure.goods_nomenclature.goods_nomenclature_sid.to_s, type: 'green_lanes_goods_nomenclature' },
           },
         },
       },

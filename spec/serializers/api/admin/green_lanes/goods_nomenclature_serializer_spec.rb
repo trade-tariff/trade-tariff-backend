@@ -6,11 +6,11 @@ RSpec.describe Api::Admin::GreenLanes::GoodsNomenclatureSerializer do
   let(:expected) do
     {
       data: {
-        id: serializable.goods_nomenclature_item_id,
+        id: serializable.goods_nomenclature_sid.to_s,
         type: :green_lanes_goods_nomenclature,
         attributes: {
           description: serializable.description,
-          goods_nomenclature_item_id: serializable.goods_nomenclature_item_id,
+          goods_nomenclature_sid: serializable.goods_nomenclature_sid,
         },
       },
     }
