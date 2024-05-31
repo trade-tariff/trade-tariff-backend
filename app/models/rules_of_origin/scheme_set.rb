@@ -28,7 +28,6 @@ module RulesOfOrigin
       @base_path = base_path
       data = JSON.parse(source_data)
 
-      @links = build_links(data['links']).freeze
       @proof_urls = data['proof_urls'] || {}
       @_schemes = build_schemes(data['schemes']).freeze
       @_countries = build_countries_to_schemes_index.freeze
@@ -90,14 +89,6 @@ module RulesOfOrigin
           countries[country_code] << scheme_code
         end
       end
-    end
-
-    def build_links(links)
-      links.map(&method(:build_link)).compact
-    end
-
-    def build_link(link_data)
-      Link.new_with_check link_data.merge(source: 'scheme_set')
     end
 
     def build_schemes(schemes_data)

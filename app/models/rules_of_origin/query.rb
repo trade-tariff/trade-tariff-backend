@@ -44,7 +44,7 @@ module RulesOfOrigin
     end
 
     def links
-      scheme_set.links + schemes.map(&:links).flatten
+      schemes.map(&:links).flatten
     end
 
     def scheme_rule_sets

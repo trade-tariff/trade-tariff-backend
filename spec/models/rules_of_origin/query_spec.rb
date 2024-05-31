@@ -90,8 +90,7 @@ RSpec.describe RulesOfOrigin::Query do
     describe '#links' do
       subject { query.links }
 
-      it { is_expected.to have_attributes length: 3 }
-      it { is_expected.to include roo_data_set.scheme_set.links.first }
+      it { is_expected.to have_attributes length: 2 }
       it { is_expected.to include roo_scheme.links.first }
     end
 
