@@ -6,9 +6,9 @@ module Api
 
         set_type :green_lanes_goods_nomenclature
 
-        set_id :goods_nomenclature_item_id
+        set_id :goods_nomenclature_sid
 
-        attributes :description, :goods_nomenclature_item_id
+        attributes :description, :goods_nomenclature_sid
       end
     end
   end

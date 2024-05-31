@@ -11,7 +11,7 @@ module Api
         attribute :productline_suffix
 
         has_one :category_assessment, serializer: CategoryAssessmentSerializer
-        has_one :goods_nomenclature, serializer: GoodsNomenclatureSerializer
+        has_one :goods_nomenclature, serializer: GoodsNomenclatureSerializer, id_method_name: :goods_nomenclature_sid
       end
     end
   end
