@@ -1,15 +1,11 @@
 RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentSerializer do
   subject do
-    described_class.new(presented,
+    described_class.new(category,
                         params: { with_measures: true, with_exemptions: true },
                         include: %w[green_lanes_measures exemptions]).serializable_hash.as_json
   end
 
   let(:category) { create :category_assessment, :with_green_lanes_measure, :with_exemption }
-
-  let :presented do
-    Api::Admin::GreenLanes::CategoryAssessmentPresenter.new(category)
-  end
 
   let :expected do
     {

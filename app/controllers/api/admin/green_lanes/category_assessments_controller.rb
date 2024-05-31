@@ -17,7 +17,7 @@ module Api
           options[:params] = { with_measures: true, with_exemptions: true }
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
 
-          render json: serialize(CategoryAssessmentPresenter.new(ca), options)
+          render json: serialize(ca, options)
         end
 
         def create

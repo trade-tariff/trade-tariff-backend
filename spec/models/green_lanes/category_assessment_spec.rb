@@ -8,6 +8,8 @@ RSpec.describe GreenLanes::CategoryAssessment do
     it { is_expected.to respond_to :theme_id }
     it { is_expected.to respond_to :created_at }
     it { is_expected.to respond_to :updated_at }
+    it { is_expected.to respond_to :green_lanes_measure_pks }
+    it { is_expected.to respond_to :exemption_pks }
   end
 
   describe 'validations' do
