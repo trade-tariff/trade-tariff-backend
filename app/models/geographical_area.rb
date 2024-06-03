@@ -103,6 +103,10 @@ class GeographicalArea < Sequel::Model
     GSP.include?(geographical_area_id) || DCTS.include?(geographical_area_id)
   end
 
+  def referenced_or_self
+    referenced.presence || self
+  end
+
   private
 
   def referenced_id

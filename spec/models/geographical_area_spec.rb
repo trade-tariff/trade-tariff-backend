@@ -12,7 +12,7 @@ RSpec.describe GeographicalArea do
     it { is_expected.to eq(%w[RO 1011]) }
   end
 
-  describe '.referenced' do
+  describe '#referenced' do
     context 'when the geographical area is a reference area' do
       subject(:refeenced) { create(:geographical_area, geographical_area_id: 'EU').referenced }
 
@@ -28,6 +28,24 @@ RSpec.describe GeographicalArea do
       subject(:refeenced) { create(:geographical_area).referenced }
 
       it { is_expected.to be_nil }
+    end
+  end
+
+  describe '#referenced_or_self' do
+    context 'with referenced' do
+      subject(:referencer) { create :geographical_area, geographical_area_id: 'EU' }
+
+      let(:reference) { create :geographical_area, geographical_area_id: '1013' }
+
+      it { is_expected.to have_attributes referenced: reference }
+      it { is_expected.to have_attributes referenced_or_self: referencer }
+    end
+
+    context 'without referenced' do
+      subject(:referencer) { create :geographical_area, geographical_area_id: 'FR' }
+
+      it { is_expected.to have_attributes referenced: nil }
+      it { is_expected.to have_attributes referenced_or_self: referencer }
     end
   end
 
