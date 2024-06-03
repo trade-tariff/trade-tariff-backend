@@ -15,15 +15,6 @@ module Api
           parent&.goods_nomenclature_sid
         end
 
-        def measure_ids
-          @measure_ids ||= measures.map(&:measure_sid)
-        end
-
-        def measures
-          @measures ||=
-            MeasurePresenter.wrap(filter_measures_by_geographical_area(super))
-        end
-
         def supplementary_measure_unit
           supplementary_measure&.supplementary_unit_duty_expression
         end
@@ -41,14 +32,6 @@ module Api
         end
 
       private
-
-        def filter_measures_by_geographical_area(unfiltered_measures)
-          return unfiltered_measures if @geographical_area_id.blank?
-
-          unfiltered_measures.select do |measure|
-            measure.relevant_for_country? @geographical_area_id
-          end
-        end
 
         def supplementary_measure
           area_relevant_applicable_measures.find(&:supplementary?)
