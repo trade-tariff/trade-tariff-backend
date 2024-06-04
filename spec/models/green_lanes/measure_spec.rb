@@ -6,6 +6,7 @@ RSpec.describe GreenLanes::Measure do
     it { is_expected.to respond_to :productline_suffix }
     it { is_expected.to respond_to :created_at }
     it { is_expected.to respond_to :updated_at }
+    it { is_expected.to respond_to :goods_nomenclature_sid }
   end
 
   describe 'validations' do

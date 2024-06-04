@@ -2,12 +2,13 @@ module Api
   module Admin
     module GreenLanes
       class ExemptionsController < AdminController
+        include Pageable
         include XiOnly
 
         before_action :check_service, :authenticate_user!
 
         def index
-          render json: serialize(exemptions.to_a)
+          render json: serialize(exemptions.to_a, pagination_meta)
         end
 
         def show
@@ -42,6 +43,13 @@ module Api
           end
         end
 
+        def destroy
+          ex = ::GreenLanes::Exemption.with_pk!(params[:id])
+          ex.destroy
+
+          head :no_content
+        end
+
         private
 
         def exemption_params
@@ -51,8 +59,12 @@ module Api
           )
         end
 
+        def record_count
+          @exemptions.pagination_record_count
+        end
+
         def exemptions
-          @exemptions ||= ::GreenLanes::Exemption.order(Sequel.asc(:code))
+          @exemptions ||= ::GreenLanes::Exemption.order(Sequel.asc(:code)).paginate(current_page, per_page)
         end
 
         def serialize(*args)

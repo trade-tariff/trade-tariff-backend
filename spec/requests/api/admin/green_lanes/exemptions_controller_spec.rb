@@ -119,4 +119,24 @@ RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
       it { expect { page_response }.not_to change(exemption.reload, :description) }
     end
   end
+
+  describe 'DELETE to #destroy' do
+    let :make_request do
+      authenticated_delete api_admin_green_lanes_exemption_path(id, format: :json)
+    end
+
+    context 'with known exemption' do
+      let(:id) { exemption.id }
+
+      it { is_expected.to have_http_status :no_content }
+      it { expect { page_response }.to change(exemption, :exists?) }
+    end
+
+    context 'with unknown exemption' do
+      let(:id) { 9999 }
+
+      it { is_expected.to have_http_status :not_found }
+      it { expect { page_response }.not_to change(GreenLanes::Exemption, :count) }
+    end
+  end
 end
