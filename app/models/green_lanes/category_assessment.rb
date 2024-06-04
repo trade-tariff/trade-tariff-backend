@@ -4,6 +4,7 @@ module GreenLanes
     plugin :auto_validations, not_null: :presence
     plugin :association_pks
     plugin :association_dependencies
+    plugin :touch
 
     many_to_one :theme
     many_to_one :measure_type, class: :MeasureType

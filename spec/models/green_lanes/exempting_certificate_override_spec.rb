@@ -44,4 +44,31 @@ RSpec.describe GreenLanes::ExemptingCertificateOverride do
       it { is_expected.to eq certificate }
     end
   end
+
+  describe 'category_assessment timestamps' do
+    subject { assessment.reload.updated_at }
+
+    before { override && assessment }
+
+    let(:override) { create :exempting_certificate_override }
+    let(:assessment) { create :category_assessment, updated_at: 20.minutes.ago }
+
+    context 'when creating an override' do
+      before { create :exempting_certificate_override }
+
+      it { is_expected.to be_within(1.minute).of Time.zone.now }
+    end
+
+    context 'when updating an override' do
+      before { override.update certificate_type_code: 'X' }
+
+      it { is_expected.to be_within(1.minute).of Time.zone.now }
+    end
+
+    context 'when removing an override' do
+      before { override.destroy }
+
+      it { is_expected.to be_within(1.minute).of Time.zone.now }
+    end
+  end
 end
