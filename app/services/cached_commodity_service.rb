@@ -49,6 +49,13 @@ class CachedCommodityService
     },
     { quota_order_number: { quota_definition: %i[quota_balance_events quota_suspension_periods quota_blocking_periods] } },
     { excluded_geographical_areas: :geographical_area_descriptions },
+    {
+      excluded_geographical_areas: [
+        :geographical_area_descriptions,
+        :contained_geographical_areas,
+        { referenced: :contained_geographical_areas },
+      ],
+    },
     { geographical_area: [:geographical_area_descriptions,
                           { contained_geographical_areas: :geographical_area_descriptions }] },
     { additional_code: :additional_code_descriptions },
