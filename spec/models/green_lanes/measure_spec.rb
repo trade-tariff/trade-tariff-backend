@@ -59,5 +59,48 @@ RSpec.describe GreenLanes::Measure do
 
       it { is_expected.to be_instance_of Commodity }
     end
+
+    describe '#geographical_area' do
+      subject { measure.geographical_area }
+
+      before { erga_omnes }
+
+      let(:erga_omnes) { create :geographical_area, :erga_omnes }
+      let(:measure) { create :green_lanes_measure }
+
+      it { is_expected.to eq_pk erga_omnes }
+
+      context 'with eager loading' do
+        subject do
+          GoodsNomenclature.actual
+                           .where(goods_nomenclature_item_id: measure.goods_nomenclature_item_id)
+                           .eager(green_lanes_measures: :geographical_area)
+                           .take
+                           .green_lanes_measures
+                           .map(&:geographical_area)
+        end
+
+        it { is_expected.to all eq_pk erga_omnes }
+      end
+    end
+  end
+
+  describe 'tariff measure emulation' do
+    subject { create :green_lanes_measure, category_assessment: assessment }
+
+    let(:assessment) { create :category_assessment }
+
+    it { is_expected.to have_attributes measure_sid: /gl\d{6}/ }
+    it { is_expected.to have_attributes measure_generating_regulation_id: assessment.regulation_id }
+    it { is_expected.to have_attributes measure_generating_regulation_role: assessment.regulation_role }
+    it { is_expected.to have_attributes generating_regulation: assessment.regulation }
+    it { is_expected.to have_attributes geographical_area_id: GeographicalArea::ERGA_OMNES_ID }
+    it { is_expected.to have_attributes measure_excluded_geographical_areas: [] }
+    it { is_expected.to have_attributes excluded_geographical_areas: [] }
+    it { is_expected.to have_attributes additional_code_id: nil }
+    it { is_expected.to have_attributes additional_code_type_id: nil }
+    it { is_expected.to have_attributes additional_code: nil }
+    it { is_expected.to have_attributes measure_conditions: [] }
+    it { is_expected.to have_attributes footnotes: [] }
   end
 end

@@ -62,5 +62,9 @@ module GreenLanes
         self.base_regulation = regulation
       end
     end
+
+    def combined_measures
+      measures + green_lanes_measures
+    end
   end
 end
