@@ -37,7 +37,13 @@ module HeadingService
           ],
         },
         { quota_order_number: :quota_definition },
-        { excluded_geographical_areas: :geographical_area_descriptions },
+        {
+          excluded_geographical_areas: [
+            :geographical_area_descriptions,
+            :contained_geographical_areas,
+            { referenced: :contained_geographical_areas },
+          ],
+        },
         :additional_code,
         :full_temporary_stop_regulations,
         :measure_partial_temporary_stops,
