@@ -4,7 +4,7 @@ module Api
   module V2
     module GreenLanes
       class ReferencedGoodsNomenclaturePresenter < WrapDelegator
-        LICENCE_TYPE_CODE = 'L'
+        LICENCE_TYPE_CODES = %w[9 C L N].freeze
 
         def initialize(goods_nomenclature, geographical_area_id = nil)
           super(goods_nomenclature)
@@ -23,7 +23,7 @@ module Api
           @licences ||=
             area_relevant_applicable_measures
               .flat_map(&:measure_conditions)
-              .select { |mc| mc.certificate_type_code == LICENCE_TYPE_CODE }
+              .select { |mc| LICENCE_TYPE_CODES.include? mc.certificate_type_code }
               .map(&:certificate)
         end
 
