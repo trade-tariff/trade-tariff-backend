@@ -32,17 +32,20 @@ orbs:
 executors:
   terraform:
     docker:
-      - image: hashicorp/terraform:1.5.5
+      - image: hashicorp/terraform:1.8.2
     resource_class: small
     working_directory: "/tmp/terraform"
     environment:
       TF_INPUT: 0
       TF_IN_AUTOMATION: 1
+  python-executor:
+    docker:
+      - image: circleci/python:latest
 
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
     resource_class: medium
     steps:
       - checkout
@@ -64,6 +67,11 @@ jobs:
           path: test-results/brakeman/
       - store_artifacts:
           path: brakeman.html
+
+  pre-commit:
+    executor: python-executor
+    steps:
+      - tariff/pre-commit
 
   write-docker-tag:
     parameters:
@@ -146,7 +154,7 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -200,7 +208,7 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -277,7 +285,7 @@ jobs:
 
   notify-production-deployment:
     docker:
-      - image: cimg/ruby:3.2.2
+      - image: cimg/ruby:3.2.3
     steps:
       - checkout
       - tariff/notify-production-release:
@@ -305,6 +313,9 @@ workflows:
   deploy-to-development:
     jobs:
       - ruby-checks:
+          <<: *filter-not-main
+
+      - pre-commit:
           <<: *filter-not-main
 
       - test:
@@ -344,6 +355,7 @@ workflows:
           requires:
             - test
             - ruby-checks
+            - pre-commit
             - plan-terraform-dev
             - build-and-push-dev
           <<: *filter-not-main
