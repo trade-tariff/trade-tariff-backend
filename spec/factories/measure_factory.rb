@@ -24,6 +24,7 @@ FactoryBot.define do
       goods_nomenclature { nil }
       for_geo_area { nil }
       certificate { nil }
+      excluded_geographical_areas { [] }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
@@ -65,6 +66,12 @@ FactoryBot.define do
     after(:create) do |measure, evaluator|
       if evaluator.certificate
         create :measure_condition, measure:, certificate: evaluator.certificate
+      end
+
+      evaluator.excluded_geographical_areas.each do |area|
+        create :measure_excluded_geographical_area,
+               measure_sid: measure.measure_sid,
+               for_geo_area: area
       end
     end
 
@@ -423,20 +430,39 @@ FactoryBot.define do
     end
 
     trait :with_measure_excluded_geographical_area do
-      after(:create) do |measure, _evaluator|
-        create(:measure_excluded_geographical_area, :with_geographical_area, measure_sid: measure.measure_sid)
+      for_geo_area do
+        create :geographical_area, :with_description, :with_members
+      end
+
+      excluded_geographical_areas do
+        [for_geo_area.contained_geographical_areas.first]
       end
     end
 
     trait :with_measure_excluded_geographical_area_group do
-      after(:create) do |measure, _evaluator|
-        create(:measure_excluded_geographical_area, :with_geographical_area_group_and_members, measure_sid: measure.measure_sid)
+      for_geo_area do
+        create :geographical_area, :with_description, :with_members
+      end
+
+      excluded_geographical_areas do
+        create_list :geographical_area, 1, members: [for_geo_area.contained_geographical_areas.first]
       end
     end
 
     trait :with_measure_excluded_geographical_area_referenced_group do
-      after(:create) do |measure, _evaluator|
-        create(:measure_excluded_geographical_area, :with_referenced_geographical_area_group_and_members, measure_sid: measure.measure_sid)
+      for_geo_area do
+        create :geographical_area, :with_description, :with_members
+      end
+
+      excluded_geographical_areas do
+        # Referencee
+        create :geographical_area,
+               geographical_area_id: GeographicalArea::REFERENCED_GEOGRAPHICAL_AREAS.first.last,
+               members: [for_geo_area.contained_geographical_areas.first]
+
+        # Referencer
+        create_list :geographical_area, 1,
+                    geographical_area_id: GeographicalArea::REFERENCED_GEOGRAPHICAL_AREAS.first.first
       end
     end
 

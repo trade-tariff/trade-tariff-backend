@@ -1,8 +1,12 @@
 FactoryBot.define do
   factory :measure_excluded_geographical_area do
+    transient do
+      for_geo_area { nil }
+    end
+
     measure_sid { generate(:measure_sid) }
-    geographical_area_sid { generate(:geographical_area_sid) }
-    excluded_geographical_area { Forgery(:basic).text(exactly: 2).upcase }
+    geographical_area_sid { for_geo_area&.geographical_area_sid || generate(:geographical_area_sid) }
+    excluded_geographical_area { for_geo_area&.geographical_area_id || Forgery(:basic).text(exactly: 2).upcase }
 
     trait :with_geographical_area do
       with_geographical_area_country
