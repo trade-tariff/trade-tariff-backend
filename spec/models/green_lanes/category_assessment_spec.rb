@@ -290,4 +290,15 @@ RSpec.describe GreenLanes::CategoryAssessment do
       it { is_expected.to include green_lanes_measure }
     end
   end
+
+  describe '#latest' do
+    subject { described_class.latest }
+
+    before { older && newer }
+
+    let(:older) { create :category_assessment, updated_at: 20.minutes.ago }
+    let(:newer) { create :category_assessment, updated_at: 2.minutes.ago }
+
+    it { is_expected.to eq_pk newer }
+  end
 end

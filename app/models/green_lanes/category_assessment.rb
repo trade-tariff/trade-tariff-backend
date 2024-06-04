@@ -28,6 +28,12 @@ module GreenLanes
     many_to_many :exemptions, join_table: :green_lanes_category_assessments_exemptions
     add_association_dependencies exemptions: :nullify
 
+    dataset_module do
+      def latest
+        order(Sequel.desc(:updated_at)).first
+      end
+    end
+
     def validate
       super
 
