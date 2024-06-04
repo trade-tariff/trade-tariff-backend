@@ -16,7 +16,11 @@ module GreenLanes
         footnotes: :footnote_descriptions,
         geographical_area: %i[geographical_area_descriptions contained_geographical_areas],
         measure_excluded_geographical_areas: [],
-        excluded_geographical_areas: :geographical_area_descriptions,
+        excluded_geographical_areas: [
+          :geographical_area_descriptions,
+          :contained_geographical_areas,
+          { referenced: :contained_geographical_areas },
+        ],
         measure_conditions: { certificate: %i[certificate_descriptions exempting_certificate_override] },
         category_assessment: ASSESSMENT_EAGER,
         base_regulation: [],
