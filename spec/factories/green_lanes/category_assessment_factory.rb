@@ -3,6 +3,7 @@ FactoryBot.define do
     transient do
       measures_count { 1 }
       measure { nil }
+      green_lanes_measures { [] }
       exemptions { [] }
     end
 
@@ -10,6 +11,7 @@ FactoryBot.define do
     measure_type { measure&.measure_type || create(:measure_type) }
     theme { create :green_lanes_theme }
     exemption_pks { exemptions.map(&:pk) }
+    green_lanes_measure_pks { green_lanes_measures.map(&:pk) }
 
     trait :category1 do
       theme { create :green_lanes_theme, :category1 }
@@ -33,6 +35,14 @@ FactoryBot.define do
 
     trait :without_regulation do
       regulation { nil }
+    end
+
+    trait :with_green_lanes_measure do
+      green_lanes_measures { create_list :green_lanes_measure, 2 }
+    end
+
+    trait :with_exemption do
+      exemptions { create_list :green_lanes_exemption, 2 }
     end
   end
 end

@@ -3,6 +3,7 @@ module GreenLanes
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
     plugin :association_pks
+    plugin :association_dependencies
 
     many_to_one :theme
     many_to_one :measure_type, class: :MeasureType
@@ -21,7 +22,10 @@ module GreenLanes
     end
 
     one_to_many :green_lanes_measures, class: 'Measure', class_namespace: 'GreenLanes'
+    add_association_dependencies green_lanes_measures: :delete
+
     many_to_many :exemptions, join_table: :green_lanes_category_assessments_exemptions
+    add_association_dependencies exemptions: :nullify
 
     def validate
       super

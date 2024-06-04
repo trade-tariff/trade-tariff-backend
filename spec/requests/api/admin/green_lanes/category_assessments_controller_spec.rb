@@ -6,7 +6,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
   end
 
   let(:json_response) { JSON.parse(page_response.body) }
-  let(:category) { create :category_assessment }
+  let(:category) { create :category_assessment, :with_green_lanes_measure, :with_exemption }
 
   describe 'GET to #index' do
     let(:make_request) do
@@ -39,6 +39,12 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
+
+      it 'only contains green_lanes_measure or green_lanes_exemption types' do
+        json_response['included'].each do |json_object|
+          expect(json_object['type']).to(satisfy { |type| %w[green_lanes_measure green_lanes_exemption green_lanes_goods_nomenclature].include?(type) })
+        end
+      end
     end
 
     context 'with non-existent category assessments item' do
