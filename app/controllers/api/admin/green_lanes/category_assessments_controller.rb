@@ -13,7 +13,7 @@ module Api
 
         def show
           options = { is_collection: false }
-          options[:include] = %i[green_lanes_measures exemptions]
+          options[:include] = %i[green_lanes_measures green_lanes_measures.goods_nomenclature exemptions]
           options[:params] = { with_measures: true, with_exemptions: true }
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
 
