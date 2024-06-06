@@ -1,6 +1,6 @@
 # Windsor Framework - Green Lanes
 
-The green lanes support exists to allow categorisation of Goods Nomenclatures according to the Windsor Framework agreement.
+The green lanes support provides data allowing an API consumer to categorise Goods Nomenclatures according to the Windsor Framework agreement.
 
 The categorisation determines whether a good can be moved between GB and NI under the Windsor Framework. There are three potential categorisations 1, 2 and Standard, with 1 being the most restrictive and Standard being the least.
 
@@ -18,9 +18,9 @@ This provides both the category and a description of the Theme.
 
 The categorisation itself is derived from the measures applied to a Goods Nomenclature. To categorise we need to match particular measures with the relevant Windsor Framework Theme.
 
-We have a join model - `CategoryAssessment` which matches particular measures on `measure_type_id`, `measure_generating_regulation_id` and `measure_generating_regulation_role`. This model the in turn points to the relevant `Theme` record which provides the category
+The `CategoryAssessment` join model matches particular measures on `measure_type_id`, `measure_generating_regulation_id` and `measure_generating_regulation_role`. The `CategoryAssessment` model the in turn points to the relevant `Theme` record which provides the category
 
-This means there may potentially be multiple CategoryAssessments which apply to a particular GoodsNomenclature, and so multiple Themes with different Categories.
+This means there maybe multiple CategoryAssessments which apply to a particular GoodsNomenclature, and so multiple Themes with different Categories.
 
 ```mermaid
 graph LR
@@ -48,7 +48,9 @@ The 0 or more Category Assessments are included in the GN API - these are _prese
 
 Primarily this means a list of exemptions which the API consumer may determine are met and so be able to ignore a particular Category Assessment.
 
-_The effective category is determined by using the Theme from the restrictive category assessment which the API consumer determines does in fact apply. If the API consumer determines that no Category Assessments apply, then the Goods Nomenclature is determined to be **Standard Category**._
+_The API consumer can determine the applicable CategoryAssessment by finding the most restrictive category assessment which does not have an applicable exemption._
+
+_If the API consumer determines that no Category Assessments apply, then the Goods Nomenclature is determined to be **Standard Category**._
 
 * To include the Exemptions list against the presented Category Assessment requires deriving the exemptions from the measures
 * _BUT_ a particular Category Assessment may match multiple measures against the requested goods nomenclature
@@ -60,20 +62,22 @@ To achieve this the relevant measures are grouped together according to those wi
 
 ## Pseudo Measures and Pseudo Exemptions
 
-In addition using the Tariff data we also need to assign some category assessments independently of the data the Tariff measures may contain.
+These are custom data points built by OTT to handle policies that don't explicitly appear in the EU tariff but are relevant under the Windsor Framework.
+
+These pseudo measures allow us to assign some category assessments independently of the data the Tariff measures may contain.
 
 ### Pseudo Measures
 
-These are our own 'fake measures' which apply a Category Assessment directly to a GoodsNomenclature. They are a separate model (`GreenLanes::Measure`) and table which we control but internally the model is engineered to behaviour as close as possible to the tariff `Measure` model.
+These custom data points are designed to apply a Category Assessment directly to a Goods Nomenclature. These data points exist as a separate model (GreenLanes::Measure) and table that we control. Internally, this model is engineered to behave as similarly as possible to the tariff Measure model.
 
-This means at a presenter level we can combine the pseudo measures with the regular measures. The do not affect the calculation of permuations of measures/exemptions because they apply to the whole world and so would be included in every permutation
+This means at a presenter level we can combine the pseudo measures with the regular measures. These Pseudo Measures apply to the whole world so apply to every permutation of the CategoryAssessment hence are not included in the calculation of the permutations of measures/exemptions.
 
 On the API they look identical to serialized tariff Measures but use an id of `GL0000XXX`.
 
 ### Pseudo Exemptions
 
-These are our own 'fake exemptions' and they are applied directly to Category Assessments via their own join table.
+These are data points created by the OTT team and they applied directly to Category Assessments through their own join table.
 
-They are engineered to behave to be presented the same as the Additional Code and Certificate exemptions with `code` and `description` fields. The model is `GreenLanes::Exemption`
+They behave similarly to regular exemptions with `code` and `description` fields, and account for gaps between the WF and the EU tariff data. The model is `GreenLanes::Exemption`
 
 On the API they are included in the regular exemptions list on a CA and are presented as their own entity type - `Exemption`.
