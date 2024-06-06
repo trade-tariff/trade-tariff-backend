@@ -16,12 +16,14 @@ module Api
                    :validity_end_date,
                    :description_plain,
                    :producline_suffix,
-                   :parent_sid
+                   :parent_sid,
+                   :supplementary_measure_unit
 
         has_many :applicable_category_assessments, serializer: CategoryAssessmentSerializer
         has_many :descendant_category_assessments, serializer: CategoryAssessmentSerializer
-        has_many :ancestors, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer
-        has_many :descendants, serializer: GreenLanes::ReferencedGoodsNomenclatureSerializer
+        has_many :ancestors, serializer: ReferencedGoodsNomenclatureSerializer
+        has_many :descendants, serializer: ReferencedGoodsNomenclatureSerializer
+        has_many :licences, serializer: CertificateSerializer
       end
     end
   end
