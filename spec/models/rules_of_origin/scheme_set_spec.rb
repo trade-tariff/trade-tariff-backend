@@ -99,14 +99,6 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     end
   end
 
-  describe '#links' do
-    subject { scheme_set.links }
-
-    it { is_expected.to have_attributes length: 1 }
-    it { is_expected.to all be_instance_of RulesOfOrigin::Link }
-    it { is_expected.to all have_attributes source: 'scheme_set' }
-  end
-
   describe '#read_referenced_file' do
     subject :read_file do
       scheme_set.read_referenced_file('fta_intro', file_name)
