@@ -130,8 +130,7 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
         ]
       end
 
-      it { is_expected.to have_attributes length: 1 }
-      it { expect(permutations[0]).to eq_pk measures }
+      it_behaves_like 'a single list'
     end
 
     context 'with non exemption certificates' do
@@ -180,6 +179,25 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
       end
 
       it_behaves_like 'two segregated lists'
+    end
+
+    context 'with different geo area sids but matching geo area id' do
+      let :measures do
+        [
+          measure,
+          create(:measure,
+                 generating_regulation: measure.generating_regulation,
+                 measure_type_id: measure.measure_type_id,
+                 for_geo_area: geo_area),
+        ]
+      end
+
+      let :geo_area do
+        create :geographical_area, geographical_area_id: measure.geographical_area_id
+      end
+
+      it_behaves_like 'a single list'
+      it { expect(measures.map(&:geographical_area_sid).uniq).to have_attributes length: 2 }
     end
 
     context 'with different geographical area exclusions' do

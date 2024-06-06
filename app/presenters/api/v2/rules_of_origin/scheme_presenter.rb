@@ -20,7 +20,7 @@ module Api
           super(scheme)
           @scheme = scheme
           @rules = rules || []
-          @links = Array.wrap(scheme_set&.links) + @scheme.links
+          @links = @scheme.links
           @rule_sets = rule_sets || []
         end
 

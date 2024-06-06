@@ -63,7 +63,7 @@ FactoryBot.define do
       certificate_type_code { 'Y' }
     end
 
-    trait :license do
+    trait :licence do
       certificate_type_code { 'L' }
     end
   end

@@ -24,6 +24,12 @@ class GeographicalArea < Sequel::Model
       .order(Sequel.desc(:geographical_area_description_periods__validity_start_date))
   end
 
+  many_to_one :referenced, class: 'GeographicalArea',
+                           primary_key: :geographical_area_id,
+                           key: :referenced_id do |ds|
+    ds.with_actual(GeographicalArea)
+  end
+
   def geographical_area_description
     geographical_area_descriptions.first
   end
@@ -54,10 +60,6 @@ class GeographicalArea < Sequel::Model
 
   def candidate_excluded_geographical_area_ids
     @candidate_excluded_geographical_area_ids ||= contained_geographical_area_ids << geographical_area_id
-  end
-
-  def referenced
-    self.class.where(geographical_area_id: referenced_id).actual.first
   end
 
   def contained_geographical_area_ids
@@ -99,6 +101,10 @@ class GeographicalArea < Sequel::Model
 
   def gsp_or_dcts?
     GSP.include?(geographical_area_id) || DCTS.include?(geographical_area_id)
+  end
+
+  def referenced_or_self
+    referenced.presence || self
   end
 
   private

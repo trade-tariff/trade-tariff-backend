@@ -13,7 +13,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
   it { is_expected.to have_attributes parent_sid: gn.parent.goods_nomenclature_sid }
   it { is_expected.to have_attributes applicable_category_assessment_ids: presenter.applicable_category_assessments.map(&:id) }
   it { is_expected.to have_attributes ancestor_ids: gn.ancestors.map(&:goods_nomenclature_sid) }
-  it { is_expected.to have_attributes measure_ids: [gn.measures.first.measure_sid] }
 
   describe '#applicable_category_assessments' do
     subject { presenter.applicable_category_assessments }
@@ -37,13 +36,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
     it { is_expected.to all be_an Api::V2::GreenLanes::ReferencedGoodsNomenclaturePresenter }
   end
 
-  describe '#measures' do
-    subject { presenter.measures }
-
-    it { is_expected.to have_attributes length: 1 }
-    it { is_expected.to all be_an Api::V2::GreenLanes::MeasurePresenter }
-  end
-
   context 'when filtering by origin' do
     subject(:presented) { described_class.new(gn, geo_area_id) }
 
@@ -52,13 +44,6 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
 
       describe '#applicable_category_assessments' do
         subject { presented.applicable_category_assessments }
-
-        it { is_expected.to have_attributes length: 1 }
-        it { is_expected.to all have_attributes geographical_area_id: /\w+/ }
-      end
-
-      describe '#measures' do
-        subject { presented.measures }
 
         it { is_expected.to have_attributes length: 1 }
         it { is_expected.to all have_attributes geographical_area_id: /\w+/ }
@@ -103,14 +88,12 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
       let(:geo_area_id) { 'IR' }
 
       it { is_expected.to have_attributes applicable_category_assessments: be_empty }
-      it { is_expected.to have_attributes measures: be_empty }
     end
 
     context 'with blank geo area' do
       let(:geo_area_id) { '   ' }
 
       it { expect(presented.applicable_category_assessments).to have_attributes length: 1 }
-      it { expect(presented.measures).to have_attributes length: 1 }
     end
   end
 
@@ -163,6 +146,102 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
       end
 
       it { is_expected.to have_attributes length: 2 }
+    end
+  end
+
+  describe '#supplementary_measure_unit' do
+    subject(:presented) { described_class.new(gn, requested_geo_area) }
+
+    before do
+      create :measure,
+             :supplementary,
+             :with_base_regulation,
+             goods_nomenclature: gn.parent,
+             for_geo_area: geo_area
+    end
+
+    let(:geo_area) { create :geographical_area, geographical_area_id: 'FR' }
+    let(:requested_geo_area) { 'FR' }
+
+    context 'with origin filter which matches' do
+      it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
+    end
+
+    context 'with origin filter which does not match' do
+      let(:requested_geo_area) { 'DE' }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: nil }
+    end
+
+    context 'without origin filter' do
+      let(:requested_geo_area) { '' }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: nil }
+    end
+
+    context 'without origin filter but with Erga Omnes Supplementary Measure' do
+      let(:requested_geo_area) { '' }
+      let(:geo_area) { create :geographical_area, :erga_omnes }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
+    end
+
+    context 'with certificate against ancestor GN' do
+      subject(:presented) { described_class.new(gn.descendants.first, requested_geo_area) }
+
+      it { is_expected.to have_attributes supplementary_measure_unit: /\w+ \(\w+\)/ }
+    end
+  end
+
+  describe '#licences' do
+    subject(:presented) { described_class.new(gn.reload, requested_geo_area) }
+
+    before do
+      create(:measure,
+             :with_base_regulation,
+             goods_nomenclature: gn,
+             for_geo_area: geo_area).tap do |meas|
+        create(:measure_condition, measure: meas, certificate:)
+      end
+    end
+
+    let(:geo_area) { create :geographical_area, geographical_area_id: 'FR' }
+    let(:requested_geo_area) { 'FR' }
+    let(:certificate) { create :certificate, :licence }
+
+    context 'with origin filter which matches' do
+      it { is_expected.to have_attributes licences: [certificate] }
+    end
+
+    context 'with origin filter which does not match' do
+      let(:requested_geo_area) { 'DE' }
+
+      it { is_expected.to have_attributes licences: [] }
+    end
+
+    context 'without origin filter' do
+      let(:requested_geo_area) { '' }
+
+      it { is_expected.to have_attributes licences: [] }
+    end
+
+    context 'without origin filter but with Erga Omnes Supplementary Measure' do
+      let(:requested_geo_area) { '' }
+      let(:geo_area) { create :geographical_area, :erga_omnes }
+
+      it { is_expected.to have_attributes licences: [certificate] }
+    end
+
+    context 'with matching origin filter but non licence certificate' do
+      let(:certificate) { create :certificate, :exemption }
+
+      it { is_expected.to have_attributes licences: [] }
+    end
+
+    context 'with certificate against ancestor GN' do
+      subject(:presented) { described_class.new(gn.descendants.first, requested_geo_area) }
+
+      it { is_expected.to have_attributes licences: [certificate] }
     end
   end
 end

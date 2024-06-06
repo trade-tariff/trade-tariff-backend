@@ -125,7 +125,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
 
       before { create :green_lanes_measure, category_assessment: }
 
-      let(:category_assessment) { create :category_assessment }
+      let(:category_assessment) { create :category_assessment, :with_green_lanes_measure }
 
       it { is_expected.to include 'measures' }
       it { expect(relationships['measures']['data'].pluck('id')).to include %r{gl\d+} }

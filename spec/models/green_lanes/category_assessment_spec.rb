@@ -8,6 +8,8 @@ RSpec.describe GreenLanes::CategoryAssessment do
     it { is_expected.to respond_to :theme_id }
     it { is_expected.to respond_to :created_at }
     it { is_expected.to respond_to :updated_at }
+    it { is_expected.to respond_to :green_lanes_measure_pks }
+    it { is_expected.to respond_to :exemption_pks }
   end
 
   describe 'validations' do
@@ -154,7 +156,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
       subject { assessment.green_lanes_measures }
 
       let :assessment do
-        create(:category_assessment).tap do |ca|
+        create(:category_assessment, :with_green_lanes_measure).tap do |ca|
           create :green_lanes_measure, category_assessment_id: ca.id
         end
       end
@@ -264,7 +266,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
     subject { category_assessment.combined_measures }
 
     let(:tariff_measure) { create :measure, :with_base_regulation }
-    let(:category_assessment) { create :category_assessment, measure: tariff_measure }
+    let(:category_assessment) { create :category_assessment, :with_green_lanes_measure, measure: tariff_measure }
 
     context 'with tariff measure' do
       it { is_expected.to include tariff_measure }
@@ -274,7 +276,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
       before { green_lanes_measure }
 
       let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
-      let(:category_assessment) { create :category_assessment }
+      let(:category_assessment) { create :category_assessment, :with_green_lanes_measure }
 
       it { is_expected.to include green_lanes_measure }
     end

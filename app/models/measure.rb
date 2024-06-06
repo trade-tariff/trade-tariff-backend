@@ -660,15 +660,11 @@ class Measure < Sequel::Model
   end
 
   def measure_excluded_geographical_area_ids
-    excluded_geographical_areas = measure_excluded_geographical_areas_dataset
-      .eager(:geographical_area)
-      .map(&:geographical_area)
-
-    excluded_geographical_areas.each_with_object([]) do |geographical_area, acc|
-      actual_area = geographical_area.referenced.presence || geographical_area
-
-      acc.concat(actual_area.candidate_excluded_geographical_area_ids)
-    end
+    excluded_geographical_areas
+      .map(&:referenced_or_self)
+      .uniq
+      .flat_map(&:candidate_excluded_geographical_area_ids)
+      .uniq
   end
 
   def resolves_meursing_measures?
