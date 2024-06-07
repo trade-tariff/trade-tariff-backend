@@ -43,6 +43,10 @@ module GreenLanes
     end
 
     def call
+      if invalid_id(@goods_nomenclature_item_id)
+        raise Sequel::RecordNotFound
+      end
+
       GoodsNomenclature
         .actual
         .eager(EAGER_LOAD)
@@ -51,6 +55,10 @@ module GreenLanes
     end
 
     private
+
+    def invalid_id(id)
+      id.blank? || id.length <= 4 || id[4..].each_char.all? { |char| char == '0' }
+    end
 
     def length_adjusted_digit_id
       @goods_nomenclature_item_id.ljust(ITEM_ID_LENGTH, '0')
