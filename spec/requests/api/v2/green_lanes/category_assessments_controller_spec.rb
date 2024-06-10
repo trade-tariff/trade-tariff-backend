@@ -3,8 +3,7 @@ require 'rails_helper'
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
   before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 
-  let(:category_assessments) { build_pair :category_assessment, geographical_area: }
-  let(:geographical_area) { create :geographical_area, :erga_omnes, :with_description }
+  let(:category_assessments) { create_pair :category_assessment }
 
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
@@ -21,10 +20,30 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
 
     before do
       allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+
+      category_assessments
     end
 
     context 'when categorisation data is found' do
       it_behaves_like 'a successful jsonapi response'
+
+      context 'with caching' do
+        before do
+          freeze_time
+
+          allow(Rails.cache).to receive(:fetch).and_call_original
+
+          make_request
+        end
+
+        let :cache_key do
+          "category-assessments-for-#{Time.zone.today.to_fs(:db)}-latest-assessment-on-#{Time.zone.now.iso8601}"
+        end
+
+        it 'caches the result' do
+          expect(Rails.cache).to have_received(:fetch).with(cache_key, expires_in: 24.hours)
+        end
+      end
     end
 
     context 'when request on uk service' do
