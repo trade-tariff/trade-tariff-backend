@@ -51,5 +51,21 @@ RSpec.describe GreenLanes::FetchGoodsNomenclatureService do
         expect { described_class.new(id).call }.to raise_error Sequel::RecordNotFound
       end
     end
+
+    context 'when the good nomenclature id is less than four digit' do
+      let(:id) { '123' }
+
+      it 'raises record not found exception' do
+        expect { described_class.new(id).call }.to raise_error Sequel::RecordNotFound
+      end
+    end
+
+    context 'when the good nomenclature id is not a subheading' do
+      let(:id) { '1234000000' }
+
+      it 'raises record not found exception' do
+        expect { described_class.new(id).call }.to raise_error Sequel::RecordNotFound
+      end
+    end
   end
 end
