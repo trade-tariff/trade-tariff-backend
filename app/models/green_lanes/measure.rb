@@ -8,8 +8,10 @@ module GreenLanes
 
     many_to_one :goods_nomenclature, class: 'GoodsNomenclature',
                                      primary_key: %i[goods_nomenclature_item_id producline_suffix],
-                                     key: %i[goods_nomenclature_item_id productline_suffix]
-    delegate :goods_nomenclature_sid, to: :goods_nomenclature
+                                     key: %i[goods_nomenclature_item_id productline_suffix] do |ds|
+      ds.with_actual(::GoodsNomenclature)
+    end
+    delegate :goods_nomenclature_sid, to: :goods_nomenclature, allow_nil: true
 
     many_to_one :geographical_area, class: 'GeographicalArea',
                                     primary_key: :geographical_area_id,
