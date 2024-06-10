@@ -62,7 +62,7 @@ module Api
             :category_assessment_id,
             :goods_nomenclature_item_id,
             :productline_suffix,
-            )
+          )
         end
 
         def record_count
