@@ -12,10 +12,11 @@ module Api
                 measure_type: %i[measure_type_description measure_type_series_description],
                 measures: {
                   additional_code: :additional_code_descriptions,
-                  measure_conditions: { certificate: :certificate_descriptions },
+                  measure_conditions: { certificate: %i[certificate_descriptions exempting_certificate_override] },
                   geographical_area: :geographical_area_descriptions,
                   measure_excluded_geographical_areas: [],
                   excluded_geographical_areas: :geographical_area_descriptions,
+                  measure_type: [],
                 },
                 green_lanes_measures: [],
                 exemptions: [],
