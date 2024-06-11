@@ -70,7 +70,10 @@ module Api
         end
 
         def certificates
-          measure_conditions.select(&:is_exempting_with_certificate_overridden?).map(&:certificate)
+          measure_conditions
+            .select(&:is_exempting_with_certificate_overridden?)
+            .map(&:certificate)
+            .uniq
         end
 
         def additional_codes
