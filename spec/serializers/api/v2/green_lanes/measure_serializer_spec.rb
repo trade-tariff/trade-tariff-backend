@@ -18,6 +18,7 @@ RSpec.describe Api::V2::GreenLanes::MeasureSerializer do
         attributes: {
           effective_start_date: measure.effective_start_date,
           effective_end_date: measure.effective_end_date,
+          goods_nomenclature_sid: measure.goods_nomenclature_sid,
         },
         relationships: {
           measure_type: {
