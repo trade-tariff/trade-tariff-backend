@@ -4,6 +4,8 @@ module GreenLanes
     plugin :auto_validations, not_null: :presence
 
     many_to_one :category_assessment
+    plugin :touch, associations: %i[category_assessment]
+
     many_to_one :goods_nomenclature, class: 'GoodsNomenclature',
                                      primary_key: %i[goods_nomenclature_item_id producline_suffix],
                                      key: %i[goods_nomenclature_item_id productline_suffix]

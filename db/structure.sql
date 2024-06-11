@@ -10724,6 +10724,13 @@ CREATE UNIQUE INDEX green_lanes_category_assessments_measure_type_id_regulation_
 
 
 --
+-- Name: green_lanes_category_assessments_updated_at_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX green_lanes_category_assessments_updated_at_index ON uk.green_lanes_category_assessments USING btree (updated_at);
+
+
+--
 -- Name: green_lanes_exempting_certificate_overrides_certificate_code_ce; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12407,3 +12414,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240429125446_change_titl
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240429135110_create_green_lanes_exempting_certificate_overrides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240507140515_add_green_lanes_measures_tables.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240610160146_update_quota_definitions_oplog_volume.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240530121653_add_index_to_category_assessments_updated_at.rb');
