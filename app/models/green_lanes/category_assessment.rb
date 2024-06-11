@@ -22,7 +22,9 @@ module GreenLanes
         .with_regulation_dates_query
     end
 
-    one_to_many :green_lanes_measures, class: 'Measure', class_namespace: 'GreenLanes'
+    one_to_many :green_lanes_measures, class: 'Measure',
+                                       class_namespace: 'GreenLanes',
+                                       reciprocal: :category_assessment
     add_association_dependencies green_lanes_measures: :delete
 
     many_to_many :exemptions, join_table: :green_lanes_category_assessments_exemptions
@@ -71,7 +73,11 @@ module GreenLanes
     end
 
     def combined_measures
-      measures.select(&:import) + green_lanes_measures
+      measures.select(&:import) + active_green_lanes_measures
+    end
+
+    def active_green_lanes_measures
+      green_lanes_measures.select(&:goods_nomenclature)
     end
   end
 end

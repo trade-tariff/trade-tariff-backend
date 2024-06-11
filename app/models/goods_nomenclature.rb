@@ -123,7 +123,8 @@ class GoodsNomenclature < Sequel::Model
   one_to_many :green_lanes_measures, class: 'Measure',
                                      class_namespace: 'GreenLanes',
                                      key: %i[goods_nomenclature_item_id productline_suffix],
-                                     primary_key: %i[goods_nomenclature_item_id producline_suffix]
+                                     primary_key: %i[goods_nomenclature_item_id producline_suffix],
+                                     reciprocal: :goods_nomenclature
 
   dataset_module do
     def non_hidden

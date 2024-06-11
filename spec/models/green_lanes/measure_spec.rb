@@ -58,6 +58,12 @@ RSpec.describe GreenLanes::Measure do
       let(:gn) { create :commodity }
 
       it { is_expected.to be_instance_of Commodity }
+
+      context 'with expired goods_nomenclature' do
+        before { gn.update(validity_end_date: 2.days.ago) }
+
+        it { is_expected.to be_nil }
+      end
     end
 
     describe '#geographical_area' do
@@ -86,8 +92,9 @@ RSpec.describe GreenLanes::Measure do
   end
 
   describe 'tariff measure emulation' do
-    subject { create :green_lanes_measure, category_assessment: assessment }
+    subject { gl_measure }
 
+    let(:gl_measure) { create :green_lanes_measure, category_assessment: assessment }
     let(:assessment) { create :category_assessment }
 
     it { is_expected.to have_attributes measure_sid: /gl\d{6}/ }
@@ -95,6 +102,7 @@ RSpec.describe GreenLanes::Measure do
     it { is_expected.to have_attributes measure_generating_regulation_role: assessment.regulation_role }
     it { is_expected.to have_attributes generating_regulation: assessment.regulation }
     it { is_expected.to have_attributes geographical_area_id: GeographicalArea::ERGA_OMNES_ID }
+    it { is_expected.to have_attributes goods_nomenclature_sid: gl_measure.goods_nomenclature.goods_nomenclature_sid }
     it { is_expected.to have_attributes measure_excluded_geographical_areas: [] }
     it { is_expected.to have_attributes excluded_geographical_areas: [] }
     it { is_expected.to have_attributes additional_code_id: nil }
@@ -102,5 +110,13 @@ RSpec.describe GreenLanes::Measure do
     it { is_expected.to have_attributes additional_code: nil }
     it { is_expected.to have_attributes measure_conditions: [] }
     it { is_expected.to have_attributes footnotes: [] }
+
+    context 'with expired goods_nomenclature' do
+      subject { gl_measure.reload }
+
+      before { gl_measure.goods_nomenclature.update validity_end_date: 2.days.ago }
+
+      it { is_expected.to have_attributes goods_nomenclature_sid: nil }
+    end
   end
 end

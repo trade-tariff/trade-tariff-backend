@@ -289,6 +289,38 @@ RSpec.describe GreenLanes::CategoryAssessment do
       it { is_expected.to include tariff_measure }
       it { is_expected.to include green_lanes_measure }
     end
+
+    context 'with expired goods_nomenclature' do
+      before { green_lanes_measure.goods_nomenclature.update validity_end_date: 2.days.ago }
+
+      let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
+
+      it { is_expected.to include tariff_measure }
+      it { is_expected.not_to include green_lanes_measure }
+    end
+  end
+
+  describe '#active_green_lanes_measures' do
+    subject { assessment.active_green_lanes_measures }
+
+    let :assessment do
+      create(:category_assessment, :with_green_lanes_measure).tap do |ca|
+        create :green_lanes_measure, category_assessment_id: ca.id
+      end
+    end
+
+    let(:gl_measure) { assessment.green_lanes_measures.first }
+
+    it { is_expected.to include gl_measure }
+
+    context 'with expired goods_nomenclature' do
+      before do
+        gl_measure.goods_nomenclature.update validity_end_date: 2.days.ago
+        assessment.reload
+      end
+
+      it { is_expected.not_to include gl_measure }
+    end
   end
 
   describe '#latest' do

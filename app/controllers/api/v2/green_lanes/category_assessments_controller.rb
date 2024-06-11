@@ -24,7 +24,7 @@ module Api
                 measure_excluded_geographical_areas: [],
                 excluded_geographical_areas: :geographical_area_descriptions,
               },
-              green_lanes_measures: [],
+              green_lanes_measures: :goods_nomenclature,
               exemptions: [],
             )
             .all
