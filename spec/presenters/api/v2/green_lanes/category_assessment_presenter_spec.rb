@@ -94,6 +94,21 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       it { is_expected.to match_array certificates }
     end
 
+    context 'with duplicate conditions pointing to same certificate' do
+      before { certificates }
+
+      let(:measure) { assessment.measures.first }
+
+      let :certificates do
+        create_list(:certificate, 1, :exemption).each do |certificate|
+          create(:measure_condition, measure:, certificate:)
+          create(:measure_condition, measure:, certificate:)
+        end
+      end
+
+      it { is_expected.to eq_pk certificates }
+    end
+
     context 'with additional code' do
       before { additional_code }
 
