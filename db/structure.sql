@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 13.10 (Debian 13.10-1.pgdg110+1)
--- Dumped by pg_dump version 16.1
+-- Dumped by pg_dump version 15.6
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -163,131 +163,6 @@ CREATE FUNCTION public.reassign_owned() RETURNS event_trigger
 		END IF;
 
 		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_80db97b8_d822_495d_b526_f313a19b6e4b_manager');
-
-		RETURN;
-	end
-$$;
-
-
---
--- Name: forbid_ddl_reader(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.forbid_ddl_reader() RETURNS event_trigger
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	begin
-		-- do not execute if member of rds_superuser
-		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
-		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if superuser
-		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if member of manager role
-		IF pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager', 'member') THEN
-			RETURN;
-		END IF;
-
-		IF pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader', 'member') THEN
-			RAISE EXCEPTION 'executing % is disabled for read only bindings', tg_tag;
-		END IF;
-	end
-$$;
-
-
---
--- Name: make_readable(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.make_readable() RETURNS event_trigger
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	begin
-		IF EXISTS (SELECT 1 FROM pg_event_trigger_ddl_commands() WHERE schema_name NOT LIKE 'pg_temp%') THEN
-			EXECUTE 'select make_readable_generic()';
-			RETURN;
-		END IF;
-	end
-	$$;
-
-
---
--- Name: make_readable_generic(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.make_readable_generic() RETURNS void
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	declare
-		r record;
-	begin
-		-- do not execute if member of rds_superuser
-		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
-		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if superuser
-		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager', 'member') THEN
-			RETURN;
-		END IF;
-
-		FOR r in (select schema_name from information_schema.schemata) LOOP
-			BEGIN
-				EXECUTE format('GRANT SELECT ON ALL TABLES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader');
-				EXECUTE format('GRANT SELECT ON ALL SEQUENCES IN SCHEMA %I TO %I', r.schema_name, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader');
-				EXECUTE format('GRANT USAGE ON SCHEMA %I TO %I', r.schema_name, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_reader');
-
-				RAISE NOTICE 'GRANTED READ ONLY IN SCHEMA %s', r.schema_name;
-			EXCEPTION WHEN OTHERS THEN
-			  -- brrr
-			END;
-		END LOOP;
-
-		RETURN;
-	end
-$$;
-
-
---
--- Name: reassign_owned(); Type: FUNCTION; Schema: uk; Owner: -
---
-
-CREATE FUNCTION uk.reassign_owned() RETURNS event_trigger
-    LANGUAGE plpgsql
-    SET search_path TO 'public'
-    AS $$
-	begin
-		-- do not execute if member of rds_superuser
-		IF EXISTS (select 1 from pg_catalog.pg_roles where rolname = 'rds_superuser')
-		AND pg_has_role(current_user, 'rds_superuser', 'member') THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if superuser
-		IF EXISTS (SELECT 1 FROM pg_user WHERE usename = current_user and usesuper = true) THEN
-			RETURN;
-		END IF;
-
-		-- do not execute if not member of manager role
-		IF NOT pg_has_role(current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager', 'member') THEN
-			RETURN;
-		END IF;
-
-		EXECUTE format('REASSIGN OWNED BY %I TO %I', current_user, 'rdsbroker_2d2707a4_5555_480a_a2f2_878393349e1a_manager');
 
 		RETURN;
 	end
@@ -767,8 +642,8 @@ CREATE TABLE uk.quota_definitions_oplog (
     validity_start_date timestamp without time zone,
     validity_end_date timestamp without time zone,
     quota_order_number_sid integer,
-    volume numeric(12,2),
-    initial_volume numeric(12,2),
+    volume numeric(15,3),
+    initial_volume numeric(15,3),
     measurement_unit_code character varying(3),
     maximum_precision integer,
     critical_state character varying(255),
@@ -12531,3 +12406,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240129180350_add_green_l
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240429125446_change_title_limit_in_sections.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240429135110_create_green_lanes_exempting_certificate_overrides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240507140515_add_green_lanes_measures_tables.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240610160146_update_quota_definitions_oplog_volume.rb');
