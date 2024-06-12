@@ -51,7 +51,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
       context 'when the heading does not exist' do
         let(:id) { heading.short_code.next }
 
-        it { expect(do_response).to have_http_status(:not_found) }
+        it { expect { do_response }.to raise_exception Sequel::RecordNotFound }
       end
 
       context 'when the heading is not declarable' do
@@ -120,7 +120,7 @@ RSpec.describe Api::V2::HeadingsController, type: :controller do
         context 'when the record is not present' do
           let(:id) { heading.short_code.next }
 
-          it { expect(do_response).to have_http_status(:not_found) }
+          it { expect { do_response }.to raise_exception Sequel::RecordNotFound }
         end
       end
     end

@@ -60,9 +60,7 @@ RSpec.describe Api::V2::MeasureTypesController, type: :controller do
         }
       end
 
-      it { expect(do_request.body).to match_json_expression pattern }
-
-      it { is_expected.to have_http_status :not_found }
+      it { expect { do_request }.to raise_exception Sequel::RecordNotFound }
     end
   end
 end

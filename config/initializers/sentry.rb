@@ -5,6 +5,8 @@ Sentry.init do |config|
     Sequel::Plugins::RailsExtensions::ModelNotFound
     Sequel::NoMatchingRow
     Sequel::RecordNotFound
+    ActionController::ParameterMissing
+    NotImplementedError
     BulkSearch::ResultCollection::RecordNotFound
     MaintenanceMode::MaintenanceModeActive
   ]

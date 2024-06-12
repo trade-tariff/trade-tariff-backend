@@ -81,9 +81,9 @@ RSpec.describe Api::V2::SectionsController do
 
     context 'when record is not present' do
       it 'returns not found if record was not found' do
-        get :show, params: { id: section.position + 1 }, format: :json
-
-        expect(response.status).to eq 404
+        expect {
+          get :show, params: { id: section.position + 1 }, format: :json
+        }.to raise_exception Sequel::RecordNotFound
       end
     end
   end

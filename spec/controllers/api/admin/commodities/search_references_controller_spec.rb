@@ -51,8 +51,11 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
         }
       end
 
-      it { is_expected.to have_http_status(:not_found) }
-      it { expect { do_post }.not_to change(SearchReference, :count) }
+      it 'raises a 404 and does not change the data' do
+        expect { do_post }
+          .to raise_exception(Sequel::RecordNotFound)
+          .and not_change(SearchReference, :count)
+      end
     end
 
     context 'when not passing a productline suffix' do

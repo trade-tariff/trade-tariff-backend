@@ -29,9 +29,9 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       let(:section) { create :section }
 
       it 'returns not found if record was not found' do
-        get :show, params: { section_id: section.id }, format: :json
-
-        expect(response.status).to eq 404
+        expect {
+          get :show, params: { section_id: section.id }, format: :json
+        }.to raise_exception(Sequel::RecordNotFound)
       end
     end
   end
@@ -132,7 +132,8 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       it 'does not change section_note content' do
         expect {
           put :update, params: { section_id: section.id, section_note: { content: '' } }, format: :json
-        }.not_to(change { section.reload.section_note.content })
+        }.to raise_exception(ActionController::ParameterMissing)
+        .and(not_change { section.reload.section_note.content })
       end
     end
   end
@@ -160,9 +161,9 @@ RSpec.describe Api::Admin::Sections::SectionNotesController do
       let(:section) { create :section }
 
       it 'responds with 404 not found' do
-        delete :destroy, params: { section_id: section.id }, format: :json
-
-        expect(response.status).to eq 404
+        expect {
+          delete :destroy, params: { section_id: section.id }, format: :json
+        }.to raise_exception Sequel::RecordNotFound
       end
     end
   end
