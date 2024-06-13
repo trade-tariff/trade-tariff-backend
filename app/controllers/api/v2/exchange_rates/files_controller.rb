@@ -3,7 +3,10 @@ module Api
     module ExchangeRates
       class FilesController < ApiController
         def show
-          filename = ExchangeRateFile.filename_for_download(type, format, year, month)
+          filename = ExchangeRateFile.filename_for_download(params[:type],
+                                                            format,
+                                                            params[:year],
+                                                            params[:month])
 
           send_data(
             file_data,
@@ -13,23 +16,6 @@ module Api
         end
 
         private
-
-        def type
-          match_data = id.match(/^(monthly_csv_hmrc|monthly_csv|monthly_xml|average_csv|spot_csv)_/)
-          match_data[1] if match_data
-        end
-
-        def month
-          @month ||= params[:id].split('-').last
-        end
-
-        def year
-          @year ||= params[:id].split('-').first.split('_').last
-        end
-
-        def id
-          params[:id].to_s
-        end
 
         def format
           request.format.symbol
@@ -48,9 +34,9 @@ module Api
 
         def file
           @file ||= ExchangeRateFile.where(
-            type:,
-            period_year: year,
-            period_month: month,
+            type: params[:type],
+            period_year: params[:year],
+            period_month: params[:month],
             format: format.to_s,
           ).take
         end
