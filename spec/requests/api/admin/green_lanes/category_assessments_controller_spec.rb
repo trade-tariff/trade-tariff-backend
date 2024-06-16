@@ -128,6 +128,40 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
     end
   end
 
+  describe 'POST to #add_exemption' do
+    let(:exemption) { create :green_lanes_exemption }
+
+    let(:id) { category.id }
+    let(:exemption_id) { exemption.id }
+
+    let(:make_request) do
+      authenticated_post exemptions_api_admin_green_lanes_category_assessment_path(id, format: :json), params: {
+        id: id,
+        exemption_id: exemption_id,
+      }
+    end
+
+    context 'with valid params' do
+      it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_category_assessment_url(category.id) }
+      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+    end
+
+    context 'with unknown exemption' do
+      let(:exemption_id) { 9999 }
+
+      it { is_expected.to have_http_status :not_found }
+      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+    end
+
+    context 'with unknown category assessment' do
+      let(:id) { 9999 }
+
+      it { is_expected.to have_http_status :not_found }
+      it { expect { page_response }.not_to change(category.reload, :regulation_role) }
+    end
+  end
+
   describe 'DELETE to #destroy' do
     let :make_request do
       authenticated_delete api_admin_green_lanes_category_assessment_path(id, format: :json)
