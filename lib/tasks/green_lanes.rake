@@ -84,8 +84,8 @@ namespace :green_lanes do
           assessment.measure_type_id = json_ca.measure_type_id
           assessment.regulation_id = json_ca.regulation_id
 
-          regulation = BaseRegulation.actual.where(base_regulation_id: json_ca.regulation_id).all.last
-          regulation ||= ModificationRegulation.actual.where(base_regulation_id: json_ca.regulation_id).all.last
+          regulation = ModificationRegulation.actual.where(modification_regulation_id: json_ca.regulation_id).all.last
+          regulation ||= BaseRegulation.actual.where(base_regulation_id: json_ca.regulation_id).all.last
 
           assessment.regulation_role = regulation&.role || 1
           assessments[key] = assessment

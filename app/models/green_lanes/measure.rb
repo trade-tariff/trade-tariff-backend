@@ -3,11 +3,16 @@ module GreenLanes
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
 
-    many_to_one :category_assessment
+    many_to_one :category_assessment, reciprocal: :green_lanes_measures
+    plugin :touch, associations: %i[category_assessment]
+
     many_to_one :goods_nomenclature, class: 'GoodsNomenclature',
                                      primary_key: %i[goods_nomenclature_item_id producline_suffix],
-                                     key: %i[goods_nomenclature_item_id productline_suffix]
-    delegate :goods_nomenclature_sid, to: :goods_nomenclature
+                                     key: %i[goods_nomenclature_item_id productline_suffix],
+                                     reciprocal: :green_lanes_measures do |ds|
+      ds.with_actual(::GoodsNomenclature)
+    end
+    delegate :goods_nomenclature_sid, to: :goods_nomenclature, allow_nil: true
 
     many_to_one :geographical_area, class: 'GeographicalArea',
                                     primary_key: :geographical_area_id,

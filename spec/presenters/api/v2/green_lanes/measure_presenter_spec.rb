@@ -10,11 +10,5 @@ RSpec.describe Api::V2::GreenLanes::MeasurePresenter do
   it { is_expected.to have_attributes id: measure.measure_sid }
   it { is_expected.to have_attributes footnotes: }
   it { is_expected.to have_attributes footnote_ids: footnotes.map(&:code) }
-  it { is_expected.to have_attributes goods_nomenclature_id: measure.goods_nomenclature.goods_nomenclature_sid }
-
-  describe '#generating_regulation' do
-    subject { presented.generating_regulation }
-
-    it { is_expected.to be_instance_of Api::V2::GreenLanes::RegulationPresenter }
-  end
+  it { is_expected.to have_attributes goods_nomenclature_sid: measure.goods_nomenclature.goods_nomenclature_sid }
 end

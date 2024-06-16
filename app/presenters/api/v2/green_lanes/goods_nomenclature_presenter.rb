@@ -47,12 +47,12 @@ module Api
       private
 
         def combined_descendant_measures
-          descendants.flat_map(&:measures) +
+          descendants.flat_map(&:measures).select(&:import) +
             descendants.flat_map(&:green_lanes_measures)
         end
 
         def combined_applicable_measures
-          applicable_measures +
+          applicable_measures.select(&:import) +
             green_lanes_measures +
             ancestors.flat_map(&:green_lanes_measures)
         end

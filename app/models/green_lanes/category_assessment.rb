@@ -4,6 +4,7 @@ module GreenLanes
     plugin :auto_validations, not_null: :presence
     plugin :association_pks
     plugin :association_dependencies
+    plugin :touch
 
     many_to_one :theme
     many_to_one :measure_type, class: :MeasureType
@@ -21,11 +22,19 @@ module GreenLanes
         .with_regulation_dates_query
     end
 
-    one_to_many :green_lanes_measures, class: 'Measure', class_namespace: 'GreenLanes'
+    one_to_many :green_lanes_measures, class: 'Measure',
+                                       class_namespace: 'GreenLanes',
+                                       reciprocal: :category_assessment
     add_association_dependencies green_lanes_measures: :delete
 
     many_to_many :exemptions, join_table: :green_lanes_category_assessments_exemptions
     add_association_dependencies exemptions: :nullify
+
+    dataset_module do
+      def latest
+        order(Sequel.desc(:updated_at)).first
+      end
+    end
 
     def validate
       super
@@ -64,7 +73,11 @@ module GreenLanes
     end
 
     def combined_measures
-      measures + green_lanes_measures
+      measures.select(&:import) + active_green_lanes_measures
+    end
+
+    def active_green_lanes_measures
+      green_lanes_measures.select(&:goods_nomenclature)
     end
   end
 end

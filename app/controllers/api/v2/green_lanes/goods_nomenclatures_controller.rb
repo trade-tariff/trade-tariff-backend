@@ -31,6 +31,8 @@ module Api
               applicable_category_assessments.measures.footnotes
               applicable_category_assessments.theme
               descendant_category_assessments
+              descendant_category_assessments.regulation
+              descendant_category_assessments.measure_type
               descendant_category_assessments.exemptions
               descendant_category_assessments.geographical_area
               descendant_category_assessments.excluded_geographical_areas

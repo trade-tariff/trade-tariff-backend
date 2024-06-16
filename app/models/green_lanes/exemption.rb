@@ -6,5 +6,6 @@ module GreenLanes
 
     many_to_many :category_assessments,
                  join_table: :green_lanes_category_assessments_exemptions
+    plugin :touch, associations: %i[category_assessments]
   end
 end
