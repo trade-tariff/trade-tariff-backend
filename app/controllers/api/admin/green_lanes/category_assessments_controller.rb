@@ -22,7 +22,7 @@ module Api
 
         def create
           ca = ::GreenLanes::CategoryAssessment.new(ca_params)
-
+          binding.pry
           if ca.valid? && ca.save
             render json: serialize(ca),
                    location: api_admin_green_lanes_category_assessment_url(ca.id),
@@ -52,6 +52,20 @@ module Api
           ca.destroy
 
           head :no_content
+        end
+
+        def add_exemption
+          ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
+          exemption = ::GreenLanes::Exemption.with_pk!(params[:exemption_id])
+
+          if ca.add_exemption(exemption)
+            render json: serialize(ca),
+                   location: api_admin_green_lanes_category_assessment_url(ca.id),
+                   status: :ok
+          else
+            render json: serialize_errors(ca),
+                   status: :unprocessable_entity
+          end
         end
 
         private
