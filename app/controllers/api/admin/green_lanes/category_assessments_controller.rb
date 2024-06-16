@@ -22,7 +22,7 @@ module Api
 
         def create
           ca = ::GreenLanes::CategoryAssessment.new(ca_params)
-          binding.pry
+
           if ca.valid? && ca.save
             render json: serialize(ca),
                    location: api_admin_green_lanes_category_assessment_url(ca.id),

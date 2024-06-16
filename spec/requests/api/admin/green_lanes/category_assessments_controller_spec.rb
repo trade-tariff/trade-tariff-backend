@@ -136,8 +136,8 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
 
     let(:make_request) do
       authenticated_post exemptions_api_admin_green_lanes_category_assessment_path(id, format: :json), params: {
-        id: id,
-        exemption_id: exemption_id,
+        id:,
+        exemption_id:,
       }
     end
 
