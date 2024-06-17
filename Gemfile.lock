@@ -1,6 +1,6 @@
 GIT
   remote: https://github.com/trade-tariff/routing-filter.git
-  revision: 3efb9d3cf4b32c976295bb4ed3473c0cce1c1241
+  revision: cc5861d8c51b72ab6fa5252e34e4d2cce786489d
   specs:
     routing-filter (1.0.0)
       actionpack (>= 7.1)
@@ -227,7 +227,7 @@ GEM
     marcel (1.0.4)
     method_source (1.0.0)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.5)
+    mini_portile2 (2.8.6)
     minitest (5.22.3)
     msgpack (1.7.2)
     multi_json (1.15.0)
