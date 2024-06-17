@@ -27,7 +27,7 @@ module Api
         def create
           measure = ::GreenLanes::Measure.new(measure_params)
 
-          if measure.save
+          if measure.valid? && measure.save
             render json: serialize(measure),
                    location: api_admin_green_lanes_measure_url(measure.id),
                    status: :created
@@ -41,7 +41,7 @@ module Api
           measure = ::GreenLanes::Measure.with_pk!(params[:id])
           measure.set measure_params
 
-          if measure.save
+          if measure.valid? && measure.save
             render json: serialize(measure),
                    location: api_admin_green_lanes_measure_url(measure.id),
                    status: :ok

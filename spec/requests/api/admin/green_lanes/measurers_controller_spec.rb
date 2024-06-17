@@ -88,21 +88,34 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController do
       authenticated_patch api_admin_green_lanes_measure_path(id, format: :json), params: {
         data: {
           type: :green_lanes_measure,
-          attributes: { category_assessment_id: new_category_assessment.id },
+          attributes: { category_assessment_id: new_category_assessment_id },
         },
       }
     end
 
     context 'with valid params' do
       let(:id) { measure.id }
+      let(:new_category_assessment_id) { new_category_assessment.id }
 
       it { is_expected.to have_http_status :success }
       it { is_expected.to have_attributes location: api_admin_green_lanes_measure_url(measure.id) }
       it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
     end
 
+    context 'with invalid params' do
+      let(:id) { measure.id }
+      let(:new_category_assessment_id) { nil }
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+
+      it 'returns errors for exemption' do
+        expect(json_response).to include('errors')
+      end
+    end
+
     context 'with unknown exemption' do
       let(:id) { 9999 }
+      let(:new_category_assessment_id) { new_category_assessment.id }
 
       it { is_expected.to have_http_status :not_found }
       it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
