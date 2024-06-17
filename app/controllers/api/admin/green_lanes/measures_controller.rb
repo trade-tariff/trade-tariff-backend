@@ -20,8 +20,10 @@ module Api
         end
 
         def show
+          options = { is_collection: false }
+          options[:include] = %i[category_assessment]
           measure = ::GreenLanes::Measure.with_pk!(params[:id])
-          render json: serialize(measure)
+          render json: serialize(measure, options)
         end
 
         def create
