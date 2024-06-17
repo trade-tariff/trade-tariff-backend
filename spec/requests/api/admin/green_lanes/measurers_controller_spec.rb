@@ -121,4 +121,24 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController do
       it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
     end
   end
+
+  describe 'DELETE to #destroy' do
+    let :make_request do
+      authenticated_delete api_admin_green_lanes_measure_path(id, format: :json)
+    end
+
+    context 'with known measure' do
+      let(:id) { measure.id }
+
+      it { is_expected.to have_http_status :no_content }
+      it { expect { page_response }.to change(measure, :exists?) }
+    end
+
+    context 'with unknown measure' do
+      let(:id) { 9999 }
+
+      it { is_expected.to have_http_status :not_found }
+      it { expect { page_response }.not_to change(GreenLanes::Measure, :count) }
+    end
+  end
 end

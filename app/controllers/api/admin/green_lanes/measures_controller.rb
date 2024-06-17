@@ -51,6 +51,13 @@ module Api
           end
         end
 
+        def destroy
+          measure = ::GreenLanes::Measure.with_pk!(params[:id])
+          measure.destroy
+
+          head :no_content
+        end
+
         private
 
         def measures
