@@ -82,7 +82,6 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController do
   end
 
   describe 'PATCH to #update' do
-    let(:id) { measure.id }
     let(:new_category_assessment) { create :category_assessment }
 
     let(:make_request) do
@@ -95,6 +94,8 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController do
     end
 
     context 'with valid params' do
+      let(:id) { measure.id }
+
       it { is_expected.to have_http_status :success }
       it { is_expected.to have_attributes location: api_admin_green_lanes_measure_url(measure.id) }
       it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
