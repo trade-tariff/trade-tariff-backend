@@ -26,4 +26,99 @@ RSpec.describe Api::Admin::GreenLanes::MeasuresController do
       it { expect(json_response).to include('data' => []) }
     end
   end
+
+  describe 'GET to #show' do
+    let(:make_request) do
+      authenticated_get api_admin_green_lanes_measure_path(id, format: :json)
+    end
+
+    context 'with existent measure' do
+      let(:id) { measure.id }
+
+      it { is_expected.to have_http_status :success }
+      it { expect(json_response).to include('data') }
+    end
+
+    context 'with non-existent measure' do
+      let(:id) { 1001 }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
+
+  describe 'POST to #create' do
+    let(:make_request) do
+      authenticated_post api_admin_green_lanes_measures_path(format: :json), params: measure_data
+    end
+
+    let :measure_data do
+      {
+        data: {
+          type: :green_lanes_measure,
+          attributes: measure_attrs,
+        },
+      }
+    end
+
+    context 'with valid params' do
+      let(:measure_attrs) { build(:green_lanes_measure).to_hash }
+
+      it { is_expected.to have_http_status :created }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_measure_url(GreenLanes::Measure.last.id) }
+      it { expect { page_response }.to change(GreenLanes::Measure, :count).by(1) }
+    end
+
+    context 'with invalid params' do
+      let(:measure_attrs) { build(:green_lanes_measure, category_assessment_id: nil).to_hash }
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+
+      it 'returns errors for exemption' do
+        expect(json_response).to include('errors')
+      end
+
+      it { expect { page_response }.not_to change(GreenLanes::Measure, :count) }
+    end
+  end
+
+  describe 'PATCH to #update' do
+    let(:new_category_assessment) { create :category_assessment }
+
+    let(:make_request) do
+      authenticated_patch api_admin_green_lanes_measure_path(id, format: :json), params: {
+        data: {
+          type: :green_lanes_measure,
+          attributes: { category_assessment_id: new_category_assessment_id },
+        },
+      }
+    end
+
+    context 'with valid params' do
+      let(:id) { measure.id }
+      let(:new_category_assessment_id) { new_category_assessment.id }
+
+      it { is_expected.to have_http_status :success }
+      it { is_expected.to have_attributes location: api_admin_green_lanes_measure_url(measure.id) }
+      it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
+    end
+
+    context 'with invalid params' do
+      let(:id) { measure.id }
+      let(:new_category_assessment_id) { nil }
+
+      it { is_expected.to have_http_status :unprocessable_entity }
+
+      it 'returns errors for exemption' do
+        expect(json_response).to include('errors')
+      end
+    end
+
+    context 'with unknown exemption' do
+      let(:id) { 9999 }
+      let(:new_category_assessment_id) { new_category_assessment.id }
+
+      it { is_expected.to have_http_status :not_found }
+      it { expect { page_response }.not_to change(measure.reload, :productline_suffix) }
+    end
+  end
 end

@@ -66,11 +66,15 @@ Rails.application.routes.draw do
         end
 
         namespace :green_lanes do
-          resources :category_assessments, only: %i[index show create update destroy]
+          resources :category_assessments, only: %i[index show create update destroy] do
+            member do
+              post 'exemptions', to: 'category_assessments#add_exemption'
+            end
+          end
           resources :themes, only: %i[index]
           resources :exempting_certificate_overrides, only: %i[index show create destroy]
           resources :exemptions, only: %i[index show create update destroy]
-          resources :measures, only: %i[index]
+          resources :measures, only: %i[index show create update]
         end
       end
     end
