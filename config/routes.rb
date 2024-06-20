@@ -69,6 +69,7 @@ Rails.application.routes.draw do
           resources :category_assessments, only: %i[index show create update destroy] do
             member do
               post 'exemptions', to: 'category_assessments#add_exemption'
+              delete 'exemptions', to: 'category_assessments#remove_exemption'
             end
           end
           resources :themes, only: %i[index]

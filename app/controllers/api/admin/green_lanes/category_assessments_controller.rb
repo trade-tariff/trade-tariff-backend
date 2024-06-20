@@ -8,7 +8,10 @@ module Api
         before_action :check_service, :authenticate_user!
 
         def index
-          render json: serialize(category_assessments.to_a, pagination_meta)
+          options = { is_collection: true }
+          options[:include] = %i[theme]
+          options[:meta] = pagination_meta(category_assessments)
+          render json: serialize(category_assessments.to_a, options)
         end
 
         def show
@@ -68,6 +71,20 @@ module Api
           end
         end
 
+        def remove_exemption
+          ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
+          exemption = ::GreenLanes::Exemption.with_pk!(params[:exemption_id])
+
+          if ca.remove_exemption(exemption)
+            render json: serialize(ca),
+                   location: api_admin_green_lanes_category_assessment_url(ca.id),
+                   status: :ok
+          else
+            render json: serialize_errors(ca),
+                   status: :unprocessable_entity
+          end
+        end
+
         private
 
         def ca_params
@@ -84,7 +101,7 @@ module Api
         end
 
         def category_assessments
-          @category_assessments ||= ::GreenLanes::CategoryAssessment.order(Sequel.desc(:id)).paginate(current_page, per_page)
+          @category_assessments ||= ::GreenLanes::CategoryAssessment.eager(:theme).order(:theme_id).paginate(current_page, per_page)
         end
 
         def serialize(*args)
@@ -93,6 +110,16 @@ module Api
 
         def serialize_errors(category_assessment)
           Api::Admin::ErrorSerializationService.new(category_assessment).call
+        end
+
+        def pagination_meta(data_set)
+          {
+            pagination: {
+              page: current_page,
+              per_page:,
+              total_count: data_set.pagination_record_count,
+            },
+          }
         end
       end
     end
