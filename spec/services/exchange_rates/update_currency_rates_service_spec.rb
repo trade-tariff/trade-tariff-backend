@@ -45,8 +45,23 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
       let(:sample_date) { Time.zone.today }
 
       before do
-        create(:exchange_rate_country_currency, currency_code: 'AED')
-        create(:exchange_rate_country_currency, currency_code: 'EUR')
+        create(:exchange_rate_country_currency,
+               country_code: 'AE',
+               country_description: 'UAE',
+               currency_description: 'Dirham',
+               currency_code: 'AED')
+        create(:exchange_rate_country_currency,
+               country_code: 'EU',
+               country_description: 'Eurozone',
+               currency_description: 'Euro',
+               currency_code: 'EUR')
+
+        # Only added for the Zimbabwe monkey patch situation
+        create(:exchange_rate_country_currency,
+               country_code: 'ZW',
+               country_description: 'Zimbabwe',
+               currency_description: 'Zimbabwe Gold',
+               currency_code: 'ZIG')
       end
 
       it 'only inserts rates that exist as currencies' do
@@ -59,6 +74,69 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
         new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
 
         expect(new_rates).to include_json(expected_rates)
+      end
+
+      # Below test is in place to protect us against XE
+      # not porviding ZIG currnecy even though its accepted across over 90% banks in Zimbabwe
+      context 'when XE provides ZWL and ZIG' do
+        let(:response) do
+          {
+            'to' => [
+              { 'quotecurrency' => 'ZWL', 'mid' => 16.8567 },
+              { 'quotecurrency' => 'ZIG', 'mid' => 16.8567 },
+            ],
+          }
+        end
+
+        let(:expected_rates) do
+          [
+            {
+              currency_code: 'ZIG',
+              validity_start_date: date.beginning_of_month,
+              validity_end_date: date.end_of_month,
+              rate: 16.8567,
+              rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
+            },
+          ].as_json
+        end
+
+        it 'will create a ZIG rate' do
+          service.call
+
+          new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
+
+          expect(new_rates).to include_json(expected_rates)
+        end
+      end
+
+      context 'when XE provides ZWL' do
+        let(:response) do
+          {
+            'to' => [
+              { 'quotecurrency' => 'ZWL', 'mid' => 16.8567 },
+            ],
+          }
+        end
+
+        let(:expected_rates) do
+          [
+            {
+              currency_code: 'ZIG',
+              validity_start_date: date.beginning_of_month,
+              validity_end_date: date.end_of_month,
+              rate: 16.8567,
+              rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
+            },
+          ].as_json
+        end
+
+        it 'will create a ZIG rate' do
+          service.call
+
+          new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
+
+          expect(new_rates).to include_json(expected_rates)
+        end
       end
     end
 
