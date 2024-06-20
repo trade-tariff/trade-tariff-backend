@@ -101,7 +101,7 @@ module Api
         end
 
         def category_assessments
-          @category_assessments ||= ::GreenLanes::CategoryAssessment.eager(:theme).order(:theme_id).paginate(current_page, per_page)
+          @category_assessments ||= ::GreenLanes::CategoryAssessment.eager(:theme).order(:id).paginate(current_page, per_page)
         end
 
         def serialize(*args)
