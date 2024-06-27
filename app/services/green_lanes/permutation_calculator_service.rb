@@ -17,8 +17,6 @@ module GreenLanes
         measure.measure_generating_regulation_role,
         measure.geographical_area_id,
         measure.measure_excluded_geographical_areas.map(&:excluded_geographical_area).sort.uniq.join('|'),
-        measure.additional_code_type_id,
-        measure.additional_code_id,
         measure.measure_conditions.select(&:is_exempting_with_certificate_overridden?).map(&:document_code).sort.uniq.join('|'),
       ]
     end
