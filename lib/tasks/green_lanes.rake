@@ -126,7 +126,7 @@ namespace :green_lanes do
     types = %w[551 552 553 554 555 561 562 564 565 566 570 695]
 
     GreenLanes::CategoryAssessment.db.transaction do
-      current_date = Date.today
+      current_date = Time.zone.today
       actual_condition = Sequel.lit('validity_start_date <= ? AND ' \
                                       '(validity_end_date IS NULL OR validity_end_date > ?)')
 
@@ -134,7 +134,6 @@ namespace :green_lanes do
              .where(measure_type_id: types, measure_generating_regulation_role: 1)
              .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
              .all.each do |tr|
-
         key = [tr.measure_type_id, tr.measure_generating_regulation_id]
         assessment = assessments[key]
 
@@ -167,6 +166,7 @@ namespace :green_lanes do
       end
     else
       raise "Cannot read file '#{ENV['PSEUDO_MEASURE_CSV_FILE']}'" unless File.file?(ENV['PSEUDO_MEASURE_CSV_FILE'].to_s)
+
       @data = CSV.read(ENV['PSEUDO_MEASURE_CSV_FILE'], headers: true)
     end
 
