@@ -183,7 +183,12 @@ namespace :green_lanes do
       measure.category_assessment_id = row['category_assessment_id']
       measure.goods_nomenclature_item_id = row['goods_nomenclature_item_id']
       measure.productline_suffix = row['productline_suffix']
-      measure.save(validate: true)
+
+      begin
+        measure.save(validate: true)
+      rescue Sequel::ValidationFailed => e
+        next
+      end
     end
   end
 end
