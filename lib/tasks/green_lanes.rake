@@ -160,7 +160,7 @@ namespace :green_lanes do
     if Rails.application.config.persistence_bucket.present?
       PSEUDO_MEASURE_CSV_OBJECT_KEY = 'data/categorisation/pseudo_measures.csv'.freeze
       begin
-        @data = Rails.application.config.persistence_bucket.object(CATEGORISATION_OBJECT_KEY).get.body.read
+        @data = Rails.application.config.persistence_bucket.object(PSEUDO_MEASURE_CSV_OBJECT_KEY).get.body.read
       rescue Aws::S3::Errors::NoSuchKey => e
         raise InvalidFile, "File not found in S3 (#{e.message})"
       end
