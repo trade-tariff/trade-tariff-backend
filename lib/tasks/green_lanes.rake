@@ -113,4 +113,82 @@ namespace :green_lanes do
       end
     end
   end
+
+  desc 'Import Trade Remedies CategoryAssessments data'
+  task import_tr_category_assessments: :environment do
+    raise 'Only supported on XI service' unless TradeTariffBackend.xi?
+
+    # load existing data
+    theme = GreenLanes::Theme.where(section: '1', subsection: '3').first
+    assessments = GreenLanes::CategoryAssessment.all.index_by do |assessment|
+      [assessment.measure_type_id, assessment.regulation_id]
+    end
+    types = %w[551 552 553 554 555 561 562 564 565 566 570 695]
+
+    GreenLanes::CategoryAssessment.db.transaction do
+      current_date = Time.zone.today
+      actual_condition = Sequel.lit('validity_start_date <= ? AND ' \
+                                      '(validity_end_date IS NULL OR validity_end_date > ?)')
+
+      Measure.where(actual_condition, current_date, current_date)
+             .where(measure_type_id: types, measure_generating_regulation_role: 1)
+             .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
+             .all.each do |tr|
+        key = [tr.measure_type_id, tr.measure_generating_regulation_id]
+        assessment = assessments[key]
+
+        unless assessment
+          assessment = GreenLanes::CategoryAssessment.new
+          assessment.measure_type_id = tr.measure_type_id
+          assessment.regulation_id = tr.measure_generating_regulation_id
+          assessment.regulation_role = tr.measure_generating_regulation_role
+          assessments[key] = assessment
+        end
+
+        if assessment.id.nil?
+          assessment.theme = theme
+          assessment.save(validate: true)
+        end
+
+        assessments[key] = assessment
+      end
+    end
+  end
+
+  desc 'Add pseudo measures PSEUDO_MEASURE_CSV_FILE=path/to/file.csv'
+  task add_pseudo_measures: :environment do
+    if Rails.application.config.persistence_bucket.present?
+      PSEUDO_MEASURE_CSV_OBJECT_KEY = 'data/categorisation/pseudo_measures.csv'.freeze
+      begin
+        csv = Rails.application.config.persistence_bucket.object(PSEUDO_MEASURE_CSV_OBJECT_KEY).get.body.read
+        @data = CSV.parse(csv, headers: true)
+      rescue Aws::S3::Errors::NoSuchKey => e
+        raise InvalidFile, "File not found in S3 (#{e.message})"
+      end
+    else
+      raise "Cannot read file '#{ENV['PSEUDO_MEASURE_CSV_FILE']}'" unless File.file?(ENV['PSEUDO_MEASURE_CSV_FILE'].to_s)
+
+      @data = CSV.read(ENV['PSEUDO_MEASURE_CSV_FILE'], headers: true)
+    end
+
+    @data.map do |row|
+      gn = GoodsNomenclature.actual.where(goods_nomenclature_item_id: row['goods_nomenclature_item_id'],
+                                          producline_suffix: row['productline_suffix'])
+
+      if gn.blank?
+        next
+      end
+
+      measure = GreenLanes::Measure.new
+      measure.category_assessment_id = row['category_assessment_id']
+      measure.goods_nomenclature_item_id = row['goods_nomenclature_item_id']
+      measure.productline_suffix = row['productline_suffix']
+
+      begin
+        measure.save(validate: true)
+      rescue Sequel::ValidationFailed => e
+        next
+      end
+    end
+  end
 end
