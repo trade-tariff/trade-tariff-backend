@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
   subject(:presented) { described_class.new(assessment, permutations.first, assessment.measures) }
 
-  let(:assessment) { create :category_assessment, :with_measures, measures_count: 2}
+  let(:assessment) { create :category_assessment, :with_measures, measures_count: 2 }
 
   let :permutations do
     GreenLanes::PermutationCalculatorService.new(assessment.measures).call
