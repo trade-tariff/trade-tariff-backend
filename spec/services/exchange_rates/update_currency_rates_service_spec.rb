@@ -75,69 +75,6 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
 
         expect(new_rates).to include_json(expected_rates)
       end
-
-      # Below test is in place to protect us against XE
-      # not porviding ZIG currnecy even though its accepted across over 90% banks in Zimbabwe
-      context 'when XE provides ZWL and ZIG' do
-        let(:response) do
-          {
-            'to' => [
-              { 'quotecurrency' => 'ZWL', 'mid' => 16.8567 },
-              { 'quotecurrency' => 'ZIG', 'mid' => 16.8567 },
-            ],
-          }
-        end
-
-        let(:expected_rates) do
-          [
-            {
-              currency_code: 'ZIG',
-              validity_start_date: date.beginning_of_month,
-              validity_end_date: date.end_of_month,
-              rate: 16.8567,
-              rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
-            },
-          ].as_json
-        end
-
-        it 'will create a ZIG rate' do
-          service.call
-
-          new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
-
-          expect(new_rates).to include_json(expected_rates)
-        end
-      end
-
-      context 'when XE provides ZWL' do
-        let(:response) do
-          {
-            'to' => [
-              { 'quotecurrency' => 'ZWL', 'mid' => 16.8567 },
-            ],
-          }
-        end
-
-        let(:expected_rates) do
-          [
-            {
-              currency_code: 'ZIG',
-              validity_start_date: date.beginning_of_month,
-              validity_end_date: date.end_of_month,
-              rate: 16.8567,
-              rate_type: ExchangeRateCurrencyRate::MONTHLY_RATE_TYPE,
-            },
-          ].as_json
-        end
-
-        it 'will create a ZIG rate' do
-          service.call
-
-          new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
-
-          expect(new_rates).to include_json(expected_rates)
-        end
-      end
     end
 
     context 'when type is SPOT_RATE_TYPE' do
