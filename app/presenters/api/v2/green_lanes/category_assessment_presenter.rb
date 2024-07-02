@@ -77,7 +77,8 @@ module Api
         end
 
         def additional_codes
-          Array.wrap(additional_code)
+          additional_codes = Array.wrap(additional_code)
+          additional_codes.select { |ad| ad.exempting_additional_code_override.present? }
         end
 
         def pseudo_exemptions

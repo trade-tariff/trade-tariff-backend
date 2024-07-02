@@ -82,6 +82,12 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       end
     end
 
+    let :exempting_additional_code do
+      create(:additional_code, :with_exempting_additional_code_override).tap do |ad_code|
+        assessment.measures.first.update additional_code: ad_code
+      end
+    end
+
     let :additional_code do
       create(:additional_code).tap do |ad_code|
         assessment.measures.first.update additional_code: ad_code
@@ -109,16 +115,22 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       it { is_expected.to eq_pk certificates }
     end
 
-    context 'with additional code' do
+    context 'with white listed additional code' do
+      before { exempting_additional_code }
+
+      it { is_expected.to match_array [exempting_additional_code] }
+    end
+
+    context 'with additional code without white listed' do
       before { additional_code }
 
-      it { is_expected.to match_array [additional_code] }
+      it { is_expected.to match_array [] }
     end
 
     context 'with certificates and additional code' do
-      before { certificates && additional_code }
+      before { certificates && exempting_additional_code }
 
-      it { is_expected.to match_array certificates << additional_code }
+      it { is_expected.to match_array certificates << exempting_additional_code }
     end
 
     context 'with pseudo exemption' do
