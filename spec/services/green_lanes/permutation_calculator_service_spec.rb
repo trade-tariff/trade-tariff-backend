@@ -97,7 +97,7 @@ RSpec.describe GreenLanes::PermutationCalculatorService do
         ]
       end
 
-      it_behaves_like 'two segregated lists'
+      it_behaves_like 'a single list'
     end
 
     context 'with different exemption certificates' do
