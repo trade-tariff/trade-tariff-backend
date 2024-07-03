@@ -82,23 +82,18 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       end
     end
 
-    let :additional_codes do
-      additional_codes = create_list(:additional_code, 2)
+    let :exempting_additional_codes do
+      additional_codes = create_list(:additional_code, 2, :with_exempting_additional_code_override)
       assessment.measures[0].update additional_code: additional_codes[0]
       assessment.measures[1].update additional_code: additional_codes[1]
       additional_codes
     end
 
-    let :exempting_additional_code do
-      create(:additional_code, :with_exempting_additional_code_override).tap do |ad_code|
-        assessment.measures.first.update additional_code: ad_code
-      end
-    end
-
-    let :additional_code do
-      create(:additional_code).tap do |ad_code|
-        assessment.measures.first.update additional_code: ad_code
-      end
+    let :additional_codes do
+      additional_codes = create_list(:additional_code, 2)
+      assessment.measures[0].update additional_code: additional_codes[0]
+      assessment.measures[1].update additional_code: additional_codes[1]
+      additional_codes
     end
 
     context 'with certificates' do
@@ -123,21 +118,21 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     end
 
     context 'with white listed additional code' do
-      before { additional_codes }
+      before { exempting_additional_codes }
 
-      it { is_expected.to match_array additional_codes }
+      it { is_expected.to match_array exempting_additional_codes }
     end
 
     context 'with additional code without white listed' do
-      before { additional_code }
+      before { additional_codes }
 
       it { is_expected.to match_array [] }
     end
 
     context 'with certificates and additional code' do
-      before { certificates && additional_codes }
+      before { certificates && exempting_additional_codes }
 
-      it { is_expected.to match_array certificates + additional_codes }
+      it { is_expected.to match_array certificates + exempting_additional_codes }
     end
 
     context 'with pseudo exemption' do
