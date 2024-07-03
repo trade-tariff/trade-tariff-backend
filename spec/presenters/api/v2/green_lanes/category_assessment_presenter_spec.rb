@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
-  subject(:presented) { described_class.new(assessment, *permutations.first) }
+  subject(:presented) { described_class.new(assessment, permutations.first, assessment.measures) }
 
-  let(:assessment) { create :category_assessment, :with_measures }
+  let(:assessment) { create :category_assessment, :with_measures, measures_count: 2 }
 
   let :permutations do
     GreenLanes::PermutationCalculatorService.new(assessment.measures).call
@@ -15,14 +15,14 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
   describe '.wrap' do
     subject(:wrapped) { described_class.wrap [assessment] }
 
-    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to have_attributes length: 2 }
     it { is_expected.to all be_instance_of described_class }
 
     context 'with first presented category assessment' do
       subject { wrapped.first }
 
       it { is_expected.to have_attributes id: /^[0-9a-f]{32}$/ }
-      it { is_expected.to have_attributes measure_ids: assessment.measures.map(&:measure_sid) }
+      it { is_expected.to have_attributes measure_ids: [assessment.measures.map(&:measure_sid).first] }
     end
 
     context 'with no measures' do
@@ -82,6 +82,13 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       end
     end
 
+    let :additional_codes do
+      additional_codes = create_list(:additional_code, 2)
+      assessment.measures[0].update additional_code: additional_codes[0]
+      assessment.measures[1].update additional_code: additional_codes[1]
+      additional_codes
+    end
+
     let :exempting_additional_code do
       create(:additional_code, :with_exempting_additional_code_override).tap do |ad_code|
         assessment.measures.first.update additional_code: ad_code
@@ -116,9 +123,9 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     end
 
     context 'with white listed additional code' do
-      before { exempting_additional_code }
+      before { additional_codes }
 
-      it { is_expected.to match_array [exempting_additional_code] }
+      it { is_expected.to match_array additional_codes }
     end
 
     context 'with additional code without white listed' do
@@ -128,9 +135,9 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     end
 
     context 'with certificates and additional code' do
-      before { certificates && exempting_additional_code }
+      before { certificates && additional_codes }
 
-      it { is_expected.to match_array certificates << exempting_additional_code }
+      it { is_expected.to match_array certificates + additional_codes }
     end
 
     context 'with pseudo exemption' do

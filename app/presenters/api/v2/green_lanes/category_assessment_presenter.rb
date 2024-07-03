@@ -17,7 +17,6 @@ module Api
                  :geographical_area,
                  :excluded_geographical_areas,
                  :measure_conditions,
-                 :additional_code,
                  to: :first_measure
 
         content_addressable_fields do |ca|
@@ -77,7 +76,7 @@ module Api
         end
 
         def additional_codes
-          additional_codes = Array.wrap(additional_code)
+          additional_codes = measures.map(&:additional_code).compact
           additional_codes.select { |ad| ad.exempting_additional_code_override.present? }
         end
 
