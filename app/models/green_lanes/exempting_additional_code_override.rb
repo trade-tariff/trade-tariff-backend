@@ -4,8 +4,8 @@ module GreenLanes
     plugin :auto_validations, not_null: :presence
 
     one_to_one :reference_additional_code, class: :AdditionalCode,
-                             key: %i[additional_code_type_id additional_code],
-                             primary_key: %i[additional_code_type_id additional_code] do |ds|
+                                           key: %i[additional_code_type_id additional_code],
+                                           primary_key: %i[additional_code_type_id additional_code] do |ds|
       ds.with_actual(AdditionalCode)
     end
 

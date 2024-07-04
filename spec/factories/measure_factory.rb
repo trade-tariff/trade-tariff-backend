@@ -518,10 +518,14 @@ FactoryBot.define do
         additional_code_description { Forgery(:basic).text }
       end
 
+      additional_code_id { '000' }
+      additional_code_type_id { '7' }
+
       after(:build) do |measure, evaluator|
         adco = create(
           :additional_code,
           :with_description,
+          :with_exempting_additional_code_override,
           additional_code_type_id: measure.additional_code_type_id,
           additional_code: evaluator.additional_code_id.presence || generate(:additional_code_id),
           additional_code_description: evaluator.additional_code_description,
