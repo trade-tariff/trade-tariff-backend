@@ -11,7 +11,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
 
   let(:category_assessment) { create :category_assessment, measure: }
   let(:certificate) { create :certificate, :exemption, :with_certificate_type, :with_description }
-  let(:measure) { create :measure, :with_additional_code, :with_base_regulation, certificate: }
+  let(:measure) { create :measure, :with_exempting_additional_code, :with_base_regulation, certificate: }
   let(:exemption) { create :green_lanes_exemption }
 
   let :presented do
