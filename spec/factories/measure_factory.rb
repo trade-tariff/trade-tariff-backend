@@ -518,6 +518,26 @@ FactoryBot.define do
         additional_code_description { Forgery(:basic).text }
       end
 
+      after(:build) do |measure, evaluator|
+        adco = create(
+          :additional_code,
+          :with_description,
+          additional_code_type_id: measure.additional_code_type_id,
+          additional_code: evaluator.additional_code_id.presence || generate(:additional_code_id),
+          additional_code_description: evaluator.additional_code_description,
+        )
+        measure.additional_code_sid = adco.additional_code_sid
+        measure.additional_code_id = adco.additional_code
+        measure.additional_code_type_id = adco.additional_code_type_id
+        measure.save
+      end
+    end
+
+    trait :with_exempting_additional_code do
+      transient do
+        additional_code_description { Forgery(:basic).text }
+      end
+
       additional_code_id { '000' }
       additional_code_type_id { '7' }
 
@@ -529,7 +549,7 @@ FactoryBot.define do
           additional_code_type_id: measure.additional_code_type_id,
           additional_code: evaluator.additional_code_id.presence || generate(:additional_code_id),
           additional_code_description: evaluator.additional_code_description,
-        )
+          )
         measure.additional_code_sid = adco.additional_code_sid
         measure.additional_code_id = adco.additional_code
         measure.additional_code_type_id = adco.additional_code_type_id
