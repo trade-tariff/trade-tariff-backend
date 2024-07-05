@@ -50,20 +50,20 @@ RSpec.describe Api::Admin::GreenLanes::ExemptingAdditionalCodeOverridesControlle
 
   describe 'POST to #create' do
     let(:make_request) do
-      authenticated_post api_admin_green_lanes_exempting_additional_code_overrides_path(format: :json), params: eco_data
+      authenticated_post api_admin_green_lanes_exempting_additional_code_overrides_path(format: :json), params: eaco_data
     end
 
-    let :eco_data do
+    let :eaco_data do
       {
         data: {
           type: :exempting_additional_code_override,
-          attributes: eco_attrs,
+          attributes: eaco_attrs,
         },
       }
     end
 
     context 'with valid params' do
-      let(:eco_attrs) { build(:exempting_additional_code_override).to_hash }
+      let(:eaco_attrs) { build(:exempting_additional_code_override).to_hash }
 
       it { is_expected.to have_http_status :created }
       it { is_expected.to have_attributes location: api_admin_green_lanes_exempting_additional_code_override_url(GreenLanes::ExemptingAdditionalCodeOverride.last.id) }
@@ -71,7 +71,7 @@ RSpec.describe Api::Admin::GreenLanes::ExemptingAdditionalCodeOverridesControlle
     end
 
     context 'with invalid params' do
-      let(:eco_attrs) { build(:exempting_additional_code_override, additional_code: nil).to_hash }
+      let(:eaco_attrs) { build(:exempting_additional_code_override, additional_code: nil).to_hash }
 
       it { is_expected.to have_http_status :unprocessable_entity }
 
