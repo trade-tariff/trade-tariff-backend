@@ -25,8 +25,8 @@ module GreenLanes
 
     def compute_assessment_permutations(assessment, assessment_measures)
       permutations_for_assessment(assessment_measures)
-        .map do |key, permutation|
-          present_assessment(assessment, key, permutation)
+        .map do |key, measure_permutation|
+          present_assessment(assessment, key, measure_permutation)
         end
     end
 
@@ -34,9 +34,9 @@ module GreenLanes
       PermutationCalculatorService.new(assessment_measures).call
     end
 
-    def present_assessment(assessment, key, permutation)
+    def present_assessment(assessment, key, measure_permutation)
       ::Api::V2::GreenLanes::CategoryAssessmentPresenter
-        .new(assessment, key, permutation)
+        .new(assessment, key, measure_permutation)
     end
 
     def filter_by_geographical_area(measure)
