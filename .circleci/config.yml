@@ -45,7 +45,7 @@ executors:
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
     resource_class: medium
     steps:
       - checkout
@@ -154,7 +154,7 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -208,7 +208,7 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -285,7 +285,7 @@ jobs:
 
   notify-production-deployment:
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
     steps:
       - checkout
       - tariff/notify-production-release:
