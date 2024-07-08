@@ -45,7 +45,7 @@ executors:
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
     resource_class: medium
     steps:
       - checkout
@@ -54,7 +54,10 @@ jobs:
           command: |
             sudo apt update
             sudo apt install libcurl4-openssl-dev
-      - ruby/install-deps
+      - run:
+          name: Install ruby dependencies
+          command: |
+            bundle install
       - run:
           name: Rubocop all files
           when: always
@@ -154,7 +157,7 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -184,7 +187,10 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install libcurl4-openssl-dev postgresql-client
-      - ruby/install-deps
+      - run:
+          name: Install ruby dependencies
+          command: |
+            bundle install
       - run:
           name: "Setup DB"
           command: |
@@ -208,7 +214,7 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -237,7 +243,10 @@ jobs:
           command: |
             sudo apt-get update
             sudo apt-get install libcurl4-openssl-dev postgresql-client
-      - ruby/install-deps
+      - run:
+          name: Install ruby dependencies
+          command: |
+            bundle install
       - run:
           name: "Setup DB"
           command: |
@@ -285,7 +294,7 @@ jobs:
 
   notify-production-deployment:
     docker:
-      - image: cimg/ruby:3.2.3
+      - image: cimg/ruby:3.3.3
     steps:
       - checkout
       - tariff/notify-production-release:
