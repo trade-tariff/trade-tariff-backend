@@ -36,7 +36,7 @@ module TariffSynchronizer
     #   "fileSize"=>478 }
     # downloadURL contains gzip file with an xml file inside.
     def response
-      @response = Rails.cache.fetch('cds-updates-list', expires_in: 2.hours) do
+      @response = begin
         uri = URI.join(ENV['HMRC_API_HOST'], '/bulk-data-download/list/TARIFF-DAILY')
         https = Net::HTTP.new(uri.host, uri.port)
         https.use_ssl = true
