@@ -54,7 +54,10 @@ jobs:
           command: |
             sudo apt update
             sudo apt install libcurl4-openssl-dev
-      - ruby/install-deps
+      - run:
+          name: Install ruby dependencies
+          command: |
+            bundle install
       - run:
           name: Rubocop all files
           when: always
