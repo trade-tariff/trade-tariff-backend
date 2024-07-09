@@ -24,7 +24,7 @@ Rails.application.configure do
   # Show full error reports.
 
   # Raise exceptions instead of rendering exception templates.
-  config.action_dispatch.show_exceptions = true
+  config.action_dispatch.show_exceptions = :all
 
   config.consider_all_requests_local = true
 
