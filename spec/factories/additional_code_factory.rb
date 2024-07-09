@@ -11,6 +11,14 @@ FactoryBot.define do
     validity_start_date     { 2.years.ago.beginning_of_day }
     validity_end_date       { nil }
 
+    trait :with_exempting_additional_code_override do
+      after(:build) do |adco, _evaluator|
+        create(:exempting_additional_code_override,
+               additional_code_type_id: adco.additional_code_type_id,
+               additional_code: adco.additional_code)
+      end
+    end
+
     trait :with_export_refund_nomenclature do
       after(:build) do |adco, _evaluator|
         create(:export_refund_nomenclature, export_refund_code: adco.additional_code)

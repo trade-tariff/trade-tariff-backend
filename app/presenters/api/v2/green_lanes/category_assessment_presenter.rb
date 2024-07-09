@@ -77,7 +77,7 @@ module Api
 
         def additional_codes
           additional_codes = measures.map(&:additional_code).compact
-          additional_codes.empty? ? [] : additional_codes
+          additional_codes.select { |ad| ad.exempting_additional_code_override.present? }
         end
 
         def pseudo_exemptions

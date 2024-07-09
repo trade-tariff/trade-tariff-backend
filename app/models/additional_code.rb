@@ -39,6 +39,12 @@ class AdditionalCode < Sequel::Model
   one_to_one :export_refund_nomenclature, key: :export_refund_code,
                                           primary_key: :additional_code
 
+  one_to_one :exempting_additional_code_override,
+             class: 'ExemptingAdditionalCodeOverride',
+             class_namespace: 'GreenLanes',
+             primary_key: %i[additional_code_type_id additional_code],
+             key: %i[additional_code_type_id additional_code]
+
   delegate :description, :formatted_description, to: :additional_code_description
 
   def code
