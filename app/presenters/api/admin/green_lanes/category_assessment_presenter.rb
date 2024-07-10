@@ -4,10 +4,10 @@ module Api
       class CategoryAssessmentPresenter < SimpleDelegator
         attr_reader :green_lanes_measures
 
-        def initialize(ca, measures)
+        def initialize(category_assessment, measures)
           @green_lanes_measures = measures
 
-          super(ca)
+          super(category_assessment)
         end
 
         def green_lanes_measure_ids
