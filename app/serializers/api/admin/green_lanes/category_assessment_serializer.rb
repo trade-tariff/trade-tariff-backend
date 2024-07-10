@@ -13,12 +13,12 @@ module Api
                    :regulation_role,
                    :theme_id
 
-        attribute :measure_pagination do |object, params|
+        attribute :measure_pagination do |_object, params|
           if params[:with_measures]
             {
-              :id => 1,
-              :type => 'measure_pagination',
-              :attributes=> params[:measure_pagination]
+              id: 1,
+              type: 'measure_pagination',
+              attributes: params[:measure_pagination],
             }
           end
         end

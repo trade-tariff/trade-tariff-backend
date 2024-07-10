@@ -19,8 +19,9 @@ module Api
           options[:include] = %i[green_lanes_measures green_lanes_measures.goods_nomenclature exemptions]
 
           ca = ::GreenLanes::CategoryAssessment.with_pk!(params[:id])
-          options[:params] = { with_measures: true, with_exemptions: true,
-                               measure_pagination: measure_pagination(green_lanes_measures(ca))}
+          options[:params] = { with_measures: true,
+                               with_exemptions: true,
+                               measure_pagination: measure_pagination(green_lanes_measures(ca)) }
 
           render json: serialize(CategoryAssessmentPresenter.new(ca, green_lanes_measures(ca).all), options)
         end
@@ -131,9 +132,9 @@ module Api
         def measure_pagination(data_set)
           total_count = data_set.pagination_record_count
           {
-            current_page: current_page,
+            current_page:,
             limit_value: per_page,
-            total_pages: (total_count.to_f / per_page).ceil
+            total_pages: (total_count.to_f / per_page).ceil,
           }
         end
       end
