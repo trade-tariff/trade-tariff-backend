@@ -1,16 +1,6 @@
-require 'routing_filter/service_path_prefix'
-
 Rails.application.routes.draw do
   get 'healthcheck' => 'healthcheck#index'
   get 'healthcheckz' => 'healthcheck#checkz'
-
-  scope :api, module: :api do
-    filter :service_path_prefix
-
-    scope :beta, module: :beta do
-      resources :search, only: %i[index]
-    end
-  end
 
   if TradeTariffBackend.enable_admin?
     namespace :api, defaults: { format: 'json' }, path: '/admin' do

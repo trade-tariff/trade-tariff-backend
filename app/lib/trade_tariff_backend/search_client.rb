@@ -13,13 +13,11 @@ module TradeTariffBackend
     attr_reader :indexes,
                 :search_operation_options,
                 :namespace,
-                :by_heading
 
     def initialize(search_client, options = {})
       @indexes = options.fetch(:indexes, [])
       @search_operation_options = options.fetch(:search_operation_options,
                                                 self.class.search_operation_options)
-      @by_heading = options.fetch(:by_heading, false)
       @namespace = options.fetch(:namespace, 'search')
 
       super(search_client)
@@ -61,8 +59,6 @@ module TradeTariffBackend
     end
 
     def build_index(index)
-      return BuildIndexByHeadingsWorker.perform_async(index.name_with_namespace) if by_heading
-
       (1..index.total_pages).each do |page_number|
         BuildIndexPageWorker.perform_async(namespace, index.name_without_namespace, page_number)
       end
