@@ -12,12 +12,14 @@ module TradeTariffBackend
 
     attr_reader :indexes,
                 :search_operation_options,
-                :namespace,
+                :namespace
 
     def initialize(search_client, options = {})
       @indexes = options.fetch(:indexes, [])
-      @search_operation_options = options.fetch(:search_operation_options,
-                                                self.class.search_operation_options)
+      @search_operation_options = options.fetch(
+        :search_operation_options,
+        self.class.search_operation_options,
+      )
       @namespace = options.fetch(:namespace, 'search')
 
       super(search_client)
