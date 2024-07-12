@@ -34,7 +34,7 @@ graph LR
     CA2 --> T2[Theme]
 ```
 
- ## API
+## API
 
 The API we expose does not map directly to the internal normalised representation we have in the database. Themes are a one to one mapping but category assessments are more complicated.
 

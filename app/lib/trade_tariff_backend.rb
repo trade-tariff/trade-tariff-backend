@@ -104,12 +104,6 @@ module TradeTariffBackend
       Mailer.reindex_exception(e).deliver_now
     end
 
-    def by_heading_reindex(indexer = by_heading_search_client)
-      indexer.update_all
-    rescue StandardError => e
-      Mailer.reindex_exception(e).deliver_now
-    end
-
     # Number of changes to fetch for Commodity/Heading/Chapter
     def change_count
       10
@@ -133,14 +127,6 @@ module TradeTariffBackend
       )
     end
 
-    def by_heading_search_client
-      @by_heading_search_client ||= SearchClient.new(
-        opensearch_client,
-        indexes: by_heading_search_indexes,
-        by_heading: true,
-      )
-    end
-
     def search_indexes
       [
         Search::ChapterIndex,
@@ -154,12 +140,6 @@ module TradeTariffBackend
     def v2_search_indexes
       [
         Search::GoodsNomenclatureIndex,
-      ].map(&:new)
-    end
-
-    def by_heading_search_indexes
-      [
-        Search::BulkSearchIndex,
       ].map(&:new)
     end
 
