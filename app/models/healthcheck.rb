@@ -23,7 +23,6 @@ class Healthcheck
       postgres: postgres_healthy?,
       redis: redis_healthy?,
       opensearch: opensearch_healthy?,
-      search_query_parser: search_query_parser_healthy?,
     }
 
     checks.merge(healthy: checks.values.all?)
@@ -31,15 +30,6 @@ class Healthcheck
 
   def current_revision
     revision || Rails.env.to_s
-  end
-
-  def search_query_parser_healthy?
-    Api::Beta::SearchQueryParserService
-      .new('test')
-      .call
-      .is_a?(::Beta::Search::SearchQueryParserResult)
-  rescue Faraday::Error
-    false
   end
 
   def opensearch_healthy?
