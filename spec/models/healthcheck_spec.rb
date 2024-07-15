@@ -3,11 +3,6 @@ RSpec.describe Healthcheck do
 
   before do
     allow(TradeTariffBackend).to receive(:revision).and_return nil
-
-    search_result = Beta::Search::SearchQueryParserResult.new
-    service_double = instance_double('Api::Beta::SearchQueryParserService', call: search_result)
-
-    allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(service_double)
   end
 
   describe '#current_revision' do
@@ -82,7 +77,6 @@ RSpec.describe Healthcheck do
         opensearch: true,
         postgres: true,
         redis: true,
-        search_query_parser: true,
         sidekiq: true,
       }
     end
