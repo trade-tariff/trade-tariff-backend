@@ -3,8 +3,7 @@ require 'rails_helper'
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
   before do
     create :category_assessment, measure: gn.measures.first
-    allow(TradeTariffBackend).to receive(:service).and_return 'xi'
-    allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+    allow(TradeTariffBackend).to receive_messages(service: 'xi', green_lanes_api_tokens: 'Trade-Tariff-Test')
   end
 
   let :gn do

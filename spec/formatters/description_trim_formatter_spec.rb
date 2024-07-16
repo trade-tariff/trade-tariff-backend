@@ -48,7 +48,7 @@ RSpec.describe DescriptionTrimFormatter do
       ).to eq ''
     end
 
-    it 'replaces  @<anycharacter> with <anycharacter>' do
+    it 'replaces @<anycharacter> with <anycharacter>' do
       expect(
         described_class.format(description: '@1'),
       ).to eq '1'

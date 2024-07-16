@@ -37,16 +37,16 @@ RSpec.describe TariffSynchronizer::FileService do
       it 'returns a IO object with the associated file info', :aggregate_failures do
         allow(base_update).to receive(:file_path).and_return('spec/fixtures/hello_world.txt')
         result = described_class.file_as_stringio(base_update)
-        expect(result).to be_kind_of(IO)
+        expect(result).to be_a(IO)
         expect(result.read).to eq("hola mundo\n")
       end
     end
   end
 
   context 'when production' do
-    let(:aws_resource) { instance_double('Aws::S3::Resource') }
-    let(:aws_bucket) { instance_double('Aws::S3::Bucket') }
-    let(:aws_object) { instance_double('Aws::S3::Object') }
+    let(:aws_resource) { instance_double(Aws::S3::Resource) }
+    let(:aws_bucket) { instance_double(Aws::S3::Bucket) }
+    let(:aws_object) { instance_double(Aws::S3::Object) }
 
     before do
       string_inquirer = ActiveSupport::StringInquirer.new('production')
@@ -89,7 +89,7 @@ RSpec.describe TariffSynchronizer::FileService do
 
     describe '.file_as_stringio' do
       it 'calls amazon s3 to get the object with the same file_path and returns a string io', :aggregate_failures do
-        aws_object_output = instance_double('Aws::S3::Types::GetObjectOutput')
+        aws_object_output = instance_double(Aws::S3::Types::GetObjectOutput)
 
         allow(base_update).to receive(:file_path).and_return('data/some-file.txt')
         allow(aws_object).to receive(:get).and_return(aws_object_output)

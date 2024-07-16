@@ -176,13 +176,13 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
       context 'when heading has at least one measure condition containing special nature certificate' do
         let(:measure_collection) { MeasureCollection.new measures_special_nature, geographical_area_id: }
 
-        it { expect(presenter.special_nature?(measures_special_nature.first)).to eq(true) }
+        it { expect(presenter.special_nature?(measures_special_nature.first)).to be(true) }
       end
 
       context 'when heading does not have any measure conditions containing special nature certificate' do
         let(:measure_collection) { MeasureCollection.new measures_not_special_nature, geographical_area_id: }
 
-        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to eq(false) }
+        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to be(false) }
       end
     end
 
@@ -202,7 +202,7 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
           )
         end
 
-        it { expect(presenter.special_nature?(measures.first)).to eq(true) }
+        it { expect(presenter.special_nature?(measures.first)).to be(true) }
       end
 
       context 'when heading does not have any measure conditions containing special nature certificate' do
@@ -217,19 +217,19 @@ RSpec.describe Api::V2::Headings::DeclarableHeadingPresenter do
           )
         end
 
-        it { expect(presenter.special_nature?(measures.first)).to eq(false) }
+        it { expect(presenter.special_nature?(measures.first)).to be(false) }
       end
 
       context 'when heading has some non country specific measure conditions containing special nature certificate' do
         let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature, geographical_area_id: }
 
-        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to eq(false) }
+        it { expect(presenter.special_nature?(measures_not_special_nature.first)).to be(false) }
       end
 
       context 'when heading has some country specific measure conditions containing special nature certificate' do
         let(:measure_collection) { MeasureCollection.new measures_not_special_nature + measures_special_nature, geographical_area_id: }
 
-        it { expect(presenter.special_nature?(measures_special_nature.first)).to eq(true) }
+        it { expect(presenter.special_nature?(measures_special_nature.first)).to be(true) }
       end
     end
   end

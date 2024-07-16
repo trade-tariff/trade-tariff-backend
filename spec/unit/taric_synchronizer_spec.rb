@@ -1,8 +1,8 @@
 # rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/AnyInstance
-RSpec.describe TaricSynchronizer, truncation: true do
+RSpec.describe TaricSynchronizer, :truncation do
   describe '.initial_update_date' do
-    it 'returns initial update date ' do
+    it 'returns initial update date' do
       expect(described_class.initial_update_date).to eq(Date.new(2012, 6, 6))
     end
   end
@@ -169,13 +169,6 @@ RSpec.describe TaricSynchronizer, truncation: true do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
     end
-
-    context 'with uk service' do
-      xit 'will raise an wrong environment error' do
-        allow(TradeTariffBackend).to receive(:service).and_return('uk')
-        expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
-      end
-    end
   end
 
   describe 'check sequence of Taric daily updates' do
@@ -223,13 +216,6 @@ RSpec.describe TaricSynchronizer, truncation: true do
     before do
       record
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
-    end
-
-    context 'with uk service' do
-      xit 'will raise an wrong environment error' do
-        allow(TradeTariffBackend).to receive(:service).and_return('uk')
-        expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
-      end
     end
 
     it 'performs a rollback' do

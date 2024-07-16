@@ -1,4 +1,4 @@
-RSpec.describe TariffSynchronizer::TariffLogger, truncation: true do
+RSpec.describe TariffSynchronizer::TariffLogger, :truncation do
   include BankHolidaysHelper
 
   before do

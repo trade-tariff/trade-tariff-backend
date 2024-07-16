@@ -8,7 +8,7 @@ RSpec.describe Beta::Search::OpenSearchResult::NoHits do
 
     it { is_expected.to be_a(Beta::Search::OpenSearchResult) }
     it { expect(result.took).to eq(0) }
-    it { expect(result.timed_out).to eq(false) }
+    it { expect(result.timed_out).to be(false) }
     it { expect(result.max_score).to eq(0) }
     it { expect(result.hits.count).to eq(0) }
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }

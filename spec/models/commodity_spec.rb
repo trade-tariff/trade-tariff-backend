@@ -120,7 +120,7 @@ RSpec.describe Commodity do
     let(:commodity) { create :commodity }
 
     it 'returns Sequel Dataset' do
-      expect(commodity.changes).to be_kind_of Sequel::Dataset
+      expect(commodity.changes).to be_a Sequel::Dataset
     end
 
     context 'with commodity changes' do

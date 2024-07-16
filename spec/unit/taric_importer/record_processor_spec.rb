@@ -19,7 +19,7 @@ RSpec.describe TaricImporter::RecordProcessor do
     it 'instantiates a Record' do
       record_processor.record = record_hash
 
-      expect(record_processor.record).to be_kind_of TaricImporter::RecordProcessor::Record
+      expect(record_processor.record).to be_a TaricImporter::RecordProcessor::Record
     end
   end
 

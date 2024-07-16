@@ -20,8 +20,7 @@ RSpec.describe TaricUpdatesSynchronizerWorker, type: :worker do
       allow(Sidekiq::Client).to receive(:enqueue)
 
       migrations_dir = Rails.root.join(file_fixture_path).join('data_migrations')
-      allow(DataMigrator).to receive(:migrations_dir).and_return(migrations_dir)
-      allow(DataMigrator).to receive(:migrate_up!).and_return(true)
+      allow(DataMigrator).to receive_messages(migrations_dir:, migrate_up!: true)
 
       allow(GoodsNomenclatures::TreeNode).to receive(:refresh!).and_call_original
     end

@@ -24,7 +24,7 @@ module Sequel
         end
 
         def id
-          (super.presence || identifier)
+          super.presence || identifier
         end
 
         def oplog?

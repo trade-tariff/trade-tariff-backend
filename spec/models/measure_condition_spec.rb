@@ -292,7 +292,7 @@ RSpec.describe MeasureCondition do
     context 'when the condition is not threshold condition' do
       subject(:measure_condition) { build :measure_condition, :without_threshold }
 
-      it { expect(measure_condition.threshold_unit_type).to eq nil }
+      it { expect(measure_condition.threshold_unit_type).to be_nil }
     end
   end
 

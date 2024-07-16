@@ -26,7 +26,7 @@ RSpec.describe Api::V2::ChangesController do
   end
 
   describe '#index' do
-    it 'will be successful' do
+    it 'is successful' do
       get :index, format: :json
 
       expect(response).to be_successful
@@ -37,7 +37,7 @@ RSpec.describe Api::V2::ChangesController do
 
       let(:json) { JSON.parse(response.body) }
 
-      it 'will return an empty array' do
+      it 'returns an empty array' do
         expect(json).to eq(no_changes_response)
       end
     end
@@ -55,7 +55,7 @@ RSpec.describe Api::V2::ChangesController do
 
         let(:json) { JSON.parse(response.body) }
 
-        it 'will return the correct code' do
+        it 'returns the correct code' do
           expect(json).to eq(expected_change_response)
         end
       end
@@ -65,7 +65,7 @@ RSpec.describe Api::V2::ChangesController do
 
         let(:json) { JSON.parse(response.body) }
 
-        it 'will return the expired code' do
+        it 'returns the expired code' do
           expect(json).to eq(no_changes_response)
         end
       end
@@ -84,7 +84,7 @@ RSpec.describe Api::V2::ChangesController do
 
         let(:json) { JSON.parse(response.body) }
 
-        it 'will return the correct code' do
+        it 'returns the correct code' do
           expect(json).to eq(expected_change_response)
         end
       end
@@ -94,7 +94,7 @@ RSpec.describe Api::V2::ChangesController do
 
         let(:json) { JSON.parse(response.body) }
 
-        it 'will return the expired code' do
+        it 'returns the expired code' do
           expect(json).to eq(no_changes_response)
         end
       end

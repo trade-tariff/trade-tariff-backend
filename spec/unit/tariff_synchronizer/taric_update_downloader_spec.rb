@@ -29,7 +29,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloader do
       end
 
       it 'Calls TariffDownloader perform for each TARIC update file found' do
-        downloader = instance_spy('TariffSynchronizer::TariffDownloader', perform: true)
+        downloader = instance_spy(TariffSynchronizer::TariffDownloader, perform: true)
 
         ['ABC.xml', 'XYZ.xml'].each do |filename|
           allow(TariffSynchronizer::TariffDownloader).to receive(:new)

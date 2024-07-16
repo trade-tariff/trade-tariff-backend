@@ -93,14 +93,14 @@ module Reporting
         quota_definition_dates = quota_definition_dates.map { |start_date, end_date|
           start_date = start_date.to_date.to_fs(:govuk_short_approx)
           end_date = end_date.to_date.to_fs(:govuk_short_approx) if end_date.present?
-          end_date = (end_date.presence || '-')
+          end_date = end_date.presence || '-'
 
           [start_date, end_date].join(' - ')
         }.join("\n")
 
         measure_start_date = measure.effective_start_date.to_date.to_fs(:govuk_short_approx)
         measure_end_date = measure.effective_end_date.to_date.to_fs(:govuk_short_approx) if measure.effective_end_date.present?
-        measure_end_date = (measure_end_date.presence || '-')
+        measure_end_date = measure_end_date.presence || '-'
         measure_extent = [measure_start_date, measure_end_date].join(' - ')
 
         [

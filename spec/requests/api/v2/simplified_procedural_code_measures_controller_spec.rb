@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::SimplifiedProceduralCodeMeasuresController, type: :request, flaky: true do
+RSpec.describe Api::V2::SimplifiedProceduralCodeMeasuresController, :flaky, type: :request do
   describe 'GET #index' do
     before do
       create(

@@ -8,7 +8,7 @@ RSpec.describe Api::V2::Measures::MeasurePresenter do
   end
 
   describe '#legal_acts' do
-    it 'will be mapped through the MeasureLegalActPresenter' do
+    it 'is mapped through the MeasureLegalActPresenter' do
       expect(presenter.legal_acts.first).to \
         be_instance_of(Api::V2::Measures::MeasureLegalActPresenter)
     end

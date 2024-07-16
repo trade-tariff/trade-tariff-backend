@@ -48,8 +48,7 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   describe '#definition' do
     context 'when the stemming exclusion and synonym references are specified in the environment' do
       before do
-        allow(TradeTariffBackend).to receive(:stemming_exclusion_reference_analyzer).and_return(stemming_exclusion_reference_analyzer)
-        allow(TradeTariffBackend).to receive(:synonym_reference_analyzer).and_return(synonym_reference_analyzer)
+        allow(TradeTariffBackend).to receive_messages(stemming_exclusion_reference_analyzer:, synonym_reference_analyzer:)
       end
 
       let(:stemming_exclusion_reference_analyzer) { 'analyzers/F135140295' }

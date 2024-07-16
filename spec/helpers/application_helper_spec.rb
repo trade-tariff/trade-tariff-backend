@@ -21,7 +21,7 @@ RSpec.describe ApplicationHelper do
         end
 
         it 'generates council regulation url' do
-          expect(regulation_url(measure.generating_regulation)).to be_eql('http://eur-lex.europa.eu/search.html?whOJ=NO_OJ%3D353,YEAR_OJ%3D2017,PAGE_FIRST%3D0019&DB_COLL_OJ=oj-c&type=advanced&lang=en')
+          expect(regulation_url(measure.generating_regulation)).to eql('http://eur-lex.europa.eu/search.html?whOJ=NO_OJ%3D353,YEAR_OJ%3D2017,PAGE_FIRST%3D0019&DB_COLL_OJ=oj-c&type=advanced&lang=en')
         end
       end
 
@@ -45,7 +45,7 @@ RSpec.describe ApplicationHelper do
         end
 
         it 'generates council regulation url' do
-          expect(regulation_url(measure.generating_regulation)).to be_eql('http://eur-lex.europa.eu/search.html?whOJ=NO_OJ%3D138,YEAR_OJ%3D2017,PAGE_FIRST%3D0057&DB_COLL_OJ=oj-l&type=advanced&lang=en')
+          expect(regulation_url(measure.generating_regulation)).to eql('http://eur-lex.europa.eu/search.html?whOJ=NO_OJ%3D138,YEAR_OJ%3D2017,PAGE_FIRST%3D0057&DB_COLL_OJ=oj-l&type=advanced&lang=en')
         end
       end
     end
@@ -71,7 +71,7 @@ RSpec.describe ApplicationHelper do
         end
 
         it 'generates council regulation url' do
-          expect(regulation_url(measure.suspending_regulation)).to be_eql(
+          expect(regulation_url(measure.suspending_regulation)).to eql(
             'http://eur-lex.europa.eu/search.html?whOJ=NO_OJ%3D297,YEAR_OJ%3D1995,PAGE_FIRST%3D0001&DB_COLL_OJ=oj-l&type=advanced&lang=en',
           )
         end
@@ -102,7 +102,7 @@ RSpec.describe ApplicationHelper do
         end
 
         it 'generates council regulation url' do
-          expect(regulation_url(measure.suspending_regulation)).to be_eql(
+          expect(regulation_url(measure.suspending_regulation)).to eql(
             'http://eur-lex.europa.eu/search.html?whOJ=NO_OJ%3D328,PAGE_FIRST%3D0006&DB_COLL_OJ=oj-l&type=advanced&lang=en',
           )
         end

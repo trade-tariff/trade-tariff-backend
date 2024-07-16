@@ -73,7 +73,7 @@ RSpec.describe Chapter do
     let(:chapter) { create :chapter }
 
     it 'returns Sequel Dataset' do
-      expect(chapter.changes).to be_kind_of Sequel::Dataset
+      expect(chapter.changes).to be_a Sequel::Dataset
     end
 
     context 'with Chapter changes' do

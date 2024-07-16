@@ -9,9 +9,13 @@ module ControllerSpecHelper
   end
 
   def login_as_api_user(user = User.new)
-    request.env['warden'] = instance_double('Authenticated API User',
-                                            authenticate!: true,
-                                            authenticated?: true,
-                                            user:)
+    # rubocop:disable RSpec/VerifiedDoubles
+    request.env['warden'] = double(
+      'Authenticated API User',
+      authenticate!: true,
+      authenticated?: true,
+      user:,
+    )
+    # rubocop:enable RSpec/VerifiedDoubles
   end
 end

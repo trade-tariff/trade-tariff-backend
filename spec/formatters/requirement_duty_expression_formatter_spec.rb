@@ -21,7 +21,7 @@ RSpec.describe RequirementDutyExpressionFormatter do
       end
     end
 
-    context 'when monetary unit, measurement unit & measurement_unit_qualifier are present ' do
+    context 'when monetary unit, measurement unit & measurement_unit_qualifier are present' do
       subject(:output) do
         described_class.format(measurement_unit:,
                                formatted_measurement_unit_qualifier: 'L',

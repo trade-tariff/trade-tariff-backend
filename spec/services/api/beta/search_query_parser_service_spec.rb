@@ -5,7 +5,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
     shared_examples_for 'a null result search query parser call' do |search_query, should_search|
       subject(:result) { described_class.new(search_query, should_search:).call }
 
-      it { expect(result.null_result).to eq(true) }
+      it { expect(result.null_result).to be(true) }
     end
 
     it_behaves_like 'a null result search query parser call', '', true # Empty search query
@@ -44,7 +44,7 @@ RSpec.describe Api::Beta::SearchQueryParserService do
       it { expect(result.noun_chunks).to eq(%w[aaa bib]) }
       it { expect(result.nouns).to eq(%w[aaa bib]) }
       it { expect(result.verbs).to eq([]) }
-      it { expect(result.null_result).to eq(false) }
+      it { expect(result.null_result).to be(false) }
     end
 
     context 'when the search query parser response is bad request' do

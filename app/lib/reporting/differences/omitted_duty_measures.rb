@@ -101,7 +101,7 @@ module Reporting
 
           next if current_measures.nil?
 
-          past_measures.each do |past_measure, _|
+          past_measures.each_key do |past_measure|
             non_continuous_measures << past_measure unless current_measures.include?(past_measure)
           end
         end

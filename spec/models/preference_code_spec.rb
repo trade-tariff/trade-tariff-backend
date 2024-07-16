@@ -23,7 +23,7 @@ RSpec.describe PreferenceCode do
       context 'when measure_type_id does not match any conditions' do
         let(:measure) { create(:measure) }
 
-        it { is_expected.to eq(nil) }
+        it { is_expected.to be_nil }
       end
 
       context 'when third country duty measure' do

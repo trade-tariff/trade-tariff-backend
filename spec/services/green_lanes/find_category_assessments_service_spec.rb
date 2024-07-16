@@ -98,7 +98,7 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         describe 'presented measure groups' do
           subject { first.map(&:measure_ids) }
 
-          it { is_expected.to match_array [[measures[0].measure_sid], [measures[3].measure_sid]] }
+          it { is_expected.to contain_exactly([measures[0].measure_sid], [measures[3].measure_sid]) }
         end
       end
     end

@@ -6,7 +6,7 @@ RSpec.describe Api::V2::SubheadingsController do
 
     context 'when the subheading has at least one child, a heading, a chapter and a section' do
       before do
-        create(:chapter, :with_section, :with_indent, :with_guide, goods_nomenclature_sid: 1, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0100000000')       # Live animals
+        create(:chapter, :with_section, :with_indent, :with_guide, goods_nomenclature_sid: 1, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0100000000') # Live animals
         create(:heading, :with_indent, :with_description, goods_nomenclature_sid: 2, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0101000000')
         create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 3, indents: 1, producline_suffix: '10', goods_nomenclature_item_id: '0101210000')
         create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 4, indents: 2, producline_suffix: '80', goods_nomenclature_item_id: '0101210000')
