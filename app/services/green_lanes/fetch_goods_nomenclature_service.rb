@@ -47,11 +47,22 @@ module GreenLanes
         raise Sequel::RecordNotFound
       end
 
-      GoodsNomenclature
-        .actual
-        .eager(EAGER_LOAD)
-        .where(goods_nomenclature_item_id: length_adjusted_digit_id, producline_suffix: '80')
-        .take
+      gn = GoodsNomenclature
+             .actual
+             .association_join(:goods_nomenclature_indents)
+             .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => length_adjusted_digit_id)
+             .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
+             .first
+
+      if gn.present?
+        GoodsNomenclature
+          .actual
+          .eager(EAGER_LOAD)
+          .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
+          .take
+      else
+        raise Sequel::RecordNotFound
+      end
     end
 
     private
