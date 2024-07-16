@@ -8,7 +8,7 @@ gem 'rails', '~> 7.1'
 
 # DB
 gem 'pg'
-gem 'sequel'
+gem 'sequel', '= 5.76.0'
 gem 'sequel-rails'
 
 # File uploads and AWS

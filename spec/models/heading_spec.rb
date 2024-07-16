@@ -13,7 +13,7 @@ RSpec.describe Heading do
     let(:heading) { create :heading }
 
     it 'returns Sequel Dataset' do
-      expect(heading.changes).to be_kind_of Sequel::Dataset
+      expect(heading.changes).to be_a Sequel::Dataset
     end
 
     context 'with Heading changes' do
@@ -90,7 +90,7 @@ RSpec.describe Heading do
     let!(:heading1) { create(:heading, goods_nomenclature_item_id: '1234000000') }
     let!(:heading2) { create(:heading, goods_nomenclature_item_id: '4321000000') }
 
-    it { expect(described_class.by_code('1234')).to be_kind_of(Sequel::Dataset) }
+    it { expect(described_class.by_code('1234')).to be_a(Sequel::Dataset) }
     it { expect(described_class.by_code('1234')).to include(heading1) }
     it { expect(described_class.by_code('1234')).not_to include(heading2) }
   end

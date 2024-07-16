@@ -203,7 +203,7 @@ RSpec.describe MeasureType do
       it { is_expected.to be_authorised_use_provisions_submission }
     end
 
-    context 'when measure_type_id is not a authorised_use_provisions_submission  measure type id' do
+    context 'when measure_type_id is not a authorised_use_provisions_submission measure type id' do
       subject(:measure_type) { build :measure_type, measure_type_id: '103' }
 
       it { is_expected.not_to be_authorised_use_provisions_submission }

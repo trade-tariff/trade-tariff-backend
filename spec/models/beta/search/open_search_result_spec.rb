@@ -178,7 +178,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
     subject(:search_result) { build(:search_result) }
 
     before do
-      service_double = instance_double('Api::Beta::GuideStatisticsService', call: statistics)
+      service_double = instance_double(Api::Beta::GuideStatisticsService, call: statistics)
       allow(Api::Beta::GuideStatisticsService).to receive(:new).and_return(service_double)
 
       search_result.generate_guide_statistics
@@ -236,7 +236,7 @@ RSpec.describe Beta::Search::OpenSearchResult do
   describe '#redirect!' do
     subject(:result) { build(:search_result) }
 
-    it { expect(result.redirect!).to eq(true) }
+    it { expect(result.redirect!).to be(true) }
     it { expect { result.redirect! }.to change(result, :redirect?).from(false).to(true) }
   end
 

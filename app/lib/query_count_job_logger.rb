@@ -1,5 +1,5 @@
-require 'sidekiq/job_logger'
 require 'sidekiq/component'
+require 'sidekiq/job_logger'
 
 class QueryCountJobLogger < ::Sidekiq::JobLogger
   def call(item, queue)

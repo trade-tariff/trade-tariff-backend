@@ -14,7 +14,7 @@ RSpec.describe Beta::Search::OpenSearchResult::WithHits do
 
     it { is_expected.to be_a(Beta::Search::OpenSearchResult) }
     it { expect(result).to respond_to(:took) }
-    it { expect(result.timed_out).to eq(false) }
+    it { expect(result.timed_out).to be(false) }
     it { expect(result).to respond_to(:max_score) }
     it { expect(result.hits.count).to eq(10) }
     it { expect(result.search_query_parser_result).to eq(search_query_parser_result) }

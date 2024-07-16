@@ -231,7 +231,7 @@ RSpec.describe DescriptionFormatter do
         ).to eq ' utilization '
       end
 
-      it 'does not replace ized  with ised' do
+      it 'does not replace ized with ised' do
         expect(
           described_class.format(description: ' unpasteurized '),
         ).to eq ' unpasteurized '

@@ -154,7 +154,7 @@ RSpec.describe CdsImporter::EntityMapper do
         expect(record.validity_start_date.to_s).to eq '1991-06-01 00:00:00 UTC'
         expect(record.validity_end_date.to_s).to eq '1996-06-14 23:59:59 UTC'
         expect(record.filename).to eq 'test.gzip'
-        expect(record.national).to eq true
+        expect(record.national).to be true
       end
     end
 

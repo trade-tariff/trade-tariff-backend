@@ -45,7 +45,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
       end
 
       it 'returns model instance' do
-        expect(operation.call).to be_kind_of LanguageDescription
+        expect(operation.call).to be_a LanguageDescription
       end
     end
 

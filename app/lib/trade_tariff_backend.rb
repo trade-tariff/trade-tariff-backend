@@ -148,7 +148,7 @@ module TradeTariffBackend
     end
 
     def excess_query_threshold
-      @excess_query_threshold ||= ENV['EXCESS_QUERY_THRESHOLD'].presence&.to_i || 0
+      @excess_query_threshold ||= ENV['EXCESS_QUERY_THRESHOLD'].presence.to_i
     end
 
     def api_version(request)

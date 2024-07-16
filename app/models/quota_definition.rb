@@ -189,7 +189,7 @@ class QuotaDefinition < Sequel::Model
     if last_suspension_period.present?
       today = Time.zone.today
 
-      return true if today >= last_suspension_period.suspension_start_date && today <= last_suspension_period.suspension_end_date
+      true if today >= last_suspension_period.suspension_start_date && today <= last_suspension_period.suspension_end_date
     end
   end
 
@@ -197,7 +197,7 @@ class QuotaDefinition < Sequel::Model
     if last_blocking_period.present?
       today = Time.zone.today
 
-      return true if today >= last_blocking_period.blocking_start_date && today <= last_blocking_period.blocking_end_date
+      true if today >= last_blocking_period.blocking_start_date && today <= last_blocking_period.blocking_end_date
     end
   end
 

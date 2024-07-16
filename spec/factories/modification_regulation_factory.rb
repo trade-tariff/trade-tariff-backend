@@ -8,6 +8,10 @@ FactoryBot.define do
     validity_end_date   { nil }
     approved_flag { true }
 
+    trait :approved do
+      approved_flag { true }
+    end
+
     trait :unapproved do
       approved_flag { false }
     end

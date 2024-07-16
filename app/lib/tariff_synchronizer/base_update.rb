@@ -190,7 +190,7 @@ module TariffSynchronizer
         if pending_applied_or_failed.count.zero?
           initial_date
         else
-          last_download = (oldest_pending || most_recent_applied || most_recent_failed)
+          last_download = oldest_pending || most_recent_applied || most_recent_failed
 
           [last_download.issue_date, DOWNLOAD_FROM.ago.to_date].min
         end

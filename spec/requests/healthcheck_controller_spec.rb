@@ -7,7 +7,7 @@ RSpec.describe HealthcheckController, type: :request do
 
     before do
       search_result = Beta::Search::SearchQueryParserResult.new
-      service_double = instance_double('Api::Beta::SearchQueryParserService', call: search_result)
+      service_double = instance_double(Api::Beta::SearchQueryParserService, call: search_result)
 
       allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(service_double)
       allow(Healthcheck).to receive(:new).and_return healthcheck

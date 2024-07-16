@@ -359,13 +359,13 @@ RSpec.describe Measure do
     context 'when base regulation approved_flag is set to true' do
       let(:measure) { create :measure, :with_base_regulation }
 
-      it { expect(measure.base_regulation).to eq measure.base_regulation }
+      it { expect(measure.base_regulation).to be_present }
     end
 
     context 'when base regulation approved_flag is set to false' do
       let(:measure) { create :measure, :with_unapproved_base_regulation }
 
-      it { expect(measure.base_regulation).to eq nil }
+      it { expect(measure.base_regulation).to be_nil }
     end
   end
 
@@ -373,13 +373,13 @@ RSpec.describe Measure do
     context 'when modification regulation approved_flag is set to true' do
       let(:measure) { create :measure, :with_modification_regulation }
 
-      it { expect(measure.modification_regulation).to eq measure.modification_regulation }
+      it { expect(measure.modification_regulation).to be_present }
     end
 
     context 'when modification regulation approved_flag is set to false' do
       let(:measure) { create :measure, :with_unapproved_modification_regulation }
 
-      it { expect(measure.modification_regulation).to eq nil }
+      it { expect(measure.modification_regulation).to be_nil }
     end
   end
 
@@ -475,13 +475,13 @@ RSpec.describe Measure do
     context 'when the measure type is import' do
       let(:measure_type) { create :measure_type, :import }
 
-      it { expect(measure.import).to eq(true) }
+      it { expect(measure.import).to be(true) }
     end
 
     context 'when the measure type is export' do
       let(:measure_type) { create :measure_type, :export }
 
-      it { expect(measure.import).to eq(false) }
+      it { expect(measure.import).to be(false) }
     end
   end
 
@@ -698,8 +698,8 @@ RSpec.describe Measure do
             :with_measure_unit,
             measure_sid: measure.measure_sid,
           )
-          allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: []))
-          allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: [measure_unit_component]))
+          allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double(MeursingMeasureFinderService, call: []))
+          allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double(MeursingMeasureComponentResolverService, call: [measure_unit_component]))
         end
 
         it { expect(measure).to be_expresses_unit }
@@ -737,10 +737,10 @@ RSpec.describe Measure do
           duty_amount: 28,
           measure_sid: measure.measure_sid,
         )
-        allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: []))
+        allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double(MeursingMeasureFinderService, call: []))
         allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(
           instance_double(
-            'MeursingMeasureComponentResolverService',
+            MeursingMeasureComponentResolverService,
             call: [ad_valorem_component],
           ),
         )
@@ -894,8 +894,8 @@ RSpec.describe Measure do
     subject(:measure) { create(:measure) }
 
     before do
-      allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: meursing_measures))
-      allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: resolved_components))
+      allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double(MeursingMeasureFinderService, call: meursing_measures))
+      allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double(MeursingMeasureComponentResolverService, call: resolved_components))
     end
 
     include_context 'with meursing additional code id', '000'
@@ -964,8 +964,8 @@ RSpec.describe Measure do
     include_context 'with meursing additional code id', '000'
 
     before do
-      allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double('MeursingMeasureFinderService', call: meursing_measures))
-      allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double('MeursingMeasureComponentResolverService', call: resolved_components))
+      allow(MeursingMeasureFinderService).to receive(:new).and_return(instance_double(MeursingMeasureFinderService, call: meursing_measures))
+      allow(MeursingMeasureComponentResolverService).to receive(:new).and_return(instance_double(MeursingMeasureComponentResolverService, call: resolved_components))
     end
 
     let(:meursing_measures) { [build(:measure)] }
@@ -1047,7 +1047,7 @@ RSpec.describe Measure do
 
     let(:finder_service) do
       instance_double(
-        'MeursingMeasureFinderService',
+        MeursingMeasureFinderService,
         call: meursing_measures,
       )
     end

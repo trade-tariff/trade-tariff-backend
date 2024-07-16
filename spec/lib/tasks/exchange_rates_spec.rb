@@ -139,13 +139,13 @@ RSpec.describe ExchangeRates do
       # Check the publication date is created correctly
       expect(ExchangeRateFile
         .where(period_month: 8, period_year: 2023)
-        .all? { |file| file.publication_date == Date.new(2023, 7, 19) }).to eq(true)
+        .all? { |file| file.publication_date == Date.new(2023, 7, 19) }).to be(true)
       expect(ExchangeRateFile
         .where(period_month: 9, period_year: 2023)
-        .all? { |file| file.publication_date == Date.new(2023, 8, 23) }).to eq(true)
+        .all? { |file| file.publication_date == Date.new(2023, 8, 23) }).to be(true)
       expect(ExchangeRateFile
         .where(period_month: 10, period_year: 2023)
-        .all? { |file| file.publication_date == Date.new(2023, 9, 20) }).to eq(true)
+        .all? { |file| file.publication_date == Date.new(2023, 9, 20) }).to be(true)
     end
   end
 

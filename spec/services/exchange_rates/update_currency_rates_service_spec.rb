@@ -100,7 +100,7 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
           ].as_json
         end
 
-        it 'will create a ZIG rate' do
+        it 'creates a ZIG rate' do
           service.call
 
           new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json
@@ -130,7 +130,7 @@ RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
           ].as_json
         end
 
-        it 'will create a ZIG rate' do
+        it 'creates a ZIG rate' do
           service.call
 
           new_rates = ExchangeRateCurrencyRate.all.map(&:values).as_json

@@ -13,14 +13,14 @@ RSpec.describe Api::V2::Headings::CommoditySerializer do
       let(:leaf) { true }
       let(:producline_suffix) { '80' }
 
-      it { expect(serializer.dig('data', 'attributes', 'declarable')).to eq(true) }
+      it { expect(serializer.dig('data', 'attributes', 'declarable')).to be(true) }
     end
 
     context 'when the commodity is not declarable' do
       let(:leaf) { false }
       let(:producline_suffix) { '80' }
 
-      it { expect(serializer.dig('data', 'attributes', 'declarable')).to eq(false) }
+      it { expect(serializer.dig('data', 'attributes', 'declarable')).to be(false) }
     end
   end
 end

@@ -60,7 +60,7 @@ RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
         travel_back
       end
 
-      it 'will return an argument error' do
+      it 'returns an argument error' do
         expect { create_average_rates }.to raise_error(ArgumentError)
       end
 

@@ -117,7 +117,7 @@ RSpec.describe TariffSynchronizer::BaseUpdate do
       create :cds_update, :applied, issue_date: 1.day.ago.to_date
 
       (20.days.ago.to_date..Time.zone.today).each do |download_date|
-        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double('TariffSynchronizer::CdsUpdateDownloader', perform: nil))
+        allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:new).with(download_date).and_return(instance_double(TariffSynchronizer::CdsUpdateDownloader, perform: nil))
       end
 
       TariffSynchronizer::CdsUpdate.sync(initial_date: 20.days.ago.to_date)

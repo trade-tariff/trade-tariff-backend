@@ -1,6 +1,6 @@
 RSpec.describe TaricSynchronizer do
   context 'for xi' do
-    describe '#apply', truncation: true do
+    describe '#apply', :truncation do
       let!(:taric_update) { create :taric_update, :pending, example_date: }
 
       before do
@@ -165,24 +165,6 @@ RSpec.describe TaricSynchronizer do
         it 'does not remove earlier updates (casts date as string to date)' do
           expect { older_update.reload }.not_to raise_error
         end
-      end
-    end
-  end
-
-  context 'for uk' do
-    before do
-      allow(TradeTariffBackend).to receive(:service).and_return('uk')
-    end
-
-    describe '#apply', truncation: true do
-      xit 'raises a wrong environment error' do
-        expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
-      end
-    end
-
-    describe '#rollback', truncation: true do
-      xit 'raises a wrong environment error' do
-        expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
       end
     end
   end

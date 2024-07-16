@@ -5,7 +5,7 @@ RSpec.describe SpellingFileUploaderWorker, type: :worker do
     silence { described_class.new.perform }
   end
 
-  let(:file_updater_service) { instance_double('SpellingCorrector::FileUpdaterService', call: 'foo') }
+  let(:file_updater_service) { instance_double(SpellingCorrector::FileUpdaterService, call: 'foo') }
 
   it { expect(file_updater_service).to have_received(:call) }
 end

@@ -113,7 +113,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     context 'with odd filename' do
       let(:file_name) { 'odd?name' }
 
-      it 'will trigger exception' do
+      it 'triggers exception' do
         expect { read_file }.to raise_exception described_class::InvalidReferencedFile
       end
     end
@@ -121,7 +121,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     context 'with tree traversal filename' do
       let(:file_name) { '..' }
 
-      it 'will trigger exception' do
+      it 'triggers exception' do
         expect { read_file }.to raise_exception described_class::InvalidReferencedFile
       end
     end

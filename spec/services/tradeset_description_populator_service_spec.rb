@@ -5,8 +5,7 @@ RSpec.describe TradesetDescriptionPopulatorService do
     let(:file_path) { 'spec/fixtures/tradeset_descriptions/DEC2022SAMPLE.csv' }
 
     before do
-      allow(TariffSynchronizer::FileService).to receive(:list_by).and_return([{ path: file_path }])
-      allow(TariffSynchronizer::FileService).to receive(:download_and_gunzip).and_return([file_path])
+      allow(TariffSynchronizer::FileService).to receive_messages(list_by: [{ path: file_path }], download_and_gunzip: [file_path])
     end
 
     it 'creates tradeset descriptions' do

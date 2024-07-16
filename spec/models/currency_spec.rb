@@ -6,7 +6,7 @@ RSpec.describe Currency do
 
   describe '#format' do
     context 'when monetary unit code is present in the hash' do
-      it 'returns the the duty amount with currency symbol ' do
+      it 'returns the the duty amount with currency symbol' do
         expect(instance.format(duty_amount)).to eq('€123')
       end
     end

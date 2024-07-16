@@ -26,14 +26,7 @@ RSpec.describe SearchSuggestion do
       end
 
       it 'returns search suggestions' do
-        expect(fuzzy_search.pluck(:value)).to match_array(
-          [
-            'alu',
-            'aluminium wire',
-            'nuts, aluminium',
-            'bars - aluminium',
-          ],
-        )
+        expect(fuzzy_search.pluck(:value)).to contain_exactly('alu', 'aluminium wire', 'nuts, aluminium', 'bars - aluminium')
       end
 
       it 'returns search suggestions with a score' do
@@ -278,7 +271,7 @@ RSpec.describe SearchSuggestion do
       let(:type) { 'unknown' }
       let(:goods_nomenclature_class) { 'Heading' }
 
-      it { is_expected.to eq(nil) }
+      it { is_expected.to be_nil }
     end
   end
 end

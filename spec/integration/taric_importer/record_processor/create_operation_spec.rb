@@ -30,7 +30,7 @@ RSpec.describe TaricImporter::RecordProcessor::CreateOperation do
     end
 
     it 'returns model instance' do
-      expect(create_operation).to be_kind_of LanguageDescription
+      expect(create_operation).to be_a LanguageDescription
     end
 
     it 'sets create operation date to operation_date' do

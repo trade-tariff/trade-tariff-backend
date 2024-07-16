@@ -31,6 +31,12 @@ Metrics/BlockLength:
 Metrics/ModuleLength:
   Enabled: false
 
+RSpec/SpecFilePathFormat:
+  Enabled: true
+  Exclude:
+    - spec/presenters/**/*
+    - spec/serializers/**/*
+
 RSpec/ContextWording:
   Prefixes:
     - when
@@ -44,10 +50,14 @@ RSpec/MultipleMemoizedHelpers:
 RSpec/ExampleLength:
   Enabled: false
 
-RSpec/FilePath:
+RSpec/NestedGroups:
   Enabled: false
 
-RSpec/NestedGroups:
+
+Rails/FilePath:
+  Enabled: false
+
+Rails/FindEach:
   Enabled: false
 
 Rails/ActiveRecordAliases:
@@ -79,4 +89,7 @@ Style/StringLiterals:
   EnforcedStyle: single_quotes
 
 RSpec/MessageChain:
+  Enabled: false
+
+RSpec/IndexedLet:
   Enabled: false

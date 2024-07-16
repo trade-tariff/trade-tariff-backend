@@ -22,7 +22,9 @@ RSpec.describe TariffSynchronizer::CdsUpdateDownloader do
     end
 
     before do
+      # rubocop:disable RSpec/VerifiedDoubleReference
       allow(downloader).to receive(:response) { instance_double('Response', body: body.to_json) }
+      # rubocop:enable RSpec/VerifiedDoubleReference
 
       # rubocop:disable RSpec/AnyInstance
       allow_any_instance_of(TariffSynchronizer::TariffDownloader).to receive(:perform)

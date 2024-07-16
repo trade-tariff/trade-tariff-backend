@@ -384,7 +384,7 @@ RSpec.describe ExchangeRateCurrencyRate do
              validity_end_date: today.end_of_month)
     end
 
-    it 'will return the correct results', :aggregate_failures do
+    it 'returns the correct results', :aggregate_failures do
       expect(dataset.count).to eq(2)
       expect(dataset.pluck(:currency_code).uniq).to eq(%w[USD])
     end

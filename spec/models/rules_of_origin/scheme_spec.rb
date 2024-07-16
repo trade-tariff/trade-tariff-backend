@@ -98,7 +98,7 @@ RSpec.describe RulesOfOrigin::Scheme do
 
     let(:origin_reference_document) { scheme.origin_reference_document }
 
-    it 'will read the origin_reference_document' do
+    it 'reads the origin_reference_document' do
       expect(scheme).to have_attributes ord: data
     end
 
@@ -214,7 +214,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     let(:intro_file) { 'intro.md' }
     let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
 
-    it 'will read the referenced file' do
+    it 'reads the referenced file' do
       expect(scheme).to have_attributes fta_intro: 'fta intro content'
     end
 
@@ -241,7 +241,7 @@ RSpec.describe RulesOfOrigin::Scheme do
     let(:notes_file) { 'notes.md' }
     let(:scheme_set) { instance_double RulesOfOrigin::SchemeSet }
 
-    it 'will read the referenced file' do
+    it 'reads the referenced file' do
       expect(scheme).to \
         have_attributes introductory_notes: 'introductory notes content'
     end

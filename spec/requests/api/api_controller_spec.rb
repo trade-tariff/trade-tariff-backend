@@ -18,14 +18,14 @@ RSpec.describe Api::ApiController, type: :request do
 
       let(:earlier_request) { get(testpath) && response }
 
-      it { is_expected.to include 'ETag' }
-      it { is_expected.to include 'Cache-Control' => /public/i }
-      it { is_expected.to include 'Cache-Control' => /max-age=120/i }
+      it { is_expected.to include 'etag' }
+      it { is_expected.to include 'cache-control' => /public/i }
+      it { is_expected.to include 'cache-control' => /max-age=120/i }
 
       context 'when tariff_updates present' do
         before { create :base_update, :applied_yesterday }
 
-        it { is_expected.to include 'ETag' => earlier_request.headers['ETag'] }
+        it { is_expected.to include 'etag' => earlier_request.headers['ETag'] }
       end
 
       context 'when latest tariff_update changes' do
@@ -35,7 +35,7 @@ RSpec.describe Api::ApiController, type: :request do
           create :base_update, :applied_today
         end
 
-        it { is_expected.not_to include 'ETag' => earlier_request.headers['ETag'] }
+        it { is_expected.not_to include 'etag' => earlier_request.headers['ETag'] }
       end
 
       context 'when current day changes and as_of not specified' do
@@ -45,7 +45,7 @@ RSpec.describe Api::ApiController, type: :request do
           travel 1.day
         end
 
-        it { is_expected.not_to include 'ETag' => earlier_request.headers['ETag'] }
+        it { is_expected.not_to include 'etag' => earlier_request.headers['ETag'] }
       end
 
       context 'when current day changes and as_of is specified' do
@@ -59,7 +59,7 @@ RSpec.describe Api::ApiController, type: :request do
           "/chapters/#{chapter.short_code}?as_of=#{Time.zone.today.to_fs :db}"
         end
 
-        it { is_expected.to include 'ETag' => earlier_request.headers['ETag'] }
+        it { is_expected.to include 'etag' => earlier_request.headers['ETag'] }
       end
     end
   end

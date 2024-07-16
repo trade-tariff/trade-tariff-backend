@@ -13,7 +13,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
   describe '.download' do
     it 'calls CdsUpdateDownloader perform for a Cds update' do
-      downloader = instance_spy('TariffSynchronizer::CdsUpdateDownloader', perform: true)
+      downloader = instance_spy(TariffSynchronizer::CdsUpdateDownloader, perform: true)
       allow(TariffSynchronizer::CdsUpdateDownloader).to receive(:new)
                                                           .with(example_date)
                                                           .and_return(downloader)
@@ -51,16 +51,15 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
 
     before do
       # stub the file_path method to return a valid path of a real file.
-      allow(cds_update).to receive(:file_path).and_return('spec/fixtures/cds_samples/tariff_dailyExtract_v1_20201010T235959.gzip')
-      allow(cds_update).to receive(:filesize).and_return filesize
+      allow(cds_update).to receive_messages(file_path: 'spec/fixtures/cds_samples/tariff_dailyExtract_v1_20201010T235959.gzip', filesize:)
 
-      cds_importer = instance_double('CdsImporter')
+      cds_importer = instance_double(CdsImporter)
       allow(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
       allow(cds_importer).to receive(:import).and_return inserted_oplog_records
     end
 
     it 'calls the CdsImporter import method', :aggregate_failures do
-      cds_importer = instance_double('CdsImporter')
+      cds_importer = instance_double(CdsImporter)
       allow(CdsImporter).to receive(:new).with(cds_update).and_return(cds_importer)
       allow(cds_importer).to receive(:import).and_return inserted_oplog_records
       allow(Rails.logger).to receive(:info)
@@ -97,15 +96,15 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       end
 
       context 'with valid upload' do
-        it 'will store the inserts on the update' do
+        it 'stores the inserts on the update' do
           expect(cds_update.reload.inserts).to include('"total_count":1')
         end
 
-        it 'will check the import' do
+        it 'checks the import' do
           expect(cds_update).to have_received(:check_oplog_inserts)
         end
 
-        it 'will not alert' do
+        it 'does not alert' do
           expect(Sentry).not_to have_received(:capture_message)
         end
       end
@@ -121,11 +120,11 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
           }
         end
 
-        it 'will check the import' do
+        it 'checks the import' do
           expect(cds_update).to have_received(:check_oplog_inserts)
         end
 
-        it 'will not alert' do
+        it 'does not alert' do
           expect(Sentry).not_to have_received(:capture_message)
         end
       end
@@ -139,11 +138,11 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
           }
         end
 
-        it 'will check the import' do
+        it 'checks the import' do
           expect(cds_update).to have_received(:check_oplog_inserts)
         end
 
-        it 'will alert' do
+        it 'alerts' do
           expect(Sentry).to have_received(:capture_message)
                              .with(/Empty CDS update - Issue Date: \d{4}-\d\d-\d\d: Applied: #{Time.zone.today}/)
         end
