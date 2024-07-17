@@ -7,7 +7,7 @@ RSpec.describe CachedSubheadingService do
   before do
     GoodsNomenclature.unrestrict_primary_key
 
-    create(:chapter, :with_section, :with_indent, :with_guide, goods_nomenclature_sid: 1, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0100000000')       # Live animals
+    create(:chapter, :with_section, :with_indent, :with_guide, goods_nomenclature_sid: 1, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0100000000') # Live animals
     create(:heading, :with_indent, :with_description, goods_nomenclature_sid: 2, indents: 0, producline_suffix: '80', goods_nomenclature_item_id: '0101000000')   # Live horses, asses, mules and hinnies
     create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 3, indents: 1, producline_suffix: '10', goods_nomenclature_item_id: '0101210000') # Horses
     create(:commodity, :with_indent, :with_description, goods_nomenclature_sid: 4, indents: 2, producline_suffix: '80', goods_nomenclature_item_id: '0101210000') # -- Pure-bred breeding animals

@@ -35,12 +35,12 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         expect { described_class.populate }.to change(Change, :count).by(1)
       end
 
-      it 'will extract the correct productline suffix' do
+      it 'extracts the correct productline suffix' do
         described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
-      it 'will flag it as end line' do
+      it 'flags it as end line' do
         described_class.populate
         expect(db[:changes].first[:end_line]).to be true
       end
@@ -62,12 +62,12 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         expect { described_class.populate }.to change(Change, :count).by(1)
       end
 
-      it 'will extract the correct productline suffix' do
+      it 'extracts the correct productline suffix' do
         described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
-      it 'will flag it as not end line' do
+      it 'flags it as not end line' do
         described_class.populate
         expect(db[:changes].first[:end_line]).to be false
       end
@@ -89,12 +89,12 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
         expect { described_class.populate }.to change(Change, :count).by(1)
       end
 
-      it 'will extract the correct productline suffix' do
+      it 'extracts the correct productline suffix' do
         described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
-      it 'will flag it as not end line' do
+      it 'flags it as not end line' do
         described_class.populate
         expect(db[:changes].first[:end_line]).to be false
       end

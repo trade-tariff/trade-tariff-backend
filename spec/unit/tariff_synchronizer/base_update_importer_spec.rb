@@ -3,7 +3,7 @@ RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   let(:taric_update) { create :taric_update, :pending }
   let(:base_update_importer) { described_class.new(taric_update) }
 
-  describe '#apply', truncation: true do
+  describe '#apply', :truncation do
     before do
       allow(TradeTariffBackend).to receive(:service).and_return('xi')
     end

@@ -1,4 +1,4 @@
-RSpec.describe Api::V1::HeadingsController, flaky: true do
+RSpec.describe Api::V1::HeadingsController, :flaky do
   render_views
 
   describe 'GET #show' do

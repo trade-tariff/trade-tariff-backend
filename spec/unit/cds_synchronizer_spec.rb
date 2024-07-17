@@ -1,6 +1,6 @@
-RSpec.describe CdsSynchronizer, truncation: true do
+RSpec.describe CdsSynchronizer, :truncation do
   describe '.initial_update_date' do
-    it 'returns initial update date ' do
+    it 'returns initial update date' do
       expect(described_class.initial_update_date).to eq(Date.new(2020, 9, 1))
     end
   end
@@ -107,13 +107,6 @@ RSpec.describe CdsSynchronizer, truncation: true do
         expect { described_class.apply }.to raise_error(TariffSynchronizer::FailedUpdatesError)
       end
     end
-
-    context 'with xi service' do
-      xit 'raises a wrong environment error' do
-        allow(TradeTariffBackend).to receive(:service).and_return('xi')
-        expect { described_class.apply }.to raise_error TariffSynchronizer::WrongEnvironmentError
-      end
-    end
   end
 
   describe '.rollback' do
@@ -123,13 +116,6 @@ RSpec.describe CdsSynchronizer, truncation: true do
       allow(TradeTariffBackend).to receive(:service).and_return('uk')
       create :cds_update, :applied, :with_measure, example_date: Date.yesterday
       create :cds_update, :applied, :with_measure, example_date: Time.zone.today
-    end
-
-    context 'with xi service' do
-      xit 'raises a wrong environment error' do
-        allow(TradeTariffBackend).to receive(:service).and_return('xi')
-        expect { described_class.rollback(Time.zone.yesterday, keep: true) }.to raise_error TariffSynchronizer::WrongEnvironmentError
-      end
     end
 
     it 'performs a rollback' do

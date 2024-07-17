@@ -28,7 +28,7 @@ RSpec.describe QuotaOrderNumber do
 
       describe '#quota_definition!' do
         it 'returns nil' do
-          expect(quota_order_number.quota_definition!).to eq(nil)
+          expect(quota_order_number.quota_definition!).to be_nil
         end
       end
     end
@@ -41,7 +41,7 @@ RSpec.describe QuotaOrderNumber do
 
             create(:quota_definition, quota_order_number_sid: quota_order_number.quota_order_number_sid)
 
-            expect(quota_order_number.quota_definition!).to eq(nil)
+            expect(quota_order_number.quota_definition!).to be_nil
           end
         end
       end

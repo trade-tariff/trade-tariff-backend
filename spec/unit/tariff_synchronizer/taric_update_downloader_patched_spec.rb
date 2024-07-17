@@ -2,7 +2,7 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloaderPatched do
   subject(:update_downloader) { described_class.new(taric_update) }
 
   before do
-    tariff_downloader = instance_double('TariffSynchronizer::TariffDownloader', perform: nil)
+    tariff_downloader = instance_double(TariffSynchronizer::TariffDownloader, perform: nil)
 
     allow(tariff_downloader).to receive(:success?).and_return(true, false, true)
 

@@ -151,7 +151,7 @@ RSpec.describe TaricImporter::RecordProcessor::DestroyOperation do
                                    'description' => 'French')
       end
 
-      it 'destroys the record ' do
+      it 'destroys the record' do
         expect { operation.call }.to change(LanguageDescription, :count).from(1).to(0)
       end
 

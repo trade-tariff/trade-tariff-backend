@@ -25,8 +25,8 @@ RSpec.describe SimplifiedProceduralCode do
 
     it { is_expected.to all(be_a(SimplifiedProceduralCodeMeasure)) }
     it { expect(all_null_measures.count).to eq 2 }
-    it { expect(all_null_measures.map(&:simplified_procedural_code)).to match_array ['2.130.0', '2.150'] }
-    it { expect(all_null_measures.map(&:goods_nomenclature_item_ids)).to match_array ['0808108010, 0808108020, 0808108090', '0809100000'] }
+    it { expect(all_null_measures.map(&:simplified_procedural_code)).to contain_exactly('2.130.0', '2.150') }
+    it { expect(all_null_measures.map(&:goods_nomenclature_item_ids)).to contain_exactly('0808108010, 0808108020, 0808108090', '0809100000') }
     it { expect(all_null_measures.map(&:goods_nomenclature_label)).to all(be_present) }
   end
 

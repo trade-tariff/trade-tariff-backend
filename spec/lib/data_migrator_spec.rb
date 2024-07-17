@@ -35,7 +35,7 @@ RSpec.describe DataMigrator do
 
     before { described_class.migrate(nil) }
 
-    it 'will revert the migration' do
+    it 'reverts the migration' do
       expect { rollback }.to change(section_note, :count).from(1).to(0)
     end
 

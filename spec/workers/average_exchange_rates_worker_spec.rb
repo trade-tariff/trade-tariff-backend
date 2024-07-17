@@ -11,7 +11,7 @@ RSpec.describe AverageExchangeRatesWorker, type: :worker do
       perform
     end
 
-    it 'will behave as expected', :aggregate_failures do
+    it 'behaves as expected', :aggregate_failures do
       expect(ExchangeRates::CreateAverageExchangeRatesService).to have_received(:call).with(force_run: false, selected_date: today)
       expect(SlackNotifierService).to have_received(:call).with(match(/Average/))
     end

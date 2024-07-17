@@ -51,7 +51,7 @@ RSpec.describe TradeTariffBackend::SearchClient do
       end
 
       it 'returns results wrapped in Hashie::Mash structure' do
-        expect(search_result).to be_kind_of Hashie::Mash
+        expect(search_result).to be_a Hashie::Mash
       end
     end
   end

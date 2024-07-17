@@ -5,13 +5,13 @@ RSpec.describe Api::Beta::SearchService do
     context 'when the search query is nil' do
       let(:search_query) { nil }
 
-      it { expect(search_result.empty_query).to eq(true) }
+      it { expect(search_result.empty_query).to be(true) }
     end
 
     context 'when the search query is an empty string' do
       let(:search_query) { '' }
 
-      it { expect(search_result.empty_query).to eq(true) }
+      it { expect(search_result.empty_query).to be(true) }
     end
 
     context 'when the search query is `ricotta`' do
@@ -21,7 +21,7 @@ RSpec.describe Api::Beta::SearchService do
 
         Hashie::TariffMash.new(JSON.parse(fixture_file.read))
       end
-      let(:search_query_parser_service) { instance_double('Api::Beta::SearchQueryParserService', call: search_query_parser_result) }
+      let(:search_query_parser_service) { instance_double(Api::Beta::SearchQueryParserService, call: search_query_parser_result) }
       let(:search_query_parser_result) { build(:search_query_parser_result, :single_hit) }
       let(:goods_nomenclature_query) { build(:goods_nomenclature_query, :single_hit) }
 
@@ -126,7 +126,7 @@ RSpec.describe Api::Beta::SearchService do
         )
         allow(TradeTariffBackend.v2_search_client).to receive(:search).and_return(search_result)
         allow(Api::Beta::SearchQueryParserService).to receive(:new).and_return(
-          instance_double('Api::Beta::SearchQueryParserService', call: build(:search_query_parser_result)),
+          instance_double(Api::Beta::SearchQueryParserService, call: build(:search_query_parser_result)),
         )
         allow(Beta::Search::GoodsNomenclatureQuery).to receive(:build).and_return(build(:goods_nomenclature_query))
         allow(Beta::Search::OpenSearchResult::WithHits).to receive(:build).and_call_original

@@ -26,7 +26,7 @@ RSpec.describe UkRegulationParser do
   context 'with null text' do
     let(:information_text) { nil }
 
-    it 'will raise an exception' do
+    it 'raises an exception' do
       expect { parser }.to \
         raise_exception(described_class::InvalidUkRegulationText)
     end
@@ -35,7 +35,7 @@ RSpec.describe UkRegulationParser do
   context 'with incomplete text' do
     let(:information_text) { "First\xC2\xA0Second" }
 
-    it 'will raise an exception' do
+    it 'raises an exception' do
       expect { parser }.to \
         raise_exception(described_class::InvalidUkRegulationText)
     end
@@ -44,7 +44,7 @@ RSpec.describe UkRegulationParser do
   context 'with unexpected text format' do
     let(:information_text) { "First\xC2\xA0Second\xC2\xA0Third\xC2\xA0Fourth" }
 
-    it 'will raise an exception' do
+    it 'raises an exception' do
       expect { parser }.to \
         raise_exception(described_class::InvalidUkRegulationText)
     end

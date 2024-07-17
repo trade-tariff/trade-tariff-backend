@@ -5,24 +5,24 @@ RSpec.describe SearchService::RogueSearchService do
     context 'when given a recognised erroneous search term' do
       let(:query_string) { 'gift' }
 
-      it 'will return true' do
-        expect(call_class).to eq(true)
+      it 'returns true' do
+        expect(call_class).to be(true)
       end
     end
 
     context 'when given a recognised erroneous search term with capitals' do
       let(:query_string) { 'Gift' }
 
-      it 'will return true' do
-        expect(call_class).to eq(true)
+      it 'returns true' do
+        expect(call_class).to be(true)
       end
     end
 
     context 'when given a random search term' do
       let(:query_string) { 'random' }
 
-      it 'will return true' do
-        expect(call_class).to eq(false)
+      it 'returns true' do
+        expect(call_class).to be(false)
       end
     end
   end

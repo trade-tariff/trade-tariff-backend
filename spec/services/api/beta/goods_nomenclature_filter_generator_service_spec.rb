@@ -43,8 +43,7 @@ RSpec.describe Api::Beta::GoodsNomenclatureFilterGeneratorService do
       it { is_expected.to eq(expected_filters) }
     end
 
-    # TODO: Reinstate this test once we've reviewed the entity classification
-    xcontext 'when generating filters for dynamic filters that have a custom boost' do
+    context 'when generating filters for dynamic filters that have a custom boost', skip: :review do
       let(:filters) do
         {
           'entity' => 'live animal',

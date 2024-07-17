@@ -147,11 +147,11 @@ RSpec.describe Api::V2::Declarable::MeasureSerializer do
         )
 
         finder_service = instance_double(
-          'MeursingMeasureFinderService',
+          MeursingMeasureFinderService,
           call: [build(:measure_component)],
         )
         resolver_service = instance_double(
-          'MeursingMeasureComponentResolverService',
+          MeursingMeasureComponentResolverService,
           call: [],
         )
 

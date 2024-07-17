@@ -1,3 +1,4 @@
+require 'sidekiq/component'
 require 'sidekiq/job_logger'
 
 class QueryCountJobLogger < ::Sidekiq::JobLogger

@@ -487,7 +487,7 @@ FactoryBot.define do
     trait :with_modification_regulation do
       measure_generating_regulation_role { Measure::MODIFICATION_REGULATION_ROLE }
 
-      generating_regulation { create(:modification_regulation, :unapproved) }
+      generating_regulation { create(:modification_regulation, :approved) }
     end
 
     trait :with_unapproved_modification_regulation do

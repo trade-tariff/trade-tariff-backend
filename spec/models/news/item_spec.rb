@@ -102,7 +102,7 @@ RSpec.describe News::Item do
       context 'with newly assigned ids' do
         before { item.collection_ids = [999_999] }
 
-        it { is_expected.to match_array [999_999] }
+        it { is_expected.to contain_exactly(999_999) }
       end
 
       context 'with extended ids list' do
@@ -125,7 +125,7 @@ RSpec.describe News::Item do
           item.save.reload
         end
 
-        it { is_expected.to match_array [original_collection_ids.first, new_collection.id] }
+        it { is_expected.to contain_exactly(original_collection_ids.first, new_collection.id) }
       end
     end
 

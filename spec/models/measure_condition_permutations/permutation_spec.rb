@@ -37,7 +37,7 @@ RSpec.describe MeasureConditionPermutations::Permutation do
         measure.measure_conditions.to_a + measure.measure_conditions.to_a
       end
 
-      it 'will change' do
+      it 'changes' do
         expect { permutation.remove_duplicate_conditions }.to \
           change permutation, :id
       end

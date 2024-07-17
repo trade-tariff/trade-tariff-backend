@@ -8,7 +8,7 @@ gem 'rails', '~> 7.1'
 
 # DB
 gem 'pg'
-gem 'sequel'
+gem 'sequel', '= 5.76.0'
 gem 'sequel-rails'
 
 # File uploads and AWS
@@ -23,7 +23,7 @@ gem 'connection_pool'
 gem 'redis', '>= 5.0.6'
 gem 'redis-client', '>= 0.11.2'
 gem 'redlock'
-gem 'sidekiq', '= 7.1.4'
+gem 'sidekiq'
 gem 'sidekiq-scheduler'
 
 # Elasticsearch

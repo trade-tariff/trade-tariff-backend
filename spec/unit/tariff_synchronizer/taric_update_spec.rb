@@ -5,7 +5,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
 
   describe '.sync' do
     before do
-      allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloader', perform: nil))
+      allow(TariffSynchronizer::TaricUpdateDownloader).to receive(:new).and_return(instance_double(TariffSynchronizer::TaricUpdateDownloader, perform: nil))
     end
 
     it 'calls the downloader with the correct args' do
@@ -21,7 +21,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
 
   describe '.sync_patched' do
     before do
-      allow(TariffSynchronizer::TaricUpdateDownloaderPatched).to receive(:new).and_return(instance_double('TariffSynchronizer::TaricUpdateDownloaderPatched', perform: nil))
+      allow(TariffSynchronizer::TaricUpdateDownloaderPatched).to receive(:new).and_return(instance_double(TariffSynchronizer::TaricUpdateDownloaderPatched, perform: nil))
     end
 
     it 'calls the downloader with the correct args' do
@@ -35,7 +35,7 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
 
   describe '#import!' do
     let(:taric_update) { create :taric_update }
-    let(:taric_importer) { instance_double('TaricImporter') }
+    let(:taric_importer) { instance_double(TaricImporter) }
 
     before do
       allow(TaricImporter).to receive(:new).with(taric_update).and_return(taric_importer)
@@ -233,11 +233,11 @@ RSpec.describe TariffSynchronizer::TaricUpdate do
         create(:taric_update, :applied, example_date: Date.parse('2021-12-02'), sequence_number: '201')
       end
 
-      it { is_expected.to eq(nil) }
+      it { is_expected.to be_nil }
     end
 
     context 'when there are no updates' do
-      it { is_expected.to eq(nil) }
+      it { is_expected.to be_nil }
     end
   end
 end
