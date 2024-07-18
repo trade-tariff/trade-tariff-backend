@@ -54,20 +54,12 @@ module ExchangeRates
       validity_end_date = @date.end_of_month
 
       ExchangeRateCurrencyRate.new(
-        currency_code: currency_overide(currency_code),
+        currency_code:,
         validity_start_date:,
         validity_end_date:,
         rate:,
         rate_type: @type,
       )
-    end
-
-    def currency_overide(currency_code)
-      currency_overides = { 'ZWL' => 'ZIG' }
-
-      return currency_code unless currency_overides.keys.include?(currency_code)
-
-      currency_overides[currency_code]
     end
   end
 end
