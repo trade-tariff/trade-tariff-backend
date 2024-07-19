@@ -11,4 +11,5 @@ max_capacity                          = 16
 stemming_exclusion_reference_analyzer = "analyzers/F17162632"
 synonym_reference_analyzer            = "analyzers/F262459844"
 management_email                      = "tariffmanagement@hmrc.gov.uk"
+green_lanes_update_email              = ""
 legacy_search_enhancements_enabled    = true

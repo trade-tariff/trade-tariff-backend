@@ -113,6 +113,10 @@ locals {
     {
       name  = "WEB_CONCURRENCY"
       value = "4"
+    },
+    {
+      name  = "GREEN_LANES_UPDATE_EMAIL"
+      value = "var.green_lanes_update_email"
     }
   ]
 

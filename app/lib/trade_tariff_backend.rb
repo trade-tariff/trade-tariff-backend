@@ -295,5 +295,9 @@ module TradeTariffBackend
     def enable_admin?
       ENV['ENABLE_ADMIN'].to_s == 'true'
     end
+
+    def green_lanes_update_email
+      ENV['GREEN_LANES_UPDATE_EMAIL']
+    end
   end
 end
