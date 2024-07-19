@@ -1,6 +1,5 @@
 module GreenLanesUpdatesPublisher
   class DataUpdatesFinder
-
     DB = Sequel::Model.db
 
     def initialize(date = Time.zone.today)
@@ -45,7 +44,5 @@ module GreenLanesUpdatesPublisher
       where mr.created_at > ? or mo.created_at > ?
       group by(mr.modification_regulation_id, mr.modification_regulation_role, mo.measure_type_id)"
     end
-
   end
-
 end

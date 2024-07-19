@@ -116,7 +116,7 @@ locals {
     },
     {
       name  = "GREEN_LANES_UPDATE_EMAIL"
-      value = "var.green_lanes_update_email"
+      value = var.green_lanes_update_email
     }
   ]
 

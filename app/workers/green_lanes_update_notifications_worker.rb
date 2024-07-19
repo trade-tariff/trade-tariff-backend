@@ -24,5 +24,4 @@ class GreenLanesUpdateNotificationsWorker
   def send_updates_email(updates, date)
     ::GreenLanesUpdatesPublisher::Mailer.update(updates, date).deliver_now
   end
-
 end
