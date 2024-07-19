@@ -7,7 +7,7 @@ RSpec.describe GreenLanesUpdatesPublisher::DataUpdatesFinder do
   end
 
   describe '#call' do
-    subject {instance.call}
+    subject { instance.call }
 
     it { is_expected.to have_attributes(size: 2) }
   end
