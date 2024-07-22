@@ -13,7 +13,7 @@ class GreenLanesUpdateNotificationsWorker
     logger.info "Running GreenLanesUpdateNotificationsWorker: #{date}"
 
     logger.info 'Load updated data'
-    updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date).call
+    updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date - 1.day).call
 
     send_updates_email(updates, date)
     # add tracking record
