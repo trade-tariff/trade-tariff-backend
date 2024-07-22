@@ -63,6 +63,8 @@ module "backend_uk" {
     ]
   ])
 
+  enable_ecs_exec = true
+
   service_secrets_config = flatten([
     local.backend_common_secrets,
     local.backend_uk_common_secrets,

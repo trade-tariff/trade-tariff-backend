@@ -58,4 +58,4 @@ HEALTHCHECK CMD nc -z 0.0.0.0 $PORT
 
 USER tariff
 
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0"]
+CMD ["ruby", "test.rb"]
