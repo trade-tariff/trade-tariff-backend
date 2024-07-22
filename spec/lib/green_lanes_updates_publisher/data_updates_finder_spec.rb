@@ -1,9 +1,9 @@
 RSpec.describe GreenLanesUpdatesPublisher::DataUpdatesFinder do
-  subject(:instance) { described_class.new Time.zone.today - 1.day }
+  subject(:instance) { described_class.new Time.zone.today - 2.day }
 
   before do
-    create :measure, generating_regulation: create(:base_regulation)
-    create :measure, generating_regulation: create(:modification_regulation)
+    create :measure, trade_movement_code: '1', generating_regulation: create(:base_regulation)
+    create :measure, trade_movement_code: '0', generating_regulation: create(:modification_regulation)
   end
 
   describe '#call' do

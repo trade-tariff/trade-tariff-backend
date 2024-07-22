@@ -24,7 +24,9 @@ FactoryBot.define do
       goods_nomenclature { nil }
       for_geo_area { nil }
       certificate { nil }
+      trade_movement_code { MeasureType::IMPORT_MOVEMENT_CODES.sample }
       excluded_geographical_areas { [] }
+      created_at    { Time.zone.now }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
@@ -49,7 +51,7 @@ FactoryBot.define do
                             validity_start_date: (validity_start_date || default_start_date) - 1.day,
                             measure_explosion_level: type_explosion_level,
                             order_number_capture_code:,
-                            trade_movement_code: MeasureType::IMPORT_MOVEMENT_CODES.sample,
+                            trade_movement_code:,
                             measure_type_series_id:
     end
 
