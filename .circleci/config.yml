@@ -413,7 +413,7 @@ workflows:
           environment: staging
           image_name: tariff-backend
           ssm_parameter: "/staging/BACKEND_ECR_URL"
-          <<: *filter-main
+          <<: *filter-not-main
 
       - apply-terraform:
           name: apply-terraform-staging
@@ -423,7 +423,7 @@ workflows:
             - write-docker-tag-staging
             - plan-terraform-staging
             - build-and-push-live
-          <<: *filter-main
+          <<: *filter-not-main
 
       - sync-opensearch-packages:
           name: sync-packages-staging
