@@ -33,6 +33,5 @@ module GreenLanes
         self.base_regulation = regulation
       end
     end
-
   end
 end

@@ -28,7 +28,6 @@ module Api
             render json: serialize_errors(update),
                    status: :unprocessable_entity
           end
-
         end
 
         private

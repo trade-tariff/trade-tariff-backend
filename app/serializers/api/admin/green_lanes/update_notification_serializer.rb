@@ -12,7 +12,6 @@ module Api
                    :regulation_id,
                    :regulation_role,
                    :status
-
       end
     end
   end
