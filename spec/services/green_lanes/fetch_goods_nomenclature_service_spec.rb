@@ -44,6 +44,39 @@ RSpec.describe GreenLanes::FetchGoodsNomenclatureService do
       end
     end
 
+    context 'when multiple PLS found' do
+      before do
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0101214264', producline_suffix: '70')
+      end
+
+      let(:id) { '0101214264' }
+
+      it { expect(service.call).to be_a(GoodsNomenclature) }
+
+      it 'return the correct goods nomenclature item id' do
+        goods_nomenclature = service.call
+
+        expect(goods_nomenclature.producline_suffix).to eq('70')
+      end
+    end
+
+    context 'when multiple PLS and multiple indents found' do
+      before do
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0101214264', producline_suffix: '70')
+        create(:goods_nomenclature, goods_nomenclature_item_id: '0101214264', producline_suffix: '70', indents: 1)
+      end
+
+      let(:id) { '0101214264' }
+
+      it { expect(service.call).to be_a(GoodsNomenclature) }
+
+      it 'return the correct goods nomenclature item id' do
+        goods_nomenclature = service.call
+
+        expect(goods_nomenclature.number_indents).to eq(1)
+      end
+    end
+
     context 'when the good nomenclature id is not found' do
       let(:id) { '123456' }
 
