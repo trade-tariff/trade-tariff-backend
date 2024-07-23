@@ -1,5 +1,5 @@
 RSpec.describe GreenLanesUpdatesPublisher::DataUpdatesFinder do
-  subject(:instance) { described_class.new Time.zone.today - 2.day }
+  subject(:instance) { described_class.new Time.zone.today - 2.days }
 
   before do
     create :measure, trade_movement_code: '1', generating_regulation: create(:base_regulation)

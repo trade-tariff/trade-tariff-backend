@@ -10,7 +10,6 @@ Sequel.migration do
       Int         :status, null: false
       Time        :created_at, null: false
       Time        :updated_at, null: false
-
     end
   end
 end

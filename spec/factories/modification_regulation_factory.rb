@@ -9,7 +9,7 @@ FactoryBot.define do
     approved_flag { true }
 
     base_regulation do
-      create(:base_regulation, created_at: Time.zone.now )
+      create(:base_regulation, created_at: Time.zone.now)
     end
 
     trait :approved do

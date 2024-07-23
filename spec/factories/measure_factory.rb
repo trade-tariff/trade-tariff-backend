@@ -26,7 +26,7 @@ FactoryBot.define do
       certificate { nil }
       trade_movement_code { MeasureType::IMPORT_MOVEMENT_CODES.sample }
       excluded_geographical_areas { [] }
-      created_at    { Time.zone.now }
+      created_at { Time.zone.now }
     end
 
     filename { build(:cds_update, issue_date: operation_date || validity_start_date).filename }
