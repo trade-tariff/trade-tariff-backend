@@ -7,9 +7,9 @@ module GreenLanesUpdatesPublisher
     default from: TradeTariffBackend.from_email,
             to: TradeTariffBackend.green_lanes_update_email
 
-    def update(_updates, date)
+    def update(updates, date)
       @updated_date = date.to_fs(:govuk)
-      @updates = _updates
+      @updates = updates
 
       mail subject: "#{subject_prefix(:info)} Green Lanes Updates"
     end
