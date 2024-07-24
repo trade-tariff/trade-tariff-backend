@@ -37,7 +37,9 @@ module Api
         end
 
         def update_notifications
-          @update_notifications ||= ::GreenLanes::UpdateNotification.order(Sequel.asc(:id)).paginate(current_page, per_page)
+          @update_notifications ||= ::GreenLanes::UpdateNotification
+                                      .where(Sequel.lit('status != ?', ::GreenLanes::UpdateNotification::NOTIFICATION_INACTIVE_STATUS))
+                                      .order(Sequel.asc(:id)).paginate(current_page, per_page)
         end
 
         def serialize(*args)

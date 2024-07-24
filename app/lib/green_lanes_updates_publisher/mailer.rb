@@ -9,6 +9,7 @@ module GreenLanesUpdatesPublisher
 
     def update(_updates, date)
       @updated_date = date.to_fs(:govuk)
+      @updates = _updates
 
       mail subject: "#{subject_prefix(:info)} Green Lanes Updates"
     end

@@ -1,3 +1,24 @@
 <p>Hello,</p>
 
 <p>Please find the attached updates as of <%= @updated_date %>.</p>
+
+<% if @updates.any? %>
+  <table>
+    <thead>
+    <tr>
+      <th>Measure Type Id</th>
+      <th>Regulation Id</th>
+      <th>Regulations Role</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @updates.each do |update| %>
+      <tr>
+        <td><%= update.measure_type_id %></td>
+        <td><%= update.regulation_role %></td>
+        <td><%= update.regulation_role %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+<% end %>

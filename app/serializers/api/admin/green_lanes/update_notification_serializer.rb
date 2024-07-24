@@ -12,6 +12,18 @@ module Api
                    :regulation_id,
                    :regulation_role,
                    :status
+
+        attribute :measure_type_description do |update|
+          update.measure_type.description
+        end
+
+        attribute :regulation_description do |update|
+          update.regulation.try(:information_text)
+        end
+
+        attribute :regulation_url do |update|
+          ApplicationHelper.regulation_url(update.regulation)
+        end
       end
     end
   end
