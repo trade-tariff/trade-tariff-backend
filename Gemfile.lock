@@ -406,10 +406,10 @@ GEM
     rubyzip (2.3.2)
     rufus-scheduler (3.9.1)
       fugit (~> 1.1, >= 1.1.6)
-    sentry-rails (5.18.1)
+    sentry-rails (5.18.2)
       railties (>= 5.0)
-      sentry-ruby (~> 5.18.1)
-    sentry-ruby (5.18.1)
+      sentry-ruby (~> 5.18.2)
+    sentry-ruby (5.18.2)
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
     sentry-sidekiq (5.18.1)
@@ -464,7 +464,7 @@ GEM
     websocket-driver (0.7.6)
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    zeitwerk (2.6.16)
+    zeitwerk (2.6.17)
 
 PLATFORMS
   ruby
