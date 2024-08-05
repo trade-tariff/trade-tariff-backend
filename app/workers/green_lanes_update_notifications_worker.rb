@@ -15,6 +15,14 @@ class GreenLanesUpdateNotificationsWorker
     logger.info 'Load updated data'
     updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date).call
 
+    if updates.any?
+      send_updates_email(updates, date)
+    end
+  end
+
+  private
+
+  def send_updates_email(updates, date)
     logger.info 'Sending update emails'
     ::GreenLanesUpdatesPublisher::Mailer.update(updates, date).deliver_now
 
