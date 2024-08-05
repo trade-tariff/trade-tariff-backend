@@ -15,8 +15,9 @@ class GreenLanesUpdateNotificationsWorker
     logger.info 'Load updated data'
     updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date - 1.day).call
 
-    send_updates_email(updates, date)
-    # add tracking record
+    if updates.any?
+      send_updates_email(updates, date)
+    end
   end
 
   private
