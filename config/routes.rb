@@ -67,6 +67,7 @@ Rails.application.routes.draw do
           resources :exempting_additional_code_overrides, only: %i[index show create destroy]
           resources :exemptions, only: %i[index show create update destroy]
           resources :measures, only: %i[index show create update destroy]
+          resources :update_notifications, only: %i[index show update]
         end
       end
     end

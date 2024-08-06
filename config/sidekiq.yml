@@ -86,3 +86,8 @@
     SynchronizerCheckWorker:
       cron: "30 08 * * *"
       description: Checks we have recent Quota Balance Events - this is an early warning that our sync process has a potential issue
+    GreenLanesUpdateNotificationsWorker:
+      cron: "0 4 * * *"
+      description: "Runs notification sending for green lanes related data updates"
+      class: GreenLanesUpdateNotificationsWorker
+      status: <%= ENV.fetch('SERVICE', 'uk') == 'xi' ? 'enabled' : 'disabled' %>

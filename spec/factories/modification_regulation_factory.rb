@@ -8,6 +8,10 @@ FactoryBot.define do
     validity_end_date   { nil }
     approved_flag { true }
 
+    base_regulation do
+      create(:base_regulation, created_at: Time.zone.now)
+    end
+
     trait :approved do
       approved_flag { true }
     end
