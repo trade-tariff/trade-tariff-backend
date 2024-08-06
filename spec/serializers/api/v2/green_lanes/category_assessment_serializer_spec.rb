@@ -23,6 +23,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
       data: {
         id: be_a(String),
         type: 'category_assessment',
+        attributes: { category_assessment_id: be_a(Integer) },
         relationships: {
           theme: {
             data: { id: category_assessment.theme.code, type: 'theme' },
