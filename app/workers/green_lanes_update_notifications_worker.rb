@@ -13,7 +13,7 @@ class GreenLanesUpdateNotificationsWorker
     logger.info "Running GreenLanesUpdateNotificationsWorker: #{date}"
 
     logger.info 'Load updated data'
-    updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date - 1.day).call
+    updates = ::GreenLanesUpdatesPublisher::DataUpdatesFinder.new(date).call
 
     if updates.any?
       send_updates_email(updates, date)
@@ -23,6 +23,10 @@ class GreenLanesUpdateNotificationsWorker
   private
 
   def send_updates_email(updates, date)
+    logger.info 'Sending update emails'
     ::GreenLanesUpdatesPublisher::Mailer.update(updates, date).deliver_now
+
+    logger.info 'Add tracking record'
+    ::GreenLanesUpdatesPublisher::UpdateNotificationsCreator.new(updates).call
   end
 end
