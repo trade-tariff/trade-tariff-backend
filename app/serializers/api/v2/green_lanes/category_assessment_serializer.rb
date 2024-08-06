@@ -7,7 +7,7 @@ module Api
         set_type :category_assessment
         set_id :id
 
-        attribute :category_assessment_id if Rails.env.development?
+        attribute :category_assessment_id
 
         has_many :exemptions, serializer: lambda { |record, _params|
           case record
