@@ -102,5 +102,41 @@ RSpec.describe GreenLanes::FindCategoryAssessmentsService do
         end
       end
     end
+
+    context 'with default GB measures for category assessments' do
+      before do
+        gb = create(:geographical_area, geographical_area_id: 'GB')
+
+        gbm = create(:measure,
+                     :with_base_regulation,
+                     goods_nomenclature:,
+                     for_geo_area: gb)
+        measures << gbm
+
+        category_assessments << create(:category_assessment, measure: gbm)
+      end
+
+      let(:geographical_area_id) { countries[:switzerland].geographical_area_id }
+
+      it { is_expected.to have_attributes length: 4 }
+
+      context 'for swiss assessment' do
+        subject { presented_assessments[category_assessments[0].id].first }
+
+        it { is_expected.to have_attributes measure_ids: [measures[0].measure_sid] }
+      end
+
+      context 'for erga omnes assessment' do
+        subject { presented_assessments[category_assessments[2].id].first }
+
+        it { is_expected.to have_attributes measure_ids: [measures[2].measure_sid] }
+      end
+
+      context 'for gb assessment' do
+        subject { presented_assessments[category_assessments[3].id].first }
+
+        it { is_expected.to have_attributes measure_ids: [measures[3].measure_sid] }
+      end
+    end
   end
 end
