@@ -239,6 +239,5 @@ namespace :green_lanes do
 
       assessments[key] = assessment
     end
-
   end
 end
