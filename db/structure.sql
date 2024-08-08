@@ -10792,7 +10792,7 @@ CREATE INDEX green_lanes_category_assessments_exemptions_exemption_id_catego ON 
 -- Name: green_lanes_category_assessments_measure_type_id_regulation_id_; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE UNIQUE INDEX green_lanes_category_assessments_measure_type_id_regulation_id_ ON uk.green_lanes_category_assessments USING btree (measure_type_id, regulation_id, regulation_role);
+CREATE UNIQUE INDEX green_lanes_category_assessments_measure_type_id_regulation_id_ ON uk.green_lanes_category_assessments USING btree (measure_type_id, regulation_id, regulation_role, theme_id);
 
 
 --
@@ -12496,3 +12496,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240610160146_update_quot
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240530121653_add_index_to_category_assessments_updated_at.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240627113028_create_green_lanes_exempting_additional_code_overrides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240723112213_create_green_lanes_update_notifications.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240808113431_update_green_lanes_category_assessments_index.rb');

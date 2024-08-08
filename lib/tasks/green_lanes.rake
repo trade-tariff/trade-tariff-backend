@@ -191,4 +191,54 @@ namespace :green_lanes do
       end
     end
   end
+
+  desc 'Add CategoryAssessments CATEGORY_ASSESSMENT_CSV_FILE=path/to/file.csv'
+  task import_csv_category_assessments: :environment do
+    raise 'Only supported on XI service' unless TradeTariffBackend.xi?
+
+    if Rails.application.config.persistence_bucket.present?
+      CATEGORY_ASSESSMENT_CSV_OBJECT_KEY = 'data/categorisation/category_assessment.csv'.freeze
+      begin
+        csv = Rails.application.config.persistence_bucket.object(CATEGORY_ASSESSMENT_CSV_OBJECT_KEY).get.body.read
+        @data = CSV.parse(csv, headers: true)
+      rescue Aws::S3::Errors::NoSuchKey => e
+        raise InvalidFile, "File not found in S3 (#{e.message})"
+      end
+    else
+      raise "Cannot read file '#{ENV['CATEGORY_ASSESSMENT_CSV_FILE']}'" unless File.file?(ENV['CATEGORY_ASSESSMENT_CSV_FILE'].to_s)
+
+      @data = CSV.read(ENV['CATEGORY_ASSESSMENT_CSV_FILE'], headers: true)
+    end
+
+    @data.map do |row|
+      theme = GreenLanes::Theme.where(section: row['theme_section'], subsection: row['theme_subsection']).first
+      assessments = GreenLanes::CategoryAssessment.all.index_by do |assessment|
+        [assessment.measure_type_id, assessment.regulation_id, assessment.theme_id]
+      end
+
+      key = [row['measure_type_id'], row['regulation_id'], theme.id]
+      assessment = assessments[key]
+
+      unless assessment
+        assessment = GreenLanes::CategoryAssessment.new
+        assessment.measure_type_id = row['measure_type_id']
+        assessment.regulation_id = row['regulation_id']
+        assessment.regulation_role = row['regulation_role']
+        assessments[key] = assessment
+      end
+
+      if assessment.id.nil?
+        assessment.theme = theme
+        assessment.save(validate: true)
+
+        exemption = GreenLanes::Exemption.where(code: row['exemption_code']).first
+        if exemption
+          assessment.add_exemption(exemption)
+        end
+      end
+
+      assessments[key] = assessment
+    end
+
+  end
 end
