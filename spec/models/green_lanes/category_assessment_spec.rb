@@ -22,16 +22,17 @@ RSpec.describe GreenLanes::CategoryAssessment do
     it { is_expected.to include regulation_role: ['is not present'] }
     it { is_expected.to include theme_id: ['is not present'] }
 
-    context 'with duplicate measure_type_id and regulation_id' do
+    context 'with duplicate measure_type_id, regulation_id and theme_id' do
       let(:existing) { create :category_assessment }
 
       let :instance do
         described_class.new measure_type_id: existing.measure_type_id,
                             regulation_id: existing.regulation_id,
-                            regulation_role: existing.regulation_role
+                            regulation_role: existing.regulation_role,
+                            theme_id: existing.theme_id
       end
 
-      it { is_expected.to include %i[measure_type_id regulation_id regulation_role] => ['is already taken'] }
+      it { is_expected.to include %i[measure_type_id regulation_id regulation_role theme_id] => ['is already taken'] }
     end
   end
 
