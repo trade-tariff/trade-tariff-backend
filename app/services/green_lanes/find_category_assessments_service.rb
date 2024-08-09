@@ -42,7 +42,7 @@ module GreenLanes
     def filter_by_geographical_area(measure)
       return true if @geographical_area_id.blank?
 
-      measure.relevant_for_country? @geographical_area_id
+      measure.relevant_for_country?(@geographical_area_id) || measure.relevant_for_country?('GB')
     end
   end
 end
