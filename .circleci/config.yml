@@ -292,16 +292,6 @@ jobs:
           command: |
             bin/sync-opensearch-packages << parameters.space >> << parameters.bucket >>
 
-  notify-production-deployment:
-    docker:
-      - image: cimg/ruby:3.3.4
-    steps:
-      - checkout
-      - tariff/notify-production-release:
-          app-name: Backend
-          slack-channel: trade_tariff
-          release-tag: $CIRCLE_TAG
-
 workflows:
   version: 2
 
@@ -487,10 +477,4 @@ workflows:
           environment: production
           requires:
             - write-docker-tag-prod-release
-          <<: *filter-release
-
-      - notify-production-deployment:
-          context: trade-tariff-releases
-          requires:
-            - apply-terraform-prod
           <<: *filter-release
