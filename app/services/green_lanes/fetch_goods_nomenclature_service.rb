@@ -68,7 +68,7 @@ module GreenLanes
     private
 
     def invalid_id(id)
-      id.blank? || !is_id_length_greater(id,2)
+      id.blank? || !is_id_length_greater(id, 2)
     end
 
     def is_id_length_greater(id, length)
