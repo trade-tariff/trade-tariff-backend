@@ -262,6 +262,10 @@ module TradeTariffBackend
       ENV['GREEN_LANES_API_TOKENS']
     end
 
+    def green_lanes_api_keys
+      ENV['GREEN_LANES_API_KEYS']
+    end
+
     def excise_alcohol_coercian_starts_from
       @excise_alcohol_coercian_starts_from ||= Date.parse(
         ENV.fetch(
