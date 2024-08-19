@@ -6,6 +6,28 @@ RSpec.describe GreenLanes::FetchGoodsNomenclatureService do
       create(:goods_nomenclature, goods_nomenclature_item_id: '0101210000')
       create(:goods_nomenclature, goods_nomenclature_item_id: '0101214200')
       create(:goods_nomenclature, goods_nomenclature_item_id: '0101214264')
+      create(:goods_nomenclature, :without_descendants, :non_grouping, goods_nomenclature_item_id: '4909000000')
+      create(:goods_nomenclature, :with_descendants, goods_nomenclature_item_id: '0202000000')
+    end
+
+    context 'when the ID is 4-digit and declarable' do
+      let(:id) { '4909' }
+
+      it { expect(service.call).to be_a(GoodsNomenclature) }
+
+      it 'return the correct goods nomenclature item id' do
+        goods_nomenclature = service.call
+
+        expect(goods_nomenclature.goods_nomenclature_item_id).to eq('4909000000')
+      end
+    end
+
+    context 'when the ID is 4-digit and non declarable' do
+      let(:id) { '0202' }
+
+      it 'raises record not found exception' do
+        expect { described_class.new(id).call }.to raise_error Sequel::RecordNotFound
+      end
     end
 
     context 'when the ID is 6-digit' do
