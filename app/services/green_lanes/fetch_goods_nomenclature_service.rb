@@ -54,7 +54,7 @@ module GreenLanes
              .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
              .first
 
-      if gn.present?
+      if gn.present? && (is_id_length_greater(@goods_nomenclature_item_id, 4) || gn.declarable?)
         GoodsNomenclature
           .actual
           .eager(EAGER_LOAD)
@@ -68,7 +68,11 @@ module GreenLanes
     private
 
     def invalid_id(id)
-      id.blank? || id.length <= 4 || id[4..].each_char.all? { |char| char == '0' }
+      id.blank? || !is_id_length_greater(id, 2)
+    end
+
+    def is_id_length_greater(id, length)
+      id.length > length && id[length..].each_char.any? { |char| char != '0' }
     end
 
     def length_adjusted_digit_id
