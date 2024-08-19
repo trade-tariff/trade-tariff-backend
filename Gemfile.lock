@@ -136,7 +136,7 @@ GEM
       rubyzip (>= 1.3.0, < 3)
     childprocess (5.0.0)
     coderay (1.1.3)
-    concurrent-ruby (1.3.3)
+    concurrent-ruby (1.3.4)
     connection_pool (2.4.1)
     crack (1.0.0)
       bigdecimal
@@ -406,14 +406,14 @@ GEM
     rubyzip (2.3.2)
     rufus-scheduler (3.9.1)
       fugit (~> 1.1, >= 1.1.6)
-    sentry-rails (5.18.1)
+    sentry-rails (5.19.0)
       railties (>= 5.0)
-      sentry-ruby (~> 5.18.1)
-    sentry-ruby (5.18.1)
+      sentry-ruby (~> 5.19.0)
+    sentry-ruby (5.19.0)
       bigdecimal
       concurrent-ruby (~> 1.0, >= 1.0.2)
-    sentry-sidekiq (5.18.1)
-      sentry-ruby (~> 5.18.1)
+    sentry-sidekiq (5.19.0)
+      sentry-ruby (~> 5.19.0)
       sidekiq (>= 3.0)
     sequel (5.76.0)
       bigdecimal
