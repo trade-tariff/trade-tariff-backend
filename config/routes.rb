@@ -227,7 +227,7 @@ Rails.application.routes.draw do
       get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
 
       namespace :green_lanes do
-        resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{6,10}/ }
+        resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
 
         resources :category_assessments, only: %i[index]
 
