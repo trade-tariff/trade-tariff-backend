@@ -7,7 +7,7 @@ class GreenLanesUpdateNotificationsWorker
   sidekiq_options queue: :sync, retry: false
 
   def perform
-    return unless TradeTariffBackend.xi?
+    return unless TradeTariffBackend.xi? && TradeTariffBackend.green_lanes_update_email.present?
 
     date = Time.zone.today
     logger.info "Running GreenLanesUpdateNotificationsWorker: #{date}"
