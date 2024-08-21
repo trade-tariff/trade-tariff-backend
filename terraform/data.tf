@@ -119,6 +119,10 @@ data "aws_secretsmanager_secret" "green_lanes_api_tokens" {
   name = "backend-green-lanes-api-tokens"
 }
 
+data "aws_secretsmanager_secret" "green_lanes_api_keys" {
+  name = "backend-green-lanes-api-keys"
+}
+
 data "aws_s3_bucket" "spelling_corrector" {
   bucket = "trade-tariff-search-configuration-${local.account_id}"
 }

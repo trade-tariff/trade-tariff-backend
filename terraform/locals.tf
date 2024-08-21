@@ -205,6 +205,10 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.green_lanes_api_tokens.arn
     },
     {
+      name      = "GREEN_LANES_API_KEYS"
+      valueFrom = data.aws_secretsmanager_secret.green_lanes_api_keys.arn
+    },
+    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
