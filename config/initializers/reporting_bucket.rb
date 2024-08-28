@@ -3,7 +3,12 @@ ecs_credentials_loaded = ENV['AWS_CONTAINER_CREDENTIALS_RELATIVE_URI'].present?
 local_credentials_loaded = ENV['AWS_PROFILE'].present? || (ENV['AWS_SECRET_ACCESS_KEY'].present? && ENV['AWS_ACCESS_KEY_ID'])
 credentials_loaded = ecs_credentials_loaded || local_credentials_loaded
 
-s3_bucket = if Rails.env.test?
+s3_bucket = if Rails.env.development? && ENV.key?('AWS_ENDPOINT')
+              unless Aws::S3::Resource.new(endpoint: ENV['AWS_ENDPOINT']).bucket(s3_bucket_name).exists?
+                Aws::S3::Resource.new(endpoint: ENV['AWS_ENDPOINT']).create_bucket({ bucket: s3_bucket_name })
+              end
+              Aws::S3::Resource.new(endpoint: ENV['AWS_ENDPOINT']).bucket(s3_bucket_name)
+            elsif Rails.env.test?
               Aws::S3::Resource.new(stub_responses: true).bucket(s3_bucket_name)
             elsif s3_bucket_name && credentials_loaded
               Aws::S3::Resource.new.bucket(s3_bucket_name)
