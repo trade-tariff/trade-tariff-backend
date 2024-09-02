@@ -90,7 +90,7 @@ securely stored in AWS Secrets Manager under the secret name backend-green-lanes
 
 When authorizing a new API client, you should update the JSON file in Secrets Manager by adding the client’s API key 
 along with their details and the appropriate throttling limits. This ensures that each client has the correct permissions 
-and rate limits when interacting with the GL endpoints.
+and rate limits when interacting with the GL endpoints. Throttling limit is set per number of hours specified in period.
 
 ```
 {
@@ -103,7 +103,7 @@ and rate limits when interacting with the GL endpoints.
       "client_secret": "<secret>",
       "t&c_accepted": true,
       "limit": 100,
-      "period": "1.hour"
+      "period": 1
     }
   }
 }
