@@ -291,6 +291,8 @@ GEM
       activesupport (>= 2.3.14)
     racc (1.8.0)
     rack (3.1.7)
+    rack-attack (6.7.0)
+      rack (>= 1.0, < 4)
     rack-protection (4.0.0)
       base64 (>= 0.1.0)
       rack (>= 3.0.0, < 4)
@@ -501,6 +503,7 @@ DEPENDENCIES
   pry-rails
   puma
   rabl
+  rack-attack
   rack-timeout
   rails (~> 7.1)
   redis (>= 5.0.6)

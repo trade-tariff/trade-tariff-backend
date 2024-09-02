@@ -79,5 +79,6 @@ group :test do
 end
 
 group :production do
+  gem 'rack-attack'
   gem 'rack-timeout'
 end
