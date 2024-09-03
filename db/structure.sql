@@ -8673,6 +8673,14 @@ ALTER TABLE ONLY uk.data_migrations
 
 
 --
+-- Name: differences_logs differences_logs_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.differences_logs
+    ADD CONSTRAINT differences_logs_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: downloads downloads_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -12497,3 +12505,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240530121653_add_index_t
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240627113028_create_green_lanes_exempting_additional_code_overrides.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240723112213_create_green_lanes_update_notifications.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240808113431_update_green_lanes_category_assessments_index.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20240830142019_add_differences_log.rb');
