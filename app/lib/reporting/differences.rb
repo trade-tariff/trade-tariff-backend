@@ -305,8 +305,8 @@ module Reporting
     end
 
     def sections
-      Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
-        worksheets = Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
+      Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
+        worksheets = Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
           OpenStruct.new(
             worksheet:,
             worksheet_name: config[:worksheet_name],
