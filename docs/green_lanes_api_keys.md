@@ -1,4 +1,5 @@
 ### API Key Management
+
 To access GL endpoints in the production environment, clients must provide a valid API key. These API keys are
 securely stored in AWS Secrets Manager under the secret name backend-green-lanes-api-keys as a JSON blob.
 
