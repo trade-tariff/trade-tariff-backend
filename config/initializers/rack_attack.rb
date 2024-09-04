@@ -6,7 +6,7 @@ if Rails.env.production?
 
     if API_KEY_LIMITS.present?
       API_KEY_LIMITS['api_keys'].each do |api_key, config|
-        throttle(api_key.to_s, limit: config['limit'], period: config['period'].to_i.minute) do |req|
+        throttle(api_key.to_s, limit: config['limit'], period: config['period'].to_i.hour) do |req|
           req.path.start_with?('/green_lanes/goods_nomenclatures') && req.env['HTTP_X_API_KEY'] == api_key
         end
       end
