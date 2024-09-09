@@ -32,6 +32,7 @@ gem 'opensearch-ruby'
 # Helpers
 gem 'bootsnap', require: false
 gem 'caxlsx'
+gem 'csv'
 gem 'gds-sso'
 gem 'hashie'
 gem 'holidays'
