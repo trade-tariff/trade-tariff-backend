@@ -84,6 +84,12 @@ TARIFF_SYNC_USERNAME
 GREEN_LANES_UPDATE_EMAIL
 ```
 
+## Localstack
+
+This project uses [localstack](https://github.com/localstack/localstack) to simulate AWS services locally should you choose to. To use localstack, you will need to install it and run it locally. You can find instructions on how to do this [here](https://github.com/localstack/localstack#installation).
+
+Once you have installed localstack, you will need to configure it to use the correct AWS region and credentials.  This can be done by uncommenting the relevant lines in the `.env.development` file and setting the appropriate values.
+
 ## Licence
 
 Trade Tariff is licenced under the [MIT licence](https://github.com/trade-tariff/trade-tariff-backend/blob/main/LICENCE.txt)
