@@ -35,7 +35,7 @@ These can be configured by running `docker-compose up` or by manual installation
       Sidekiq is started to build the search indexes - once the jobs have all
       finished (10 `[done]` jobs, one after the other), hit `Ctrl-C` to exit
       sidekiq.
-4. Start the app with `bin/rails s`.
+4. Start the app with `bin/rails s`. If you want to run rails plus the sidekiq worker, run `bin/dev`.
 
 ### Database
 
