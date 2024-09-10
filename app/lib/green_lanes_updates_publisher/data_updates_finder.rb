@@ -14,7 +14,7 @@ module GreenLanesUpdatesPublisher
       inner join measure_types mt
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where br.created_at > :today or mo.created_at > :today
-      group by(br.base_regulation_id, br.base_regulation_role, mo.measure_type_id)"
+      group by(br.base_regulation_id, br.base_regulation_role, mo.measure_type_id)".freeze
 
     MODIFICATION_REGULATIONS =
       "select mr.modification_regulation_id as regulation_id, mr.modification_regulation_role as regulation_role, mo.measure_type_id,
@@ -25,7 +25,7 @@ module GreenLanesUpdatesPublisher
       inner join measure_types mt
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where mr.created_at > :today or mo.created_at > :today
-      group by(mr.modification_regulation_id, mr.modification_regulation_role, mo.measure_type_id)"
+      group by(mr.modification_regulation_id, mr.modification_regulation_role, mo.measure_type_id)".freeze
 
     EXPIRED_BASE_REGULATIONS =
       "select br.base_regulation_id as regulation_id, br.base_regulation_role as regulation_role, mo.measure_type_id,
@@ -37,7 +37,7 @@ module GreenLanesUpdatesPublisher
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where least(br.validity_end_date, br.effective_end_date) between :yesterday and :today
             or least(mo.validity_end_date, mo.invalidated_at) between :yesterday and :today
-      group by(br.base_regulation_id, br.base_regulation_role, mo.measure_type_id)"
+      group by(br.base_regulation_id, br.base_regulation_role, mo.measure_type_id)".freeze
 
     EXPIRED_MODIFICATION_REGULATIONS =
       "select mr.modification_regulation_id as regulation_id, mr.modification_regulation_role as regulation_role, mo.measure_type_id,
@@ -49,7 +49,7 @@ module GreenLanesUpdatesPublisher
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where least(mr.validity_end_date, mr.effective_end_date) between :yesterday and :today
             or least(mo.validity_end_date, mo.invalidated_at) between :yesterday and :today
-      group by(mr.modification_regulation_id, mr.modification_regulation_role, mo.measure_type_id)"
+      group by(mr.modification_regulation_id, mr.modification_regulation_role, mo.measure_type_id)".freeze
 
     UPDATED_MEASURES =
       "select mo.measure_generating_regulation_id as regulation_id, mo.measure_generating_regulation_role as regulation_role, mo.measure_type_id,
@@ -64,7 +64,7 @@ module GreenLanesUpdatesPublisher
       inner join measure_types mt
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where mc.created_at > :today or ac.created_at > :today or ga.created_at > :today
-      group by(mo.measure_generating_regulation_id, mo.measure_generating_regulation_role, mo.measure_type_id)"
+      group by(mo.measure_generating_regulation_id, mo.measure_generating_regulation_role, mo.measure_type_id)".freeze
 
     def initialize(date = Time.zone.today)
       @start_date = date
