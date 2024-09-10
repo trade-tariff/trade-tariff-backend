@@ -82,6 +82,7 @@ module Reporting
 
     def initialize
       @package = Axlsx::Package.new
+      Axlsx.escape_formulas = false
       @package.use_shared_strings = true
       @workbook = package.workbook
       @bold_style = workbook.styles.add_style(
@@ -123,6 +124,8 @@ module Reporting
       total_start = Time.zone.now
 
       methods = %i[
+
+        add_measure_quota_coverage_worksheet
         add_missing_from_uk_worksheet
         add_missing_from_xi_worksheet
         add_indentation_worksheet
@@ -139,7 +142,6 @@ module Reporting
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
         add_missing_quota_origins_worksheet
-        add_measure_quota_coverage_worksheet
         add_bad_quota_association_worksheet
         add_quota_exclusion_misalignment_worksheet
         add_missing_supplementary_units_from_uk_worksheet
@@ -165,99 +167,99 @@ module Reporting
     end
 
     def add_overview_worksheet
-      Reporting::Differences::Overview.new(self).add_worksheet
+      generate_sheet('Overview', self)
     end
 
     def add_missing_from_uk_worksheet
-      Reporting::Differences::GoodsNomenclature.new('xi', 'uk', self).add_worksheet
+      generate_sheet('GoodsNomenclature', 'xi', 'uk', self)
     end
 
     def add_missing_from_xi_worksheet
-      Reporting::Differences::GoodsNomenclature.new('uk', 'xi', self).add_worksheet
+      generate_sheet('GoodsNomenclature', 'uk', 'xi', self)
     end
 
     def add_indentation_worksheet
-      Reporting::Differences::Indentation.new(self).add_worksheet
+      generate_sheet('Indentation', self)
     end
 
     def add_hierarchy_worksheet
-      Reporting::Differences::Hierarchy.new(self).add_worksheet
+      generate_sheet('Hierarchy', self)
     end
 
     def add_endline_worksheet
-      Reporting::Differences::Endline.new(self).add_worksheet
+      generate_sheet('Endline', self)
     end
 
     def add_start_date_worksheet
-      Reporting::Differences::GoodsNomenclatureStartDate.new(self).add_worksheet
+      generate_sheet('GoodsNomenclatureStartDate', self)
     end
 
     def add_end_date_worksheet
-      Reporting::Differences::GoodsNomenclatureEndDate.new(self).add_worksheet
+      generate_sheet('GoodsNomenclatureEndDate', self)
     end
 
     def add_mfn_missing_worksheet
-      Reporting::Differences::MfnMissing.new(self).add_worksheet
+      generate_sheet('MfnMissing', self)
     end
 
     def add_mfn_duplicated_worksheet
-      Reporting::Differences::MfnDuplicated.new(self).add_worksheet
+      generate_sheet('MfnDuplicated', self)
     end
 
     def add_misapplied_action_code_worksheet
-      Reporting::Differences::MisappliedActionCode.new(self).add_worksheet
+      generate_sheet('MisappliedActionCode', self)
     end
 
     def add_incomplete_measure_condition_worksheet
-      Reporting::Differences::IncompleteMeasureCondition.new(self).add_worksheet
+      generate_sheet('IncompleteMeasureCondition', self)
     end
 
     def add_me32_worksheet
-      Reporting::Differences::Me32.new(self).add_worksheet
+      generate_sheet('Me32', self)
     end
 
     def add_seasonal_worksheet
-      Reporting::Differences::Seasonal.new(self).add_worksheet
+      generate_sheet('Seasonal', self)
     end
 
     def add_omitted_duty_measures_worksheet
-      Reporting::Differences::OmittedDutyMeasures.new(self).add_worksheet
+      generate_sheet('OmittedDutyMeasures', self)
     end
 
     def add_missing_vat_measure_worksheet
-      Reporting::Differences::MissingVatMeasure.new(self).add_worksheet
+      generate_sheet('MissingVatMeasure', self)
     end
 
     def add_missing_quota_origins_worksheet
-      Reporting::Differences::QuotaMissingOrigin.new(self).add_worksheet
+      generate_sheet('QuotaMissingOrigin', self)
     end
 
     def add_measure_quota_coverage_worksheet
-      Reporting::Differences::MeasureQuotaCoverage.new(self).add_worksheet
+      generate_sheet('MeasureQuotaCoverage', self)
     end
 
     def add_bad_quota_association_worksheet
-      Reporting::Differences::BadQuotaAssociation.new(self).add_worksheet
+      generate_sheet('BadQuotaAssociation', self)
     end
 
     def add_quota_exclusion_misalignment_worksheet
-      Reporting::Differences::QuotaExclusionMisalignment.new(self).add_worksheet
+      generate_sheet('QuotaExclusionMisalignment', self)
     end
 
     def add_missing_supplementary_units_from_uk_worksheet
-      Reporting::Differences::SupplementaryUnit.new('xi', 'uk', self).add_worksheet
+      generate_sheet('SupplementaryUnit', 'xi', 'uk', self)
     end
 
     def add_missing_supplementary_units_from_xi_worksheet
-      Reporting::Differences::SupplementaryUnit.new('uk', 'xi', self).add_worksheet
+      generate_sheet('SupplementaryUnit', 'uk', 'xi', self)
     end
 
     def add_candidate_supplementary_units
-      Reporting::Differences::CandidateSupplementaryUnit.new(self).add_worksheet
+      generate_sheet('CandidateSupplementaryUnit', self)
     end
 
     def add_me16_worksheet
-      Reporting::Differences::Me16.new(self).add_worksheet
+      generate_sheet('Me16', self)
     end
 
     def uk_goods_nomenclatures
@@ -303,8 +305,8 @@ module Reporting
     end
 
     def sections
-      Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
-        worksheets = Reporting::Differences::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
+      Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
+        worksheets = Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
           OpenStruct.new(
             worksheet:,
             worksheet_name: config[:worksheet_name],
@@ -334,6 +336,13 @@ module Reporting
 
     def xi_supplementary_units_link
       Reporting::SupplementaryUnits.get_xi_link_today
+    end
+
+    private
+
+    def generate_sheet(klass, *args)
+      data = Module.const_get("Reporting::Differences::Loaders::#{klass}").new(*args).get
+      Module.const_get("Reporting::Differences::Renderers::#{klass}").new(*args).add_worksheet(data)
     end
 
     class << self
