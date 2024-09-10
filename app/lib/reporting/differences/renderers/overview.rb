@@ -96,7 +96,7 @@ module Reporting
             worksheets: {
               'Missing VAT rates' => {
                 description: 'Commodities, as of as_of, where there is no VAT rate.',
-                worksheet_name: 'VAT-related anomalies',
+                worksheet_name: 'VAT missing',
                 new_items_formula: "=COUNTIF('VAT missing'!C:C, \"Yes\")",
               },
             },
@@ -253,7 +253,7 @@ module Reporting
                   [
                     nil,
                     worksheet,
-                    report.overview_counts[worksheet_name],
+                    "=COUNTA('#{worksheet_name}'!A2:A1048576)",
                     worksheet_config.fetch(:new_items_formula, nil),
                     worksheet_description,
                     'View issues',
