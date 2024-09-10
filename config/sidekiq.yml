@@ -91,3 +91,7 @@
       description: "Runs notification sending for green lanes related data updates"
       class: GreenLanesUpdateNotificationsWorker
       status: <%= ENV.fetch('SERVICE', 'uk') == 'xi' ? 'enabled' : 'disabled' %>
+    CheckDifferencesReportHasRun:
+      cron: "0 1 * * 2"  # 1am every Tuesday
+      description: "Checks if the differences report has run"
+      class: DifferencesReportCheckWorker
