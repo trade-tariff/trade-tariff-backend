@@ -38,7 +38,7 @@ module Api
 
         def update_notifications
           @update_notifications ||= ::GreenLanes::UpdateNotification
-                                      .where(Sequel.lit('status != ?', ::GreenLanes::UpdateNotification::NOTIFICATION_INACTIVE_STATUS))
+                                      .where(Sequel.lit('status != ?', ::GreenLanes::UpdateNotification::NotificationStatus::INACTIVE))
                                       .order(Sequel.asc(:id)).paginate(current_page, per_page)
         end
 

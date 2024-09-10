@@ -118,6 +118,10 @@ locals {
       name  = "GREEN_LANES_UPDATE_EMAIL"
       value = var.green_lanes_update_email
     }
+    {
+      name  = "GREEN_LANES_NOTIFY_MEASURE_UPDATES"
+      value = var.green_lanes_notify_measure_updates
+    }
   ]
 
   backend_common_worker_vars = [

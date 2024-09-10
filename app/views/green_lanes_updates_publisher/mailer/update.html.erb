@@ -9,7 +9,7 @@
   </tr>
   </thead>
   <tbody>
-  <% @updates.each do |update| %>
+  <% @updates.select { |update| update.status == ::GreenLanes::UpdateNotification::NotificationStatus::CREATED }.each do |update| %>
     <tr>
       <td style='border:1px solid #000;padding:8px;'><%= update.measure_type_id %></td>
       <td style='border:1px solid #000;padding:8px;'><%= update.regulation_id %></td>
@@ -18,6 +18,59 @@
   <% end %>
   </tbody>
 </table>
+
+<% if @expired_count > 0 || @updated_count > 0 %>
+
+  <% if @include_measure_updates && @expired_count > 0 %>
+  <p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Please note that as of <%= @updated_date %>, set of data, potentially relevant to the Windsor Framework has been expired. The details are provided in the table below.</p>
+  <table style='border-collapse:collapse;width:75%;max-width:800px;font-family:Calibri,Arial,sans-serif;font-size:14px;'>
+    <thead>
+    <tr>
+      <th style='border:1px solid #000;padding:8px;text-align:left;'>Measure Type ID</th>
+      <th style='border:1px solid #000;padding:8px;text-align:left;'>Regulation ID</th>
+      <th style='border:1px solid #000;padding:8px;text-align:left;'>Regulation Role</th>
+    </tr>
+    </thead>
+    <tbody>
+    <% @updates.select { |update| update.status == ::GreenLanes::UpdateNotification::NotificationStatus::EXPIRED }.each do |update| %>
+      <tr>
+        <td style='border:1px solid #000;padding:8px;'><%= update.measure_type_id %></td>
+        <td style='border:1px solid #000;padding:8px;'><%= update.regulation_id %></td>
+        <td style='border:1px solid #000;padding:8px;'><%= update.regulation_role %></td>
+      </tr>
+    <% end %>
+    </tbody>
+  </table>
+  <% end %>
+
+  <% if @include_measure_updates && @updated_count > 0 %>
+    <p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Please note that as of <%= @updated_date %>, set of data, potentially relevant to the Windsor Framework has been updated. The details are provided in the table below.</p>
+    <table style='border-collapse:collapse;width:75%;max-width:800px;font-family:Calibri,Arial,sans-serif;font-size:14px;'>
+      <thead>
+      <tr>
+        <th style='border:1px solid #000;padding:8px;text-align:left;'>Measure Type ID</th>
+        <th style='border:1px solid #000;padding:8px;text-align:left;'>Regulation ID</th>
+        <th style='border:1px solid #000;padding:8px;text-align:left;'>Regulation Role</th>
+      </tr>
+      </thead>
+      <tbody>
+      <% @updates.select { |update| update.status == ::GreenLanes::UpdateNotification::NotificationStatus::UPDATED }.each do |update| %>
+        <tr>
+          <td style='border:1px solid #000;padding:8px;'><%= update.measure_type_id %></td>
+          <td style='border:1px solid #000;padding:8px;'><%= update.regulation_id %></td>
+          <td style='border:1px solid #000;padding:8px;'><%= update.regulation_role %></td>
+        </tr>
+      <% end %>
+      </tbody>
+    </table>
+  <% end %>
+
+  <% unless @include_measure_updates %>
+    <p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Please note that as of <%=  @updated_date  %>
+      , since last update <%=  @expired_count  %> measures have been expired and <%=  @updated_count  %> measures have been updated. Log in the admin UI to see more details.</p>
+  <%  end %>
+<% end %>
+
 <p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>We advise you to assess the impact of these new data points on the categorisation of trades. Should any changes need to be made to the underlying data supporting the categorisation process, you will need to access the admin dashboard at <a href='https://admin.trade-tariff.service.gov.uk'>https://admin.trade-tariff.service.gov.uk</a> using your GOV UK credentials.</p>
 <p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>If you need any support, please reach out to the OTT Team at <a href='mailto:hmrc-trade-tariff-support-g@digital.hmrc.gov.uk'>hmrc-trade-tariff-support-g@digital.hmrc.gov.uk</a>.</p>
 <p style='font-size:14px;color:#000;font-family:Calibri,Arial,sans-serif;'>Thank you,</p>
