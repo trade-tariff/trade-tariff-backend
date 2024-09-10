@@ -1,7 +1,11 @@
 module GreenLanes
   class UpdateNotification < Sequel::Model(:green_lanes_update_notifications)
-    NOTIFICATION_STATUS = [0, 1, 9].freeze #  created, updated, handled
-    NOTIFICATION_INACTIVE_STATUS = 9 # handled
+    class NotificationStatus
+      CREATED = 0
+      UPDATED = 1
+      EXPIRED = 2
+      INACTIVE = 9
+    end
 
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence

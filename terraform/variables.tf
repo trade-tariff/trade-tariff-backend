@@ -81,3 +81,8 @@ variable "green_lanes_update_email" {
   description = "Email address for the green lanes policy team."
   type        = string
 }
+
+variable "green_lanes_notify_measure_updates" {
+  description = "Flag to indicate if updated or expired measure records should be included in green lanes update email."
+  type        = bool
+}

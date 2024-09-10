@@ -303,5 +303,9 @@ module TradeTariffBackend
     def green_lanes_update_email
       ENV['GREEN_LANES_UPDATE_EMAIL']
     end
+
+    def green_lanes_notify_measure_updates
+      ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
+    end
   end
 end
