@@ -63,6 +63,7 @@ group :development, :test do
   gem 'dotenv-rails'
   gem 'pry-byebug'
   gem 'pry-rails'
+  gem 'solargraph'
 end
 
 group :test do
