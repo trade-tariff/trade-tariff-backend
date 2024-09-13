@@ -15,10 +15,6 @@ class CdsImporter
         "#{mapping_path}.relationType" => :relation_type,
         "#{mapping_path}.coefficient" => :coefficient,
       ).freeze
-
-      self.primary_filters = {
-        quota_definition_sid: :main_quota_definition_sid,
-      }.freeze
     end
   end
 end

@@ -17,10 +17,6 @@ class CdsImporter
         "#{mapping_path}.measurementUnit.measurementUnitCode" => :measurement_unit_code,
         "#{mapping_path}.measurementUnitQualifier.measurementUnitQualifierCode" => :measurement_unit_qualifier_code,
       ).freeze
-
-      self.primary_filters = {
-        measure_sid: :measure_sid,
-      }.freeze
     end
   end
 end
