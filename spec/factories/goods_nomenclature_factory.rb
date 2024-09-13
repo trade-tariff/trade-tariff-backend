@@ -184,7 +184,7 @@ FactoryBot.define do
           :preferential_quota,
           goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid,
           goods_nomenclature_item_id: goods_nomenclature.goods_nomenclature_item_id,
-          )
+        )
       end
     end
 
