@@ -47,18 +47,11 @@ module GreenLanes
         raise Sequel::RecordNotFound
       end
 
-      gn = GoodsNomenclature
-             .actual
-             .association_join(:goods_nomenclature_indents)
-             .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => length_adjusted_digit_id)
-             .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
-             .first
-
-      if gn.present? && (is_id_length_greater(@goods_nomenclature_item_id, 4) || gn.declarable?)
+      if is_id_length_greater(@goods_nomenclature_item_id, 4) || declarable?
         GoodsNomenclature
           .actual
           .eager(EAGER_LOAD)
-          .where(goods_nomenclature_sid: gn.goods_nomenclature_sid)
+          .where(goods_nomenclature_item_id: length_adjusted_digit_id)
           .take
       else
         raise Sequel::RecordNotFound
@@ -66,6 +59,17 @@ module GreenLanes
     end
 
     private
+
+    def declarable?
+      gn = GoodsNomenclature
+             .actual
+             .association_join(:goods_nomenclature_indents)
+             .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => length_adjusted_digit_id)
+             .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
+             .first
+
+      gn.present? && gn.declarable?
+    end
 
     def invalid_id(id)
       id.blank? || !is_id_length_greater(id, 2)
