@@ -25,7 +25,7 @@ fingerlings, larvae, parr, or smolts by intervention in the rearing or growth pr
 
 12. products extracted from the seabed or below the seabed which is situated outside its territorial sea but where it has exclusive exploitation rights; and
 
-13. goods produced there exclusively from the products specified in points 1 to 12
+13. goods produced there exclusively from the products specified in points a to l
 
 {{ Article 3 }}
 
