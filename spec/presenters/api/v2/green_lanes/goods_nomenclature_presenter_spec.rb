@@ -22,6 +22,18 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturePresenter do
     it { is_expected.to all have_attributes id: /^[a-f\d]{32}$/ }
   end
 
+  describe '#applicable_category_assessments for quota measure types' do
+    subject { presenter.applicable_category_assessments }
+
+    before { TradeTariffRequest.green_lanes = true }
+
+    let(:gn) { create :goods_nomenclature, :with_ancestors, :with_children, :with_quota_measures }
+
+    it { is_expected.to have_attributes length: 1 }
+    it { is_expected.to all be_an Api::V2::GreenLanes::CategoryAssessmentPresenter }
+    it { is_expected.to all have_attributes id: /^[a-f\d]{32}$/ }
+  end
+
   describe '#ancestors' do
     subject { presenter.ancestors }
 
