@@ -1,4 +1,4 @@
-The following shall be considered as wholly obtained in a Party:
+1) The following shall be considered as wholly obtained in a Party:
 
 1. mineral products and natural water extracted from its soil or from its seabed;
 
@@ -29,7 +29,7 @@ fingerlings, larvae, parr, or smolts by intervention in the rearing or growth pr
 
 {{ Article 3 }}
 
-The terms ‘its vessels’ and ‘its factory ships’ shall apply only to vessels and factory ships which meet each of the following requirements:
+2) The terms ‘its vessels’ and ‘its factory ships’ shall apply only to vessels and factory ships which meet each of the following requirements:
 
 1. they are registered in the exporting or the importing Party; and
 
