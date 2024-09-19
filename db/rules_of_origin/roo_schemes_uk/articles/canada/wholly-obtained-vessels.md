@@ -6,9 +6,9 @@ For the purpose of subparagraphs 1(h) and (i), the following conditions apply to
 
    2. listed in Canada, if such vessel:
 
-      1. immediately prior to its listing in Canada, is entitled to fly the flag of the UK or a Member State of the European Union and must sail under that flag; and
+      a. immediately prior to its listing in Canada, is entitled to fly the flag of the UK or a Member State of the European Union and must sail under that flag; and
 
-      2. fulfills the conditions of sub-subparagraphs 2(b)(i) or 2(b)(ii);
+      b. fulfills the conditions of sub-subparagraphs 2(b)(i) or 2(b)(ii);
 
    3. entitled to fly the flag of the UK or a Member State of the European Union, or of Canada and must sail under that flag; and
 
