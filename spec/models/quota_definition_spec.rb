@@ -1,5 +1,9 @@
 RSpec.describe QuotaDefinition do
   describe '#status' do
+    before do
+      TradeTariffRequest.time_machine_now = Time.current
+    end
+
     context 'when not in a critical state with no events' do
       subject(:status) { build(:quota_definition, critical_state: 'N').status }
 

@@ -1,4 +1,8 @@
 RSpec.describe Commodity do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+  
   it { expect(described_class.primary_key).to eq :goods_nomenclature_sid }
 
   describe 'associations' do

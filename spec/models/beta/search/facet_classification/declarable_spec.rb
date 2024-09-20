@@ -1,4 +1,8 @@
 RSpec.describe Beta::Search::FacetClassification::Declarable do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe '.build' do
     subject(:result) { described_class.build(goods_nomenclature) }
 

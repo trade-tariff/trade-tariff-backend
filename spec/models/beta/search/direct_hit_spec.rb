@@ -1,5 +1,9 @@
 RSpec.describe Beta::Search::DirectHit do
   describe '#build' do
+    before do
+      TradeTariffRequest.time_machine_now = Time.current
+    end
+
     shared_examples 'a direct hit' do |*search_result_traits|
       subject(:direct_hit) { described_class.build(search_result) }
 

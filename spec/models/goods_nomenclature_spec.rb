@@ -1,4 +1,8 @@
 RSpec.describe GoodsNomenclature do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe '#full_chemicals' do
     subject(:full_chemicals) { create(:goods_nomenclature, :with_full_chemicals).full_chemicals }
 
