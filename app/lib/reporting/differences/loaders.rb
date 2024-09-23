@@ -33,7 +33,7 @@ module Reporting
 
         def check_for_new_records(key, value)
           previous_data_json = DifferencesLog.where(key:).exclude(date: Time.zone.today).order(Sequel.desc(:date)).first
-          return unless previous_data_json
+          return value unless previous_data_json
 
           previous_data = JSON.parse(previous_data_json.value)
           value.each do |row|
