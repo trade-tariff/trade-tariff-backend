@@ -267,11 +267,12 @@ module Reporting
                 worksheet_row[2].style = centered_style
                 worksheet_row[3].style = centered_style
                 worksheet_row[4].style = regular_style
+                worksheet_row[5].style = centered_style
 
                 sheet.add_hyperlink(
                   location: "'#{worksheet_name}'!A1",
                   target: :sheet,
-                  ref: worksheet_row[4].r,
+                  ref: worksheet_row[5].r,
                 )
               end
 
