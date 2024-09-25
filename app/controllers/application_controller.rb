@@ -24,7 +24,10 @@ class ApplicationController < ActionController::API
   private
 
   def actual_date
-    Date.parse(params[:as_of].to_s)
+    date = Date.parse(params[:as_of].to_s)
+    raise ArgumentError, 'Invalid date' if date > 20.years.from_now || date < 20.years.ago
+
+    date
   rescue ArgumentError # empty as_of param means today
     Time.zone.today
   end
