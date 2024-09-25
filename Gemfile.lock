@@ -213,7 +213,6 @@ GEM
     launchy (3.0.1)
       addressable (~> 2.8)
       childprocess (~> 5.0)
-    lemmatizer (0.2.2)
     letter_opener (1.10.0)
       launchy (>= 2.2, < 4)
     logger (1.6.0)
@@ -520,7 +519,6 @@ DEPENDENCIES
   holidays
   json_expressions
   jsonapi-serializer
-  lemmatizer
   letter_opener
   lograge
   logstash-event

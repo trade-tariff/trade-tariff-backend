@@ -1015,18 +1015,6 @@
     targets = [];
     version = "3.0.1";
   };
-  lemmatizer = {
-    groups = ["default"];
-    platforms = [];
-    source = {
-      remotes = ["https://rubygems.org"];
-      sha256 = "0mc2dn007q8zi5yladynhk3d2gvar5lrvd70gj3zinvwfh55xdz9";
-      target = "ruby";
-      type = "gem";
-    };
-    targets = [];
-    version = "0.2.2";
-  };
   letter_opener = {
     dependencies = ["launchy"];
     groups = ["development"];

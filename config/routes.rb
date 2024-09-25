@@ -81,10 +81,8 @@ Rails.application.routes.draw do
     # For example (broken/incorrect scoping arrangement):
     #   v2 scope (default)
     #   v1 scope (unreachable)
-    #   beta scope (unreachable)
     #
     # For example (correct scoping arrangement): (correct)
-    #   beta scope (reachable)
     #   v1 scope (reachable)
     #   v2 scope (default)
     #

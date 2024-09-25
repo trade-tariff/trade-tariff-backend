@@ -98,12 +98,6 @@ module TradeTariffBackend
       end
     end
 
-    def v2_reindex(indexer = v2_search_client)
-      indexer.update_all
-    rescue StandardError => e
-      Mailer.reindex_exception(e).deliver_now
-    end
-
     # Number of changes to fetch for Commodity/Heading/Chapter
     def change_count
       10
@@ -120,13 +114,6 @@ module TradeTariffBackend
       )
     end
 
-    def v2_search_client
-      @v2_search_client ||= SearchClient.new(
-        opensearch_client,
-        indexes: v2_search_indexes,
-      )
-    end
-
     def search_indexes
       [
         Search::ChapterIndex,
@@ -134,12 +121,6 @@ module TradeTariffBackend
         Search::HeadingIndex,
         Search::SearchReferenceIndex,
         Search::SectionIndex,
-      ].map(&:new)
-    end
-
-    def v2_search_indexes
-      [
-        Search::GoodsNomenclatureIndex,
       ].map(&:new)
     end
 
@@ -163,20 +144,12 @@ module TradeTariffBackend
       @rules_of_origin ||= RulesOfOrigin::DataSet.load_default
     end
 
-    def search_facet_classifier_configuration
-      @search_facet_classifier_configuration ||= Api::Beta::ClassificationConverterService.new.call
-    end
-
-    def lemmatizer
-      @lemmatizer ||= Lemmatizer.new
-    end
-
     def stop_words
       @stop_words ||= Set.new(YAML.load_file(stop_words_file)[:stop_words])
     end
 
     def stop_words_file
-      Rails.root.join('db/beta/search/stop_words.yml')
+      Rails.root.join('db/stop_words.yml')
     end
 
     def synonym_reference_analyzer
@@ -197,18 +170,6 @@ module TradeTariffBackend
 
     def reporting_cdn_host
       ENV['REPORTING_CDN_HOST']
-    end
-
-    def beta_search_max_hits
-      ENV['BETA_SEARCH_MAX_HITS']
-    end
-
-    def beta_search_debug?
-      ENV['BETA_SEARCH_DEBUG'] == 'true'
-    end
-
-    def beta_search_guides_enabled?
-      ENV.fetch('BETA_SEARCH_GUIDES_ENABLED', 'false') == 'true'
     end
 
     def opensearch_client

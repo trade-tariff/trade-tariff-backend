@@ -1,2 +1,0 @@
-0106390000, sparrow, robin, magpie, jay, blackbird, bluebird
-yakutian laika => dog, yakutian laika,
