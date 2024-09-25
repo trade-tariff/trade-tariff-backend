@@ -32,7 +32,7 @@ Rails.application.routes.draw do
           end
         end
 
-        resources :commodities, only: %i[show index] do
+        resources :commodities, only: %i[show] do
           scope module: 'commodities' do
             resources :search_references, only: %i[show index destroy create update]
           end
