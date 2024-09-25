@@ -45,7 +45,7 @@ Rails.application.routes.draw do
 
       # avoid admin named routes clashing with public api named routes
       namespace :admin, path: '' do
-        if TradeTariffBackend.uk? && !Rails.env.development?
+        if Rails.env.development? || TradeTariffBackend.uk?
           namespace :news do
             resources :items, only: %i[index show create update destroy]
             resources :collections, only: %i[index show create update]
@@ -197,7 +197,7 @@ Rails.application.routes.draw do
             as: :product_specific_rules
       end
 
-      if TradeTariffBackend.uk? && !Rails.env.development?
+      if Rails.env.development? || TradeTariffBackend.uk?
         namespace :news do
           resources :items, only: %i[index show]
           resources :years, only: %i[index]
