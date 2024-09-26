@@ -31,7 +31,7 @@
       cron: "0 18 * * *"
       description: "Populates search suggestions which are used in the frontend"
     ReportWorker:
-      cron: "0 8 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
+      cron: "30 10 * * *" # Needs to run even if the UpdatesSynchronizerWorker failed
       description: "Generates reports and persists them to S3"
     UKUpdatesSynchronizerWorker:
       cron: "0 5 * * *"
