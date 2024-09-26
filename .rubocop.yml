@@ -6,15 +6,15 @@ inherit_gem:
 require: rubocop-rspec
 
 AllCops:
-  TargetRubyVersion: 3.3.4
+  TargetRubyVersion: 3.3.5
   Exclude:
-    - 'db/schema.rb'
-    - 'vendor/**/*'
-    - 'bin/**'
-    - 'db/migrate/*'
-    - 'db/data_migrations/*'
-    - 'tmp/**/*'
-    - 'config/puma.rb'
+    - "db/schema.rb"
+    - "vendor/**/*"
+    - "bin/**"
+    - "db/migrate/*"
+    - "db/data_migrations/*"
+    - "tmp/**/*"
+    - "config/puma.rb"
 
 Layout/LineLength:
   Max: 120
@@ -53,7 +53,6 @@ RSpec/ExampleLength:
 RSpec/NestedGroups:
   Enabled: false
 
-
 Rails/FilePath:
   Enabled: false
 
@@ -83,7 +82,7 @@ Style/GuardClause:
 
 Style/OptionalBooleanParameter:
   Exclude:
-    - 'app/workers/**/*.rb' # Sidekiq doesn't support kwargs syntax for jobs
+    - "app/workers/**/*.rb" # Sidekiq doesn't support kwargs syntax for jobs
 
 Style/StringLiterals:
   EnforcedStyle: single_quotes
