@@ -1,7 +1,11 @@
-### Packaging and Packing Materials and Containers
+For the purpose of determining whether a product is originating, it is not necessary to determine the origin of the following which might be used in its production:
 
-1. If, under paragraph 5 of Part Two, Section 1, of the Tariff of the United Kingdom, packaging is included with the product for classification purposes, it is considered in determining whether all the non-originating materials used in the production of the product satisfy the requirements set out in Annex 5.
+a. energy and fuel;
 
-2. Packing materials and containers in which a product is packed for shipment shall be disregarded in determining the origin of that product.
+b. plant and equipment;
 
-{{ Article 9 }}
+c. machines and tools; or
+
+d. materials which do not enter and which are not intended to enter into the final composition of the product.
+
+{{ Article 13 }}

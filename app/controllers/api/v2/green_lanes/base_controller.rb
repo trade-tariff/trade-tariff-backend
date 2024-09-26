@@ -6,7 +6,7 @@ module Api
 
         include ActionController::HttpAuthentication::Token::ControllerMethods
 
-        before_action :check_service, :authenticate
+        before_action :check_service, :authenticate, :set_request_scope
 
         private
 
@@ -14,6 +14,10 @@ module Api
           if TradeTariffBackend.uk?
             raise ActionController::RoutingError, 'Invalid service'
           end
+        end
+
+        def set_request_scope
+          TradeTariffRequest.green_lanes = true
         end
 
         def authenticate

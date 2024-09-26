@@ -61,7 +61,6 @@ module Reporting
             end
 
             (rows || []).each do |row|
-              report.increment_count(name)
               sheet.add_row(row, types: CELL_TYPES, style: regular_style)
               sheet.rows.last.tap do |last_row|
                 last_row.cells[5].style = centered_style # Indentation

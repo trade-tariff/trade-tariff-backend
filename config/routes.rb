@@ -32,7 +32,7 @@ Rails.application.routes.draw do
           end
         end
 
-        resources :commodities, only: %i[show index] do
+        resources :commodities, only: %i[show] do
           scope module: 'commodities' do
             resources :search_references, only: %i[show index destroy create update]
           end
@@ -45,7 +45,7 @@ Rails.application.routes.draw do
 
       # avoid admin named routes clashing with public api named routes
       namespace :admin, path: '' do
-        if TradeTariffBackend.uk?
+        if Rails.env.development? || TradeTariffBackend.uk?
           namespace :news do
             resources :items, only: %i[index show create update destroy]
             resources :collections, only: %i[index show create update]
@@ -81,10 +81,8 @@ Rails.application.routes.draw do
     # For example (broken/incorrect scoping arrangement):
     #   v2 scope (default)
     #   v1 scope (unreachable)
-    #   beta scope (unreachable)
     #
     # For example (correct scoping arrangement): (correct)
-    #   beta scope (reachable)
     #   v1 scope (reachable)
     #   v2 scope (default)
     #
@@ -197,7 +195,7 @@ Rails.application.routes.draw do
             as: :product_specific_rules
       end
 
-      if TradeTariffBackend.uk?
+      if Rails.env.development? || TradeTariffBackend.uk?
         namespace :news do
           resources :items, only: %i[index show]
           resources :years, only: %i[index]

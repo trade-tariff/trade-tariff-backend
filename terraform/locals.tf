@@ -23,10 +23,6 @@ locals {
       value = data.aws_s3_bucket.persistence.bucket
     },
     {
-      name  = "BETA_SEARCH_MAX_HITS"
-      value = "1000"
-    },
-    {
       name  = "DB_POOL"
       value = "20"
     },
@@ -77,10 +73,6 @@ locals {
     {
       name  = "SENTRY_PROJECT"
       value = "tariff-backend"
-    },
-    {
-      name  = "SPELLING_CORRECTOR_BUCKET_NAME"
-      value = data.aws_s3_bucket.spelling_corrector.bucket
     },
     {
       name  = "TARIFF_SUPPORT_EMAIL"
