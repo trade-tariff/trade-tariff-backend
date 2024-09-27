@@ -40,6 +40,7 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
           },
         }
       end
+
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
       it { expect(json_response).to include('meta') }

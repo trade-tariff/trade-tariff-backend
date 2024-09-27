@@ -118,8 +118,8 @@ module Api
             .association_join(:exemptions)
             .where(
               Sequel.|(
-                { Sequel[:exemptions][:code] => exemption_code }
-              )
+                { Sequel[:exemptions][:code] => exemption_code },
+              ),
             )
             .distinct(Sequel[:green_lanes_category_assessments][:id])
             .select_all(:green_lanes_category_assessments)
