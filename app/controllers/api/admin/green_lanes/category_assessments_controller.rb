@@ -10,8 +10,8 @@ module Api
         def index
           options = { is_collection: true }
           options[:include] = %i[theme]
-          options[:meta] = pagination_meta(category_assessments)
-          render json: serialize(category_assessments.to_a, options)
+          options[:meta] = pagination_meta(category_assessments(search_param))
+          render json: serialize(category_assessments(search_param).to_a, options)
         end
 
         def show
@@ -99,12 +99,31 @@ module Api
           )
         end
 
+        def search_param
+          params.dig(:query, :exemption_code) || ''
+        end
+
         def record_count
           @category_assessments.pagination_record_count
         end
 
-        def category_assessments
-          @category_assessments ||= ::GreenLanes::CategoryAssessment.eager(:theme).order(:id).paginate(current_page, per_page)
+        def category_assessments(exemption_code)
+          @category_assessments ||= search_category_assessments(exemption_code)
+        end
+
+        def search_category_assessments(exemption_code)
+          return ::GreenLanes::CategoryAssessment.eager(:theme).order(:id).paginate(ca_current_page, per_page) if exemption_code.blank?
+
+          ::GreenLanes::CategoryAssessment
+            .association_join(:exemptions)
+            .where(
+              Sequel.|(
+                { Sequel[:exemptions][:code] => exemption_code }
+              )
+            )
+            .distinct(Sequel[:green_lanes_category_assessments][:id])
+            .select_all(:green_lanes_category_assessments)
+            .eager(:theme).order(Sequel[:green_lanes_category_assessments][:id]).paginate(ca_current_page, per_page)
         end
 
         def green_lanes_measures(category_assessment)
@@ -119,10 +138,16 @@ module Api
           Api::Admin::ErrorSerializationService.new(category_assessment).call
         end
 
+        def ca_current_page
+          Integer(params.dig(:query, :page) || 1)
+        rescue ArgumentError
+          1
+        end
+
         def pagination_meta(data_set)
           {
             pagination: {
-              page: current_page,
+              page: ca_current_page,
               per_page:,
               total_count: data_set.pagination_record_count,
             },
