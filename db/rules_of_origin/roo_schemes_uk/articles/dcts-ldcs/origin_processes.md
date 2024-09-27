@@ -83,7 +83,7 @@ On request of the importer, where unassembled or disassembled products falling w
 
 ## Exemptions from proof of origin requirements
 
-Personal goods and those imported by way of trade shall be exempted from the obligation to make out and produce a proof of origin provided the following conditions are met:ions:
+Personal goods and those imported by way of trade shall be exempted from the obligation to make out and produce a proof of origin provided the following conditions are met:
 
 $LegislativeList
  * &nbsp; &bull; &nbsp; the total value of the goods referred to above does not exceed £1,000;
@@ -99,7 +99,7 @@ Obvious errors on a proof of origin shall not cause it to be rejected if these e
 
 ## Annex A - Form A
 
-Form A (https://www.gov.uk/guidance/completing-generalised-scheme-of-preferences-form-a) must bear a:
+Form A <a href="https://assets.publishing.service.gov.uk/government/uploads/system/uploads/attachment_data/file/948751/Certificate_of_origin_-_FORM_A.pdf" target="_blank">(Form A - Generalized System of Preferences - Certificate of Origin (publishing.service.gov.uk))</a> must either bear a:
 
 $LegislativeList
   * &nbsp; &bull; &nbsp; serial number; or
