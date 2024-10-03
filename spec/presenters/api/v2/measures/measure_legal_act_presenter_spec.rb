@@ -7,7 +7,7 @@ RSpec.describe Api::V2::Measures::MeasureLegalActPresenter do
   let(:eu_regulation) do
     {
       code: '14567/23',
-      url: 'http://eur-lex.europa.eu/search.html?',
+      url: 'https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A3202314567',
       description: 'This is some explanatory information text',
     }
   end
