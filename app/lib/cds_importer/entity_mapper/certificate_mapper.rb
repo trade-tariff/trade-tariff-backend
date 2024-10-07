@@ -9,8 +9,6 @@ class CdsImporter
         'certificateType.certificateTypeCode' => :certificate_type_code,
         'certificateCode' => :certificate_code,
       ).freeze
-
-      delete_missing_entities CertificateDescriptionPeriodMapper
     end
   end
 end

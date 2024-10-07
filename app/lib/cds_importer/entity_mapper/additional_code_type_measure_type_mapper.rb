@@ -11,10 +11,6 @@ class CdsImporter
         "#{mapping_path}.measureType.measureTypeId" => :measure_type_id,
         'additionalCodeTypeId' => :additional_code_type_id,
       ).freeze
-
-      self.primary_filters = {
-        additional_code_type_id: :additional_code_type_id,
-      }.freeze
     end
   end
 end

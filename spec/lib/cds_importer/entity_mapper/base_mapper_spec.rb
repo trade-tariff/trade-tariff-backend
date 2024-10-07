@@ -69,7 +69,6 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
   it_behaves_like 'an entity mapper accessor', :mapping_root
   it_behaves_like 'an entity mapper accessor', :exclude_mapping
   it_behaves_like 'an entity mapper accessor', :primary_key_mapping
-  it_behaves_like 'an entity mapper accessor', :primary_filters
 
   describe '.before_oplog_inserts_callbacks' do
     it { expect(secondary_mocked_mapper.before_oplog_inserts_callbacks).to include(an_instance_of(Proc)) }
@@ -92,10 +91,6 @@ RSpec.describe CdsImporter::EntityMapper::BaseMapper do
 
   describe '.entity' do
     it { expect(primary_mocked_mapper.entity).to eq(MockedModel) }
-  end
-
-  describe '.entity_composite_primary_key' do
-    it { expect(primary_mocked_mapper.entity_composite_primary_key).to eq([:bar]) }
   end
 
   describe '.mapping_with_key_as_array' do

@@ -16,10 +16,6 @@ class CdsImporter
         "#{mapping_path}.language.languageId" => :language_id,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        footnote_description_period_sid: :footnote_description_period_sid,
-      }.freeze
     end
   end
 end

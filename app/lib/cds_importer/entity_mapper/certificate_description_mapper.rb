@@ -16,10 +16,6 @@ class CdsImporter
         'certificateCode' => :certificate_code,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        certificate_description_period_sid: :certificate_description_period_sid,
-      }.freeze
     end
   end
 end

@@ -18,10 +18,6 @@ class CdsImporter
         "#{mapping_path}.abrogationRegulationOfficialjournalNumber" => :abrogation_regulation_officialjournal_number,
         "#{mapping_path}.abrogationRegulationOfficialjournalPage" => :abrogation_regulation_officialjournal_page,
       ).freeze
-
-      self.primary_filters = {
-        measure_sid: :measure_sid,
-      }.freeze
     end
   end
 end
