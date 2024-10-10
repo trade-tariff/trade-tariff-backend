@@ -91,7 +91,7 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
   context 'when GNs for a id is requested' do
     it 'returns rendered record of the GN' do
       get :show, params: { id: commodity.goods_nomenclature_item_id },
-          format: :json
+                 format: :json
 
       expect(response_json['id']).to eq commodity.goods_nomenclature_sid.to_s
     end
