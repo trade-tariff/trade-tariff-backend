@@ -15,6 +15,16 @@ module Api
         respond_with(commodities)
       end
 
+      def show
+        gn = GoodsNomenclature.actual
+                              .eager(:ancestors,
+                                     :descendants)
+                              .where(goods_nomenclature_item_id: params[:id])
+                              .take
+
+        render json: Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer.new(gn).serializable_hash
+      end
+
       def show_by_section
         section  = Section.where(position: params[:position]).take
         chapters = section.chapters_dataset

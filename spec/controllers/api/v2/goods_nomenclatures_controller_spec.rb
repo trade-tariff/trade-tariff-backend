@@ -88,6 +88,21 @@ RSpec.describe Api::V2::GoodsNomenclaturesController do
     end
   end
 
+  context 'when GNs for a id is requested' do
+    it 'returns rendered record of the GN' do
+      get :show, params: { id: commodity.goods_nomenclature_item_id },
+          format: :json
+
+      expect(response_json['id']).to eq commodity.goods_nomenclature_sid.to_s
+    end
+
+    context 'with an incorrect short code' do
+      before { get :show, params: { id: '9922' }, format: :json }
+
+      it { is_expected.to have_http_status :not_found }
+    end
+  end
+
   context 'when GNs for a heading are requested as CSV' do
     it 'returns rendered record of GNs in the heading as CSV' do
       get :show_by_heading, params: { heading_id: commodity.heading.short_code },

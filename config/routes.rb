@@ -223,6 +223,7 @@ Rails.application.routes.draw do
       get 'goods_nomenclatures/section/:position', to: 'goods_nomenclatures#show_by_section', constraints: { position: /\d+/ }
       get 'goods_nomenclatures/chapter/:chapter_id', to: 'goods_nomenclatures#show_by_chapter', constraints: { chapter_id: /\d{2}/ }
       get 'goods_nomenclatures/heading/:heading_id', to: 'goods_nomenclatures#show_by_heading', constraints: { heading_id: /\d{4}/ }
+      get 'goods_nomenclatures/:id', to: 'goods_nomenclatures#show', constraints: { id: /\d{4,10}/ }
 
       namespace :green_lanes do
         resources :goods_nomenclatures, only: %i[show], constraints: { id: /\d{4,10}/ }
