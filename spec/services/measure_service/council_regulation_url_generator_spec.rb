@@ -1,34 +1,17 @@
 RSpec.describe MeasureService::CouncilRegulationUrlGenerator do
-  let(:target_regulation) { create(:measure_partial_temporary_stop) }
+  let(:target_regulation) { create(:measure_partial_temporary_stop, partial_temporary_stop_regulation_id: 'A09CDEF') }
   let(:service) { described_class.new(target_regulation) }
 
   describe '#generate' do
     it 'returns external regulation url' do
-      expect(service.generate).to start_with('http://eur-lex.europa.eu/search.html')
-    end
-  end
-
-  describe '#regulation_id' do
-    context 'for measure_partial_temporary_stop' do
-      it 'return regulation_id for target regulation' do
-        expect(service.send(:regulation_id)).to eq(target_regulation.partial_temporary_stop_regulation_id)
-      end
+      code = '32009ACDEF'
+      expect(service.generate).to eq("https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A#{code}")
     end
 
-    context 'for full_temporary_stop_regulation' do
-      let(:target_regulation) { create(:fts_regulation) }
-
-      it 'return regulation_id for target regulation' do
-        expect(service.send(:regulation_id)).to eq(target_regulation.full_temporary_stop_regulation_id)
-      end
-    end
-
-    context 'for base_regulation' do
-      let(:target_regulation) { create(:base_regulation) }
-
-      it 'return regulation_id for target regulation' do
-        expect(service.send(:regulation_id)).to eq(target_regulation.base_regulation_id)
-      end
+    it 'handles years that are greater than 2071' do
+      target_regulation.partial_temporary_stop_regulation_id = 'A72CDEF'
+      code = '31972ACDEF'
+      expect(service.generate).to eq("https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A#{code}")
     end
   end
 end
