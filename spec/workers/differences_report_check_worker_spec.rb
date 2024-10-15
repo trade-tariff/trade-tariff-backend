@@ -13,6 +13,7 @@ RSpec.describe DifferencesReportCheckWorker, type: :worker do
     end
 
     it 'is unhappy if the differences report has not run this week' do
+      allow(Rails.env).to receive(:production?).and_return(true)
       DifferencesLog.create(date: 10.days.ago, key: 'foo', value: 'foo')
       worker.perform
       expect(SlackNotifierService).to have_received(:call)
