@@ -44,7 +44,10 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
       it { is_expected.to have_http_status :success }
       it { expect(json_response).to include('data') }
       it { expect(json_response).to include('meta') }
-      it { expect(json_response['data'].first['attributes']['measure_type_id']).to include(category.measure_type_id.to_s) }
+      it 'expects measure_type_id to be in the json response' do
+        measure_type_ids = json_response['data'].map { |item| item['attributes']['measure_type_id'] }
+        expect(measure_type_ids).to include(category.measure_type_id.to_s)
+      end
     end
 
     context 'with some category assessments, sort by parameter present' do
