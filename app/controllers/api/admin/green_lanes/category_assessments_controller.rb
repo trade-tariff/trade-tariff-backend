@@ -10,8 +10,9 @@ module Api
         def index
           options = { is_collection: true }
           options[:include] = %i[theme]
-          options[:meta] = pagination_meta(category_assessments(search_param))
-          render json: serialize(category_assessments(search_param).to_a, options)
+          options[:meta] = pagination_meta(category_assessments)
+
+          render json: serialize(category_assessments.to_a, options)
         end
 
         def show
@@ -99,20 +100,29 @@ module Api
           )
         end
 
-        def search_param
-          params.dig(:query, :exemption_code) || ''
-        end
-
         def record_count
           @category_assessments.pagination_record_count
         end
 
-        def category_assessments(exemption_code)
-          @category_assessments ||= search_category_assessments(exemption_code)
+        def category_assessments
+          exemption_code = params.dig(:query, :filters, :exemption_code) || ''
+          sort_by = params.dig(:query, :sort) || 'id'
+          sort_order = params.dig(:query, :direction) || 'asc'
+
+          order_expr = if sort_order == 'desc'
+                         Sequel.desc(Sequel[:green_lanes_category_assessments][sort_by.to_sym])
+                       else
+                         Sequel.asc(Sequel[:green_lanes_category_assessments][sort_by.to_sym])
+                       end
+
+          @category_assessments ||= search_category_assessments(exemption_code, order_expr)
         end
 
-        def search_category_assessments(exemption_code)
-          return ::GreenLanes::CategoryAssessment.eager(:theme).order(:id).paginate(ca_current_page, per_page) if exemption_code.blank?
+        def search_category_assessments(exemption_code, order_expr)
+          if exemption_code.blank?
+            return ::GreenLanes::CategoryAssessment.eager(:theme).order(order_expr)
+                                                   .paginate(ca_current_page, per_page)
+          end
 
           ::GreenLanes::CategoryAssessment
             .association_join(:exemptions)
@@ -121,9 +131,8 @@ module Api
                 { Sequel[:exemptions][:code] => exemption_code },
               ),
             )
-            .distinct(Sequel[:green_lanes_category_assessments][:id])
             .select_all(:green_lanes_category_assessments)
-            .eager(:theme).order(Sequel[:green_lanes_category_assessments][:id]).paginate(ca_current_page, per_page)
+            .eager(:theme).order(order_expr).paginate(ca_current_page, per_page)
         end
 
         def green_lanes_measures(category_assessment)
