@@ -14,10 +14,6 @@ class CdsImporter
         "#{mapping_path}.language.languageId" => :language_id,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        additional_code_type_id: :additional_code_type_id,
-      }.freeze
     end
   end
 end

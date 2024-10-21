@@ -11,19 +11,6 @@ class CdsImporter
       @filename = filename
     end
 
-    def destroy_missing_record
-      instrument('cds_importer.import.operations', mapper:, operation: DESTROY_MISSING_OPERATION, count: 1, record:) do
-        operation_klass = record.class.operation_klass
-
-        values = record.values.slice(*operation_klass.columns).except(:oid)
-        values[:filename] = filename
-        values[:operation] = Sequel::Plugins::Oplog::DESTROY_OPERATION
-        values[:created_at] = operation_klass.dataset.current_datetime if operation_klass.columns.include?(:created_at)
-
-        operation_klass.insert(values)
-      end
-    end
-
     def save_record!
       instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1, record:) do
         operation_klass = record.class.operation_klass

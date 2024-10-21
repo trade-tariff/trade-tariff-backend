@@ -29,17 +29,4 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureDescriptionPeriodMapp
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('GoodsNomenclature', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(:goods_nomenclature_description, goods_nomenclature_description_period_sid: '30993')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', GoodsNomenclatureDescription, goods_nomenclature_description_period_sid: '30993'
-    end
-  end
 end

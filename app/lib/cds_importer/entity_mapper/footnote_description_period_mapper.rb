@@ -12,13 +12,6 @@ class CdsImporter
         'footnoteType.footnoteTypeId' => :footnote_type_id,
         'footnoteId' => :footnote_id,
       ).freeze
-
-      self.primary_filters = {
-        footnote_type_id: :footnote_type_id,
-        footnote_id: :footnote_id,
-      }.freeze
-
-      delete_missing_entities FootnoteDescriptionMapper
     end
   end
 end

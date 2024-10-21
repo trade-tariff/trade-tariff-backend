@@ -59,24 +59,4 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaDescriptionPeriodMappe
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('GeographicalArea', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :geographical_area,
-          :with_description,
-          geographical_area_sid: '62',
-          geographical_area_description_period_sid: '1429',
-        )
-      end
-
-      let(:operation) { 'C' }
-
-      it_behaves_like 'an entity mapper missing destroy operation', GeographicalAreaDescription, geographical_area_sid: '62'
-    end
-  end
 end

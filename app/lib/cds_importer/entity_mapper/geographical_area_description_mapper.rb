@@ -16,10 +16,6 @@ class CdsImporter
         'geographicalAreaId' => :geographical_area_id,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        geographical_area_description_period_sid: :geographical_area_description_period_sid,
-      }.freeze
     end
   end
 end

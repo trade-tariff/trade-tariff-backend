@@ -34,8 +34,7 @@ class CdsImporter
                       :mapping_path,        # path to attributes in xml
                       :mapping_root,        # node name in xml that provides data for mapping
                       :exclude_mapping,     # list of excluded attributes
-                      :primary_key_mapping, # how we pull out the (often composite) primary key from the xml node document
-                      :primary_filters      # how we know what secondaries are associated with the primary
+                      :primary_key_mapping  # how we pull out the (often composite) primary key from the xml node document
 
         def before_oplog_inserts_callbacks
           @before_oplog_inserts_callbacks ||= []
@@ -115,32 +114,6 @@ class CdsImporter
           primary_filters.each_with_object({}) do |(primary_field, secondary_field), acc|
             acc[secondary_field] = primary_model_instance.public_send(primary_field)
           end
-        end
-
-        # Returns sequel filter args that will find all missing secondaries based on the primary key index order
-        # defined by the underlying secondary entity model class
-        def missing_entity_filter_for(missing_entities)
-          entity_composite_primary_key.each_with_object({}).with_index do |(primary_key_field, acc), index|
-            acc[primary_key_field] = missing_entities.map { |entity| entity[index] }
-          end
-        end
-
-        def entity_composite_primary_key
-          Array.wrap(entity.primary_key)
-        end
-
-        def database_entities_for(primary_model_instance)
-          filter = filter_for(primary_model_instance)
-
-          entity.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
-            Array.wrap(composite_primary_key)
-          end
-        end
-
-        def xml_entities_for(xml_node)
-          xml_node_entities = new(xml_node).parse.map { |model_configuration| model_configuration[:instance] }
-
-          xml_node_entities.pluck(*entity.primary_key).map(&Array.method(:wrap))
         end
 
         protected
