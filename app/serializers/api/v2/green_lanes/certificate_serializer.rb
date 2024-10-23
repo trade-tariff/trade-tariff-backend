@@ -12,6 +12,18 @@ module Api
                    :certificate_code,
                    :description,
                    :formatted_description
+
+        attribute :group_ids do |object|
+          object.group_ids if object.is_a?(CertificatePresenter)
+        end
+
+        attribute :code do |object|
+          if object.is_a?(CertificatePresenter)
+            object.certificate_id
+          else
+            object.id
+          end
+        end
       end
     end
   end

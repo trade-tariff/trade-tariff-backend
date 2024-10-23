@@ -11,7 +11,7 @@ module Api
 
         has_many :exemptions, serializer: lambda { |record, _params|
           case record
-          when Certificate
+          when CertificatePresenter
             GreenLanes::CertificateSerializer
           when AdditionalCode
             AdditionalCodeSerializer

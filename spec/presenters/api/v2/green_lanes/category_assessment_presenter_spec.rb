@@ -99,7 +99,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     context 'with certificates' do
       before { certificates }
 
-      it { is_expected.to match_array certificates }
+      it { is_expected.to match_array Api::V2::GreenLanes::CertificatePresenter.wrap(certificates) }
     end
 
     context 'with duplicate conditions pointing to same certificate' do

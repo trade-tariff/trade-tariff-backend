@@ -17,6 +17,7 @@ module Api
                  :geographical_area,
                  :excluded_geographical_areas,
                  :measure_conditions,
+                 :measure_sid,
                  to: :first_measure
 
         content_addressable_fields do |ca|
@@ -69,10 +70,14 @@ module Api
         end
 
         def certificates
-          measure_conditions
+          certificates = measure_conditions
             .select(&:is_exempting_with_certificate_overridden?)
             .map(&:certificate)
             .uniq
+
+          MeasureConditionPermutations::GreenLanesCalculator.new(measure_conditions, certificates, measure_sid)
+                                                    .group_certificates
+
         end
 
         def additional_codes
