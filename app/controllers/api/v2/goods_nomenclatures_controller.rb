@@ -15,6 +15,19 @@ module Api
         respond_with(commodities)
       end
 
+      def show
+        gn = GoodsNomenclature
+               .actual
+               .association_join(:goods_nomenclature_indents)
+               .where(Sequel[:goods_nomenclatures][:goods_nomenclature_item_id] => params[:id])
+               .order(Sequel[:goods_nomenclatures][:producline_suffix], Sequel[:goods_nomenclature_indents][:number_indents])
+               .last
+
+        raise Sequel::RecordNotFound if gn.blank?
+
+        render json: Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer.new(gn).serializable_hash
+      end
+
       def show_by_section
         section  = Section.where(position: params[:position]).take
         chapters = section.chapters_dataset
