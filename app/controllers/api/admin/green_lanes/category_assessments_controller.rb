@@ -11,6 +11,7 @@ module Api
           options = { is_collection: true }
           options[:include] = %i[theme]
           options[:meta] = pagination_meta(category_assessments)
+
           render json: serialize(category_assessments.to_a, options)
         end
 
@@ -104,7 +105,34 @@ module Api
         end
 
         def category_assessments
-          @category_assessments ||= ::GreenLanes::CategoryAssessment.eager(:theme).order(:id).paginate(current_page, per_page)
+          exemption_code = params.dig(:query, :filters, :exemption_code) || ''
+          sort_by = params.dig(:query, :sort) || 'id'
+          sort_order = params.dig(:query, :direction) || 'asc'
+
+          order_expr = if sort_order == 'desc'
+                         Sequel.desc(Sequel[:green_lanes_category_assessments][sort_by.to_sym])
+                       else
+                         Sequel.asc(Sequel[:green_lanes_category_assessments][sort_by.to_sym])
+                       end
+
+          @category_assessments ||= search_category_assessments(exemption_code, order_expr)
+        end
+
+        def search_category_assessments(exemption_code, order_expr)
+          if exemption_code.blank?
+            return ::GreenLanes::CategoryAssessment.eager(:theme).order(order_expr)
+                                                   .paginate(ca_current_page, per_page)
+          end
+
+          ::GreenLanes::CategoryAssessment
+            .association_join(:exemptions)
+            .where(
+              Sequel.|(
+                { Sequel[:exemptions][:code] => exemption_code },
+              ),
+            )
+            .select_all(:green_lanes_category_assessments)
+            .eager(:theme).order(order_expr).paginate(ca_current_page, per_page)
         end
 
         def green_lanes_measures(category_assessment)
@@ -119,10 +147,16 @@ module Api
           Api::Admin::ErrorSerializationService.new(category_assessment).call
         end
 
+        def ca_current_page
+          Integer(params.dig(:query, :page) || 1)
+        rescue ArgumentError
+          1
+        end
+
         def pagination_meta(data_set)
           {
             pagination: {
-              page: current_page,
+              page: ca_current_page,
               per_page:,
               total_count: data_set.pagination_record_count,
             },
