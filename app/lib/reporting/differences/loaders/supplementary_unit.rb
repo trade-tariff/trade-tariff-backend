@@ -13,6 +13,10 @@ module Reporting
           @report = report
         end
 
+        def key
+          [self.class.name, source, target].join('_')
+        end
+
         private
 
         attr_reader :source, :target, :report
