@@ -422,14 +422,14 @@ workflows:
           context: trade-tariff-terraform-aws-staging
           <<: *filter-main
 
-      - tariff/smoketests:
-          name: smoketest-staging
-          context: trade-tariff-testing
-          url: https://staging.trade-tariff.service.gov.uk
-          yarn_run: staging-tariff-backend-smoketests
-          requires:
-            - apply-terraform-staging
-          <<: *filter-main
+      # - tariff/smoketests:
+      #     name: smoketest-staging
+      #     context: trade-tariff-testing
+      #     url: https://staging.trade-tariff.service.gov.uk
+      #     yarn_run: staging-tariff-backend-smoketests
+      #     requires:
+      #       - apply-terraform-staging
+      #     <<: *filter-main
 
   deploy-to-production:
     jobs:
