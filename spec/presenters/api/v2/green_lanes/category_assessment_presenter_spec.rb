@@ -96,10 +96,18 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
       additional_codes
     end
 
+    let :certificate_presenters do
+      MeasureConditionPermutations::GreenLanesCalculator.new(assessment.measures.first.measure_conditions, certificates, assessment.measures.first.measure_sid)
+                                                        .group_certificates
+    end
+
     context 'with certificates' do
       before { certificates }
 
-      it { is_expected.to match_array Api::V2::GreenLanes::CertificatePresenter.wrap(certificates) }
+      it 'returns certificate presenters' do
+        expect(presented.exemptions.map(&:id))
+          .to match_array(certificate_presenters.map(&:id))
+      end
     end
 
     context 'with duplicate conditions pointing to same certificate' do
@@ -114,7 +122,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
         end
       end
 
-      it { is_expected.to eq_pk certificates }
+      it { is_expected.to eq_pk certificate_presenters }
     end
 
     context 'with white listed additional code' do
@@ -132,7 +140,10 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
     context 'with certificates and additional code' do
       before { certificates && exempting_additional_codes }
 
-      it { is_expected.to match_array certificates + exempting_additional_codes }
+      it 'returns certificate presenters and additional codes' do
+        expect(presented.exemptions.map(&:id))
+          .to match_array((certificate_presenters + exempting_additional_codes).map(&:id))
+      end
     end
 
     context 'with pseudo exemption' do

@@ -16,7 +16,7 @@ module MeasureConditionPermutations
       filter_certificates(grouped_by_group_id, grouped_by_condition_id)
       filter_groups(grouped_by_group_id, grouped_by_condition_id)
 
-      Api::V2::GreenLanes::CertificatePresenter.wrap(@filtered_certificates, @group_id_map, @measure_sid)
+      Api::V2::GreenLanes::CertificatePresenter.wrap(@filtered_certificates, @measure_sid, @group_id_map)
     end
 
     private
@@ -27,18 +27,20 @@ module MeasureConditionPermutations
           permutation.measure_conditions.map do |condition|
             {
               condition_id: condition.certificate&.id,
-              group_id: group_id + permutation_id
+              group_id: group_id + permutation_id,
             }
           end
         end
       end
 
+      # Returns certificate ids with id of permutation group that certificate present
       map&.flat_map { |outer| outer.flat_map { |inner| inner } }
     end
 
     def filter_certificates(grouped_by_group_id, grouped_by_condition_id)
       certificate_ids = @certificates.map(&:id)
 
+      # Filter out certificates if all certificates in its are not present
       @filtered_certificates = @certificates.select do |certificate|
         group_ids = grouped_by_condition_id[certificate.id]
 
@@ -53,17 +55,20 @@ module MeasureConditionPermutations
     def filter_groups(grouped_by_group_id, grouped_by_condition_id)
       certificate_ids = @filtered_certificates.map(&:id)
 
-      filtered_groups = grouped_by_group_id.select do |group_id, condition_ids|
+      # Filter out groups if its certificates are not in CA certificate list
+      filtered_groups = grouped_by_group_id.select do |_group_id, condition_ids|
         condition_ids.all? { |condition_id| certificate_ids.include?(condition_id) }
       end
 
-      filtered_conditions = grouped_by_condition_id.select do |condition_id, group_ids|
+      # Filter out certificates group id, if the group is not completed
+      filtered_conditions = grouped_by_condition_id.select do |_condition_id, group_ids|
         group_ids.any? { |group_id| filtered_groups.keys.include?(group_id) }
       end
 
-      @group_id_map = filtered_conditions.map do |condition_id, group_ids|
-        [condition_id, group_ids.select { |group_id| filtered_groups.keys.include?(group_id) }]
-      end.to_h
+      # Returns group ids against certificate ids
+      @group_id_map = filtered_conditions.transform_values do |group_ids|
+        group_ids.select { |group_id| filtered_groups.keys.include?(group_id) }
+      end
     end
 
     def condition_permutations

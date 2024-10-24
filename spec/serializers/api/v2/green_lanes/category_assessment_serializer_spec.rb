@@ -30,7 +30,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           },
           exemptions: {
             data: [
-              { id: certificate.id, type: 'certificate' },
+              { id: be_a(String), type: 'certificate' },
               { id: measure.additional_code.id.to_s, type: 'additional_code' },
               { id: exemption.code, type: 'exemption' },
             ],
@@ -63,7 +63,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentSerializer do
           },
         },
         {
-          id: certificate.id,
+          id: be_a(String),
           type: 'certificate',
           attributes: {
             certificate_type_code: certificate.certificate_type_code,

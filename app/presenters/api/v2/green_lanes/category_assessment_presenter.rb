@@ -77,7 +77,6 @@ module Api
 
           MeasureConditionPermutations::GreenLanesCalculator.new(measure_conditions, certificates, measure_sid)
                                                     .group_certificates
-
         end
 
         def additional_codes
