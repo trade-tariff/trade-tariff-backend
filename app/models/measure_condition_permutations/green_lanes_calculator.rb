@@ -22,14 +22,17 @@ module MeasureConditionPermutations
     private
 
     def group_conditions
-      map = condition_permutations.map.with_index do |condition_group, group_id|
-        condition_group.permutations.map.with_index do |permutation, permutation_id|
-          permutation.measure_conditions.map do |condition|
+      index = 0
+      map = condition_permutation_groups.map do |condition_group|
+        condition_group.permutations.map do |permutation|
+          result = permutation.measure_conditions.map do |condition|
             {
               condition_id: condition.certificate&.id,
-              group_id: group_id + permutation_id,
+              group_id: index,
             }
           end
+          index += 1
+          result
         end
       end
 
@@ -40,7 +43,7 @@ module MeasureConditionPermutations
     def filter_certificates(grouped_by_group_id, grouped_by_condition_id)
       certificate_ids = @certificates.map(&:id)
 
-      # Filter out certificates if all certificates in its are not present
+      # Filter out certificates if all certificates in its group are not present
       @filtered_certificates = @certificates.select do |certificate|
         group_ids = grouped_by_condition_id[certificate.id]
 
@@ -71,7 +74,7 @@ module MeasureConditionPermutations
       end
     end
 
-    def condition_permutations
+    def condition_permutation_groups
       if matched_measure_conditions?
         Calculators::Matched.new('n/a', @measure_conditions)
                             .permutation_groups
