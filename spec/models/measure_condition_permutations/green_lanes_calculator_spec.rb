@@ -18,40 +18,42 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                                 double('Condition', certificate: double('Certificate', id: 2))
-                                               ])
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
     end
 
     context 'when there is one group and multiple permutation' do
-      let(:certificates_out) { [double('Certificate', id: 1), double('Certificate', id: 2),
-                                double('Certificate', id: 3), double('Certificate', id: 4)] }
+      let(:certificates_out) do
+        [double('Certificate', id: 1),
+         double('Certificate', id: 2),
+         double('Certificate', id: 3),
+         double('Certificate', id: 4)]
+      end
       let(:certificates_in) { certificates_out }
       let(:group_mapping) { { 1 => [0], 2 => [0], 3 => [1], 4 => [1] } }
 
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                                 double('Condition', certificate: double('Certificate', id: 2))
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                                 double('Condition', certificate: double('Certificate', id: 4))
-                                               ])
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                     double('Condition', certificate: double('Certificate', id: 4)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
@@ -65,18 +67,17 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                                 double('Condition', certificate: double('Certificate', id: 2))
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                                 double('Condition', certificate: double('Certificate', id: 4))
-                                               ])
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                     double('Condition', certificate: double('Certificate', id: 4)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
@@ -90,18 +91,17 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                                 double('Condition', certificate: double('Certificate', id: 2))
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 3))
-                                               ])
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
@@ -115,19 +115,18 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                                 double('Condition', certificate: double('Certificate', id: 2))
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                                 double('Condition', certificate: double('Certificate', id: 4))
-                                               ])
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                     double('Condition', certificate: double('Certificate', id: 4)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
@@ -141,50 +140,53 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                               ])
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
     end
 
     context 'when there are multiple groups' do
-      let(:certificates_out) { [double('Certificate', id: 1), double('Certificate', id: 2), double('Certificate', id: 3),
-                                double('Certificate', id: 4), double('Certificate', id: 5)] }
+      let(:certificates_out) do
+        [double('Certificate', id: 1),
+         double('Certificate', id: 2),
+         double('Certificate', id: 3),
+         double('Certificate', id: 4),
+         double('Certificate', id: 5)]
+      end
       let(:certificates_in) { certificates_out }
       let(:group_mapping) { { 1 => [0], 2 => [1], 3 => [1], 4 => [2], 5 => [2] } }
 
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                               ]),
-                                             ]),
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 4)),
-                                                 double('Condition', certificate: double('Certificate', id: 5)),
-                                               ]),
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                   ]),
+                                 ]),
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 4)),
+                                     double('Condition', certificate: double('Certificate', id: 5)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
@@ -198,23 +200,22 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                               ]),
-                                             ]),
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 5)),
-                                               ]),
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                   ]),
+                                 ]),
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 5)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'
@@ -228,23 +229,22 @@ RSpec.describe MeasureConditionPermutations::GreenLanesCalculator do
       before do
         allow(calculator).to receive(:condition_permutation_groups)
                                .and_return([
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 1)),
-                                               ]),
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 3)),
-                                               ]),
-                                             ]),
-                                             double('PermutationGroup', permutations: [
-                                               double('Permutation', measure_conditions: [
-                                                 double('Condition', certificate: double('Certificate', id: 2)),
-                                                 double('Condition', certificate: double('Certificate', id: 4)),
-                                               ]),
-                                             ])
-                                           ])
-
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 1)),
+                                   ]),
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 3)),
+                                   ]),
+                                 ]),
+                                 double('PermutationGroup', permutations: [
+                                   double('Permutation', measure_conditions: [
+                                     double('Condition', certificate: double('Certificate', id: 2)),
+                                     double('Condition', certificate: double('Certificate', id: 4)),
+                                   ]),
+                                 ]),
+                               ])
       end
 
       it_behaves_like 'returns a wrapped CertificatePresenter'

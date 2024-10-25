@@ -1,20 +1,17 @@
 RSpec.describe Api::V2::GreenLanes::CertificateSerializer do
-  subject(:serialized) do
-    described_class.new(certificate).serializable_hash.as_json
-  end
-
   subject(:presented_serialized) do
     described_class.new(presented).serializable_hash.as_json
   end
 
+  let(:serialized) do
+    described_class.new(certificate).serializable_hash.as_json
+  end
   let(:certificate) do
     create(:certificate, :with_description)
   end
-
   let :presented do
-    Api::V2::GreenLanes::CertificatePresenter.wrap([certificate], 'measure_id', { certificate.id => '1'}).first
+    Api::V2::GreenLanes::CertificatePresenter.wrap([certificate], 'measure_id', { certificate.id => '1' }).first
   end
-
   let(:expected_pattern) do
     {
       data: {
@@ -30,7 +27,6 @@ RSpec.describe Api::V2::GreenLanes::CertificateSerializer do
       },
     }
   end
-
   let(:expected_presented_pattern) do
     {
       data: {
