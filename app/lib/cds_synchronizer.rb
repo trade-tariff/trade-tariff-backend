@@ -11,7 +11,8 @@ class CdsSynchronizer
   # set initial update date
   # Initial dump date + 1 day
   cattr_accessor :initial_update_date
-  self.initial_update_date = Date.new(2020, 9, 1)
+  # self.initial_update_date = Date.new(2020, 9, 1)
+  self.initial_update_date = Date.new(2023, 12, 31)
 
   class << self
     def download
@@ -48,6 +49,7 @@ class CdsSynchronizer
 
         date_range = date_range_since_oldest_pending_update
         date_range.each do |day|
+          puts('Applying file')
           applied_updates << perform_update(CdsUpdate, day)
         end
 

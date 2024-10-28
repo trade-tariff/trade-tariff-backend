@@ -18,11 +18,11 @@ module TariffSynchronizer
 
       # IMPORTANT: running large update files may cause out of memory exception.
       # Run `import!` outside of this class to prevent that.
-      Sequel::Model.db.transaction(reraise: true) do
-        # If a error is raised during import, mark the update as failed
-        Sequel::Model.db.after_rollback { @base_update.mark_as_failed }
-        @base_update.import!
-      end
+      # Sequel::Model.db.transaction(reraise: true) do
+      # If a error is raised during import, mark the update as failed
+      Sequel::Model.db.after_rollback { @base_update.mark_as_failed }
+      @base_update.import!
+      # end
     rescue StandardError => e
       e = e.original if e.respond_to?(:original) && e.original
       persist_exception_for_review(e)

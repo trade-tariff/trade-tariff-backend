@@ -21,9 +21,14 @@ module TariffSynchronizer
       return if daily_files.empty?
 
       range.each do |date|
-        file = daily_files.find { |df| df['filename'][23..30] == date.strftime('%Y%m%d') }
+        puts(date.strftime('%Y%m%d'))
+
+        # file = daily_files.find { |df| df['filename'][23..30] == date.strftime('%Y%m%d') }
+        file = daily_files.find { |df| df['filename'][24..31] == date.strftime('%Y%m%d') } # this says yearly instead of daily so bump the range up by one char
+
         next unless file
 
+        puts('doing the next thing')
         TariffDownloader.new(file['filename'], file['downloadURL'], date, TariffSynchronizer::CdsUpdate).perform
       end
     end
@@ -37,7 +42,7 @@ module TariffSynchronizer
     # downloadURL contains gzip file with an xml file inside.
     def response
       @response = begin
-        uri = URI.join(ENV['HMRC_API_HOST'], '/bulk-data-download/list/TARIFF-DAILY')
+        uri = URI.join(ENV['HMRC_API_HOST'], '/bulk-data-download/list/TARIFF-ANNUAL')
         https = Net::HTTP.new(uri.host, uri.port)
         https.use_ssl = true
         request = Net::HTTP::Get.new(uri.request_uri)

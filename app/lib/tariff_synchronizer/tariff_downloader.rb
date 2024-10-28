@@ -4,6 +4,7 @@ module TariffSynchronizer
     TariffDownloaderZipError = Class.new(StandardError)
 
     ZIP_SIGNATURE = "\x50\x4B\x03\x04".freeze
+    GZIP_SIGNATURE = "\x1F\x8B\x08\x00".freeze
 
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
@@ -20,8 +21,11 @@ module TariffSynchronizer
 
     def perform
       if file_already_downloaded?
+        puts('already downloaded')
         create_entry
       else
+
+        puts('Not already downloaded')
         download_and_create_entry
       end
     rescue StandardError => e
@@ -60,19 +64,24 @@ module TariffSynchronizer
     end
 
     def create_record_for_empty_response
+      puts('called create_record_for_empty_response')
       update_or_create(filename, BaseUpdate::FAILED_STATE)
       TariffLogger.blank_update(date:, url:)
     end
 
     def create_record_for_exceeded_response
+      puts('called reate_record_for_exceeded_response')
       update_or_create(filename, BaseUpdate::FAILED_STATE)
       TariffLogger.retry_exceeded(date, url)
     end
 
     # We do not create records for missing updates
-    def create_record_for_not_found_response; end
+    def create_record_for_not_found_response
+      puts('called create_record_for_not_found_response')
+    end
 
     def create_record_for_successful_response
+      puts('create_record_for_successful_response')
       update_or_create(filename, BaseUpdate::PENDING_STATE, response.content.size)
       write_update_file(response.content)
       @success = true
@@ -87,9 +96,10 @@ module TariffSynchronizer
     def write_update_file(response_body)
       if should_write_file?(response_body)
         FileService.write_file(file_path, response_body)
-
+        puts('wrote file')
         Rails.logger.info("#{update_type.upcase} update for #{date} downloaded from #{url}, to #{file_path} (size: #{response_body.size})")
       else
+        puts("didn't write file")
         persist_exception_for_review(TariffDownloaderZipError.new('Response was not a zip file. Skipping persistence'))
       end
     end
@@ -105,14 +115,46 @@ module TariffSynchronizer
     end
 
     def should_write_file?(response_body)
+      # If it's a TaricUpdate, write the file
       return true if update_klass == TariffSynchronizer::TaricUpdate
-      return true if zip_file?(response_body)
 
+      # Check if it's a ZIP or GZIP file
+      return true if zip_file?(response_body) || gzip_file?(response_body)
+
+      # If neither, don't write the file
       false
     end
 
     def zip_file?(content)
-      content.to_s.start_with?(ZIP_SIGNATURE)
+      # Get the first four bytes as binary
+      start_bytes = content[0, 4]
+
+      # Compare byte-by-byte
+      if start_bytes.bytes == ZIP_SIGNATURE.bytes
+        puts "It's a ZIP file"
+        true
+      else
+        puts "It's not a ZIP file"
+        false
+      end
+    end
+
+    def gzip_file?(content)
+      # Get the first four bytes as binary
+      start_bytes = content[0, 4]
+
+      # Log the length of both byte arrays
+      puts "GZIP_SIGNATURE length: #{GZIP_SIGNATURE.bytes.length}"
+      puts "start_bytes length: #{start_bytes.bytes.length}"
+
+      # Compare byte-by-byte
+      if start_bytes.bytes == GZIP_SIGNATURE.bytes
+        puts "It's a GZIP file"
+        true
+      else
+        puts "It's not a GZIP file"
+        false
+      end
     end
 
     delegate :update_type, to: :update_klass

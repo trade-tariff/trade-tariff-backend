@@ -50,6 +50,26 @@ class CdsImporter
     @oplog_inserts
   end
 
+  require 'zlib'
+
+  def import2
+    handler = XmlProcessor.new(@cds_update.filename)
+
+    # Decompress the gzip file and stream its content
+    gzipped_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
+
+    subscribe_to_oplog_inserts
+
+    # Decompress the file and stream the content into the SAX parser
+    Zlib::GzipReader.open(gzipped_file) do |gz|
+      # Pass the gz stream to the updated reader for streaming
+      CdsImporter::XmlParser::Reader.new(gz, handler).parse_stream
+      Rails.logger.info "Successfully imported streamed Cds file: #{@cds_update.filename}"
+    end
+
+    @oplog_inserts
+  end
+
   class XmlProcessor
     def initialize(filename)
       @filename = filename

@@ -52,6 +52,7 @@ module TariffSynchronizer
     private
 
     def send_request
+      puts('sending request')
       uri = URI(@url)
 
       client = Faraday.new(uri.host) do |conn|
@@ -61,6 +62,14 @@ module TariffSynchronizer
       end
 
       faraday_response = client.get(uri)
+
+      # Log the Content-Length from headers
+      content_length = faraday_response.headers['Content-Length']
+      puts "File size according to Content-Length: #{content_length} bytes" if content_length
+
+      # Log the size of the body
+      body_size = faraday_response.body.bytesize
+      puts "Actual file size (body size): #{body_size} bytes"
 
       Response.new(faraday_response.status, faraday_response.body)
     rescue Faraday::Error => e

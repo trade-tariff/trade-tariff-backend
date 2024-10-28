@@ -14,10 +14,11 @@ module TariffSynchronizer
         if Rails.env.production?
           bucket.object(file_path).put(body:)
         else
+          puts 'writing  file locally'
           directory = File.dirname(file_path)
-
+          puts "directory: #{directory}"
           FileUtils.mkdir_p(directory) unless File.exist?(directory)
-
+          puts "filepath: #{file_path}"
           File.open(file_path, 'wb') { |f| f.write(body) }
         end
       end

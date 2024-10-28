@@ -27,7 +27,8 @@ module TariffSynchronizer
     end
 
     def import!
-      @oplog_inserts = CdsImporter.new(self).import
+      # @oplog_inserts = CdsImporter.new(self).import
+      @oplog_inserts = CdsImporter.new(self).import2
 
       check_oplog_inserts
       mark_as_applied

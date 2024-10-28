@@ -183,7 +183,8 @@ module TariffSynchronizer
       private
 
       def download_end_date
-        Time.zone.today
+        # Time.zone.today
+        Time.zone.parse('2024-01-02')
       end
 
       def download_start_date(initial_date:)

@@ -4,8 +4,8 @@ class CdsImporter
       EXTRA_CONTENT = /^\n\s+/
       CONTENT_KEY = :__content__
 
-      def initialize(stringio, target_handler)
-        @stringio = stringio
+      def initialize(io_stream, target_handler)
+        @io_stream = io_stream # Handle the IO stream (decompressed gzip content)
         @targets = CdsImporter::EntityMapper.all_mapping_roots
         @target_handler = target_handler
         @target_depth = 3
@@ -16,8 +16,12 @@ class CdsImporter
         super()
       end
 
-      def parse
-        Nokogiri::XML::SAX::Parser.new(self).parse(@stringio)
+      # Stream parsing using the 'parse' method that accepts an IO-like object
+      def parse_stream
+        parser = Nokogiri::XML::SAX::Parser.new(self)
+
+        # Parse the entire IO stream (gzipped XML) at once
+        parser.parse(@io_stream) # Instead of feeding chunks, this will process the stream
       end
 
       def start_element(key, _attrs = [])
@@ -33,11 +37,13 @@ class CdsImporter
       end
 
       def characters(val)
-        # The XML we receive has a bunch of contiguous newline-starting strings that get passed to this callback so we
-        # skip assigning any values that start with newline characters
+        # The XML we receive has a bunch of contiguous newline-starting strings that get passed to this callback
+        # so we skip assigning any values that start with newline characters
         return if !@in_target || val =~ EXTRA_CONTENT
 
-        @node[CONTENT_KEY] += val if val
+        # Ensure @node[CONTENT_KEY] is always initialized to an empty string before concatenating
+        @node[CONTENT_KEY] ||= '' # Initialize if nil
+        @node[CONTENT_KEY] += val if val # Append val to it
       end
 
       def end_element(key)
