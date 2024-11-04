@@ -48,7 +48,6 @@ module Reporting
             end
 
             (rows || []).each do |row|
-              report.increment_count(name)
               sheet.add_row(row, types: CELL_TYPES, style: regular_style)
             end
 

@@ -270,10 +270,6 @@ class GoodsNomenclature < Sequel::Model
     @has_chemicals ||= full_chemicals_dataset.limit(1).any?
   end
 
-  def intercept_terms
-    Beta::Search::InterceptMessage.all_references[goods_nomenclature_item_id]
-  end
-
   def to_admin_param
     to_param
   end

@@ -250,22 +250,6 @@ RSpec.describe GoodsNomenclature do
     end
   end
 
-  describe '#intercept_terms' do
-    subject(:goods_nomenclature) { build(:goods_nomenclature, goods_nomenclature_item_id:) }
-
-    context 'when there are intercept terms for the goods nomenclature' do
-      let(:goods_nomenclature_item_id) { '9031800000' }
-
-      it { expect(goods_nomenclature.intercept_terms).to eq('accelerometer bruel kjaer eddy current eddyfi ectane fitbit rotary encoder') }
-    end
-
-    context 'when there are `no` intercept terms for the goods nomenclature' do
-      let(:goods_nomenclature_item_id) { '9031810000' }
-
-      it { expect(goods_nomenclature.intercept_terms).to eq('') }
-    end
-  end
-
   describe '#to_admin_param' do
     subject { goods_nomenclature.to_admin_param }
 

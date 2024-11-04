@@ -96,7 +96,7 @@ module Reporting
             worksheets: {
               'Missing VAT rates' => {
                 description: 'Commodities, as of as_of, where there is no VAT rate.',
-                worksheet_name: 'VAT-related anomalies',
+                worksheet_name: 'VAT missing',
                 new_items_formula: "=COUNTIF('VAT missing'!C:C, \"Yes\")",
               },
             },
@@ -253,7 +253,7 @@ module Reporting
                   [
                     nil,
                     worksheet,
-                    report.overview_counts[worksheet_name],
+                    "=COUNTA('#{worksheet_name}'!A2:A1048576)",
                     worksheet_config.fetch(:new_items_formula, nil),
                     worksheet_description,
                     'View issues',
@@ -267,11 +267,12 @@ module Reporting
                 worksheet_row[2].style = centered_style
                 worksheet_row[3].style = centered_style
                 worksheet_row[4].style = regular_style
+                worksheet_row[5].style = centered_style
 
                 sheet.add_hyperlink(
                   location: "'#{worksheet_name}'!A1",
                   target: :sheet,
-                  ref: worksheet_row[4].r,
+                  ref: worksheet_row[5].r,
                 )
               end
 

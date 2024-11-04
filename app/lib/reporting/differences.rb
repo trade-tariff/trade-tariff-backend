@@ -77,8 +77,7 @@ module Reporting
                 :bold_style,
                 :centered_style,
                 :print_style,
-                :as_of,
-                :overview_counts
+                :as_of
 
     def initialize
       @package = Axlsx::Package.new
@@ -117,15 +116,12 @@ module Reporting
         sz: 11,
       )
       @as_of = Time.zone.today.iso8601
-      @overview_counts = Hash.new(0)
     end
 
     def generate(only: [])
       total_start = Time.zone.now
 
       methods = %i[
-
-        add_measure_quota_coverage_worksheet
         add_missing_from_uk_worksheet
         add_missing_from_xi_worksheet
         add_indentation_worksheet
@@ -142,6 +138,7 @@ module Reporting
         add_omitted_duty_measures_worksheet
         add_missing_vat_measure_worksheet
         add_missing_quota_origins_worksheet
+        add_measure_quota_coverage_worksheet
         add_bad_quota_association_worksheet
         add_quota_exclusion_misalignment_worksheet
         add_missing_supplementary_units_from_uk_worksheet
@@ -300,10 +297,6 @@ module Reporting
       CSV.parse(csv, headers: true).map(&:to_h)
     end
 
-    def increment_count(worksheet_name)
-      overview_counts[worksheet_name] += 1
-    end
-
     def sections
       Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.keys.map do |section|
         worksheets = Reporting::Differences::Renderers::Overview::OVERVIEW_SECTION_CONFIG.dig(section, :worksheets).map do |worksheet, config|
@@ -311,7 +304,6 @@ module Reporting
             worksheet:,
             worksheet_name: config[:worksheet_name],
             subtext: config[:description].sub('as_of', as_of.to_date.to_fs(:govuk)),
-            issue_count: overview_counts[config[:worksheet_name]],
           )
         end
 
