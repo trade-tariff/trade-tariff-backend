@@ -19,7 +19,6 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
     end
   end
 
-
   describe 'GET to #index search' do
     before do
       category

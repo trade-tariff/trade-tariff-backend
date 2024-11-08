@@ -147,7 +147,6 @@ module Api
             .paginate(ca_current_page, per_page)
         end
 
-
         def green_lanes_measures(category_assessment)
           category_assessment.green_lanes_measures_dataset.paginate(current_page, per_page)
         end
