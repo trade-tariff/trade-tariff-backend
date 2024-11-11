@@ -106,6 +106,10 @@ module Api
 
         def category_assessments
           exemption_code = params.dig(:query, :filters, :exemption_code) || ''
+          measure_type_id = params.dig(:query, :filters, :measure_type_id) || ''
+          regulation_id = params.dig(:query, :filters, :regulation_id) || ''
+          regulation_role = params.dig(:query, :filters, :regulation_role) || ''
+          theme_id = params.dig(:query, :filters, :theme_id) || ''
           sort_by = params.dig(:query, :sort) || 'id'
           sort_order = params.dig(:query, :direction) || 'asc'
 
@@ -115,24 +119,32 @@ module Api
                          Sequel.asc(Sequel[:green_lanes_category_assessments][sort_by.to_sym])
                        end
 
-          @category_assessments ||= search_category_assessments(exemption_code, order_expr)
+          @category_assessments ||= search_category_assessments(exemption_code, measure_type_id, regulation_id, regulation_role, theme_id, order_expr)
         end
 
-        def search_category_assessments(exemption_code, order_expr)
+        def search_category_assessments(exemption_code, measure_type_id, regulation_id, regulation_role, theme_id, order_expr)
+          conditions = {}
+          conditions[Sequel[:green_lanes_category_assessments][:measure_type_id]] = measure_type_id if measure_type_id.present?
+          conditions[Sequel[:green_lanes_category_assessments][:regulation_id]] = regulation_id if regulation_id.present?
+          conditions[Sequel[:green_lanes_category_assessments][:regulation_role]] = regulation_role if regulation_role.present?
+          conditions[Sequel[:green_lanes_category_assessments][:theme_id]] = theme_id if theme_id.present?
+
           if exemption_code.blank?
-            return ::GreenLanes::CategoryAssessment.eager(:theme).order(order_expr)
-                                                   .paginate(ca_current_page, per_page)
+            query = ::GreenLanes::CategoryAssessment.eager(:theme).order(order_expr)
+            query = query.where(Sequel.|(conditions)) unless conditions.empty?
+            query = query.paginate(ca_current_page, per_page)
+            return query
           end
+
+          conditions[Sequel[:exemptions][:code]] = exemption_code
 
           ::GreenLanes::CategoryAssessment
             .association_join(:exemptions)
-            .where(
-              Sequel.|(
-                { Sequel[:exemptions][:code] => exemption_code },
-              ),
-            )
+            .where(Sequel.|(conditions))
             .select_all(:green_lanes_category_assessments)
-            .eager(:theme).order(order_expr).paginate(ca_current_page, per_page)
+            .eager(:theme)
+            .order(order_expr)
+            .paginate(ca_current_page, per_page)
         end
 
         def green_lanes_measures(category_assessment)

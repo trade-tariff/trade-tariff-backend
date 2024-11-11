@@ -8,30 +8,27 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
   let(:json_response) { JSON.parse(page_response.body) }
   let(:category) { create :category_assessment, :with_green_lanes_measure, :with_exemption }
 
-  describe 'GET to #index' do
-    let(:make_request) do
-      authenticated_get api_admin_green_lanes_category_assessments_path(format: :json)
+  shared_examples_for 'search category assessment response' do
+    it { is_expected.to have_http_status :success }
+    it { expect(json_response).to include('data') }
+    it { expect(json_response).to include('meta') }
+
+    it 'expects measure_type_id to be in the json response' do
+      measure_type_ids = json_response['data'].map { |item| item['attributes']['measure_type_id'] }
+      expect(measure_type_ids).to include(category.measure_type_id.to_s)
+    end
+  end
+
+  describe 'GET to #index search' do
+    before do
+      category
     end
 
-    context 'with some category assessments' do
-      before do
-        category
-      end
-
-      it { is_expected.to have_http_status :success }
-      it { expect(json_response).to include('data') }
-      it { expect(json_response).to include('meta') }
+    let(:make_request) do
+      authenticated_get api_admin_green_lanes_category_assessments_path(format: :json), params: search_data
     end
 
     context 'with some category assessments, search by exemption code' do
-      before do
-        category
-      end
-
-      let(:make_request) do
-        authenticated_get api_admin_green_lanes_category_assessments_path(format: :json), params: search_data
-      end
-
       let :search_data do
         {
           query: {
@@ -41,25 +38,62 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
         }
       end
 
-      it { is_expected.to have_http_status :success }
-      it { expect(json_response).to include('data') }
-      it { expect(json_response).to include('meta') }
+      it_behaves_like 'search category assessment response'
+    end
 
-      it 'expects measure_type_id to be in the json response' do
-        measure_type_ids = json_response['data'].map { |item| item['attributes']['measure_type_id'] }
-        expect(measure_type_ids).to include(category.measure_type_id.to_s)
+    context 'with some category assessments, search by measure type id' do
+      let :search_data do
+        {
+          query: {
+            measure_type_id: category.measure_type_id.to_s,
+            page: 1,
+          },
+        }
       end
+
+      it_behaves_like 'search category assessment response'
+    end
+
+    context 'with some category assessments, search by regulation id' do
+      let :search_data do
+        {
+          query: {
+            regulation_id: category.regulation_id.to_s,
+            page: 1,
+          },
+        }
+      end
+
+      it_behaves_like 'search category assessment response'
+    end
+
+    context 'with some category assessments, search by regulation role' do
+      let :search_data do
+        {
+          query: {
+            regulation_role: category.regulation_role,
+            page: 1,
+          },
+        }
+      end
+
+      it_behaves_like 'search category assessment response'
+    end
+
+    context 'with some category assessments, search by theme id' do
+      let :search_data do
+        {
+          query: {
+            theme_id: category.theme_id.to_s,
+            page: 1,
+          },
+        }
+      end
+
+      it_behaves_like 'search category assessment response'
     end
 
     context 'with some category assessments, sort by parameter present' do
-      before do
-        category
-      end
-
-      let(:make_request) do
-        authenticated_get api_admin_green_lanes_category_assessments_path(format: :json), params: search_data
-      end
-
       let :search_data do
         {
           query: {
@@ -77,6 +111,22 @@ RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
       it { is_expected.to have_http_status :success }
 
       it { expect(regulation_ids).to eq(regulation_ids.sort.reverse) }
+    end
+  end
+
+  describe 'GET to #index' do
+    let(:make_request) do
+      authenticated_get api_admin_green_lanes_category_assessments_path(format: :json)
+    end
+
+    context 'with some category assessments' do
+      before do
+        category
+      end
+
+      it { is_expected.to have_http_status :success }
+      it { expect(json_response).to include('data') }
+      it { expect(json_response).to include('meta') }
     end
 
     context 'without any category assessments' do
