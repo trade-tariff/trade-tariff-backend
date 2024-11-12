@@ -56,7 +56,7 @@ RSpec.describe Api::V2::CommoditiesController do
       end
 
       it 'sets the value to nil when we are done making the request' do
-        expect { do_response }.to change { TradeTariffRequest.meursing_additional_code_id }.from('foo').to(nil)
+        expect { do_response }.to change(TradeTariffRequest, :meursing_additional_code_id).from('foo').to(nil)
       end
 
       it 'passes the correct meursing additional code to the MeursingMeasureFinderService' do

@@ -2,7 +2,7 @@ require 'date'
 
 module TimeMachine
   def self.no_time_machine
-    previous =  TradeTariffRequest.time_machine_now
+    previous = TradeTariffRequest.time_machine_now
 
     raise ArgumentError, 'requires a block' unless block_given?
 
