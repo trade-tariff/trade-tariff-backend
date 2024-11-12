@@ -62,6 +62,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
       it 'calls FindCategoryAssessmentsService with correct params' do
         make_request
 
+        TradeTariffRequest.time_machine_now = Time.current
+
         expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)
           .with(gn.applicable_measures, 'AU')

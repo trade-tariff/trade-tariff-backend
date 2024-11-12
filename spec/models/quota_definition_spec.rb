@@ -216,6 +216,7 @@ RSpec.describe QuotaDefinition do
       let(:quota_definition) { create(:quota_definition, :with_quota_critical_events) }
 
       it 'returns the ids' do
+        TradeTariffRequest.time_machine_now = Time.current
         expect(quota_definition.quota_critical_event_ids.count).to be_positive
       end
     end
