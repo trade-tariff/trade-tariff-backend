@@ -5,7 +5,6 @@ module Reporting
         include Reporting::Differences::Loaders::Helpers
 
         FILTERED_MEASURE_TYPES = Set.new(%w[305]).freeze
-        FILTERED_GEOGRAPHICAL_AREA_IDS = Set.new(%w[1011]).freeze
 
         delegate :each_chapter,
                  to: :report
@@ -37,8 +36,7 @@ module Reporting
               next if chapter_descendant.classified?
 
               next if chapter_descendant.applicable_overview_measures.find { |measure|
-                measure.measure_type_id.in?(FILTERED_MEASURE_TYPES) &&
-                  measure.geographical_area_id.in?(FILTERED_GEOGRAPHICAL_AREA_IDS)
+                measure.measure_type_id.in?(FILTERED_MEASURE_TYPES)
               }.present?
 
               yield chapter_descendant
