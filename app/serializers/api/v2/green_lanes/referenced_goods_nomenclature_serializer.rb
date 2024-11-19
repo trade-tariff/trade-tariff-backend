@@ -10,6 +10,7 @@ module Api
 
         attributes :goods_nomenclature_sid,
                    :goods_nomenclature_item_id,
+                   :formatted_description,
                    :description,
                    :number_indents,
                    :producline_suffix,
