@@ -18,10 +18,6 @@ class CdsImporter
         "#{mapping_path}.geographicalArea.geographicalAreaId" => :excluded_geographical_area,
         "#{mapping_path}.geographicalArea.sid" => :geographical_area_sid,
       ).freeze
-
-      self.primary_filters = {
-        measure_sid: :measure_sid,
-      }.freeze
     end
   end
 end
