@@ -10,7 +10,7 @@ RSpec.describe ApplicationController, type: :request do
       let(:exception) { ActionController::InvalidAuthenticityToken }
 
       it { is_expected.to have_http_status(:unprocessable_entity) }
-      it { expect(do_response.body).to eq('{"error":"422 - Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/"}') }
+      it { expect(do_response.body).to eq('{"errors":[{"detail":"422 - Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/"}]}') }
     end
   end
 end
