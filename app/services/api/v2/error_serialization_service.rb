@@ -2,6 +2,7 @@ module Api
   module V2
     class ErrorSerializationService
       def serialized_errors(errors)
+        # errors.to_json
         errors = Array.wrap(errors).flat_map do |error|
           if error.key?(:error)
             { detail: error[:error] }

@@ -8,7 +8,7 @@ RSpec.describe ErrorsController do
   shared_examples 'a json error response' do |status_code, message|
     it { is_expected.to have_http_status status_code }
     it { is_expected.to have_attributes media_type: 'application/json' }
-    it { expect(json_response).to include 'error' => "#{status_code} - #{message}" }
+    it { expect(json_response).to eq('errors' => [{ 'detail' => "#{status_code} - #{message}" }]) }
   end
 
   shared_examples 'a csv or json error response' do |status_code, message|
