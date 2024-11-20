@@ -15,10 +15,6 @@ class CdsImporter
         "#{mapping_path}.criticalState" => :critical_state,
         "#{mapping_path}.criticalStateChangeDate" => :critical_state_change_date,
       ).freeze
-
-      self.primary_filters = {
-        quota_definition_sid: :quota_definition_sid,
-      }.freeze
     end
   end
 end

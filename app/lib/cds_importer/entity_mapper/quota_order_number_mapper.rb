@@ -11,8 +11,6 @@ class CdsImporter
         'sid' => :quota_order_number_sid,
         'quotaOrderNumberId' => :quota_order_number_id,
       ).freeze
-
-      delete_missing_entities QuotaOrderNumberOriginMapper
     end
   end
 end

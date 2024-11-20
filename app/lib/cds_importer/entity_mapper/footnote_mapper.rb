@@ -9,8 +9,6 @@ class CdsImporter
         'footnoteId' => :footnote_id,
         'footnoteType.footnoteTypeId' => :footnote_type_id,
       ).freeze
-
-      delete_missing_entities FootnoteDescriptionPeriodMapper
     end
   end
 end
