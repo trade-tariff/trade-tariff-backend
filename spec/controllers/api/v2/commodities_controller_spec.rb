@@ -52,11 +52,11 @@ RSpec.describe Api::V2::CommoditiesController do
       end
 
       before do
-        Thread.current[:meursing_additional_code_id] = 'foo'
+        TradeTariffRequest.meursing_additional_code_id = 'foo'
       end
 
       it 'sets the value to nil when we are done making the request' do
-        expect { do_response }.to change { Thread.current[:meursing_additional_code_id] }.from('foo').to(nil)
+        expect { do_response }.to change(TradeTariffRequest, :meursing_additional_code_id).from('foo').to(nil)
       end
 
       it 'passes the correct meursing additional code to the MeursingMeasureFinderService' do
