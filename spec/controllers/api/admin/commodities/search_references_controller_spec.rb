@@ -1,4 +1,8 @@
 RSpec.describe Api::Admin::Commodities::SearchReferencesController do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   it_behaves_like 'v2 search references controller' do
     let(:search_reference_parent)  { create :commodity, :declarable, :with_heading }
     let(:search_reference)         { create :search_reference, referenced: search_reference_parent }

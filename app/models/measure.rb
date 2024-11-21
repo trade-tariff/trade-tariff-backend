@@ -676,7 +676,7 @@ class Measure < Sequel::Model
   end
 
   def meursing_additional_code_id
-    Thread.current[:meursing_additional_code_id]
+    TradeTariffRequest.meursing_additional_code_id
   end
 
   def all_condition_components

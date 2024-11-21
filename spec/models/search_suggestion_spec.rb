@@ -67,6 +67,8 @@ RSpec.describe SearchSuggestion do
       let(:query) { '12' }
 
       before do
+        TradeTariffRequest.time_machine_now = Time.current
+
         create(
           :search_suggestion,
           :goods_nomenclature,

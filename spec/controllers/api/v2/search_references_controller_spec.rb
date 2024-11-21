@@ -1,5 +1,7 @@
 RSpec.describe Api::V2::SearchReferencesController do
   before do
+    TradeTariffRequest.time_machine_now = Time.current
+
     create :search_reference, :with_heading, title: 'aa'
     create :search_reference, :with_chapter, title: 'bb'
     create :search_reference, :with_commodity, title: 'bb'
