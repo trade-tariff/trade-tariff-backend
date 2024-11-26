@@ -76,7 +76,8 @@ jobs:
   pre-commit:
     executor: python-executor
     steps:
-      - tariff/pre-commit
+      - tariff/pre-commit:
+          terraform_version: "1.9.8"
 
   write-docker-tag:
     parameters:
