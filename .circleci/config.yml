@@ -41,6 +41,8 @@ executors:
   python-executor:
     docker:
       - image: circleci/python:latest
+    environment:
+      TERRAFORM_VERSION: 1.9.8
 
 jobs:
   ruby-checks:
