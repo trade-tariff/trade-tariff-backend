@@ -205,6 +205,10 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.green_lanes_api_keys.arn
     },
     {
+      name      = "NEW_RELIC_LICENSE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.new_relic_license_key.arn
+    },
+    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
