@@ -123,6 +123,10 @@ data "aws_secretsmanager_secret" "green_lanes_api_keys" {
   name = "backend-green-lanes-api-keys"
 }
 
+data "aws_secretsmanager_secret" "new_relic_license_key" {
+  name = "backend-new-relic-license-key"
+}
+
 data "aws_s3_bucket" "persistence" {
   bucket = "trade-tariff-persistence-${local.account_id}"
 }

@@ -7,7 +7,7 @@ Terraform to deploy the service into AWS.
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | 1.8.2 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | 1.9.8 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | ~> 4 |
 
 ## Providers
@@ -52,6 +52,7 @@ Terraform to deploy the service into AWS.
 | [aws_secretsmanager_secret.differences_to_emails](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.green_lanes_api_keys](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.green_lanes_api_tokens](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
+| [aws_secretsmanager_secret.new_relic_license_key](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.oauth_id](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.oauth_secret](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.redis_frontend_connection_string](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
