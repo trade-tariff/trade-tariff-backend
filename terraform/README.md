@@ -96,7 +96,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `2` | no |
 | <a name="input_stemming_exclusion_reference_analyzer"></a> [stemming\_exclusion\_reference\_analyzer](#input\_stemming\_exclusion\_reference\_analyzer) | Stemmer package file path in opensearch | `string` | n/a | yes |
 | <a name="input_synonym_reference_analyzer"></a> [synonym\_reference\_analyzer](#input\_synonym\_reference\_analyzer) | Synonym package file path in opensearch | `string` | n/a | yes |
-| <a name="input_execute_clean_up_changes_table"></a> [execute\_clean\_up\_changes\_table](#input\_execute\_clean\_up\_changes\_table) | Defaults to true except in STAGING only to stop daily cleanup of the Changes table for TGP testing (HMRC-434). | `bool` | `true`| no |
+| <a name="input_execute_clean_up_changes_table"></a> [execute\_clean\_up\_changes\_table](#input\_execute\_clean\_up\_changes\_table) | Defaults to true except in STAGING only to stop daily cleanup of the Changes table for TGP testing (HMRC-434). | `bool` | n/a | yes |
 
 ## Outputs
 
