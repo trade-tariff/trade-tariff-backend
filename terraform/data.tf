@@ -127,6 +127,22 @@ data "aws_secretsmanager_secret" "new_relic_license_key" {
   name = "backend-new-relic-license-key"
 }
 
+data "aws_secretsmanager_secret" "otel_exporter" {
+  name = "backend-otel-exporter"
+}
+
+data "aws_secretsmanager_secret" "otel_exporter_otlp_endpoint" {
+  name = "backend-exporter-otlp-endpoint"
+}
+
+data "aws_secretsmanager_secret" "otel_exporter_otlp_headers" {
+  name = "backend-exporter-otlp-headers"
+}
+
+data "aws_secretsmanager_secret" "otel_service_name" {
+  name = "backend-otel-service-name"
+}
+
 data "aws_s3_bucket" "persistence" {
   bucket = "trade-tariff-persistence-${local.account_id}"
 }
