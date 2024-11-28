@@ -209,6 +209,22 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.new_relic_license_key.arn
     },
     {
+      name      = "OTEL_EXPORTER"
+      valueFrom = data.aws_secretsmanager_secret.otel_exporter.arn
+    },
+    {
+      name      = "OTEL_EXPORTER_OTLP_ENDPOINT"
+      valueFrom = data.aws_secretsmanager_secret.otel_exporter_otlp_endpoint.arn
+    },
+    {
+      name      = "OTEL_EXPORTER_OTLP_HEADERS"
+      valueFrom = data.aws_secretsmanager_secret.otel_exporter_otlp_headers.arn
+    },
+    {
+      name      = "OTEL_SERVICE_NAME"
+      valueFrom = data.aws_secretsmanager_secret.otel_service_name.arn
+    },
+    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
