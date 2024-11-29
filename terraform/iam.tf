@@ -23,7 +23,6 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.redis_frontend_connection_string.arn,
       data.aws_secretsmanager_secret.redis_uk_connection_string.arn,
       data.aws_secretsmanager_secret.redis_xi_connection_string.arn,
-      data.aws_secretsmanager_secret.scout_api_key.arn,
       data.aws_secretsmanager_secret.secret_key_base.arn,
       data.aws_secretsmanager_secret.sentry_dsn.arn,
       data.aws_secretsmanager_secret.slack_web_hook_url.arn,
