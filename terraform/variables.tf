@@ -90,5 +90,5 @@ variable "green_lanes_notify_measure_updates" {
 variable "process_extra_changes_for_tgp" {
   description = "Defaults to false except in STAGING only for TGP testing (HMRC-434)."
   type        = bool
-  default     = true
+  default     = false
 }
