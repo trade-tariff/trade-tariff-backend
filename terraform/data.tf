@@ -150,7 +150,3 @@ data "aws_s3_bucket" "persistence" {
 data "aws_s3_bucket" "reporting" {
   bucket = "trade-tariff-reporting-${local.account_id}"
 }
-
-data "aws_secretsmanager_secret" "scout_api_key" {
-  name = "backend-scout-api-key"
-}

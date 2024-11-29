@@ -631,8 +631,6 @@ GEM
     rubyzip (2.3.2)
     rufus-scheduler (3.9.1)
       fugit (~> 1.1, >= 1.1.6)
-    scout_apm (5.4.0)
-      parser
     sentry-rails (5.19.0)
       railties (>= 5.0)
       sentry-ruby (~> 5.19.0)
@@ -762,7 +760,6 @@ DEPENDENCIES
   rspec_junit_formatter
   rubocop-govuk
   rubyzip
-  scout_apm
   sentry-rails
   sentry-sidekiq
   sequel (= 5.84.0)
