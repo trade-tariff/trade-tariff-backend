@@ -229,6 +229,10 @@ locals {
       valueFrom = data.aws_secretsmanager_secret.otel_service_name.arn
     },
     {
+      name      = "SCOUT_API_KEY"
+      valueFrom = data.aws_secretsmanager_secret.scout_api_key.arn
+    },
+    {
       name      = "SENTRY_DSN"
       valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
