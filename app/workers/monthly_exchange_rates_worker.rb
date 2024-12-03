@@ -16,6 +16,8 @@ class MonthlyExchangeRatesWorker
   end
 
   def notify
+    return unless ENV.fetch('ENVIRONMENT', '') == 'production'
+
     message = 'Exchange rates for the current month have been added and are accessible for viewing at /exchange_rates.'
 
     logger.info message
