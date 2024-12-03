@@ -272,5 +272,13 @@ module TradeTariffBackend
     def disable_admin_api_authentication?
       ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
     end
+
+    def snapshot_importer_file_path
+      ENV['SNAPSHOT_IMPORTER_FILE_PATH']
+    end
+
+    def snapshot_importer_batch_size
+      ENV['SNAPSHOT_IMPORTER_BATCH_SIZE'].to_i
+    end
   end
 end

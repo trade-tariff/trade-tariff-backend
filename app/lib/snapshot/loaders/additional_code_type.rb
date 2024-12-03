@@ -5,7 +5,6 @@ module Loaders
       descriptions = []
       measure_types = []
 
-
       batch.each do |attributes|
         additional_code_types.push({
           additional_code_type_id: attributes['AdditionalCodeType']['additionalCodeTypeId'],
