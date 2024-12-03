@@ -244,7 +244,7 @@ GEM
     marcel (1.0.4)
     method_source (1.1.0)
     mini_mime (1.1.5)
-    mini_portile2 (2.8.7)
+    mini_portile2 (2.8.8)
     minitest (5.25.1)
     msgpack (1.7.2)
     multi_json (1.15.0)
@@ -264,7 +264,7 @@ GEM
       net-protocol
     newrelic_rpm (9.16.0)
     nio4r (2.7.3)
-    nokogiri (1.16.6)
+    nokogiri (1.16.8)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     oauth2 (2.0.9)
