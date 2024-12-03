@@ -268,5 +268,13 @@ module TradeTariffBackend
     def green_lanes_notify_measure_updates
       ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
     end
+
+    def snapshot_importer_file_path
+      ENV['SNAPSHOT_IMPORTER_FILE_PATH']
+    end
+
+    def snapshot_importer_batch_size
+      ENV['SNAPSHOT_IMPORTER_BATCH_SIZE'].to_i
+    end
   end
 end
