@@ -67,27 +67,4 @@ RSpec.describe CdsImporter::EntityMapper::QuotaOrderNumberOriginMapper do
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('QuotaOrderNumber', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      let(:operation) { 'C' }
-
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :quota_order_number,
-          :with_quota_order_number_origin,
-          quota_order_number_sid: '21006',
-          quota_order_number_origin_sid: '21120',
-        )
-
-        # Control for non-deleted secondary entities
-        create(:quota_order_number_origin_exclusion, quota_order_number_origin_sid: '21120', excluded_geographical_area_sid: '92')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaOrderNumberOriginExclusion, quota_order_number_origin_sid: '21120'
-    end
-  end
 end

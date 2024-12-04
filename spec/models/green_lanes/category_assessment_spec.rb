@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe GreenLanes::CategoryAssessment do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe 'attributes' do
     it { is_expected.to respond_to :id }
     it { is_expected.to respond_to :measure_type_id }

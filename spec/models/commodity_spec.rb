@@ -1,4 +1,8 @@
 RSpec.describe Commodity do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   it { expect(described_class.primary_key).to eq :goods_nomenclature_sid }
 
   describe 'associations' do
@@ -105,10 +109,8 @@ RSpec.describe Commodity do
     end
 
     context 'when in TimeMachine block' do
-      around do |example|
-        TimeMachine.at(2.years.ago.beginning_of_day) do
-          example.run
-        end
+      before do
+        TradeTariffRequest.time_machine_now = 2.years.ago.beginning_of_day
       end
 
       it { expect(described_class.actual).to include actual_commodity }

@@ -32,7 +32,7 @@ orbs:
 executors:
   terraform:
     docker:
-      - image: hashicorp/terraform:1.8.2
+      - image: hashicorp/terraform:1.9.8
     resource_class: small
     working_directory: "/tmp/terraform"
     environment:
@@ -41,6 +41,8 @@ executors:
   python-executor:
     docker:
       - image: circleci/python:latest
+    environment:
+      TERRAFORM_VERSION: 1.9.8
 
 jobs:
   ruby-checks:
@@ -74,7 +76,8 @@ jobs:
   pre-commit:
     executor: python-executor
     steps:
-      - tariff/pre-commit
+      - tariff/pre-commit:
+          terraform_version: "1.9.8"
 
   write-docker-tag:
     parameters:

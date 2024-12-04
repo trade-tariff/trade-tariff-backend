@@ -34,17 +34,4 @@ RSpec.describe CdsImporter::EntityMapper::CertificateDescriptionPeriodMapper do
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('Certificate', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(:certificate_description, certificate_description_period_sid: '5033')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', CertificateDescription, certificate_description_period_sid: '5033'
-    end
-  end
 end

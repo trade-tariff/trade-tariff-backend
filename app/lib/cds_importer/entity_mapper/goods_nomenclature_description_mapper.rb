@@ -17,10 +17,6 @@ class CdsImporter
         'produclineSuffix' => :productline_suffix,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        goods_nomenclature_description_period_sid: :goods_nomenclature_description_period_sid,
-      }.freeze
     end
   end
 end

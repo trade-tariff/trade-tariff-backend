@@ -22,12 +22,6 @@ class CdsImporter
         "#{mapping_path}.certificate.certificateType.certificateTypeCode" => :certificate_type_code,
         "#{mapping_path}.certificate.certificateCode" => :certificate_code,
       ).freeze
-
-      self.primary_filters = {
-        measure_sid: :measure_sid,
-      }.freeze
-
-      delete_missing_entities MeasureConditionComponentMapper
     end
   end
 end

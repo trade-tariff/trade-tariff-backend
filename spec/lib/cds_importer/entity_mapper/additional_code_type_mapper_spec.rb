@@ -84,26 +84,5 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeTypeMapper do
       it_behaves_like 'an entity mapper destroy operation', AdditionalCodeTypeDescription
       it_behaves_like 'an entity mapper destroy operation', AdditionalCodeTypeMeasureType
     end
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :additional_code_type,
-          :with_description,
-          :with_measure_type,
-          additional_code_type_id: '3',
-          language_id: 'NO',
-          measure_type_id: '467',
-        )
-
-        # Control for a non-deleted entities
-        create(:additional_code_type_measure_type, measure_type_id: '468', additional_code_type_id: '3')
-        create(:additional_code_type_description, additional_code_type_id: '3', language_id: 'EN')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', AdditionalCodeTypeDescription, additional_code_type_id: '3'
-      it_behaves_like 'an entity mapper missing destroy operation', AdditionalCodeTypeMeasureType, additional_code_type_id: '3'
-    end
   end
 end

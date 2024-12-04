@@ -113,6 +113,10 @@ locals {
     {
       name  = "GREEN_LANES_NOTIFY_MEASURE_UPDATES"
       value = var.green_lanes_notify_measure_updates
+    },
+    {
+      name  = "PROCESS_EXTRA_CHANGES_FOR_TGP"
+      value = var.process_extra_changes_for_tgp
     }
   ]
 
@@ -203,6 +207,26 @@ locals {
     {
       name      = "GREEN_LANES_API_KEYS"
       valueFrom = data.aws_secretsmanager_secret.green_lanes_api_keys.arn
+    },
+    {
+      name      = "NEW_RELIC_LICENSE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.new_relic_license_key.arn
+    },
+    {
+      name      = "OTEL_EXPORTER"
+      valueFrom = data.aws_secretsmanager_secret.otel_exporter.arn
+    },
+    {
+      name      = "OTEL_EXPORTER_OTLP_ENDPOINT"
+      valueFrom = data.aws_secretsmanager_secret.otel_exporter_otlp_endpoint.arn
+    },
+    {
+      name      = "OTEL_EXPORTER_OTLP_HEADERS"
+      valueFrom = data.aws_secretsmanager_secret.otel_exporter_otlp_headers.arn
+    },
+    {
+      name      = "OTEL_SERVICE_NAME"
+      valueFrom = data.aws_secretsmanager_secret.otel_service_name.arn
     },
     {
       name      = "SENTRY_DSN"

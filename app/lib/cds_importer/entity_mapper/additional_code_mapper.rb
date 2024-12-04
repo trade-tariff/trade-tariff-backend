@@ -10,9 +10,6 @@ class CdsImporter
         'additionalCodeType.additionalCodeTypeId' => :additional_code_type_id,
         'additionalCodeCode' => :additional_code,
       ).freeze
-
-      delete_missing_entities FootnoteAssociationAdditionalCodeMapper,
-                              AdditionalCodeDescriptionPeriodMapper
     end
   end
 end

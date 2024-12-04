@@ -14,10 +14,6 @@ class CdsImporter
         "#{mapping_path}.footnote.footnoteId" => :footnote_id,
         "#{mapping_path}.footnote.footnoteType.footnoteTypeId" => :footnote_type,
       ).freeze
-
-      self.primary_filters = {
-        goods_nomenclature_sid: :goods_nomenclature_sid,
-      }.freeze
     end
   end
 end
