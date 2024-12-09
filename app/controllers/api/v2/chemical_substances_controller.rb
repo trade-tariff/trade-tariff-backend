@@ -21,7 +21,7 @@ module Api
           :cus,
           :goods_nomenclature_sid,
           :goods_nomenclature_item_id,
-        ).to_h
+        )
       end
     end
   end

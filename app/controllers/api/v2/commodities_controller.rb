@@ -36,7 +36,7 @@ module Api
         params.fetch(:filter, {}).permit(
           :geographical_area_id,
           :meursing_additional_code_id,
-        ).to_h
+        )
       end
 
       def configure_meursing_additional_code
