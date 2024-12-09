@@ -95,3 +95,7 @@ def silence
   @original_stderr = nil
   @original_stdout = nil
 end
+
+def strong_params(wimpy_params)
+  ActionController::Parameters.new(wimpy_params).permit!
+end
