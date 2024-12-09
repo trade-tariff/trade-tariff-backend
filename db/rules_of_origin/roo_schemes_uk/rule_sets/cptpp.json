@@ -14305,23 +14305,6 @@
                   "valid": true
             },
             {
-                  "heading": "CHAPTER 75\nNICKEL AND ARTICLES THEREOF",
-                  "min": "CHAPTER 75\nNICKEL AND ARTICLES THEREOF",
-                  "max": "CHAPTER 75\nNICKEL AND ARTICLES THEREOF",
-                  "rules": [
-                        {
-                              "rule": "CHAPTER 75\n\nNICKEL AND ARTICLES THEREOF.",
-                              "class": [],
-                              "footnotes": [],
-                              "operator": null,
-                              "quota": false,
-                              "import": true,
-                              "export": true
-                        }
-                  ],
-                  "valid": true
-            },
-            {
                   "heading": "7501-7505",
                   "min": "7501000000",
                   "max": "7505999999",
