@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::API
+  include ActionController::Helpers
   include ::ActionController::MimeResponds
   # SequelRails incorrectly includes this into ActionController::Base but our
   # ApplicationController derives from ActionController::API
