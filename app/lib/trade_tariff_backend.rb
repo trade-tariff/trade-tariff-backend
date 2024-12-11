@@ -188,7 +188,7 @@ module TradeTariffBackend
     end
 
     def opensearch_host
-      ENV.fetch('ELASTICSEARCH_URL', 'http://localhost:9200')
+      ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
     end
 
     def xe_api_url
@@ -246,7 +246,7 @@ module TradeTariffBackend
 
     def frontend_redis
       @frontend_redis ||= begin
-        url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://localhost:6379')
+        url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://host.docker.internal:6379')
         db = Rails.env.test? ? 1 : 0
 
         Redis.new(url:, db:)
