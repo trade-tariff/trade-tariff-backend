@@ -1,11 +1,9 @@
 module TariffSynchronizer
   class CdsSnapshotUpdate < BaseUpdate
     class << self
-
       def sync(date)
         download(date)
       end
-
 
       def download(date)
         CdsSnapshotDownloader.new(date).perform
@@ -14,7 +12,6 @@ module TariffSynchronizer
       def update_type
         :cds_snapshot
       end
-
     end
 
     def import!

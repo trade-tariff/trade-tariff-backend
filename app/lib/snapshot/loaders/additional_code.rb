@@ -8,15 +8,15 @@ module Loaders
 
       batch.each do |attributes|
         additional_codes.push({
-                                additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
-                                additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
-                                additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
-                                validity_start_date: attributes.dig('AdditionalCode', 'validityStartDate'),
-                                validity_end_date: attributes.dig('AdditionalCode', 'validityEndDate'),
-                                operation: attributes.dig('AdditionalCode', 'metainfo', 'opType'),
-                                operation_date: attributes.dig('AdditionalCode', 'metainfo', 'transactionDate'),
-                                filename: file,
-                              })
+          additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
+          additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
+          additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
+          validity_start_date: attributes.dig('AdditionalCode', 'validityStartDate'),
+          validity_end_date: attributes.dig('AdditionalCode', 'validityEndDate'),
+          operation: attributes.dig('AdditionalCode', 'metainfo', 'opType'),
+          operation_date: attributes.dig('AdditionalCode', 'metainfo', 'transactionDate'),
+          filename: file,
+        })
 
         footnote_attributes = if attributes.dig('AdditionalCode', 'footnoteAssociationAdditionalCode').is_a?(Array)
                                 attributes.dig('AdditionalCode', 'footnoteAssociationAdditionalCode')
@@ -28,16 +28,17 @@ module Loaders
           next unless footnote.is_a?(Hash)
 
           footnotes.push({
-                           additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
-                           additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
-                           additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
-                           footnote_id: footnote.dig('footnote', 'footnoteId'),
-                           footnote_type_id: footnote.dig('footnote', 'footnoteType', 'footnoteTypeId'),
-                           validity_start_date: footnote.dig('validityStartDate'),
-                           validity_end_date: footnote.dig('validityEndDate'), operation: footnote.dig('metainfo', 'opType'),
-                           operation_date: footnote.dig('metainfo', 'transactionDate'),
-                           filename: file,
-                         })
+            additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
+            additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
+            additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
+            footnote_id: footnote.dig('footnote', 'footnoteId'),
+            footnote_type_id: footnote.dig('footnote', 'footnoteType', 'footnoteTypeId'),
+            validity_start_date: footnote['validityStartDate'],
+            validity_end_date: footnote['validityEndDate'],
+            operation: footnote.dig('metainfo', 'opType'),
+            operation_date: footnote.dig('metainfo', 'transactionDate'),
+            filename: file,
+          })
         end
 
         period_attributes = if attributes.dig('AdditionalCode', 'additionalCodeDescriptionPeriod').is_a?(Array)
@@ -48,32 +49,31 @@ module Loaders
 
         period_attributes.each do |period|
           periods.push({
-                         additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
-                         additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
-                         additional_code_description_period_sid: period.dig('sid'),
-                         additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
-                         validity_start_date: period.dig('validityStartDate'),
-                         validity_end_date: period.dig('validityEndDate'),
-                         operation: period.dig('metainfo', 'opType'),
-                         operation_date: period.dig('metainfo', 'transactionDate'),
-                         filename: file,
-                       })
+            additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
+            additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
+            additional_code_description_period_sid: period['sid'],
+            additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
+            validity_start_date: period['validityStartDate'],
+            validity_end_date: period['validityEndDate'],
+            operation: period.dig('metainfo', 'opType'),
+            operation_date: period.dig('metainfo', 'transactionDate'),
+            filename: file,
+          })
 
-          description = period.dig('additionalCodeDescription')
+          description = period['additionalCodeDescription']
           next unless description
 
           descriptions.push({
-                              additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
-                              additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
-                              additional_code_description_period_sid: period.dig('sid'),
-                              additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
-                              language_id: description.dig('language', 'languageId'),
-                              description: description.dig('description'),
-                              operation: description.dig('metainfo', 'opType'),
-                              operation_date: description.dig('metainfo', 'transactionDate'),
-                              filename: file,
-                            })
-
+            additional_code_sid: attributes.dig('AdditionalCode', 'sid'),
+            additional_code_type_id: attributes.dig('AdditionalCode', 'additionalCodeType', 'additionalCodeTypeId'),
+            additional_code_description_period_sid: period['sid'],
+            additional_code: attributes.dig('AdditionalCode', 'additionalCodeCode'),
+            language_id: description.dig('language', 'languageId'),
+            description: description['description'],
+            operation: description.dig('metainfo', 'opType'),
+            operation_date: description.dig('metainfo', 'transactionDate'),
+            filename: file,
+          })
         end
       end
 

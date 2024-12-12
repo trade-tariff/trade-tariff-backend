@@ -6,21 +6,21 @@ module Loaders
 
       batch.each do |attributes|
         regs.push({
-                    full_temporary_stop_regulation_id: attributes.dig('FullTemporaryStopRegulation', 'fullTemporaryStopRegulationId'),
-                    full_temporary_stop_regulation_role: attributes.dig('FullTemporaryStopRegulation', 'regulationRoleType', 'regulationRoleTypeId'),
-                    published_date: attributes.dig('FullTemporaryStopRegulation', 'publishedDate'),
-                    officialjournal_number: attributes.dig('FullTemporaryStopRegulation', 'officialjournalNumber'),
-                    officialjournal_page: attributes.dig('FullTemporaryStopRegulation', 'officialjournalPage'),
-                    effective_enddate: attributes.dig('FullTemporaryStopRegulation', 'effectiveEndDate'),
-                    explicit_abrogation_regulation_role: attributes.dig('FullTemporaryStopRegulation', 'explicitAbrogationRegulation', 'regulationRoleType', 'regulationRoleTypeId'),
-                    explicit_abrogation_regulation_id: attributes.dig('FullTemporaryStopRegulation', 'explicitAbrogationRegulation', 'explicitAbrogationRegulationId'),
-                    replacement_indicator: attributes.dig('FullTemporaryStopRegulation', 'replacementIndicator'),
-                    information_text: attributes.dig('FullTemporaryStopRegulation', 'informationText'),
-                    approved_flag: attributes.dig('FullTemporaryStopRegulation', 'approvedFlag'),
-                    operation: attributes.dig('FullTemporaryStopRegulation', 'metainfo', 'opType'),
-                    operation_date: attributes.dig('FullTemporaryStopRegulation', 'metainfo', 'transactionDate'),
-                    filename: file,
-                  })
+          full_temporary_stop_regulation_id: attributes.dig('FullTemporaryStopRegulation', 'fullTemporaryStopRegulationId'),
+          full_temporary_stop_regulation_role: attributes.dig('FullTemporaryStopRegulation', 'regulationRoleType', 'regulationRoleTypeId'),
+          published_date: attributes.dig('FullTemporaryStopRegulation', 'publishedDate'),
+          officialjournal_number: attributes.dig('FullTemporaryStopRegulation', 'officialjournalNumber'),
+          officialjournal_page: attributes.dig('FullTemporaryStopRegulation', 'officialjournalPage'),
+          effective_enddate: attributes.dig('FullTemporaryStopRegulation', 'effectiveEndDate'),
+          explicit_abrogation_regulation_role: attributes.dig('FullTemporaryStopRegulation', 'explicitAbrogationRegulation', 'regulationRoleType', 'regulationRoleTypeId'),
+          explicit_abrogation_regulation_id: attributes.dig('FullTemporaryStopRegulation', 'explicitAbrogationRegulation', 'explicitAbrogationRegulationId'),
+          replacement_indicator: attributes.dig('FullTemporaryStopRegulation', 'replacementIndicator'),
+          information_text: attributes.dig('FullTemporaryStopRegulation', 'informationText'),
+          approved_flag: attributes.dig('FullTemporaryStopRegulation', 'approvedFlag'),
+          operation: attributes.dig('FullTemporaryStopRegulation', 'metainfo', 'opType'),
+          operation_date: attributes.dig('FullTemporaryStopRegulation', 'metainfo', 'transactionDate'),
+          filename: file,
+        })
 
         action_attributes = if attributes.dig('FullTemporaryStopRegulation', 'ftsRegulationAction').is_a?(Array)
                               attributes.dig('FullTemporaryStopRegulation', 'ftsRegulationAction')
@@ -32,14 +32,14 @@ module Loaders
           next unless action.is_a?(Hash)
 
           actions.push({
-                         fts_regulation_id: attributes.dig('FullTemporaryStopRegulation', 'fullTemporaryStopRegulationId'),
-                         fts_regulation_role: attributes.dig('FullTemporaryStopRegulation', 'regulationRoleType', 'regulationRoleTypeId'),
-                         stopped_regulation_role: action.dig('stoppedRegulationRole'),
-                         stopped_regulation_id: action.dig('stoppedRegulationId'),
-                         operation: action.dig('metainfo', 'opType'),
-                         operation_date: action.dig('metainfo', 'transactionDate'),
-                         filename: file,
-                       })
+            fts_regulation_id: attributes.dig('FullTemporaryStopRegulation', 'fullTemporaryStopRegulationId'),
+            fts_regulation_role: attributes.dig('FullTemporaryStopRegulation', 'regulationRoleType', 'regulationRoleTypeId'),
+            stopped_regulation_role: action['stoppedRegulationRole'],
+            stopped_regulation_id: action['stoppedRegulationId'],
+            operation: action.dig('metainfo', 'opType'),
+            operation_date: action.dig('metainfo', 'transactionDate'),
+            filename: file,
+          })
         end
       end
 

@@ -7,14 +7,14 @@ module Loaders
 
       batch.each do |attributes|
         footnotes.push({
-                         footnote_id: attributes.dig('Footnote', 'footnoteId'),
-                         footnote_type_id: attributes.dig('Footnote', 'footnoteType', 'footnoteTypeId'),
-                         validity_start_date: attributes.dig('Footnote', 'validityStartDate'),
-                         validity_end_date: attributes.dig('Footnote', 'validityEndDate'),
-                         operation: attributes.dig('Footnote', 'metainfo', 'opType'),
-                         operation_date: attributes.dig('Footnote', 'metainfo', 'transactionDate'),
-                         filename: file,
-                       })
+          footnote_id: attributes.dig('Footnote', 'footnoteId'),
+          footnote_type_id: attributes.dig('Footnote', 'footnoteType', 'footnoteTypeId'),
+          validity_start_date: attributes.dig('Footnote', 'validityStartDate'),
+          validity_end_date: attributes.dig('Footnote', 'validityEndDate'),
+          operation: attributes.dig('Footnote', 'metainfo', 'opType'),
+          operation_date: attributes.dig('Footnote', 'metainfo', 'transactionDate'),
+          filename: file,
+        })
 
         period_attributes = if attributes.dig('Footnote', 'footnoteDescriptionPeriod').is_a?(Array)
                               attributes.dig('Footnote', 'footnoteDescriptionPeriod')
@@ -24,29 +24,29 @@ module Loaders
 
         period_attributes.each do |period|
           periods.push({
-                         footnote_id: attributes.dig('Footnote', 'regulationGroupId'),
-                         footnote_type_id: attributes.dig('Footnote', 'footnoteType', 'footnoteTypeId'),
-                         footnote_description_period_sid: period.dig('sid'),
-                         validity_start_date: period.dig('validityStartDate'),
-                         validity_end_date: period.dig('validityEndDate'),
-                         operation: period.dig('metainfo', 'opType'),
-                         operation_date: period.dig('metainfo', 'transactionDate'),
-                         filename: file,
-                       })
+            footnote_id: attributes.dig('Footnote', 'regulationGroupId'),
+            footnote_type_id: attributes.dig('Footnote', 'footnoteType', 'footnoteTypeId'),
+            footnote_description_period_sid: period['sid'],
+            validity_start_date: period['validityStartDate'],
+            validity_end_date: period['validityEndDate'],
+            operation: period.dig('metainfo', 'opType'),
+            operation_date: period.dig('metainfo', 'transactionDate'),
+            filename: file,
+          })
 
-          description = period.dig('footnoteDescription')
+          description = period['footnoteDescription']
           next unless description
 
           descriptions.push({
-                              footnote_id: attributes.dig('Footnote', 'regulationGroupId'),
-                              footnote_type_id: attributes.dig('Footnote', 'footnoteType', 'footnoteTypeId'),
-                              footnote_description_period_sid: period.dig('sid'),
-                              language_id: description.dig('language', 'languageId'),
-                              description: description.dig('description'),
-                              operation: description.dig('metainfo', 'opType'),
-                              operation_date: description.dig('metainfo', 'transactionDate'),
-                              filename: file,
-                            })
+            footnote_id: attributes.dig('Footnote', 'regulationGroupId'),
+            footnote_type_id: attributes.dig('Footnote', 'footnoteType', 'footnoteTypeId'),
+            footnote_description_period_sid: period['sid'],
+            language_id: description.dig('language', 'languageId'),
+            description: description['description'],
+            operation: description.dig('metainfo', 'opType'),
+            operation_date: description.dig('metainfo', 'transactionDate'),
+            filename: file,
+          })
         end
       end
 
