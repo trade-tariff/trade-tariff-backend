@@ -28,16 +28,15 @@ module TariffSynchronizer
       end
     end
 
-    private
-
+    protected
     # Example:
     # { "filename"=>"tariff_dailyExtract_v1_20191009T235959.gzip",
     #   "downloadURL"=>"https://sdes.hmrc.gov.uk/api-download/156ec583-9245-484a-9f91-3919493a047d",
     #   "fileSize"=>478 }
     # downloadURL contains gzip file with an xml file inside.
-    def response
+    def response(file_type = 'TARIFF-DAILY')
       @response = begin
-        uri = URI.join(ENV['HMRC_API_HOST'], '/bulk-data-download/list/TARIFF-DAILY')
+        uri = URI.join(ENV['HMRC_API_HOST'], "/bulk-data-download/list/#{file_type}")
         https = Net::HTTP.new(uri.host, uri.port)
         https.use_ssl = true
         request = Net::HTTP::Get.new(uri.request_uri)
@@ -53,6 +52,8 @@ module TariffSynchronizer
         raise ListDownloadFailedError, @response.code
       end
     end
+
+    private
 
     def log_request_to_cds_daily_updates
       Rails.logger.info "Checking for CDS daily updates for #{request_date}"

@@ -3,17 +3,67 @@ require_relative 'snapshot/loaders/base'
 
 Dir[Rails.root.join('app/lib/snapshot/loaders/**/*.rb')].sort.each { |f| require f }
 
-class SnapshotImporter
+class CdsSnapshotImporter
   class ImportException < StandardError; end
 
   FILE = TradeTariffBackend.snapshot_importer_file_path.freeze
   BATCH_SIZE = TradeTariffBackend.snapshot_importer_batch_size
 
+  def initialize(snapshot_update)
+    @snapshot_update = snapshot_update
+  end
+
+  def import
+    zip_file = TariffSynchronizer::FileService.file_as_stringio(@snapshot_update)
+
+    Zip::File.open_buffer(zip_file) do |archive|
+      archive.entries.each do |entry|
+        # Read into memory
+        xml_stream = entry.get_input_stream
+        process(xml_stream)
+
+        Rails.logger.info "Successfully imported Cds file: #{@snapshot_update.filename}"
+      end
+    end
+  end
+
+  private
+
+
   def nodes
     Loaders.constants.dup.map(&:to_s).delete_if { |name| name == 'Base' }
   end
 
-  def perform
+  def process(xml_stream)
+      current_node = ''
+      count = 0
+      batch = []
+
+      Nokogiri::XML::Reader.from_io(xml_stream).each do |node|
+        next unless nodes.include? node.name
+
+        if !batch.empty? && (current_node != node.name || (count % BATCH_SIZE).zero?)
+          Rails.logger.debug "Loading #{current_node}"
+          loader = Object.const_get("Loaders::#{current_node}")
+          loader.load(@snapshot_update.filename, batch)
+          batch.clear
+        end
+
+        # Process current node
+        attribs = Hash.from_xml(node.outer_xml)
+        batch << attribs if attribs[node.name]
+        current_node = node.name
+        count += 1
+      end
+
+      unless batch.empty?
+        Rails.logger.debug "Loading #{current_node}"
+        loader = Object.const_get("Loaders::#{current_node}")
+        loader.load(@snapshot_update.filename, batch)
+      end
+  end
+
+  def truncate
     Object.const_get('AdditionalCode::Operation').truncate
     Object.const_get('AdditionalCodeDescription::Operation').truncate
     Object.const_get('AdditionalCodeDescriptionPeriod::Operation').truncate
@@ -104,38 +154,12 @@ class SnapshotImporter
     Object.const_get('RegulationReplacement::Operation').truncate
     Object.const_get('RegulationRoleType::Operation').truncate
     Object.const_get('RegulationRoleTypeDescription::Operation').truncate
-    Object.const_get('GoodsNomenclatureGroup::Operation').truncate
-    Object.const_get('GoodsNomenclatureGroupDescription::Operation').truncate
-
-    file_name = FILE.split('/').last
-    File.open(FILE) do |file|
-      current_node = ''
-      count = 0
-      batch = []
-
-      Nokogiri::XML::Reader.from_io(file).each do |node|
-        next unless nodes.include? node.name
-
-        if !batch.empty? && (current_node != node.name || (count % BATCH_SIZE).zero?)
-          Rails.logger.debug "Loading #{current_node}"
-          loader = Object.const_get("Loaders::#{current_node}")
-          loader.load(file_name, batch)
-          batch.clear
-        end
-
-        # Process current node
-        attribs = Hash.from_xml(node.outer_xml)
-        batch << attribs if attribs[node.name]
-        current_node = node.name
-        count += 1
-      end
-
-      unless batch.empty?
-        Rails.logger.debug "Loading #{current_node}"
-        loader = Object.const_get("Loaders::#{current_node}")
-        loader.load(file_name, batch)
-      end
-    end
-    puts 'Done' # rubocop:disable Rails/Output
+    # Object.const_get('GoodsNomenclatureGroup::Operation').truncate
+    # Object.const_get('GoodsNomenclatureGroupDescription::Operation').truncate
+    # PublicationSigle
+    # GoodsNomenclatureGroup
+    # GoodsNomenclatureGroupDescription
+    # ExportRefundNomenclature
+    # MonetaryPlaceOfPublication
   end
 end
