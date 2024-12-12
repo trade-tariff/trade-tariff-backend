@@ -1,0 +1,28 @@
+:verbose: false
+:concurrency: 10
+:queues:
+  - healthcheck
+  - rollbacks
+  - sync
+  - default
+  - bulk_search
+:scheduler:
+  :schedule:
+    #
+    # Syntax:
+    #
+    # mm hh dd mt wd  command
+    #
+    # mm minute 0-59
+    # hh hour 0-23
+    # dd day of month 1-31
+    # mt month 1-12
+    # wd day of week 0-7 (Sunday = 0 or 7)
+    #
+    # Online converter: https://crontab.guru/#0_22_*_*_*
+    #
+    CdsSnapshotImportWorker:
+      cron: "0 01 01 * *"
+      description: "Import CDS snapshot files into backup database"
+      class: CdsSnapshotImportWorker
+      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
