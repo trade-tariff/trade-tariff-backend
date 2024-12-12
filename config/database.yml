@@ -1,8 +1,8 @@
 default: &default
   adapter: postgres
   encoding: utf8
-  # pool: 12
-  search_path: <%= "#{ENV.fetch("SERVICE", "uk")}, public" %>
+  pool: 12
+  search_path: <%= "#{ENV.fetch("SERVICE", "uk")}#{ENV.fetch("SCHEMA_EXTENSION", "")}, public" %>
 
 development:
   <<: *default
