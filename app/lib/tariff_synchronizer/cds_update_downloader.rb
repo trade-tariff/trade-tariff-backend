@@ -29,6 +29,7 @@ module TariffSynchronizer
     end
 
     protected
+
     # Example:
     # { "filename"=>"tariff_dailyExtract_v1_20191009T235959.gzip",
     #   "downloadURL"=>"https://sdes.hmrc.gov.uk/api-download/156ec583-9245-484a-9f91-3919493a047d",

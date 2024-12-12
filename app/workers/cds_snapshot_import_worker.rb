@@ -10,10 +10,8 @@ class CdsSnapshotImportWorker
     CdsSnapshotSynchronizer.download
     # TODO: Check if the file downloaded
 
-
     logger.info 'Applying...'
     CdsSnapshotSynchronizer.apply
-
   rescue TariffSynchronizer::CdsUpdateDownloader::ListDownloadFailedError
     # TODO: reschedule
   end

@@ -6,7 +6,7 @@ module Loaders
 
       batch.each do |attributes|
         codes.push({
-                              condition_code: attributes['MeasureConditionCode']['conditionCode'],
+          condition_code: attributes['MeasureConditionCode']['conditionCode'],
           validity_start_date: attributes['MeasureConditionCode']['validityStartDate'],
           validity_end_date: attributes['MeasureConditionCode']['validityEndDate'],
           operation: attributes['MeasureConditionCode']['metainfo']['opType'],
@@ -15,7 +15,7 @@ module Loaders
         })
 
         descriptions.push({
-                            condition_code: attributes['MeasureConditionCode']['conditionCode'],
+          condition_code: attributes['MeasureConditionCode']['conditionCode'],
           language_id: attributes['MeasureConditionCode']['measureConditionCodeDescription']['language']['languageId'],
           description: attributes['MeasureConditionCode']['measureConditionCodeDescription']['description'],
           operation: attributes['MeasureConditionCode']['measureConditionCodeDescription']['metainfo']['opType'],

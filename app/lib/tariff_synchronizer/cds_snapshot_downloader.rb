@@ -12,12 +12,12 @@ module TariffSynchronizer
     def perform
       log_request
 
-       if request_date.month == 1
-         file = fetch_file('TARIFF-ANNUAL', ANNUAL_FILE_PATTERN, request_date.strftime('%Y%m%d'))
-         if file.present?
-           TariffDownloader.new(file['filename'], file['downloadURL'], request_date, TariffSynchronizer::CdsSnapshotUpdate).perform
-         end
-       end
+      if request_date.month == 1
+        file = fetch_file('TARIFF-ANNUAL', ANNUAL_FILE_PATTERN, request_date.strftime('%Y%m%d'))
+        if file.present?
+          TariffDownloader.new(file['filename'], file['downloadURL'], request_date, TariffSynchronizer::CdsSnapshotUpdate).perform
+        end
+      end
 
       last_day_of_previous_month = request_date.prev_month.end_of_month.strftime('%Y%m%d')
       file = fetch_file('TARIFF-MONTHLY', MONTHLY_FILE_PATTERN, last_day_of_previous_month)
