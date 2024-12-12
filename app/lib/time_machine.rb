@@ -1,19 +1,16 @@
 require 'date'
 
 module TimeMachine
-  THREAD_DATETIME_KEY = :time_machine_now
-  THREAD_RELEVANT_KEY = :time_machine_relevant
-
   def self.no_time_machine
-    previous = Thread.current[THREAD_DATETIME_KEY]
+    previous = TradeTariffRequest.time_machine_now
 
     raise ArgumentError, 'requires a block' unless block_given?
 
-    Thread.current[THREAD_DATETIME_KEY] = nil
+    TradeTariffRequest.time_machine_now = nil
 
     yield
   ensure
-    Thread.current[THREAD_DATETIME_KEY] = previous
+    TradeTariffRequest.time_machine_now = previous
   end
 
   # Travel to specified date and time
@@ -27,13 +24,13 @@ module TimeMachine
       Time.current
     end
 
-    previous = Thread.current[THREAD_DATETIME_KEY]
+    previous = TradeTariffRequest.time_machine_now
     raise ArgumentError, 'requires a block' unless block_given?
 
-    Thread.current[THREAD_DATETIME_KEY] = datetime
+    TradeTariffRequest.time_machine_now = datetime
     yield
   ensure
-    Thread.current[THREAD_DATETIME_KEY] = previous
+    TradeTariffRequest.time_machine_now = previous
   end
 
   def self.now(&block)
@@ -43,10 +40,10 @@ module TimeMachine
   def self.with_relevant_validity_periods
     raise ArgumentError, 'requires a block' unless block_given?
 
-    Thread.current[THREAD_RELEVANT_KEY] = true
+    TradeTariffRequest.time_machine_relevant = true
     yield
   ensure
-    Thread.current[THREAD_RELEVANT_KEY] = nil
+    TradeTariffRequest.time_machine_relevant = nil
   end
 
   def self.date_is_set?
@@ -54,6 +51,6 @@ module TimeMachine
   end
 
   def self.point_in_time
-    Thread.current[THREAD_DATETIME_KEY]
+    TradeTariffRequest.time_machine_now
   end
 end

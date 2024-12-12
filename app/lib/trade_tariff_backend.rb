@@ -275,6 +275,9 @@ module TradeTariffBackend
 
     def snapshot_importer_batch_size
       ENV['SNAPSHOT_IMPORTER_BATCH_SIZE'].to_i
+
+    def process_extra_changes_for_tgp?
+      ENV.fetch('PROCESS_EXTRA_CHANGES_FOR_TGP', 'false') == 'true'
     end
   end
 end

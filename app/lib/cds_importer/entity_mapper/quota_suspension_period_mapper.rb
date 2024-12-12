@@ -16,10 +16,6 @@ class CdsImporter
         "#{mapping_path}.suspensionEndDate" => :suspension_end_date,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        quota_definition_sid: :quota_definition_sid,
-      }.freeze
     end
   end
 end

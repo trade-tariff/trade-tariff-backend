@@ -1,4 +1,8 @@
 RSpec.describe SearchReference do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   shared_examples_for 'a setter callback' do |referenced_factory|
     subject(:search_reference) { described_class.new(title: 'foo', referenced:) }
 

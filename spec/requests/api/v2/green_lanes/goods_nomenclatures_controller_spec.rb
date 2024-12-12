@@ -2,6 +2,7 @@ require 'rails_helper'
 
 RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
   before do
+    TradeTariffRequest.time_machine_now = Time.current
     create :category_assessment, measure: gn.measures.first
     allow(TradeTariffBackend).to receive_messages(service: 'xi', green_lanes_api_tokens: 'Trade-Tariff-Test')
   end
@@ -60,6 +61,8 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
       it 'calls FindCategoryAssessmentsService with correct params' do
         make_request
+
+        TradeTariffRequest.time_machine_now = Time.current
 
         expect(GreenLanes::FindCategoryAssessmentsService)
           .to have_received(:call)

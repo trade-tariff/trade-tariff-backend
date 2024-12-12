@@ -12,8 +12,6 @@ class CdsImporter
         'geographicalAreaId' => :geographical_area_id,
         'parentGeographicalAreaGroupSid' => :parent_geographical_area_group_sid,
       ).freeze
-
-      delete_missing_entities GeographicalAreaDescriptionPeriodMapper
     end
   end
 end

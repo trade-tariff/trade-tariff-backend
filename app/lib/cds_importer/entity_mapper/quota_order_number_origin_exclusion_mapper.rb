@@ -18,10 +18,6 @@ class CdsImporter
         'quotaOrderNumberOrigin.sid' => :quota_order_number_origin_sid,
         "#{mapping_path}.geographicalArea.sid" => :excluded_geographical_area_sid,
       ).freeze
-
-      self.primary_filters = {
-        quota_order_number_origin_sid: :quota_order_number_origin_sid,
-      }.freeze
     end
   end
 end

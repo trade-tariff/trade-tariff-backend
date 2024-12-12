@@ -14,6 +14,7 @@ gem 'sequel-rails'
 # File uploads and AWS
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
+gem 'aws-xray-sdk', require: ['aws-xray-sdk/facets/rails/railtie']
 
 # File zip/unzipping
 gem 'rubyzip'
@@ -38,8 +39,12 @@ gem 'hashie'
 gem 'holidays'
 gem 'lograge'
 gem 'logstash-event'
+gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
+gem 'opentelemetry-exporter-otlp'
+gem 'opentelemetry-instrumentation-all'
+gem 'opentelemetry-sdk'
 gem 'plek'
 gem 'sentry-rails'
 gem 'sentry-sidekiq'

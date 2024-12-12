@@ -117,7 +117,7 @@ class CachedCommodityService
   end
 
   def meursing_additional_code_id
-    Thread.current[:meursing_additional_code_id]
+    TradeTariffRequest.meursing_additional_code_id
   end
 
   def cache_key
