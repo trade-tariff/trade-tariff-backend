@@ -238,19 +238,19 @@ module TradeTariffBackend
 
     def revision
       @revision ||= begin
-        File.read(REVISION_FILE).chomp if File.file?(REVISION_FILE)
-      rescue Errno::EACCES
-        nil
-      end
+                      File.read(REVISION_FILE).chomp if File.file?(REVISION_FILE)
+                    rescue Errno::EACCES
+                      nil
+                    end
     end
 
     def frontend_redis
       @frontend_redis ||= begin
-        url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://localhost:6379')
-        db = Rails.env.test? ? 1 : 0
+                            url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://localhost:6379')
+                            db = Rails.env.test? ? 1 : 0
 
-        Redis.new(url:, db:)
-      end
+                            Redis.new(url:, db:)
+                          end
     end
 
     def legacy_search_enhancements_enabled?
@@ -275,6 +275,7 @@ module TradeTariffBackend
 
     def snapshot_importer_batch_size
       ENV['SNAPSHOT_IMPORTER_BATCH_SIZE'].to_i
+    end
 
     def process_extra_changes_for_tgp?
       ENV.fetch('PROCESS_EXTRA_CHANGES_FOR_TGP', 'false') == 'true'
