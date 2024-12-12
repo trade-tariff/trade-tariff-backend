@@ -7,7 +7,7 @@ class CdsSnapshotSynchronizer
 
       TradeTariffBackend.with_redis_lock do
         begin
-          TariffSynchronizer::CdsSnapshotUpdate.sync(Date.today)
+          TariffSynchronizer::CdsSnapshotUpdate.sync(Time.zone.today)
         rescue TariffUpdatesRequester::DownloadException => e
           TariffLogger.failed_download(exception: e)
           raise e.original
@@ -20,7 +20,7 @@ class CdsSnapshotSynchronizer
       # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
       TradeTariffBackend.with_redis_lock do
-        perform_update(CdsSnapshotUpdate, Date.today)
+        perform_update(CdsSnapshotUpdate, Time.zone.today)
       end
     rescue Redlock::LockError
       Rails.logger.warn 'Failed to acquire Redis lock for update application'

@@ -1,7 +1,7 @@
 require 'active_support/core_ext/hash/conversions'
 require_relative 'snapshot/loaders/base'
 
-Dir[Rails.root.join('app/lib/snapshot/loaders/**/*.rb')].sort.each { |f| require f }
+# Dir[Rails.root.join('app/lib/snapshot/loaders/**/*.rb')].sort.each { |f| require f }
 
 class CdsSnapshotImporter
   class ImportException < StandardError; end
@@ -29,38 +29,37 @@ class CdsSnapshotImporter
 
   private
 
-
   def nodes
     Loaders.constants.dup.map(&:to_s).delete_if { |name| name == 'Base' }
   end
 
   def process(xml_stream)
-      current_node = ''
-      count = 0
-      batch = []
+    current_node = ''
+    count = 0
+    batch = []
 
-      Nokogiri::XML::Reader.from_io(xml_stream).each do |node|
-        next unless nodes.include? node.name
+    Nokogiri::XML::Reader.from_io(xml_stream).each do |node|
+      next unless nodes.include? node.name
 
-        if !batch.empty? && (current_node != node.name || (count % BATCH_SIZE).zero?)
-          Rails.logger.debug "Loading #{current_node}"
-          loader = Object.const_get("Loaders::#{current_node}")
-          loader.load(@snapshot_update.filename, batch)
-          batch.clear
-        end
-
-        # Process current node
-        attribs = Hash.from_xml(node.outer_xml)
-        batch << attribs if attribs[node.name]
-        current_node = node.name
-        count += 1
-      end
-
-      unless batch.empty?
+      if !batch.empty? && (current_node != node.name || (count % BATCH_SIZE).zero?)
         Rails.logger.debug "Loading #{current_node}"
         loader = Object.const_get("Loaders::#{current_node}")
         loader.load(@snapshot_update.filename, batch)
+        batch.clear
       end
+
+      # Process current node
+      attribs = Hash.from_xml(node.outer_xml)
+      batch << attribs if attribs[node.name]
+      current_node = node.name
+      count += 1
+    end
+
+    unless batch.empty?
+      Rails.logger.debug "Loading #{current_node}"
+      loader = Object.const_get("Loaders::#{current_node}")
+      loader.load(@snapshot_update.filename, batch)
+    end
   end
 
   def truncate
