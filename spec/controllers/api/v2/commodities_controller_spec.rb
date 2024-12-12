@@ -20,7 +20,7 @@ RSpec.describe Api::V2::CommoditiesController do
     it 'initializes the CachedCommodityService' do
       do_response
 
-      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, {})
+      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, strong_params({}))
     end
 
     context 'when a filter for geographical_area_id is passed' do
@@ -31,9 +31,7 @@ RSpec.describe Api::V2::CommoditiesController do
       it 'passes the filter to the CachedCommodityService' do
         do_response
 
-        filter_params = ActionController::Parameters.new(geographical_area_id: 'RO').permit!
-
-        expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, filter_params)
+        expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, strong_params({ geographical_area_id: 'RO' }))
       end
     end
 
