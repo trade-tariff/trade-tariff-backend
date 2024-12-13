@@ -1,7 +1,7 @@
 require 'active_support/core_ext/hash/conversions'
-require_relative 'snapshot/loaders/base'
+require_relative 'snapshot_loaders/base'
 
-# Dir[Rails.root.join('app/lib/snapshot/loaders/**/*.rb')].sort.each { |f| require f }
+Dir[Rails.root.join('app/lib/snapshot_loaders/**/*.rb')].sort.each { |f| require f }
 
 class CdsSnapshotImporter
   class ImportException < StandardError; end
