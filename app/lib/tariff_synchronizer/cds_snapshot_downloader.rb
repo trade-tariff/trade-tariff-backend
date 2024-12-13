@@ -5,10 +5,6 @@ module TariffSynchronizer
 
     attr_reader :request_date
 
-    def initialize(request_date)
-      @request_date = request_date
-    end
-
     def perform
       log_request
 
