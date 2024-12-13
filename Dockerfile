@@ -57,6 +57,8 @@ RUN addgroup -S tariff && \
   chown -R tariff:tariff /app && \
   chown -R tariff:tariff /usr/local/bundle
 
+RUN chmod +x /app/config/init_backup.sh
+
 HEALTHCHECK CMD nc -z 0.0.0.0 $PORT
 
 USER tariff
