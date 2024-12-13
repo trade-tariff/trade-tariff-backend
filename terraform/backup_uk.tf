@@ -41,7 +41,7 @@ module "backup_uk" {
 
   init_container            = true
   init_container_entrypoint = [""]
-  init_container_command    = local.init_command
+  init_container_command    = local.backup_init_command
 
   service_environment_config = flatten([
     local.backend_common_vars,
