@@ -20,7 +20,7 @@ repos:
       - id: end-of-file-fixer
         exclude: ^db/
       - id: check-yaml
-        exclude: ^db/|config/sidekiq.yml
+        exclude: ^db/|config/sidekiq.yml|config/backup_sidekiq.yml
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0
