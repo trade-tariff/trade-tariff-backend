@@ -30,7 +30,7 @@ class CdsSnapshotImporter
   private
 
   def nodes
-    Loaders.constants.dup.map(&:to_s).delete_if { |name| name == 'Base' }
+    SnapshotLoaders.constants.dup.map(&:to_s).delete_if { |name| name == 'Base' }
   end
 
   def process(xml_stream)
