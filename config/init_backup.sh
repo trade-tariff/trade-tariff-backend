@@ -23,7 +23,7 @@ fi
 SQL_DUMP_PATH="./temp_schema_dump.sql"
 
 # Compute the new schema name
-NEW_SCHEMA="${SERVICE}_${SCHEMA_EXTENSION}"
+NEW_SCHEMA="${SERVICE}${SCHEMA_EXTENSION}"
 
 # Check if the new schema already exists
 schema_exists=$(psql "$DATABASE_URL" -tAc "SELECT EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = '$NEW_SCHEMA');")
