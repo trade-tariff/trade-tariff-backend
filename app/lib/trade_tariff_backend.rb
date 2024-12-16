@@ -141,7 +141,9 @@ module TradeTariffBackend
     end
 
     def rules_of_origin
-      @rules_of_origin ||= RulesOfOrigin::DataSet.load_default
+      Rails.cache.fetch("rules_of_origin/#{service}", expires_in: 1.hour) do
+        RulesOfOrigin::DataSet.load_default
+      end
     end
 
     def stop_words

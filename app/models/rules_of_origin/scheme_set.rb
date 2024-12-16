@@ -10,23 +10,23 @@ module RulesOfOrigin
     class << self
       def from_file(file)
         source_file = Pathname.new(file)
-        unless source_file.extname == '.json' && source_file.file? && source_file.exist?
+        unless source_file.extname == '.erb' && source_file.file? && source_file.exist?
           raise InvalidSchemesFile, 'Requires a path to a JSON file'
         end
 
-        base_path = source_file.dirname.join source_file.basename(source_file.extname)
+        base_path = source_file.dirname.join(source_file.basename.split.first) + "roo_schemes_#{TradeTariffBackend.service}"
 
         new(base_path, source_file.read)
       end
 
       def from_default_file(service)
-        from_file DEFAULT_SOURCE_PATH.join("roo_schemes_#{service}.json")
+        from_file DEFAULT_SOURCE_PATH.join("roo_schemes_#{service}.json.erb")
       end
     end
 
     def initialize(base_path, source_data)
       @base_path = base_path
-      data = JSON.parse(source_data)
+      data = JSON.parse(ERB.new(source_data).result)
 
       @proof_urls = data['proof_urls'] || {}
       @_schemes = build_schemes(data['schemes']).freeze
