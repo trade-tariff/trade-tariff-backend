@@ -19,7 +19,9 @@ class CdsSnapshotSynchronizer
     def apply
       # The sync task is run on multiple machines to avoid more than one process
       # running the apply task it is wrapped with a redis lock
+      logger.info 'Acquiring redis lock'
       TradeTariffBackend.with_redis_lock do
+        logger.info 'Start applying cds snapshot updates'
         perform_update(CdsSnapshotUpdate, Time.zone.today)
       end
     rescue Redlock::LockError
