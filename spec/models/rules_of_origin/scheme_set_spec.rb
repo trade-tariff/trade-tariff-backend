@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe RulesOfOrigin::SchemeSet do
   subject(:scheme_set) { described_class.from_file test_file }
 
-  let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_uk.json') }
+  let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_uk.json.erb') }
 
   describe 'attributes' do
     it { is_expected.to respond_to :schemes }
@@ -36,7 +36,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     context 'for XI service' do
       before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 
-      let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_xi.json') }
+      let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_xi.json.erb') }
 
       it { is_expected.to be_instance_of described_class }
     end
@@ -45,7 +45,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
   describe '#schemes' do
     subject { scheme_set.schemes }
 
-    let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json' }
+    let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json.erb' }
 
     it { is_expected.to include 'eu' }
     it { is_expected.not_to include 'past' }
@@ -55,7 +55,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
   describe '#scheme' do
     subject(:scheme) { scheme_set.scheme(scheme_code) }
 
-    let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json' }
+    let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json.erb' }
 
     context 'for known scheme' do
       let(:scheme_code) { 'eu' }
