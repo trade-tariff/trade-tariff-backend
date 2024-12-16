@@ -22,7 +22,7 @@
     # Online converter: https://crontab.guru/#0_22_*_*_*
     #
     CdsSnapshotImportWorker:
-      cron: "05 16 16 * *"
+      cron: "25,35,45 16 16 * *"
       description: "Import CDS snapshot files into backup database"
       class: CdsSnapshotImportWorker
       status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
