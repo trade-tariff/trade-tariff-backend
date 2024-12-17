@@ -5357,8 +5357,8 @@
         },
         {
             "scheme_code": "cptpp",
-            "validity_start_date": "2024-12-01",
-            "validity_end_date": "2024-12-17",
+            "validity_start_date": "2024-12-15",
+            "validity_end_date": "2024-12-23",
             "title": "The Comprehensive and Progressive Agreement for Trans-Pacific Partnership",
             "proofs": [
                 {
@@ -5460,7 +5460,7 @@
         },
         {
             "scheme_code": "cptpp",
-            "validity_start_date": "2024-12-18",
+            "validity_start_date": "2024-12-24",
             "validity_end_date": null,
             "title": "The Comprehensive and Progressive Agreement for Trans-Pacific Partnership",
              "proofs": [
