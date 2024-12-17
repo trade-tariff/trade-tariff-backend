@@ -20,5 +20,6 @@
   // Uncomment to connect as root instead. More info: https://containers.dev/implementors/json_reference/#remoteUser.
   // "remoteUser": "root",
   // Use 'postCreateCommand' to run commands after the container is created.
-  "postCreateCommand": "bin/bundle install"
+  "postCreateCommand": "bin/bundle install",
+  "postStartCommand": "bin/dev"
 }
