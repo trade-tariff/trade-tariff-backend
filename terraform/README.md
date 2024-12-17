@@ -24,6 +24,7 @@ Terraform to deploy the service into AWS.
 | <a name="module_backend_admin_xi"></a> [backend\_admin\_xi](#module\_backend\_admin\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
+| <a name="module_backup_uk"></a> [backup\_uk](#module\_backup\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
 | <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
 | <a name="module_worker_xi"></a> [worker\_xi](#module\_worker\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.12.0 |
 
@@ -95,6 +96,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_process_extra_changes_for_tgp"></a> [process\_extra\_changes\_for\_tgp](#input\_process\_extra\_changes\_for\_tgp) | Defaults to false except in STAGING only for TGP testing (HMRC-434). | `bool` | `false` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to use. | `string` | n/a | yes |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `2` | no |
+| <a name="input_snapshot_import_batch_size"></a> [snapshot\_import\_batch\_size](#input\_snapshot\_import\_batch\_size) | Batch size for the snapshot upload batch insert. | `number` | n/a | yes |
 | <a name="input_stemming_exclusion_reference_analyzer"></a> [stemming\_exclusion\_reference\_analyzer](#input\_stemming\_exclusion\_reference\_analyzer) | Stemmer package file path in opensearch | `string` | n/a | yes |
 | <a name="input_synonym_reference_analyzer"></a> [synonym\_reference\_analyzer](#input\_synonym\_reference\_analyzer) | Synonym package file path in opensearch | `string` | n/a | yes |
 
