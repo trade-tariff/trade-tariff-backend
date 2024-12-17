@@ -2,8 +2,8 @@ default: &default
   adapter: postgres
   encoding: utf8
   # pool: 12
-  # host: host.docker.internal
-  # user: postgres
+  host: host.docker.internal
+  user: postgres
   search_path: <%= "#{ENV.fetch("SERVICE", "uk")}, public" %>
 
 development:

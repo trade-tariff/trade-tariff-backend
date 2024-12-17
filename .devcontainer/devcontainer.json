@@ -6,7 +6,10 @@
   "service": "rails",
   "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   // Features to add to the dev container. More info: https://containers.dev/features.
-  "features": {},
+  "features": {
+    "ghcr.io/cirolosapio/devcontainers-features/alpine-ohmyzsh:0": {},
+    // "ghcr.io/gvatsal60/dev-container-features/pre-commit:1": {}
+  },
   "containerEnv": {},
   // Use 'forwardPorts' to make a list of ports inside the container available locally.
   "forwardPorts": [
