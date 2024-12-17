@@ -143,6 +143,10 @@ locals {
       name  = "XE_API_URL"
       value = "https://xecdapi.xe.com"
     },
+    {
+      name  = "SNAPSHOT_IMPORTER_BATCH_SIZE"
+      value = var.snapshot_import_batch_size
+    }
   ]
 
   backend_uk_common_secrets = [
