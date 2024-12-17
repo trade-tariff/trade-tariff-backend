@@ -16,7 +16,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
   describe '.from_file' do
     context 'with valid file' do
       it { is_expected.to be_instance_of described_class }
-      it { is_expected.to have_attributes schemes: include('eu') }
+      it { is_expected.to have_attributes schemes: include(['eu', Time.parse('2021-01-01 00:00:00 UTC')]) }
       it { is_expected.to have_attributes countries: include('FR') }
       it { is_expected.to have_attributes proof_urls: include('origin-declaration') }
     end
@@ -47,7 +47,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
 
     let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json' }
 
-    it { is_expected.to include 'eu' }
+    it { is_expected.to include ['eu', Time.parse('2021-01-01 00:00:00 UTC')] }
     it { is_expected.not_to include 'past' }
     it { is_expected.not_to include 'future' }
   end
@@ -58,7 +58,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     let(:test_file) { file_fixture 'rules_of_origin/invalid_dates.json' }
 
     context 'for known scheme' do
-      let(:scheme_code) { 'eu' }
+      let(:scheme_code) { ['eu', Time.parse('2021-01-01 00:00:00 UTC')] }
 
       it { is_expected.to have_attributes scheme_code: 'eu' }
     end

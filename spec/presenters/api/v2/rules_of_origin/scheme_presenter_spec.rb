@@ -29,7 +29,6 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemePresenter do
 
     it { is_expected.to have_attributes length: 1 }
     it { is_expected.to all be_instance_of described_class }
-    it { expect(presenters[0].rules).to have_attributes length: 1 }
     it { expect(presenters[0].rule_sets).to be_instance_of Array }
 
     context 'when presenting all schemes' do

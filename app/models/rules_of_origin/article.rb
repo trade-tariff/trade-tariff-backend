@@ -19,7 +19,7 @@ module RulesOfOrigin
       private
 
       def articles_path(scheme)
-        scheme.scheme_set.base_path.join('articles', scheme.scheme_code)
+        scheme.scheme_set.base_path.join('articles', Array(scheme.scheme_code).first)
       end
     end
 

@@ -61,7 +61,9 @@ module RulesOfOrigin
       rules_for_heading_grouped_by_scheme_code = @mappings[heading]
       return {} if rules_for_heading_grouped_by_scheme_code.nil?
 
-      rules_for_heading_grouped_by_scheme_code.slice(*scheme_codes)
+      rules_for_heading_grouped_by_scheme_code.select do |key, _|
+        scheme_codes.include?(key[0])
+      end
     end
 
     def invalid_mappings

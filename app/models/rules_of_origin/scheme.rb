@@ -123,7 +123,7 @@ module RulesOfOrigin
     end
 
     def read_rule_sets
-      JSON.parse(read_referenced_file('rule_sets', "#{scheme_code}.json"))
+      JSON.parse(read_referenced_file('rule_sets', "#{Array(scheme_code).first}.json"))
     rescue Errno::ENOENT
       { 'rule_sets' => [] }
     end

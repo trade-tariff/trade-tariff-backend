@@ -1,7 +1,8 @@
 FactoryBot.define do
   factory :rules_of_origin_scheme, class: 'RulesOfOrigin::Scheme' do
-    sequence(:scheme_code)  { |n| "SC#{n}" }
+    sequence(:scheme_code)  { |n| ["SC#{n}"] }
     sequence(:title)        { |n| "Scheme #{n}" }
+    sequence(:validity_start_date) { |_n| Time.parse('2021-01-01 00:00:00 UTC') }
     introductory_notes_file { 'intro_notes.md' }
     fta_intro_file          { 'fta_intro.md' }
     countries               { %w[FR ES IT DE] }
