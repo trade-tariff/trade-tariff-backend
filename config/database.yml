@@ -12,6 +12,7 @@ development:
 
 test:
   <<: *default
+  user: <%= ENV.fetch("DB_USER", "postgres") %>
   database: tariff_test
 
 production:
