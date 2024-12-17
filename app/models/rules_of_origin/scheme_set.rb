@@ -93,7 +93,7 @@ module RulesOfOrigin
 
     def build_schemes(schemes_data)
       schemes_data.map(&method(:build_scheme))
-                  .index_by(&:scheme_code)
+                  .index_by { |scheme| [scheme.scheme_code, scheme.validity_start_date] }
     end
 
     def build_scheme(scheme_data)
