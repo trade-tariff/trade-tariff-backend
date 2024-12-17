@@ -6,7 +6,6 @@ Dir[Rails.root.join('app/lib/snapshot_loaders/**/*.rb')].sort.each { |f| require
 class CdsSnapshotImporter
   class ImportException < StandardError; end
 
-  FILE = TradeTariffBackend.snapshot_importer_file_path.freeze
   BATCH_SIZE = TradeTariffBackend.snapshot_importer_batch_size
 
   def initialize(snapshot_update)
