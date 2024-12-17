@@ -5358,7 +5358,7 @@
         {
             "scheme_code": "cptpp",
             "validity_start_date": "2024-12-08",
-            "validity_end_date": null,
+            "validity_end_date": "2024-12-23",
             "title": "The Comprehensive and Progressive Agreement for Trans-Pacific Partnership",
             "proofs": [
                 {
@@ -5425,10 +5425,82 @@
                 "PE",
                 "SG",
                 "VN"
-                <%= ", \"AU\"" if Date.today >= Date.new(2024, 12, 24) %>
+            ]
+        },
+        {
+            "scheme_code": "cptpp",
+            "validity_start_date": "2024-12-24",
+            "validity_end_date": null,
+            "title": "The Comprehensive and Progressive Agreement for Trans-Pacific Partnership",
+            "proofs": [
+                {
+                    "summary": "Origin declaration",
+                    "subtext": "",
+                    "proof_class": "origin-declaration",
+                    "detail": ""
+                }
+            ],
+            "cumulation_methods": {
+                "bilateral": {
+                    "countries": [
+                        "BN",
+                        "CL",
+                        "JP",
+                        "MY",
+                        "NZ",
+                        "PE",
+                        "SG",
+                        "VN",
+                        "AU"
+                    ]
+                }
+            },
+            "ord": {
+                "ord_title": "The CPTPP Origin Reference Document, version 1.1, dated 30 September 2024",
+                "ord_version": "1.1",
+                "ord_date": "30 September 2024",
+                "ord_original": "240924_ORD_CPTPP_v1.1.docx"
+            },
+            "articles": {
+                "article 1": "neutral-elements",
+                "article 3": "wholly obtained",
+                "article 10": "cumulation",
+                "article 11": "tolerances",
+                "article 13": "accessories",
+                "article 14": "packing materials - retail",
+                "article 15": "packing materials - shipment",
+                "article 17": "sets",
+                "article 18": "direct-transport",
+                "article 27": "verification",
+                "Annex II": "insufficient-processing"
+              
+            },
+            "features": {
+                "absorption": true,
+                "tolerances": false,
+                "sets": true,
+                "cumulation": true,
+                "drawback": false
+            },
+            "introductory_notes_file": "cptpp_intro.md",
+            "links": [
+                {
+                    "text": "The UK and the Comprehensive and Progressive Agreement for Trans-Pacific Partnership (CPTPP)",
+                    "url": "https://www.gov.uk/government/collections/the-uk-and-the-comprehensive-and-progressive-agreement-for-trans-pacific-partnershipcptpp"
+                }
+            ],
+            "countries": [
+                "BN",
+                "CL",
+                "JP",
+                "MY",
+                "NZ",
+                "PE",
+                "SG",
+                "VN",
+                "AU"
             ]
         }
-        
     ],
     "proof_urls": {
         "origin-declaration": "https://www.gov.uk/guidance/get-proof-of-origin-for-your-goods#origin-declaration",
