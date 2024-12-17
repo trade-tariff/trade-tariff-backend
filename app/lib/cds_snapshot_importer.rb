@@ -42,7 +42,7 @@ class CdsSnapshotImporter
 
       if !batch.empty? && (current_node != node.name || (count % BATCH_SIZE).zero?)
         Rails.logger.debug "Loading #{current_node}"
-        loader = Object.const_get("Loaders::#{current_node}")
+        loader = Object.const_get("SnapshotLoaders::#{current_node}")
         loader.load(@snapshot_update.filename, batch)
         batch.clear
       end
@@ -56,7 +56,7 @@ class CdsSnapshotImporter
 
     unless batch.empty?
       Rails.logger.debug "Loading #{current_node}"
-      loader = Object.const_get("Loaders::#{current_node}")
+      loader = Object.const_get("SnapshotLoaders::#{current_node}")
       loader.load(@snapshot_update.filename, batch)
     end
   end
