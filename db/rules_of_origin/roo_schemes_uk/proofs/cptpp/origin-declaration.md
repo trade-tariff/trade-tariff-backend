@@ -2,15 +2,19 @@ The certification of origin may be issued by the exporter, producer or importer,
 
 A certification of origin:
 
-1. need not follow a prescribed format;
-2. must be in writing, including electronic format;
-3. must specify that the good is originating ; and
-4. must contain a set of minimum data requirements as set out in Annex I (Minimum Data Requirements) of the CPTPP ORD
+$LegislativeList
+- a. need not follow a prescribed format;
+- b. must be in writing, including electronic format;
+- c. must specify that the good is originating ; and
+- d. must contain a set of minimum data requirements as set out in Annex I (Minimum Data Requirements) of the CPTPP ORD
+$EndLegislativeList
 
 A certification of origin may apply to:
 
-1. a single shipment of a good into the territory of a party
-2. multiple shipments of identical goods within any period specified in the certification of origin, but not exceeding 12 months.
+$LegislativeList
+- a. a single shipment of a good into the territory of a party
+- b. multiple shipments of identical goods within any period specified in the certification of origin, but not exceeding 12 months.
+$EndLegislativeList
 
 A certification of origin shall be valid for 2 years after the date it was issued.
 
