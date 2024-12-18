@@ -223,14 +223,15 @@ jobs:
           BUNDLE_RETRY: "3"
           RAILS_ENV: test
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+          REDIS_URL: "redis://localhost:6379/"
+          FRONTEND_REDIS_URL: "redis://localhost:6379/"
+          ELASTICSEARCH_URL: "http://localhost:9200"
       - image: cimg/postgres:13.6
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
       - image: cimg/redis:6.2
-        environment:
-          REDIS_URL: "redis://localhost:6379/"
       - image: opensearchproject/opensearch:2
         environment:
           cluster.name: elasticsearch
