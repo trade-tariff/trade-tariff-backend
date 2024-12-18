@@ -1,4 +1,4 @@
-Non-originating goods/materials must be processed to meet the PSRs. 
+Non-originating goods/materials must be processed to meet the PSRs, except in the case of short supply goods listed in Annex IV, provided that meet the conditions set out in that Annex.
  
 Except as otherwise provided in a Party’s Tariff Schedule, where an importing Party applies a different preferential tariff under CPTTP to other Parties for the same originating good and more than one Party is involved in the production, for the correct tariff to be applied the preferential origin must be declared as the Party where the last production process occurred with the exception of the following:
 
