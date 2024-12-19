@@ -23,21 +23,21 @@ FileUtils.chdir APP_ROOT do
   system("bundle check") || system!("bundle install")
 
   puts "\n== Creating database =="
-  system! "bin/rake db:create"
+  system! "bin/rails db:create"
 
   if ARGV[0]
     puts "\n== Importing database dump =="
     system! "psql -h localhost tariff_development < #{ARGV[0]}"
   else
     puts "\n== Loading database structure =="
-    system! "bin/rake db:structure:load"
+    system! "bin/rails db:structure:load"
 
     puts "\n== Loading seed data =="
-    system! "bin/rake db:seed"
+    system! "bin/rails db:seed"
   end
 
   puts "\n== Preparing test database =="
-  system! "bin/rake db:test:prepare"
+  system! "bin/rails db:test:prepare"
 
   puts "\n== Removing old logs and tempfiles =="
   system! "bin/rails log:clear tmp:clear"

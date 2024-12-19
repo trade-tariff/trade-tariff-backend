@@ -14,16 +14,42 @@ Projects using the Trade Tariff (TT) API:
 
 > Make sure you install and enable all pre-commit hooks https://pre-commit.com/
 
-### Dependencies
+Before setup you will need your backing services:
 
-- Ruby [v3.2](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
 - Postgresql v13
 - OpenSearch v2
 - Redis
 
-These can be configured by running `docker-compose up` or by manual installation.
+These can be configured by following the instructions here:
 
-### Setup
+https://docs.trade-tariff.service.gov.uk/manual/get-started.html#6-set-up-ott-docker
+
+### DevContainers (recommended)
+
+This application supports devcontainers - i.e running the application and your development tools inside Docker.
+
+These instructions apply to VSCode, but the DevContainer should work with any tooling:
+
+Once backing services are running inside Docker:
+
+* Clone this repo to your local machine.
+* Ensure you have the [DevContainer extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed in VSCode.
+* Open the folder in VSCode
+* Run "Dev Containers: Open Folder in Container... "
+* Once the container has booted, inside VSCode's terminal, run `bin/setup`
+* Once complete, start the service with `bin/dev`
+
+If commiting / pushing from inside your devcontainer, you may need to share your SSH configuration with your container. Instructions on this can be found [here](https://code.visualstudio.com/remote/advancedcontainers/sharing-git-credentials).
+
+Should you *not* want to use DevContainers, you can setup this up manually:
+
+### Manual development (not recommended)
+
+#### Dependencies
+
+- Ruby [v3.3](https://github.com/trade-tariff/trade-tariff-frontend/blob/main/.ruby-version#L1)
+
+#### Setup
 
 1. Clone this repo
 2. Install the correct ruby version according to the `.ruby-version` - eg using
