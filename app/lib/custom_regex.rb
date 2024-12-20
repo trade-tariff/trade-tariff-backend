@@ -10,10 +10,12 @@ module CustomRegex
   end
 
   def cus_number_regex
+    # Seven digits, followed by a hyphen, followed by one digit.
     /\A\d{7}-\d\z/
   end
 
   def no_alpha_regex
+    # entire strings that do not contain any alphabetic characters
     /^(?!.*[A-Za-z]+).*$/
   end
 

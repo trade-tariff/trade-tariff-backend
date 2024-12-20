@@ -34,7 +34,7 @@ class SearchService
 
     def find_search_suggestion(query)
       filter = { value: singular_and_plural(query) }
-      if resource_id.present?
+      if resource_id.present? && resource_id != 'undefined'
         filter[:id] = resource_id
       end
 
