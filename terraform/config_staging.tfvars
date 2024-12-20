@@ -15,3 +15,4 @@ green_lanes_update_email              = ""
 green_lanes_notify_measure_updates    = false
 legacy_search_enhancements_enabled    = true
 process_extra_changes_for_tgp         = true
+snapshot_import_batch_size            = 500
