@@ -4,7 +4,7 @@ ruby File.read('.ruby-version')
 
 # Server
 gem 'puma'
-gem 'rails', '~> 7.1'
+gem 'rails', '~> 8.0'
 
 # DB
 gem 'pg'
@@ -42,9 +42,6 @@ gem 'logstash-event'
 gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
-gem 'opentelemetry-exporter-otlp'
-gem 'opentelemetry-instrumentation-all'
-gem 'opentelemetry-sdk'
 gem 'plek'
 gem 'sentry-rails'
 gem 'sentry-sidekiq'
