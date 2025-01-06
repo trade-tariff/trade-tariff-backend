@@ -6,7 +6,7 @@ RSpec.describe Api::Admin::GreenLanes::FaqFeedbackController do
 
   describe 'POST to #create' do
     let(:make_request) do
-      authenticated_post api_admin_green_lanes_faq_feedback_index_path(format: :json), params: faq_feedback_data
+      authenticated_post api_green_lanes_faq_feedback_index_path(format: :json), params: faq_feedback_data
     end
     let :faq_feedback_data do
       {
@@ -21,7 +21,7 @@ RSpec.describe Api::Admin::GreenLanes::FaqFeedbackController do
       let(:ex_attrs) { build(:green_lanes_faq_feedback).to_hash }
 
       it { is_expected.to have_http_status :created }
-      it { is_expected.to have_attributes location: api_admin_green_lanes_faq_feedback_url(GreenLanes::FaqFeedback.last.id) }
+      it { is_expected.to have_attributes location: api_green_lanes_faq_feedback_url(GreenLanes::FaqFeedback.last.id) }
     end
 
     context 'with invalid params' do

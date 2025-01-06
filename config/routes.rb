@@ -68,7 +68,6 @@ Rails.application.routes.draw do
           resources :exemptions, only: %i[index show create update destroy]
           resources :measures, only: %i[index show create update destroy]
           resources :update_notifications, only: %i[index show update]
-          resources :faq_feedback, only: %i[create show]
         end
       end
     end
@@ -232,6 +231,8 @@ Rails.application.routes.draw do
         resources :category_assessments, only: %i[index]
 
         resources :themes, only: %i[index]
+
+        resources :faq_feedback, only: %i[create show], controller: '/api/admin/green_lanes/faq_feedback'
       end
     end
 
