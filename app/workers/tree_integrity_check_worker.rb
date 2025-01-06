@@ -1,7 +1,16 @@
 class TreeIntegrityCheckWorker
   include Sidekiq::Worker
 
-  def perform(days_from_now = 0)
+  def perform
+    check(7)
+    check(14)
+    check(21)
+    check(28)
+  end
+
+  private
+
+  def check(days_from_now = 0)
     date = (Time.zone.today + days_from_now.days).to_date
 
     TimeMachine.at(date) do
