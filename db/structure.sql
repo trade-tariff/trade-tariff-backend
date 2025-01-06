@@ -9075,6 +9075,14 @@ ALTER TABLE ONLY uk.green_lanes_exemptions
 
 
 --
+-- Name: green_lanes_faq_feedback green_lanes_faq_feedback_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.green_lanes_faq_feedback
+    ADD CONSTRAINT green_lanes_faq_feedback_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: green_lanes_measures green_lanes_measures_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -9712,6 +9720,14 @@ ALTER TABLE ONLY uk.tradeset_descriptions
 
 ALTER TABLE ONLY uk.transmission_comments_oplog
     ADD CONSTRAINT transmission_comments_pkey PRIMARY KEY (oid);
+
+
+--
+-- Name: green_lanes_faq_feedback unique_faq_feedback; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.green_lanes_faq_feedback
+    ADD CONSTRAINT unique_faq_feedback UNIQUE (session_id, category_id, question_id);
 
 
 --
@@ -12532,3 +12548,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240627113028_create_gree
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240723112213_create_green_lanes_update_notifications.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240808113431_update_green_lanes_category_assessments_index.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240830142019_add_differences_log.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20241210100900_add_green_lanes_faq_feedback_table.rb');
