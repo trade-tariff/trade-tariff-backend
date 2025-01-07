@@ -232,7 +232,7 @@ Rails.application.routes.draw do
 
         resources :themes, only: %i[index]
 
-        resources :faq_feedback, only: %i[create show], controller: '/api/admin/green_lanes/faq_feedback'
+        resources :faq_feedback, only: %i[create index show], controller: '/api/admin/green_lanes/faq_feedback'
       end
     end
 

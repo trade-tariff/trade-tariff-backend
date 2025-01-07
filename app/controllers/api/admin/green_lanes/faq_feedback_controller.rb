@@ -8,6 +8,7 @@ module Api
           faq_feedback = ::GreenLanes::FaqFeedback.new(faq_feedback_params)
 
           if faq_feedback.valid? && faq_feedback.save
+            Rails.logger.info("FAQ feedback created: #{faq_feedback.id}")
             render json: serialize(faq_feedback),
                    location: api_green_lanes_faq_feedback_url(faq_feedback.id),
                    status: :created
@@ -15,6 +16,11 @@ module Api
             render json: serialize_errors(faq_feedback),
                    status: :unprocessable_entity
           end
+        end
+
+        def index
+          faq_feedback = ::GreenLanes::FaqFeedback.all
+          render json: serialize(faq_feedback)
         end
 
         private
