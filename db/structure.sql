@@ -12578,4 +12578,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240723112213_create_gree
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240808113431_update_green_lanes_category_assessments_index.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240830142019_add_differences_log.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20241210100900_add_green_lanes_faq_feedback_table.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250107153800_grant_priviliges_green_lanes_faq_feedback_table.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250107153800_grant_privileges_green_lanes_faq_feedback_table.rb');
