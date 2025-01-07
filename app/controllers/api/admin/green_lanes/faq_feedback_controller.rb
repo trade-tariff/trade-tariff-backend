@@ -2,7 +2,7 @@ module Api
   module Admin
     module GreenLanes
       class FaqFeedbackController < AdminController
-        before_action :authenticate_user!
+        # before_action :authenticate_user!
 
         def create
           faq_feedback = ::GreenLanes::FaqFeedback.new(faq_feedback_params)
