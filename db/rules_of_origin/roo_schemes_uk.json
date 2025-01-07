@@ -5357,8 +5357,8 @@
         },
         {
             "scheme_code": "cptpp",
-            "validity_start_date": "2024-12-15",
-            "validity_end_date": "2024-12-23",
+            "validity_start_date": "2024-12-24",
+            "validity_end_date": null,
             "title": "UK-Comprehensive and Progressive Agreement for Trans-Pacific Partnership Agreement (CPTPP)",
             "proofs": [
                 {
@@ -5383,7 +5383,8 @@
                         "NZ",
                         "PE",
                         "SG",
-                        "VN"
+                        "VN",
+                        "AU"
                     ]
                 }
             },
@@ -5429,7 +5430,8 @@
                 "NZ",
                 "PE",
                 "SG",
-                "VN"
+                "VN",
+                "AU"
             ],
             "show_proofs_for_geographical_areas": [
                 "2051",
