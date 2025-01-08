@@ -7,7 +7,7 @@ module Api
         column :goods_nomenclature_sid, column_name: 'SID'
         column :goods_nomenclature_item_id, column_name: 'Commodity code'
         column :producline_suffix, column_name: 'Product line suffix'
-        column :description, column_name: 'Description'
+        column :csv_formatted_description, column_name: 'Description'
         column :validity_start_date, column_name: 'Start date'
         column :validity_end_date, column_name: 'End date'
         column :number_indents, column_name: 'Indentation'
