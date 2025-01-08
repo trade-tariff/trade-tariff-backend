@@ -386,7 +386,7 @@ workflows:
             - apply-terraform-dev
           <<: *filter-not-main
 
-  deploy-to-staging:
+  deploy-to-staging-and-production:
     jobs:
       - write-docker-tag:
           name: write-docker-tag-staging
@@ -434,11 +434,11 @@ workflows:
       #       - apply-terraform-staging
       #     <<: *filter-main
 
-  deploy-to-production:
-    jobs:
       - write-docker-tag:
           name: write-docker-tag-prod
           environment: production
+          requires:
+            - apply-terraform-staging
 
       - plan-terraform:
           name: plan-terraform-prod
