@@ -8,8 +8,13 @@ class CsvDescriptionFormatter
     str.gsub!(/&nbsp;|\u00A0/, ' ') # Non-breaking space to regular space
     str.gsub!(/\u{00B1}/, '±')
     str.gsub!(/<\/?(br|sub)(\s*\/)?>/, ' ') # Remove html tags, including self-closing tags
+    str.gsub!(/<p\/>/, " ")
     str.gsub!(/&times;/, 'x')
     str.gsub!(/&deg;/, '°')
+
+    # Replace Äú and Äù with plain double quotes
+    str.gsub!(/Äú/, '"')
+    str.gsub!(/Äù/, '"')
 
     # Match html superscript tags and sub them for their plain text equivalent char
     str.gsub!(/<sup>-(?=<\/sup>)<\/sup>/, '⁻')
