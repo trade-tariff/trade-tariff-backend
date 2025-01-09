@@ -5,7 +5,7 @@ class CsvDescriptionFormatter
     str = opts.values.first
     return '' if str.blank?
 
-    str.gsub!(/&nbsp;|\u00A0/, ' ')  # Non-breaking space to regular space
+    str.gsub!(/&nbsp;|\u00A0/, ' ') # Non-breaking space to regular space
     str.gsub!(/\u{00B1}/, '±')
     str.gsub!(/<\/?(br|sub)(\s*\/)?>/, ' ') # Remove html tags, including self-closing tags
     str.gsub!(/&times;/, 'x')
