@@ -21,6 +21,9 @@ class GoodsNomenclatureDescription < Sequel::Model
   custom_format :formatted_description, with: DescriptionFormatter,
                                         using: :description
 
+  custom_format :csv_formatted_description, with: CsvDescriptionFormatter,
+                                            using: :formatted_description
+
   custom_format :description_indexed, with: DescriptionFormatter,
                                       using: :description
   def description

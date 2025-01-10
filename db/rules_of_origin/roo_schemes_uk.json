@@ -5357,17 +5357,22 @@
         },
         {
             "scheme_code": "cptpp",
-            "validity_start_date": "2024-12-08",
+            "validity_start_date": "2024-12-24",
             "validity_end_date": null,
-            "title": "The Comprehensive and Progressive Agreement for Trans-Pacific Partnership",
+            "title": "UK-Comprehensive and Progressive Agreement for Trans-Pacific Partnership Agreement (CPTPP)",
             "proofs": [
                 {
-                    "summary": "Origin declaration",
+                    "summary": "Certification of origin",
                     "subtext": "",
                     "proof_class": "origin-declaration",
                     "detail": ""
                 }
             ],
+            "proof_codes": {
+                "DE 2/3:": "- **9081** to identify a claim under CPTPP and complete the document ID field with 9U01, 9U02 or 9U03 (see below) with status code JP\n - One of the following proof of origin codes together with an appropriate status code:\n\n    - **9U01** – Certification of Origin made out by the exporter\n\n    - **9U02** – Certification of Origin made out by the producer\n\n    - **9U03** – Certification of Origin made out by the importer",
+                "DE 4/17": "The data element must include a preference code in the 300 series.",
+                "DE 5/16": "Enter the CPTPP Party of preferential origin.\n\nFurther information on completing data elements can be found here:\n\n[https://www.gov.uk/government/publications/cds-uk-trade-tariff-volume-3-import-declaration-completion-guide/uk-trade-tariff-cds-volume-3-import-declaration-completion-guide](https://www.gov.uk/government/publications/cds-uk-trade-tariff-volume-3-import-declaration-completion-guide/uk-trade-tariff-cds-volume-3-import-declaration-completion-guide)"
+            },
             "cumulation_methods": {
                 "bilateral": {
                     "countries": [
@@ -5378,7 +5383,8 @@
                         "NZ",
                         "PE",
                         "SG",
-                        "VN"
+                        "VN",
+                        "AU"
                     ]
                 }
             },
@@ -5424,11 +5430,30 @@
                 "NZ",
                 "PE",
                 "SG",
+                "VN",
+                "AU"
+            ],
+            "show_proofs_for_geographical_areas": [
+                "2051",
+                "2052",
+                "2053",
+                "2054",
+                "2055",
+                "2056",
+                "2057",
+                "2058",
+                "2059",
+                "2060",
+                "BN",
+                "CL",
+                "JP",
+                "MY",
+                "NZ",
+                "PE",
+                "SG",
                 "VN"
-                <%= ", \"AU\"" if Date.today >= Date.new(2024, 12, 24) %>
             ]
         }
-        
     ],
     "proof_urls": {
         "origin-declaration": "https://www.gov.uk/guidance/get-proof-of-origin-for-your-goods#origin-declaration",
