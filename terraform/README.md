@@ -84,6 +84,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
+| <a name="input_execute_clean_up_changes_table"></a> [execute\_clean\_up\_changes\_table](#input\_execute\_clean\_up\_changes\_table) | Defaults to true except in STAGING only to stop daily cleanup of the Changes table for TGP testing (HMRC-434). | `bool` | `true` | no |
 | <a name="input_frontend_base_domain"></a> [frontend\_base\_domain](#input\_frontend\_base\_domain) | Host address of the frontend service. | `string` | n/a | yes |
 | <a name="input_green_lanes_notify_measure_updates"></a> [green\_lanes\_notify\_measure\_updates](#input\_green\_lanes\_notify\_measure\_updates) | Flag to indicate if updated or expired measure records should be included in green lanes update email. | `bool` | n/a | yes |
 | <a name="input_green_lanes_update_email"></a> [green\_lanes\_update\_email](#input\_green\_lanes\_update\_email) | Email address for the green lanes policy team. | `string` | n/a | yes |
@@ -92,7 +93,6 @@ Terraform to deploy the service into AWS.
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Largest number of tasks the service can scale-out to. | `number` | `5` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory to allocate in MB. Powers of 2 only. | `number` | n/a | yes |
 | <a name="input_min_capacity"></a> [min\_capacity](#input\_min\_capacity) | Smallest number of tasks the service can scale-in to. | `number` | `1` | no |
-| <a name="input_process_extra_changes_for_tgp"></a> [process\_extra\_changes\_for\_tgp](#input\_process\_extra\_changes\_for\_tgp) | Defaults to false except in STAGING only for TGP testing (HMRC-434). | `bool` | `false` | no |
 | <a name="input_region"></a> [region](#input\_region) | AWS region to use. | `string` | n/a | yes |
 | <a name="input_service_count"></a> [service\_count](#input\_service\_count) | Number of services to use. | `number` | `2` | no |
 | <a name="input_stemming_exclusion_reference_analyzer"></a> [stemming\_exclusion\_reference\_analyzer](#input\_stemming\_exclusion\_reference\_analyzer) | Stemmer package file path in opensearch | `string` | n/a | yes |

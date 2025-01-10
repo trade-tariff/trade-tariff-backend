@@ -115,8 +115,8 @@ locals {
       value = var.green_lanes_notify_measure_updates
     },
     {
-      name  = "PROCESS_EXTRA_CHANGES_FOR_TGP"
-      value = var.process_extra_changes_for_tgp
+      name  = "EXECUTE_CLEAN_UP_CHANGES_TABLE"
+      value = var.execute_clean_up_changes_table
     }
   ]
 

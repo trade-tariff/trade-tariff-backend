@@ -14,4 +14,4 @@ management_email                      = "hmrc-trade-tariff-support-g@digital.hmr
 green_lanes_update_email              = ""
 green_lanes_notify_measure_updates    = false
 legacy_search_enhancements_enabled    = true
-process_extra_changes_for_tgp         = true
+execute_clean_up_changes_table        = false

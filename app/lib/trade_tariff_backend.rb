@@ -269,8 +269,8 @@ module TradeTariffBackend
       ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
     end
 
-    def process_extra_changes_for_tgp?
-      ENV.fetch('PROCESS_EXTRA_CHANGES_FOR_TGP', 'false') == 'true'
+    def execute_clean_up_changes_table?
+      ENV.fetch('EXECUTE_CLEAN_UP_CHANGES_TABLE', 'true') == 'true'
     end
   end
 end

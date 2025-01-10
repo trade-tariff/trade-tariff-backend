@@ -87,8 +87,8 @@ variable "green_lanes_notify_measure_updates" {
   type        = bool
 }
 
-variable "process_extra_changes_for_tgp" {
-  description = "Defaults to false except in STAGING only for TGP testing (HMRC-434)."
+variable "execute_clean_up_changes_table" {
+  description = "Defaults to true except in STAGING only to stop daily cleanup of the Changes table for TGP testing (HMRC-434)."
   type        = bool
-  default     = false
+  default     = true
 }
