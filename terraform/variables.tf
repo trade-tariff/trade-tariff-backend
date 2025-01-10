@@ -86,9 +86,3 @@ variable "green_lanes_notify_measure_updates" {
   description = "Flag to indicate if updated or expired measure records should be included in green lanes update email."
   type        = bool
 }
-
-variable "execute_clean_up_changes_table" {
-  description = "Defaults to true except in STAGING only to stop daily cleanup of the Changes table for TGP testing (HMRC-434)."
-  type        = bool
-  default     = true
-}

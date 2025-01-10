@@ -5,10 +5,6 @@ class PopulateChangesTableWorker
 
   def perform
     ChangesTablePopulator.populate
-    if TradeTariffBackend.execute_clean_up_changes_table?
-      ChangesTablePopulator.cleanup_outdated
-    else
-      logger.info 'Skipping cleanup of outdated changes, see env_var CLEAN_UP_CHANGES_TABLE'
-    end
+    ChangesTablePopulator.cleanup_outdated
   end
 end

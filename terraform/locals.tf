@@ -113,10 +113,6 @@ locals {
     {
       name  = "GREEN_LANES_NOTIFY_MEASURE_UPDATES"
       value = var.green_lanes_notify_measure_updates
-    },
-    {
-      name  = "EXECUTE_CLEAN_UP_CHANGES_TABLE"
-      value = var.execute_clean_up_changes_table
     }
   ]
 
