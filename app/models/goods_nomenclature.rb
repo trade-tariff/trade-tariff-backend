@@ -92,6 +92,7 @@ class GoodsNomenclature < Sequel::Model
            :description_indexed,
            :description_plain,
            :formatted_description,
+           :csv_formatted_description,
            :consigned_from,
            to: :goods_nomenclature_description,
            allow_nil: true
