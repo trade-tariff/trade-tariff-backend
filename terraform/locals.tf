@@ -113,10 +113,6 @@ locals {
     {
       name  = "GREEN_LANES_NOTIFY_MEASURE_UPDATES"
       value = var.green_lanes_notify_measure_updates
-    },
-    {
-      name  = "PROCESS_EXTRA_CHANGES_FOR_TGP"
-      value = var.process_extra_changes_for_tgp
     }
   ]
 
