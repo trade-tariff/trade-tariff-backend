@@ -74,3 +74,7 @@
       cron: "0 1 * * 2"  # 1am every Tuesday
       description: "Checks if the differences report has run"
       class: DifferencesReportCheckWorker
+    FAQFeedbackReportWorker:
+      cron: "0 9 * * 2"  # 9am every Tuesday
+      description: "Sends FAQ Feedback Report"
+      class: FaqFeedbackReportWorker
