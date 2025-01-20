@@ -9,7 +9,7 @@ Sequel.migration do
       currency_code: 'VED',
       country_code: 'VE',
       country_description: 'Venezuela',
-      currency_description: 'Bolivar Fuerte',
+      currency_description: 'Venezuelan Bolívar',
       validity_start_date: Date.new(2025, 1, 22),
     )
   end
