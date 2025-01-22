@@ -52,7 +52,7 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
       commodity.save # Create first
       commodity.destroy
 
-      expect(search_result.hits.total.value).to be == 0
+      expect(search_result.hits.total.value).to eq 0
     end
   end
 
@@ -72,7 +72,7 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
       search_reference.save
       search_reference.destroy
 
-      expect(search_result.hits.hits.map(&:_source).map(&:search_references).size).to be == 0
+      expect(search_result.hits.hits.map(&:_source).map(&:search_references).size).to eq 0
     end
   end
 end

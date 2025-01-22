@@ -78,10 +78,10 @@ module TradeTariffBackend
 
     def index_by_name(index_name, model_id, model_json)
       __getobj__.index({
-              index: index_name,
-              id: model_id,
-              body: model_json,
-            }.merge(search_operation_options))
+        index: index_name,
+        id: model_id,
+        body: model_json,
+      }.merge(search_operation_options))
     end
 
     def delete(index_class, model)
@@ -93,9 +93,9 @@ module TradeTariffBackend
 
     def delete_by_name(index_name, model_id)
       __getobj__.delete({
-              index: index_name,
-              id: model_id,
-            }.merge(search_operation_options))
+        index: index_name,
+        id: model_id,
+      }.merge(search_operation_options))
     end
   end
 end

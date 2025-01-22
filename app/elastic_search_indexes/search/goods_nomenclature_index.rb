@@ -1,6 +1,5 @@
 module Search
   class GoodsNomenclatureIndex
-
     def initialize(server_namespace = TradeTariffBackend::SearchClient.server_namespace)
       @server_namespace = server_namespace
     end
@@ -37,12 +36,12 @@ module Search
             validity_start_date: { type: 'date', format: 'date_optional_time' },
             producline_suffix: { type: 'keyword' },
             search_references: {
-              "type": "nested",
+              "type": 'nested',
               "properties": {
                 title: { type: 'text', analyzer: 'snowball' },
                 title_indexed: { type: 'text', analyzer: 'snowball' },
                 reference_class: { type: 'keyword' },
-              }
+              },
             },
             section: {
               dynamic: true,

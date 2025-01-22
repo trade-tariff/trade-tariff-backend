@@ -7,5 +7,4 @@ RSpec.describe Search::GoodsNomenclatureIndex do
   it { is_expected.to have_attributes name: 'testnamespace-goods_nomenclatures-uk' }
   it { is_expected.to have_attributes name_without_namespace: 'GoodsNomenclatureIndex' }
   it { is_expected.to have_attributes model_class: GoodsNomenclature }
-
 end
