@@ -29,50 +29,71 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
   end
 
   describe 'after_create' do
-    it 'indexes the created object' do
-      commodity.save
+    context 'when an object is created' do
+      before { commodity.save }
 
-      expect(search_result.hits.total.value).to be >= 1
-      expect(search_result_commodity_ids).to include commodity.goods_nomenclature_item_id
+      it 'indexes the created object' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'includes the created object in the index' do
+        expect(search_result_commodity_ids).to include commodity.goods_nomenclature_item_id
+      end
     end
   end
 
   describe 'after_update' do
-    it 'updates the index for the object' do
-      commodity.save # Create first
+    before do
+      commodity.save
       commodity.update(producline_suffix: '70')
+    end
 
-      expect(search_result.hits.total.value).to be >= 1
-      expect(producline_suffix).to include commodity.producline_suffix
+    context 'when an object is updated' do
+      it 'updates the index for the object' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'reflects the updated field in the index' do
+        expect(producline_suffix).to include commodity.producline_suffix
+      end
     end
   end
 
   describe 'after_destroy' do
-    it 'removes the object from the index' do
-      commodity.save # Create first
+    before do
+      commodity.save
       commodity.destroy
+    end
 
+    it 'removes the object from the index' do
       expect(search_result.hits.total.value).to eq 0
     end
   end
 
   describe 'SearchReference behavior' do
-    let(:query) do
-      search_reference.title
+    let(:query) { search_reference.title }
+
+    context 'when a search reference is created' do
+      before { search_reference.save }
+
+      it 'indexes the referenced goods nomenclatures' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'includes the reference title in the index' do
+        expect(search_reference_titles).to include search_reference.title
+      end
     end
 
-    it 'indexes referenced goods nomenclatures on creation' do
-      search_reference.save
+    context 'when a search reference is destroyed' do
+      before do
+        search_reference.save
+        search_reference.destroy
+      end
 
-      expect(search_result.hits.total.value).to be >= 1
-      expect(search_reference_title).to include search_reference.title
-    end
-
-    it 'removes referenced goods nomenclatures from index on destruction' do
-      search_reference.save
-      search_reference.destroy
-
-      expect(search_result.hits.hits.map(&:_source).map(&:search_references).size).to eq 0
+      it 'removes the referenced goods nomenclatures from the index' do
+        expect(search_result.hits.hits.flat_map { |hit| hit._source.search_references || [] }.size).to eq 0
+      end
     end
   end
 end
