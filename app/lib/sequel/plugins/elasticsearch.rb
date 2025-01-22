@@ -22,6 +22,8 @@ module Sequel
           rescue ::OpenSearch::Transport::Transport::Errors::NotFound
             false
           end
+
+          add_goods_nomenclature_index
         end
 
         def after_update
@@ -32,6 +34,8 @@ module Sequel
           rescue ::OpenSearch::Transport::Transport::Errors::NotFound
             false
           end
+
+          add_goods_nomenclature_index
         end
 
         def after_destroy
@@ -42,7 +46,37 @@ module Sequel
           rescue ::OpenSearch::Transport::Transport::Errors::NotFound
             false
           end
+
+          delete_goods_nomenclature_index
         end
+
+        private
+
+        def add_goods_nomenclature_index
+          index_name = Search::GoodsNomenclatureIndex.new.name
+
+          if self.instance_of?(Commodity)
+            TradeTariffBackend.search_client.index_by_name(index_name, self.id, Search::GoodsNomenclatureSerializer.new(self).as_json)
+          elsif self.instance_of?(SearchReference)
+            TradeTariffBackend.search_client.index_by_name(index_name, self.referenced.id, Search::GoodsNomenclatureSerializer.new(self.referenced.reload).as_json)
+          else
+            # Ignore Section for the time being
+          end
+        end
+
+        def delete_goods_nomenclature_index
+          index_name = Search::GoodsNomenclatureIndex.new.name
+
+          if self.instance_of?(Commodity)
+            TradeTariffBackend.search_client.delete_by_name(index_name, self.id)
+          elsif self.instance_of?(SearchReference)
+            self.referenced.search_references
+            TradeTariffBackend.search_client.index_by_name(index_name, self.referenced.id, Search::GoodsNomenclatureSerializer.new(self.referenced.reload).as_json)
+          else
+            # Ignore Section for the time being
+          end
+        end
+
       end
     end
   end
