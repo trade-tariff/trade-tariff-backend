@@ -121,6 +121,7 @@ module TradeTariffBackend
         Search::HeadingIndex,
         Search::SearchReferenceIndex,
         Search::SectionIndex,
+        Search::GoodsNomenclatureIndex,
       ].map(&:new)
     end
 
@@ -263,6 +264,10 @@ module TradeTariffBackend
 
     def green_lanes_notify_measure_updates
       ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
+    end
+
+    def optimised_search_enabled?
+      ENV['OPTIMISED_SEARCH_ENABLED'].to_s == 'true'
     end
 
     def disable_admin_api_authentication?

@@ -1,6 +1,10 @@
 RSpec.describe Api::V2::SearchController do
   routes { V2Api.routes }
 
+  before do
+    allow(TradeTariffBackend).to receive(:optimised_search_enabled?).and_return false
+  end
+
   describe 'GET /search' do
     subject(:response) { get :search, params: { q: chapter.to_param, as_of: chapter.validity_start_date } }
 

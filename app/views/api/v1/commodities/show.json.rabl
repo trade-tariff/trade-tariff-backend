@@ -46,10 +46,10 @@ end
 node(:_response_info) do
   {
     links: [
-      { rel: 'self', href: api_link(request.fullpath) },
-      { rel: 'heading', href: api_link(api_heading_path(@commodity.heading)) },
-      { rel: 'chapter', href: api_link(api_chapter_path(@commodity.chapter)) },
-      { rel: 'section', href: api_link(api_section_path(@commodity.section.position)) },
+      { rel: 'self', href: request.fullpath },
+      { rel: 'heading', href: api_heading_path(@commodity.heading) },
+      { rel: 'chapter', href: api_chapter_path(@commodity.chapter) },
+      { rel: 'section', href: api_section_path(@commodity.section.position) },
     ],
   }
 end

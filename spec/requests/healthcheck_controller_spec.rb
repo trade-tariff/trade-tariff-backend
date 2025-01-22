@@ -2,7 +2,7 @@ RSpec.describe HealthcheckController, type: :request do
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 
-    let(:make_request) { get '/healthcheck' }
+    let(:make_request) { get '/api/v2/healthcheck' }
     let(:healthcheck) { Healthcheck.instance }
 
     before do

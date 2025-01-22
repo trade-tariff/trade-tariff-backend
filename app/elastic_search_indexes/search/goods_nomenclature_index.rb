@@ -1,77 +1,105 @@
 module Search
-  class GoodsNomenclatureIndex
-
-    def initialize(server_namespace = TradeTariffBackend::SearchClient.server_namespace)
-      @server_namespace = server_namespace
-    end
+  class GoodsNomenclatureIndex < ::SearchIndex
+    INDEX_NAME = 'goods_nomenclatures'.freeze
 
     def name
-      [@server_namespace, type.pluralize, TradeTariffBackend.service].join('-')
-    end
-
-    def type
-      model_class.to_s.underscore
-    end
-
-    def model_class
-      name_without_namespace.chomp('Index').constantize
-    end
-
-    def name_without_namespace
-      self.class.name.split('::').last
+      [TradeTariffBackend::SearchClient.server_namespace, INDEX_NAME, TradeTariffBackend.service].join('-')
     end
 
     def definition
       {
         mappings: {
           properties: {
-            dynamic: false,
             id: { type: 'long' },
             description: { type: 'text', analyzer: 'snowball' },
-            description_indexed: { type: 'text', analyzer: 'snowball' },
-            goods_nomenclature_item_id: { type: 'keyword' },
-            declarable: { enabled: false },
-            ancestor_descriptions: { enabled: false },
-            validity_end_date: { format: 'date_optional_time', type: 'date' },
-            number_indents: { type: 'long' },
+            goods_nomenclature_item_id: {
+              type: 'text',
+              "fields": {
+                "keyword": {
+                  "type": 'keyword',
+                  "ignore_above": 256,
+                },
+              },
+              analyzer: 'ngram_analyzer',
+              search_analyzer: 'lowercase_analyzer',
+            },
             validity_start_date: { type: 'date', format: 'date_optional_time' },
-            producline_suffix: { type: 'keyword' },
+            validity_end_date: { format: 'date_optional_time', type: 'date' },
+            type: { type: 'keyword' },
             search_references: {
-              "type": "nested",
-              "properties": {
-                title: { type: 'text', analyzer: 'snowball' },
-                title_indexed: { type: 'text', analyzer: 'snowball' },
+              properties: {
+                title: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
                 reference_class: { type: 'keyword' },
-              }
-            },
-            section: {
-              dynamic: true,
-              properties: {
-                position: { type: 'long' },
-                title: { type: 'text' },
-                numeral: { type: 'keyword' },
               },
             },
-            chapter: {
-              dynamic: true,
+            chemicals: {
               properties: {
-                description: { type: 'text' },
-                validity_start_date: { type: 'date', format: 'date_optional_time' },
-                producline_suffix: { type: 'keyword' },
-                goods_nomenclature_sid: { type: 'long' },
-                goods_nomenclature_item_id: { type: 'keyword' },
+                cus: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+                cas_rn: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+                name: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
               },
             },
-            heading: {
-              dynamic: true,
-              properties: {
-                validity_end_date: { type: 'date', format: 'date_optional_time' },
-                number_indents: { type: 'long' },
-                description: { type: 'text' },
-                validity_start_date: { type: 'date', format: 'date_optional_time' },
-                producline_suffix: { type: 'keyword' },
-                goods_nomenclature_sid: { type: 'long' },
-                goods_nomenclature_item_id: { type: 'keyword' },
+          },
+        },
+        settings: {
+          analysis: {
+            filter: {
+              ngram_filter: {
+                type: 'edge_ngram',
+                min_gram: 2,
+                max_gram: 20,
+              },
+            },
+            analyzer: {
+              ngram_analyzer: {
+                type: 'custom',
+                tokenizer: 'standard',
+                filter: %w[lowercase ngram_filter],
+              },
+              lowercase_analyzer: {
+                type: 'custom',
+                tokenizer: 'standard',
+                filter: %w[lowercase],
               },
             },
           },
@@ -83,8 +111,7 @@ module Search
       {
         goods_nomenclature_indents: [],
         goods_nomenclature_descriptions: [],
-        heading: %i[goods_nomenclature_indents goods_nomenclature_descriptions],
-        chapter: %i[goods_nomenclature_descriptions guides sections],
+        search_references: [],
       }
     end
   end

@@ -120,6 +120,10 @@ locals {
     {
       name  = "GREEN_LANES_NOTIFY_MEASURE_UPDATES"
       value = var.green_lanes_notify_measure_updates
+    },
+    {
+      name  = "OPTIMISED_SEARCH_ENABLED"
+      value = var.optimised_search_enabled
     }
   ]
 
