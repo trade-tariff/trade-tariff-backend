@@ -33,7 +33,7 @@ RSpec.describe SimplifiedProceduralCode do
   describe '.populate' do
     subject(:populate) { described_class.populate }
 
-    it { expect { populate }.to change(described_class, :count).by(55) }
+    it { expect { populate }.to change(described_class, :count).by(53) }
   end
 
   describe '.codes' do

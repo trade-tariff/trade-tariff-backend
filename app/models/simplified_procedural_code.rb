@@ -2,20 +2,26 @@ class SimplifiedProceduralCode < Sequel::Model
   plugin :timestamps, update_on_create: true
   plugin :validation_helpers
 
-  def to_null_measure
-    SimplifiedProceduralCodeMeasure.unrestrict_primary_key
-    measure = SimplifiedProceduralCodeMeasure.new
-    measure.simplified_procedural_code = simplified_procedural_code
-    measure.goods_nomenclature_item_ids = self.class.codes[simplified_procedural_code]['commodities'].join(', ')
-    measure.goods_nomenclature_label = goods_nomenclature_label
-    measure
-  end
-
   class << self
     def all_null_measures
-      @all_null_measures ||= distinct(:simplified_procedural_code)
-        .all
-        .map(&:to_null_measure)
+      @all_null_measures ||= select(
+        :simplified_procedural_code,
+        :goods_nomenclature_label,
+        Sequel.lit('ARRAY_AGG(goods_nomenclature_item_id) AS goods_nomenclature_item_ids'),
+      )
+                               .group(:simplified_procedural_code, :goods_nomenclature_label)
+                               .map do |record|
+        to_null_measure(record)
+      end
+    end
+
+    def to_null_measure(record)
+      SimplifiedProceduralCodeMeasure.unrestrict_primary_key
+      measure = SimplifiedProceduralCodeMeasure.new
+      measure.simplified_procedural_code = record.simplified_procedural_code
+      measure.goods_nomenclature_label = record.goods_nomenclature_label
+      measure.goods_nomenclature_item_ids = record[:goods_nomenclature_item_ids].join(', ')
+      measure
     end
 
     def populate
