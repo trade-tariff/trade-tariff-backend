@@ -81,7 +81,7 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
       end
 
       it 'includes the reference title in the index' do
-        expect(search_reference_titles).to include search_reference.title
+        expect(search_reference_title).to include search_reference.title
       end
     end
 
