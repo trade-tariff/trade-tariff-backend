@@ -20,6 +20,8 @@ class SimplifiedProceduralCode < Sequel::Model
 
     def populate
       unrestrict_primary_key
+      SimplifiedProceduralCode.truncate
+
       codes.each do |simplified_procedural_code, attributes|
         goods_nomenclature_label = attributes['label']
         attributes['commodities'].each do |goods_nomenclature_item_id|
