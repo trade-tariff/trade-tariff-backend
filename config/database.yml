@@ -6,7 +6,7 @@ default: &default
 
 development:
   <<: *default
-  host: host.docker.internal
+  host: <%= ENV['PGHOST'] %>
   user: postgres
   database: tariff_development
 
