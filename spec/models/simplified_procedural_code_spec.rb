@@ -1,26 +1,12 @@
 RSpec.describe SimplifiedProceduralCode do
-  describe '#to_null_measure' do
-    subject(:to_null_measure) { simplified_procedural_code.to_null_measure }
-
-    let(:simplified_procedural_code) do
-      create(
-        :simplified_procedural_code,
-        simplified_procedural_code: '2.130.0',
-      )
-    end
-
-    it { is_expected.to be_a SimplifiedProceduralCodeMeasure }
-    it { expect(to_null_measure.simplified_procedural_code).to eq simplified_procedural_code.simplified_procedural_code }
-    it { expect(to_null_measure.goods_nomenclature_item_ids).to eq '0808108010, 0808108020, 0808108090' }
-    it { expect(to_null_measure.goods_nomenclature_label).to eq simplified_procedural_code.goods_nomenclature_label }
-  end
-
   describe '.all_null_measures' do
     subject(:all_null_measures) { described_class.all_null_measures }
 
     before do
-      create(:simplified_procedural_code, simplified_procedural_code: '2.130.0')
-      create(:simplified_procedural_code, simplified_procedural_code: '2.150')
+      create(:simplified_procedural_code, simplified_procedural_code: '2.130.0', goods_nomenclature_item_id: '0808108010')
+      create(:simplified_procedural_code, simplified_procedural_code: '2.130.0', goods_nomenclature_item_id: '0808108020')
+      create(:simplified_procedural_code, simplified_procedural_code: '2.130.0', goods_nomenclature_item_id: '0808108090')
+      create(:simplified_procedural_code, simplified_procedural_code: '2.150', goods_nomenclature_item_id: '0809100000')
     end
 
     it { is_expected.to all(be_a(SimplifiedProceduralCodeMeasure)) }

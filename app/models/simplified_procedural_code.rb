@@ -15,15 +15,6 @@ class SimplifiedProceduralCode < Sequel::Model
       end
     end
 
-    def to_null_measure(record)
-      SimplifiedProceduralCodeMeasure.unrestrict_primary_key
-      measure = SimplifiedProceduralCodeMeasure.new
-      measure.simplified_procedural_code = record.simplified_procedural_code
-      measure.goods_nomenclature_label = record.goods_nomenclature_label
-      measure.goods_nomenclature_item_ids = record[:goods_nomenclature_item_ids].join(', ')
-      measure
-    end
-
     def populate
       unrestrict_primary_key
       SimplifiedProceduralCode.truncate
@@ -47,6 +38,17 @@ class SimplifiedProceduralCode < Sequel::Model
 
         JSON.parse(file)['spvs']
       end
+    end
+
+    private
+
+    def to_null_measure(record)
+      SimplifiedProceduralCodeMeasure.unrestrict_primary_key
+      measure = SimplifiedProceduralCodeMeasure.new
+      measure.simplified_procedural_code = record.simplified_procedural_code
+      measure.goods_nomenclature_label = record.goods_nomenclature_label
+      measure.goods_nomenclature_item_ids = record[:goods_nomenclature_item_ids].join(', ')
+      measure
     end
   end
 end
