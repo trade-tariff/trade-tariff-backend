@@ -1,23 +1,8 @@
 module Search
   class GoodsNomenclatureIndex
-    def initialize(server_namespace = TradeTariffBackend::SearchClient.server_namespace)
-      @server_namespace = server_namespace
-    end
 
-    def name
-      [@server_namespace, type.pluralize, TradeTariffBackend.service].join('-')
-    end
-
-    def type
-      model_class.to_s.underscore
-    end
-
-    def model_class
-      name_without_namespace.chomp('Index').constantize
-    end
-
-    def name_without_namespace
-      self.class.name.split('::').last
+    def self.name
+      [TradeTariffBackend::SearchClient.server_namespace, 'goods_nomenclatures', TradeTariffBackend.service].join('-')
     end
 
     def definition
@@ -26,11 +11,9 @@ module Search
           properties: {
             dynamic: false,
             id: { type: 'long' },
-            description: { type: 'text', analyzer: 'snowball' },
-            description_indexed: { type: 'text', analyzer: 'snowball' },
-            goods_nomenclature_item_id: { type: 'keyword' },
+            description: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
+            goods_nomenclature_item_id: { type: 'keyword', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
             declarable: { enabled: false },
-            ancestor_descriptions: { enabled: false },
             validity_end_date: { format: 'date_optional_time', type: 'date' },
             number_indents: { type: 'long' },
             validity_start_date: { type: 'date', format: 'date_optional_time' },
@@ -38,8 +21,7 @@ module Search
             search_references: {
               "type": 'nested',
               "properties": {
-                title: { type: 'text', analyzer: 'snowball' },
-                title_indexed: { type: 'text', analyzer: 'snowball' },
+                title: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
                 reference_class: { type: 'keyword' },
               },
             },
@@ -75,6 +57,29 @@ module Search
             },
           },
         },
+        settings: {
+          analysis: {
+            filter: {
+              ngram_filter: {
+                type: 'edge_ngram',
+                min_gram: 2,
+                max_gram: 20
+              }
+            },
+            analyzer: {
+              ngram_analyzer: {
+                type: 'custom',
+                tokenizer: 'standard',
+                filter: %w[lowercase ngram_filter]
+              },
+              lowercase_analyzer: {
+                type: 'custom',
+                tokenizer: 'standard',
+                filter: %w[lowercase]
+              }
+            }
+          }
+        }
       }
     end
 
