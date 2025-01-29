@@ -14,7 +14,6 @@ gem 'sequel-rails'
 # File uploads and AWS
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
-gem 'aws-xray-sdk', require: ['aws-xray-sdk/facets/rails/railtie']
 
 # File zip/unzipping
 gem 'rubyzip'
@@ -82,6 +81,7 @@ group :test do
 end
 
 group :production do
+  gem 'aws-xray-sdk', require: ['aws-xray-sdk/facets/rails/railtie']
   gem 'rack-attack'
   gem 'rack-timeout'
 end
