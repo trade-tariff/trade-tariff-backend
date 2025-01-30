@@ -23,7 +23,7 @@ class ReportWorker
   def schedule_differences_generation
     # Delays to ensure both XI and UK Report Workers have completed before
     # DifferencesReportWorker executes
-    DifferencesReportWorker.perform_in(30.minutes) if generate_differences?
+    DifferencesReportWorker.perform_in(30.minutes, ENV['NOEMAIL'] != 'true') if generate_differences?
   end
 
   def monday?

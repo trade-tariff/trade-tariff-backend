@@ -70,6 +70,10 @@ module "worker_uk" {
       {
         name  = "ENVIRONMENT"
         value = var.environment
+      },
+      {
+        name  = "NOEMAIL"
+        value = var.noemail
       }
     ]
   ])

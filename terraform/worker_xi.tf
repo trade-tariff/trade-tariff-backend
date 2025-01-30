@@ -74,6 +74,10 @@ module "worker_xi" {
       {
         name  = "ENVIRONMENT"
         value = var.environment
+      },
+      {
+        name  = "NOEMAIL"
+        value = var.noemail
       }
     ]
   ])

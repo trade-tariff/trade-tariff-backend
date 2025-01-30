@@ -26,7 +26,7 @@ class MonthlyExchangeRatesWorker
   end
 
   def email_files_to_hmrc(date)
-    return if TradeTariffBackend.xi?
+    return if TradeTariffBackend.xi? || ENV['NOEMAIL'] != 'true'
 
     ExchangeRatesMailer.monthly_files(date)&.deliver_now
   end

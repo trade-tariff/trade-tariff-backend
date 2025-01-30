@@ -4,7 +4,7 @@ class FaqFeedbackReportWorker
   sidekiq_options retry: 1, retry_in: 1.hour
 
   def perform(deliver_email = true)
-    if deliver_email
+    if deliver_email && ENV['NOEMAIL'] != 'true'
       send_faq_feedback_report_email
     end
   end

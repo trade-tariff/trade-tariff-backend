@@ -94,7 +94,7 @@ module TradeTariffBackend
       TimeMachine.with_relevant_validity_periods do
         indexer.update_all
       rescue StandardError => e
-        Mailer.reindex_exception(e).deliver_now
+        Mailer.reindex_exception(e).deliver_now if ENV['NOEMAIL'] != 'true'
       end
     end
 

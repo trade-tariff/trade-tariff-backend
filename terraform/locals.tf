@@ -137,6 +137,10 @@ locals {
       name  = "XE_API_URL"
       value = "https://xecdapi.xe.com"
     },
+    {
+      name  = "NOEMAIL"
+      value = var.noemail
+    },
   ]
 
   backend_uk_common_secrets = [

@@ -86,3 +86,8 @@ variable "green_lanes_notify_measure_updates" {
   description = "Flag to indicate if updated or expired measure records should be included in green lanes update email."
   type        = bool
 }
+
+variable "noemail" {
+  description = "Disables sending emails for non-prod environments should be set to false in prod"
+  type        = bool
+}
