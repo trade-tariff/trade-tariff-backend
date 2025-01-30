@@ -6,13 +6,14 @@ default: &default
 
 development:
   <<: *default
-  host: host.docker.internal
-  user: postgres
+  host: <%= ENV.fetch('PGHOST', "localhost") %>
+  user: <%= ENV.fetch("DB_USER", "postgres") %>
   database: tariff_development
 
 test:
   <<: *default
   user: <%= ENV.fetch("DB_USER", "postgres") %>
+  host: <%= ENV.fetch('PGHOST', "localhost") %>
   database: tariff_test
 
 production:
