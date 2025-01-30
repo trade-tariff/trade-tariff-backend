@@ -51,3 +51,4 @@ searches_without_match_or_synonym.csv
 /data/green_lanes/categories.json
 
 .direnv
+.envrc

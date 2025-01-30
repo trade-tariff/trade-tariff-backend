@@ -1,98 +1,80 @@
 {
-  description = "trade-tariff-backend";
-
-  nixConfig = {
-    extra-substituters = "https://nixpkgs-ruby.cachix.org";
-    extra-trusted-public-keys = "nixpkgs-ruby.cachix.org-1:vrcdi50fTolOxWCZZkw0jakOnUI1T19oYJ+PRYdK4SM=";
-  };
-
   inputs = {
-    nixpkgs.url = "nixpkgs";
-    ruby-nix.url = "github:inscapist/ruby-nix";
-    # a fork that supports platform dependant gem
-    bundix = {
-      url = "github:inscapist/bundix/main";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
+    nixpkgs-ruby = {
+      url = "github:bobvanderlinden/nixpkgs-ruby";
       inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
     };
-    fu.url = "github:numtide/flake-utils";
-    bob-ruby.url = "github:bobvanderlinden/nixpkgs-ruby";
-    bob-ruby.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs =
-    {
-      self,
-      nixpkgs,
-      fu,
-      ruby-nix,
-      bundix,
-      bob-ruby,
-    }:
-    with fu.lib;
-    eachDefaultSystem (
-      system:
+  outputs = { self, nixpkgs, flake-utils, nixpkgs-ruby }:
+    flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = import nixpkgs {
-          inherit system;
-          overlays = [ bob-ruby.overlays.default ];
+          system = system;
+          overlays = [nixpkgs-ruby.overlays.default];
         };
-        rubyNix = ruby-nix.lib pkgs;
 
-        gemset = if builtins.pathExists ./gemset.nix then import ./gemset.nix else { };
+        rubyVersion = let
+          rubyRegex = "^ruby (.*)$";
+          toolVersionsLines = builtins.split "\n" (builtins.readFile ./.tool-versions);
+          rubyLine = builtins.head (builtins.filter (line: builtins.match rubyRegex (builtins.toString line) != null) toolVersionsLines);
+          versionMatch = builtins.match rubyRegex rubyLine;
+        in builtins.elemAt versionMatch 0;
+        ruby = pkgs."ruby-${rubyVersion}";
 
-        # If you want to override gem build config, see
-        #   https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/ruby-modules/gem-config/default.nix
-        gemConfig = { };
+        postgresqlBuildFlags = with pkgs; [
+          "--with-pg-config=${lib.getDev postgresql_16}/bin/pg_config"
+        ];
 
-        # Read Ruby version from the .ruby-version file
-        rubyVersion = builtins.readFile ./.ruby-version;
-
-        # Remove newline or extra whitespace characters
-        sanitizedRubyVersion = builtins.substring 0 (builtins.stringLength rubyVersion - 1) rubyVersion;
-
-        # See available versions here: https://github.com/bobvanderlinden/nixpkgs-ruby/blob/master/ruby/versions.json
-        ruby = pkgs."ruby-${sanitizedRubyVersion}";
-
-        # Running bundix would regenerate `gemset.nix`
-        bundixcli = bundix.packages.${system}.default;
-
-        # Use these instead of the original `bundle <mutate>` commands
-        bundleLock = pkgs.writeShellScriptBin "bundle-lock" ''
-          export BUNDLE_PATH=vendor/bundle
-          bundle lock
+        postgresql = pkgs.postgresql_16.withPackages (p: [ p.postgis ]);
+        pg-environment-variables = ''
+          export PGDATA=$PWD/.nix/postgres/data
+          export PGHOST=$PWD/.nix/postgres
+          export DB_USER=""
         '';
-        bundleUpdate = pkgs.writeShellScriptBin "bundle-update" ''
-          export BUNDLE_PATH=vendor/bundle
-          bundle lock --update
-        '';
-      in
-      rec {
-        inherit
-          (rubyNix {
-            inherit gemset ruby;
-            name = "trade-tariff-backend";
-            gemConfig = pkgs.defaultGemConfig // gemConfig;
-          })
-          env
-          ;
 
-        devShells = rec {
-          default = dev;
-          dev = pkgs.mkShell {
-            buildInputs =
-              [
-                env
-                bundixcli
-                bundleLock
-                bundleUpdate
-              ]
-              ++ (with pkgs; [
-                yarn
-                rufo
-                postgresql
-              ]);
-          };
+        postgresql-start = pkgs.writeScriptBin "pg-start" ''
+          ${pg-environment-variables}
+
+          if [ ! -d $PGDATA ]; then
+            mkdir -p $PGDATA
+
+            ${postgresql}/bin/initdb $PGDATA --auth=trust
+          fi
+
+          ${postgresql}/bin/postgres -k $PGHOST -c listen_addresses=''' -c unix_socket_directories=$PGHOST
+        '';
+
+        lint = pkgs.writeScriptBin "lint" ''
+          changed_files=$(git diff --name-only --diff-filter=ACM --merge-base main)
+
+          bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
+        '';
+      in {
+        devShells.default = pkgs.mkShell {
+          shellHook = ''
+            export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
+            mkdir -p $GEM_HOME
+
+            export BUNDLE_BUILD__PG="${
+              builtins.concatStringsSep " " postgresqlBuildFlags
+            }"
+
+            export GEM_PATH=$GEM_HOME
+            export PATH=$GEM_HOME/bin:$PATH
+
+            ${pg-environment-variables}
+          '';
+
+          buildInputs = [
+            lint
+            postgresql
+            postgresql-start
+            ruby
+          ];
         };
-      }
-    );
+      });
 }

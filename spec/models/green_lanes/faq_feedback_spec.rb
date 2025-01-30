@@ -31,4 +31,23 @@ RSpec.describe GreenLanes::FaqFeedback do
       end
     end
   end
+
+  describe '.statistics' do
+    subject(:statistics) { described_class.statistics }
+
+    before do
+      create(:green_lanes_faq_feedback, category_id: 1, question_id: 1, useful: true)
+      create(:green_lanes_faq_feedback, category_id: 1, question_id: 1, useful: false)
+      create(:green_lanes_faq_feedback, category_id: 1, question_id: 2, useful: true)
+      create(:green_lanes_faq_feedback, category_id: 2, question_id: 1, useful: false)
+    end
+
+    it 'returns the correct statistics grouped by category and question' do
+      expect(statistics).to contain_exactly(
+        include(category_id: 1, question_id: 1, useful_count: 1, not_useful_count: 1),
+        include(category_id: 1, question_id: 2, useful_count: 1, not_useful_count: 0),
+        include(category_id: 2, question_id: 1, useful_count: 0, not_useful_count: 1),
+      )
+    end
+  end
 end
