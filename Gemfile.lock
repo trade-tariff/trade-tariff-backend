@@ -353,7 +353,7 @@ GEM
       psych (>= 4.0.0)
     redis (5.2.0)
       redis-client (>= 0.22.0)
-    redis-client (0.22.2)
+    redis-client (0.23.2)
       connection_pool
     redlock (2.0.6)
       redis-client (>= 0.14.1, < 1.0.0)
@@ -433,7 +433,7 @@ GEM
     sentry-sidekiq (5.19.0)
       sentry-ruby (~> 5.19.0)
       sidekiq (>= 3.0)
-    sequel (5.84.0)
+    sequel (5.88.0)
       bigdecimal
     sequel-rails (1.2.2)
       actionpack (>= 4.0.0)
@@ -553,7 +553,7 @@ DEPENDENCIES
   rubyzip
   sentry-rails
   sentry-sidekiq
-  sequel (= 5.84.0)
+  sequel (= 5.88.0)
   sequel-rails
   sidekiq
   sidekiq-scheduler
