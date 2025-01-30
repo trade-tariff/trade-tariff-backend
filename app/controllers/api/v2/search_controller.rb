@@ -11,7 +11,7 @@ module Api
 
       def suggestions
         if elastic_search
-          render json: ElasticSearchService.new(params).to_suggestions
+          render json: ElasticSearch::ElasticSearchService.new(params).to_suggestions
         else
         render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
         end
@@ -28,7 +28,7 @@ module Api
       end
 
       def elastic_search
-        # code here
+        # TODO: code feature flag comes here
         true
       end
     end
