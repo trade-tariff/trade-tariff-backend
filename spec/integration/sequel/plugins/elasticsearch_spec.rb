@@ -16,6 +16,10 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
     search_result.hits.hits.map(&:_source).map(&:goods_nomenclature_item_id)
   end
 
+  let(:type) do
+    search_result.hits.hits.map(&:_source).map(&:type)
+  end
+
   let(:producline_suffix) do
     search_result.hits.hits.map(&:_source).map(&:producline_suffix)
   end
@@ -28,7 +32,55 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
     TradeTariffBackend.search_client.drop_index(Search::GoodsNomenclatureIndex.new)
   end
 
-  describe 'after_create' do
+  describe 'after_create a chapter' do
+    context 'when an object is created' do
+      let(:chapter) { create :chapter }
+
+      let(:query) do
+        chapter.goods_nomenclature_item_id
+      end
+
+      before { chapter.save }
+
+      it 'indexes the created object' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'includes the created object in the index' do
+        expect(search_result_commodity_ids).to include chapter.goods_nomenclature_item_id
+      end
+
+      it 'includes the correct type in the index' do
+        expect(type).to include chapter.class.name
+      end
+    end
+  end
+
+  describe 'after_create a heading' do
+    context 'when an object is created' do
+      let(:heading) { create :heading }
+
+      let(:query) do
+        heading.goods_nomenclature_item_id
+      end
+
+      before { heading.save }
+
+      it 'indexes the created object' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'includes the created object in the index' do
+        expect(search_result_commodity_ids).to include heading.goods_nomenclature_item_id
+      end
+
+      it 'includes the correct type in the index' do
+        expect(type).to include heading.class.name
+      end
+    end
+  end
+
+  describe 'after_create a commodity' do
     context 'when an object is created' do
       before { commodity.save }
 
@@ -38,6 +90,10 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
 
       it 'includes the created object in the index' do
         expect(search_result_commodity_ids).to include commodity.goods_nomenclature_item_id
+      end
+
+      it 'includes the correct type in the index' do
+        expect(type).to include commodity.class.name
       end
     end
   end

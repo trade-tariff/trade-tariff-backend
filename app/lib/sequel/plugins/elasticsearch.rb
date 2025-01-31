@@ -55,21 +55,21 @@ module Sequel
         def add_goods_nomenclature_index
           index_name = Search::GoodsNomenclatureIndex.new.name
 
-          if instance_of?(Commodity)
-            TradeTariffBackend.search_client.index_by_name(index_name, id, Search::GoodsNomenclatureSerializer.new(self).as_json)
+          if is_a?(GoodsNomenclature)
+            TradeTariffBackend.search_client.index_by_name(index_name, oid, Search::GoodsNomenclatureSerializer.new(self).as_json)
           elsif instance_of?(SearchReference)
-            TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+            TradeTariffBackend.search_client.index_by_name(index_name, referenced.oid, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
           end
         end
 
         def delete_goods_nomenclature_index
           index_name = Search::GoodsNomenclatureIndex.new.name
 
-          if instance_of?(Commodity)
-            TradeTariffBackend.search_client.delete_by_name(index_name, id)
+          if is_a?(GoodsNomenclature)
+            TradeTariffBackend.search_client.delete_by_name(index_name, oid)
           elsif instance_of?(SearchReference)
             referenced.search_references
-            TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+            TradeTariffBackend.search_client.index_by_name(index_name, referenced.oid, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
           end
         end
       end

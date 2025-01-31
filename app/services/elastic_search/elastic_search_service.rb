@@ -1,5 +1,7 @@
 module ElasticSearch
   class ElasticSearchService
+    include ActiveModel::Validations
+    include ActiveModel::Conversion
     include CustomRegex
 
     class EmptyQuery < StandardError
@@ -23,10 +25,10 @@ module ElasticSearch
     def as_of=(date)
       date ||= Time.zone.today.to_s
       @as_of = begin
-                 Date.parse(date)
-               rescue StandardError
-                 Time.zone.today
-               end
+        Date.parse(date)
+      rescue StandardError
+        Time.zone.today
+      end
     end
 
     def q=(term)
@@ -48,11 +50,11 @@ module ElasticSearch
     end
 
     def to_suggestions(_config = {})
-      if q.present? && !SearchService::RogueSearchService.call(q)
-        @result = perform
-      else
-        @result = []
-      end
+      @result = if q.present? && !SearchService::RogueSearchService.call(q)
+                  perform
+                else
+                  []
+                end
       @result
     end
 
@@ -60,21 +62,21 @@ module ElasticSearch
 
     def perform
       results = TradeTariffBackend.search_client.search(
-        ElasticSearch::Query::SearchSuggestionQuery.new(q, as_of, Search::GoodsNomenclatureIndex.new).query
+        ElasticSearch::Query::SearchSuggestionQuery.new(q, as_of, Search::GoodsNomenclatureIndex.new).query,
       )
 
       Api::V2::SearchSuggestionSerializer.new(map_search_results(results, q)).serializable_hash
     end
 
     def map_search_results(response, query)
-      response.dig("hits", "hits")&.map do |hit|
-        source = hit["_source"]
-        search_references = source["search_references"] || []
+      response.dig('hits', 'hits')&.map do |hit|
+        source = hit['_source']
+        search_references = source['search_references'] || []
 
         fields = {
-          "goods_nomenclature_item_id" => source["goods_nomenclature_item_id"].to_s,
-          "description" => source["description"].to_s,
-          "search_references" => search_references.map { |ref| ref["title"] }.join(", ")
+          'Description' => source['description'].to_s,
+          'Search References' => search_references.map { |ref| ref['title'] }.join(', '),
+          'Item Id' => source['goods_nomenclature_item_id'].to_s,
         }
 
         selected_field, selected_value = fields.find do |_, value|
@@ -83,16 +85,15 @@ module ElasticSearch
 
         SearchSuggestion.unrestrict_primary_key
         suggestion = SearchSuggestion.new(
-          id: source["id"],
+          id: hit['_id'],
           value: selected_value,
-          type: selected_field,
-          priority: hit["_id"],
-          # TODO: add goods_nomenclature_sid and goods_nomenclature_class into the index
-          goods_nomenclature_sid: source["goods_nomenclature_item_id"],
-          goods_nomenclature_class: "Commodity",
+          type: "Goods Nomenclature #{selected_field}",
+          priority: '',
+          goods_nomenclature_sid: source['id'],
+          goods_nomenclature_class: source['type'],
         )
 
-        suggestion[:score] = hit["_score"]
+        suggestion[:score] = hit['_score']
         suggestion[:query] = query
 
         suggestion

@@ -6,7 +6,6 @@ module ElasticSearch
       # results so have a constant much bigger than possible
       # index size for size value.
 
-
       attr_reader :query_string,
                   :date,
                   :index
@@ -40,7 +39,7 @@ module ElasticSearch
                       type: 'best_fields',
                       fuzziness: 'AUTO',
                       operator: 'and',
-                    }
+                    },
                   },
                   {
                     bool: {
@@ -79,10 +78,9 @@ module ElasticSearch
                 ],
               },
             },
-          }
+          },
         }
       end
     end
   end
 end
-

@@ -3,8 +3,6 @@ module Api
     class SearchController < ApiController
       no_caching
 
-      elastic_search = true
-
       def search
         render json: SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
       end
@@ -13,7 +11,7 @@ module Api
         if elastic_search
           render json: ElasticSearch::ElasticSearchService.new(params).to_suggestions
         else
-        render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
+          render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
         end
       end
 
