@@ -8,7 +8,11 @@ module Api
       end
 
       def suggestions
-        render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
+        if elastic_search
+          render json: ElasticSearch::ElasticSearchService.new(params).to_suggestions
+        else
+          render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
+        end
       end
 
       private
@@ -19,6 +23,11 @@ module Api
         end
 
         []
+      end
+
+      def elastic_search
+        # TODO: code feature flag comes here
+        true
       end
     end
   end

@@ -121,6 +121,7 @@ module TradeTariffBackend
         Search::HeadingIndex,
         Search::SearchReferenceIndex,
         Search::SectionIndex,
+        Search::GoodsNomenclatureIndex,
       ].map(&:new)
     end
 
