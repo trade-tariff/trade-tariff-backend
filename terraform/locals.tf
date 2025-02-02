@@ -1,9 +1,11 @@
 locals {
-  account_id     = data.aws_caller_identity.current.account_id
-  no_reply       = "no-reply@${var.base_domain}"
-  worker_command = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
-  init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
-  signon_url     = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
+  account_id          = data.aws_caller_identity.current.account_id
+  no_reply            = "no-reply@${var.base_domain}"
+  worker_command      = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
+  backup_command      = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/backup_sidekiq.yml"]
+  init_command        = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
+  backup_init_command = ["/bin/sh", "-c", "./config/init_backup.sh && bundle exec rails db:migrate && bundle exec rails data:migrate"]
+  signon_url          = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
 
   backend_common_vars = [
     {
@@ -137,6 +139,10 @@ locals {
       name  = "XE_API_URL"
       value = "https://xecdapi.xe.com"
     },
+    {
+      name  = "SNAPSHOT_IMPORTER_BATCH_SIZE"
+      value = var.snapshot_import_batch_size
+    }
   ]
 
   backend_uk_common_secrets = [

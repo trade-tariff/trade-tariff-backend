@@ -86,3 +86,14 @@ variable "green_lanes_notify_measure_updates" {
   description = "Flag to indicate if updated or expired measure records should be included in green lanes update email."
   type        = bool
 }
+
+variable "process_extra_changes_for_tgp" {
+  description = "Defaults to false except in STAGING only for TGP testing (HMRC-434)."
+  type        = bool
+  default     = false
+}
+
+variable "snapshot_import_batch_size" {
+  description = "Batch size for the snapshot upload batch insert."
+  type        = number
+}
