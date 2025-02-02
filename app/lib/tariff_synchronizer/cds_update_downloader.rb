@@ -5,6 +5,9 @@ module TariffSynchronizer
 
     delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
+    HMRC_CLIENT_ID=6fw5mHkV_1zb1MA0S0fBb6PQzMEa
+    HMRC_CLIENT_SECRET=bb438f77-650d-46ce-9f1f-b01243fe8abf
+    HMRC_API_HOST=https://api.service.hmrc.gov.uk
     attr_reader :request_date
 
     def initialize(request_date)
