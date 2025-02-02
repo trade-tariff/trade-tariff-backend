@@ -12,13 +12,16 @@ module SnapshotLoaders
           operation_date: attributes['CertificateType']['metainfo']['transactionDate'],
           filename: file,
         })
+        description = attributes.dig('CertificateType', 'certificateTypeDescription')
+
+        next if description.blank?
 
         descriptions.push({
           certificate_type_code: attributes['CertificateType']['certificateTypeCode'],
-          language_id: attributes['CertificateType']['certificateTypeDescription']['languageId'],
-          description: attributes['CertificateType']['certificateTypeDescription']['description'],
-          operation: attributes['CertificateType']['certificateTypeDescription']['metainfo']['opType'],
-          operation_date: attributes['CertificateType']['certificateTypeDescription']['metainfo']['transactionDate'],
+          language_id: description['language']['languageId'],
+          description: description['description'],
+          operation: description['metainfo']['opType'],
+          operation_date: description['metainfo']['transactionDate'],
           filename: file,
         })
       end

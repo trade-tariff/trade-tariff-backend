@@ -24,7 +24,8 @@ module SnapshotLoaders
           filename: file,
         })
 
-        attributes['AdditionalCodeType']['additionalCodeTypeMeasureType'].each do |measure_type|
+        additional_code_measure_types = Array.wrap(attributes['AdditionalCodeType']['additionalCodeTypeMeasureType'])
+        additional_code_measure_types.each do |measure_type|
           next unless measure_type.is_a?(Hash)
 
           measure_type_id = measure_type.dig('measureType', 'measureTypeId') || measure_type.dig('measureTypeId') # rubocop:disable Style/SingleArgumentDig

@@ -13,17 +13,27 @@ class CdsSnapshotImporter
   end
 
   def import
+    start_time = Time.zone.now
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@snapshot_update)
 
     Zip::File.open_buffer(zip_file) do |archive|
       archive.entries.each do |entry|
         # Read into memory
-        xml_stream = entry.get_input_stream
-        process(xml_stream)
+        wrapped_stream = ProgressIO.new(
+          entry.get_input_stream,
+          total_size: entry.size,
+          label: "Processing #{entry.name}",
+          log_every: 0.1,
+          start_time:,
+        )
+        process(wrapped_stream)
 
         Rails.logger.info "Successfully imported Cds file: #{@snapshot_update.filename}"
       end
     end
+
+    end_time = Time.zone.now
+    puts "Import took #{(end_time - start_time).round(2)} seconds"
   end
 
   private
@@ -34,23 +44,33 @@ class CdsSnapshotImporter
 
   def process(xml_stream)
     current_node = ''
+    types = Hash.new(0)
     count = 0
     batch = []
 
     Nokogiri::XML::Reader.from_io(xml_stream).each do |node|
-      next unless nodes.include? node.name
+      next unless node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
+      next unless node.depth == 3 # primary node depth
 
-      if !batch.empty? && (current_node != node.name || (count % BATCH_SIZE).zero?)
-        Rails.logger.debug "Loading #{current_node}"
-        loader = Object.const_get("SnapshotLoaders::#{current_node}")
-        loader.load(@snapshot_update.filename, batch)
-        batch.clear
+      name = node.name.camelize
+      types[node.name] += 1
+      next unless nodes.include?(name)
+
+      if !batch.empty? && (current_node != name || (count % BATCH_SIZE).zero?)
+        begin
+          Rails.logger.debug "Loading #{current_node}"
+          loader = Object.const_get("SnapshotLoaders::#{current_node}")
+          loader.load(@snapshot_update.filename, batch)
+          batch.clear
+        rescue StandardError => e
+          Rails.logger.error "Failed to load #{current_node} with error: #{e.message}"
+        end
       end
 
       # Process current node
       attribs = Hash.from_xml(node.outer_xml)
       batch << attribs if attribs[node.name]
-      current_node = node.name
+      current_node = name
       count += 1
     end
 
@@ -59,6 +79,8 @@ class CdsSnapshotImporter
       loader = Object.const_get("SnapshotLoaders::#{current_node}")
       loader.load(@snapshot_update.filename, batch)
     end
+
+    puts JSON.pretty_generate(types)
   end
 
   def truncate
@@ -82,7 +104,6 @@ class CdsSnapshotImporter
     Object.const_get('FootnoteAssociationAdditionalCode::Operation').truncate
     Object.const_get('FootnoteAssociationGoodsNomenclature::Operation').truncate
     Object.const_get('FootnoteAssociationMeasure::Operation').truncate
-    Object.const_get('FootnoteAssociationMeursingHeading::Operation').truncate
     Object.const_get('FootnoteDescription::Operation').truncate
     Object.const_get('FootnoteDescriptionPeriod::Operation').truncate
     Object.const_get('FootnoteType::Operation').truncate
