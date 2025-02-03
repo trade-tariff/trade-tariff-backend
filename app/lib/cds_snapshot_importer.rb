@@ -1,4 +1,4 @@
-class CdsSnapshotImporterWill
+class CdsSnapshotImporter
   class ImportException < StandardError
     attr_reader :original
 
