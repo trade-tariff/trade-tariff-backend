@@ -145,7 +145,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
         }.ignore_extra_keys!
       end
 
-      context 'search returns valid result' do
+      context 'for fuzzy query search returns valid result' do
         it { is_expected.to match_json_expression heading_pattern }
       end
     end
