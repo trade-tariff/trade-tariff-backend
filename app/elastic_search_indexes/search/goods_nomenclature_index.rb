@@ -1,7 +1,6 @@
 module Search
   class GoodsNomenclatureIndex < ::SearchIndex
-
-    INDEX_NAME = "goods_nomenclatures".freeze
+    INDEX_NAME = 'goods_nomenclatures'.freeze
 
     def name
       [TradeTariffBackend::SearchClient.server_namespace, INDEX_NAME, TradeTariffBackend.service].join('-')

@@ -28,7 +28,7 @@ module ElasticSearch
     private
 
     def parse_date(date)
-      return Time.zone.today unless date.present?
+      return Time.zone.today if date.blank?
 
       Date.parse(date)
     rescue StandardError
@@ -36,7 +36,7 @@ module ElasticSearch
     end
 
     def process_query(term)
-      return '' unless term.present?
+      return '' if term.blank?
 
       term = term.to_s.first(100)
 

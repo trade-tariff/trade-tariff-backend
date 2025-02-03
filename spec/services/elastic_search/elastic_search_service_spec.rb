@@ -1,4 +1,8 @@
 RSpec.describe ElasticSearch::ElasticSearchService do
+  before do
+    TradeTariffBackend.search_client.drop_index(Search::GoodsNomenclatureIndex.new)
+  end
+
   describe 'initialization' do
     let(:query) { Forgery(:basic).text }
 
@@ -39,7 +43,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
   describe 'search suggestion' do
     context 'when filtering by date' do
       context 'when with goods codes that have bounded validity period' do
-        subject { described_class.new(q: '2851', as_of: date).to_suggestions[:data][0] }
+        subject { described_class.new(q: '2851000000', as_of: date).to_suggestions[:data][0] }
 
         before do
           heading = create :heading,
@@ -59,7 +63,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
               value: '2851000000',
               goods_nomenclature_class: 'Heading',
               suggestion_type: 'Goods Nomenclature Item Id',
-              query: '2851',
+              query: '2851000000',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
         end
@@ -119,7 +123,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
 
     describe 'querying with ambiguous characters' do
       subject(:result) do
-        described_class.new(q: '!!! annima',
+        described_class.new(q: '! bovinn',
                             as_of: '2007-01-01').to_suggestions[:data][0]
       end
 
@@ -140,7 +144,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             value: 'Live bovine animals',
             goods_nomenclature_class: 'Heading',
             suggestion_type: 'Goods Nomenclature Description',
-            query: '!!! annima',
+            query: '! bovinn',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
       end

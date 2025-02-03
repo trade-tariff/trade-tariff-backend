@@ -8,8 +8,6 @@ RSpec.describe Search::GoodsNomenclatureSerializer do
       {
         goods_nomenclature_item_id: serializable.goods_nomenclature_item_id,
         description: 'Horses, other than lemmings',
-        description_indexed: 'horses live animals live horses, asses, mules and hinnies',
-        ancestor_descriptions: ['Live horses, asses, mules and hinnies', 'Live animals', 'Horses, other than lemmings'],
       }.ignore_extra_keys!
     end
 
