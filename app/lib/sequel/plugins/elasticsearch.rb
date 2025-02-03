@@ -56,9 +56,9 @@ module Sequel
           index_name = Search::GoodsNomenclatureIndex.new.name
 
           if is_a?(GoodsNomenclature)
-            TradeTariffBackend.search_client.index_by_name(index_name, oid, Search::GoodsNomenclatureSerializer.new(self).as_json)
+            TradeTariffBackend.search_client.index_by_name(index_name, id, Search::GoodsNomenclatureSerializer.new(self).as_json)
           elsif instance_of?(SearchReference)
-            TradeTariffBackend.search_client.index_by_name(index_name, referenced.oid, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+            TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
           end
         end
 
@@ -66,10 +66,10 @@ module Sequel
           index_name = Search::GoodsNomenclatureIndex.new.name
 
           if is_a?(GoodsNomenclature)
-            TradeTariffBackend.search_client.delete_by_name(index_name, oid)
+            TradeTariffBackend.search_client.delete_by_name(index_name, id)
           elsif instance_of?(SearchReference)
             referenced.search_references
-            TradeTariffBackend.search_client.index_by_name(index_name, referenced.oid, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+            TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
           end
         end
       end

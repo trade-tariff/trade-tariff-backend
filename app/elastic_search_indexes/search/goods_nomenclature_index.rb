@@ -1,7 +1,10 @@
 module Search
-  class GoodsNomenclatureIndex
+  class GoodsNomenclatureIndex < ::SearchIndex
+
+    INDEX_NAME = "goods_nomenclatures".freeze
+
     def name
-      [TradeTariffBackend::SearchClient.server_namespace, 'goods_nomenclatures', TradeTariffBackend.service].join('-')
+      [TradeTariffBackend::SearchClient.server_namespace, INDEX_NAME, TradeTariffBackend.service].join('-')
     end
 
     def definition
@@ -51,9 +54,12 @@ module Search
       }
     end
 
-    def total_pages
-      # TODO: revisit for build_index
-      0
+    def eager_load
+      {
+        goods_nomenclature_indents: [],
+        goods_nomenclature_descriptions: [],
+        search_references: [],
+      }
     end
   end
 end
