@@ -269,5 +269,9 @@ module TradeTariffBackend
     def green_lanes_notify_measure_updates
       ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
     end
+
+    def optimised_search_enabled?
+      ENV['OPTIMISED_SEARCH_ENABLED'].to_s == 'true'
+    end
   end
 end
