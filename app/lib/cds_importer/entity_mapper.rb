@@ -46,6 +46,30 @@ class CdsImporter
       end
     end
 
+    def parse
+      applicable_mappers_for(@key, @xml_node).each do |mapper|
+        mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) }
+
+        instances = mapper.parse
+
+        instances.map do |model_configuration|
+          model_instance = model_configuration[:instance]
+          expanded_model_values = model_configuration[:expanded_attributes]
+
+          mapper.before_oplog_inserts_callbacks.each do |callback|
+            callback.call(
+              xml_node,
+              mapper,
+              model_instance,
+              expanded_model_values,
+            )
+          end
+
+          yield model_instance, mapper if block_given?
+        end
+      end
+    end
+
     class << self
       def applicable_mappers_for(key, xml_node)
         mappers = all_mappers.select { |mapper| mapper&.mapping_root == key }.sort_by(&:sort_key)

@@ -1,4 +1,4 @@
-class ProgressIO
+class ProgressIo
   def initialize(io, total_size:, label: nil, log_every: 0.1, start_time: Time.zone.now)
     @io          = io
     @total_size  = total_size.to_f
@@ -9,7 +9,6 @@ class ProgressIO
     @start_time  = start_time
   end
 
-  # Called by Nokogiri or anything reading from `io`
   def read(*args)
     chunk = @io.read(*args)
     return nil unless chunk
@@ -19,7 +18,6 @@ class ProgressIO
     chunk
   end
 
-  # Pass through other methods if needed (e.g. close, rewind, etc.)
   def method_missing(method, *args, &block)
     @io.respond_to?(method) ? @io.send(method, *args, &block) : super
   end
@@ -47,8 +45,10 @@ class ProgressIO
 
     if percent - @last_report >= @log_every
       @last_report = percent
-      $stdout.print "\r#{@label}: #{percent.round(1)}% complete (#{@bytes_read}/#{@total_size.to_i} bytes) [#{formatted_elapsed} elapsed, ETA: #{formatted_eta}]"
+      # rubocop:disable Rails/Output
+      print "\r#{@label}: #{percent.round(1)}% complete (#{@bytes_read}/#{@total_size.to_i} bytes) [#{formatted_elapsed} elapsed, ETA: #{formatted_eta}]"
       $stdout.flush
+      # rubocop:enable Rails/Output
     end
   end
 end

@@ -1,184 +1,92 @@
-require 'active_support/core_ext/hash/conversions'
-require_relative 'snapshot_loaders/base'
+class CdsSnapshotImporterWill
+  class ImportException < StandardError
+    attr_reader :original
 
-Dir[Rails.root.join('app/lib/snapshot_loaders/**/*.rb')].sort.each { |f| require f }
+    def initialize(msg = 'CdsImporter::ImportException', original = $ERROR_INFO)
+      super(msg)
+      @original = original
+    end
+  end
 
-class CdsSnapshotImporter
-  class ImportException < StandardError; end
-
-  BATCH_SIZE = TradeTariffBackend.snapshot_importer_batch_size
-
-  def initialize(snapshot_update)
-    @snapshot_update = snapshot_update
+  def initialize(update)
+    @update = update
   end
 
   def import
+    Rails.application.eager_load!
+    Sequel::Plugins::Oplog.registered_models.each_value(&:truncate)
+
     start_time = Time.zone.now
-    zip_file = TariffSynchronizer::FileService.file_as_stringio(@snapshot_update)
+    handler = XmlProcessor.new(@update.filename)
+    zip_file = TariffSynchronizer::FileService.file_as_stringio(@update)
 
     Zip::File.open_buffer(zip_file) do |archive|
       archive.entries.each do |entry|
-        # Read into memory
-        wrapped_stream = ProgressIO.new(
+        wrapped_stream = ProgressIo.new(
           entry.get_input_stream,
           total_size: entry.size,
           label: "Processing #{entry.name}",
           log_every: 0.1,
           start_time:,
         )
-        process(wrapped_stream)
-
-        Rails.logger.info "Successfully imported Cds file: #{@snapshot_update.filename}"
+        CdsImporter::XmlParser::Reader.new(wrapped_stream, handler).parse
+        handler.process_end
+        Rails.logger.info "Successfully imported Cds Annual file: #{@update.filename}"
       end
     end
-
-    end_time = Time.zone.now
-    puts "Import took #{(end_time - start_time).round(2)} seconds"
   end
 
-  private
+  class XmlProcessor
+    def initialize(filename)
+      @filename = filename
+      @types = Hash.new(0)
+      @count = 0
+      @batch = Hash.new([])
+      @current_primary = ''
+    end
 
-  def nodes
-    SnapshotLoaders.constants.dup.map(&:to_s).delete_if { |name| name == 'Base' }
-  end
+    # The XML has sections of responses where all of the primary's are the same type.
+    #    e.g. Measure, Measure, Measure, Measure, QuotaOrderNumber, QuotaOrderNumber, QuotaOrderNumber
+    #
+    # We instantiate a new batch when:
+    #
+    # 1. The current node is different from the previous node (e.g. we used to be iterating over 'Measure' nodes and now we're iterating over 'QuotaOrderNumber' nodes)
+    # 2. We've reached the batch size
+    # 3. We've reached the end of the file (signified by a call to process_end)
+    #
+    # All of the batches we accumulate for the primary and secondary nodes will have different lengths
+    def process_xml_node(key, hash_from_node)
+      hash_from_node['filename'] = @filename
 
-  def process(xml_stream)
-    current_node = ''
-    types = Hash.new(0)
-    count = 0
-    batch = []
+      process_batch if @batch.any? && @current_primary != key || (@count % TradeTariffBackend.snapshot_importer_batch_size).zero?
 
-    Nokogiri::XML::Reader.from_io(xml_stream).each do |node|
-      next unless node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
-      next unless node.depth == 3 # primary node depth
+      @current_primary = key
+      @count += 1
 
-      name = node.name.camelize
-      types[node.name] += 1
-      next unless nodes.include?(name)
+      CdsImporter::EntityMapper.new(key, hash_from_node).parse do |model, _mapper|
+        @types[model.class] += 1
+        @batch[model.class] << model
+      end
+    rescue StandardError => e
+      cds_failed_log(e, key, hash_from_node)
+      raise ImportException
+    end
 
-      if !batch.empty? && (current_node != name || (count % BATCH_SIZE).zero?)
-        begin
-          Rails.logger.debug "Loading #{current_node}"
-          loader = Object.const_get("SnapshotLoaders::#{current_node}")
-          loader.load(@snapshot_update.filename, batch)
-          batch.clear
-        rescue StandardError => e
-          Rails.logger.error "Failed to load #{current_node} with error: #{e.message}"
-        end
+    def process_batch
+      @batch.each do |model_klass, batch|
+        model_klass.operation_klass.multi_insert(batch.map(&:values))
       end
 
-      # Process current node
-      attribs = Hash.from_xml(node.outer_xml)
-      batch << attribs if attribs[node.name]
-      current_node = name
-      count += 1
+      @batch = Hash.new([])
     end
 
-    unless batch.empty?
-      Rails.logger.debug "Loading #{current_node}"
-      loader = Object.const_get("SnapshotLoaders::#{current_node}")
-      loader.load(@snapshot_update.filename, batch)
+    alias_method :process_end, :process_batch
+
+    def cds_failed_log(exception, key, hash)
+      message = "Cds import failed: #{exception}"
+      message << "\n Failed object: #{key}\n #{hash}"
+      message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
+      Rails.logger.error(message)
     end
-
-    puts JSON.pretty_generate(types)
-  end
-
-  def truncate
-    Object.const_get('AdditionalCode::Operation').truncate
-    Object.const_get('AdditionalCodeDescription::Operation').truncate
-    Object.const_get('AdditionalCodeDescriptionPeriod::Operation').truncate
-    Object.const_get('AdditionalCodeType::Operation').truncate
-    Object.const_get('AdditionalCodeTypeDescription::Operation').truncate
-    Object.const_get('AdditionalCodeTypeMeasureType::Operation').truncate
-    Object.const_get('BaseRegulation::Operation').truncate
-    Object.const_get('Certificate::Operation').truncate
-    Object.const_get('CertificateDescription::Operation').truncate
-    Object.const_get('CertificateDescriptionPeriod::Operation').truncate
-    Object.const_get('CertificateType::Operation').truncate
-    Object.const_get('CertificateTypeDescription::Operation').truncate
-    Object.const_get('CompleteAbrogationRegulation::Operation').truncate
-    Object.const_get('DutyExpression::Operation').truncate
-    Object.const_get('DutyExpressionDescription::Operation').truncate
-    Object.const_get('ExplicitAbrogationRegulation::Operation').truncate
-    Object.const_get('Footnote::Operation').truncate
-    Object.const_get('FootnoteAssociationAdditionalCode::Operation').truncate
-    Object.const_get('FootnoteAssociationGoodsNomenclature::Operation').truncate
-    Object.const_get('FootnoteAssociationMeasure::Operation').truncate
-    Object.const_get('FootnoteDescription::Operation').truncate
-    Object.const_get('FootnoteDescriptionPeriod::Operation').truncate
-    Object.const_get('FootnoteType::Operation').truncate
-    Object.const_get('FootnoteTypeDescription::Operation').truncate
-    Object.const_get('FtsRegulationAction::Operation').truncate
-    Object.const_get('FullTemporaryStopRegulation::Operation').truncate
-    Object.const_get('GeographicalArea::Operation').truncate
-    Object.const_get('GeographicalAreaDescription::Operation').truncate
-    Object.const_get('GeographicalAreaDescriptionPeriod::Operation').truncate
-    Object.const_get('GeographicalAreaMembership::Operation').truncate
-    Object.const_get('GoodsNomenclature::Operation').truncate
-    Object.const_get('GoodsNomenclatureDescription::Operation').truncate
-    Object.const_get('GoodsNomenclatureDescriptionPeriod::Operation').truncate
-    Object.const_get('GoodsNomenclatureIndent::Operation').truncate
-    Object.const_get('GoodsNomenclatureOrigin::Operation').truncate
-    Object.const_get('GoodsNomenclatureSuccessor::Operation').truncate
-    Object.const_get('Language::Operation').truncate
-    Object.const_get('LanguageDescription::Operation').truncate
-    Object.const_get('Measure::Operation').truncate
-    Object.const_get('MeasureAction::Operation').truncate
-    Object.const_get('MeasureActionDescription::Operation').truncate
-    Object.const_get('MeasureComponent::Operation').truncate
-    Object.const_get('MeasureCondition::Operation').truncate
-    Object.const_get('MeasureConditionCode::Operation').truncate
-    Object.const_get('MeasureConditionCodeDescription::Operation').truncate
-    Object.const_get('MeasureConditionComponent::Operation').truncate
-    Object.const_get('MeasureExcludedGeographicalArea::Operation').truncate
-    Object.const_get('MeasurePartialTemporaryStop::Operation').truncate
-    Object.const_get('MeasureType::Operation').truncate
-    Object.const_get('MeasureTypeDescription::Operation').truncate
-    Object.const_get('MeasureTypeSeries::Operation').truncate
-    Object.const_get('MeasureTypeSeriesDescription::Operation').truncate
-    Object.const_get('Measurement::Operation').truncate
-    Object.const_get('MeasurementUnit::Operation').truncate
-    Object.const_get('MeasurementUnitDescription::Operation').truncate
-    Object.const_get('MeasurementUnitQualifier::Operation').truncate
-    Object.const_get('MeasurementUnitQualifierDescription::Operation').truncate
-    Object.const_get('MeursingAdditionalCode::Operation').truncate
-    Object.const_get('MeursingHeading::Operation').truncate
-    Object.const_get('MeursingHeadingText::Operation').truncate
-    Object.const_get('MeursingSubheading::Operation').truncate
-    Object.const_get('MeursingTableCellComponent::Operation').truncate
-    Object.const_get('MeursingTablePlan::Operation').truncate
-    Object.const_get('ModificationRegulation::Operation').truncate
-    Object.const_get('MonetaryExchangePeriod::Operation').truncate
-    Object.const_get('MonetaryExchangeRate::Operation').truncate
-    Object.const_get('MonetaryUnit::Operation').truncate
-    Object.const_get('MonetaryUnitDescription::Operation').truncate
-    Object.const_get('ProrogationRegulation::Operation').truncate
-    Object.const_get('ProrogationRegulationAction::Operation').truncate
-    Object.const_get('QuotaAssociation::Operation').truncate
-    Object.const_get('QuotaBalanceEvent::Operation').truncate
-    Object.const_get('QuotaBlockingPeriod::Operation').truncate
-    Object.const_get('QuotaClosedAndTransferredEvent::Operation').truncate
-    Object.const_get('QuotaCriticalEvent::Operation').truncate
-    Object.const_get('QuotaDefinition::Operation').truncate
-    Object.const_get('QuotaExhaustionEvent::Operation').truncate
-    Object.const_get('QuotaOrderNumber::Operation').truncate
-    Object.const_get('QuotaOrderNumberOrigin::Operation').truncate
-    Object.const_get('QuotaOrderNumberOriginExclusion::Operation').truncate
-    Object.const_get('QuotaReopeningEvent::Operation').truncate
-    Object.const_get('QuotaSuspensionPeriod::Operation').truncate
-    Object.const_get('QuotaUnblockingEvent::Operation').truncate
-    Object.const_get('QuotaUnsuspensionEvent::Operation').truncate
-    Object.const_get('RegulationGroup::Operation').truncate
-    Object.const_get('RegulationGroupDescription::Operation').truncate
-    Object.const_get('RegulationReplacement::Operation').truncate
-    Object.const_get('RegulationRoleType::Operation').truncate
-    Object.const_get('RegulationRoleTypeDescription::Operation').truncate
-    # Object.const_get('GoodsNomenclatureGroup::Operation').truncate
-    # Object.const_get('GoodsNomenclatureGroupDescription::Operation').truncate
-    # PublicationSigle
-    # GoodsNomenclatureGroup
-    # GoodsNomenclatureGroupDescription
-    # ExportRefundNomenclature
-    # MonetaryPlaceOfPublication
   end
 end

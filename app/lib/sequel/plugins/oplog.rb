@@ -5,6 +5,10 @@ module Sequel
       UPDATE_OPERATION = 'U'.freeze
       DESTROY_OPERATION = 'D'.freeze
 
+      def self.registered_models
+        @registered_models ||= {}
+      end
+
       def self.configure(model, options = {})
         model_primary_key = options.fetch(:primary_key, model.primary_key)
         primary_key = [:oid, model_primary_key].flatten
@@ -41,8 +45,9 @@ module Sequel
 
         # Delegations
         model.delegate :operation_klass, to: model
-
         model.plugin :identification
+
+        registered_models[model] = model.operation_klass
       end
 
       module InstanceMethods
