@@ -7,7 +7,7 @@ data "aws_iam_policy_document" "secrets" {
       "secretsmanager:DescribeSecret",
       "secretsmanager:ListSecretVersionIds"
     ]
-    resources = [
+    resources = compact([
       try(data.aws_secretsmanager_secret.aurora_ro_connection_string[0].arn, null),
       try(data.aws_secretsmanager_secret.aurora_rw_connection_string[0].arn, null),
       data.aws_secretsmanager_secret.database_connection_string.arn,
@@ -32,7 +32,7 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.sync_xi_username.arn,
       data.aws_secretsmanager_secret.xe_api_password.arn,
       data.aws_secretsmanager_secret.xe_api_username.arn,
-    ]
+    ])
   }
 
   statement {
