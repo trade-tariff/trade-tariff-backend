@@ -86,3 +86,9 @@ variable "green_lanes_notify_measure_updates" {
   description = "Flag to indicate if updated or expired measure records should be included in green lanes update email."
   type        = bool
 }
+
+variable "disable_admin_api_authentication" {
+  description = "Flag to indicate if admin API authentication should be disabled."
+  type        = bool
+  default     = false
+}

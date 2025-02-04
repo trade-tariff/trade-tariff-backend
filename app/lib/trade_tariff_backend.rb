@@ -268,5 +268,9 @@ module TradeTariffBackend
     def green_lanes_notify_measure_updates
       ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
     end
+
+    def disable_admin_api_authentication?
+      ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
+    end
   end
 end
