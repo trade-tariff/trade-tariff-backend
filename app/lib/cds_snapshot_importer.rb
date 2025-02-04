@@ -41,7 +41,7 @@ class CdsSnapshotImporter
       @filename = filename
       @types = Hash.new(0)
       @count = 0
-      @batch = Hash.new([])
+      @batch = {}
       @current_primary = ''
     end
 
@@ -58,14 +58,14 @@ class CdsSnapshotImporter
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      process_batch if @batch.any? && @current_primary != key || (@count % TradeTariffBackend.snapshot_importer_batch_size).zero?
+      process_batch if start_new_batch?(key)
 
       @current_primary = key
       @count += 1
 
       CdsImporter::EntityMapper.new(key, hash_from_node).parse do |model, _mapper|
         @types[model.class] += 1
-        @batch[model.class] << model
+        (@batch[model.class] ||= []) << model
       end
     rescue StandardError => e
       cds_failed_log(e, key, hash_from_node)
@@ -77,10 +77,16 @@ class CdsSnapshotImporter
         model_klass.operation_klass.multi_insert(batch.map(&:values))
       end
 
-      @batch = Hash.new([])
+      @batch = {}
     end
-
     alias_method :process_end, :process_batch
+
+    private
+
+    def start_new_batch?(key)
+      !@batch.empty? &&
+        (@current_primary != key || (@count % TradeTariffBackend.snapshot_importer_batch_size).zero?)
+    end
 
     def cds_failed_log(exception, key, hash)
       message = "Cds import failed: #{exception}"

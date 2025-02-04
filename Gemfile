@@ -55,6 +55,7 @@ gem 'tilt'
 
 group :development do
   gem 'foreman'
+  gem 'get_process_mem'
   gem 'letter_opener'
   gem 'rubocop-govuk'
 end

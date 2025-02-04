@@ -1,3 +1,10 @@
+begin
+  require 'get_process_mem'
+  MEM = GetProcessMem.new
+rescue LoadError
+  MEM = nil
+end
+
 class ProgressIo
   def initialize(io, total_size:, label: nil, log_every: 0.1, start_time: Time.zone.now)
     @io          = io
@@ -42,11 +49,12 @@ class ProgressIo
     eta_minutes = (eta / 60).to_i % 60
     eta_hours = (eta / 3600).to_i % 60
     formatted_eta = "#{eta_hours}h #{eta_minutes}m #{eta.to_i % 60}s"
+    process_mem = MEM ? " (#{MEM.mb.round(2)} MB)" : ''
 
     if percent - @last_report >= @log_every
       @last_report = percent
       # rubocop:disable Rails/Output
-      print "\r#{@label}: #{percent.round(1)}% complete (#{@bytes_read}/#{@total_size.to_i} bytes) [#{formatted_elapsed} elapsed, ETA: #{formatted_eta}]"
+      print "\r#{@label}: #{percent.round(1)}% complete (#{@bytes_read}/#{@total_size.to_i} bytes) [#{formatted_elapsed} elapsed, ETA: #{formatted_eta}] #{process_mem}"
       $stdout.flush
       # rubocop:enable Rails/Output
     end
