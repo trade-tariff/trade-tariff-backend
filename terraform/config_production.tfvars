@@ -14,3 +14,4 @@ management_email                      = "tariffmanagement@hmrc.gov.uk"
 green_lanes_update_email              = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
 green_lanes_notify_measure_updates    = false
 legacy_search_enhancements_enabled    = true
+disable_admin_api_authentication      = false

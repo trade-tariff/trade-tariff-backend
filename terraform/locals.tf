@@ -31,6 +31,10 @@ locals {
       value = "1"
     },
     {
+      name  = "DISABLE_ADMIN_API_AUTHENTICATION"
+      value = var.disable_admin_api_authentication
+    },
+    {
       name  = "FRONTEND_HOST"
       value = "https://${var.frontend_base_domain}/"
     },

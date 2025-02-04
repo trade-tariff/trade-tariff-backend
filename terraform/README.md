@@ -82,6 +82,7 @@ Terraform to deploy the service into AWS.
 | <a name="input_alcohol_coercian_starts_from"></a> [alcohol\_coercian\_starts\_from](#input\_alcohol\_coercian\_starts\_from) | When alcohol measurement unit coercian starts from for excise measurement units | `string` | `"2023-01-01"` | no |
 | <a name="input_base_domain"></a> [base\_domain](#input\_base\_domain) | Host address of the service. | `string` | n/a | yes |
 | <a name="input_cpu"></a> [cpu](#input\_cpu) | CPU units to use. | `number` | n/a | yes |
+| <a name="input_disable_admin_api_authentication"></a> [disable\_admin\_api\_authentication](#input\_disable\_admin\_api\_authentication) | Flag to indicate if admin API authentication should be disabled. | `bool` | `false` | no |
 | <a name="input_docker_tag"></a> [docker\_tag](#input\_docker\_tag) | Image tag to use. | `string` | n/a | yes |
 | <a name="input_environment"></a> [environment](#input\_environment) | Deployment environment. | `string` | n/a | yes |
 | <a name="input_frontend_base_domain"></a> [frontend\_base\_domain](#input\_frontend\_base\_domain) | Host address of the frontend service. | `string` | n/a | yes |
