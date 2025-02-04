@@ -17,6 +17,8 @@ module "backend_admin_xi" {
   docker_tag   = var.docker_tag
   skip_destroy = true
 
+  enable_ecs_exec = true
+
   container_port        = 8080
   private_dns_namespace = "tariff.internal"
 
@@ -24,6 +26,7 @@ module "backend_admin_xi" {
   memory = var.memory
 
   task_role_policy_arns = [
+    aws_iam_policy.exec.arn,
     aws_iam_policy.s3.arn,
     aws_iam_policy.task_role_kms_keys.arn
   ]
