@@ -1,6 +1,5 @@
 module Api
   class ApiController < ApplicationController
-    include GDS::SSO::ControllerMethods
     include EtagCaching
 
     respond_to :json
