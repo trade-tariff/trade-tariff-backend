@@ -15,3 +15,4 @@ green_lanes_update_email              = "hmrc-trade-tariff-support-g@digital.hmr
 green_lanes_notify_measure_updates    = false
 legacy_search_enhancements_enabled    = true
 disable_admin_api_authentication      = false
+snapshot_import_batch_size            = 500

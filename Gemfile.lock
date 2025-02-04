@@ -176,6 +176,7 @@ GEM
       logger
     faraday-net_http (3.1.0)
       net-http
+    ffi (1.17.1)
     foreman (0.88.1)
     forgery (0.8.1)
     fugit (1.11.1)
@@ -189,6 +190,9 @@ GEM
       rails (>= 7)
       warden (~> 1.2)
       warden-oauth2 (~> 0.0.1)
+    get_process_mem (1.0.0)
+      bigdecimal (>= 2.0)
+      ffi (~> 1.0)
     globalid (1.2.1)
       activesupport (>= 6.1)
     hashdiff (1.1.0)
@@ -522,6 +526,7 @@ DEPENDENCIES
   foreman
   forgery
   gds-sso
+  get_process_mem
   hashie
   holidays
   json_expressions

@@ -92,3 +92,14 @@ variable "disable_admin_api_authentication" {
   type        = bool
   default     = false
 }
+
+variable "process_extra_changes_for_tgp" {
+  description = "Defaults to false except in STAGING only for TGP testing (HMRC-434)."
+  type        = bool
+  default     = false
+}
+
+variable "snapshot_import_batch_size" {
+  description = "Batch size for the snapshot upload batch insert."
+  type        = number
+}

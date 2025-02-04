@@ -39,9 +39,10 @@ class CdsImporter
 
     Zip::File.open_buffer(zip_file) do |archive|
       archive.entries.each do |entry|
-        # Read into memory
+        # Create an IO buffer around the entry
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
+        # TODO: xml_stream.read reads the file into memory and undoes the good work of using SAX
         CdsImporter::XmlParser::Reader.new(xml_stream.read, handler).parse
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
