@@ -56,15 +56,15 @@ locals {
     },
     {
       name  = "RACK_TIMEOUT_SERVICE"
-      value = "5"
+      value = "50"
     },
     {
       name  = "RACK_TIMEOUT_SERVICE_TIMEOUT"
-      value = "5"
+      value = "50"
     },
     {
       name  = "RACK_TIMEOUT_WAIT_TIMEOUT"
-      value = "5"
+      value = "100"
     },
     {
       name  = "RUBYOPT",
