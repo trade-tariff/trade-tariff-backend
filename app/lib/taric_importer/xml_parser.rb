@@ -43,7 +43,7 @@ class TaricImporter
         key = strip_namespace(key)
 
         if key == @target
-          @target_handler.process_xml_node @stack[-1]
+          @target_handler.process_xml_node @stack.pop
           @in_target = false
         end
 

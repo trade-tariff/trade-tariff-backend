@@ -43,7 +43,7 @@ class CdsImporter
       def end_element(key)
         @depth -= 1
         if @depth == @target_depth && @targets.include?(key)
-          @target_handler.process_xml_node(key, @stack[-1])
+          @target_handler.process_xml_node(key, @stack.pop)
           @in_target = false
         end
         return unless @in_target
