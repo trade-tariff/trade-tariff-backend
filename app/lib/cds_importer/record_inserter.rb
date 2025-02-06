@@ -1,6 +1,5 @@
 class CdsImporter
   class RecordInserter
-    DESTROY_MISSING_OPERATION = :destroy_missing
     SKIPPED_OPERATION = :skipped
 
     delegate :instrument, to: ActiveSupport::Notifications
