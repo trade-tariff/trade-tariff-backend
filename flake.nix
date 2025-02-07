@@ -14,21 +14,19 @@
       let
         pkgs = import nixpkgs {
           system = system;
-          overlays = [nixpkgs-ruby.overlays.default];
+          overlays = [ nixpkgs-ruby.overlays.default ];
         };
 
-        rubyVersion = let
-          rubyRegex = "^ruby (.*)$";
-          toolVersionsLines = builtins.split "\n" (builtins.readFile ./.tool-versions);
-          rubyLine = builtins.head (builtins.filter (line: builtins.match rubyRegex (builtins.toString line) != null) toolVersionsLines);
-          versionMatch = builtins.match rubyRegex rubyLine;
-        in builtins.elemAt versionMatch 0;
+        rubyVersion = builtins.head (builtins.split "\n" (builtins.readFile ./.ruby-version));
         ruby = pkgs."ruby-${rubyVersion}";
 
         postgresqlBuildFlags = with pkgs; [
           "--with-pg-config=${lib.getDev postgresql_16}/bin/pg_config"
         ];
-
+        psychBuildFlags = with pkgs; [
+          "--with-libyaml-include=${libyaml.dev}/include"
+          "--with-libyaml-lib=${libyaml.out}/lib"
+        ];
         postgresql = pkgs.postgresql_16.withPackages (p: [ p.postgis ]);
         pg-environment-variables = ''
           export PGDATA=$PWD/.nix/postgres/data
@@ -53,7 +51,8 @@
 
           bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
         '';
-      in {
+      in
+      {
         devShells.default = pkgs.mkShell {
           shellHook = ''
             export GEM_HOME=$PWD/.nix/ruby/$(${ruby}/bin/ruby -e "puts RUBY_VERSION")
@@ -61,6 +60,10 @@
 
             export BUNDLE_BUILD__PG="${
               builtins.concatStringsSep " " postgresqlBuildFlags
+            }"
+
+            export BUNDLE_BUILD__PSYCH="${
+              builtins.concatStringsSep " " psychBuildFlags
             }"
 
             export GEM_PATH=$GEM_HOME
