@@ -29,6 +29,7 @@ class CdsImporter
               mapper,
               model_instance,
               expanded_model_values,
+              implicit_deletes_enabled?,
             )
           end
 
@@ -62,6 +63,20 @@ class CdsImporter
     end
 
     private
+
+    def implicit_deletes_enabled?
+      return file_date < TradeTariffBackend.implicit_deletion_cutoff if file_date
+
+      false
+    end
+
+    def file_date
+      return nil if @filename.blank?
+
+      TariffSynchronizer::CdsUpdate.new(filename: @filename).file_date
+    rescue StandardError
+      nil
+    end
 
     def instrument_warning(message, xml_node)
       instrument('apply.import_warnings', message:, xml_node:)

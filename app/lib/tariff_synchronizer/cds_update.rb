@@ -45,6 +45,8 @@ module TariffSynchronizer
       Date.new(*sequence_date)
     end
 
+    alias_method :file_date, :filename_sequence
+
     def to_param
       filename.sub('.gzip', '')
     end
