@@ -183,10 +183,6 @@ module TradeTariffBackend
       }
     end
 
-    def bulk_search_api_enabled?
-      ENV.fetch('BULK_SEARCH_API_ENABLED', 'false') == 'true'
-    end
-
     def opensearch_host
       ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
     end
