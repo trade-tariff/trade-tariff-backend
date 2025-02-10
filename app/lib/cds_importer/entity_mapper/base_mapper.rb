@@ -64,26 +64,6 @@ class CdsImporter
           end
         end
 
-        # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
-        def delete_missing_entities(*secondary_mappers)
-          before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance, _expanded_attributes|
-            if TradeTariffBackend.handle_missing_soft_deletes?
-              secondary_mappers.each do |secondary_mapper|
-                database_entities = secondary_mapper.database_entities_for(primary_model_instance)
-                xml_node_entities = secondary_mapper.xml_entities_for(xml_node)
-                missing_entities = database_entities - xml_node_entities
-                missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
-
-                secondary_mapper.entity.where(missing_entity_filter).each do |missing_entity|
-                  inserter = CdsImporter::RecordInserter.new(missing_entity, secondary_mapper, mapper_instance.filename)
-
-                  inserter.destroy_missing_record
-                end
-              end
-            end
-          end
-        end
-
         def entity
           entity_class.constantize
         end
@@ -194,10 +174,6 @@ class CdsImporter
         values[:approved_flag] = (values[:approved_flag] == APPROVED_FLAG) if values.key?(:approved_flag)
         values[:stopped_flag] = (values[:stopped_flag] == STOPPED_FLAG) if values.key?(:approved_flag)
         values
-      end
-
-      def derived_entity_class
-        name.match(/\ACdsImporter::EntityMapper::(?<entity_class>.*)Mapper\z/).try(:[], :entity_class)
       end
     end
   end

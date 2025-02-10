@@ -1,3 +1,5 @@
+require 'rails/generators'
+
 module Generators
   class DataMigrationGenerator < Rails::Generators::NamedBase
     class IllegalMigrationNameError < StandardError
