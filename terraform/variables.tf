@@ -86,3 +86,8 @@ variable "green_lanes_notify_measure_updates" {
   description = "Flag to indicate if updated or expired measure records should be included in green lanes update email."
   type        = bool
 }
+
+variable "optimised_search_enabled" {
+  description = "Flag to indicate if OTT search use the new elastic search index for search and suggestions"
+  type        = bool
+}

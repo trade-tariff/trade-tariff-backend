@@ -5,8 +5,13 @@ module Sequel
     module Elasticsearch
       def self.configure(model, options = {})
         index = options[:index] || Search.const_get("#{model}Index")
-        model.elasticsearch_indexes = Array.wrap(index)
-        model.elasticsearch_index = index.new
+        if index == ''
+          # this is a temporary fix to skip FullChemical looking for it's own index
+          model.elasticsearch_indexes = []
+        else
+          model.elasticsearch_indexes = Array.wrap(index)
+          model.elasticsearch_index = index.new
+        end
       end
 
       module ClassMethods
@@ -55,21 +60,24 @@ module Sequel
         def add_goods_nomenclature_index
           index_name = Search::GoodsNomenclatureIndex.new.name
 
-          if instance_of?(Commodity)
+          if is_a?(GoodsNomenclature)
             TradeTariffBackend.search_client.index_by_name(index_name, id, Search::GoodsNomenclatureSerializer.new(self).as_json)
           elsif instance_of?(SearchReference)
             TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+          elsif instance_of?(FullChemical) && goods_nomenclature.present?
+            TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
           end
         end
 
         def delete_goods_nomenclature_index
           index_name = Search::GoodsNomenclatureIndex.new.name
 
-          if instance_of?(Commodity)
+          if is_a?(GoodsNomenclature)
             TradeTariffBackend.search_client.delete_by_name(index_name, id)
           elsif instance_of?(SearchReference)
-            referenced.search_references
             TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+          elsif instance_of?(FullChemical) && goods_nomenclature.present?
+            TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
           end
         end
       end
