@@ -85,7 +85,7 @@ module "worker_xi" {
     [
       {
         name      = "DATABASE_URL"
-        valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+        valueFrom = local.read_write_db_arn
       }
     ]
   ])

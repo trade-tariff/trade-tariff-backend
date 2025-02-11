@@ -1,4 +1,6 @@
 RSpec.describe Api::V1::Chapters::ChapterNotesController do
+  routes { V1Api.routes }
+
   let(:pattern) do
     {
       id: Integer,

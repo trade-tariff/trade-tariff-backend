@@ -59,6 +59,18 @@ data "aws_secretsmanager_secret" "database_readonly_connection_string" {
   name = "postgres-read-only"
 }
 
+# HMRC-532: Aurora test
+
+data "aws_secretsmanager_secret" "aurora_rw_connection_string" {
+  count = var.environment == "staging" ? 1 : 0
+  name  = "aurora-postgres-rw-connection-string"
+}
+
+data "aws_secretsmanager_secret" "aurora_ro_connection_string" {
+  count = var.environment == "staging" ? 1 : 0
+  name  = "aurora-postgres-ro-connection-string"
+}
+
 data "aws_secretsmanager_secret" "secret_key_base" {
   name = "backend-secret-key-base"
 }

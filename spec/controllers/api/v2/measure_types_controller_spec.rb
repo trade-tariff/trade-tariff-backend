@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::MeasureTypesController, type: :controller do
+  routes { V2Api.routes }
+
   describe '#index' do
     subject(:do_request) { get :index }
 
@@ -56,7 +58,7 @@ RSpec.describe Api::V2::MeasureTypesController, type: :controller do
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://test.host/measure_types/foo',
+          url: 'http://test.host/uk/api/v2/measure_types/foo',
         }
       end
 

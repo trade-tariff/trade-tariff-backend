@@ -1,4 +1,5 @@
 RSpec.describe Api::V2::SectionsController do
+  routes { V2Api.routes }
   # GET /api/v2/sections/:id
 
   describe '#show' do
