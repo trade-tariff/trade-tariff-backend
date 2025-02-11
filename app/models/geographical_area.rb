@@ -3,6 +3,7 @@ class GeographicalArea < Sequel::Model
   GROUPS_CODE = '1'.freeze
   AREAS_CODES = %w[0 1 2].freeze
   ERGA_OMNES_ID = '1011'.freeze
+  AREAS_SUBJECT_TO_VAT_OR_EXCISE = '1400'.freeze
   REFERENCED_GEOGRAPHICAL_AREAS = { 'EU' => '1013' }.freeze
   GSP = %w[2005 2020 2027].freeze
   DCTS = %w[1060 1061 1062].freeze

@@ -231,6 +231,10 @@ FactoryBot.define do
       geographical_area_id { GeographicalArea::ERGA_OMNES_ID }
     end
 
+    trait :areas_subject_to_vat_or_excise do
+      geographical_area_id { GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE }
+    end
+
     trait :simplified_procedural_code do
       erga_omnes
       with_measure_components
@@ -285,7 +289,7 @@ FactoryBot.define do
 
     trait :vat_overview do
       vat
-      erga_omnes
+      areas_subject_to_vat_or_excise
     end
 
     trait :supplementary do
