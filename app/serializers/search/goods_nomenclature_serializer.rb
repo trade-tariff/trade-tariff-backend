@@ -14,6 +14,7 @@ module Search
       }
 
       commodity_attributes[:search_references] = search_references_part if search_references.present?
+      commodity_attributes[:chemicals] = chemicals_part if full_chemicals.present?
       commodity_attributes
     end
 
@@ -34,6 +35,18 @@ module Search
         {
           title: search_reference.title,
           reference_class: search_reference.referenced_class,
+        }
+      end
+    end
+
+    def chemicals_part
+      return if full_chemicals.empty?
+
+      full_chemicals.map do |chemical|
+        {
+          cus: chemical.cus,
+          cas_rn: chemical.cas_rn,
+          name: chemical.name,
         }
       end
     end

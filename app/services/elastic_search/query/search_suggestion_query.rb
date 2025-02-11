@@ -35,7 +35,7 @@ module ElasticSearch
                   {
                     multi_match: {
                       query: query_string,
-                      fields: %w[goods_nomenclature_item_id description search_references.title],
+                      fields: %w[goods_nomenclature_item_id description search_references.title chemicals.cus chemicals.cas_rn chemicals.name],
                       type: 'best_fields',
                       fuzziness: 'AUTO',
                       operator: 'and',

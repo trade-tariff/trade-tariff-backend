@@ -65,22 +65,37 @@ module ElasticSearch
       response.dig('hits', 'hits')&.map do |hit|
         source = hit['_source']
         search_references = source['search_references'] || []
+        chemicals = source['chemicals'] || []
 
-        fields = {
-          'Description' => source['description'].to_s,
-          'Search References' => search_references.map { |ref| ref['title'] }.join(', '),
-          'Item Id' => source['goods_nomenclature_item_id'].to_s,
-        }
+        fields = [
+          { 'Description' => source['description'].to_s }, { 'Goods Nomenclature Item Id' => source['goods_nomenclature_item_id'].to_s }
+        ]
 
-        selected_field, selected_value = fields.find do |_, value|
-          value.split.any? { |word| word.downcase.include?(query.downcase) }
-        end || fields.first
+        search_references.each do |ref|
+          fields << { 'Search Reference' => ref['title'].to_s }
+        end
+
+        chemicals.each do |chem|
+          fields << { 'CUS' => chem['cus'].to_s }
+          fields << { 'CAS_RN' => chem['cas_rn'].to_s }
+          fields << { 'Chemical Name' => chem['name'].to_s }
+        end
+
+        match = fields.find do |hash|
+          hash.any? { |_, value| value.split.any? { |word| word.downcase.include?(query.downcase) } }
+        end
+
+        if match
+          selected_field, selected_value = match.first
+        else
+          selected_field, selected_value = fields.first.to_a.first
+        end
 
         SearchSuggestion.unrestrict_primary_key
         suggestion = SearchSuggestion.new(
-          id: hit['_id'],
+          id: hit['id'],
           value: selected_value,
-          type: "Goods Nomenclature #{selected_field}",
+          type: selected_field,
           priority: '',
           goods_nomenclature_sid: source['id'],
           goods_nomenclature_class: source['type'],

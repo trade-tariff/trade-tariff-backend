@@ -2,7 +2,6 @@ require 'spec_helper'
 
 RSpec.describe Sequel::Plugins::Elasticsearch do
   let(:commodity) { create :commodity }
-  let(:search_reference) { create :search_reference }
 
   let(:search_result) do
     TradeTariffBackend.search_client.search q: query, index: Search::GoodsNomenclatureIndex.new.name
@@ -22,10 +21,6 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
 
   let(:producline_suffix) do
     search_result.hits.hits.map(&:_source).map(&:producline_suffix)
-  end
-
-  let(:search_reference_title) do
-    search_result.hits.hits.map(&:_source).map(&:search_references).first.map(&:title)
   end
 
   before do
@@ -127,6 +122,12 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
   end
 
   describe 'SearchReference behavior' do
+    let(:search_reference) { create :search_reference }
+
+    let(:search_reference_title) do
+      search_result.hits.hits.map(&:_source).map(&:search_references).first.map(&:title)
+    end
+
     let(:query) { search_reference.title }
 
     context 'when a search reference is created' do
@@ -149,6 +150,39 @@ RSpec.describe Sequel::Plugins::Elasticsearch do
 
       it 'removes the referenced goods nomenclatures from the index' do
         expect(search_result.hits.hits.flat_map { |hit| hit._source.search_references || [] }.size).to eq 0
+      end
+    end
+  end
+
+  describe 'Chemicals behavior' do
+    let(:chemical) { create :full_chemical }
+
+    let(:chemical_name) do
+      search_result.hits.hits.map(&:_source).map(&:chemicals).first.map(&:name)
+    end
+
+    let(:query) { chemical.name }
+
+    context 'when a search reference is created' do
+      before { chemical.save }
+
+      it 'indexes the referenced goods nomenclatures' do
+        expect(search_result.hits.total.value).to be >= 1
+      end
+
+      it 'includes the chemical name in the index' do
+        expect(chemical_name).to include chemical.name
+      end
+    end
+
+    context 'when a chemical is destroyed' do
+      before do
+        chemical.save
+        chemical.destroy
+      end
+
+      it 'removes the referenced goods nomenclatures from the index' do
+        expect(search_result.hits.hits.flat_map { |hit| hit._source.chemicals || [] }.size).to eq 0
       end
     end
   end

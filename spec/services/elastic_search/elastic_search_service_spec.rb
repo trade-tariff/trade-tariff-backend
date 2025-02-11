@@ -101,7 +101,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: 'Live bovine animals',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'Goods Nomenclature Description',
+              suggestion_type: 'Description',
               query: 'bovine',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
@@ -143,7 +143,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
           attributes: {
             value: 'Live bovine animals',
             goods_nomenclature_class: 'Heading',
-            suggestion_type: 'Goods Nomenclature Description',
+            suggestion_type: 'Description',
             query: '! bovinn',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
@@ -172,7 +172,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
           attributes: {
             value: 'tea',
             goods_nomenclature_class: 'Commodity',
-            suggestion_type: 'Goods Nomenclature Search References',
+            suggestion_type: 'Search Reference',
             query: 'tea',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
@@ -180,6 +180,71 @@ RSpec.describe ElasticSearch::ElasticSearchService do
 
       context 'with search date falls within validity period' do
         let(:date) { '2005-01-01' }
+
+        it { is_expected.to match_json_expression heading_pattern }
+      end
+    end
+  end
+
+  context 'when chemical search' do
+    describe 'with search date falls within validity period' do
+      before do
+        chem = create :full_chemical
+        chem.save
+      end
+
+      let(:date) { '2005-01-01' }
+
+      context 'when search by chemical name' do
+        subject { described_class.new(q: 'powder', as_of: nil).to_suggestions[:data][0] }
+
+        let(:heading_pattern) do
+          {
+            type: :search_suggestion,
+            attributes: {
+              value: 'mel powder',
+              goods_nomenclature_class: 'Heading',
+              suggestion_type: 'Chemical Name',
+              query: 'powder',
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!
+        end
+
+        it { is_expected.to match_json_expression heading_pattern }
+      end
+
+      context 'when search by cus number' do
+        subject { described_class.new(q: '0154438', as_of: nil).to_suggestions[:data][0] }
+
+        let(:heading_pattern) do
+          {
+            type: :search_suggestion,
+            attributes: {
+              value: '0154438-3',
+              goods_nomenclature_class: 'Heading',
+              suggestion_type: 'CUS',
+              query: '0154438',
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!
+        end
+
+        it { is_expected.to match_json_expression heading_pattern }
+      end
+
+      context 'when search by cas_rn number' do
+        subject { described_class.new(q: '8028', as_of: nil).to_suggestions[:data][0] }
+
+        let(:heading_pattern) do
+          {
+            type: :search_suggestion,
+            attributes: {
+              value: '8028-66-8',
+              goods_nomenclature_class: 'Heading',
+              suggestion_type: 'CAS_RN',
+              query: '8028',
+            }.ignore_extra_keys!,
+          }.ignore_extra_keys!
+        end
 
         it { is_expected.to match_json_expression heading_pattern }
       end

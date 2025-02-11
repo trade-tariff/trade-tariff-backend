@@ -20,9 +20,16 @@ module Search
             producline_suffix: { type: 'keyword' },
             type: { type: 'keyword' },
             search_references: {
-              "properties": {
+              properties: {
                 title: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
                 reference_class: { type: 'keyword' },
+              },
+            },
+            chemicals: {
+              properties: {
+                cus: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
+                cas_rn: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
+                name: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
               },
             },
           },
