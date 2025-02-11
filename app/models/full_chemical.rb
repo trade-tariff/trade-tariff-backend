@@ -4,10 +4,10 @@ class FullChemical < Sequel::Model
   plugin :auto_validations, not_null: :presence
   plugin :elasticsearch, index: ''
 
-    many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
+  many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,
                                    foreign_key: :goods_nomenclature_sid do |ds|
-                                     ds.with_actual(GoodsNomenclature)
-                                   end
+    ds.with_actual(GoodsNomenclature)
+  end
 
   def validate
     super

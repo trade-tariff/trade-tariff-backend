@@ -64,7 +64,7 @@ module Sequel
             TradeTariffBackend.search_client.index_by_name(index_name, id, Search::GoodsNomenclatureSerializer.new(self).as_json)
           elsif instance_of?(SearchReference)
             TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
-          elsif instance_of?(FullChemical)
+          elsif instance_of?(FullChemical) && goods_nomenclature.present?
             TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
           end
         end
@@ -76,7 +76,7 @@ module Sequel
             TradeTariffBackend.search_client.delete_by_name(index_name, id)
           elsif instance_of?(SearchReference)
             TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
-          elsif instance_of?(FullChemical)
+          elsif instance_of?(FullChemical) && goods_nomenclature.present?
             TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
           end
         end
