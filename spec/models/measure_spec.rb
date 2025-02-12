@@ -119,7 +119,7 @@ RSpec.describe Measure do
 
     context 'for UK service with Geographical Area Subject to VAT or Excise' do
       let(:service) { 'uk' }
-      let(:geographical_area_id) { GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE }
+      let(:geographical_area_id) { GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE_ID }
 
       it_behaves_like 'includes measure type', 'VAT_TYPES'
     end

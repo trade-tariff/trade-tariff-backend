@@ -232,7 +232,7 @@ FactoryBot.define do
     end
 
     trait :areas_subject_to_vat_or_excise do
-      geographical_area_id { GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE }
+      geographical_area_id { GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE_ID }
     end
 
     trait :simplified_procedural_code do
