@@ -1,4 +1,10 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
+  let(:cutoff) { Date.tomorrow }
+
+  before do
+    allow(TradeTariffBackend).to receive(:implicit_deletion_cutoff).and_return(cutoff)
+  end
+
   it_behaves_like 'an entity mapper', 'Measure', 'Measure' do
     let(:xml_node) do
       {
@@ -162,7 +168,60 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
             'transactionDate' => '2017-07-25T21:03:21',
           },
         },
+        'filename' => "tariff_dailyExtract_v1_#{Time.zone.today.strftime('%Y%m%d')}T235959.gzip",
       }
+    end
+
+    context 'when implictly deleting secondary entities before a cutoff' do
+      before do
+        create(
+          :measure,
+          :with_footnote_association,
+          :with_measure_excluded_geographical_area,
+          measure_sid: '12348',
+        )
+      end
+
+      let(:cutoff) { Date.tomorrow }
+      let(:operation) { 'C' }
+
+      it 'removes the old footnote associations' do
+        old = FootnoteAssociationMeasure.last.oid
+        entity_mapper.import
+        expect(FootnoteAssociationMeasure.pluck(:oid)).not_to include(old)
+      end
+
+      it 'removes the old measure excluded geographical areas' do
+        old = MeasureExcludedGeographicalArea.last.oid
+        entity_mapper.import
+        expect(MeasureExcludedGeographicalArea.pluck(:oid)).not_to include(old)
+      end
+    end
+
+    context 'when implictly deleting secondary entities after a cutoff' do
+      before do
+        create(
+          :measure,
+          :with_footnote_association,
+          :with_measure_excluded_geographical_area,
+          measure_sid: '12348',
+        )
+      end
+
+      let(:cutoff) { Time.zone.today }
+      let(:operation) { 'C' }
+
+      it 'does not remove the old footnote associations' do
+        old = FootnoteAssociationMeasure.last.oid
+        entity_mapper.import
+        expect(FootnoteAssociationMeasure.pluck(:oid)).to include(old)
+      end
+
+      it 'does not remove the old measure excluded geographical areas' do
+        old = MeasureExcludedGeographicalArea.last.oid
+        entity_mapper.import
+        expect(MeasureExcludedGeographicalArea.pluck(:oid)).to include(old)
+      end
     end
 
     context 'when the measure is being updated' do

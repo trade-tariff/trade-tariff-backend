@@ -24,6 +24,22 @@ class CdsImporter
         'reductionIndicator' => :reduction_indicator,
         'exportRefundNomenclature.sid' => :export_refund_nomenclature_sid,
       ).freeze
+
+      before_oplog_inserts do |xml_node, _mapper, _model_instance, _expanded_model_values, implicit_deletes_enabled|
+        if implicit_deletes_enabled
+          MeasureExcludedGeographicalArea.operation_klass.where(
+            measure_sid: xml_node['sid'],
+          ).delete
+        end
+      end
+
+      before_oplog_inserts do |xml_node, _mapper, _model_instance, _expanded_model_values, implicit_deletes_enabled|
+        if implicit_deletes_enabled
+          FootnoteAssociationMeasure.operation_klass.where(
+            measure_sid: xml_node['sid'],
+          ).delete
+        end
+      end
     end
   end
 end

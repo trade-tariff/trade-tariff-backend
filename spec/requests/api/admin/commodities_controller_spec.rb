@@ -1,7 +1,7 @@
 RSpec.describe Api::Admin::CommoditiesController, type: :request do
   describe 'GET #show' do
     subject(:do_request) do
-      authenticated_get api_commodity_path(id: goods_nomenclature.to_admin_param)
+      authenticated_get api_admin_commodity_path(id: goods_nomenclature.to_admin_param)
       response
     end
 

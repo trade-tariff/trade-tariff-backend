@@ -183,10 +183,6 @@ module TradeTariffBackend
       }
     end
 
-    def bulk_search_api_enabled?
-      ENV.fetch('BULK_SEARCH_API_ENABLED', 'false') == 'true'
-    end
-
     def opensearch_host
       ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
     end
@@ -271,6 +267,10 @@ module TradeTariffBackend
 
     def disable_admin_api_authentication?
       ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
+    end
+
+    def implicit_deletion_cutoff
+      Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-23'))
     end
   end
 end

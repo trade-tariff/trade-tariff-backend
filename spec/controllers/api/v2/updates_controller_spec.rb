@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::UpdatesController do
+  routes { V2Api.routes }
+
   describe 'GET #latest' do
     let(:pattern) do
       {

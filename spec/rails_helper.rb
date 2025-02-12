@@ -78,6 +78,8 @@ RSpec.configure do |config|
   end
 
   config.after { travel_back }
+
+  config.include V2Api.routes.url_helpers, type: :request
 end
 
 def silence

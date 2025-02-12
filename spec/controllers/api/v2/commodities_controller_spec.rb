@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::CommoditiesController do
+  routes { V2Api.routes }
+
   let(:commodity) do
     create(
       :commodity,
