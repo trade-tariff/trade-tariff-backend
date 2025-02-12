@@ -1,4 +1,6 @@
 RSpec.describe Api::V1::ChaptersController do
+  routes { V1Api.routes }
+
   let(:now) { Time.zone.today }
   let(:expires_at) { now.end_of_day }
 

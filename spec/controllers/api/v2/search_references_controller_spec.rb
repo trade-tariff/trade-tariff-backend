@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::SearchReferencesController do
+  routes { V2Api.routes }
+
   before do
     TradeTariffRequest.time_machine_now = Time.current
 

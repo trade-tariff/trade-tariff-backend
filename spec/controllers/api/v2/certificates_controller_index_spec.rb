@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::CertificatesController, type: :controller do
+  routes { V2Api.routes }
+
   describe 'GET #index' do
     subject(:do_response) do
       get :index, format: :json
