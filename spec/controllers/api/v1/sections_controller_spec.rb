@@ -1,4 +1,5 @@
 RSpec.describe Api::V1::SectionsController do
+  routes { V1Api.routes }
   render_views
 
   describe 'GET #show' do

@@ -46,12 +46,16 @@ module Api
           end
         end
 
+        def admin_commodity_id
+          params[:admin_commodity_id].presence || params[:commodity_id]
+        end
+
         def commodity_id
-          params[:commodity_id].split('-', 2).first
+          admin_commodity_id.split('-', 2).first
         end
 
         def productline_suffix
-          params[:commodity_id].split('-', 2)[1] || '80'
+          admin_commodity_id.split('-', 2)[1] || '80'
         end
       end
     end

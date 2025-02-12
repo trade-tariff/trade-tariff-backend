@@ -72,7 +72,7 @@ module "backend_uk" {
     [
       {
         name      = "DATABASE_URL"
-        valueFrom = data.aws_secretsmanager_secret.database_readonly_connection_string.arn
+        valueFrom = local.read_only_db_arn
       }
     ]
   ])

@@ -1,4 +1,6 @@
 RSpec.describe Api::V1::HeadingsController, :flaky do
+  routes { V1Api.routes }
+
   render_views
 
   describe 'GET #show' do

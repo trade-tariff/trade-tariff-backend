@@ -2,7 +2,7 @@ module Api
   module Admin
     module GreenLanes
       class FaqFeedbackController < AdminController
-        # before_action :authenticate_user!
+        before_action :authenticate_user!
 
         def create
           faq_feedback = ::GreenLanes::FaqFeedback.new(faq_feedback_params)
@@ -10,7 +10,7 @@ module Api
           if faq_feedback.valid? && faq_feedback.save
             Rails.logger.info("FAQ feedback created: #{faq_feedback.id}")
             render json: serialize(faq_feedback),
-                   location: api_green_lanes_faq_feedback_url(faq_feedback.id),
+                   location: api_admin_green_lanes_faq_feedback_url(faq_feedback.id),
                    status: :created
           else
             render json: serialize_errors(faq_feedback),

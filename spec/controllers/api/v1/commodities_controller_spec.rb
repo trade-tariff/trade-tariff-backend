@@ -1,4 +1,6 @@
 RSpec.describe Api::V1::CommoditiesController do
+  routes { V1Api.routes }
+
   describe 'GET #show' do
     render_views
 

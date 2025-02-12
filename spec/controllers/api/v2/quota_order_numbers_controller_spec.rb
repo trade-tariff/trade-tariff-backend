@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::QuotaOrderNumbersController, type: :controller do
+  routes { V2Api.routes }
+
   describe '#index' do
     subject(:do_request) { get :index }
 
