@@ -424,7 +424,7 @@ class Measure < Sequel::Model
         if TradeTariffBackend.uk?
           overview_types << {
             measures__measure_type_id: MeasureType::VAT_TYPES,
-            measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+            measures__geographical_area_id: GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE_ID,
           }
         end
 
