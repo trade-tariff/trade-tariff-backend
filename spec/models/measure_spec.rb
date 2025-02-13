@@ -117,7 +117,7 @@ RSpec.describe Measure do
       it_behaves_like 'excludes measure type', 'VAT_TYPES', 'FR'
     end
 
-    context 'for UK service with Geographical Area Subject to VAT or Excise' do
+    context 'for UK service with VAT Measure_Type and Geographical Area Subject to VAT or Excise' do
       let(:service) { 'uk' }
       let(:geographical_area_id) { GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE_ID }
 
@@ -126,13 +126,20 @@ RSpec.describe Measure do
 
     context 'for XI service' do
       let(:service) { 'xi' }
+      let(:geographical_area_id) { GeographicalArea::ERGA_OMNES_ID }
 
       it_behaves_like 'excludes measure type', 'TARIFF_PREFERENCE'
       it_behaves_like 'includes measure type', 'SUPPLEMENTARY_TYPES'
       it_behaves_like 'includes measure type', 'THIRD_COUNTRY'
       it_behaves_like 'excludes measure type', 'THIRD_COUNTRY', 'FR'
-      it_behaves_like 'excludes measure type', 'VAT_TYPES'
       it_behaves_like 'excludes measure type', 'VAT_TYPES', 'FR'
+    end
+
+    context 'for XI service with VAT Measure_Type and Geographical Area ERGA_OMNES' do
+      let(:service) { 'xi' }
+      let(:geographical_area_id) { GeographicalArea::ERGA_OMNES_ID }
+
+      it_behaves_like 'includes measure type', 'VAT_TYPES'
     end
   end
 
