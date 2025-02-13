@@ -42,6 +42,10 @@ module "backend_xi" {
         value = "false"
       },
       {
+        name  = "ENABLE_ADMIN"
+        value = "true"
+      },
+      {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-xi-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
