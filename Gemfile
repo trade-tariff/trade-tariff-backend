@@ -14,6 +14,7 @@ gem 'sequel-rails'
 # File uploads and AWS
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
+gem 'aws-sdk-ses'
 
 # File zip/unzipping
 gem 'rubyzip'
