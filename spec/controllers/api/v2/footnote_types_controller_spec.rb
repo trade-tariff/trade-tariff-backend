@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::FootnoteTypesController, type: :controller do
+  routes { V2Api.routes }
+
   describe '#index' do
     let(:footnote_type_1) { create :footnote_type }
     let(:pattern) do

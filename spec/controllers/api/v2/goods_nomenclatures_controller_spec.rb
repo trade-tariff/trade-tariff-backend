@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::GoodsNomenclaturesController do
+  routes { V2Api.routes }
+
   subject { response }
 
   before { commodity }

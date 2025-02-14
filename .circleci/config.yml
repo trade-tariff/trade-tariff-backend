@@ -47,7 +47,7 @@ executors:
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.3.6
+      - image: cimg/ruby:3.3.7
     resource_class: medium
     steps:
       - checkout
@@ -160,12 +160,13 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.3.6
+      - image: cimg/ruby:3.3.7
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
-          RAILS_ENV: test
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+          PGHOST: localhost
+          RAILS_ENV: test
       - image: cimg/postgres:13.6
         environment:
           POSTGRES_USER: postgres
@@ -217,15 +218,16 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.3.6
+      - image: cimg/ruby:3.3.7
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
-          RAILS_ENV: test
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
-          REDIS_URL: "redis://localhost:6379/"
-          FRONTEND_REDIS_URL: "redis://localhost:6379/"
           ELASTICSEARCH_URL: "http://localhost:9200"
+          FRONTEND_REDIS_URL: "redis://localhost:6379/"
+          PGHOST: localhost
+          RAILS_ENV: test
+          REDIS_URL: "redis://localhost:6379/"
       - image: cimg/postgres:13.6
         environment:
           POSTGRES_USER: postgres
@@ -353,22 +355,16 @@ workflows:
           ssm_parameter: "/development/BACKEND_ECR_URL"
           <<: *filter-not-main
 
-      - confirm-deploy-for-qa?:
-          type: approval
+      - apply-terraform:
+          name: apply-terraform-dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
           requires:
             - test
             - ruby-checks
             - pre-commit
             - plan-terraform-dev
             - build-and-push-dev
-          <<: *filter-not-main
-
-      - apply-terraform:
-          name: apply-terraform-dev
-          context: trade-tariff-terraform-aws-development
-          environment: development
-          requires:
-            - confirm-deploy-for-qa?
           <<: *filter-not-main
 
       - sync-opensearch-packages:

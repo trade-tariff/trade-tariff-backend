@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::AdditionalCodesController, type: :controller do
+  routes { V2Api.routes }
+
   describe 'GET #search' do
     subject(:response) { get :search, params:, format: :json }
 

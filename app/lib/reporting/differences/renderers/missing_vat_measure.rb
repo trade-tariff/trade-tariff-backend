@@ -11,7 +11,6 @@ module Reporting
         WORKSHEET_NAME = 'VAT missing'.freeze
 
         FILTERED_MEASURE_TYPES = Set.new(%w[305]).freeze
-        FILTERED_GEOGRAPHICAL_AREA_IDS = Set.new(%w[1011]).freeze
 
         HEADER_ROW = [
           'Commodity code',

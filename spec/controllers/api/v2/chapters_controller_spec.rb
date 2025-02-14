@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::ChaptersController do
+  routes { V2Api.routes }
+
   describe 'GET #show' do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }

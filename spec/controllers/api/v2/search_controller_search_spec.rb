@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::SearchController do
+  routes { V2Api.routes }
+
   before do
     allow(TradeTariffBackend).to receive(:optimised_search_enabled?).and_return false
   end

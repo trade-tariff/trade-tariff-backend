@@ -7,7 +7,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
     let(:search_reference_parent)  { create :commodity, :declarable, :with_heading }
     let(:search_reference)         { create :search_reference, referenced: search_reference_parent }
     let(:collection_query)         do
-      { commodity_id: search_reference_parent.goods_nomenclature_item_id }
+      { admin_commodity_id: search_reference_parent.goods_nomenclature_item_id }
     end
     let(:resource_query) do
       collection_query.merge(id: search_reference.id)
@@ -28,7 +28,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       let(:params) do
         {
           data: { type: :search_reference, attributes: { title: 'foo' } },
-          commodity_id: "#{referenced.goods_nomenclature_item_id}-#{referenced.producline_suffix}",
+          admin_commodity_id: "#{referenced.goods_nomenclature_item_id}-#{referenced.producline_suffix}",
         }
       end
 
@@ -51,7 +51,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       let(:params) do
         {
           data: { type: :search_reference, attributes: { title: 'foo' } },
-          commodity_id: "#{referenced.goods_nomenclature_item_id}-75",
+          admin_commodity_id: "#{referenced.goods_nomenclature_item_id}-75",
         }
       end
 
@@ -63,7 +63,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       let(:params) do
         {
           data: { type: :search_reference, attributes: { title: 'foo' } },
-          commodity_id: referenced.goods_nomenclature_item_id, # This is missing the productline suffix
+          admin_commodity_id: referenced.goods_nomenclature_item_id, # This is missing the productline suffix
         }
       end
 
@@ -88,7 +88,7 @@ RSpec.describe Api::Admin::Commodities::SearchReferencesController do
       let(:params) do
         {
           data: { type: :search_reference, attributes: { title: 'foo' } },
-          commodity_id: "#{referenced.goods_nomenclature_item_id}-#{referenced.producline_suffix}",
+          admin_commodity_id: "#{referenced.goods_nomenclature_item_id}-#{referenced.producline_suffix}",
         }
       end
 

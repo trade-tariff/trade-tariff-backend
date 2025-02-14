@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::MonetaryExchangeRatesController do
+  routes { V2Api.routes }
+
   describe 'GET #index' do
     before do
       create(:monetary_unit, monetary_unit_code: 'GBP', validity_start_date: 10.years.ago.beginning_of_day)

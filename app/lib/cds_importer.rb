@@ -42,7 +42,7 @@ class CdsImporter
         # Read into memory
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
-        CdsImporter::XmlParser::Reader.new(xml_stream.read, handler).parse
+        CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end

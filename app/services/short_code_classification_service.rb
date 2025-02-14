@@ -9,7 +9,7 @@ class ShortCodeClassificationService
 
     return ['Chapter', goods_nomenclature_item_id, productline_suffix] if short_code.length == 1
     return ['Chapter', goods_nomenclature_item_id, productline_suffix] if short_code.length == 2
-    return ['Subheading', goods_nomenclature_item_id, productline_suffix] if short_code.length == 6 || short_code.length == 8
+    return ['Subheading', goods_nomenclature_item_id, productline_suffix] if [6, 8].include?(short_code.length)
     return ['Commodity', goods_nomenclature_item_id, productline_suffix] if short_code.length == 10
 
     if short_code.match?(/\d{10}-\d{2}/)

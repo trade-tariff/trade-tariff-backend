@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::ChemicalsController, type: :controller do
+  routes { V2Api.routes }
+
   let(:chemical1) { create :chemical, :with_name }
   let(:goods_nomenclature) { create :goods_nomenclature }
   let(:chemical_gn_association) { create :chemicals_goods_nomenclatures, chemical_id: chemical1.id, goods_nomenclature_sid: goods_nomenclature.goods_nomenclature_sid }

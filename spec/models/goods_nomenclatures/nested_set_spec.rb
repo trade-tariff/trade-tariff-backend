@@ -644,7 +644,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       create :measure,
              :supplementary,
              :with_base_regulation,
-             :erga_omnes,
+             :areas_subject_to_vat_or_excise,
              goods_nomenclature: subheading.children.first
     end
 
@@ -657,7 +657,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         create :measure,
                :vat,
                :with_base_regulation,
-               :erga_omnes,
+               :areas_subject_to_vat_or_excise,
                goods_nomenclature: subheading.parent
       end
 
@@ -665,7 +665,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         create :measure,
                :tariff_preference,
                :with_base_regulation,
-               :erga_omnes,
+               :areas_subject_to_vat_or_excise,
                goods_nomenclature: subheading
       end
 

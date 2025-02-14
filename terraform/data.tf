@@ -59,6 +59,18 @@ data "aws_secretsmanager_secret" "database_readonly_connection_string" {
   name = "postgres-read-only"
 }
 
+# HMRC-532: Aurora test
+
+data "aws_secretsmanager_secret" "aurora_rw_connection_string" {
+  count = var.environment == "staging" ? 1 : 0
+  name  = "aurora-postgres-rw-connection-string"
+}
+
+data "aws_secretsmanager_secret" "aurora_ro_connection_string" {
+  count = var.environment == "staging" ? 1 : 0
+  name  = "aurora-postgres-ro-connection-string"
+}
+
 data "aws_secretsmanager_secret" "secret_key_base" {
   name = "backend-secret-key-base"
 }
@@ -133,4 +145,12 @@ data "aws_s3_bucket" "persistence" {
 
 data "aws_s3_bucket" "reporting" {
   bucket = "trade-tariff-reporting-${local.account_id}"
+}
+
+data "aws_lb_target_group" "backend_uk" {
+  name = "backend-uk"
+}
+
+data "aws_lb_target_group" "backend_xi" {
+  name = "backend-xi"
 }

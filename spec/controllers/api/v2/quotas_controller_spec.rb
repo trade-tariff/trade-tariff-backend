@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::QuotasController, type: :controller do
+  routes { V2Api.routes }
+
   describe 'GET /quotas/search.json' do
     let(:validity_start_date) { Date.new(Time.zone.today.year, 1, 1) }
     let(:quota_order_number) { create :quota_order_number }
