@@ -12,9 +12,9 @@ gem 'sequel', '5.88.0'
 gem 'sequel-rails'
 
 # File uploads and AWS
+gem 'aws-actionmailer-ses'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
-gem 'aws-sdk-ses'
 
 # File zip/unzipping
 gem 'rubyzip'
