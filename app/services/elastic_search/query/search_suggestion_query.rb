@@ -22,6 +22,48 @@ module ElasticSearch
           body: {
             query: {
               bool: {
+                "should": [
+                  {
+                    "wildcard": {
+                      "goods_nomenclature_item_id.keyword": {
+                        "value": "*#{query_string}*",
+                        "boost": 20,
+                      },
+                    },
+                  },
+                  {
+                    "wildcard": {
+                      "search_references.title.keyword": {
+                        "value": "*#{query_string}*",
+                        "boost": 20,
+                      },
+                    },
+                  },
+                  {
+                    "wildcard": {
+                      "chemicals.cus.keyword": {
+                        "value": "*#{query_string}*",
+                        "boost": 20,
+                      },
+                    },
+                  },
+                  {
+                    "wildcard": {
+                      "chemicals.cas_rn.keyword": {
+                        "value": "*#{query_string}*",
+                        "boost": 20,
+                      },
+                    },
+                  },
+                  {
+                    "wildcard": {
+                      "chemicals.name.keyword": {
+                        "value": "*#{query_string}*",
+                        "boost": 20,
+                      },
+                    },
+                  },
+                ],
                 must: [
                   {
                     bool: {
@@ -35,10 +77,10 @@ module ElasticSearch
                   {
                     multi_match: {
                       query: query_string,
-                      fields: %w[goods_nomenclature_item_id description search_references.title chemicals.cus chemicals.cas_rn chemicals.name],
+                      fields: %w[goods_nomenclature_item_id search_references.title chemicals.cus chemicals.cas_rn chemicals.name],
                       type: 'best_fields',
                       fuzziness: 'AUTO',
-                      operator: 'and',
+                      operator: 'or',
                     },
                   },
                   {
@@ -76,6 +118,11 @@ module ElasticSearch
                     },
                   },
                 ],
+              },
+            },
+            "highlight": {
+              "fields": {
+                "*": {},
               },
             },
           },

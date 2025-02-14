@@ -11,25 +11,72 @@ module Search
         mappings: {
           properties: {
             id: { type: 'long' },
-            description: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
-            goods_nomenclature_item_id: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
-            declarable: { enabled: false },
+            description: { type: 'text', analyzer: 'snowball' },
+            goods_nomenclature_item_id: {
+              type: 'text',
+              "fields": {
+                "keyword": {
+                  "type": 'keyword',
+                  "ignore_above": 256,
+                },
+              },
+              analyzer: 'ngram_analyzer',
+              search_analyzer: 'lowercase_analyzer',
+            },
             validity_start_date: { type: 'date', format: 'date_optional_time' },
             validity_end_date: { format: 'date_optional_time', type: 'date' },
-            number_indents: { type: 'long' },
-            producline_suffix: { type: 'keyword' },
             type: { type: 'keyword' },
             search_references: {
               properties: {
-                title: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
+                title: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
                 reference_class: { type: 'keyword' },
               },
             },
             chemicals: {
               properties: {
-                cus: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
-                cas_rn: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
-                name: { type: 'text', analyzer: 'ngram_analyzer', search_analyzer: 'lowercase_analyzer' },
+                cus: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+                cas_rn: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
+                name: {
+                  type: 'text',
+                  "fields": {
+                    "keyword": {
+                      "type": 'keyword',
+                      "ignore_above": 256,
+                    },
+                  },
+                  analyzer: 'ngram_analyzer',
+                  search_analyzer: 'lowercase_analyzer',
+                },
               },
             },
           },

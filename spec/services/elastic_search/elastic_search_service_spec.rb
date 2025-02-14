@@ -62,7 +62,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: '2851000000',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'Goods Nomenclature Item Id',
+              suggestion_type: 'goods_nomenclature_item_id',
               query: '2851000000',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
@@ -82,7 +82,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
       end
 
       context 'when with goods codes that have unbounded validity period' do
-        subject(:result) { described_class.new(q: 'bovine', as_of: date).to_suggestions[:data][0] }
+        subject(:result) { described_class.new(q: '0102000000', as_of: date).to_suggestions[:data][0] }
 
         before do
           heading = create :heading, :with_description,
@@ -99,10 +99,10 @@ RSpec.describe ElasticSearch::ElasticSearchService do
           {
             type: :search_suggestion,
             attributes: {
-              value: 'Live bovine animals',
+              value: '0102000000',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'Description',
-              query: 'bovine',
+              suggestion_type: 'goods_nomenclature_item_id',
+              query: '0102000000',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
         end
@@ -123,7 +123,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
 
     describe 'querying with ambiguous characters' do
       subject(:result) do
-        described_class.new(q: '! bovinn',
+        described_class.new(q: '! 01020000',
                             as_of: '2007-01-01').to_suggestions[:data][0]
       end
 
@@ -141,10 +141,10 @@ RSpec.describe ElasticSearch::ElasticSearchService do
         {
           type: :search_suggestion,
           attributes: {
-            value: 'Live bovine animals',
+            value: '0102000000',
             goods_nomenclature_class: 'Heading',
-            suggestion_type: 'Description',
-            query: '! bovinn',
+            suggestion_type: 'goods_nomenclature_item_id',
+            query: '0102000000',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
       end
@@ -172,7 +172,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
           attributes: {
             value: 'tea',
             goods_nomenclature_class: 'Commodity',
-            suggestion_type: 'Search Reference',
+            suggestion_type: 'search_references',
             query: 'tea',
           }.ignore_extra_keys!,
         }.ignore_extra_keys!
@@ -204,7 +204,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: 'mel powder',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'Chemical Name',
+              suggestion_type: 'chemicals',
               query: 'powder',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
@@ -222,8 +222,8 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: '0154438-3',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'CUS',
-              query: '0154438',
+              suggestion_type: 'chemicals',
+              query: '0154438-3',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
         end
@@ -240,8 +240,8 @@ RSpec.describe ElasticSearch::ElasticSearchService do
             attributes: {
               value: '8028-66-8',
               goods_nomenclature_class: 'Heading',
-              suggestion_type: 'CAS_RN',
-              query: '8028',
+              suggestion_type: 'chemicals',
+              query: '8028-66-8',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
         end

@@ -269,7 +269,7 @@ module TradeTariffBackend
     def optimised_search_enabled?
       ENV['OPTIMISED_SEARCH_ENABLED'].to_s == 'true'
     end
-      
+
     def disable_admin_api_authentication?
       ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
     end

@@ -62,50 +62,36 @@ module ElasticSearch
     end
 
     def map_search_results(response, query)
-      response.dig('hits', 'hits')&.map do |hit|
+      response.dig('hits', 'hits')&.map { |hit|
         source = hit['_source']
-        search_references = source['search_references'] || []
-        chemicals = source['chemicals'] || []
-
-        fields = [
-          { 'Description' => source['description'].to_s }, { 'Goods Nomenclature Item Id' => source['goods_nomenclature_item_id'].to_s }
-        ]
-
-        search_references.each do |ref|
-          fields << { 'Search Reference' => ref['title'].to_s }
-        end
-
-        chemicals.each do |chem|
-          fields << { 'CUS' => chem['cus'].to_s }
-          fields << { 'CAS_RN' => chem['cas_rn'].to_s }
-          fields << { 'Chemical Name' => chem['name'].to_s }
-        end
-
-        match = fields.find do |hash|
-          hash.any? { |_, value| value.split.any? { |word| word.downcase.include?(query.downcase) } }
-        end
-
-        if match
-          selected_field, selected_value = match.first
-        else
-          selected_field, selected_value = fields.first.to_a.first
-        end
+        selected_field, selected_value, selected_query = extract_highlight(hit['highlight'])
 
         SearchSuggestion.unrestrict_primary_key
-        suggestion = SearchSuggestion.new(
-          id: hit['id'],
-          value: selected_value,
-          type: selected_field,
-          priority: '',
-          goods_nomenclature_sid: source['id'],
-          goods_nomenclature_class: source['type'],
-        )
+        SearchSuggestion.new.tap do |suggestion|
+          suggestion.id = source['id']
+          suggestion.value = selected_value || source['goods_nomenclature_item_id']
+          suggestion.type = selected_field || 'goods_nomenclature_item_id'
+          suggestion.priority = ''
+          suggestion.goods_nomenclature_sid = source['id']
+          suggestion.goods_nomenclature_class = source['type']
+          suggestion[:score] = hit['_score']
+          suggestion[:query] = selected_query.presence || query
+        end
+      }&.compact
+    end
 
-        suggestion[:score] = hit['_score']
-        suggestion[:query] = query
+    def extract_highlight(highlight)
+      return [nil, nil, nil] unless highlight
 
-        suggestion
+      highlight.each do |field, texts|
+        Array(texts).each do |text|
+          if (match = text.match(/<em>(.*?)<\/em>/))
+            return [field.split('.').first, text.gsub(/<\/?em>/, ''), match[1]]
+          end
+        end
       end
+
+      [nil, nil, nil]
     end
   end
 end
