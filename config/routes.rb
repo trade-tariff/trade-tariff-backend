@@ -1,6 +1,9 @@
 Rails.application.routes.draw do
   root to: 'application#nothing'
 
+  # Application liveness
+  get 'healthcheckz' => 'healthcheck#checkz'
+
   # Legacy routes
   mount V2Api => '/', as: 'v2', constraints: ApiConstraints.new(version: 2)
   mount V1Api => '/', as: 'v1', constraints: ApiConstraints.new(version: 1)

@@ -2,9 +2,7 @@ class V2Api < ::Rails::Engine
 end
 
 V2Api.routes.draw do
-  # Application liveness
   get 'healthcheck' => 'healthcheck#index'
-  get 'healthcheckz' => 'healthcheck#checkz'
 
   namespace :api, defaults: { format: 'json' }, path: '/' do
     scope module: :v2 do
