@@ -2,7 +2,6 @@ Rails.application.routes.draw do
   root to: 'application#nothing'
 
   # Application liveness
-  get 'healthcheck' => 'healthcheck#index'
   get 'healthcheckz' => 'healthcheck#checkz'
 
   # Legacy routes

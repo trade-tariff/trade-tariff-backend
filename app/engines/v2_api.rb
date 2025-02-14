@@ -2,6 +2,8 @@ class V2Api < ::Rails::Engine
 end
 
 V2Api.routes.draw do
+  get 'healthcheck' => 'healthcheck#index'
+
   namespace :api, defaults: { format: 'json' }, path: '/' do
     scope module: :v2 do
       resources :sections, only: %i[index show] do
