@@ -144,6 +144,8 @@ V2Api.routes.draw do
         resources :category_assessments, only: %i[index]
 
         resources :themes, only: %i[index]
+
+        resources :faq_feedback, only: %i[create index show]
       end
     end
   end
