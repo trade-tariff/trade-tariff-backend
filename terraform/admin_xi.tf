@@ -2,7 +2,7 @@ module "backend_admin_xi" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
 
   service_name  = "backend-admin-xi"
-  service_count = var.service_count
+  service_count = 0
   region        = var.region
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
@@ -10,7 +10,7 @@ module "backend_admin_xi" {
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  min_capacity = var.min_capacity
+  min_capacity = 0
   max_capacity = var.max_capacity
 
   docker_image = data.aws_ssm_parameter.ecr_url.value
