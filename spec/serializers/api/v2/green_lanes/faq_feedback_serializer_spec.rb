@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::FaqFeedbackSerializer do
+RSpec.describe Api::V2::GreenLanes::FaqFeedbackSerializer do
   subject(:serialized) do
     described_class.new(faq_feedback).serializable_hash
   end
