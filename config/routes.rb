@@ -86,7 +86,6 @@ Rails.application.routes.draw do
           resources :exemptions, only: %i[index show create update destroy]
           resources :measures, only: %i[index show create update destroy]
           resources :update_notifications, only: %i[index show update]
-          resources :faq_feedback, only: %i[create index show]
         end
       end
     end

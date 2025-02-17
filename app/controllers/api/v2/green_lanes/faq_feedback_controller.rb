@@ -1,16 +1,17 @@
 module Api
-  module Admin
+  module V2
     module GreenLanes
-      class FaqFeedbackController < AdminController
-        before_action :authenticate_user!
+      class FaqFeedbackController < BaseController
+        include V2Api.routes.url_helpers
+
+        skip_before_action :check_service
 
         def create
           faq_feedback = ::GreenLanes::FaqFeedback.new(faq_feedback_params)
-          Rails.logger.info("FAQ feedback valid?: #{faq_feedback.valid?}")
+
           if faq_feedback.valid? && faq_feedback.save
-            Rails.logger.info("FAQ feedback created: #{faq_feedback.id}")
             render json: serialize(faq_feedback),
-                   location: api_admin_green_lanes_faq_feedback_url(faq_feedback.id),
+                   location: api_green_lanes_faq_feedback_url(faq_feedback.id),
                    status: :created
           else
             render json: serialize_errors(faq_feedback),
@@ -35,11 +36,11 @@ module Api
         end
 
         def serialize(*args)
-          Api::Admin::GreenLanes::FaqFeedbackSerializer.new(*args).serializable_hash
+          Api::V2::GreenLanes::FaqFeedbackSerializer.new(*args).serializable_hash
         end
 
-        def serialize_errors(exemption)
-          Api::Admin::ErrorSerializationService.new(exemption).call
+        def serialize_errors(faq_feedback)
+          Api::V2::ErrorSerializationService.new.serialized_errors(faq_feedback.errors)
         end
       end
     end

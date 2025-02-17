@@ -1,5 +1,5 @@
 module Api
-  module Admin
+  module V2
     module GreenLanes
       class FaqFeedbackSerializer
         include JSONAPI::Serializer
