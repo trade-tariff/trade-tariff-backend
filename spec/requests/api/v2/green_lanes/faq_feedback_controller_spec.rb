@@ -1,14 +1,17 @@
 RSpec.describe Api::V2::GreenLanes::FaqFeedbackController do
-  subject(:page_response) { make_request && response }
+  subject(:api_response) { make_request && response }
 
-  let(:json_response) { JSON.parse(page_response.body) }
+  let(:json_response) { JSON.parse(api_response.body) }
   let(:faq_feedback) { create :green_lanes_faq_feedback }
   let :authorization do
     ActionController::HttpAuthentication::Token.encode_credentials('Trade-Tariff-Test')
   end
 
   before do
-    allow(TradeTariffBackend).to receive(:green_lanes_api_tokens).and_return 'Trade-Tariff-Test'
+    allow(TradeTariffBackend).to receive_messages(
+      green_lanes_api_tokens: 'Trade-Tariff-Test',
+      uk?: false,
+    )
   end
 
   describe 'POST to #create' do
