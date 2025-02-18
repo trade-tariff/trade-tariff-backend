@@ -4,6 +4,10 @@ Rails.application.routes.draw do
   # Application liveness
   get 'healthcheckz' => 'healthcheck#checkz'
 
+  # Legacy routes
+  mount V2Api => '/', as: 'v2', constraints: ApiConstraints.new(version: 2)
+  mount V1Api => '/', as: 'v1', constraints: ApiConstraints.new(version: 1)
+
   # V1 routes
   mount V1Api => '/api/v1', as: 'v1_api'
   mount V1Api => '/xi/api/v1', as: 'xi_v1_api' if TradeTariffBackend.xi?

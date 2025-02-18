@@ -56,7 +56,10 @@ private
   end
 
   def serialize_errors(errors)
-    if request.url.include?('v2')
+    # TODO: Remove custom Accept header management
+    if request.headers['Accept'] == 'application/vnd.uktt.v2'
+      Api::V2::ErrorSerializationService.new.serialized_errors(errors)
+    elsif request.url.include?('v2')
       Api::V2::ErrorSerializationService.new.serialized_errors(errors)
     else
       Api::V1::ErrorSerializationService.new.serialized_errors(errors)
