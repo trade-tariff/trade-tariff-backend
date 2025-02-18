@@ -222,29 +222,55 @@ RSpec.describe SearchService do
     end
 
     context 'when search references' do
-      subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 'foo').to_json[:data][:attributes] }
+      context 'when optimised search disabled' do
+        subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 'foo').to_json[:data][:attributes] }
 
-      before do
-        create(
-          :search_suggestion,
-          :search_reference,
-          goods_nomenclature: create(:heading, goods_nomenclature_item_id: '0102000000'),
-          id: 'foo',
-          value: 'foo bar',
-        )
+        before do
+          create(
+            :search_suggestion,
+            :search_reference,
+            goods_nomenclature: create(:heading, goods_nomenclature_item_id: '0102000000'),
+            id: 'foo',
+            value: 'foo bar',
+          )
+
+          allow(TradeTariffBackend).to receive(:optimised_search_enabled?).and_return false
+        end
+
+        let(:expected_pattern) do
+          {
+            type: 'exact_match',
+            entry: {
+              endpoint: 'headings',
+              id: '0102',
+            },
+          }
+        end
+
+        it { is_expected.to match_json_expression(expected_pattern) }
       end
 
-      let(:expected_pattern) do
-        {
-          type: 'exact_match',
-          entry: {
-            endpoint: 'headings',
-            id: '0102',
-          },
-        }
-      end
+      context 'when optimised search enabled' do
+        subject(:result) { described_class.new(data_serializer, q: 'Foo Bar', as_of: Time.zone.today, resource_id: 100).to_json[:data][:attributes] }
 
-      it { is_expected.to match_json_expression(expected_pattern) }
+        before do
+          create :goods_nomenclature, goods_nomenclature_item_id: '3903000000'
+
+          allow(TradeTariffBackend).to receive(:optimised_search_enabled?).and_return true
+        end
+
+        let(:expected_pattern) do
+          {
+            type: 'exact_match',
+            entry: {
+              endpoint: 'headings',
+              id: '3903',
+            },
+          }
+        end
+
+        it { is_expected.to match_json_expression(expected_pattern) }
+      end
     end
 
     shared_examples_for 'an historic goods nomenclature exact search' do |goods_nomenclature_type, query|
