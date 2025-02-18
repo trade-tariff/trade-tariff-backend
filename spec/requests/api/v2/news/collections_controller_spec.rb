@@ -5,8 +5,7 @@ RSpec.describe Api::V2::News::CollectionsController do
     subject(:rendered) { make_request && response }
 
     let :make_request do
-      get api_news_collections_path(format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      get api_news_collections_path(format: :json)
     end
 
     it_behaves_like 'a successful jsonapi response'

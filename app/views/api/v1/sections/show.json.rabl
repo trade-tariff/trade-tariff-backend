@@ -21,8 +21,8 @@ end
 node(:_response_info) do
   {
     links: [
-      { rel: 'self', href: api_link(request.fullpath) },
-      { rel: 'sections', href: api_link(api_sections_path) },
+      { rel: 'self', href: request.fullpath },
+      { rel: 'sections', href: api_sections_path },
     ],
   }
 end

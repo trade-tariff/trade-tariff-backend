@@ -5,8 +5,7 @@ RSpec.describe Api::V2::ChemicalSubstancesController, type: :request do
     let(:make_request) do
       create(:full_chemical, cus: '1234567890')
 
-      get api_chemical_substances_path(params:, format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      get api_chemical_substances_path(params:, format: :json)
     end
 
     context 'when no filter is provided' do
