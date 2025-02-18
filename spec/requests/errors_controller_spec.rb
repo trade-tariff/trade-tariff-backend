@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ErrorsController do
   subject(:rendered) { make_request && response }
 
@@ -13,21 +11,20 @@ RSpec.describe ErrorsController do
 
   shared_examples 'a csv or json error response' do |status_code, message|
     context 'with html request' do
-      let(:make_request) { get "/#{status_code}" }
+      let(:make_request) { get "/api/v1/#{status_code}" }
 
       it_behaves_like 'a json error response', status_code, message
     end
 
     context 'with json request' do
-      let(:make_request) { get "/#{status_code}.json" }
+      let(:make_request) { get "/api/v1/#{status_code}.json" }
 
       it_behaves_like 'a json error response', status_code, message
     end
 
     context 'with jsonapi request' do
       let :make_request do
-        get "/#{status_code}.json",
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+        get "/api/v2/#{status_code}.json"
       end
 
       it { is_expected.to have_http_status status_code }
@@ -36,7 +33,7 @@ RSpec.describe ErrorsController do
     end
 
     context 'with csv request' do
-      let(:make_request) { get "/#{status_code}.csv" }
+      let(:make_request) { get "/api/v1/#{status_code}.csv" }
 
       it { is_expected.to have_http_status status_code }
       it { is_expected.to have_attributes media_type: 'text/csv' }
@@ -44,7 +41,7 @@ RSpec.describe ErrorsController do
     end
 
     context 'with other request' do
-      let(:make_request) { get "/#{status_code}.pdf" }
+      let(:make_request) { get "/api/v1/#{status_code}.pdf" }
 
       it_behaves_like 'a json error response', status_code, message
     end
@@ -77,7 +74,7 @@ RSpec.describe ErrorsController do
   end
 
   describe 'GET #maintenance' do
-    let(:make_request) { get '/maintenance' }
+    let(:make_request) { get '/api/v2/maintenance' }
 
     it_behaves_like 'a csv or json error response', 503, 'Service is unavailable'
   end

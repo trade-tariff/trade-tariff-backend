@@ -1,6 +1,6 @@
 RSpec.describe ApplicationController, type: :request do
   describe 'GET #index' do
-    subject(:do_response) { get('/healthcheck') && response }
+    subject(:do_response) { get('/api/v2/healthcheck') && response }
 
     context 'when the request propagates a handled error' do
       before do
@@ -9,8 +9,18 @@ RSpec.describe ApplicationController, type: :request do
 
       let(:exception) { ActionController::InvalidAuthenticityToken }
 
+      let(:expected_error) do
+        {
+          "errors": [
+            {
+              "detail": '422 - Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/',
+            },
+          ],
+        }.to_json
+      end
+
       it { is_expected.to have_http_status(:unprocessable_entity) }
-      it { expect(do_response.body).to eq('{"error":"422 - Unprocessable entity: API documentation is available at https://api.trade-tariff.service.gov.uk/"}') }
+      it { expect(do_response.body).to eq(expected_error) }
     end
   end
 end

@@ -20,8 +20,7 @@ RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
 
   let :make_request do
     get api_green_lanes_goods_nomenclature_path(request_item_id, format: :json),
-        headers: { 'Accept' => 'application/vnd.uktt.v2',
-                   'HTTP_AUTHORIZATION' => authorization },
+        headers: { 'HTTP_AUTHORIZATION' => authorization },
         params:
   end
 

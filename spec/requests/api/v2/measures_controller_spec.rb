@@ -7,8 +7,7 @@ RSpec.describe Api::V2::MeasuresController do
     let(:measure) { create(:measure) }
 
     let :make_request do
-      get api_measure_path(id: measure.measure_sid, format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      get api_measure_path(id: measure.measure_sid, format: :json)
     end
 
     it_behaves_like 'a successful jsonapi response'

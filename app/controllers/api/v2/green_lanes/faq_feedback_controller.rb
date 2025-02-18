@@ -4,8 +4,6 @@ module Api
       class FaqFeedbackController < BaseController
         include V2Api.routes.url_helpers
 
-        skip_before_action :check_service
-
         def create
           faq_feedback = ::GreenLanes::FaqFeedback.new(faq_feedback_params)
 

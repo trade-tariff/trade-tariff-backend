@@ -8,8 +8,7 @@ RSpec.describe Api::V2::GreenLanes::ThemesController do
   describe 'GET to #index' do
     let(:make_request) do
       get api_green_lanes_themes_path(format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2',
-                     'HTTP_AUTHORIZATION' => authorization }
+          headers: { 'HTTP_AUTHORIZATION' => authorization }
     end
 
     let :authorization do

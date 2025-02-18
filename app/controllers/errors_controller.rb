@@ -56,7 +56,7 @@ private
   end
 
   def serialize_errors(errors)
-    if request.headers['Accept'] == 'application/vnd.uktt.v2'
+    if request.url.include?('v2')
       Api::V2::ErrorSerializationService.new.serialized_errors(errors)
     else
       Api::V1::ErrorSerializationService.new.serialized_errors(errors)

@@ -4,7 +4,7 @@ RSpec.describe Api::ApiController, type: :request do
   let(:chapter) { create :chapter, :with_section }
 
   describe 'GET to #show' do
-    let(:testpath) { "/chapters/#{chapter.short_code}" }
+    let(:testpath) { "/api/v2/chapters/#{chapter.short_code}" }
 
     it { is_expected.to have_http_status :success }
 
@@ -56,7 +56,7 @@ RSpec.describe Api::ApiController, type: :request do
         end
 
         let :testpath do
-          "/chapters/#{chapter.short_code}?as_of=#{Time.zone.today.to_fs :db}"
+          "/api/v2/chapters/#{chapter.short_code}?as_of=#{Time.zone.today.to_fs :db}"
         end
 
         it { is_expected.to include 'etag' => earlier_request.headers['ETag'] }

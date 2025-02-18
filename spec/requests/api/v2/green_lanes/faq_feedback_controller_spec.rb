@@ -14,7 +14,6 @@ RSpec.describe Api::V2::GreenLanes::FaqFeedbackController do
   describe 'POST to #create' do
     let(:make_request) do
       post api_green_lanes_faq_feedback_index_path(format: :json), params: faq_feedback_data, headers: {
-        'Accept' => 'application/vnd.uktt.v2',
         'HTTP_AUTHORIZATION' => authorization,
       }
     end

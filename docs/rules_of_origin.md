@@ -5,7 +5,7 @@
 The primary API endpoint for rules of origin is
 
 ```
-/rules_of_origin_schemes/<commodity_code>/<country_code>
+/api/v2/rules_of_origin_schemes/<commodity_code>/<country_code>
 ```
 
 This will return a JSON-API response containing a list of all applicable schemes and their rules which are relevant to the `commodity_code`
@@ -13,13 +13,13 @@ This will return a JSON-API response containing a list of all applicable schemes
 There are also;
 
 ```
-/rules_of_origin_schemes/<commodity_code>
+/api/v2/rules_of_origin_schemes/<commodity_code>
 ```
 
 Returning the rules across all schemes for a commodity code, the json format for the schemes themselves is reduced to exclude heavier elements like articles markdown
 
 ```
-/rules_of_origin_schemes
+/api/v2/rules_of_origin_schemes
 ```
 
 This returns a listing of all schemes, again with reduced information. This api supports filtering, - at present the only filter is `?filter[has_article]=<article_name>` which will filter the schemes for only those which have the required article.

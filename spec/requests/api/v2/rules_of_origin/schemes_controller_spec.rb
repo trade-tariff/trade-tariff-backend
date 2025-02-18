@@ -10,8 +10,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController do
 
     let :make_request do
       get api_rules_of_origin_schemes_path(format: :json),
-          params: { heading_code:, country_code: },
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+          params: { heading_code:, country_code: }
     end
 
     it_behaves_like 'a successful jsonapi response'
@@ -32,10 +31,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController do
 
     context 'with path params' do
       let :make_request do
-        get api_rules_of_origin_path(heading_code:,
-                                     country_code:,
-                                     format: :json),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+        get api_rules_of_origin_path(heading_code:, country_code:, format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -43,8 +39,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController do
 
     context 'when listing all schemes' do
       let :make_request do
-        get api_rules_of_origin_schemes_path(format: :json),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+        get api_rules_of_origin_schemes_path(format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'
@@ -55,8 +50,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController do
         subject { JSON.parse(rendered.body)['included'] }
 
         let :make_request do
-          get api_rules_of_origin_schemes_path(include: 'proofs', format: :json),
-              headers: { 'Accept' => 'application/vnd.uktt.v2' }
+          get api_rules_of_origin_schemes_path(include: 'proofs', format: :json)
         end
 
         it { is_expected.to include include 'type' => 'rules_of_origin_proof' }
@@ -65,9 +59,7 @@ RSpec.describe Api::V2::RulesOfOrigin::SchemesController do
 
     context 'with filtered list of schemes' do
       let :make_request do
-        get api_rules_of_origin_schemes_path(filter: { has_article: 'duty-drawback' },
-                                             format: :json),
-            headers: { 'Accept' => 'application/vnd.uktt.v2' }
+        get api_rules_of_origin_schemes_path(filter: { has_article: 'duty-drawback' }, format: :json)
       end
 
       it_behaves_like 'a successful jsonapi response'
