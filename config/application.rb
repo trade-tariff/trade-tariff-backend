@@ -1,5 +1,6 @@
 require_relative 'boot'
 require_relative '../lib/core_ext/object'
+require_relative '../app/middleware/handle_goods_nomenclature'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'
@@ -61,6 +62,8 @@ module TradeTariffBackend
     config.exceptions_app = routes
 
     config.sequel.allow_missing_migration_files = ENV['ALLOW_MISSING_MIGRATION_FILES'].to_s == 'true'
+
+    config.middleware.use ::HandleGoodsNomenclature
   end
 
   Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
