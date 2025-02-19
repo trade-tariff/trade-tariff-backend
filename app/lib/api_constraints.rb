@@ -4,7 +4,7 @@ class ApiConstraints
   end
 
   def matches?(req)
-    default? || req.headers['Accept'].include?("application/vnd.uktt.v#{@version}")
+    default? || req.headers['Accept'].to_s.include?("application/vnd.uktt.v#{@version}")
   end
 
   private
