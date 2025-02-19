@@ -11,7 +11,6 @@ RSpec.describe Appendix5aPopulatorService do
       create(
         :appendix_5a,
         cds_guidance: 'foo',
-        chief_guidance: 'bar',
       )
     end
 
@@ -21,8 +20,7 @@ RSpec.describe Appendix5aPopulatorService do
       let(:new_guidance) do
         {
           '1123' => {
-            'guidance_cds' => 'foo',
-            'guidance_chief' => 'baz',
+            'guidance_cds' => 'bar',
           },
         }
       end
@@ -45,7 +43,6 @@ RSpec.describe Appendix5aPopulatorService do
         {
           '1123' => {
             'guidance_cds' => 'foo',
-            'guidance_chief' => 'bar',
           },
         }
       end
@@ -82,11 +79,9 @@ RSpec.describe Appendix5aPopulatorService do
         {
           '1123' => {
             'guidance_cds' => 'foo',
-            'guidance_chief' => 'bar',
           },
           '2123' => {
             'guidance_cds' => 'foo',
-            'guidance_chief' => 'bar',
           },
         }
       end
