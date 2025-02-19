@@ -3,6 +3,5 @@ FactoryBot.define do
     certificate_type_code { '1' }
     certificate_code { '123' }
     cds_guidance { 'foo' }
-    chief_guidance { 'bar' }
   end
 end
