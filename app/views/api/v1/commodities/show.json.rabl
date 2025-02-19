@@ -47,9 +47,9 @@ node(:_response_info) do
   {
     links: [
       { rel: 'self', href: request.fullpath },
-      { rel: 'heading', href: api_heading_path(@commodity.heading) },
-      { rel: 'chapter', href: api_chapter_path(@commodity.chapter) },
-      { rel: 'section', href: api_section_path(@commodity.section.position) },
+      { rel: 'heading', href: v1_api_path('headings', @commodity.heading_short_code) },
+      { rel: 'chapter', href: v1_api_path('chapters', @commodity.chapter_short_code) },
+      { rel: 'section', href: v1_api_path('sections', @commodity.section.position) },
     ],
   }
 end
