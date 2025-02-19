@@ -104,14 +104,8 @@ GEM
     aws-sdk-sesv2 (1.70.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sigv4 (~> 1.5)
-    aws-sdk-xray (1.4.0)
-      aws-sdk-core (~> 3)
-      aws-sigv4 (~> 1.0)
     aws-sigv4 (1.11.0)
       aws-eventstream (~> 1, >= 1.0.2)
-    aws-xray-sdk (0.16.0)
-      aws-sdk-xray (~> 1.4.0)
-      multi_json (~> 1)
     backport (1.2.0)
     base64 (0.2.0)
     benchmark (0.4.0)
@@ -510,7 +504,6 @@ DEPENDENCIES
   aws-actionmailer-ses
   aws-sdk-rails
   aws-sdk-s3
-  aws-xray-sdk
   bootsnap
   brakeman
   caxlsx

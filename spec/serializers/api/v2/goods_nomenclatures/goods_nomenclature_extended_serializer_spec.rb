@@ -36,7 +36,7 @@ RSpec.describe Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer 
       it { is_expected.to include producline_suffix: gn.producline_suffix }
       it { is_expected.to include description: gn.description }
       it { is_expected.to include number_indents: gn.number_indents }
-      it { is_expected.to include href: "/api/v2/commodities/#{gn.goods_nomenclature_item_id}" }
+      it { is_expected.to include href: "/uk/api/v2/commodities/#{gn.goods_nomenclature_item_id}" }
       it { is_expected.to include formatted_description: gn.formatted_description }
       it { is_expected.to include validity_start_date: gn.validity_start_date }
       it { is_expected.to include validity_end_date: gn.validity_end_date }
@@ -45,21 +45,21 @@ RSpec.describe Api::V2::GoodsNomenclatures::GoodsNomenclatureExtendedSerializer 
       context 'with heading' do
         let(:gn) { create :heading, :with_children }
 
-        it { is_expected.to include href: "/api/v2/headings/#{gn.short_code}" }
+        it { is_expected.to include href: "/uk/api/v2/headings/#{gn.short_code}" }
         it { is_expected.to include declarable: false }
       end
 
       context 'with declarable heading' do
         let(:gn) { create :heading }
 
-        it { is_expected.to include href: "/api/v2/headings/#{gn.short_code}" }
+        it { is_expected.to include href: "/uk/api/v2/headings/#{gn.short_code}" }
         it { is_expected.to include declarable: true }
       end
 
       context 'with subheading' do
         let(:gn) { create :subheading, :with_children }
 
-        it { is_expected.to include href: "/api/v2/subheadings/#{gn.to_param}" }
+        it { is_expected.to include href: "/uk/api/v2/subheadings/#{gn.to_param}" }
         it { is_expected.to include declarable: false }
       end
     end
