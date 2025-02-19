@@ -1,3 +1,5 @@
+require 'rails_helper'
+
 RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
   describe 'GET #show' do
     subject { make_request && response }
@@ -18,7 +20,11 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       let(:year) { 2023 }
 
       let(:make_request) do
-        get "/uk/api/v2/exchange_rates/period_lists.json?year=#{year}&filter[type]=monthly"
+        get api_exchange_rates_period_list_path(
+          year: '2023',
+          filter: { type: 'monthly' },
+          format: :json,
+        )
       end
 
       let(:pattern) do
@@ -79,7 +85,11 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       let(:period_list) { build(:period_list, exchange_rate_periods: [], year: 1970) }
 
       let(:make_request) do
-        get "/uk/api/v2/exchange_rates/period_lists.json?year=#{year}&filter[type]=monthly"
+        get api_exchange_rates_period_list_path(
+          year: '1970',
+          filter: { type: 'monthly' },
+          format: :json,
+        )
       end
 
       let(:pattern) do
@@ -107,13 +117,17 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       let(:year) { '2023idadas' }
 
       let(:make_request) do
-        get "/uk/api/v2/exchange_rates/period_lists/#{year}?filter[type]=monthly"
+        get api_exchange_rates_period_list_path(
+          year: '2023idadas',
+          filter: { type: 'monthly' },
+          format: :json,
+        )
       end
 
       let(:pattern) do
         {
-          'error' => 'not found',
-          'url' => 'http://www.example.com/uk/api/v2/exchange_rates/period_lists/2023idadas?filter[type]=monthly',
+          error: 'not found',
+          url: 'http://www.example.com/uk/api/v2/exchange_rates/period_lists/2023idadas?filter%5Btype%5D=monthly',
         }
       end
 
@@ -125,13 +139,17 @@ RSpec.describe Api::V2::ExchangeRates::PeriodListsController, type: :request do
       let(:year) { 2023 }
 
       let(:make_request) do
-        get "/uk/api/v2/exchange_rates/period_lists/#{year}?filter[type]=invalid"
+        get api_exchange_rates_period_list_path(
+          year: '2023',
+          filter: { type: 'invalid' },
+          format: :json,
+        )
       end
 
       let(:pattern) do
         {
-          'error' => 'invalid',
-          'url' => 'http://www.example.com/uk/api/v2/exchange_rates/period_lists/2023?filter[type]=invalid',
+          error: 'invalid',
+          url: 'http://www.example.com/uk/api/v2/exchange_rates/period_lists/2023?filter%5Btype%5D=invalid',
         }
       end
 

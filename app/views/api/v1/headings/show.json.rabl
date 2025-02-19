@@ -53,8 +53,8 @@ node(:_response_info) do
   {
     links: [
       { rel: 'self', href: request.fullpath },
-      { rel: 'chapter', href: v1_api_path('chapters', @heading.chapter_short_code) },
-      { rel: 'section', href: v1_api_path('sections', @heading.section.position) },
+      { rel: 'chapter', href: api_chapter_path(@heading.chapter) },
+      { rel: 'section', href: api_section_path(@heading.section.position) },
     ],
   }
 end

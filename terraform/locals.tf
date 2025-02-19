@@ -30,10 +30,6 @@ locals {
       value = "20"
     },
     {
-      name  = "DEFAULT_API_VERSION"
-      value = "1"
-    },
-    {
       name  = "DISABLE_ADMIN_API_AUTHENTICATION"
       value = var.disable_admin_api_authentication
     },
