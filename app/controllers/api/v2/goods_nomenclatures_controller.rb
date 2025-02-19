@@ -74,21 +74,22 @@ module Api
       end
 
       def self.api_path_builder(object, check_for_subheadings: false)
+        service = TradeTariffBackend.service
         gnid = object.goods_nomenclature_item_id
         return nil unless gnid
 
         case object
         when Chapter
-          "/api/v2/chapters/#{gnid.first(2)}"
+          "/#{service}/api/v2/chapters/#{gnid.first(2)}"
         when Heading
-          "/api/v2/headings/#{gnid.first(4)}"
+          "/#{service}/api/v2/headings/#{gnid.first(4)}"
         when Subheading
-          "/api/v2/subheadings/#{object.to_param}"
+          "/#{service}/api/v2/subheadings/#{object.to_param}"
         else
           if check_for_subheadings && !object.declarable?
-            "/api/v2/subheadings/#{gnid.first(10)}-#{object.producline_suffix}"
+            "/#{service}/api/v2/subheadings/#{gnid.first(10)}-#{object.producline_suffix}"
           else
-            "/api/v2/commodities/#{gnid.first(10)}"
+            "/#{service}/api/v2/commodities/#{gnid.first(10)}"
           end
         end
       end

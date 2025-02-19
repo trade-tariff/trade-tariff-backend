@@ -22,7 +22,7 @@ node(:_response_info) do
   {
     links: [
       { rel: 'self', href: request.fullpath },
-      { rel: 'sections', href: api_sections_path },
+      { rel: 'sections', href: v1_api_path('sections') },
     ],
   }
 end

@@ -58,7 +58,8 @@ RSpec.describe Api::V2::MeasureTypesController, type: :controller do
       let(:pattern) do
         {
           error: 'not found',
-          url: 'http://test.host/uk/api/v2/measure_types/foo',
+          # TODO: This will default to v2 pathed helper when legacy routes are removed
+          url: 'http://test.host/measure_types/foo',
         }
       end
 
