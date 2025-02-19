@@ -31,7 +31,7 @@ node(:_response_info) do
   {
     links: [
       { rel: 'self', href: request.fullpath },
-      { rel: 'section', href: v1_api_path('sections', @chapter.section.position) },
+      { rel: 'section', href: api_section_path(@chapter.section.position) },
     ],
   }
 end
