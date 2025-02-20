@@ -530,6 +530,7 @@ ALTER SEQUENCE uk.additional_codes_oid_seq OWNED BY uk.additional_codes_oplog.oi
 CREATE TABLE uk.appendix_5as (
     certificate_type_code text NOT NULL,
     certificate_code text NOT NULL,
+    chief_guidance text,
     cds_guidance text,
     created_at timestamp without time zone,
     updated_at timestamp without time zone
@@ -12578,4 +12579,3 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20240808113431_update_gree
 INSERT INTO "schema_migrations" ("filename") VALUES ('20240830142019_add_differences_log.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20241210100900_add_green_lanes_faq_feedback_table.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250108092900_elevate_privileges_green_lanes_faq_feedback_table.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250219092427_delete_chief_guidance_column_from_appendix5a.rb');
