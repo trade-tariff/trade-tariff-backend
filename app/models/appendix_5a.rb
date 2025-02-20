@@ -20,7 +20,7 @@ class Appendix5a < Sequel::Model(:appendix_5as)
   end
 
   def guidance_chief
-    ''
+    chief_guidance || ''
   end
 
   def guidance_cds
