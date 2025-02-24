@@ -1,4 +1,8 @@
 RSpec.describe TaricImporter do
+  before do
+    allow(TradeTariffBackend).to receive(:service).and_return('xi')
+  end
+
   describe '#import' do
     let(:example_date) { Date.new(2013, 8, 2) }
     let(:example_date2) { Date.new(2014, 8, 2) }
