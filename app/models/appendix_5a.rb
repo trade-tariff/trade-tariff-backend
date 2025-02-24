@@ -19,9 +19,9 @@ class Appendix5a < Sequel::Model(:appendix_5as)
     "#{certificate_type_code}#{certificate_code}"
   end
 
-  def guidance_chief
-    ''
-  end
+  # def guidance_chief
+  #   ''
+  # end
 
   def guidance_cds
     cds_guidance

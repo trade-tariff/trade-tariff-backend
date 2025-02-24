@@ -12,8 +12,8 @@ module Api
                    :certificate_code,
                    :description,
                    :formatted_description,
-                   :guidance_cds,
-                   :guidance_chief
+                   :guidance_cds
+        #  :guidance_chief
 
         attribute :certificate_type_description do |certificate|
           certificate.certificate_type_description&.description

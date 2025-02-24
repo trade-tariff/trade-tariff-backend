@@ -29,7 +29,7 @@ RSpec.describe Api::V2::Certificates::CertificatesSerializer do
             description: String,
             formatted_description: String,
             guidance_cds: String,
-            guidance_chief: String,
+            # guidance_chief: String,
           },
           relationships: {
             goods_nomenclatures: Hash,

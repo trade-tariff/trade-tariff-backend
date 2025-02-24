@@ -20,7 +20,7 @@ module Api
                    :document_code,
                    :duty_expression,
                    :guidance_cds,
-                   :guidance_chief,
+                   #  :guidance_chief,
                    :measure_condition_class,
                    :monetary_unit_abbreviation,
                    :requirement,
