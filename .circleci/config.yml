@@ -47,7 +47,7 @@ executors:
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.3.7
+      - image: cimg/ruby:3.4.2
     resource_class: medium
     steps:
       - checkout
@@ -160,7 +160,7 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.3.7
+      - image: cimg/ruby:3.4.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
@@ -218,7 +218,7 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.3.7
+      - image: cimg/ruby:3.4.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
