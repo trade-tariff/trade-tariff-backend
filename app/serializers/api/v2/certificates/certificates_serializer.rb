@@ -11,7 +11,6 @@ module Api
                    :description,
                    :formatted_description,
                    :guidance_cds
-        #  :guidance_chief
 
         has_one :goods_nomenclatures,
                 serializer: proc { |record, _params|

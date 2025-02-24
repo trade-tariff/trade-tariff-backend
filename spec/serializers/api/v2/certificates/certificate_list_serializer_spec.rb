@@ -24,7 +24,6 @@ RSpec.describe Api::V2::Certificates::CertificateListSerializer do
             certificate_type_description: String,
             validity_start_date: String,
             guidance_cds: String,
-            # guidance_chief: String,
           },
         },
       ],

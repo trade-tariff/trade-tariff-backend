@@ -68,7 +68,6 @@ class MeasureCondition < Sequel::Model
 
   delegate :requirement_operator, to: :measure_condition_code, allow_nil: true
 
-  # delegate :guidance_chief, :guidance_cds, to: :appendix_5a, allow_nil: true
   delegate :guidance_cds, to: :appendix_5a, allow_nil: true
 
   delegate :positive_action?, to: :measure_action, allow_nil: true
