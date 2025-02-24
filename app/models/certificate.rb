@@ -68,7 +68,7 @@ class Certificate < Sequel::Model
   end
 
   delegate :description, :formatted_description, to: :certificate_description
-  delegate :guidance_chief, :guidance_cds, to: :appendix_5a, allow_nil: true
+  delegate :guidance_cds, to: :appendix_5a, allow_nil: true
 
   dataset_module do
     def with_certificate_types_and_codes(certificate_types_and_codes)

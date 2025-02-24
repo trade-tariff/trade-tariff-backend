@@ -252,12 +252,6 @@ RSpec.describe MeasureCondition do
     it { is_expected.not_to be_nil }
   end
 
-  describe '#guidance_chief' do
-    subject(:guidance_chief) { create(:measure_condition, :with_guidance).guidance_chief }
-
-    it { is_expected.not_to be_nil }
-  end
-
   describe '#threshold_unit_type' do
     context 'when the condition code is for the entry price system' do
       subject(:measure_condition) { build :measure_condition, :eps }
