@@ -40,10 +40,6 @@ module "backend_uk" {
     local.backend_common_vars,
     [
       {
-        name  = "CDS"
-        value = "true"
-      },
-      {
         name  = "ENABLE_ADMIN"
         value = "true"
       },

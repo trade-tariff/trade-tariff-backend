@@ -31,7 +31,7 @@ RSpec.describe RollbackWorker, type: :worker do
 
     context 'for uk' do
       before do
-        allow(TradeTariffBackend).to receive_messages(use_cds?: 'true', service: 'uk')
+        allow(TradeTariffBackend).to receive_messages(service: 'uk')
         allow(TaricSynchronizer).to receive(:rollback)
         allow(CdsSynchronizer).to receive(:rollback).with(date, keep: false)
       end

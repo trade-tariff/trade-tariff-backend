@@ -58,13 +58,13 @@ class TaricImporter
   private
 
   def proceed_with_import?(filename)
-    return true unless TradeTariffBackend.use_cds?
+    return true unless TradeTariffBackend.uk?
 
     TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).blank?
   end
 
   def post_import(file_path:, filename:)
-    create_update_entry(file_path:, filename:) if TradeTariffBackend.use_cds?
+    create_update_entry(file_path:, filename:) if TradeTariffBackend.uk?
     Rails.logger.info "Successfully imported Taric file: #{@taric_update.filename}"
   end
 
