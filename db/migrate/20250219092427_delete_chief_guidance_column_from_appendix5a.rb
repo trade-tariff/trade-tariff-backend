@@ -3,7 +3,7 @@
 Sequel.migration do
   up do
     alter_table(:appendix_5as) do
-      drop_column :chief_guidance, String
+      drop_column :chief_guidance
     end
   end
 
