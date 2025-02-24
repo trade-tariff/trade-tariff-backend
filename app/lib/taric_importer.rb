@@ -58,7 +58,7 @@ class TaricImporter
   private
 
   def proceed_with_import?(filename)
-    return true unless TradeTariffBackend.use_cds?uk?
+    return true unless TradeTariffBackend.uk?
 
     TariffSynchronizer::TaricUpdate.find(filename: filename[0, 30]).blank?
   end

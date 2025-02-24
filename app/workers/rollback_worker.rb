@@ -5,8 +5,6 @@ class RollbackWorker
 
   def perform(date, redownload = false)
     if TradeTariffBackend.uk?
-      require 'pry'
-      binding.pry
       CdsSynchronizer.rollback(date, keep: redownload)
     else
       TaricSynchronizer.rollback(date, keep: redownload)
