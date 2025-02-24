@@ -38,10 +38,6 @@ module "backend_xi" {
   service_environment_config = flatten([local.backend_common_vars,
     [
       {
-        name  = "CDS"
-        value = "false"
-      },
-      {
         name  = "ENABLE_ADMIN"
         value = "true"
       },

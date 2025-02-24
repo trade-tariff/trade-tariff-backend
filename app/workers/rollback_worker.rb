@@ -4,7 +4,9 @@ class RollbackWorker
   sidekiq_options queue: :rollbacks, retry: false
 
   def perform(date, redownload = false)
-    if TradeTariffBackend.use_cds?
+    if TradeTariffBackend.uk?
+      require 'pry'
+      binding.pry
       CdsSynchronizer.rollback(date, keep: redownload)
     else
       TaricSynchronizer.rollback(date, keep: redownload)

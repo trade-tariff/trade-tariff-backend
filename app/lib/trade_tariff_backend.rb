@@ -39,10 +39,6 @@ module TradeTariffBackend
       ENV.fetch('TARIFF_SYNC_EMAIL')
     end
 
-    def use_cds?
-      ENV['CDS'] == 'true'
-    end
-
     def patch_broken_taric_downloads?
       ENV['PATCH_BROKEN_TARIC_DOWNLOADS'] == 'true'
     end
