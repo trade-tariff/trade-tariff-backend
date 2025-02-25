@@ -72,7 +72,7 @@ module "backend_xi" {
     [
       {
         name      = "DATABASE_URL"
-        valueFrom = local.read_write_db_arn
+        valueFrom = local.database_url
       }
     ]
   ])
