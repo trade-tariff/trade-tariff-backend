@@ -24,7 +24,6 @@ RSpec.describe Api::V2::Measures::MeasureConditionSerializer do
           condition_measurement_unit_qualifier_code: serializable.condition_measurement_unit_qualifier_code,
           measure_condition_class: 'threshold',
           guidance_cds: be_a(String),
-          guidance_chief: be_a(String),
           requirement_operator: '>',
           threshold_unit_type: serializable.threshold_unit_type.to_s,
         },
