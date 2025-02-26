@@ -49,7 +49,7 @@ class SearchService
     end
 
     def find_historic_goods_nomenclature(query)
-      return nil unless query.match(/\A\d+\z/)
+      return nil unless /\A\d+\z/.match?(query)
 
       short_code = query.first(10)
       producline_suffix = query.length > 10 ? query.last(2) : nil

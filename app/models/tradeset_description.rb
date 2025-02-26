@@ -26,7 +26,7 @@ class TradesetDescription < Sequel::Model
     private
 
     def normalise_goods_nomenclature_item_id(goods_nomenclature_item_id)
-      goods_nomenclature_item_id = goods_nomenclature_item_id.to_s.gsub(' ', '').first(GoodsNomenclature::VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH)
+      goods_nomenclature_item_id = goods_nomenclature_item_id.to_s.delete(' ').first(GoodsNomenclature::VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH)
 
       return goods_nomenclature_item_id if goods_nomenclature_item_id.length == GoodsNomenclature::VALID_GOODS_NOMENCLATURE_ITEM_ID_LENGTH
       return '' if goods_nomenclature_item_id.blank?
