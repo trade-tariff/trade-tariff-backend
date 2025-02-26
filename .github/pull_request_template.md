@@ -1,6 +1,6 @@
 ### Jira link
 
-HMRC-<TODO>
+[HMRC-<TODO>](https://transformuk.atlassian.net/browse/HMRC-<TODO>)
 
 ### What?
 
