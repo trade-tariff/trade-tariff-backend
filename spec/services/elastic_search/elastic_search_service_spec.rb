@@ -223,7 +223,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
               value: '0154438-3',
               goods_nomenclature_class: 'Heading',
               suggestion_type: 'chemicals',
-              query: '0154438-3',
+              query: '0154438',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
         end
@@ -241,7 +241,7 @@ RSpec.describe ElasticSearch::ElasticSearchService do
               value: '8028-66-8',
               goods_nomenclature_class: 'Heading',
               suggestion_type: 'chemicals',
-              query: '8028-66-8',
+              query: '8028',
             }.ignore_extra_keys!,
           }.ignore_extra_keys!
         end
