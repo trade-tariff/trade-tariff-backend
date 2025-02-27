@@ -423,7 +423,7 @@ GEM
     sentry-sidekiq (5.22.4)
       sentry-ruby (~> 5.22.4)
       sidekiq (>= 3.0)
-    sequel (5.88.0)
+    sequel (5.89.0)
       bigdecimal
     sequel-rails (1.2.3)
       actionpack (>= 4.0.0)
@@ -547,7 +547,7 @@ DEPENDENCIES
   rubyzip
   sentry-rails
   sentry-sidekiq
-  sequel (= 5.88.0)
+  sequel (= 5.89.0)
   sequel-rails
   sidekiq
   sidekiq-scheduler
