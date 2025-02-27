@@ -90,29 +90,5 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteMapper do
       it_behaves_like 'an entity mapper destroy operation', FootnoteDescription
       it_behaves_like 'an entity mapper destroy operation', FootnoteDescriptionPeriod
     end
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      let(:operation) { 'C' }
-
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :footnote,
-          :with_description,
-          footnote_id: '133',
-          footnote_type_id: 'TM',
-        )
-        # Control for a non-deleted period
-        create(
-          :footnote_description_period,
-          :with_description,
-          footnote_description_period_sid: '1355',
-          footnote_type_id: 'TM',
-          footnote_id: '133',
-        )
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescriptionPeriod, footnote_type_id: 'TM', footnote_id: '133'
-    end
   end
 end

@@ -10,8 +10,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
 
     let :make_request do
       get api_green_lanes_category_assessments_path(format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2',
-                     'HTTP_AUTHORIZATION' => authorization }
+          headers: { 'HTTP_AUTHORIZATION' => authorization }
     end
 
     let :authorization do
@@ -60,8 +59,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
 
     let :make_request do
       get api_green_lanes_category_assessments_path(format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2',
-                     'HTTP_AUTHORIZATION' => authorization }
+          headers: { 'HTTP_AUTHORIZATION' => authorization }
     end
 
     context 'when presence of incorrect bearer token' do

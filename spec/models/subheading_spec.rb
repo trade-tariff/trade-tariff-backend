@@ -1,4 +1,8 @@
 RSpec.describe Subheading do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe '#to_param' do
     subject(:to_param) { described_class.find(goods_nomenclature_item_id: '0101210000', producline_suffix: '10').to_param }
 

@@ -1,4 +1,8 @@
 RSpec.describe GreenLanes::Measure do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe 'attributes' do
     it { is_expected.to respond_to :id }
     it { is_expected.to respond_to :category_assessment_id }

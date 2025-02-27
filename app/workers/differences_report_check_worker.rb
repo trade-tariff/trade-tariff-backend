@@ -4,7 +4,7 @@ class DifferencesReportCheckWorker
   sidekiq_options retry: 1, retry_in: 1.hour
 
   def perform
-    return unless Rails.env.production?
+    return unless ENV.fetch('ENVIRONMENT', '') == 'production'
 
     last_log = DifferencesLog.max(:date)
     notify_failure if last_log < 7.days.ago

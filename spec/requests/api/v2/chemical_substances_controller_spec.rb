@@ -5,8 +5,7 @@ RSpec.describe Api::V2::ChemicalSubstancesController, type: :request do
     let(:make_request) do
       create(:full_chemical, cus: '1234567890')
 
-      get api_chemical_substances_path(params:, format: :json),
-          headers: { 'Accept' => 'application/vnd.uktt.v2' }
+      get api_chemical_substances_path(params:, format: :json)
     end
 
     context 'when no filter is provided' do
@@ -25,7 +24,7 @@ RSpec.describe Api::V2::ChemicalSubstancesController, type: :request do
       it 'calls the FullChemical.with_filter method' do
         allow(FullChemical).to receive(:with_filter).and_call_original
         rendered
-        expect(FullChemical).to have_received(:with_filter).with('cus' => '1234567890')
+        expect(FullChemical).to have_received(:with_filter).with(strong_params('cus' => '1234567890'))
       end
 
       it { expect(rendered.body).to match(/1234567890/) }

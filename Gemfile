@@ -4,14 +4,15 @@ ruby File.read('.ruby-version')
 
 # Server
 gem 'puma'
-gem 'rails', '~> 7.1'
+gem 'rails', '~> 8.0'
 
 # DB
 gem 'pg'
-gem 'sequel', '5.84.0'
+gem 'sequel', '5.89.0'
 gem 'sequel-rails'
 
 # File uploads and AWS
+gem 'aws-actionmailer-ses'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -38,6 +39,7 @@ gem 'hashie'
 gem 'holidays'
 gem 'lograge'
 gem 'logstash-event'
+gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
 gem 'plek'
@@ -59,6 +61,7 @@ group :development do
 end
 
 group :development, :test do
+  gem 'awesome_print'
   gem 'dotenv-rails'
   gem 'pry-byebug'
   gem 'pry-rails'

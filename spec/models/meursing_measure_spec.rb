@@ -1,4 +1,8 @@
 RSpec.describe MeursingMeasure do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   it { expect(described_class.primary_key).to eq(:measure_sid) }
 
   describe '#all' do

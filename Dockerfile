@@ -1,5 +1,5 @@
 # Build compilation image
-FROM ruby:3.3.5-alpine3.20 as builder
+FROM ruby:3.4.2-alpine3.21 as builder
 
 # The application runs from /app
 WORKDIR /app
@@ -7,7 +7,7 @@ WORKDIR /app
 # build-base: compilation tools for bundle
 # git: used to pull gems from git
 # yarn: node package manager
-RUN apk add --update --no-cache build-base git postgresql-dev shared-mime-info tzdata && \
+RUN apk add --update --no-cache build-base git postgresql-dev shared-mime-info tzdata yaml-dev && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
 
@@ -29,7 +29,10 @@ RUN rm -rf node_modules log tmp && \
   find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:3.3.5-alpine3.20 as production
+FROM ruby:3.4.2-alpine3.21 as production
+
+# Install PostgreSQL client tools
+RUN apk add --no-cache postgresql-client
 
 RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \

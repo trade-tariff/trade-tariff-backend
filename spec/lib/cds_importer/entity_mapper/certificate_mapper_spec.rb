@@ -55,26 +55,5 @@ RSpec.describe CdsImporter::EntityMapper::CertificateMapper do
       it_behaves_like 'an entity mapper create operation', CertificateDescription
       it_behaves_like 'an entity mapper create operation', CertificateDescriptionPeriod
     end
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :certificate_description_period,
-          certificate_code: '071',
-          certificate_type_code: 'Y',
-        )
-
-        # Control for a non-deleted period
-        create(
-          :certificate_description_period,
-          certificate_code: '071',
-          certificate_type_code: 'Y',
-          certificate_description_period_sid: '5033',
-        )
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', CertificateDescriptionPeriod, certificate_type_code: 'Y', certificate_code: '071'
-    end
   end
 end

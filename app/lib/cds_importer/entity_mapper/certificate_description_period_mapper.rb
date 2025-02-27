@@ -12,13 +12,6 @@ class CdsImporter
         'certificateType.certificateTypeCode' => :certificate_type_code,
         'certificateCode' => :certificate_code,
       ).freeze
-
-      self.primary_filters = {
-        certificate_type_code: :certificate_type_code,
-        certificate_code: :certificate_code,
-      }.freeze
-
-      delete_missing_entities CertificateDescriptionMapper
     end
   end
 end

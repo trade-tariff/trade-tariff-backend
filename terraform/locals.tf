@@ -5,6 +5,10 @@ locals {
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
   signon_url     = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
 
+  database_url = (
+    var.environment == "development" ? data.aws_secretsmanager_secret.database_connection_string.arn : try(data.aws_secretsmanager_secret.aurora_rw_connection_string[0].arn, "")
+  )
+
   backend_common_vars = [
     {
       name  = "PORT"
@@ -27,8 +31,8 @@ locals {
       value = "20"
     },
     {
-      name  = "DEFAULT_API_VERSION"
-      value = "1"
+      name  = "DISABLE_ADMIN_API_AUTHENTICATION"
+      value = var.disable_admin_api_authentication
     },
     {
       name  = "FRONTEND_HOST"
@@ -113,6 +117,10 @@ locals {
     {
       name  = "GREEN_LANES_NOTIFY_MEASURE_UPDATES"
       value = var.green_lanes_notify_measure_updates
+    },
+    {
+      name  = "OPTIMISED_SEARCH_ENABLED"
+      value = var.optimised_search_enabled
     }
   ]
 
@@ -203,6 +211,10 @@ locals {
     {
       name      = "GREEN_LANES_API_KEYS"
       valueFrom = data.aws_secretsmanager_secret.green_lanes_api_keys.arn
+    },
+    {
+      name      = "NEW_RELIC_LICENSE_KEY"
+      valueFrom = data.aws_secretsmanager_secret.new_relic_license_key.arn
     },
     {
       name      = "SENTRY_DSN"

@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::CommoditiesController do
+  routes { V2Api.routes }
+
   let(:commodity) do
     create(
       :commodity,
@@ -20,7 +22,7 @@ RSpec.describe Api::V2::CommoditiesController do
     it 'initializes the CachedCommodityService' do
       do_response
 
-      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, {})
+      expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, strong_params({}))
     end
 
     context 'when a filter for geographical_area_id is passed' do
@@ -31,9 +33,7 @@ RSpec.describe Api::V2::CommoditiesController do
       it 'passes the filter to the CachedCommodityService' do
         do_response
 
-        filter_params = ActionController::Parameters.new(geographical_area_id: 'RO').permit!
-
-        expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, filter_params)
+        expect(CachedCommodityService).to have_received(:new).with(commodity, Time.zone.today, strong_params({ geographical_area_id: 'RO' }))
       end
     end
 
@@ -52,11 +52,11 @@ RSpec.describe Api::V2::CommoditiesController do
       end
 
       before do
-        Thread.current[:meursing_additional_code_id] = 'foo'
+        TradeTariffRequest.meursing_additional_code_id = 'foo'
       end
 
       it 'sets the value to nil when we are done making the request' do
-        expect { do_response }.to change { Thread.current[:meursing_additional_code_id] }.from('foo').to(nil)
+        expect { do_response }.to change(TradeTariffRequest, :meursing_additional_code_id).from('foo').to(nil)
       end
 
       it 'passes the correct meursing additional code to the MeursingMeasureFinderService' do

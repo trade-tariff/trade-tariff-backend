@@ -52,9 +52,9 @@ end
 node(:_response_info) do
   {
     links: [
-      { rel: 'self', href: api_link(request.fullpath) },
-      { rel: 'chapter', href: api_link(api_chapter_path(@heading.chapter)) },
-      { rel: 'section', href: api_link(api_section_path(@heading.section.position)) },
+      { rel: 'self', href: request.fullpath },
+      { rel: 'chapter', href: api_chapter_path(@heading.chapter) },
+      { rel: 'section', href: api_section_path(@heading.section.position) },
     ],
   }
 end

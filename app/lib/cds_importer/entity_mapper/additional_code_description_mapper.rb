@@ -17,10 +17,6 @@ class CdsImporter
         'additionalCodeCode' => :additional_code,
         "#{mapping_path}.description" => :description,
       ).freeze
-
-      self.primary_filters = {
-        additional_code_description_period_sid: :additional_code_description_period_sid,
-      }.freeze
     end
   end
 end

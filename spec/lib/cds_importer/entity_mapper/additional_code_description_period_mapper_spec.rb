@@ -33,17 +33,4 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeDescriptionPeriodMapper 
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('AdditionalCode', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(:additional_code_description, additional_code_sid: '3084', additional_code_description_period_sid: '536')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', AdditionalCodeDescription, additional_code_description_period_sid: '536', additional_code_sid: '3084'
-    end
-  end
 end

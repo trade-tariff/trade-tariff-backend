@@ -10,9 +10,6 @@ class CdsImporter
         'additionalCodeTypeId' => :additional_code_type_id,
         'meursingTablePlan.meursingTablePlanId' => :meursing_table_plan_id,
       ).freeze
-
-      delete_missing_entities AdditionalCodeTypeDescriptionMapper,
-                              AdditionalCodeTypeMeasureTypeMapper
     end
   end
 end

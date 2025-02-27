@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::ChangesController do
+  routes { V2Api.routes }
+
   let(:no_changes_response) { { 'data' => [] } }
   let(:goods_nomenclature_item_id) { nil }
   let(:goods_nomenclature_sid) { nil }

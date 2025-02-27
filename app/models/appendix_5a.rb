@@ -1,5 +1,5 @@
 class Appendix5a < Sequel::Model(:appendix_5as)
-  CDS_GUIDANCE_OBJECT_KEY = 'config/chief_cds_guidance.json'.freeze
+  CDS_GUIDANCE_OBJECT_KEY = 'config/cds_guidance.json'.freeze
 
   set_primary_key %i[certificate_type_code certificate_code]
 
@@ -17,10 +17,6 @@ class Appendix5a < Sequel::Model(:appendix_5as)
 
   def document_code
     "#{certificate_type_code}#{certificate_code}"
-  end
-
-  def guidance_chief
-    chief_guidance
   end
 
   def guidance_cds

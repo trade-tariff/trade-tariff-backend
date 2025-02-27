@@ -1,8 +1,11 @@
 RSpec.describe Api::V1::ChaptersController do
+  routes { V1Api.routes }
+
   let(:now) { Time.zone.today }
   let(:expires_at) { now.end_of_day }
 
   before do
+    TradeTariffRequest.time_machine_now = Time.current
     allow(Rails.cache).to receive(:fetch).and_call_original
   end
 

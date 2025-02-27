@@ -34,8 +34,7 @@ class CdsImporter
                       :mapping_path,        # path to attributes in xml
                       :mapping_root,        # node name in xml that provides data for mapping
                       :exclude_mapping,     # list of excluded attributes
-                      :primary_key_mapping, # how we pull out the (often composite) primary key from the xml node document
-                      :primary_filters      # how we know what secondaries are associated with the primary
+                      :primary_key_mapping  # how we pull out the (often composite) primary key from the xml node document
 
         def before_oplog_inserts_callbacks
           @before_oplog_inserts_callbacks ||= []
@@ -62,26 +61,6 @@ class CdsImporter
           BASE_MAPPING.except(*exclude_mapping).keys.each_with_object({}) do |key, memo|
             mapped_key = mapping_path.present? ? "#{mapping_path}.#{key}" : key
             memo[mapped_key] = BASE_MAPPING[key]
-          end
-        end
-
-        # Register a callback to soft delete missing entities indicated by the passed in secondary mappers
-        def delete_missing_entities(*secondary_mappers)
-          before_oplog_inserts do |xml_node, mapper_instance, primary_model_instance, _expanded_attributes|
-            if TradeTariffBackend.handle_missing_soft_deletes?
-              secondary_mappers.each do |secondary_mapper|
-                database_entities = secondary_mapper.database_entities_for(primary_model_instance)
-                xml_node_entities = secondary_mapper.xml_entities_for(xml_node)
-                missing_entities = database_entities - xml_node_entities
-                missing_entity_filter = secondary_mapper.missing_entity_filter_for(missing_entities)
-
-                secondary_mapper.entity.where(missing_entity_filter).each do |missing_entity|
-                  inserter = CdsImporter::RecordInserter.new(missing_entity, secondary_mapper, mapper_instance.filename)
-
-                  inserter.destroy_missing_record
-                end
-              end
-            end
           end
         end
 
@@ -115,32 +94,6 @@ class CdsImporter
           primary_filters.each_with_object({}) do |(primary_field, secondary_field), acc|
             acc[secondary_field] = primary_model_instance.public_send(primary_field)
           end
-        end
-
-        # Returns sequel filter args that will find all missing secondaries based on the primary key index order
-        # defined by the underlying secondary entity model class
-        def missing_entity_filter_for(missing_entities)
-          entity_composite_primary_key.each_with_object({}).with_index do |(primary_key_field, acc), index|
-            acc[primary_key_field] = missing_entities.map { |entity| entity[index] }
-          end
-        end
-
-        def entity_composite_primary_key
-          Array.wrap(entity.primary_key)
-        end
-
-        def database_entities_for(primary_model_instance)
-          filter = filter_for(primary_model_instance)
-
-          entity.where(filter).pluck(*entity.primary_key).map do |composite_primary_key|
-            Array.wrap(composite_primary_key)
-          end
-        end
-
-        def xml_entities_for(xml_node)
-          xml_node_entities = new(xml_node).parse.map { |model_configuration| model_configuration[:instance] }
-
-          xml_node_entities.pluck(*entity.primary_key).map(&Array.method(:wrap))
         end
 
         protected
@@ -221,10 +174,6 @@ class CdsImporter
         values[:approved_flag] = (values[:approved_flag] == APPROVED_FLAG) if values.key?(:approved_flag)
         values[:stopped_flag] = (values[:stopped_flag] == STOPPED_FLAG) if values.key?(:approved_flag)
         values
-      end
-
-      def derived_entity_class
-        name.match(/\ACdsImporter::EntityMapper::(?<entity_class>.*)Mapper\z/).try(:[], :entity_class)
       end
     end
   end

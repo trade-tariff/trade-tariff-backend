@@ -32,17 +32,4 @@ RSpec.describe CdsImporter::EntityMapper::FootnoteDescriptionPeriodMapper do
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('Footnote', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(:footnote_description, footnote_description_period_sid: '1355')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteDescription, footnote_description_period_sid: '1355'
-    end
-  end
 end

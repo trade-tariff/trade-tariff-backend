@@ -42,7 +42,7 @@ class CdsImporter
         # Read into memory
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
-        CdsImporter::XmlParser::Reader.new(xml_stream.read, handler).parse
+        CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end
@@ -98,8 +98,8 @@ class CdsImporter
         oplog_inserts[:operations][operation][entity_class][:duration] += duration
         oplog_inserts[:operations][operation][entity_class][:mapping_path] = mapping_path
 
-        # We only accumulate missing destroy and skipped operations because we can work out from the file which record was inserted for non-missing operation types
-        if [CdsImporter::RecordInserter::DESTROY_MISSING_OPERATION, CdsImporter::RecordInserter::SKIPPED_OPERATION].include?(operation)
+        # We only accumulate skipped operations because we can work out from the file which record was inserted for non-missing operation types
+        if [CdsImporter::RecordInserter::SKIPPED_OPERATION].include?(operation)
           oplog_inserts[:operations][operation][entity_class][:records] ||= []
           oplog_inserts[:operations][operation][entity_class][:records] << record.identification
         end

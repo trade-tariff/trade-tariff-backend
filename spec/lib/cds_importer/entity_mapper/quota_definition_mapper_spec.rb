@@ -241,46 +241,6 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
       # it_behaves_like 'an entity mapper destroy operation', QuotaUnblockingEvent
     end
 
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :quota_definition,
-          :with_quota_association,
-          :with_quota_balance_events,
-          :with_quota_critical_events,
-          :with_quota_exhaustion_events,
-          :with_quota_reopening_events,
-          :with_quota_suspension_period,
-          :with_quota_unsuspension_events,
-          quota_definition_sid: '21891',
-        )
-
-        # Control for non-deleted secondary entities
-        create(:quota_association, main_quota_definition_sid: '21891', sub_quota_definition_sid: '21741')
-        create(:quota_balance_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-07-04T14:48:00')
-        create(:quota_critical_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-03-23T13:00:00')
-        create(:quota_exhaustion_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-02-10T13:00:00')
-        create(:quota_reopening_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-03-24T11:56:00')
-        create(:quota_suspension_period, quota_definition_sid: '21891', quota_suspension_period_sid: '2000')
-        create(:quota_unsuspension_event, quota_definition_sid: '21891', occurrence_timestamp: '2022-05-31T03:18:00')
-      end
-
-      let(:operation) { 'C' }
-
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaAssociation, main_quota_definition_sid: '21891'
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaBalanceEvent, quota_definition_sid: '21891'
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaCriticalEvent, quota_definition_sid: '21891'
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaExhaustionEvent, quota_definition_sid: '21891'
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaReopeningEvent, quota_definition_sid: '21891'
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaSuspensionPeriod, quota_definition_sid: '21891'
-      it_behaves_like 'an entity mapper missing destroy operation', QuotaUnsuspensionEvent, quota_definition_sid: '21891'
-
-      # TODO: We need real examples of these - they haven't appeared in an XML file yet
-      # it_behaves_like 'an entity mapper missing destroy operation', QuotaBlockingPeriod, quota_definition_sid: '21891'
-      # it_behaves_like 'an entity mapper missing destroy operation', QuotaUnblockingEvent, quota_definition_sid: '21891'
-    end
-
     context 'when there is already a quotaClosedAndTransferredEvent but none in the xml node' do
       before { create(:quota_closed_and_transferred_event, quota_definition_sid: xml_node['sid']) }
 

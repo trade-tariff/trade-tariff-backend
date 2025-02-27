@@ -40,11 +40,11 @@ module Api
       end
 
       def configure_meursing_additional_code
-        Thread.current[:meursing_additional_code_id] = filter_params[:meursing_additional_code_id]
+        TradeTariffRequest.meursing_additional_code_id = filter_params[:meursing_additional_code_id]
 
         yield
       ensure
-        Thread.current[:meursing_additional_code_id] = nil
+        TradeTariffRequest.meursing_additional_code_id = nil
       end
     end
   end

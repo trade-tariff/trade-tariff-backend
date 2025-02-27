@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::TreeNode do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe 'Sequel::Model config' do
     subject { described_class }
 

@@ -78,6 +78,8 @@ RSpec.configure do |config|
   end
 
   config.after { travel_back }
+
+  config.include V2Api.routes.url_helpers, type: :request
 end
 
 def silence
@@ -94,4 +96,8 @@ def silence
   $stdout = @original_stdout
   @original_stderr = nil
   @original_stdout = nil
+end
+
+def strong_params(wimpy_params)
+  ActionController::Parameters.new(wimpy_params).permit!
 end

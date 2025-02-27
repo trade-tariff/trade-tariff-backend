@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::ChaptersController do
+  routes { V2Api.routes }
+
   describe 'GET #show' do
     let(:heading) { create :heading, :with_chapter }
     let(:chapter) { heading.reload.chapter }
@@ -95,6 +97,7 @@ RSpec.describe Api::V2::ChaptersController do
     context 'when record is present' do
       it 'returns rendered record' do
         get :show, params: { id: chapter }, format: :json
+        TradeTariffRequest.time_machine_now = Time.current
 
         expect(response.body).to match_json_expression pattern
       end

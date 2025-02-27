@@ -32,7 +32,7 @@ orbs:
 executors:
   terraform:
     docker:
-      - image: hashicorp/terraform:1.8.2
+      - image: hashicorp/terraform:1.9.8
     resource_class: small
     working_directory: "/tmp/terraform"
     environment:
@@ -41,11 +41,13 @@ executors:
   python-executor:
     docker:
       - image: circleci/python:latest
+    environment:
+      TERRAFORM_VERSION: 1.9.8
 
 jobs:
   ruby-checks:
     docker:
-      - image: cimg/ruby:3.3.5
+      - image: cimg/ruby:3.4.2
     resource_class: medium
     steps:
       - checkout
@@ -74,7 +76,8 @@ jobs:
   pre-commit:
     executor: python-executor
     steps:
-      - tariff/pre-commit
+      - tariff/pre-commit:
+          terraform_version: "1.9.8"
 
   write-docker-tag:
     parameters:
@@ -157,12 +160,13 @@ jobs:
 
   flaky-tests:
     docker:
-      - image: cimg/ruby:3.3.5
+      - image: cimg/ruby:3.4.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
-          RAILS_ENV: test
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+          PGHOST: localhost
+          RAILS_ENV: test
       - image: cimg/postgres:13.6
         environment:
           POSTGRES_USER: postgres
@@ -214,20 +218,22 @@ jobs:
   test:
     resource_class: medium
     docker:
-      - image: cimg/ruby:3.3.5
+      - image: cimg/ruby:3.4.2
         environment:
           BUNDLE_JOBS: "3"
           BUNDLE_RETRY: "3"
-          RAILS_ENV: test
           DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+          ELASTICSEARCH_URL: "http://localhost:9200"
+          FRONTEND_REDIS_URL: "redis://localhost:6379/"
+          PGHOST: localhost
+          RAILS_ENV: test
+          REDIS_URL: "redis://localhost:6379/"
       - image: cimg/postgres:13.6
         environment:
           POSTGRES_USER: postgres
           POSTGRES_DB: tariff_test
           POSTGRES_PASSWORD: postgres
       - image: cimg/redis:6.2
-        environment:
-          REDIS_URL: "redis://localhost:6379/"
       - image: opensearchproject/opensearch:2
         environment:
           cluster.name: elasticsearch
@@ -349,22 +355,16 @@ workflows:
           ssm_parameter: "/development/BACKEND_ECR_URL"
           <<: *filter-not-main
 
-      - confirm-deploy-for-qa?:
-          type: approval
+      - apply-terraform:
+          name: apply-terraform-dev
+          context: trade-tariff-terraform-aws-development
+          environment: development
           requires:
             - test
             - ruby-checks
             - pre-commit
             - plan-terraform-dev
             - build-and-push-dev
-          <<: *filter-not-main
-
-      - apply-terraform:
-          name: apply-terraform-dev
-          context: trade-tariff-terraform-aws-development
-          environment: development
-          requires:
-            - confirm-deploy-for-qa?
           <<: *filter-not-main
 
       - sync-opensearch-packages:
@@ -383,7 +383,7 @@ workflows:
             - apply-terraform-dev
           <<: *filter-not-main
 
-  deploy-to-staging:
+  deploy-to-staging-and-production:
     jobs:
       - write-docker-tag:
           name: write-docker-tag-staging
@@ -431,11 +431,11 @@ workflows:
       #       - apply-terraform-staging
       #     <<: *filter-main
 
-  deploy-to-production:
-    jobs:
       - write-docker-tag:
           name: write-docker-tag-prod
           environment: production
+          requires:
+            - apply-terraform-staging
 
       - plan-terraform:
           name: plan-terraform-prod

@@ -37,13 +37,11 @@ class Appendix5aPopulatorService
         certificate_type_code = document_code[0]
         certificate_code = document_code[1..]
         cds_guidance = guidance['guidance_cds']
-        chief_guidance = guidance['guidance_chief']
 
         Appendix5a.new(
           certificate_type_code:,
           certificate_code:,
           cds_guidance:,
-          chief_guidance:,
         )
       end
     end
@@ -58,7 +56,6 @@ class Appendix5aPopulatorService
           next unless guidance.document_code == document_code
 
           guidance.cds_guidance = new_guidance[document_code]['guidance_cds']
-          guidance.chief_guidance = new_guidance[document_code]['guidance_chief']
 
           if guidance.column_changes.any?
             acc << guidance

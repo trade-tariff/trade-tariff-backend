@@ -1,4 +1,5 @@
 class ApplicationController < ActionController::API
+  include ActionController::Helpers
   include ::ActionController::MimeResponds
   # SequelRails incorrectly includes this into ActionController::Base but our
   # ApplicationController derives from ActionController::API
@@ -24,13 +25,25 @@ class ApplicationController < ActionController::API
   private
 
   def actual_date
-    date = Date.parse(params[:as_of].to_s)
-    raise ArgumentError, 'Invalid date' if date > 20.years.from_now || date < 20.years.ago
+    as_of_param = params[:as_of].to_s
 
-    date
-  rescue ArgumentError # empty as_of param means today
+    # Validate the format of the date using regex
+    unless as_of_param.match?(/\A\d{4}-\d{2}-\d{2}\z/)
+      return Time.zone.today
+    end
+
+    date = Date.parse(as_of_param)
+
+    # Ensure the date is within a 20-year range
+    if date > 20.years.from_now
+      Time.zone.today
+    else
+      date
+    end
+  rescue ArgumentError
     Time.zone.today
   end
+
   helper_method :actual_date
 
   def configure_time_machine(&block)

@@ -421,12 +421,19 @@ class Measure < Sequel::Model
           },
         ]
 
-        if TradeTariffBackend.uk?
-          overview_types << {
-            measures__measure_type_id: MeasureType::VAT_TYPES,
-            measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
-          }
-        end
+        overview_types << if TradeTariffBackend.uk?
+                            {
+                              measures__measure_type_id: MeasureType::VAT_TYPES,
+                              measures__geographical_area_id: GeographicalArea::AREAS_SUBJECT_TO_VAT_OR_EXCISE_ID,
+                            }
+                          else
+
+                            {
+                              measures__measure_type_id: MeasureType::VAT_TYPES,
+                              measures__geographical_area_id: GeographicalArea::ERGA_OMNES_ID,
+                            }
+
+                          end
 
         Sequel.|(*overview_types)
       end
@@ -676,7 +683,7 @@ class Measure < Sequel::Model
   end
 
   def meursing_additional_code_id
-    Thread.current[:meursing_additional_code_id]
+    TradeTariffRequest.meursing_additional_code_id
   end
 
   def all_condition_components

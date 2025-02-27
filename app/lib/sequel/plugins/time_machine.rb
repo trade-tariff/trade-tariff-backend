@@ -39,11 +39,11 @@ module Sequel
         end
 
         def point_in_time
-          Thread.current[::TimeMachine::THREAD_DATETIME_KEY]
+          TradeTariffRequest.time_machine_now
         end
 
         def relevant_query?
-          Thread.current[::TimeMachine::THREAD_RELEVANT_KEY]
+          TradeTariffRequest.time_machine_relevant
         end
 
         def validity_dates_filter(table = self,
@@ -67,7 +67,7 @@ module Sequel
 
       module InstanceMethods
         def current?
-          now = Time.zone.now # This method will be called by a backgroung JOB, therefore it does not use Thread.current
+          now = Time.zone.now # This method will be called by a backgroung JOB, therefore it does not use TradeTariffRequest.time_machine_now
           period_end_date = self.class.period_end_date_column.column
           period_start_date = self.class.period_start_date_column.column
 

@@ -55,8 +55,9 @@ data "aws_secretsmanager_secret" "database_connection_string" {
   name = "tradetariffpostgres${var.environment}-connection-string"
 }
 
-data "aws_secretsmanager_secret" "database_readonly_connection_string" {
-  name = "postgres-read-only"
+data "aws_secretsmanager_secret" "aurora_rw_connection_string" {
+  count = var.environment == "development" ? 0 : 1
+  name  = "aurora-postgres-rw-connection-string"
 }
 
 data "aws_secretsmanager_secret" "secret_key_base" {
@@ -123,10 +124,22 @@ data "aws_secretsmanager_secret" "green_lanes_api_keys" {
   name = "backend-green-lanes-api-keys"
 }
 
+data "aws_secretsmanager_secret" "new_relic_license_key" {
+  name = "backend-new-relic-license-key"
+}
+
 data "aws_s3_bucket" "persistence" {
   bucket = "trade-tariff-persistence-${local.account_id}"
 }
 
 data "aws_s3_bucket" "reporting" {
   bucket = "trade-tariff-reporting-${local.account_id}"
+}
+
+data "aws_lb_target_group" "backend_uk" {
+  name = "backend-uk"
+}
+
+data "aws_lb_target_group" "backend_xi" {
+  name = "backend-xi"
 }

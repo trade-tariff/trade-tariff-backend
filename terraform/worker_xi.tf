@@ -48,10 +48,6 @@ module "worker_xi" {
     local.backend_common_worker_vars,
     [
       {
-        name  = "CDS"
-        value = "false"
-      },
-      {
         name  = "GOVUK_APP_DOMAIN"
         value = "tariff-xi-worker-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
       },
@@ -85,7 +81,7 @@ module "worker_xi" {
     [
       {
         name      = "DATABASE_URL"
-        valueFrom = data.aws_secretsmanager_secret.database_connection_string.arn
+        valueFrom = local.database_url
       }
     ]
   ])

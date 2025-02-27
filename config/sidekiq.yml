@@ -52,23 +52,7 @@
     OneWeekTreeIntegrityCheck:
       cron: '05 8 * * 1'
       class: TreeIntegrityCheckWorker
-      description: Check integrity of Goods Nomenclature hierarchy 1 week in future
-      args: [ 7 ]
-    TwoWeeksTreeIntegrityCheck:
-      cron: '10 8 * * 1'
-      class: TreeIntegrityCheckWorker
-      description: Check integrity of Goods Nomenclature hierarchy 2 weeks in future
-      args: [ 14 ]
-    ThreeWeeksTreeIntegrityCheck:
-      cron: '15 8 * * 1'
-      class: TreeIntegrityCheckWorker
-      description: Check integrity of Goods Nomenclature hierarchy 3 weeks in future
-      args: [ 21 ]
-    FourWeeksTreeIntegrityCheck:
-      cron: '20 8 * * 1'
-      class: TreeIntegrityCheckWorker
-      description: Check integrity of Goods Nomenclature hierarchy 4 weeks in future
-      args: [ 28 ]
+      description: Check integrity of Goods Nomenclature hierarchy 1-4 weeks in future
     MonthlyExchangeRatesWorker:
       cron: '0 21 * * 3'
       description: Update monthly rates data from XE API and Upload files to S3 every penultimate wednesday of the month at 9pm
@@ -90,3 +74,7 @@
       cron: "0 1 * * 2"  # 1am every Tuesday
       description: "Checks if the differences report has run"
       class: DifferencesReportCheckWorker
+    FAQFeedbackReportWorker:
+      cron: "0 9 * * 2"  # 9am every Tuesday
+      description: "Sends FAQ Feedback Report"
+      class: FaqFeedbackReportWorker

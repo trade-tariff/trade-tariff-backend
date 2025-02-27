@@ -1,5 +1,9 @@
 RSpec.describe QuotaDefinition do
   describe '#status' do
+    before do
+      TradeTariffRequest.time_machine_now = Time.current
+    end
+
     context 'when not in a critical state with no events' do
       subject(:status) { build(:quota_definition, critical_state: 'N').status }
 
@@ -212,6 +216,7 @@ RSpec.describe QuotaDefinition do
       let(:quota_definition) { create(:quota_definition, :with_quota_critical_events) }
 
       it 'returns the ids' do
+        TradeTariffRequest.time_machine_now = Time.current
         expect(quota_definition.quota_critical_event_ids.count).to be_positive
       end
     end

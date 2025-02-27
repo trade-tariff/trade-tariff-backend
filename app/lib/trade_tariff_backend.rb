@@ -39,10 +39,6 @@ module TradeTariffBackend
       ENV.fetch('TARIFF_SYNC_EMAIL')
     end
 
-    def use_cds?
-      ENV['CDS'] == 'true'
-    end
-
     def patch_broken_taric_downloads?
       ENV['PATCH_BROKEN_TARIC_DOWNLOADS'] == 'true'
     end
@@ -121,6 +117,7 @@ module TradeTariffBackend
         Search::HeadingIndex,
         Search::SearchReferenceIndex,
         Search::SectionIndex,
+        Search::GoodsNomenclatureIndex,
       ].map(&:new)
     end
 
@@ -183,12 +180,8 @@ module TradeTariffBackend
       }
     end
 
-    def bulk_search_api_enabled?
-      ENV.fetch('BULK_SEARCH_API_ENABLED', 'false') == 'true'
-    end
-
     def opensearch_host
-      ENV.fetch('ELASTICSEARCH_URL', 'http://localhost:9200')
+      ENV.fetch('ELASTICSEARCH_URL', 'http://host.docker.internal:9200')
     end
 
     def xe_api_url
@@ -246,7 +239,7 @@ module TradeTariffBackend
 
     def frontend_redis
       @frontend_redis ||= begin
-        url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://localhost:6379')
+        url = ENV.fetch('FRONTEND_REDIS_URL', 'redis://host.docker.internal:6379')
         db = Rails.env.test? ? 1 : 0
 
         Redis.new(url:, db:)
@@ -267,6 +260,18 @@ module TradeTariffBackend
 
     def green_lanes_notify_measure_updates
       ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
+    end
+
+    def optimised_search_enabled?
+      ENV['OPTIMISED_SEARCH_ENABLED'].to_s == 'true'
+    end
+
+    def disable_admin_api_authentication?
+      ENV.fetch('DISABLE_ADMIN_API_AUTHENTICATION', 'false').to_s == 'true'
+    end
+
+    def implicit_deletion_cutoff
+      Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-23'))
     end
   end
 end

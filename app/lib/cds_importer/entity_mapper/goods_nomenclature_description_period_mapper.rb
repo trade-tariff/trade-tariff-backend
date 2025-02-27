@@ -15,12 +15,6 @@ class CdsImporter
         'goodsNomenclatureItemId' => :goods_nomenclature_item_id,
         'produclineSuffix' => :productline_suffix,
       ).freeze
-
-      self.primary_filters = {
-        goods_nomenclature_sid: :goods_nomenclature_sid,
-      }.freeze
-
-      delete_missing_entities GoodsNomenclatureDescriptionMapper
     end
   end
 end

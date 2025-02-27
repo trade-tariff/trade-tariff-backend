@@ -34,7 +34,7 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
           '0',
           goods_nomenclature.description,
           '80',
-          "/api/v2/headings/#{goods_nomenclature.short_code}",
+          "/uk/api/v2/headings/#{goods_nomenclature.short_code}",
           goods_nomenclature.formatted_description,
           "#{goods_nomenclature.validity_start_date.to_date} 00:00:00 UTC",
           '',
@@ -47,7 +47,7 @@ RSpec.describe Api::V2::Csv::GoodsNomenclatureSerializer do
     context 'with subheading' do
       let(:goods_nomenclature) { create :commodity, :with_children }
 
-      it { expect(rows[1]).to match "api/v2/subheadings/#{goods_nomenclature.to_param}" }
+      it { expect(rows[1]).to match "/uk/api/v2/subheadings/#{goods_nomenclature.to_param}" }
     end
 
     context 'with parent' do

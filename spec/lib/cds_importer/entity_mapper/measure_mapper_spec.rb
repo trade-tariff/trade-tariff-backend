@@ -1,4 +1,10 @@
 RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
+  let(:cutoff) { Date.tomorrow }
+
+  before do
+    allow(TradeTariffBackend).to receive(:implicit_deletion_cutoff).and_return(cutoff)
+  end
+
   it_behaves_like 'an entity mapper', 'Measure', 'Measure' do
     let(:xml_node) do
       {
@@ -162,7 +168,60 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
             'transactionDate' => '2017-07-25T21:03:21',
           },
         },
+        'filename' => "tariff_dailyExtract_v1_#{Time.zone.today.strftime('%Y%m%d')}T235959.gzip",
       }
+    end
+
+    context 'when implictly deleting secondary entities before a cutoff' do
+      before do
+        create(
+          :measure,
+          :with_footnote_association,
+          :with_measure_excluded_geographical_area,
+          measure_sid: '12348',
+        )
+      end
+
+      let(:cutoff) { Date.tomorrow }
+      let(:operation) { 'C' }
+
+      it 'removes the old footnote associations' do
+        old = FootnoteAssociationMeasure.last.oid
+        entity_mapper.import
+        expect(FootnoteAssociationMeasure.pluck(:oid)).not_to include(old)
+      end
+
+      it 'removes the old measure excluded geographical areas' do
+        old = MeasureExcludedGeographicalArea.last.oid
+        entity_mapper.import
+        expect(MeasureExcludedGeographicalArea.pluck(:oid)).not_to include(old)
+      end
+    end
+
+    context 'when implictly deleting secondary entities after a cutoff' do
+      before do
+        create(
+          :measure,
+          :with_footnote_association,
+          :with_measure_excluded_geographical_area,
+          measure_sid: '12348',
+        )
+      end
+
+      let(:cutoff) { Time.zone.today }
+      let(:operation) { 'C' }
+
+      it 'does not remove the old footnote associations' do
+        old = FootnoteAssociationMeasure.last.oid
+        entity_mapper.import
+        expect(FootnoteAssociationMeasure.pluck(:oid)).to include(old)
+      end
+
+      it 'does not remove the old measure excluded geographical areas' do
+        old = MeasureExcludedGeographicalArea.last.oid
+        entity_mapper.import
+        expect(MeasureExcludedGeographicalArea.pluck(:oid)).to include(old)
+      end
     end
 
     context 'when the measure is being updated' do
@@ -212,43 +271,6 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
       it_behaves_like 'an entity mapper destroy operation', MeasureConditionComponent
       it_behaves_like 'an entity mapper destroy operation', MeasureExcludedGeographicalArea
       it_behaves_like 'an entity mapper destroy operation', MeasurePartialTemporaryStop
-    end
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :measure,
-          :with_footnote_association,
-          :with_measure_components,
-          :with_measure_conditions,
-          :with_measure_excluded_geographical_area,
-          :with_measure_partial_temporary_stop,
-          measure_sid: '12348',
-        )
-
-        # Control for non-deleted secondary entities
-        create(:footnote_association_measure, measure_sid: '12348', footnote_type_id: '06', footnote_id: '08')
-        create(:measure_component, measure_sid: '12348', duty_expression_id: '01')
-        create(:measure_condition, measure_sid: '12348', measure_condition_sid: '3321')
-        create(:measure_condition_component, measure_condition_sid: '3321', duty_expression_id: '01')
-        create(:measure_excluded_geographical_area, measure_sid: '12348', geographical_area_sid: '11993')
-        create(:measure_partial_temporary_stop, measure_sid: '12348', partial_temporary_stop_regulation_id: 'R1312020')
-      end
-
-      let(:operation) { 'C' }
-
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteAssociationMeasure, measure_sid: '12348' do
-        let(:has_hard_deletes) { true } # TODO: This will be removed once we migrate to soft-deletion
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', MeasureExcludedGeographicalArea, measure_sid: '12348' do
-        let(:has_hard_deletes) { true } # TODO: This will be removed once we migrate to soft-deletion
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', MeasureComponent, measure_sid: '12348'
-      it_behaves_like 'an entity mapper missing destroy operation', MeasureCondition, measure_sid: '12348'
-      it_behaves_like 'an entity mapper missing destroy operation', MeasurePartialTemporaryStop, measure_sid: '12348'
     end
   end
 end

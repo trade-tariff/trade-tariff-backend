@@ -138,30 +138,4 @@ RSpec.describe CdsImporter::EntityMapper::GoodsNomenclatureMapper do
       }
     end
   end
-
-  describe '#import' do
-    subject(:entity_mapper) { CdsImporter::EntityMapper.new('GoodsNomenclature', xml_node) }
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :goods_nomenclature,
-          :with_footnote_association,
-          :with_indent,
-          :with_description,
-          goods_nomenclature_sid: '87045',
-        )
-
-        # Control for non-deleted secondary entities
-        create(:footnote_association_goods_nomenclature, goods_nomenclature_sid: '87045', footnote_type: 'TN', footnote_id: '204')
-        create(:goods_nomenclature_indent, goods_nomenclature_sid: '87045', goods_nomenclature_indent_sid: '86531')
-        create(:goods_nomenclature_description_period, goods_nomenclature_sid: '87045', goods_nomenclature_description_period_sid: '127397')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteAssociationGoodsNomenclature, goods_nomenclature_sid: '87045'
-      it_behaves_like 'an entity mapper missing destroy operation', GoodsNomenclatureIndent, goods_nomenclature_sid: '87045'
-      it_behaves_like 'an entity mapper missing destroy operation', GoodsNomenclatureDescriptionPeriod, goods_nomenclature_sid: '87045'
-    end
-  end
 end

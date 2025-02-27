@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 RSpec.describe GoodsNomenclatures::NestedSet do
+  before do
+    TradeTariffRequest.time_machine_now = Time.current
+  end
+
   describe 'relationships' do
     describe '#tree_node' do
       subject(:tree_node) { commodity.reload.tree_node }
@@ -35,6 +39,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it { is_expected.to have_attributes depth: 4 }
 
         context 'with date in the past' do
+          before do
+            TradeTariffRequest.time_machine_now = 2.weeks.ago
+          end
+
           around { |example| TimeMachine.at(2.weeks.ago) { example.run } }
 
           it { is_expected.to have_attributes goods_nomenclature_indent_sid: indent.pk }
@@ -371,6 +379,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         context 'when accessing historical data via TimeMachine' do
+          before do
+            TradeTariffRequest.time_machine_now = 2.weeks.ago
+          end
+
           around { |example| TimeMachine.at(2.weeks.ago) { example.run } }
 
           describe '#ancestors' do
@@ -399,6 +411,10 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         end
 
         context 'when outside of TimeMachine' do
+          before do
+            TradeTariffRequest.time_machine_now = nil
+          end
+
           around { |example| TimeMachine.no_time_machine { example.run } }
 
           let(:commodity) { create :commodity }
@@ -628,7 +644,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
       create :measure,
              :supplementary,
              :with_base_regulation,
-             :erga_omnes,
+             :areas_subject_to_vat_or_excise,
              goods_nomenclature: subheading.children.first
     end
 
@@ -641,7 +657,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         create :measure,
                :vat,
                :with_base_regulation,
-               :erga_omnes,
+               :areas_subject_to_vat_or_excise,
                goods_nomenclature: subheading.parent
       end
 
@@ -649,7 +665,7 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         create :measure,
                :tariff_preference,
                :with_base_regulation,
-               :erga_omnes,
+               :areas_subject_to_vat_or_excise,
                goods_nomenclature: subheading
       end
 

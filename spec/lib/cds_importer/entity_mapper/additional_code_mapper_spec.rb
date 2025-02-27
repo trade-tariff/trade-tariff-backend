@@ -100,25 +100,5 @@ RSpec.describe CdsImporter::EntityMapper::AdditionalCodeMapper do
       it_behaves_like 'an entity mapper destroy operation', FootnoteAssociationAdditionalCode
       it_behaves_like 'an entity mapper destroy operation', AdditionalCodeDescriptionPeriod
     end
-
-    context 'when there are missing secondary entities to be soft deleted' do
-      before do
-        # Creates entities that will be missing from the xml node
-        create(
-          :additional_code,
-          :with_footnote_association,
-          :with_description,
-          additional_code_sid: '3084',
-        )
-
-        # Control for non-deleted secondary entities
-        create(:footnote_association_additional_code, additional_code_sid: '3084', footnote_type_id: '06', footnote_id: '08')
-        create(:additional_code_description_period, additional_code_description_period_sid: '536', additional_code_sid: '3084', additional_code_type_id: '8')
-        create(:additional_code_description, additional_code_description_period_sid: '536', additional_code_sid: '3084')
-      end
-
-      it_behaves_like 'an entity mapper missing destroy operation', FootnoteAssociationAdditionalCode, additional_code_sid: '3084'
-      it_behaves_like 'an entity mapper missing destroy operation', AdditionalCodeDescriptionPeriod, additional_code_sid: '3084'
-    end
   end
 end

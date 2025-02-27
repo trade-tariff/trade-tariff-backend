@@ -13,10 +13,6 @@ class CdsImporter
         'produclineSuffix' => :producline_suffix,
         'statisticalIndicator' => :statistical_indicator,
       ).freeze
-
-      delete_missing_entities FootnoteAssociationGoodsNomenclatureMapper,
-                              GoodsNomenclatureIndentMapper,
-                              GoodsNomenclatureDescriptionPeriodMapper
     end
   end
 end

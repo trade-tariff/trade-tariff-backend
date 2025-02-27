@@ -25,23 +25,21 @@ class CdsImporter
         'exportRefundNomenclature.sid' => :export_refund_nomenclature_sid,
       ).freeze
 
-      before_oplog_inserts do |xml_node|
-        unless TradeTariffBackend.handle_missing_soft_deletes?
-          MeasureExcludedGeographicalArea.operation_klass.where(measure_sid: xml_node['sid']).delete
+      before_oplog_inserts do |xml_node, _mapper, _model_instance, _expanded_model_values, implicit_deletes_enabled|
+        if implicit_deletes_enabled
+          MeasureExcludedGeographicalArea.operation_klass.where(
+            measure_sid: xml_node['sid'],
+          ).delete
         end
       end
 
-      before_oplog_inserts do |xml_node|
-        unless TradeTariffBackend.handle_missing_soft_deletes?
-          FootnoteAssociationMeasure.operation_klass.where(measure_sid: xml_node['sid']).delete
+      before_oplog_inserts do |xml_node, _mapper, _model_instance, _expanded_model_values, implicit_deletes_enabled|
+        if implicit_deletes_enabled
+          FootnoteAssociationMeasure.operation_klass.where(
+            measure_sid: xml_node['sid'],
+          ).delete
         end
       end
-
-      delete_missing_entities FootnoteAssociationMeasureMapper,
-                              MeasureComponentMapper,
-                              MeasureConditionMapper,
-                              MeasureExcludedGeographicalAreaMapper,
-                              MeasurePartialTemporaryStopMapper
     end
   end
 end

@@ -1,4 +1,6 @@
 RSpec.describe Api::V2::HeadingsController, type: :controller do
+  routes { V2Api.routes }
+
   describe '#show' do
     subject(:do_response) { get :show, params: { id:, filter: } }
 
