@@ -19,7 +19,7 @@ module RomanNumerals
     class << self
       def to_roman(value)
         result = ''
-        @base_digits.keys.reverse.each do |decimal|
+        @base_digits.keys.reverse_each do |decimal|
           while value >= decimal
             value -= decimal
             result += @base_digits[decimal]
@@ -33,7 +33,7 @@ module RomanNumerals
 
         value = value.upcase
         result = 0
-        @base_digits.values.reverse.each do |roman|
+        @base_digits.values.reverse_each do |roman|
           while value.start_with? roman
             value = value.slice(roman.length, value.length)
             result += @base_digits.key roman

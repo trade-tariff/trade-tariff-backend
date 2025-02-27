@@ -81,7 +81,7 @@ class TaricSynchronizer
       TradeTariffBackend.with_redis_lock do
         date = Date.parse(rollback_date.to_s)
 
-        (date..Time.zone.today).to_a.reverse.each do |date_for_rollback|
+        (date..Time.zone.today).to_a.reverse_each do |date_for_rollback|
           Sequel::Model.db.transaction do
             # Delete actual data
             oplog_based_models.each do |model|

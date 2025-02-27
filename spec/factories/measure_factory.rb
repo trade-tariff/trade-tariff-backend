@@ -39,7 +39,7 @@ FactoryBot.define do
     additional_code_sid { additional_code&.additional_code_sid }
     additional_code_type_id { additional_code&.additional_code_type_id }
     goods_nomenclature_sid { goods_nomenclature&.goods_nomenclature_sid || generate(:goods_nomenclature_sid) }
-    goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || 10.times.map { Random.rand(9) }.join }
+    goods_nomenclature_item_id { goods_nomenclature&.goods_nomenclature_item_id || Array.new(10) { Random.rand(9) }.join }
     geographical_area_sid { for_geo_area&.geographical_area_sid || generate(:geographical_area_sid) }
     geographical_area_id { for_geo_area&.geographical_area_id || generate(:geographical_area_id) }
     validity_start_date { default_start_date }

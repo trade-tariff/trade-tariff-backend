@@ -7,8 +7,8 @@ FactoryBot.define do
     end
 
     export_refund_nomenclature_sid { generate(:export_refund_nomenclature_sid) }
-    goods_nomenclature_item_id { 10.times.map { Random.rand(9) }.join }
-    export_refund_code   { 3.times.map { Random.rand(9) }.join }
+    goods_nomenclature_item_id { Array.new(10) { Random.rand(9) }.join }
+    export_refund_code   { Array.new(3) { Random.rand(9) }.join }
     additional_code_type { Random.rand(9) }
     productline_suffix   { [10, 20, 80].sample }
     validity_start_date  { 2.years.ago.beginning_of_day }

@@ -91,7 +91,7 @@ module Sequel
 
           values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
-            values.merge!(created_at: operation_klass.dataset.current_datetime)
+            values[:created_at] = operation_klass.dataset.current_datetime
           end
 
           operation_klass.insert(values)
@@ -102,7 +102,7 @@ module Sequel
 
           values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
-            values.merge!(created_at: operation_klass.dataset.current_datetime)
+            values[:created_at] = operation_klass.dataset.current_datetime
           end
 
           operation_klass.insert(values)
@@ -113,7 +113,7 @@ module Sequel
 
           values = self.values.slice(*operation_klass.columns).except(:oid)
           if operation_klass.columns.include?(:created_at)
-            values.merge!(created_at: operation_klass.dataset.current_datetime)
+            values[:created_at] = operation_klass.dataset.current_datetime
           end
 
           operation_klass.insert(values)

@@ -13,7 +13,7 @@ module Api
       end
 
       attribute :query do |search_suggestion|
-        search_suggestion[:query].to_s.gsub(/\\/, '')
+        search_suggestion[:query].to_s.delete('\\')
       end
     end
   end

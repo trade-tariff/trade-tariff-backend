@@ -58,6 +58,7 @@ group :development do
   gem 'foreman'
   gem 'letter_opener'
   gem 'rubocop-govuk'
+  gem 'rubocop-performance'
 end
 
 group :development, :test do

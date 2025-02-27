@@ -155,7 +155,7 @@ FactoryBot.define do
       after(:create) do |heading, _evaluator|
         create(:goods_nomenclature, :with_description,
                :with_indent,
-               goods_nomenclature_item_id: "#{heading.short_code}#{6.times.map { Random.rand(9) }.join}")
+               goods_nomenclature_item_id: "#{heading.short_code}#{Array.new(6) { Random.rand(9) }.join}")
       end
     end
 
