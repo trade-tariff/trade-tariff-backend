@@ -4,7 +4,7 @@ class SchemaQueryFilterLogger < SimpleDelegator
   SCHEMA_QUERY_PATTERN = /pg_attribute|current_setting/
 
   def debug(progname = nil, &block)
-    return if progname =~ SCHEMA_QUERY_PATTERN
+    return if SCHEMA_QUERY_PATTERN.match?(progname)
 
     super(progname, &block)
   end

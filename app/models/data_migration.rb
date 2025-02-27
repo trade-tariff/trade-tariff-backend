@@ -5,7 +5,7 @@ class DataMigration < Sequel::Model
 
   dataset_module do
     def version(version)
-      raise ArgumentError, 'Invalid version number' unless version =~ VERSION_FORMAT
+      raise ArgumentError, 'Invalid version number' unless VERSION_FORMAT.match?(version)
 
       where Sequel.like(:filename, "#{version}_%.rb")
     end

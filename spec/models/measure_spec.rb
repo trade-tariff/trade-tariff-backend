@@ -469,7 +469,7 @@ RSpec.describe Measure do
     end
 
     context 'when a quota_order_number is not associated' do
-      let(:ordernumber) { 6.times.map { Random.rand(9) }.join }
+      let(:ordernumber) { Array.new(6) { Random.rand(9) }.join }
       let(:measure) { create :measure, ordernumber: }
 
       it 'returns a mock quota order number with just the number set' do

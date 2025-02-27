@@ -6,16 +6,16 @@ Sequel.migration do
       quota_definition = QuotaDefinition.where(
         quota_definition_sid: 22_046,
         filename: 'tariff_dailyExtract_v1_20230109T235959.gzip',
-      ).take
+      ).first
 
-      quota_definition.update(initial_volume: 1_471_000.0)
+      quota_definition.update(initial_volume: 1_471_000.0) if quota_definition
 
       quota_definition = QuotaDefinition.where(
         quota_definition_sid: 22_052,
         filename: 'tariff_dailyExtract_v1_20230109T235959.gzip',
-      ).take
+      ).first
 
-      quota_definition.update(initial_volume: 1_471_000.0)
+      quota_definition.update(initial_volume: 1_471_000.0) if quota_definition
     end
   end
 

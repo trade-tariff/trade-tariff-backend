@@ -3,7 +3,10 @@ inherit_gem:
     - config/default.yml
     - config/rails.yml
 
-require: rubocop-rspec
+require:
+  - rubocop-rspec
+  - rubocop-performance
+
 
 AllCops:
   Exclude:

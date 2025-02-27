@@ -11,12 +11,12 @@ module GreenLanesUpdatesPublisher
       @updated_date = date.to_fs(:govuk)
       @updates = updates
       @include_measure_updates = TradeTariffBackend.green_lanes_notify_measure_updates
-      @expired_count = @updates.select { |update|
+      @expired_count = @updates.count do |update|
         update.status == ::GreenLanes::UpdateNotification::NotificationStatus::EXPIRED
-      }.count
-      @updated_count = @updates.select { |update|
+      end
+      @updated_count = @updates.count do |update|
         update.status == ::GreenLanes::UpdateNotification::NotificationStatus::UPDATED
-      }.count
+      end
 
       mail subject: "#{subject_prefix(:info)} Green Lanes Updates"
     end
