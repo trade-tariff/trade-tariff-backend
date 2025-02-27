@@ -36,7 +36,7 @@ module GreenLanesUpdatesPublisher
       inner join measure_types mt
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where least(br.validity_end_date, br.effective_end_date) between :yesterday and :today
-            or least(mo.validity_end_date, mo.invalidated_at) between :yesterday and :today
+            or mo.validity_end_date between :yesterday and :today
       group by(br.base_regulation_id, br.base_regulation_role, mo.measure_type_id)".freeze
 
     EXPIRED_MODIFICATION_REGULATIONS =
@@ -48,7 +48,7 @@ module GreenLanesUpdatesPublisher
       inner join measure_types mt
       on mo.measure_type_id = mt.measure_type_id and mt.trade_movement_code in (0,1)
       where least(mr.validity_end_date, mr.effective_end_date) between :yesterday and :today
-            or least(mo.validity_end_date, mo.invalidated_at) between :yesterday and :today
+            or mo.validity_end_date between :yesterday and :today
       group by(mr.modification_regulation_id, mr.modification_regulation_role, mo.measure_type_id)".freeze
 
     UPDATED_MEASURES =
