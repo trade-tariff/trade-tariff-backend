@@ -77,7 +77,7 @@ module ElasticSearch
                   {
                     multi_match: {
                       query: query_string,
-                      fields: %w[goods_nomenclature_item_id search_references.title chemicals.cus chemicals.cas_rn chemicals.name],
+                      fields: %w[goods_nomenclature_item_id^5 chemicals.cus^0.5 chemicals.cas_rn^0.5 search_references.title chemicals.name^0.1],
                       type: 'best_fields',
                       fuzziness: 'AUTO',
                       operator: 'or',

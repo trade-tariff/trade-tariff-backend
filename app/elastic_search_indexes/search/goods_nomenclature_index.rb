@@ -74,7 +74,7 @@ module Search
                       "ignore_above": 256,
                     },
                   },
-                  analyzer: 'ngram_analyzer',
+                  analyzer: 'big_ngram_analyzer',
                   search_analyzer: 'lowercase_analyzer',
                 },
               },
@@ -89,12 +89,22 @@ module Search
                 min_gram: 2,
                 max_gram: 20,
               },
+              big_ngram_filter: {
+                type: 'edge_ngram',
+                min_gram: 4,
+                max_gram: 20,
+              },
             },
             analyzer: {
               ngram_analyzer: {
                 type: 'custom',
                 tokenizer: 'standard',
                 filter: %w[lowercase ngram_filter],
+              },
+              big_ngram_analyzer: {
+                type: 'custom',
+                tokenizer: 'standard',
+                filter: %w[lowercase big_ngram_filter],
               },
               lowercase_analyzer: {
                 type: 'custom',
