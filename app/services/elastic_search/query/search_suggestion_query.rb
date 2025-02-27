@@ -26,40 +26,40 @@ module ElasticSearch
                   {
                     "wildcard": {
                       "goods_nomenclature_item_id.keyword": {
-                        "value": "*#{query_string}*",
-                        "boost": 20,
+                        "value": "#{query_string}*",
+                        "boost": 10,
                       },
                     },
                   },
                   {
                     "wildcard": {
                       "search_references.title.keyword": {
-                        "value": "*#{query_string}*",
-                        "boost": 20,
+                        "value": "#{query_string}*",
+                        "boost": 10,
                       },
                     },
                   },
                   {
                     "wildcard": {
                       "chemicals.cus.keyword": {
-                        "value": "*#{query_string}*",
-                        "boost": 20,
+                        "value": "#{query_string}*",
+                        "boost": 10,
                       },
                     },
                   },
                   {
                     "wildcard": {
                       "chemicals.cas_rn.keyword": {
-                        "value": "*#{query_string}*",
-                        "boost": 20,
+                        "value": "#{query_string}*",
+                        "boost": 10,
                       },
                     },
                   },
                   {
                     "wildcard": {
                       "chemicals.name.keyword": {
-                        "value": "*#{query_string}*",
-                        "boost": 20,
+                        "value": "#{query_string}*",
+                        "boost": 10,
                       },
                     },
                   },
