@@ -196,11 +196,6 @@ class Measure < Sequel::Model
     result.compact
   end
 
-  # Soft-deleted
-  def invalidated?
-    invalidated_at.present?
-  end
-
   dataset_module do
     def with_additional_code_sid(additional_code_sid)
       return self if additional_code_sid.blank?
@@ -319,10 +314,6 @@ class Measure < Sequel::Model
     def with_duty_amount(amount)
       join_table(:left, MeasureComponent, measures__measure_sid: :measure_components__measure_sid)
       .where(measure_components__duty_amount: amount)
-    end
-
-    def non_invalidated
-      where(measures__invalidated_at: nil)
     end
 
     def effective_start_date_column

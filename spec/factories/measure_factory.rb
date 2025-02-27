@@ -155,10 +155,6 @@ FactoryBot.define do
       national { true }
     end
 
-    trait :invalidated do
-      invalidated_at { Time.zone.now }
-    end
-
     trait :with_goods_nomenclature do
       goods_nomenclature do
         create(:goods_nomenclature,

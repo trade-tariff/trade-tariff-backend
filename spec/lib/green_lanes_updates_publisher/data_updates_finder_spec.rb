@@ -17,7 +17,6 @@ RSpec.describe GreenLanesUpdatesPublisher::DataUpdatesFinder do
   context 'when there are expired measures' do
     before do
       create :measure, validity_end_date: Time.zone.today - 1, trade_movement_code: '1', generating_regulation: create(:base_regulation)
-      create :measure, invalidated_at: Time.zone.today - 1, trade_movement_code: '1', generating_regulation: create(:base_regulation)
       create :measure, trade_movement_code: '1', generating_regulation: create(:base_regulation, validity_end_date: Time.zone.today - 1)
       create :measure, trade_movement_code: '0', generating_regulation: create(:modification_regulation, effective_end_date: Time.zone.today - 1)
     end
@@ -25,7 +24,7 @@ RSpec.describe GreenLanesUpdatesPublisher::DataUpdatesFinder do
     describe '#call' do
       subject { instance.call }
 
-      it { is_expected.to have_attributes(size: 8) }
+      it { is_expected.to have_attributes(size: 6) }
     end
   end
 
