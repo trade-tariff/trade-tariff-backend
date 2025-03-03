@@ -7,7 +7,13 @@ class SearchService
           search: {
             query: {
               bool: {
-                must: multi_match_part,
+                must: {
+                  multi_match: {
+                    query: query_string,
+                    operator: 'and',
+                    fields: %w[title_indexed],
+                  },
+                },
                 filter: {
                   bool: {
                     must: [
@@ -64,28 +70,6 @@ class SearchService
             size: INDEX_SIZE_MAX,
           },
         }
-      end
-
-      def multi_match_part
-        query = {
-          multi_match: {
-            query: query_string,
-            operator: 'and',
-          },
-        }
-
-        query[:multi_match][:fields] = if search_through_negated_title?
-                                         %w[title_indexed]
-                                       else
-                                         %w[title]
-                                       end
-
-        query
-      end
-
-      def search_through_negated_title?
-        TradeTariffBackend.legacy_search_enhancements_enabled? &&
-          SearchNegationService::NEGATION_TERMS.none? { |term| query_string.include?(term) }
       end
     end
   end

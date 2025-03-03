@@ -13,6 +13,5 @@ synonym_reference_analyzer            = "analyzers/F108210248"
 management_email                      = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
 green_lanes_update_email              = ""
 green_lanes_notify_measure_updates    = false
-legacy_search_enhancements_enabled    = true
 optimised_search_enabled              = false
 disable_admin_api_authentication      = true

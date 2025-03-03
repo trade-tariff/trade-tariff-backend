@@ -5,7 +5,7 @@ Rails.application.routes.draw do
   get 'healthcheckz' => 'healthcheck#checkz'
 
   # Admin routes
-  draw(:admin) if TradeTariffBackend.enable_admin?
+  draw(:admin)
 
   # Error handling
   draw(:errors)

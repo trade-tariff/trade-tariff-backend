@@ -39,10 +39,6 @@ locals {
       value = "https://${var.frontend_base_domain}/"
     },
     {
-      name  = "LEGACY_SEARCH_ENHANCEMENTS_ENABLED"
-      value = var.legacy_search_enhancements_enabled
-    },
-    {
       name  = "MALLOC_ARENA_MAX"
       value = "2"
     },
