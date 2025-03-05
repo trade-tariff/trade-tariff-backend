@@ -6,7 +6,7 @@ to UK and NI.
 
 Projects using the Trade Tariff (TT) API:
 
-- [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend)
+- [Trade Tariff Frontend](https://github.com/trade-tariff/trade-tariff-frontend/)
 - [Trade Tariff Admin](https://github.com/trade-tariff/trade-tariff-admin)
 - [Trade Tariff Duty Calculator](https://github.com/trade-tariff/trade-tariff-duty-calculator)
 
