@@ -17,7 +17,13 @@ class SearchService
                       },
                     },
                   },
-                  multi_match_part(query_opts),
+                  {
+                    multi_match: {
+                      query: query_string,
+                      operator: 'and',
+                      fields: query_opts[:fields].presence || %w[description_indexed],
+                    },
+                  },
                   {
                     bool: {
                       should: [
@@ -58,30 +64,6 @@ class SearchService
             size: INDEX_SIZE_MAX,
           },
         }
-      end
-
-      def multi_match_part(query_opts = {})
-        query = {
-          multi_match: {
-            query: query_string,
-            operator: 'and',
-          }.merge(query_opts),
-        }
-
-        query[:multi_match][:fields] = if query_opts[:fields].present?
-                                         query_opts[:fields]
-                                       elsif search_through_negated_ancestors?
-                                         %w[description_indexed]
-                                       else
-                                         %w[description]
-                                       end
-
-        query
-      end
-
-      def search_through_negated_ancestors?
-        TradeTariffBackend.legacy_search_enhancements_enabled? &&
-          SearchNegationService::NEGATION_TERMS.none? { |term| query_string.include?(term) }
       end
     end
   end

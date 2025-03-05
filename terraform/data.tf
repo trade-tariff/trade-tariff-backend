@@ -51,13 +51,8 @@ data "aws_secretsmanager_secret" "redis_frontend_connection_string" {
   name = "redis-frontend-connection-string"
 }
 
-data "aws_secretsmanager_secret" "database_connection_string" {
-  name = "tradetariffpostgres${var.environment}-connection-string"
-}
-
 data "aws_secretsmanager_secret" "aurora_rw_connection_string" {
-  count = var.environment == "development" ? 0 : 1
-  name  = "aurora-postgres-rw-connection-string"
+  name = "aurora-postgres-rw-connection-string"
 }
 
 data "aws_secretsmanager_secret" "secret_key_base" {
