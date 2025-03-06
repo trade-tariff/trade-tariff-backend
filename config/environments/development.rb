@@ -56,7 +56,7 @@ Rails.application.configure do
   config.action_mailer.perform_caching = false
 
   # Mailcatcher configuration.
-  config.action_mailer.default_url_options = { host: 'host.docker.internal', port: 3000 }
+  config.action_mailer.default_url_options = { host: ENV.fetch('DEFAULT_MAIL_HOST', 'host.docker.internal'), port: 3000 }
   config.action_mailer.delivery_method = :letter_opener
 
   # Print deprecation notices to the Rails logger.
