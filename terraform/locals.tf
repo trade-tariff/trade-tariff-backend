@@ -5,9 +5,7 @@ locals {
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
   signon_url     = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
 
-  database_url = (
-    var.environment == "development" ? data.aws_secretsmanager_secret.database_connection_string.arn : try(data.aws_secretsmanager_secret.aurora_rw_connection_string[0].arn, "")
-  )
+  database_url = data.aws_secretsmanager_secret.aurora_rw_connection_string.arn
 
   backend_common_vars = [
     {
@@ -39,10 +37,6 @@ locals {
       value = "https://${var.frontend_base_domain}/"
     },
     {
-      name  = "LEGACY_SEARCH_ENHANCEMENTS_ENABLED"
-      value = var.legacy_search_enhancements_enabled
-    },
-    {
       name  = "MALLOC_ARENA_MAX"
       value = "2"
     },
@@ -69,14 +63,6 @@ locals {
     {
       name  = "RUBYOPT",
       value = "--enable-yjit"
-    },
-    {
-      name  = "SENTRY_ENVIRONMENT"
-      value = var.environment
-    },
-    {
-      name  = "SENTRY_PROJECT"
-      value = "tariff-backend"
     },
     {
       name  = "TARIFF_SUPPORT_EMAIL"
@@ -215,10 +201,6 @@ locals {
     {
       name      = "NEW_RELIC_LICENSE_KEY"
       valueFrom = data.aws_secretsmanager_secret.new_relic_license_key.arn
-    },
-    {
-      name      = "SENTRY_DSN"
-      valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
     {
       name      = "SECRET_KEY_BASE"
