@@ -51,6 +51,11 @@
 
           bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
         '';
+
+        update-providers = pkgs.writeScriptBin "update-providers" ''
+          cd terraform
+          terraform init -backend=false -reconfigure -upgrade
+        '';
       in
       {
         devShells.default = pkgs.mkShell {
@@ -74,9 +79,11 @@
 
           buildInputs = [
             lint
+            pkgs.circleci-cli
             postgresql
             postgresql-start
             ruby
+            update-providers
           ];
         };
       });
