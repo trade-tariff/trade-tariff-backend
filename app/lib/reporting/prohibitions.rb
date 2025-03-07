@@ -121,10 +121,14 @@ module Reporting
           sheet.column_widths(*COLUMN_WIDTHS) # Set this after the rows have been added, otherwise it won't work
         end
 
-        object.put(
-          body: package.to_stream.read,
-          content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        )
+        package.serialize('prohibitions.xlsx') if Rails.env.development?
+
+        if Rails.env.production?
+          object.put(
+            body: package.to_stream.read,
+            content_type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          )
+        end
 
         Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
       end

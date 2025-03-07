@@ -9,10 +9,14 @@ module Reporting
               .new(goods_nomenclatures)
               .serialized_csv
 
-          object.put(
-            body: csv_data,
-            content_type: 'text/csv',
-          )
+          File.write('commodities.csv', csv_data) if Rails.env.development?
+
+          if Rails.env.production?
+            object.put(
+              body: csv_data,
+              content_type: 'text/csv',
+            )
+          end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
         end
@@ -48,7 +52,7 @@ module Reporting
             ancestors: :goods_nomenclature_descriptions,
             descendants: :goods_nomenclature_descriptions,
           )
-          .all
+          .actual
           .each_with_object([]) do |chapter, acc|
             acc << chapter
             acc.concat chapter.descendants
