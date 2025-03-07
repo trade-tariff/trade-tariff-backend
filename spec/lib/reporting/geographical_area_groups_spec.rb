@@ -7,6 +7,8 @@ RSpec.describe Reporting::GeographicalAreaGroups do
     let(:rows) { body.drop(1) }
 
     before do
+      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+
       create(:geographical_area, :group, :with_description, :with_members)
 
       described_class.generate

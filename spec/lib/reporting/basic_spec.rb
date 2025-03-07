@@ -8,6 +8,8 @@ RSpec.describe Reporting::Basic do
       let(:rows) { body.drop(1) }
 
       before do
+        allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+
         create(
           :commodity,
           :with_description,

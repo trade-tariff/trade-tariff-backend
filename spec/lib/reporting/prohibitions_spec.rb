@@ -6,6 +6,8 @@ RSpec.describe Reporting::Prohibitions do
     let(:rows) { body.drop(1) }
 
     before do
+      allow(Rails).to receive(:env).and_return(ActiveSupport::StringInquirer.new('production'))
+
       declarable = create(
         :commodity,
         :with_description,
