@@ -88,9 +88,9 @@ class MeasurementUnit < Sequel::Model
                        end
 
       if unit.present?
-        Sentry.capture_message("Missing measurement unit in database for measurement unit key: #{unit_key}")
+        NewRelic::Agent.notice_error("Missing measurement unit in database for measurement unit key: #{unit_key}")
       else
-        Sentry.capture_message("Missing measurement unit in measurement_units.yml: #{unit_key}")
+        NewRelic::Agent.notice_error("Missing measurement unit in measurement_units.yml: #{unit_key}")
       end
 
       {
