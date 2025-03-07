@@ -52,7 +52,7 @@ module Reporting
             ancestors: :goods_nomenclature_descriptions,
             descendants: :goods_nomenclature_descriptions,
           )
-          .actual
+          .all
           .each_with_object([]) do |chapter, acc|
             acc << chapter
             acc.concat chapter.descendants
