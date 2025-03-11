@@ -1,10 +1,10 @@
 class SearchInstrumentationService
   def self.log_search_suggestions_results(query, results)
-      results_count = results[:data].size
-      results_zero = results_count.nil? || results_count.zero?
-      query_length = query.present? ? query.length : 0
-      Rails.logger.info "Search Suggestion Request : search_query=#{query}, query_length=#{query_length}, "\
-                          "result_count=#{results_count}, result_zero=#{results_zero}"
+    results_count = results[:data].size
+    results_zero = results_count.nil? || results_count.zero?
+    query_length = query.present? ? query.length : 0
+    Rails.logger.info "Search Suggestion Request : search_query=#{query}, query_length=#{query_length}, "\
+                        "result_count=#{results_count}, result_zero=#{results_zero}"
   end
 
   def self.log_search_results(query, results)
