@@ -9,7 +9,7 @@ module Reporting
               .new(goods_nomenclatures)
               .serialized_csv
 
-          File.write('commodities.csv', csv_data) if Rails.env.development?
+          File.write(File.basename(object_key), csv_data) if Rails.env.development?
 
           if Rails.env.production?
             object.put(

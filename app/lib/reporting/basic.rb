@@ -65,7 +65,7 @@ module Reporting
           end
 
           if rows.any?
-            File.write('basic.csv', csv_data) if Rails.env.development?
+            File.write(File.basename(object_key), csv_data) if Rails.env.development?
 
             if Rails.env.production?
               object.put(

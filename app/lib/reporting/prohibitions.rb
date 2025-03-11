@@ -121,7 +121,7 @@ module Reporting
           sheet.column_widths(*COLUMN_WIDTHS) # Set this after the rows have been added, otherwise it won't work
         end
 
-        package.serialize('prohibitions.xlsx') if Rails.env.development?
+        package.serialize(File.basename(object_key)) if Rails.env.development?
 
         if Rails.env.production?
           object.put(

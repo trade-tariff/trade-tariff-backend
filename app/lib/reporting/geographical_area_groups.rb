@@ -65,7 +65,7 @@ module Reporting
           sheet.column_widths(*COLUMN_WIDTHS)
         end
 
-        package.serialize('geographical_area_groups.xlsx') if Rails.env.development?
+        package.serialize(File.basename(object_key)) if Rails.env.development?
 
         if Rails.env.production?
           object.put(
