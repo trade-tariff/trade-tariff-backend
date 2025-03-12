@@ -137,7 +137,7 @@ GEM
       database_cleaner-core (~> 2.0.0)
       sequel
     date (3.4.1)
-    diff-lcs (1.5.1)
+    diff-lcs (1.6.0)
     docile (1.4.1)
     dotenv (3.1.7)
     dotenv-rails (3.1.7)
@@ -187,7 +187,7 @@ GEM
       reline (>= 0.4.2)
     jaro_winkler (1.6.0)
     jmespath (1.6.2)
-    json (2.9.1)
+    json (2.10.1)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
@@ -359,7 +359,7 @@ GEM
       railties (>= 5.2)
     reverse_markdown (3.0.0)
       nokogiri
-    rexml (3.4.0)
+    rexml (3.4.1)
     rspec-core (3.13.3)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.3)
@@ -454,7 +454,7 @@ GEM
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
-    solargraph (0.51.2)
+    solargraph (0.52.0)
       backport (~> 1.2)
       benchmark
       bundler (~> 2.0)
@@ -472,6 +472,7 @@ GEM
       thor (~> 1.0)
       tilt (~> 2.0)
       yard (~> 0.9, >= 0.9.24)
+      yard-solargraph (~> 0.1)
     stringio (3.1.5)
     thor (1.3.2)
     tilt (2.6.0)
@@ -497,6 +498,8 @@ GEM
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
     yard (0.9.37)
+    yard-solargraph (0.1.0)
+      yard (~> 0.9)
     zeitwerk (2.7.2)
 
 PLATFORMS
