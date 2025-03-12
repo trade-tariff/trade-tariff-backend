@@ -65,10 +65,14 @@ module Reporting
           end
 
           if rows.any?
-            object.put(
-              body: csv_data,
-              content_type: 'text/csv',
-            )
+            File.write(File.basename(object_key), csv_data) if Rails.env.development?
+
+            if Rails.env.production?
+              object.put(
+                body: csv_data,
+                content_type: 'text/csv',
+              )
+            end
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
