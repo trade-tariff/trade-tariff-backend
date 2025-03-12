@@ -4,15 +4,13 @@ RSpec.describe TariffSynchronizer::FileService do
   context 'when development' do
     describe '.write_file' do
       it 'Saves the file in the local filesystem', :aggregate_failures do
-        FakeFS do
-          prepare_synchronizer_folders
-          file_path = File.join(TariffSynchronizer.root_path, 'chief', 'hello.txt')
+        prepare_synchronizer_folders
+        file_path = File.join(TariffSynchronizer.root_path, 'chief', 'hello.txt')
 
-          described_class.write_file(file_path, 'Hello World')
+        described_class.write_file(file_path, 'Hello World')
 
-          expect(File.exist?(file_path)).to be true
-          expect(File.read(file_path)).to eq('Hello World')
-        end
+        expect(File.exist?(file_path)).to be true
+        expect(File.read(file_path)).to eq('Hello World')
       end
     end
 

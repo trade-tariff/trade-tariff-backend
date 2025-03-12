@@ -5,15 +5,10 @@ require 'spec_helper'
 require 'webmock/rspec'
 WebMock.disable_net_connect!(allow_localhost: true)
 
-require 'simplecov'
-
-SimpleCov.start 'rails'
-
 require File.expand_path('../config/environment', __dir__)
 
 require 'rspec/rails'
 require 'json_expressions/rspec'
-require 'fakefs/spec_helpers'
 require 'sidekiq/testing'
 
 Rails.application.load_tasks
