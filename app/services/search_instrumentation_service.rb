@@ -3,8 +3,19 @@ class SearchInstrumentationService
     results_count = results[:data].size
     results_zero = results_count.nil? || results_count.zero?
     query_length = query.present? ? query.length : 0
-    Rails.logger.info "Search Suggestion Request : search_query=#{query}, query_length=#{query_length}, "\
-                        "result_count=#{results_count}, result_zero=#{results_zero}"
+
+    log_entry = {
+      timestamp: Time.zone.now.utc.iso8601,
+      level: 'INFO',
+      service: 'api/v2/search_suggestions',
+      message: 'Search Suggestion Request',
+      search_query: query,
+      query_length: query_length,
+      result_count: results_count,
+      result_zero: results_zero,
+    }
+
+    Rails.logger.info(log_entry.to_json)
   end
 
   def self.log_search_results(query, results)
@@ -45,8 +56,20 @@ class SearchInstrumentationService
 
     results_zero = results_count.zero?
     query_length = query.present? ? query.length : 0
-    Rails.logger.info "Search Request : search_query=#{query}, query_length=#{query_length}, "\
-                        "result_type=#{results_type}, top_result_score=#{max_score}, "\
-                        "result_count=#{results_count}, result_zero=#{results_zero}"
+
+    log_entry = {
+      timestamp: Time.zone.now.utc.iso8601,
+      level: 'INFO',
+      service: 'api/v2/search',
+      message: 'Search Request',
+      search_query: query,
+      query_length: query_length,
+      results_type: results_type,
+      max_score: max_score,
+      result_count: results_count,
+      result_zero: results_zero,
+    }
+
+    Rails.logger.info(log_entry.to_json)
   end
 end
