@@ -22,7 +22,7 @@ class SearchService
   class EmptyQuery < StandardError
   end
 
-  attr_reader :q, :result, :as_of, :data_serializer
+  attr_reader :q, :result, :data_serializer
   attr_accessor :resource_id
 
   delegate :serializable_hash, to: :result
@@ -36,6 +36,10 @@ class SearchService
       end
     end
     @data_serializer = data_serializer
+  end
+
+  def as_of
+    @as_of || Time.zone.today
   end
 
   def as_of=(date)
