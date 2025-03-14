@@ -79,7 +79,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
       before do
         allow(CdsImporter).to receive(:new).with(cds_update).and_return importer
         allow(importer).to receive(:import).and_return inserted_oplog_records
-        allow(Sentry).to receive(:capture_message)
+        allow(NewRelic::Agent).to receive(:notice_error)
         allow(cds_update).to receive(:check_oplog_inserts).and_call_original
 
         cds_update.import!
@@ -105,7 +105,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         end
 
         it 'does not alert' do
-          expect(Sentry).not_to have_received(:capture_message)
+          expect(NewRelic::Agent).not_to have_received(:notice_error)
         end
       end
 
@@ -125,7 +125,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         end
 
         it 'does not alert' do
-          expect(Sentry).not_to have_received(:capture_message)
+          expect(NewRelic::Agent).not_to have_received(:notice_error)
         end
       end
 
@@ -143,7 +143,7 @@ RSpec.describe TariffSynchronizer::CdsUpdate do
         end
 
         it 'alerts' do
-          expect(Sentry).to have_received(:capture_message)
+          expect(NewRelic::Agent).to have_received(:notice_error)
                              .with(/Empty CDS update - Issue Date: \d{4}-\d\d-\d\d: Applied: #{Time.zone.today}/)
         end
       end

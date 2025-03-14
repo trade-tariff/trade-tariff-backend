@@ -1,5 +1,5 @@
 RSpec.describe 'excess query counts', type: :request do
-  before { allow(Sentry).to receive(:capture_message).and_return true }
+  before { allow(NewRelic::Agent).to receive(:notice_error).and_return true }
 
   let(:get_page) { get api_heading_path(heading, format: :json) }
 
@@ -22,8 +22,8 @@ RSpec.describe 'excess query counts', type: :request do
       expect(response).to have_http_status :ok
     end
 
-    it 'does not notify sentry' do
-      expect(Sentry).not_to have_received :capture_message
+    it 'does not notify new relic' do
+      expect(NewRelic::Agent).not_to have_received :notice_error
     end
   end
 
@@ -49,8 +49,8 @@ RSpec.describe 'excess query counts', type: :request do
         get_page
       end
 
-      it 'notifies sentry' do
-        expect(Sentry).to have_received(:capture_message).with \
+      it 'notifies New relic' do
+        expect(NewRelic::Agent).to have_received(:notice_error).with \
           'Excess queries detected: 21 (limit: 20)'
       end
     end

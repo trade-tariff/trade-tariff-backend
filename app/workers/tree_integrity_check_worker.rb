@@ -17,7 +17,7 @@ class TreeIntegrityCheckWorker
       service = TreeIntegrityCheckingService.new
 
       unless service.check!
-        Sentry.capture_message <<~EOMSG
+        NewRelic::Agent.notice_error <<~EOMSG
           Tree integrity check failed for #{date.to_formatted_s(:db)}
 
           GN SIDs: #{service.failures.inspect}

@@ -65,14 +65,6 @@ locals {
       value = "--enable-yjit"
     },
     {
-      name  = "SENTRY_ENVIRONMENT"
-      value = var.environment
-    },
-    {
-      name  = "SENTRY_PROJECT"
-      value = "tariff-backend"
-    },
-    {
       name  = "TARIFF_SUPPORT_EMAIL"
       value = "hmrc-trade-tariff-support-g@digital.hmrc.gov.uk"
     },
@@ -209,10 +201,6 @@ locals {
     {
       name      = "NEW_RELIC_LICENSE_KEY"
       valueFrom = data.aws_secretsmanager_secret.new_relic_license_key.arn
-    },
-    {
-      name      = "SENTRY_DSN"
-      valueFrom = data.aws_secretsmanager_secret.sentry_dsn.arn
     },
     {
       name      = "SECRET_KEY_BASE"

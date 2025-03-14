@@ -3,7 +3,7 @@ RSpec.describe TreeIntegrityCheckWorker, type: :worker do
 
   describe '#perform' do
     before do
-      allow(::Sentry).to receive(:capture_message)
+      allow(::NewRelic::Agent).to receive(:notice_error)
       commodity
 
       described_class.new.perform
@@ -13,7 +13,7 @@ RSpec.describe TreeIntegrityCheckWorker, type: :worker do
       let(:commodity) { create :commodity, :with_chapter_and_heading }
 
       it 'takes no action' do
-        expect(Sentry).not_to have_received(:capture_message)
+        expect(NewRelic::Agent).not_to have_received(:notice_error)
       end
     end
 
@@ -21,7 +21,7 @@ RSpec.describe TreeIntegrityCheckWorker, type: :worker do
       let(:commodity) { create :commodity, :with_chapter_and_heading, indents: 2 }
 
       it 'alerts with the failing ids' do
-        expect(Sentry).to have_received(:capture_message).with(%r{Tree integrity check failed for \d{4}-\d\d-\d\d}).exactly(4).times
+        expect(NewRelic::Agent).to have_received(:notice_error).with(%r{Tree integrity check failed for \d{4}-\d\d-\d\d}).exactly(4).times
       end
     end
   end

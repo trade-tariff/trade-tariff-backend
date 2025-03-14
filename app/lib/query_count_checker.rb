@@ -11,7 +11,7 @@ class QueryCountChecker
   def check
     return true unless query_count > threshold
 
-    raise_exception? ? raise_exception! : alert_to_sentry
+    raise_exception? ? raise_exception! : alert_to_newrelic
   end
 
   class ExcessQueryCountException < StandardError; end
@@ -22,8 +22,8 @@ private
     !!@raise_exception
   end
 
-  def alert_to_sentry
-    ::Sentry.capture_message(message_with_count)
+  def alert_to_newrelic
+    NewRelic::Agent.notice_error(message_with_count)
 
     false
   end

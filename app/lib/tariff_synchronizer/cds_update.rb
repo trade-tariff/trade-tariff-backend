@@ -67,7 +67,7 @@ module TariffSynchronizer
     end
 
     def alert_potential_failed_import
-      Sentry.capture_message \
+      NewRelic::Agent.notice_error \
         "Empty CDS update - Issue Date: #{issue_date}: Applied: #{Time.zone.today}"
     end
   end
