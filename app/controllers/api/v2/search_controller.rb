@@ -4,15 +4,19 @@ module Api
       no_caching
 
       def search
-        render json: SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
+        results = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
+        SearchInstrumentationService.log_search_results(params[:q], results)
+        render json: results
       end
 
       def suggestions
-        if TradeTariffBackend.optimised_search_enabled?
-          render json: ElasticSearch::ElasticSearchService.new(params).to_suggestions
-        else
-          render json: Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
-        end
+        results = if TradeTariffBackend.optimised_search_enabled?
+                    ElasticSearch::ElasticSearchService.new(params).to_suggestions
+                  else
+                    Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
+                  end
+        SearchInstrumentationService.log_search_suggestions_results(params[:q], results)
+        render json: results
       end
 
       private

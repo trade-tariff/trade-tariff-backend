@@ -48,7 +48,6 @@ Terraform to deploy the service into AWS.
 | [aws_s3_bucket.persistence](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 | [aws_s3_bucket.reporting](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/s3_bucket) | data source |
 | [aws_secretsmanager_secret.aurora_rw_connection_string](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
-| [aws_secretsmanager_secret.database_connection_string](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.differences_to_emails](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.green_lanes_api_keys](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
 | [aws_secretsmanager_secret.green_lanes_api_tokens](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/secretsmanager_secret) | data source |
@@ -88,7 +87,6 @@ Terraform to deploy the service into AWS.
 | <a name="input_frontend_base_domain"></a> [frontend\_base\_domain](#input\_frontend\_base\_domain) | Host address of the frontend service. | `string` | n/a | yes |
 | <a name="input_green_lanes_notify_measure_updates"></a> [green\_lanes\_notify\_measure\_updates](#input\_green\_lanes\_notify\_measure\_updates) | Flag to indicate if updated or expired measure records should be included in green lanes update email. | `bool` | n/a | yes |
 | <a name="input_green_lanes_update_email"></a> [green\_lanes\_update\_email](#input\_green\_lanes\_update\_email) | Email address for the green lanes policy team. | `string` | n/a | yes |
-| <a name="input_legacy_search_enhancements_enabled"></a> [legacy\_search\_enhancements\_enabled](#input\_legacy\_search\_enhancements\_enabled) | Enable legacy search enhancements | `bool` | n/a | yes |
 | <a name="input_management_email"></a> [management\_email](#input\_management\_email) | Email address for the exchange rate management team. | `string` | n/a | yes |
 | <a name="input_max_capacity"></a> [max\_capacity](#input\_max\_capacity) | Largest number of tasks the service can scale-out to. | `number` | `5` | no |
 | <a name="input_memory"></a> [memory](#input\_memory) | Memory to allocate in MB. Powers of 2 only. | `number` | n/a | yes |

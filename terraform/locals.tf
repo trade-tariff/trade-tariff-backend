@@ -5,9 +5,7 @@ locals {
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
   signon_url     = var.environment == "production" ? "https://signon.publishing.service.gov.uk" : "http://signon.tariff.internal:8080"
 
-  database_url = (
-    var.environment == "development" ? data.aws_secretsmanager_secret.database_connection_string.arn : try(data.aws_secretsmanager_secret.aurora_rw_connection_string[0].arn, "")
-  )
+  database_url = data.aws_secretsmanager_secret.aurora_rw_connection_string.arn
 
   backend_common_vars = [
     {
@@ -37,10 +35,6 @@ locals {
     {
       name  = "FRONTEND_HOST"
       value = "https://${var.frontend_base_domain}/"
-    },
-    {
-      name  = "LEGACY_SEARCH_ENHANCEMENTS_ENABLED"
-      value = var.legacy_search_enhancements_enabled
     },
     {
       name  = "MALLOC_ARENA_MAX"

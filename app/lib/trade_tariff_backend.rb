@@ -246,14 +246,6 @@ module TradeTariffBackend
       end
     end
 
-    def legacy_search_enhancements_enabled?
-      ENV.fetch('LEGACY_SEARCH_ENHANCEMENTS_ENABLED', 'false') == 'true'
-    end
-
-    def enable_admin?
-      ENV['ENABLE_ADMIN'].to_s == 'true'
-    end
-
     def green_lanes_update_email
       ENV['GREEN_LANES_UPDATE_EMAIL']
     end
@@ -271,7 +263,7 @@ module TradeTariffBackend
     end
 
     def implicit_deletion_cutoff
-      Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-23'))
+      Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-25'))
     end
   end
 end

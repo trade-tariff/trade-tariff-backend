@@ -65,10 +65,14 @@ module Reporting
           end
 
           if rows.any?
-            object.put(
-              body: csv_data,
-              content_type: 'text/csv',
-            )
+            File.write(File.basename(object_key), csv_data) if Rails.env.development?
+
+            if Rails.env.production?
+              object.put(
+                body: csv_data,
+                content_type: 'text/csv',
+              )
+            end
           end
 
           Rails.logger.debug("Query count: #{::SequelRails::Railties::LogSubscriber.count}")
@@ -92,7 +96,7 @@ module Reporting
 
         row = []
         row << goods_nomenclature.goods_nomenclature_item_id
-        row << goods_nomenclature&.goods_nomenclature_description&.description_plain
+        row << goods_nomenclature&.goods_nomenclature_description&.description_plain&.tr("\u00A0", ' ')
         row << third_country_duty
         row << supplementary_measure&.supplementary_unit_duty_expression
 

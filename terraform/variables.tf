@@ -72,11 +72,6 @@ variable "management_email" {
   type        = string
 }
 
-variable "legacy_search_enhancements_enabled" {
-  description = "Enable legacy search enhancements"
-  type        = bool
-}
-
 variable "green_lanes_update_email" {
   description = "Email address for the green lanes policy team."
   type        = string

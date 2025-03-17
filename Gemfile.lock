@@ -74,7 +74,6 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
-    ansi (1.5.0)
     ast (2.4.2)
     awesome_print (1.9.2)
     aws-actionmailer-ses (1.0.0)
@@ -107,7 +106,6 @@ GEM
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.11.0)
       aws-eventstream (~> 1, >= 1.0.2)
-    backport (1.2.0)
     base64 (0.2.0)
     benchmark (0.4.0)
     bigdecimal (3.1.9)
@@ -116,7 +114,6 @@ GEM
     brakeman (7.0.0)
       racc
     builder (3.3.0)
-    byebug (11.1.3)
     caxlsx (4.2.0)
       htmlentities (~> 4.3, >= 4.3.4)
       marcel (~> 1.0)
@@ -137,8 +134,7 @@ GEM
       database_cleaner-core (~> 2.0.0)
       sequel
     date (3.4.1)
-    diff-lcs (1.5.1)
-    docile (1.4.1)
+    diff-lcs (1.6.0)
     dotenv (3.1.7)
     dotenv-rails (3.1.7)
       dotenv (= 3.1.7)
@@ -152,7 +148,6 @@ GEM
     factory_bot_rails (6.4.4)
       factory_bot (~> 6.5)
       railties (>= 5.0.0)
-    fakefs (3.0.0)
     faraday (2.12.2)
       faraday-net_http (>= 2.0, < 3.5)
       json
@@ -185,7 +180,6 @@ GEM
       pp (>= 0.6.0)
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
-    jaro_winkler (1.6.0)
     jmespath (1.6.2)
     json (2.9.1)
     json_expressions (0.9.0)
@@ -193,10 +187,6 @@ GEM
       activesupport (>= 4.2)
     jwt (2.10.1)
       base64
-    kramdown (2.5.1)
-      rexml (>= 3.3.9)
-    kramdown-parser-gfm (1.1.0)
-      kramdown (~> 2.0)
     language_server-protocol (3.17.0.4)
     launchy (3.1.0)
       addressable (~> 2.8)
@@ -204,7 +194,7 @@ GEM
       logger (~> 1.6)
     letter_opener (1.10.0)
       launchy (>= 2.2, < 4)
-    logger (1.6.5)
+    logger (1.6.6)
     lograge (0.14.0)
       actionpack (>= 4)
       activesupport (>= 4)
@@ -241,7 +231,7 @@ GEM
       net-protocol
     newrelic_rpm (9.17.0)
     nio4r (2.7.4)
-    nokogiri (1.18.2)
+    nokogiri (1.18.3)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     oauth2 (2.0.9)
@@ -251,7 +241,6 @@ GEM
       rack (>= 1.2, < 4)
       snaky_hash (~> 2.0)
       version_gem (~> 1.1)
-    observer (0.1.2)
     omniauth (2.1.2)
       hashie (>= 3.4.6)
       rack (>= 2.2.3)
@@ -265,22 +254,19 @@ GEM
     opensearch-ruby (3.4.0)
       faraday (>= 1.0, < 3)
       multi_json (>= 1.0)
-    ostruct (0.6.1)
     parallel (1.26.3)
     parser (3.3.7.1)
       ast (~> 2.4.1)
       racc
     pg (1.5.9)
-    plek (5.2.0)
+    plek (5.2.1)
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
+    prism (1.3.0)
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
-    pry-byebug (3.10.1)
-      byebug (~> 11.0)
-      pry (>= 0.13, < 0.15)
     pry-rails (0.3.11)
       pry (>= 0.13.0)
     psych (5.2.3)
@@ -293,7 +279,7 @@ GEM
     rabl (0.17.0)
       activesupport (>= 2.3.14)
     racc (1.8.1)
-    rack (3.1.10)
+    rack (3.1.12)
     rack-attack (6.7.0)
       rack (>= 1.0, < 4)
     rack-protection (4.1.1)
@@ -357,8 +343,6 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    reverse_markdown (3.0.0)
-      nokogiri
     rexml (3.4.0)
     rspec-core (3.13.3)
       rspec-support (~> 3.13.0)
@@ -413,6 +397,15 @@ GEM
       rubocop (~> 1.0)
     rubocop-rspec (3.3.0)
       rubocop (~> 1.61)
+    ruby-lsp (0.23.11)
+      language_server-protocol (~> 3.17.0)
+      prism (>= 1.2, < 2.0)
+      rbs (>= 3, < 4)
+      sorbet-runtime (>= 0.5.10782)
+    ruby-lsp-rails (0.4.0)
+      ruby-lsp (>= 0.23.0, < 0.24.0)
+    ruby-lsp-rspec (0.1.22)
+      ruby-lsp (~> 0.23.0)
     ruby-progressbar (1.13.0)
     rubyzip (2.4.1)
     rufus-scheduler (3.9.2)
@@ -427,9 +420,9 @@ GEM
     sentry-sidekiq (5.22.4)
       sentry-ruby (~> 5.22.4)
       sidekiq (>= 3.0)
-    sequel (5.89.0)
+    sequel (5.90.0)
       bigdecimal
-    sequel-rails (1.2.3)
+    sequel-rails (1.2.4)
       actionpack (>= 4.0.0)
       activemodel (>= 4.0.0)
       railties (>= 4.0.0)
@@ -444,35 +437,12 @@ GEM
       rufus-scheduler (~> 3.2)
       sidekiq (>= 6, < 8)
       tilt (>= 1.4.0, < 3)
-    simplecov (0.22.0)
-      docile (~> 1.1)
-      simplecov-html (~> 0.11)
-      simplecov_json_formatter (~> 0.1)
-    simplecov-html (0.13.1)
-    simplecov_json_formatter (0.1.4)
     slack-notifier (2.4.0)
     snaky_hash (2.0.1)
       hashie
       version_gem (~> 1.1, >= 1.1.1)
-    solargraph (0.51.2)
-      backport (~> 1.2)
-      benchmark
-      bundler (~> 2.0)
-      diff-lcs (~> 1.4)
-      jaro_winkler (~> 1.6)
-      kramdown (~> 2.3)
-      kramdown-parser-gfm (~> 1.1)
-      logger (~> 1.6)
-      observer (~> 0.1)
-      ostruct (~> 0.6)
-      parser (~> 3.0)
-      rbs (~> 3.0)
-      reverse_markdown (>= 2.0, < 4)
-      rubocop (~> 1.38)
-      thor (~> 1.0)
-      tilt (~> 2.0)
-      yard (~> 0.9, >= 0.9.24)
-    stringio (3.1.2)
+    sorbet-runtime (0.5.11919)
+    stringio (3.1.5)
     thor (1.3.2)
     tilt (2.6.0)
     timeout (0.4.3)
@@ -481,7 +451,7 @@ GEM
     unicode-display_width (3.1.4)
       unicode-emoji (~> 4.0, >= 4.0.4)
     unicode-emoji (4.0.4)
-    uri (1.0.2)
+    uri (1.0.3)
     useragent (0.16.11)
     version_gem (1.1.4)
     warden (1.2.9)
@@ -496,14 +466,12 @@ GEM
       base64
       websocket-extensions (>= 0.1.0)
     websocket-extensions (0.1.5)
-    yard (0.9.37)
-    zeitwerk (2.7.1)
+    zeitwerk (2.7.2)
 
 PLATFORMS
   ruby
 
 DEPENDENCIES
-  ansi
   awesome_print
   aws-actionmailer-ses
   aws-sdk-rails
@@ -516,7 +484,6 @@ DEPENDENCIES
   database_cleaner-sequel
   dotenv-rails
   factory_bot_rails
-  fakefs
   foreman
   forgery
   gds-sso
@@ -533,15 +500,14 @@ DEPENDENCIES
   opensearch-ruby
   pg
   plek
-  pry-byebug
   pry-rails
   puma
   rabl
   rack-attack
   rack-timeout
-  rails (~> 8.0)
-  redis (>= 5.0.6)
-  redis-client (>= 0.11.2)
+  rails
+  redis
+  redis-client
   redlock
   responders
   rspec-json_expectations
@@ -549,16 +515,16 @@ DEPENDENCIES
   rspec_junit_formatter
   rubocop-govuk
   rubocop-performance
+  ruby-lsp-rails
+  ruby-lsp-rspec
   rubyzip
   sentry-rails
   sentry-sidekiq
-  sequel (= 5.89.0)
+  sequel
   sequel-rails
   sidekiq
   sidekiq-scheduler
-  simplecov
   slack-notifier
-  solargraph
   tilt
   webmock
 
@@ -566,4 +532,4 @@ RUBY VERSION
    ruby 3.4.2p28
 
 BUNDLED WITH
-   2.5.11
+   2.6.6

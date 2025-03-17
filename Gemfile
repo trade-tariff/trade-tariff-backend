@@ -4,11 +4,11 @@ ruby File.read('.ruby-version')
 
 # Server
 gem 'puma'
-gem 'rails', '~> 8.0'
+gem 'rails'
 
 # DB
 gem 'pg'
-gem 'sequel', '5.89.0'
+gem 'sequel'
 gem 'sequel-rails'
 
 # File uploads and AWS
@@ -21,8 +21,8 @@ gem 'rubyzip'
 
 # Background jobs
 gem 'connection_pool'
-gem 'redis', '>= 5.0.6'
-gem 'redis-client', '>= 0.11.2'
+gem 'redis'
+gem 'redis-client'
 gem 'redlock'
 gem 'sidekiq'
 gem 'sidekiq-scheduler'
@@ -48,7 +48,6 @@ gem 'sentry-sidekiq'
 gem 'slack-notifier'
 
 # API related
-gem 'ansi'
 gem 'jsonapi-serializer'
 gem 'rabl'
 gem 'responders'
@@ -64,22 +63,20 @@ end
 group :development, :test do
   gem 'awesome_print'
   gem 'dotenv-rails'
-  gem 'pry-byebug'
   gem 'pry-rails'
-  gem 'solargraph'
+  gem 'ruby-lsp-rails'
+  gem 'ruby-lsp-rspec'
 end
 
 group :test do
   gem 'brakeman'
   gem 'database_cleaner-sequel'
   gem 'factory_bot_rails', require: false
-  gem 'fakefs', require: 'fakefs/safe'
   gem 'forgery'
   gem 'json_expressions'
   gem 'rspec-json_expectations'
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
-  gem 'simplecov', require: false
   gem 'webmock'
 end
 
