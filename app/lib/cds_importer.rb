@@ -4,6 +4,7 @@ require_relative 'cds_importer/xml_parser'
 require 'zip'
 
 class CdsImporter
+  BATCH_SIZE = TradeTariffBackend.cds_importer_batch_size
   class ImportException < StandardError
     attr_reader :original
 
@@ -53,15 +54,29 @@ class CdsImporter
   class XmlProcessor
     def initialize(filename)
       @filename = filename
+      @count = 0
+      @batch = []
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      CdsImporter::EntityMapper.new(key, hash_from_node).import
+      cds_entities = CdsImporter::EntityMapper.new(key, hash_from_node).import
+
+      @batch << cds_entities
+      @count += cds_entities.size
     rescue StandardError => e
       cds_failed_log(e, key, hash_from_node)
       raise ImportException
+    end
+
+    def process_batch(eof)
+      if eof || @count >= BATCH_SIZE
+        record_inserter = CdsImporter::RecordInserter.new(@batch, @filename)
+        record_inserter.save_batch
+        @batch.clear
+        @count = 0
+      end
     end
 
     def cds_failed_log(exception, key, hash)
@@ -70,6 +85,14 @@ class CdsImporter
         message << "\n Backtrace:\n #{exception.backtrace.join("\n")}"
         Rails.logger.error message
       end
+    end
+  end
+
+  class CdsEntity
+    def initialize(key, instance, mapper)
+      @key = key
+      @instance = instance
+      @mapper  = mapper
     end
   end
 

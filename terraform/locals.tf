@@ -139,6 +139,10 @@ locals {
       name  = "XE_API_URL"
       value = "https://xecdapi.xe.com"
     },
+    {
+      name  = "CDS_IMPORT_BATCH_SIZE"
+      value = var.cds_import_batch_size
+    },
   ]
 
   backend_uk_common_secrets = [

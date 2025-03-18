@@ -92,3 +92,8 @@ variable "disable_admin_api_authentication" {
   type        = bool
   default     = false
 }
+
+variable "cds_import_batch_size" {
+  description = "Batch size for CDS batch insert"
+  type        = number
+}
