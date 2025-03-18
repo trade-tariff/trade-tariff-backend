@@ -14,7 +14,7 @@ class SynchronizerCheckWorker
       Last update was at #{latest_qbe&.created_at}. Please investigate promptly.
     EOMSG
 
-    Sentry.capture_message(msg)
+    NewRelic::Agent.notice_error(msg)
     Rails.logger.warn(msg)
   end
 

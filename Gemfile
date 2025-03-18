@@ -43,8 +43,6 @@ gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
 gem 'plek'
-gem 'sentry-rails'
-gem 'sentry-sidekiq'
 gem 'slack-notifier'
 
 # API related

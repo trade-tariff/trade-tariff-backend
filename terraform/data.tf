@@ -63,10 +63,6 @@ data "aws_secretsmanager_secret" "slack_web_hook_url" {
   name = "slack-web-hook-url"
 }
 
-data "aws_secretsmanager_secret" "sentry_dsn" {
-  name = "backend-sentry-dsn"
-}
-
 data "aws_secretsmanager_secret" "differences_to_emails" {
   name = "backend-differences-to-emails"
 }
