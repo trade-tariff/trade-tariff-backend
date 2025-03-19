@@ -1,4 +1,4 @@
-### Validity of a proof of origin
+## Validity of a proof of origin
 A proof of origin shall be valid for a period expiring two years after the date on which it was made out and may be presented to HMRC within this period.
 
 Proofs of origin submitted after the expiry of their validity period may be accepted where the failure to submit them is due to exceptional circumstances.
@@ -13,13 +13,13 @@ Proofs of origin may apply to:
 
   - are the subject of the same contract of sale
 
-  - are classified in the same code (eight digits) of the Combined Nomenclature
 
+  - are classified in the same code (eight digits) of the Combined Nomenclature
   - come exclusively from the same exporter, are destined for the same importer, and are made the subject of entry formalities at the same customs office in the UK
 
 On request of the importer, where unassembled or disassembled products falling within Section XVI or XVII or heading 7308 or 9406 of the Harmonised System are imported in instalments for transport or production reasons, a single proof of origin for such products may be used in accordance with the requirements laid down by HMRC.
  
-### Exemptions from proof of origin requirements
+## Exemptions from proof of origin requirements
 
 Personal goods and those imported by way of trade shall be exempted from the obligation to make out and produce a proof of origin:
 
@@ -31,7 +31,7 @@ The goods referred to above must meet the following conditions:
 
 - there is no doubt as to the veracity of that declaration
 
-### Discrepancies and errors
+## Discrepancies and errors
  
 - Slight discrepancies discovered between the statements made in an origin declaration and those made in the documents submitted to the customs office for the purpose of carrying out the formalities for importing the goods shall not in themselves render the origin declaration null and void if it is duly established that that it does correspond to the goods submitted.
 
@@ -69,7 +69,7 @@ The replacement statement on origin must be marked “Replacement”
 Re-consignments from Switzerland shall be accompanied by an origin declaration in the form of a statement on origin made out by a Registered Exporter.]
 //-->
 
-### Annex A - Form A
+## Annex A - Form A
 
 Form A (https://www.gov.uk/guidance/completing-generalised-scheme-of-preferences-form-a) must bear a serial number, printed or otherwise, or, where there is no serial number, a reference to the commercial invoice by which it can be identified does not need to be stamped and signed by an authority designated by the beneficiary country, so does not need to be an original.
 
@@ -88,7 +88,7 @@ Form A (https://www.gov.uk/guidance/completing-generalised-scheme-of-preferences
 |Box&nbsp;11|**Certification**<br>This field may be left blank. The UK no longer requires the Form A to be certified by a designated authority in the exporting GSP country.
 |Box&nbsp;12|**Declaration by the exporter**<br>Complete this box by inserting the name of the country in which the goods are considered to have originated. You should take into account that where the provisions for regional cumulation have been applied, that country may not be the same as the country of final processing or the country of exportation.<br><br>For the importing country you must put 'United Kingdom'; indicating a different importing country (e.g. European Union) will lead to the Form A not being accepted. Only the exporter, or a person duly authorised by the exporter, can sign this declaration.<br><br>Forwarding agents acting simply in that capacity are not exporters and must not sign this box. By signing this form, you declare that the goods qualify under the provisions of the Trade Preference Scheme (Developing Countries Trading Scheme) Regulations 2023 and the Customs (Origin of Chargeable Goods: Developing Countries Trading Scheme)) Regulations 2023. If the declaration is incorrect, you will have committed an offence which may incur penalties.|
  
-### Annex B - Making out an origin declaration
+## Annex B - Making out an origin declaration
 
 An origin declaration [(including a replacement origin declaration)] must:
 
