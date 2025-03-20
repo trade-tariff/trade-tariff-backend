@@ -129,7 +129,7 @@ namespace :green_lanes do
       current_date = Time.zone.today
       actual_condition = Sequel.lit('validity_start_date <= ? AND ' \
                                       '(validity_end_date IS NULL OR validity_end_date > ?)')
-
+      # select active measure_id, regulation_id and regulation_role of given measure type to create category_assessment
       Measure.where(actual_condition, current_date, current_date)
              .where(measure_type_id: types, measure_generating_regulation_role: 1)
              .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
