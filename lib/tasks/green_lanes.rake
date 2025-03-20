@@ -133,10 +133,10 @@ namespace :green_lanes do
       Measure.where(actual_condition, current_date, current_date)
              .where(measure_type_id: types)
              .where(
-                Sequel.|(
-                  { measure_generating_regulation_id: ModificationRegulation.where(actual_condition, current_date, current_date).select(:modification_regulation_id)},
-                  { measure_generating_regulation_id: BaseRegulation.where(actual_condition, current_date, current_date).select(:base_regulation_id)}
-                )
+               Sequel.|(
+                 { measure_generating_regulation_id: ModificationRegulation.where(actual_condition, current_date, current_date).select(:modification_regulation_id) },
+                 { measure_generating_regulation_id: BaseRegulation.where(actual_condition, current_date, current_date).select(:base_regulation_id) },
+               ),
              )
              .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
              .all.each do |tr|
