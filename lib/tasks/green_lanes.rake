@@ -126,19 +126,9 @@ namespace :green_lanes do
     types = %w[551 552 553 554 555 561 562 564 565 566 570 690 695 696]
 
     GreenLanes::CategoryAssessment.db.transaction do
-      current_date = Time.zone.today
-      actual_condition = Sequel.lit('validity_start_date <= ? AND ' \
-                                      '(validity_end_date IS NULL OR validity_end_date > ?)')
-
       # select active measure_id, regulation_id and regulation_role of given measure type to create category_assessment
-      Measure.where(actual_condition, current_date, current_date)
-             .where(measure_type_id: types)
-             .where(
-               Sequel.|(
-                 { measure_generating_regulation_id: ModificationRegulation.where(actual_condition, current_date, current_date).select(:modification_regulation_id) },
-                 { measure_generating_regulation_id: BaseRegulation.where(actual_condition, current_date, current_date).select(:base_regulation_id) },
-               ),
-             )
+      Measure.where(measure_type_id: types)
+             .actual.with_regulation_dates_query
              .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
              .all.each do |tr|
         key = [tr.measure_type_id, tr.measure_generating_regulation_id, tr.measure_generating_regulation_role]
