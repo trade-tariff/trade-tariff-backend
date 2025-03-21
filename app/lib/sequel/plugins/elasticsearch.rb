@@ -19,65 +19,67 @@ module Sequel
       end
 
       module InstanceMethods
-        def after_create
-          super
+        if Rails.env.test?
+          def after_create
+            super
 
-          self.class.elasticsearch_indexes.each do |index_class|
-            TradeTariffBackend.search_client.index(index_class, self)
-          rescue ::OpenSearch::Transport::Transport::Errors::NotFound
-            false
+            self.class.elasticsearch_indexes.each do |index_class|
+              TradeTariffBackend.search_client.index(index_class, self)
+            rescue ::OpenSearch::Transport::Transport::Errors::NotFound
+              false
+            end
+
+            add_goods_nomenclature_index
           end
 
-          add_goods_nomenclature_index
-        end
+          def after_update
+            super
 
-        def after_update
-          super
+            self.class.elasticsearch_indexes.each do |index_class|
+              TradeTariffBackend.search_client.index(index_class, self)
+            rescue ::OpenSearch::Transport::Transport::Errors::NotFound
+              false
+            end
 
-          self.class.elasticsearch_indexes.each do |index_class|
-            TradeTariffBackend.search_client.index(index_class, self)
-          rescue ::OpenSearch::Transport::Transport::Errors::NotFound
-            false
+            add_goods_nomenclature_index
           end
 
-          add_goods_nomenclature_index
-        end
+          def after_destroy
+            super
 
-        def after_destroy
-          super
+            self.class.elasticsearch_indexes.each do |index_class|
+              TradeTariffBackend.search_client.delete(index_class, self)
+            rescue ::OpenSearch::Transport::Transport::Errors::NotFound
+              false
+            end
 
-          self.class.elasticsearch_indexes.each do |index_class|
-            TradeTariffBackend.search_client.delete(index_class, self)
-          rescue ::OpenSearch::Transport::Transport::Errors::NotFound
-            false
+            delete_goods_nomenclature_index
           end
 
-          delete_goods_nomenclature_index
-        end
+          private
 
-        private
+          def add_goods_nomenclature_index
+            index_name = Search::GoodsNomenclatureIndex.new.name
 
-        def add_goods_nomenclature_index
-          index_name = Search::GoodsNomenclatureIndex.new.name
-
-          if is_a?(GoodsNomenclature)
-            TradeTariffBackend.search_client.index_by_name(index_name, id, Search::GoodsNomenclatureSerializer.new(self).as_json)
-          elsif instance_of?(SearchReference)
-            TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
-          elsif instance_of?(FullChemical) && goods_nomenclature.present?
-            TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
+            if is_a?(GoodsNomenclature)
+              TradeTariffBackend.search_client.index_by_name(index_name, id, Search::GoodsNomenclatureSerializer.new(self).as_json)
+            elsif instance_of?(SearchReference)
+              TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+            elsif instance_of?(FullChemical) && goods_nomenclature.present?
+              TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
+            end
           end
-        end
 
-        def delete_goods_nomenclature_index
-          index_name = Search::GoodsNomenclatureIndex.new.name
+          def delete_goods_nomenclature_index
+            index_name = Search::GoodsNomenclatureIndex.new.name
 
-          if is_a?(GoodsNomenclature)
-            TradeTariffBackend.search_client.delete_by_name(index_name, id)
-          elsif instance_of?(SearchReference)
-            TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
-          elsif instance_of?(FullChemical) && goods_nomenclature.present?
-            TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
+            if is_a?(GoodsNomenclature)
+              TradeTariffBackend.search_client.delete_by_name(index_name, id)
+            elsif instance_of?(SearchReference)
+              TradeTariffBackend.search_client.index_by_name(index_name, referenced.id, Search::GoodsNomenclatureSerializer.new(referenced.reload).as_json)
+            elsif instance_of?(FullChemical) && goods_nomenclature.present?
+              TradeTariffBackend.search_client.index_by_name(index_name, goods_nomenclature.id, Search::GoodsNomenclatureSerializer.new(goods_nomenclature.reload).as_json)
+            end
           end
         end
       end
