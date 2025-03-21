@@ -1,6 +1,6 @@
 RSpec.describe CdsImporter::RecordInserter do
   shared_examples_for 'an insert operation' do |method_name|
-    subject(:do_insert) { described_class.new(record, mapper, 'new_filename.gzip').public_send(method_name, *args) }
+    subject(:do_insert) { described_class.new(batch, 'new_filename.gzip').public_send(method_name, *args) }
 
     it 'persists a new record with the correct filename and operation' do
       expect { do_insert }
@@ -19,13 +19,37 @@ RSpec.describe CdsImporter::RecordInserter do
     end
   end
 
+  context 'when record batch is inserted' do
+    let(:mapper) { CdsImporter::EntityMapper::MeasureMapper.new({}) }
+    let(:record) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
+    let(:entity) { CdsImporter::CdsEntity.new('Measure', record, mapper) }
+    let(:mapper2) { CdsImporter::EntityMapper::CertificateMapper.new({}) }
+    let(:record2) { create(:certificate, filename: 'initial_filename.gzip', operation: 'C') }
+    let(:entity2) { CdsImporter::CdsEntity.new('Certificate', record2, mapper2) }
+    let(:batch) {[entity, entity2]}
+
+    describe '#save_batch' do
+      let(:expected_db_operation) { 'C' } # Copied from record
+      let(:expected_instrument_operation) { :create }
+      let(:args) { [] }
+
+      it_behaves_like 'an insert operation', :save_batch
+    end
+
+  end
+
+  context 'when single record is inserted' do
+
   let(:mapper) { CdsImporter::EntityMapper::MeasureMapper.new({}) }
   let(:record) { create(:measure, filename: 'initial_filename.gzip', operation: 'C') }
+  let(:entity) { CdsImporter::CdsEntity.new('Measure', record, mapper) }
+  let(:batch) {[entity]}
   let(:args) { [] }
 
   describe '#save_record!' do
     let(:expected_db_operation) { 'C' } # Copied from record
     let(:expected_instrument_operation) { :create }
+    let(:args) { [record, mapper] }
 
     it_behaves_like 'an insert operation', :save_record!
   end
@@ -33,12 +57,12 @@ RSpec.describe CdsImporter::RecordInserter do
   describe '#save_record' do
     let(:expected_db_operation) { 'C' } # Copied from record
     let(:expected_instrument_operation) { :create }
-    let(:args) { %w[Measure] }
+    let(:args) { ['Measure', record, mapper] }
 
     it_behaves_like 'an insert operation', :save_record
 
     context 'when an error is propagated' do
-      subject(:do_insert) { described_class.new(record, mapper, 'new_filename.gzip').save_record('Measure') }
+      subject(:do_insert) { described_class.new(batch, 'new_filename.gzip').save_record('Measure', record, mapper) }
 
       before do
         allow(record.class.operation_klass).to receive(:insert).and_raise(StandardError, 'foo')
@@ -56,5 +80,6 @@ RSpec.describe CdsImporter::RecordInserter do
           .with('cds_error.cds_importer', record:, xml_key: 'Measure', xml_node: {}, exception: an_instance_of(StandardError))
       end
     end
+  end
   end
 end
