@@ -126,9 +126,8 @@ namespace :green_lanes do
     types = %w[551 552 553 554 555 561 562 564 565 566 570 690 695 696]
 
     GreenLanes::CategoryAssessment.db.transaction do
-      # select active measure_id, regulation_id and regulation_role of given measure type to create category_assessment
       Measure.where(measure_type_id: types)
-             .actual.with_regulation_dates_query
+             .with_generating_regulation
              .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
              .all.each do |tr|
         key = [tr.measure_type_id, tr.measure_generating_regulation_id, tr.measure_generating_regulation_role]
