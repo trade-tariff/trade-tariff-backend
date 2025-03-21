@@ -94,6 +94,8 @@ class CdsImporter
       @instance = instance
       @mapper  = mapper
     end
+
+    attr_reader :key, :instance, :mapper
   end
 
   private

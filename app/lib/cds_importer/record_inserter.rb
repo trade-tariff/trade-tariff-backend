@@ -10,11 +10,11 @@ class CdsImporter
     end
 
     def save_batch
-      record_batch.each do |record|
-        if record.instance.skip_import?
+      record_batch.each do |entity|
+        if entity.instance.skip_import?
           instrument_skip_record
         else
-          instrument('cds_importer.import.operations', multi_insert: true, mapper: record.mapper, operation: record.instance.operation, count: 1, record: record.instance)
+          instrument('cds_importer.import.operations', multi_insert: true, mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance)
         end
       end
 
