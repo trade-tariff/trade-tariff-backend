@@ -7,7 +7,7 @@ class InvalidateCacheWorker
 
     production_cdn = client.list_distributions.distribution_list.items.find { |d| d.comment = 'Production CDN' }
     if production_cdn
-      distribution_id = production_cdn.first.id
+      distribution_id = production_cdn.id
     end
 
     if distro
