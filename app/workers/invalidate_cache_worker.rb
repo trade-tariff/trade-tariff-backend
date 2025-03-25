@@ -6,7 +6,7 @@ class InvalidateCacheWorker
     client = Aws::CloudFront::Client.new(credentials: creds)
 
     production_cdn = client.list_distributions.distribution_list.items.find { |d| d.comment = 'Production CDN' }
-    if production_cdn.count.positive?
+    if production_cdn
       distribution_id = production_cdn.first.id
     end
 
