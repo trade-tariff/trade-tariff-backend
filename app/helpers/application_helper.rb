@@ -1,7 +1,5 @@
 module ApplicationHelper
-  def regulation_url(regulation)
-    ApplicationHelper.regulation_url(regulation)
-  end
+  delegate :regulation_url, to: :ApplicationHelper
 
   def self.regulation_url(regulation)
     MeasureService::CouncilRegulationUrlGenerator.new(
@@ -9,9 +7,7 @@ module ApplicationHelper
     ).generate
   end
 
-  def regulation_code(regulation)
-    ApplicationHelper.regulation_code(regulation)
-  end
+  delegate :regulation_code, to: :ApplicationHelper
 
   def self.regulation_code(regulation)
     regulation_id = regulation.regulation_id

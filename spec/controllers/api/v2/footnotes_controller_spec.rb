@@ -1,7 +1,7 @@
 RSpec.describe Api::V2::FootnotesController, type: :controller do
   routes { V2Api.routes }
 
-  subject(:do_response) { get :search, params:, format: :json && response }
+  subject(:do_response) { get(:search, params:) && response }
 
   let(:footnote) { create(:footnote, :with_description) }
 
