@@ -17,8 +17,6 @@ class SearchService
       @resource_id = resource_id
     end
 
-    def present?
-      @results.present?
-    end
+    delegate :present?, to: :@results
   end
 end

@@ -4,11 +4,7 @@ module Api
       include GDS::SSO::ControllerMethods
 
       def authenticate_user!
-        if TradeTariffBackend.disable_admin_api_authentication?
-          true
-        else
-          super
-        end
+        TradeTariffBackend.disable_admin_api_authentication? || super
       end
 
       no_caching
