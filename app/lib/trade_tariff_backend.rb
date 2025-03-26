@@ -265,5 +265,9 @@ module TradeTariffBackend
     def implicit_deletion_cutoff
       Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-25'))
     end
+
+    def cupid_team_to_emails
+      ENV['CUPID_TEAM_TO_EMAILS']
+    end
   end
 end

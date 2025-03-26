@@ -149,6 +149,10 @@ locals {
 
   backend_uk_worker_secrets = [
     {
+      name      = "CUPID_TEAM_TO_EMAILS"
+      valueFrom = data.aws_secretsmanager_secret.cupid_team_to_emails.arn
+    },
+    {
       name      = "DIFFERENCES_TO_EMAILS"
       valueFrom = data.aws_secretsmanager_secret.differences_to_emails.arn
     },
