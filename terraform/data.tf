@@ -119,6 +119,10 @@ data "aws_secretsmanager_secret" "new_relic_license_key" {
   name = "backend-new-relic-license-key"
 }
 
+data "aws_secretsmanager_secret" "cupid_team_to_emails" {
+  name = "backend-cupid-team-to-emails"
+}
+
 data "aws_s3_bucket" "persistence" {
   bucket = "trade-tariff-persistence-${local.account_id}"
 }

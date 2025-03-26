@@ -9,6 +9,7 @@ data "aws_iam_policy_document" "secrets" {
     ]
     resources = compact([
       data.aws_secretsmanager_secret.aurora_rw_connection_string.arn,
+      data.aws_secretsmanager_secret.cupid_team_to_emails.arn,
       data.aws_secretsmanager_secret.differences_to_emails.arn,
       data.aws_secretsmanager_secret.green_lanes_api_keys.arn,
       data.aws_secretsmanager_secret.green_lanes_api_tokens.arn,
