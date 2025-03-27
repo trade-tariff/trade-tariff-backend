@@ -1,15 +1,14 @@
 class InvalidateCacheWorker
   include Sidekiq::Worker
 
-  def perform
-    creds = Aws::ECSCredentials.new(retries: 3)
-    client = Aws::CloudFront::Client.new(credentials: creds)
+  def perform(client = self.class.client)
+    cdn = client.list_distributions.distribution_list.items.find do |d|
+      d.comment == "#{ENV.fetch('ENVIRONMENT', '').capitalize} CDN"
+    end
 
-    production_cdn = client.list_distributions.distribution_list.items.find { |d| d.comment = "#{ENV['ENVIRONMENT'].capitalize} CDN" }
-
-    if production_cdn
+    if cdn
       client.create_invalidation({
-        distribution_id: production_cdn.id,
+        distribution_id: cdn.id,
         invalidation_batch: {
           paths: {
             quantity: 1,
@@ -19,5 +18,11 @@ class InvalidateCacheWorker
         },
       })
     end
+  end
+
+  delegate :client, to: :class
+
+  def self.client
+    @client ||= Aws::CloudFront::Client.new
   end
 end
