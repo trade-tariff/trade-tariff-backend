@@ -5,7 +5,7 @@ class InvalidateCacheWorker
     creds = Aws::ECSCredentials.new(retries: 3)
     client = Aws::CloudFront::Client.new(credentials: creds)
 
-    production_cdn = client.list_distributions.distribution_list.items.find { |d| d.comment = ENV.fetch('CDN_DISTRIBUTION_NAME', 'Production CDN') }
+    production_cdn = client.list_distributions.distribution_list.items.find { |d| d.comment = "#{ENV['ENVIRONMENT'].capitalize} CDN" }
 
     if production_cdn
       client.create_invalidation({
