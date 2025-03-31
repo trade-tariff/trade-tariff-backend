@@ -180,3 +180,21 @@ resource "aws_iam_policy" "emails" {
   name   = "frontend-execution-role-emails-policy"
   policy = data.aws_iam_policy_document.emails.json
 }
+
+data "aws_iam_policy_document" "cloudfront" {
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudfront:CreateInvalidation"]
+    resources = ["arn:aws:cloudfront::${local.account_id}:distribution/*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudfront:ListDistributions"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cloudfront" {
+  name   = "backend-task-role-cloudfront-policy"
+  policy = data.aws_iam_policy_document.cloudfront.json
+}
