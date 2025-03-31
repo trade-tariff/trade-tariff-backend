@@ -187,6 +187,11 @@ data "aws_iam_policy_document" "cloudfront" {
     actions   = ["cloudfront:CreateInvalidation"]
     resources = ["arn:aws:cloudfront::${local.account_id}:distribution/*"]
   }
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudfront:ListDistributions"]
+    resources = ["*"]
+  }
 }
 
 resource "aws_iam_policy" "cloudfront" {
