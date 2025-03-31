@@ -12025,7 +12025,7 @@ CREATE INDEX quota_assoc_pk ON uk.quota_associations_oplog USING btree (main_quo
 -- Name: quota_balance_evt_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX quota_balance_evt_pk ON uk.quota_balance_events_oplog USING btree (quota_definition_sid, occurrence_timestamp);
+CREATE INDEX quota_balance_evt_pk ON uk.quota_balance_events_oplog USING btree (quota_definition_sid, occurrence_timestamp, oid DESC);
 
 
 --
@@ -12053,7 +12053,7 @@ CREATE INDEX quota_crit_evt_pk ON uk.quota_critical_events_oplog USING btree (qu
 -- Name: quota_def_pk; Type: INDEX; Schema: uk; Owner: -
 --
 
-CREATE INDEX quota_def_pk ON uk.quota_definitions_oplog USING btree (quota_definition_sid);
+CREATE INDEX quota_def_pk ON uk.quota_definitions_oplog USING btree (quota_definition_sid, oid DESC);
 
 
 --
@@ -12583,3 +12583,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250128110215_update_diac
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250207141527_update_currency_vef_end_date.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250219092427_delete_chief_guidance_column_from_appendix5a.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250324091812_alter_column_nullable_path_in_goods_nomenclatures_oplog.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250331102817_update_view_indexes.rb');
