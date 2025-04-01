@@ -63,10 +63,6 @@ data "aws_secretsmanager_secret" "slack_web_hook_url" {
   name = "slack-web-hook-url"
 }
 
-data "aws_secretsmanager_secret" "sentry_dsn" {
-  name = "backend-sentry-dsn"
-}
-
 data "aws_secretsmanager_secret" "differences_to_emails" {
   name = "backend-differences-to-emails"
 }
@@ -121,6 +117,10 @@ data "aws_secretsmanager_secret" "green_lanes_api_keys" {
 
 data "aws_secretsmanager_secret" "new_relic_license_key" {
   name = "backend-new-relic-license-key"
+}
+
+data "aws_secretsmanager_secret" "cupid_team_to_emails" {
+  name = "backend-cupid-team-to-emails"
 }
 
 data "aws_s3_bucket" "persistence" {

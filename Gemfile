@@ -13,6 +13,7 @@ gem 'sequel-rails'
 
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
+gem 'aws-sdk-cloudfront', '~> 1.111'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -43,8 +44,6 @@ gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
 gem 'plek'
-gem 'sentry-rails'
-gem 'sentry-sidekiq'
 gem 'slack-notifier'
 
 # API related

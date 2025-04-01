@@ -9,6 +9,7 @@ data "aws_iam_policy_document" "secrets" {
     ]
     resources = compact([
       data.aws_secretsmanager_secret.aurora_rw_connection_string.arn,
+      data.aws_secretsmanager_secret.cupid_team_to_emails.arn,
       data.aws_secretsmanager_secret.differences_to_emails.arn,
       data.aws_secretsmanager_secret.green_lanes_api_keys.arn,
       data.aws_secretsmanager_secret.green_lanes_api_tokens.arn,
@@ -19,7 +20,6 @@ data "aws_iam_policy_document" "secrets" {
       data.aws_secretsmanager_secret.redis_uk_connection_string.arn,
       data.aws_secretsmanager_secret.redis_xi_connection_string.arn,
       data.aws_secretsmanager_secret.secret_key_base.arn,
-      data.aws_secretsmanager_secret.sentry_dsn.arn,
       data.aws_secretsmanager_secret.slack_web_hook_url.arn,
       data.aws_secretsmanager_secret.sync_uk_host.arn,
       data.aws_secretsmanager_secret.sync_uk_password.arn,
@@ -179,4 +179,22 @@ data "aws_iam_policy_document" "emails" {
 resource "aws_iam_policy" "emails" {
   name   = "frontend-execution-role-emails-policy"
   policy = data.aws_iam_policy_document.emails.json
+}
+
+data "aws_iam_policy_document" "cloudfront" {
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudfront:CreateInvalidation"]
+    resources = ["arn:aws:cloudfront::${local.account_id}:distribution/*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudfront:ListDistributions"]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cloudfront" {
+  name   = "backend-task-role-cloudfront-policy"
+  policy = data.aws_iam_policy_document.cloudfront.json
 }

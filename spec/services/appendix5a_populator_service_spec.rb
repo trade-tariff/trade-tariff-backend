@@ -5,6 +5,7 @@ RSpec.describe Appendix5aPopulatorService do
     before do
       allow(Appendix5a).to receive(:fetch_latest).and_return(new_guidance)
       allow(SlackNotifierService).to receive(:call).and_call_original
+      allow(Appendix5aMailer).to receive_message_chain(:appendix5a_notify_message, :deliver_now)
     end
 
     let!(:existing_guidance) do
@@ -36,6 +37,12 @@ RSpec.describe Appendix5aPopulatorService do
           .to have_received(:call)
           .with('Appendix 5a has been updated with 0 new, 1 changed and 0 removed guidance documents')
       end
+
+      it 'sends an email notification' do
+        call
+        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
+          .with(0, 1, 0)
+      end
     end
 
     context 'when latest guidance has not changed' do
@@ -51,10 +58,15 @@ RSpec.describe Appendix5aPopulatorService do
         expect { call }.not_to change_guidance_values
       end
 
-      it 'notifies slack' do
+      it 'does not notify slack' do
         call
 
         expect(SlackNotifierService).not_to have_received(:call)
+      end
+
+      it 'does not send an email' do
+        call
+        expect(Appendix5aMailer).not_to have_received(:appendix5a_notify_message)
       end
     end
 
@@ -71,6 +83,12 @@ RSpec.describe Appendix5aPopulatorService do
         expect(SlackNotifierService)
           .to have_received(:call)
           .with('Appendix 5a has been updated with 0 new, 0 changed and 1 removed guidance documents')
+      end
+
+      it 'sends an email notification' do
+        call
+        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
+          .with(0, 0, 1)
       end
     end
 
@@ -96,6 +114,12 @@ RSpec.describe Appendix5aPopulatorService do
         expect(SlackNotifierService)
           .to have_received(:call)
           .with('Appendix 5a has been updated with 1 new, 0 changed and 0 removed guidance documents')
+      end
+
+      it 'sends an email notification' do
+        call
+        expect(Appendix5aMailer).to have_received(:appendix5a_notify_message)
+          .with(1, 0, 0)
       end
     end
   end

@@ -121,20 +121,16 @@ namespace :green_lanes do
     # load existing data
     theme = GreenLanes::Theme.where(section: '1', subsection: '3').first
     assessments = GreenLanes::CategoryAssessment.all.index_by do |assessment|
-      [assessment.measure_type_id, assessment.regulation_id]
+      [assessment.measure_type_id, assessment.regulation_id, assessment.regulation_role]
     end
-    types = %w[551 552 553 554 555 561 562 564 565 566 570 695]
+    types = %w[551 552 553 554 555 561 562 564 565 566 570 690 695 696]
 
     GreenLanes::CategoryAssessment.db.transaction do
-      current_date = Time.zone.today
-      actual_condition = Sequel.lit('validity_start_date <= ? AND ' \
-                                      '(validity_end_date IS NULL OR validity_end_date > ?)')
-
-      Measure.where(actual_condition, current_date, current_date)
-             .where(measure_type_id: types, measure_generating_regulation_role: 1)
+      Measure.where(measure_type_id: types)
+             .with_generating_regulation
              .select_group(:measure_type_id, :measure_generating_regulation_id, :measure_generating_regulation_role)
              .all.each do |tr|
-        key = [tr.measure_type_id, tr.measure_generating_regulation_id]
+        key = [tr.measure_type_id, tr.measure_generating_regulation_id, tr.measure_generating_regulation_role]
         assessment = assessments[key]
 
         unless assessment
