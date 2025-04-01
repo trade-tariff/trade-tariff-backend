@@ -44,12 +44,9 @@ class CdsImporter
         @depth -= 1
         if @depth == @target_depth && @targets.include?(key)
           @target_handler.process_xml_node(key, @stack.pop)
-          @target_handler.process_batch(false)
           @in_target = false
         end
-        if @depth == 0
-          @target_handler.process_batch(true)
-        end
+
         return unless @in_target
 
         child = @stack.pop

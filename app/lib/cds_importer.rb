@@ -4,7 +4,6 @@ require_relative 'cds_importer/xml_parser'
 require 'zip'
 
 class CdsImporter
-  BATCH_SIZE = TradeTariffBackend.cds_importer_batch_size
   class ImportException < StandardError
     attr_reader :original
 
@@ -44,6 +43,7 @@ class CdsImporter
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
         CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
+        handler.process_end
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end
@@ -61,23 +61,27 @@ class CdsImporter
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      cds_entities = CdsImporter::EntityMapper.new(key, hash_from_node).import
+      CdsImporter::EntityMapper.new(key, hash_from_node).import do |cds_entity|
+        @batch << cds_entity
+        @count += 1
 
-      @batch << cds_entities
-      @count += cds_entities.size
+        if @count >= batch_size
+          process_batch
+        end
+      end
     rescue StandardError => e
       cds_failed_log(e, key, hash_from_node)
       raise ImportException
     end
 
-    def process_batch(eof)
-      if eof || @count >= BATCH_SIZE
-        record_inserter = CdsImporter::RecordInserter.new(@batch, @filename)
-        record_inserter.save_batch
-        @batch.clear
-        @count = 0
-      end
+    def process_batch
+      record_inserter = CdsImporter::RecordInserter.new(@batch, @filename)
+      record_inserter.save_batch
+      @batch.clear
+      @count = 0
     end
+
+    alias_method :process_end, :process_batch
 
     def cds_failed_log(exception, key, hash)
       "Cds import failed: #{exception}".tap do |message|
@@ -86,13 +90,17 @@ class CdsImporter
         Rails.logger.error message
       end
     end
+
+    def batch_size
+      TradeTariffBackend.cds_importer_batch_size
+    end
   end
 
   class CdsEntity
     def initialize(key, instance, mapper)
       @key = key
       @instance = instance
-      @mapper  = mapper
+      @mapper = mapper
     end
 
     attr_reader :key, :instance, :mapper

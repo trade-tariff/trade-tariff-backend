@@ -12,14 +12,14 @@ class CdsImporter
     def save_batch
       record_batch.each do |entity|
         if entity.instance.skip_import?
-          instrument_skip_record
+          instrument_skip_record(entity.instance, entity.mapper)
         else
           instrument('cds_importer.import.operations', multi_insert: true, mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance)
         end
       end
 
       filtered_batch = record_batch.reject { |entity| entity.instance.skip_import? }
-      grouped_batch = filtered_batch.group_by { |entity| entity.instance.operation_klass }
+      grouped_batch = filtered_batch.group_by { |entity| entity.instance.class.operation_klass }
 
       grouped_batch.each do |operation_klass, group|
         save_group(operation_klass, group)
@@ -79,7 +79,7 @@ class CdsImporter
       nil
     end
 
-    def instrument_skip_record
+    def instrument_skip_record(record, mapper)
       instrument('cds_importer.import.operations', mapper:, operation: SKIPPED_OPERATION, count: 1, record:)
     end
 

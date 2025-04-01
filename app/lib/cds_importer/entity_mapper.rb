@@ -14,7 +14,6 @@ class CdsImporter
     end
 
     def import
-      cds_entities = []
       applicable_mappers_for(@key, @xml_node).each do |mapper|
         mapper.before_building_model_callbacks.each { |callback| callback.call(xml_node) }
 
@@ -33,10 +32,9 @@ class CdsImporter
               implicit_deletes_enabled?,
             )
           end
-          cds_entities << CdsImporter::CdsEntity.new(@key, model_instance, mapper)
+          yield CdsImporter::CdsEntity.new(@key, model_instance, mapper) if block_given?
         end
       end
-      cds_entities
     end
 
     class << self
