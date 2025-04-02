@@ -46,64 +46,6 @@ executors:
       TERRAFORM_VERSION: 1.9.8
 
 jobs:
-  trigger-github-e2e-tests:
-    docker:
-      - image: cimg/base:stable
-    parameters:
-      test_url:
-        type: string
-    steps:
-      - checkout
-      - github-cli/install
-      - run:
-          name: Trigger GitHub Workflow and Monitor
-          command: |
-            gh workflow run e2e-tests.yml \
-              -R trade-tariff/trade-tariff-tools \
-              --ref main \
-              -f test-url="<< parameters.test_url >>"
-
-            sleep 5 # Give it a moment to register
-            RUN_ID=$(gh run list \
-              --repo trade-tariff/trade-tariff-tools \
-              --workflow=e2e-tests.yml \
-              --branch=main \
-              --limit=1 \
-              --json databaseId \
-              -q '.[0].databaseId')
-
-            echo "GitHub Workflow triggered with Run ID: $RUN_ID"
-            echo "Checking status (will not block pipeline)..."
-
-            END_TIME=$((SECONDS+100))
-            while [ $SECONDS -lt $END_TIME ]; do
-              STATUS=$(gh run view $RUN_ID \
-                --repo trade-tariff/trade-tariff-tools \
-                --json conclusion,status \
-                -q '.status')
-
-              CONCLUSION=$(gh run view $RUN_ID \
-                --repo trade-tariff/trade-tariff-tools \
-                --json conclusion,status \
-                -q '.conclusion')
-
-              echo "Current status: $STATUS"
-
-              if [ "$STATUS" = "completed" ]; then
-                echo "Workflow completed with conclusion: $CONCLUSION"
-                echo "GITHUB_WORKFLOW_RESULT=$CONCLUSION" >> $BASH_ENV
-                break
-              fi
-
-              sleep 30
-            done
-
-            if [ "$STATUS" != "completed" ]; then
-              echo "Workflow did not complete within 15 minutes"
-              echo "GITHUB_WORKFLOW_RESULT=timed_out" >> $BASH_ENV
-            fi
-
-            echo "Continuing pipeline regardless of GitHub workflow outcome"
   ruby-checks:
     docker:
       - image: cimg/ruby:3.4.2
@@ -426,14 +368,6 @@ workflows:
             - build-and-push-dev
           <<: *filter-not-main
 
-      - trigger-github-e2e-tests:
-          name: trigger-e2e-tests-dev
-          test_url: https://dev.trade-tariff.service.gov.uk
-          context: trade-tariff-terraform-aws-development
-          requires:
-            - apply-terraform-dev
-          <<: *filter-not-main
-
       - tariff/smoketests:
           name: smoketest-dev
           context: trade-tariff-testing
@@ -487,14 +421,6 @@ workflows:
           space: staging
           bucket: trade-tariff-opensearch-packages-451934005581
           context: trade-tariff-terraform-aws-staging
-          <<: *filter-main
-
-      - trigger-github-e2e-tests:
-          name: trigger-e2e-tests-staging
-          test_url: https://staging.trade-tariff.service.gov.uk
-          context: trade-tariff-terraform-aws-staging
-          requires:
-            - apply-terraform-staging
           <<: *filter-main
 
       - tariff/smoketests:
