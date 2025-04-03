@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe QueryCountChecker do
   subject(:check_count) { described_class.new(threshold).check }
 
-  before { allow(Sentry).to receive(:capture_message).and_return true }
+  before { allow(NewRelic::Agent).to receive(:notice_error).and_return true }
 
   let(:threshold) { 20 }
 
@@ -16,10 +16,10 @@ RSpec.describe QueryCountChecker do
       expect { check_count }.not_to raise_exception
     end
 
-    it 'does not notify sentry' do
+    it 'does not notify New Relic' do
       check_count
 
-      expect(Sentry).not_to have_received :capture_message
+      expect(NewRelic::Agent).not_to have_received :notice_error
     end
   end
 
@@ -34,10 +34,10 @@ RSpec.describe QueryCountChecker do
           described_class::ExcessQueryCountException, /excess queries detected/i
       end
 
-      it 'does not notify sentry' do
+      it 'does not notify new relic' do
         check_count
       rescue described_class::ExcessQueryCountException
-        expect(Sentry).not_to have_received :capture_message
+        expect(NewRelic::Agent).not_to have_received :notice_error
       end
     end
 
@@ -48,10 +48,10 @@ RSpec.describe QueryCountChecker do
         expect(check_count).to be false
       end
 
-      it 'notifies sentry' do
+      it 'notifies new relic' do
         check_count
 
-        expect(Sentry).to have_received(:capture_message).with \
+        expect(NewRelic::Agent).to have_received(:notice_error).with \
           "Excess queries detected: #{threshold + 1} (limit: #{threshold})"
       end
     end
