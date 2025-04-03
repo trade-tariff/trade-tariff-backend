@@ -43,6 +43,7 @@ gem 'logstash-event'
 gem 'newrelic_rpm'
 gem 'nokogiri'
 gem 'omniauth-rails_csrf_protection'
+gem 'ostruct'
 gem 'plek'
 gem 'slack-notifier'
 
@@ -76,6 +77,7 @@ group :test do
   gem 'rspec-json_expectations'
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'
+  gem 'rspec-rebound'
   gem 'webmock'
 end
 

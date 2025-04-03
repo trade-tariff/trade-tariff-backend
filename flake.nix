@@ -27,7 +27,7 @@
           "--with-libyaml-include=${libyaml.dev}/include"
           "--with-libyaml-lib=${libyaml.out}/lib"
         ];
-        postgresql = pkgs.postgresql_16.withPackages (p: [ p.postgis ]);
+        postgresql = pkgs.postgresql_17;
         pg-environment-variables = ''
           export PGDATA=$PWD/.nix/postgres/data
           export PGHOST=$PWD/.nix/postgres
