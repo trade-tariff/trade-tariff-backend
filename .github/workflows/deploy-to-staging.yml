@@ -48,6 +48,7 @@ jobs:
 
   post-deploy:
     uses: trade-tariff/trade-tariff-tools/.github/workflows/e2e-tests.yml@main
+    needs: deploy
     with:
       test-url: "https://staging.trade-tariff.service.gov.uk"
       admin-test-url: "https://admin.staging.trade-tariff.service.gov.uk"
