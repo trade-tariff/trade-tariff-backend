@@ -78,7 +78,7 @@ FactoryBot.define do
     end
 
     trait :with_skip_import do
-      after(:build) do |measure, evaluator|
+      after(:build) do |measure, _evaluator|
         measure.skip_import!
       end
     end
