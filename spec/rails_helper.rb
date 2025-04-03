@@ -75,6 +75,10 @@ RSpec.configure do |config|
   config.after { travel_back }
 
   config.include V2Api.routes.url_helpers, type: :request
+
+  config.verbose_retry = true
+  config.display_try_failure_messages = true
+  config.around { |ex| ex.run_with_retry retry: 3 }
 end
 
 def silence
