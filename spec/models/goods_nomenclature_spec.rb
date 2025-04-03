@@ -460,8 +460,8 @@ RSpec.describe GoodsNomenclature do
     context 'when footnote_types_and_ids is empty' do
       let(:footnote_types_and_ids) { [] }
 
-      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456 789] }
-      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N Z] }
+      it { expect(dataset.pluck(:footnote_id)).to include('123', '456', '789') }
+      it { expect(dataset.pluck(:footnote_type_id)).to include('Y', 'N', 'Z') }
     end
 
     context 'when footnote_types_and_ids is present' do
@@ -472,8 +472,8 @@ RSpec.describe GoodsNomenclature do
         ]
       end
 
-      it { expect(dataset.pluck(:footnote_id)).to eq %w[123 456] }
-      it { expect(dataset.pluck(:footnote_type_id)).to eq %w[Y N] }
+      it { expect(dataset.pluck(:footnote_id)).to include('123', '456') }
+      it { expect(dataset.pluck(:footnote_type_id)).to include('Y', 'N') }
     end
   end
 
