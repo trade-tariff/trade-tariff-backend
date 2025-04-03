@@ -269,7 +269,7 @@ module TradeTariffBackend
     def cds_importer_batch_size
       ENV['CDS_IMPORT_BATCH_SIZE'].to_i
     end
-      
+
     def cupid_team_to_emails
       ENV['CUPID_TEAM_TO_EMAILS']
     end
