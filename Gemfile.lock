@@ -258,6 +258,7 @@ GEM
     opensearch-ruby (3.4.0)
       faraday (>= 1.0, < 3)
       multi_json (>= 1.0)
+    ostruct (0.6.1)
     parallel (1.26.3)
     parser (3.3.7.2)
       ast (~> 2.4.1)
@@ -365,6 +366,8 @@ GEM
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
+    rspec-rebound (0.2.1)
+      rspec-core (~> 3.3)
     rspec-support (3.13.2)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
@@ -500,6 +503,7 @@ DEPENDENCIES
   nokogiri
   omniauth-rails_csrf_protection
   opensearch-ruby
+  ostruct
   pg
   plek
   pry-rails
@@ -514,6 +518,7 @@ DEPENDENCIES
   responders
   rspec-json_expectations
   rspec-rails
+  rspec-rebound
   rspec_junit_formatter
   rubocop-govuk
   rubocop-performance
