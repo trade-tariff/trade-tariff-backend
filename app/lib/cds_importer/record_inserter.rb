@@ -25,7 +25,6 @@ class CdsImporter
         save_group(operation_klass, group)
       rescue StandardError => e
         instrument('cds_error.cds_importer', multi_insert: true, type: operation_klass, exception: e)
-        save_single(group)
         nil
       end
     end
@@ -42,41 +41,7 @@ class CdsImporter
         end
         value_batch << values
       end
-
       operation_klass.multi_insert(value_batch)
-    end
-
-    def save_single(group)
-      group.each do |cds_entity|
-        if logger_enabled?
-          save_record(cds_entity.key, cds_entity.instance, cds_entity.mapper)
-        else
-          save_record!(cds_entity.instance, cds_entity.mapper)
-        end
-      end
-    end
-
-    def save_record!(record, mapper)
-      instrument('cds_importer.import.operations', mapper:, operation: record.operation, count: 1, record:) do
-        operation_klass = record.class.operation_klass
-
-        values = record.values.slice(*operation_klass.columns).except(:oid)
-
-        values[:filename] = filename
-
-        if operation_klass.columns.include?(:created_at)
-          values[:created_at] = operation_klass.dataset.current_datetime
-        end
-
-        operation_klass.insert(values)
-      end
-    end
-
-    def save_record(xml_key, record, mapper)
-      save_record!(record, mapper)
-    rescue StandardError => e
-      instrument('cds_error.cds_importer', record:, xml_key:, xml_node: mapper.xml_node, exception: e)
-      nil
     end
 
     def instrument_skip_record(record, mapper)
