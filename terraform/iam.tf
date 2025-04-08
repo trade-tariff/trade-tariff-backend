@@ -52,12 +52,15 @@ data "aws_iam_policy_document" "task" {
   }
 
   statement {
-    effect = "Allow"
-    actions = [
-      "cloudfront:CreateInvalidation",
-      "cloudfront:ListDistributions"
-    ]
+    effect    = "Allow"
+    actions   = ["cloudfront:CreateInvalidation"]
     resources = ["arn:aws:cloudfront::${local.account_id}:distribution/*"]
+  }
+
+  statement {
+    effect    = "Allow"
+    actions   = ["cloudfront:ListDistributions"]
+    resources = ["*"]
   }
 }
 
