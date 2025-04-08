@@ -4,6 +4,8 @@ class ReportWorker
   sidekiq_options retry: false
 
   def perform(trigger_differences_report = true)
+    return if Rails.env.development?
+
     Reporting::Commodities.generate
     Reporting::Basic.generate
     Reporting::SupplementaryUnits.generate
