@@ -6,6 +6,7 @@ RSpec.describe RefreshAppendix5aGuidanceWorker, type: :worker do
 
     before do
       allow(Appendix5aPopulatorService).to receive(:new).and_call_original
+      allow(Appendix5aMailer).to receive_message_chain(:appendix5a_notify_message, :deliver_now)
     end
 
     it 'calls the service' do

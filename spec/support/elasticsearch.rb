@@ -11,7 +11,7 @@ RSpec.configure do |config|
       sleep 2
       retry
     else
-      warn 'Could not connect to ElasticSearch within 30 seconds, giving up'
+      warn "Could not connect to ElasticSearch on #{TradeTariffBackend.opensearch_configuration[:host]}, giving up"
       raise e
     end
   end

@@ -74,27 +74,31 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
-    ast (2.4.2)
+    ast (2.4.3)
     awesome_print (1.9.2)
     aws-actionmailer-ses (1.0.0)
       actionmailer (>= 7.1.0)
       aws-sdk-ses (~> 1, >= 1.50.0)
       aws-sdk-sesv2 (~> 1, >= 1.34.0)
-    aws-eventstream (1.3.1)
-    aws-partitions (1.1056.0)
-    aws-sdk-core (3.219.0)
+    aws-eventstream (1.3.2)
+    aws-partitions (1.1080.0)
+    aws-sdk-cloudfront (1.114.0)
+      aws-sdk-core (~> 3, >= 3.216.0)
+      aws-sigv4 (~> 1.5)
+    aws-sdk-core (3.222.1)
       aws-eventstream (~> 1, >= 1.3.0)
       aws-partitions (~> 1, >= 1.992.0)
       aws-sigv4 (~> 1.9)
       base64
       jmespath (~> 1, >= 1.6.1)
+      logger
     aws-sdk-kms (1.99.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sigv4 (~> 1.5)
     aws-sdk-rails (5.1.0)
       aws-sdk-core (~> 3)
       railties (>= 7.1.0)
-    aws-sdk-s3 (1.182.0)
+    aws-sdk-s3 (1.183.0)
       aws-sdk-core (~> 3, >= 3.216.0)
       aws-sdk-kms (~> 1)
       aws-sigv4 (~> 1.5)
@@ -128,7 +132,7 @@ GEM
       bigdecimal
       rexml
     crass (1.0.6)
-    csv (3.3.2)
+    csv (3.3.3)
     database_cleaner-core (2.0.1)
     database_cleaner-sequel (2.0.2)
       database_cleaner-core (~> 2.0.0)
@@ -159,7 +163,7 @@ GEM
     fugit (1.11.1)
       et-orbi (~> 1, >= 1.2.11)
       raabro (~> 1.4)
-    gds-sso (19.1.0)
+    gds-sso (20.0.0)
       oauth2 (~> 2.0)
       omniauth (~> 2.1)
       omniauth-oauth2 (~> 1.8)
@@ -181,7 +185,7 @@ GEM
       rdoc (>= 4.0.0)
       reline (>= 0.4.2)
     jmespath (1.6.2)
-    json (2.9.1)
+    json (2.10.2)
     json_expressions (0.9.0)
     jsonapi-serializer (2.2.0)
       activesupport (>= 4.2)
@@ -194,7 +198,8 @@ GEM
       logger (~> 1.6)
     letter_opener (1.10.0)
       launchy (>= 2.2, < 4)
-    logger (1.6.6)
+    lint_roller (1.1.0)
+    logger (1.7.0)
     lograge (0.14.0)
       actionpack (>= 4)
       activesupport (>= 4)
@@ -213,7 +218,7 @@ GEM
     method_source (1.1.0)
     mini_mime (1.1.5)
     mini_portile2 (2.8.8)
-    minitest (5.25.4)
+    minitest (5.25.5)
     msgpack (1.8.0)
     multi_json (1.15.0)
     multi_xml (0.7.1)
@@ -229,9 +234,9 @@ GEM
       timeout
     net-smtp (0.5.1)
       net-protocol
-    newrelic_rpm (9.17.0)
+    newrelic_rpm (9.18.0)
     nio4r (2.7.4)
-    nokogiri (1.18.3)
+    nokogiri (1.18.7)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     oauth2 (2.0.9)
@@ -241,7 +246,7 @@ GEM
       rack (>= 1.2, < 4)
       snaky_hash (~> 2.0)
       version_gem (~> 1.1)
-    omniauth (2.1.2)
+    omniauth (2.1.3)
       hashie (>= 3.4.6)
       rack (>= 2.2.3)
       rack-protection
@@ -254,8 +259,9 @@ GEM
     opensearch-ruby (3.4.0)
       faraday (>= 1.0, < 3)
       multi_json (>= 1.0)
+    ostruct (0.6.1)
     parallel (1.26.3)
-    parser (3.3.7.1)
+    parser (3.3.7.4)
       ast (~> 2.4.1)
       racc
     pg (1.5.9)
@@ -263,7 +269,7 @@ GEM
     pp (0.6.2)
       prettyprint
     prettyprint (0.2.0)
-    prism (1.3.0)
+    prism (1.4.0)
     pry (0.14.2)
       coderay (~> 1.1)
       method_source (~> 1.0)
@@ -327,11 +333,11 @@ GEM
     rake (13.2.1)
     rbs (3.8.1)
       logger
-    rdoc (6.12.0)
+    rdoc (6.13.1)
       psych (>= 4.0.0)
     redis (5.4.0)
       redis-client (>= 0.22.0)
-    redis-client (0.23.2)
+    redis-client (0.24.0)
       connection_pool
     redlock (2.0.6)
       redis-client (>= 0.14.1, < 1.0.0)
@@ -343,7 +349,7 @@ GEM
     responders (3.1.1)
       actionpack (>= 5.2)
       railties (>= 5.2)
-    rexml (3.4.0)
+    rexml (3.4.1)
     rspec-core (3.13.3)
       rspec-support (~> 3.13.0)
     rspec-expectations (3.13.3)
@@ -361,42 +367,51 @@ GEM
       rspec-expectations (~> 3.13)
       rspec-mocks (~> 3.13)
       rspec-support (~> 3.13)
+    rspec-rebound (0.2.1)
+      rspec-core (~> 3.3)
     rspec-support (3.13.2)
     rspec_junit_formatter (0.6.0)
       rspec-core (>= 2, < 4, != 2.12.0)
-    rubocop (1.70.0)
+    rubocop (1.75.1)
       json (~> 2.3)
-      language_server-protocol (>= 3.17.0)
+      language_server-protocol (~> 3.17.0.2)
+      lint_roller (~> 1.1.0)
       parallel (~> 1.10)
       parser (>= 3.3.0.2)
       rainbow (>= 2.2.2, < 4.0)
       regexp_parser (>= 2.9.3, < 3.0)
-      rubocop-ast (>= 1.36.2, < 2.0)
+      rubocop-ast (>= 1.43.0, < 2.0)
       ruby-progressbar (~> 1.7)
       unicode-display_width (>= 2.4.0, < 4.0)
-    rubocop-ast (1.37.0)
-      parser (>= 3.3.1.0)
-    rubocop-capybara (2.21.0)
-      rubocop (~> 1.41)
-    rubocop-govuk (5.0.8)
-      rubocop (= 1.70.0)
-      rubocop-ast (= 1.37.0)
-      rubocop-capybara (= 2.21.0)
-      rubocop-rails (= 2.28.0)
-      rubocop-rake (= 0.6.0)
-      rubocop-rspec (= 3.3.0)
-    rubocop-performance (1.23.1)
-      rubocop (>= 1.48.1, < 2.0)
-      rubocop-ast (>= 1.31.1, < 2.0)
-    rubocop-rails (2.28.0)
+    rubocop-ast (1.43.0)
+      parser (>= 3.3.7.2)
+      prism (~> 1.4)
+    rubocop-capybara (2.22.1)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.72, >= 1.72.1)
+    rubocop-govuk (5.1.2)
+      rubocop (= 1.75.1)
+      rubocop-ast (= 1.43.0)
+      rubocop-capybara (= 2.22.1)
+      rubocop-rails (= 2.31.0)
+      rubocop-rake (= 0.7.1)
+      rubocop-rspec (= 3.5.0)
+    rubocop-performance (1.25.0)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
+    rubocop-rails (2.31.0)
       activesupport (>= 4.2.0)
+      lint_roller (~> 1.1)
       rack (>= 1.1)
-      rubocop (>= 1.52.0, < 2.0)
-      rubocop-ast (>= 1.31.1, < 2.0)
-    rubocop-rake (0.6.0)
-      rubocop (~> 1.0)
-    rubocop-rspec (3.3.0)
-      rubocop (~> 1.61)
+      rubocop (>= 1.75.0, < 2.0)
+      rubocop-ast (>= 1.38.0, < 2.0)
+    rubocop-rake (0.7.1)
+      lint_roller (~> 1.1)
+      rubocop (>= 1.72.1)
+    rubocop-rspec (3.5.0)
+      lint_roller (~> 1.1)
+      rubocop (~> 1.72, >= 1.72.1)
     ruby-lsp (0.23.11)
       language_server-protocol (~> 3.17.0)
       prism (>= 1.2, < 2.0)
@@ -411,14 +426,14 @@ GEM
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
     securerandom (0.4.1)
-    sequel (5.89.0)
+    sequel (5.91.0)
       bigdecimal
     sequel-rails (1.2.4)
       actionpack (>= 4.0.0)
       activemodel (>= 4.0.0)
       railties (>= 4.0.0)
       sequel (>= 3.28, < 6.0)
-    sidekiq (7.3.8)
+    sidekiq (7.3.9)
       base64
       connection_pool (>= 2.3.0)
       logger
@@ -433,7 +448,7 @@ GEM
       hashie
       version_gem (~> 1.1, >= 1.1.1)
     sorbet-runtime (0.5.11919)
-    stringio (3.1.5)
+    stringio (3.1.6)
     thor (1.3.2)
     tilt (2.6.0)
     timeout (0.4.3)
@@ -444,12 +459,12 @@ GEM
     unicode-emoji (4.0.4)
     uri (1.0.3)
     useragent (0.16.11)
-    version_gem (1.1.4)
+    version_gem (1.1.6)
     warden (1.2.9)
       rack (>= 2.0.9)
     warden-oauth2 (0.0.1)
       warden
-    webmock (3.25.0)
+    webmock (3.25.1)
       addressable (>= 2.8.0)
       crack (>= 0.3.2)
       hashdiff (>= 0.4.0, < 2.0.0)
@@ -465,6 +480,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   aws-actionmailer-ses
+  aws-sdk-cloudfront (~> 1.111)
   aws-sdk-rails
   aws-sdk-s3
   bootsnap
@@ -489,6 +505,7 @@ DEPENDENCIES
   nokogiri
   omniauth-rails_csrf_protection
   opensearch-ruby
+  ostruct
   pg
   plek
   pry-rails
@@ -503,13 +520,14 @@ DEPENDENCIES
   responders
   rspec-json_expectations
   rspec-rails
+  rspec-rebound
   rspec_junit_formatter
   rubocop-govuk
   rubocop-performance
   ruby-lsp-rails
   ruby-lsp-rspec
   rubyzip
-  sequel (= 5.89.0)
+  sequel
   sequel-rails
   sidekiq
   sidekiq-scheduler

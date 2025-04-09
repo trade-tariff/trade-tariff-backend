@@ -87,6 +87,10 @@ class Appendix5aPopulatorService
     logger.info message
 
     SlackNotifierService.call(message)
+    Appendix5aMailer.appendix5a_notify_message(added_guidance.count,
+                                               changed_guidance.count,
+                                               removed_guidance.count)
+                                              .deliver_now
   end
 
   def no_guidance_changes?

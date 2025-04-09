@@ -1,5 +1,5 @@
 module "backend_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.12.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.13.1"
 
   region = var.region
 
@@ -15,7 +15,7 @@ module "backend_uk" {
   min_capacity = var.min_capacity
   max_capacity = var.max_capacity
 
-  docker_image = data.aws_ssm_parameter.ecr_url.value
+  docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   skip_destroy = true
 
@@ -25,53 +25,9 @@ module "backend_uk" {
   cpu    = var.cpu
   memory = var.memory
 
-  task_role_policy_arns = [
-    aws_iam_policy.exec.arn,
-    aws_iam_policy.s3.arn,
-    aws_iam_policy.task_role_kms_keys.arn,
-    aws_iam_policy.emails.arn
-  ]
+  task_role_policy_arns = [aws_iam_policy.task.arn]
 
-  execution_role_policy_arns = [
-    aws_iam_policy.secrets.arn,
-  ]
-
-  service_environment_config = flatten([
-    local.backend_common_vars,
-    [
-      {
-        name  = "GOVUK_APP_DOMAIN"
-        value = "tariff-uk-backend-${var.environment}.apps.internal" # This is necessary for a GOVUK gem we're not using
-      },
-      {
-        name  = "SERVICE"
-        value = "uk"
-      },
-      {
-        name  = "SLACK_USERNAME"
-        value = "UK Backend API ${title(var.environment)}"
-      },
-      {
-        name  = "TARIFF_FROM_EMAIL"
-        value = "Tariff UK [${title(var.environment)}] <${local.no_reply}>"
-      },
-      {
-        name  = "ENVIRONMENT"
-        value = var.environment
-      }
-    ]
-  ])
+  service_environment_config = local.backend_uk_secret_env_vars
 
   enable_ecs_exec = true
-
-  service_secrets_config = flatten([
-    local.backend_common_secrets,
-    local.backend_uk_common_secrets,
-    [
-      {
-        name      = "DATABASE_URL"
-        valueFrom = local.database_url
-      }
-    ]
-  ])
 }
