@@ -1,1 +1,0 @@
-**Full cumulation** allows for the working or processing carried out on the materials that is more than insufficient in the countries participating in agreement to be considered as carried out in the final country of production.

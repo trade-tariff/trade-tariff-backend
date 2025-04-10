@@ -6,7 +6,7 @@ module RulesOfOrigin
   class HeadingMappings
     SERVICES = %w[uk xi both].freeze
     SUB_HEADING_FORMAT = %r{\A\d{6}\z}
-    DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
+    DEFAULT_SOURCE_PATH = Rails.root.join('lib/rules_of_origin').freeze
     DEFAULT_FILE = 'rules_to_commodities_211124.csv'
 
     class << self

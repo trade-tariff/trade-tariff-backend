@@ -3,7 +3,7 @@ require 'rails_helper'
 RSpec.describe RulesOfOrigin::SchemeSet do
   subject(:scheme_set) { described_class.from_file test_file }
 
-  let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_uk.json') }
+  let(:test_file) { Rails.root.join('lib/rules_of_origin/roo_schemes_uk.json') }
 
   describe 'attributes' do
     it { is_expected.to respond_to :schemes }
@@ -22,7 +22,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     end
 
     context 'with non existant file' do
-      let(:test_file) { Rails.root.join('db/rules_of_origin/random.csv') }
+      let(:test_file) { Rails.root.join('lib/rules_of_origin/random.csv') }
 
       it { expect { scheme_set }.to raise_exception described_class::InvalidSchemesFile }
     end
@@ -36,7 +36,7 @@ RSpec.describe RulesOfOrigin::SchemeSet do
     context 'for XI service' do
       before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 
-      let(:test_file) { Rails.root.join('db/rules_of_origin/roo_schemes_xi.json') }
+      let(:test_file) { Rails.root.join('lib/rules_of_origin/roo_schemes_xi.json') }
 
       it { is_expected.to be_instance_of described_class }
     end
