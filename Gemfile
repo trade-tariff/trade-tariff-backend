@@ -61,7 +61,7 @@ group :development do
 end
 
 group :development, :test do
-  gem 'awesome_print'
+  gem 'amazing_print'
   gem 'dotenv-rails'
   gem 'pry-rails'
   gem 'ruby-lsp-rails'
