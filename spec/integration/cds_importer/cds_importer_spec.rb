@@ -56,6 +56,20 @@ RSpec.describe CdsImporter do
 
         expect(CdsImporter::EntityMapper).to have_received(:new)
       end
+
+      context 'when batch size is reached' do
+        before do
+          allow(TradeTariffBackend).to receive(:cds_importer_batch_size).and_return(1)
+        end
+
+        it 'invokes RecordInserter' do
+          allow(CdsImporter::RecordInserter).to receive(:new).with(kind_of(Array), cds_update.filename).and_call_original
+
+          processor.process_xml_node('AdditionalCode', {})
+
+          expect(CdsImporter::RecordInserter).to have_received(:new)
+        end
+      end
     end
 
     context 'when some error appears' do
