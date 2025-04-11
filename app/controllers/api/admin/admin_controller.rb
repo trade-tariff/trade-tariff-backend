@@ -6,8 +6,6 @@ module Api
       def authenticate_user!
         TradeTariffBackend.disable_admin_api_authentication? || super
       end
-
-      no_caching
     end
   end
 end
