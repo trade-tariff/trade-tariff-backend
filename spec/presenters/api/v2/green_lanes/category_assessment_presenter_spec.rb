@@ -108,6 +108,14 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
         end
 
         it { is_expected.to be_empty }
+
+        context 'with feature flag off' do
+          before do
+            allow(TradeTariffBackend).to receive(:green_lanes_exclude_grouped_exemptions?).and_return(false)
+          end
+
+          it { is_expected.to include certificate }
+        end
       end
     end
   end
