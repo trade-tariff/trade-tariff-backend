@@ -1,6 +1,9 @@
 class InvalidateCacheWorker
   include Sidekiq::Worker
 
+  SERVICES = ['/uk', '/xi', ''].freeze
+  PATHS = %w[/api/v1/* /api/v2/*].freeze
+
   def perform(client = self.class.client)
     cdn = client.list_distributions.distribution_list.items.find do |d|
       d.comment == "#{ENV.fetch('ENVIRONMENT', '').capitalize} CDN"
@@ -12,7 +15,7 @@ class InvalidateCacheWorker
         invalidation_batch: {
           paths: {
             quantity: 1,
-            items: ['/*'],
+            items: paths,
           },
           caller_reference: 'InvalidateCacheWorker',
         },
@@ -24,5 +27,11 @@ class InvalidateCacheWorker
 
   def self.client
     @client ||= Aws::CloudFront::Client.new
+  end
+
+  def paths
+    SERVICES.product(PATHS).map do |service, path|
+      "#{service}#{path}"
+    end
   end
 end
