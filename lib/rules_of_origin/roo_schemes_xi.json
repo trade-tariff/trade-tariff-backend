@@ -1,0 +1,965 @@
+{
+    "scope": "xi",
+    "links": [
+        {
+            "text": "Check your goods meet the rules of origin",
+            "url": "https://www.gov.uk/guidance/check-your-goods-meet-the-rules-of-origin"
+        },
+        {
+            "text": "Moving goods into, out of, or through Northern Ireland",
+            "url": "https://www.gov.uk/government/collections/moving-goods-into-out-of-or-through-northern-ireland"
+        },
+        {
+            "text": "Rules of Origin - Daera",
+            "url": "https://www.daera-ni.gov.uk/articles/rules-origin"
+        },
+        {
+            "text": "Northern Ireland Protocol: application of EU preferential rules of origin",
+            "url": "https://publications.parliament.uk/pa/cm5801/cmselect/cmeuleg/229-xxxvi/22907.htm"
+        }
+    ],
+    "schemes": [
+        {
+            "scheme_code": "eu",
+            "adopted_by_uk": false,
+            "title": "UK / EU Trade and Co-operation Agreement",
+            "introductory_notes_file": "eu_intro.md",
+            "fta_intro_file": "eu.md",
+            "links": [
+                {
+                    "text": "UK/EU and EAEC: Trade and Cooperation Agreement",
+                    "url": "https://www.gov.uk/government/publications/ukeu-and-eaec-trade-and-cooperation-agreement-ts-no82021"
+                },
+                {
+                    "text": "Claiming preferential rates of duty between the UK and EU",
+                    "url": "https://www.gov.uk/guidance/claiming-preferential-rates-of-duty-between-the-uk-and-eu"
+                },
+                {
+                    "text": "Rules of origin for goods moving between the UK and EU",
+                    "url": "https://www.gov.uk/government/publications/rules-of-origin-for-goods-moving-between-the-uk-and-eu"
+                }
+            ],
+            "countries": [
+                "EU",
+                "AT",
+                "BE",
+                "BG",
+                "CY",
+                "CZ",
+                "DE",
+                "DK",
+                "EE",
+                "ES",
+                "FI",
+                "FR",
+                "GR",
+                "HR",
+                "HU",
+                "IE",
+                "IT",
+                "LT",
+                "LU",
+                "LV",
+                "MT",
+                "NL",
+                "PL",
+                "PT",
+                "RO",
+                "SE",
+                "SI",
+                "SK",
+                "SM",
+                "AD"
+            ]
+        },
+        {
+            "scheme_code": "japan",
+            "adopted_by_uk": true,
+            "title": "EU-Japan Economic Partnership Agreement",
+            "introductory_notes_file": "japan_intro.md",
+            "fta_intro_file": "japan.md",
+            "links": [
+                {
+                    "text": "The EU-Japan Economic Partnership Agreement",
+                    "url": "https://ec.europa.eu/trade/policy/in-focus/eu-japan-economic-partnership-agreement/index_en.htm"
+                }
+            ],
+            "explainers": [
+                {
+                    "text": "Requirements for originating products",
+                    "url": "01-overview.md"
+                },
+                {
+                    "text": "Wholly-obtained products",
+                    "url": "02-wholly-obtained.md"
+                },
+                {
+                    "text": "Insufficient working or processing",
+                    "url": "03-insufficient-working.md"
+                },
+                {
+                    "text": "Accumulation",
+                    "url": "04-cumulation"
+                },
+                {
+                    "text": "Tolerances",
+                    "url": "05-tolerances.md"
+                },
+                {
+                    "text": "Unit of qualification",
+                    "url": "06-unit-of-qualification.md"
+                },
+                {
+                    "text": "Account segregation",
+                    "url": "07-account-segregation.md"
+                },
+                {
+                    "text": "Sets",
+                    "url": "08-sets.md"
+                },
+                {
+                    "text": "Non-alteration",
+                    "url": "09-non-alteration.md"
+                },
+                {
+                    "text": "Returning products",
+                    "url": "10-returning-products.md"
+                },
+                {
+                    "text": "Accessories",
+                    "url": "11-accessories.md"
+                },
+                {
+                    "text": "Neutral elements",
+                    "url": "12-neutral-elements.md"
+                },
+                {
+                    "text": "Packing materials and shipment",
+                    "url": "13-packing-materials-shipment.md"
+                }
+            ],
+            "countries": [
+                "JP"
+            ]
+        },
+        {
+            "scheme_code": "algeria",
+            "adopted_by_uk": true,
+            "title": "EU-Algeria Association Agreement",
+            "introductory_notes_file": "algeria_intro.md",
+            "fta_intro_file": "algeria.md",
+            "links": [
+                {
+                    "text": "EU-Algeria Association Agreement",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/algeria/index_en.htm"
+                }
+            ],
+            "countries": [
+                "DZ"
+            ]
+        },
+        {
+            "scheme_code": "bosnia",
+            "adopted_by_uk": true,
+            "title": "EU-Bosnia Stabilization and Association Agreement (SAA)",
+            "introductory_notes_file": "bosnia_intro.md",
+            "fta_intro_file": "bosnia.md",
+            "links": [
+                {
+                    "text": "EU-Bosnia Stabilization and Association Agreement (SAA)",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/bosnia/index_en.htm"
+                }
+            ],
+            "countries": [
+                "BA"
+            ]
+        },
+        {
+            "scheme_code": "albania",
+            "adopted_by_uk": true,
+            "title": "EU-Albania Stabilisation and Association Agreement",
+            "introductory_notes_file": "albania_intro.md",
+            "fta_intro_file": "albania.md",
+            "links": [
+                {
+                    "text": "EU Trade with the West Balkans",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/western-balkans/"
+                }
+            ],
+            "countries": [
+                "AL"
+            ]
+        },
+        {
+            "scheme_code": "canada",
+            "adopted_by_uk": true,
+            "title": "EU-Canada Comprehensive Economic and Trade Agreement (CETA)",
+            "introductory_notes_file": "canada_intro.md",
+            "fta_intro_file": "canada.md",
+            "links": [
+                {
+                    "text": "Trading with Canada in the EU",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/canada/index_en.htm"
+                },
+                {
+                    "text": "EU-Canada Comprehensive Economic and Trade Agreement (CETA)",
+                    "url": "https://ec.europa.eu/trade/policy/in-focus/ceta/"
+                }
+            ],
+            "countries": [
+                "CA"
+            ]
+        },
+        {
+            "scheme_code": "south-korea",
+            "adopted_by_uk": true,
+            "title": "EU-South Korea free trade agreement",
+            "introductory_notes_file": "south-korea_intro.md",
+            "fta_intro_file": "south-korea.md",
+            "links": [
+                {
+                    "text": "EU-South Korea free trade agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=OJ%3AL%3A2011%3A127%3ATOC"
+                },
+                {
+                    "text": "Trade with South Korea",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/south-korea/"
+                }
+            ],
+            "countries": [
+                "KR"
+            ]
+        },
+        {
+            "scheme_code": "kenya",
+            "adopted_by_uk": true,
+            "title": "Economic Partnership Agreement",
+            "notes": "Copy of Ivory Coast Agreement",
+            "introductory_notes_file": "kenya_intro.md",
+            "fta_intro_file": "kenya.md",
+            "links": [
+                {
+                    "text": "Trade with the East African Community",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/eac/index_en.htm"
+                }
+            ],
+            "countries": [
+                "KE"
+            ]
+        },
+        {
+            "scheme_code": "esa",
+            "adopted_by_uk": true,
+            "title": "ESA-EU economic partnership agreement (EPA)",
+            "introductory_notes_file": "esa_intro.md",
+            "fta_intro_file": "esa.md",
+            "links": [
+                {
+                    "text": "EU-ESA Economic Partnership Agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=OJ%3AL%3A2012%3A111%3ATOC"
+                },
+                {
+                    "text": "Trade with Eastern and Southern Africa (ESA)",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/esa/"
+                }
+            ],
+            "countries": [
+                "esa",
+                "SC",
+                "MU",
+                "ZW"
+            ]
+        },
+        {
+            "scheme_code": "central-america",
+            "adopted_by_uk": true,
+            "title": "EU-Central America association agreement",
+            "introductory_notes_file": "central_america_intro.md",
+            "fta_intro_file": "central_america.md",
+            "links": [
+                {
+                    "text": "EU-Central America association agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX:22012A1215(01)"
+                },
+                {
+                    "text": "Trade with Central America",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/central-america/"
+                }
+            ],
+            "countries": [
+                "central-america",
+                "CR",
+                "GT",
+                "HN",
+                "NI",
+                "PA",
+                "SV"
+            ]
+        },
+        {
+            "scheme_code": "andean",
+            "adopted_by_uk": true,
+            "title": "EU-Andean countries trade agreement",
+            "introductory_notes_file": "andean_intro.md",
+            "fta_intro_file": "andean.md",
+            "links": [
+                {
+                    "text": "EU-Andean comprehensive trade agreement",
+                    "url": "https://trade.ec.europa.eu/doclib/docs/2011/march/tradoc_147704.pdf"
+                },
+                {
+                    "text": "Trade with the Andean Community",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/andean-community/"
+                }
+            ],
+            "countries": [
+                "andean",
+                "CO",
+                "PE",
+                "EC"
+            ]
+        },
+        {
+            "scheme_code": "cameroon",
+            "adopted_by_uk": true,
+            "title": "EU-Cameroon Interim Economic Partnership Agreement",
+            "introductory_notes_file": "cameroon_intro.md",
+            "fta_intro_file": "cameroon.md",
+            "links": [
+                {
+                    "text": "EU-Cameroon Interim Economic Partnership Agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=OJ%3AL%3A2009%3A057%3ATOC"
+                },
+                {
+                    "text": "Trade with Central Africa",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/central-africa/"
+                }
+            ],
+            "countries": [
+                "CM"
+            ]
+        },
+        {
+            "scheme_code": "cariforum",
+            "adopted_by_uk": true,
+            "title": "CARIFORUM-EU economic partnership agreement",
+            "introductory_notes_file": "cariforum_intro.md",
+            "fta_intro_file": "cariforum.md",
+            "links": [
+                {
+                    "text": "CARIFORUM-EU Economic Partnership Agreement",
+                    "url": "https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2008:289:0003:1955:EN:PDF"
+                },
+                {
+                    "text": "Trade with Caribbean countries",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/caribbean/"
+                }
+            ],
+            "countries": [
+                "AG",
+                "BB",
+                "BS",
+                "BZ",
+                "DM",
+                "DO",
+                "GD",
+                "GY",
+                "JM",
+                "KN",
+                "LC",
+                "SR",
+                "TT",
+                "VC"
+            ]
+        },
+        {
+            "scheme_code": "chile",
+            "adopted_by_uk": true,
+            "title": "EU - Chile Association Agreement",
+            "introductory_notes_file": "chile_intro.md",
+            "fta_intro_file": "chile.md",
+            "links": [
+                {
+                    "text": "The EU's trading relationship with Chile",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/chile/index_en.htm"
+                },
+                {
+                    "text": "The EU - Chile Association Agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:22002A1230(01)"
+                }
+            ],
+            "countries": [
+                "CL"
+            ]
+        },
+        {
+            "scheme_code": "cotedivoire",
+            "adopted_by_uk": true,
+            "title": "EU-Côte d’Ivoire stepping stone economic partnership agreement",
+            "introductory_notes_file": "cotedivoire_intro.md",
+            "fta_intro_file": "cotedivoire.md",
+            "links": [
+                {
+                    "text": "EU-Côte d’Ivoire stepping stone economic partnership agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:22009A0303%2801%29"
+                },
+                {
+                    "text": "Trade with West Africa",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/west-africa/"
+                }
+            ],
+            "countries": [
+                "CI"
+            ]
+        },
+        {
+            "scheme_code": "egypt",
+            "adopted_by_uk": true,
+            "title": "EU-Egypt Association Agreement",
+            "introductory_notes_file": "egypt_intro.md",
+            "fta_intro_file": "egypt.md",
+            "links": [
+                {
+                    "text": "EU-Egypt Association Agreement",
+                    "url": "https://eur-lex.europa.eu/LexUriServ/LexUriServ.do?uri=OJ:L:2003:345:0115:0116:EN:PDF"
+                },
+                {
+                    "text": "Trade with Egypt",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/egypt/"
+                }
+            ],
+            "countries": [
+                "EG"
+            ]
+        },
+        {
+            "scheme_code": "faroe-islands",
+            "adopted_by_uk": true,
+            "title": "EU-Faroe Islands Trade Agreement",
+            "introductory_notes_file": "faroe-islands_intro.md",
+            "fta_intro_file": "faroe-islands.md",
+            "links": [
+                {
+                    "text": "EU-Faroe Islands Trade Agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/ALL/?uri=CELEX%3A21997A0222%2801%29+"
+                }
+            ],
+            "countries": [
+                "FO"
+            ]
+        },
+        {
+            "scheme_code": "georgia",
+            "adopted_by_uk": true,
+            "title": "EU-Georgia Association Agreement",
+            "introductory_notes_file": "georgia_intro.md",
+            "fta_intro_file": "georgia.md",
+            "links": [
+                {
+                    "text": "EU-Georgia Association Agreement",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/georgia/index_en.htm"
+                },
+                {
+                    "text": "Trade with Georgia",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/georgia/"
+                }
+            ],
+            "countries": [
+                "GE"
+            ]
+        },
+        {
+            "scheme_code": "ghana",
+            "adopted_by_uk": true,
+            "title": "EU-Ghana Stepping stone Economic Partnership Agreement",
+            "introductory_notes_file": "ghana_intro.md",
+            "fta_intro_file": "ghana.md",
+            "links": [
+                {
+                    "text": "Trade with West Africa",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=uriserv:OJ.L_.2016.287.01.0003.01.ENG"
+                },
+                {
+                    "text": "Trade with West Africa",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/west-africa/"
+                }
+            ],
+            "countries": [
+                "GH"
+            ]
+        },
+        {
+            "scheme_code": "iceland-norway",
+            "adopted_by_uk": true,
+            "title": "European Economic Area (EEA) Agreement",
+            "introductory_notes_file": "eea_intro.md",
+            "fta_intro_file": "eea.md",
+            "links": [
+                {
+                    "text": "European Economic Area (EEA) Agreement",
+                    "url": "https://trade.ec.europa.eu/access-to-markets/en/content/european-economic-area-eea-agreement"
+                }
+            ],
+            "countries": [
+                "IS",
+                "NO",
+                "LI"
+            ]
+        },
+        {
+            "scheme_code": "israel",
+            "adopted_by_uk": true,
+            "title": "EU-Israel Association Agreement",
+            "introductory_notes_file": "israel_intro.md",
+            "fta_intro_file": "israel.md",
+            "links": [
+                {
+                    "text": "EU-Israel Association Agreement",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/israel/index_en.htm"
+                },
+                {
+                    "text": "Trade with Israel",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/israel/"
+                }
+            ],
+            "countries": [
+                "IL"
+            ]
+        },
+        {
+            "scheme_code": "kosovo",
+            "adopted_by_uk": true,
+            "title": "EU-Stabilisation and Association Agreement (SAA)",
+            "introductory_notes_file": "kosovo_intro.md",
+            "fta_intro_file": "kosovo.md",
+            "links": [
+                {
+                    "text": "EU-Kosovo Stabilisation and Association Agreement (SAA)",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=LEGISSUM%3A4314927"
+                },
+                {
+                    "text": "Trade with the West Balkans",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/western-balkans/"
+                }
+
+            ],
+            "countries": [
+                "XK"
+            ]
+        },
+        {
+            "scheme_code": "jordan",
+            "adopted_by_uk": true,
+            "title": "EU-Jordan Association Agreement",
+            "introductory_notes_file": "jordan_intro.md",
+            "fta_intro_file": "jordan.md",
+            "links": [
+                {
+                    "text": "EU-Jordan Association Agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=CELEX:22002A0515(02)&from=EN"
+                },
+                {
+                    "text": "Trade with Jordan",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/jordan/"
+                }
+            ],
+            "countries": [
+                "JO"
+            ]
+        },
+        {
+            "scheme_code": "lebanon",
+            "adopted_by_uk": true,
+            "title": "EU-Lebanon association agreement",
+            "introductory_notes_file": "lebanon_intro.md",
+            "fta_intro_file": "lebanon.md",
+            "links": [
+                {
+                    "text": "EU-Lebanon association agreement",
+                    "url": "https://eeas.europa.eu/sites/default/files/euro_mediterranean_agreement_en.pdf"
+                },
+                {
+                    "text": "Trade with Lebanon",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/lebanon/"
+                }
+            ],
+            "countries": [
+                "LB"
+            ]
+        },
+        {
+            "scheme_code": "mexico",
+            "adopted_by_uk": true,
+            "title": "EU-Mexico Trade Agreement",
+            "introductory_notes_file": "mexico_intro.md",
+            "fta_intro_file": "mexico.md",
+            "links": [
+                {
+                    "text": "EU-Mexico Trade Agreement",
+                    "url": "https://ec.europa.eu/trade/policy/in-focus/eu-mexico-trade-agreement/"
+                },
+                {
+                    "text": "Trade with Mexico",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/mexico/"
+                }
+            ],
+            "countries": [
+                "MX"
+            ]
+        },
+        {
+            "scheme_code": "switzerland-liechtenstein",
+            "adopted_by_uk": true,
+            "title": "EU-Switzerland Free Trade Agreement",
+            "introductory_notes_file": "switzerland_intro.md",
+            "fta_intro_file": "switzerland.md",
+            "links": [
+                {
+                    "text": "Agreement between the European Community and the Swiss Confederation on mutual recognition in relation to conformity assessment",
+                    "url": "https://trade.ec.europa.eu/doclib/docs/2013/december/tradoc_152006.pdf"
+                },
+                {
+                    "text": "Trade with Switzerland",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/switzerland/"
+                }
+            ],
+            "countries": [
+                "CH"
+            ]
+        },
+        {
+            "scheme_code": "moldova",
+            "adopted_by_uk": true,
+            "title": "EU-Moldova Association Agreement",
+            "introductory_notes_file": "moldova_intro.md",
+            "fta_intro_file": "moldova.md",
+            "links": [
+                {
+                    "text": "EU-Moldova Association Agreement",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02014A0830(01)-20180824"
+                },
+                {
+                    "text": "Trade with Moldova",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/moldova/"
+                }
+            ],
+            "countries": [
+                "MD"
+            ]
+        },
+        {
+            "scheme_code": "montenegro",
+            "adopted_by_uk": true,
+            "title": "EU-Montenegro Stabilisation and Association Agreement",
+            "introductory_notes_file": "montenegro_intro.md",
+            "fta_intro_file": "montenegro.md",
+            "links": [
+                {
+                    "text": "Trading with the West Balkans",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/western-balkans/"
+                }
+            ],
+            "countries": [
+                "ME"
+            ]
+        },
+        {
+            "scheme_code": "morocco",
+            "adopted_by_uk": true,
+            "title": "EU-Morocco Association Agreement",
+            "introductory_notes_file": "morocco_intro.md",
+            "fta_intro_file": "morocco.md",
+            "links": [
+                {
+                    "text": "EU-Morocco Association Agreement",
+                    "url": "https://eur-lex.europa.eu/oj/direct-access.html?locale=en"
+                },
+                {
+                    "text": "Trade with Morocco",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/morocco/index_en.htm"
+                }
+            ],
+            "countries": [
+                "MA"
+            ]
+        },
+        {
+            "scheme_code": "north-macedonia",
+            "adopted_by_uk": true,
+            "title": "EU-North Macedonia Stabilisation and Association Agreement",
+            "introductory_notes_file": "north-macedonia_intro.md",
+            "fta_intro_file": "north-macedonia.md",
+            "links": [
+                {
+                    "text": "Trading with the West Balkans",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/western-balkans/"
+                }
+            ],
+            "countries": [
+                "MK"
+            ]
+        },
+        {
+            "scheme_code": "pacific",
+            "adopted_by_uk": true,
+            "title": "EU-Pacific states Economic Partnership Agreement (EPA)",
+            "introductory_notes_file": "pacific_intro.md",
+            "fta_intro_file": "pacific.md",
+            "links": [
+                {
+                    "text": "EU-Pacific states economic partnership agreement (EPA)",
+                    "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/PDF/?uri=OJ:L:2009:272:FULL&from=EN"
+                },
+                {
+                    "text": "Trade with Pacific countries",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/pacific/"
+                }
+            ],
+            "countries": [
+                "FJ",
+                "PG",
+                "WS"
+            ]
+        },
+        {
+            "scheme_code": "palestinian-authority",
+            "adopted_by_uk": true,
+            "title": "EU-Palestinian Authority Interim Association Agreement",
+            "introductory_notes_file": "palestinian-authority_intro.md",
+            "fta_intro_file": "palestinian-authority.md",
+            "links": [
+                {
+                    "text": "EU-Palestinian interim association agreement",
+                    "url": "https://trade.ec.europa.eu/doclib/docs/2019/june/tradoc_157923.pdf"
+                },
+                {
+                    "text": "Trade with Palestine",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/palestine/"
+                }
+            ],
+            "countries": [
+                "PS"
+            ]
+        },
+        {
+            "scheme_code": "singapore",
+            "adopted_by_uk": true,
+            "title": "EU-Singapore Trade and Investment Agreements",
+            "introductory_notes_file": "singapore_intro.md",
+            "fta_intro_file": "singapore.md",
+            "links": [
+                {
+                    "text": "EU-Singapore Trade and Investment Agreements",
+                    "url": "https://ec.europa.eu/trade/policy/in-focus/eu-singapore-agreement/"
+                },
+                {
+                    "text": "Trade with Singapore",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/singapore/"
+                }
+            ],
+            "countries": [
+                "SG"
+            ]
+        },
+        {
+            "scheme_code": "serbia",
+            "adopted_by_uk": true,
+            "title": "EU-Serbia Stabilisation and Association Agreement",
+            "introductory_notes_file": "serbia_intro.md",
+            "fta_intro_file": "serbia.md",
+            "links": [
+                {
+                    "text": "EU Trade with the West Balkans",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/western-balkans/"
+                }
+            ],
+            "countries": [
+                "XS"
+            ]
+        },
+        {
+            "scheme_code": "sacum",
+            "adopted_by_uk": true,
+            "title": "Southern African Development Community (SADC) Economic Partnership Agreement",
+            "introductory_notes_file": "sacum_intro.md",
+            "fta_intro_file": "sacum.md",
+            "links": [
+                {
+                    "text": "Southern African Development Community (SADC) Economic Partnership Agreement",
+                    "url": "https://trade.ec.europa.eu/doclib/docs/2014/october/tradoc_152818.pdf"
+                },
+                {
+                    "text": "Trade with Southern African Development Community (SADC)",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/regions/sadc/"
+                }
+            ],
+            "countries": [
+                "BW",
+                "LS",
+                "MZ",
+                "NA",
+                "SZ",
+                "ZA"
+            ]
+        },
+        {
+            "scheme_code": "tunisia",
+            "adopted_by_uk": true,
+            "title": "EU-Tunisia association agreement",
+            "introductory_notes_file": "tunisia_intro.md",
+            "fta_intro_file": "tunisia.md",
+            "links": [
+                {
+                    "text": "Trade with Tunisia",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/tunisia/"
+                }
+            ],
+            "countries": [
+                "TN"
+            ]
+        },
+        {
+            "scheme_code": "turkey",
+            "adopted_by_uk": true,
+            "title": "EU-Turkey Customs Union",
+            "introductory_notes_file": "turkey_intro.md",
+            "fta_intro_file": "turkey.md",
+            "links": [
+                {
+                    "text": "EU-Turkey Customs Union",
+                    "url": "https://www.avrupa.info.tr/sites/default/files/2016-09/Custom_Union_des_ENG_0.pdf"
+                },
+                {
+                    "text": "Trade with Turkey",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/turkey/"
+                }
+            ],
+            "countries": [
+                "TR"
+            ]
+        },
+        {
+            "scheme_code": "ukraine",
+            "adopted_by_uk": true,
+            "title": "EU-Ukraine association agreement",
+            "introductory_notes_file": "ukraine_intro.md",
+            "fta_intro_file": "ukraine.md",
+            "links": [
+                {
+                    "text": "EU-Ukraine association agreement",
+                    "url": "https://trade.ec.europa.eu/doclib/docs/2016/november/tradoc_155103.pdf"
+                },
+                {
+                    "text": "Trade with Ukraine",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/ukraine/"
+                }
+            ],
+            "countries": [
+                "UA"
+            ]
+        },
+        {
+            "scheme_code": "vietnam",
+            "adopted_by_uk": true,
+            "title": "EU-Vietnam Free Trade Agreement",
+            "introductory_notes_file": "vietnam_intro.md",
+            "fta_intro_file": "vietnam.md",
+            "links": [
+                {
+                    "text": "EU-Vietnam Free Trade Agreement",
+                    "url": "https://trade.ec.europa.eu/doclib/press/index.cfm?id=1437"
+                },
+                {
+                    "text": "Trade with Vietnam",
+                    "url": "https://ec.europa.eu/trade/policy/countries-and-regions/countries/vietnam/"
+                }
+            ],
+            "countries": [
+                "VN"
+            ]
+        },
+        {
+            "scheme_code": "gsp",
+            "adopted_by_uk": true,
+            "title": "Generalised Scheme of Preferences (GSP)",
+            "introductory_notes_file": "gsp_intro.md",
+            "fta_intro_file": "gsp.md",
+            "unilateral": true,
+            "links": [
+                {
+                    "text": "GSP - Least Developed Countries Framework",
+                    "url": ""
+                }
+            ],
+            "countries": [
+                "AF",
+                "AO",
+                "BD",
+                "BF",
+                "BI",
+                "BJ",
+                "BO",
+                "BT",
+                "CD",
+                "CF",
+                "CG",
+                "CK",
+                "CV",
+                "DJ",
+                "DZ",
+                "ER",
+                "ET",
+                "FM",
+                "GM",
+                "GN",
+                "GW",
+                "HT",
+                "ID",
+                "IN",
+                "KG",
+                "KH",
+                "KI",
+                "KM",
+                "LA",
+                "LK",
+                "LR",
+                "LS",
+                "MG",
+                "ML",
+                "MM",
+                "MN",
+                "MR",
+                "MW",
+                "MZ",
+                "NE",
+                "NG",
+                "NP",
+                "NU",
+                "PH",
+                "PK",
+                "RW",
+                "SB",
+                "SD",
+                "SL",
+                "SN",
+                "SO",
+                "SS",
+                "ST",
+                "SY",
+                "TD",
+                "TG",
+                "TJ",
+                "TL",
+                "TV",
+                "TZ",
+                "UG",
+                "UZ",
+                "VN",
+                "VU",
+                "WS",
+                "YE",
+                "ZM"
+            ]
+        }
+    ]
+}

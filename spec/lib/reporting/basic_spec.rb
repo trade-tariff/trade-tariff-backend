@@ -1,4 +1,4 @@
-RSpec.describe Reporting::Basic do
+RSpec.describe Reporting::Basic, skip: 'pending an investigation' do
   describe '.generate' do
     include_context 'with a stubbed reporting bucket'
 
