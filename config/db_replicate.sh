@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+
+[[ "$TRACE" ]] && set -o xtrace
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noclobber
+
+START_TIME=$(date +%s)
+
+declare -A SERVICE_COUNTS
+
+if [ -z "$ENVIRONMENT" ]; then
+  echo "You need to set the ENVIRONMENT environment variable."
+  exit 1
+fi
+
+#SERVICES="backend-uk worker-uk"
+#CLUSTER_NAME="trade-tariff-cluster-$ENVIRONMENT"
+#RESTORE_FILE="tariff-merged-production-2025-03-25.sql.gz"
+#ENVIRONMENT
+#DATABASE_URL
+#DB_DUMP_SERVER=https://dumps.trade-tariff.service.gov.uk/
+#DB_DUMP_USER
+#DB_DUMP_PASSWORD
+
+get_desired_count_for_service() {
+    local service=$1
+
+    aws ecs describe-services --cluster "$CLUSTER_NAME" \
+        --services "$service" \
+        --query 'services[0].desiredCount' \
+        --output text
+}
+
+set_desired_count_for_service_to() {
+    local service=$1
+    local desired_count=$2
+
+    aws ecs update-service --cluster "$CLUSTER_NAME" \
+        --service "$service" \
+        --desired-count "$desired_count" > /dev/null
+}
+
+stop_services() {
+  for service in $SERVICES; do
+      SERVICE_COUNTS[$service]=$(get_desired_count_for_service "$service")
+
+      set_desired_count_for_service_to "$service" 0
+  done
+
+  sleep 20 # Give the services time to stop
+}
+
+restore_database() {
+  /bin/sh -c \"curl --silent -u "${DB_DUMP_USER}":"${DB_DUMP_PASSWORD}" "${DB_DUMP_SERVER}""${RESTORE_FILE}" | gzip -d | psql \$DATABASE_URL\"
+}
+
+start_services() {
+  for service in $SERVICES; do
+      local desired_count
+      desired_count=${SERVICE_COUNTS[$service]}
+
+      if [ "$desired_count" -eq 0 ]; then
+          desired_count=1
+      fi
+
+      set_desired_count_for_service_to "$service" "$desired_count"
+  done
+}
+
+echo "Stopping services"
+stop_services
+
+restore_database
+
+echo "SQL backup restored successfully"
+
+echo "Starting services"
+start_services
+
+END_TIME=$(date +%s)
+ELAPSED_TIME=$((END_TIME - START_TIME))
+
+echo "Database replication complete. Time: ${ELAPSED_TIME}s"
