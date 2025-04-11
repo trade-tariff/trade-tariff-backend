@@ -2,6 +2,8 @@ module Api
   module V2
     module News
       class ItemsController < ApiController
+        time_based_caching
+
         PAGE_SIZES = [1, 10, 20].freeze
         DEFAULT_PAGE_SIZE = 20
 

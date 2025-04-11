@@ -1,6 +1,8 @@
 module Api
   module V2
     class SearchController < ApiController
+      no_caching
+
       def search
         results = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
         SearchInstrumentationService.log_search_results(params[:q], results)
