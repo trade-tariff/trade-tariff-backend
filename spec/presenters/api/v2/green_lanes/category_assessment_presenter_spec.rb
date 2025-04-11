@@ -42,32 +42,81 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
   describe '#certificates' do
     subject { presented.certificates }
 
-    before do
-      create :measure_condition, measure: assessment.measures.first, certificate:
+    context 'with single certificates' do
+      before do
+        create :measure_condition, measure: assessment.measures.first, certificate:
+      end
+
+      context 'with exemption certificate' do
+        let(:certificate) { create :certificate, :exemption }
+
+        it { is_expected.to include certificate }
+      end
+
+      context 'with exemption certificate and overridden' do
+        let(:certificate) { create :certificate, :exemption, exempting_certificate_override: true }
+
+        it { is_expected.not_to include certificate }
+      end
+
+      context 'with licence certificate' do
+        let(:certificate) { create :certificate, :licence }
+
+        it { is_expected.not_to include certificate }
+      end
+
+      context 'with licence certificate and overridden' do
+        let(:certificate) { create :certificate, :licence, exempting_certificate_override: true }
+
+        it { is_expected.to include certificate }
+      end
     end
 
-    context 'with exemption certificate' do
+    context 'with multiple certificates' do
       let(:certificate) { create :certificate, :exemption }
+      let(:measure_sid) { assessment.measures.first.measure_sid }
 
-      it { is_expected.to include certificate }
-    end
+      before do
+        create(:measure_condition, measure_sid:,
+                                   certificate:,
+                                   condition_code: 'AB')
 
-    context 'with exemption certificate and overridden' do
-      let(:certificate) { create :certificate, :exemption, exempting_certificate_override: true }
+        create(:measure_condition, measure_sid:,
+                                   certificate:,
+                                   condition_code: 'CD')
+      end
 
-      it { is_expected.not_to include certificate }
-    end
+      context 'with singular exemptions' do
+        it { is_expected.to include certificate }
+      end
 
-    context 'with licence certificate' do
-      let(:certificate) { create :certificate, :licence }
+      context 'with combined exemptions' do
+        before do
+          create(:measure_condition, measure_sid:,
+                                     certificate:,
+                                     condition_code: 'AB',
+                                     certificate_type_code: 'f',
+                                     certificate_code: 'def',
+                                     condition_duty_amount: 30_000)
 
-      it { is_expected.not_to include certificate }
-    end
+          create(:measure_condition, measure_sid:,
+                                     certificate:,
+                                     condition_code: 'CD',
+                                     certificate_type_code: 'f',
+                                     certificate_code: 'def',
+                                     condition_duty_amount: 30_000)
+        end
 
-    context 'with licence certificate and overridden' do
-      let(:certificate) { create :certificate, :licence, exempting_certificate_override: true }
+        it { is_expected.to be_empty }
 
-      it { is_expected.to include certificate }
+        context 'with feature flag off' do
+          before do
+            allow(TradeTariffBackend).to receive(:green_lanes_exclude_grouped_exemptions?).and_return(false)
+          end
+
+          it { is_expected.to include certificate }
+        end
+      end
     end
   end
 

@@ -69,10 +69,24 @@ module Api
         end
 
         def certificates
-          measure_conditions
-            .select(&:is_exempting_with_certificate_overridden?)
-            .map(&:certificate)
-            .uniq
+          if TradeTariffBackend.green_lanes_exclude_grouped_exemptions?
+            permutations = MeasureConditionPermutations::Calculator.new(first_measure)
+              .permutation_groups
+              .flat_map(&:permutations)
+
+            singular_exemptions = permutations
+              .filter_map do |permutation|
+                exemptions = permutation.measure_conditions.select(&:is_exempting_with_certificate_overridden?)
+                exemptions.one? ? exemptions.first : nil
+              end
+
+            singular_exemptions.map(&:certificate).uniq
+          else
+            measure_conditions
+              .select(&:is_exempting_with_certificate_overridden?)
+              .map(&:certificate)
+              .uniq
+          end
         end
 
         def additional_codes
