@@ -74,8 +74,8 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
-    amazing_print (1.7.2)
     ast (2.4.3)
+    awesome_print (1.9.2)
     aws-actionmailer-ses (1.0.0)
       actionmailer (>= 7.1.0)
       aws-sdk-ses (~> 1, >= 1.50.0)
@@ -478,7 +478,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  amazing_print
+  awesome_print
   aws-actionmailer-ses
   aws-sdk-cloudfront (~> 1.111)
   aws-sdk-rails

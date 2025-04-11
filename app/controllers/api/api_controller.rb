@@ -1,5 +1,7 @@
 module Api
   class ApiController < ApplicationController
+    include EtagCaching
+
     respond_to :json
 
     rescue_from Sequel::NoMatchingRow, Sequel::RecordNotFound do |_exception|

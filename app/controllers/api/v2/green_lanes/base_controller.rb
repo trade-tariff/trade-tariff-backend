@@ -2,6 +2,8 @@ module Api
   module V2
     module GreenLanes
       class BaseController < ApiController
+        no_caching
+
         include ActionController::HttpAuthentication::Token::ControllerMethods
 
         before_action :check_service, :authenticate, :set_request_scope
