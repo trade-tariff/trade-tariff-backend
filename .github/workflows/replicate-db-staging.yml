@@ -1,0 +1,38 @@
+name: Run DB Replicate Job
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-job:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_REGION: eu-west-2
+      IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+      CLUSTER: trade-tariff-cluster-staging
+      TASK_DEFINITION: db-replicate-job-uk
+
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Run ECS task
+        run: |
+          aws ecs run-task \
+            --cluster "$CLUSTER" \
+            --launch-type FARGATE \
+            --network-configuration "awsvpcConfiguration={subnets=[trade-tariff-staging-vpc],securityGroups=[trade-tariff-ecs-security-group-staging],assignPublicIp=DISABLED}" \
+            --task-definition "$TASK_DEFINITION" \
+            --overrides "{
+            \"containerOverrides\": [{
+              \"name\": \"db-replicate-job-uk\",
+              \"environment\": [{
+                \"name\": \"CLUSTER_NAME\",
+                \"value\": \"$CLUSTER\"
+              }]
+            }]
+          }"

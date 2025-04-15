@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.IAM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
@@ -23,16 +23,16 @@ jobs:
       - name: Run ECS task
         run: |
           aws ecs run-task \
-            --cluster $CLUSTER \
+            --cluster "$CLUSTER" \
             --launch-type FARGATE \
             --network-configuration "awsvpcConfiguration={subnets=[trade-tariff-dev-vpc],securityGroups=[trade-tariff-ecs-security-group-dev],assignPublicIp=DISABLED}" \
-            --task-definition $TASK_DEFINITION \
-            --overrides '{
-              "containerOverrides": [{
-                "name": "db-replicate-job-uk",
-                "environment": [{
-                  "name": "CLUSTER_NAME",
-                  "value": $CLUSTER
-                }]
+            --task-definition "$TASK_DEFINITION" \
+            --overrides "{
+            \"containerOverrides\": [{
+              \"name\": \"db-replicate-job-uk\",
+              \"environment\": [{
+                \"name\": \"CLUSTER_NAME\",
+                \"value\": \"$CLUSTER\"
               }]
-            }'
+            }]
+          }"
