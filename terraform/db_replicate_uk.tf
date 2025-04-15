@@ -9,6 +9,10 @@ module "db-replicate-job-uk" {
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
+  service_count = 1
+  min_capacity  = 1
+  max_capacity  = 1
+
   docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   skip_destroy = true
