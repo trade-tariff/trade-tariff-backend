@@ -15,15 +15,6 @@ if [ -z "$ENVIRONMENT" ]; then
   exit 1
 fi
 
-#SERVICES="backend-uk worker-uk"
-#CLUSTER_NAME="trade-tariff-cluster-$ENVIRONMENT"
-#RESTORE_FILE="tariff-merged-production-2025-03-25.sql.gz"
-#ENVIRONMENT
-#DATABASE_URL
-#DB_DUMP_SERVER=https://dumps.trade-tariff.service.gov.uk/
-#DB_DUMP_USER
-#DB_DUMP_PASSWORD
-
 get_desired_count_for_service() {
     local service=$1
 

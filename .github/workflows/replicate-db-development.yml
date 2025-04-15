@@ -9,8 +9,9 @@ jobs:
 
     env:
       AWS_REGION: eu-west-2
-      CLUSTER: trade-tariff-cluster-prod
-      TASK_DEFINITION: worker-uk-job
+      IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+      CLUSTER: trade-tariff-cluster-dev
+      TASK_DEFINITION: db-replicate-job-uk
 
     steps:
       - name: Configure AWS credentials
@@ -24,14 +25,14 @@ jobs:
           aws ecs run-task \
             --cluster $CLUSTER \
             --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[subnet-abc123],securityGroups=[sg-abc123],assignPublicIp=DISABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[trade-tariff-dev-vpc],securityGroups=[trade-tariff-ecs-security-group-dev],assignPublicIp=DISABLED}" \
             --task-definition $TASK_DEFINITION \
             --overrides '{
               "containerOverrides": [{
-                "name": "worker-uk",
+                "name": "db-replicate-job-uk",
                 "environment": [{
-                  "name": "TAG",
-                  "value": "${{ github.event.inputs.docker_tag }}"
+                  "name": "CLUSTER_NAME",
+                  "value": $CLUSTER
                 }]
               }]
             }'
