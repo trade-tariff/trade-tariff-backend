@@ -1,4 +1,4 @@
-module "worker_uk" {
+module "db-replicate-job-uk" {
   source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.13.1"
 
   service_name = "db-replicate-job-uk"
