@@ -58,3 +58,11 @@ data "aws_secretsmanager_secret" "backend_xi_api_configuration" {
 data "aws_secretsmanager_secret_version" "backend_xi_api_configuration" {
   secret_id = data.aws_secretsmanager_secret.backend_xi_api_configuration.id
 }
+
+data "aws_secretsmanager_secret" "db_replicate_uk_worker_configuration" {
+  name = "db-replicate-uk-worker-configuration"
+}
+
+data "aws_secretsmanager_secret_version" "db_replicate_uk_worker_configuration" {
+  secret_id = data.aws_secretsmanager_secret.db_replicate_uk_worker_configuration.id
+}
