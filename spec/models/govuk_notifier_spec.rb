@@ -13,7 +13,7 @@ RSpec.describe GovukNotifier do
 
     it 'sends an email' do
       allow(notifier).to receive(:audit).and_return(nil)
-      notifier.send_email('test@example.com', :trade_tariff_changes, { foo: 'bar' })
+      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
       expect(client).to have_received(:send_email).with(
         email_address: 'test@example.com',
         template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
@@ -25,7 +25,7 @@ RSpec.describe GovukNotifier do
 
     it 'audits the email' do
       allow(client).to receive(:send_email).and_return(mocked_response)
-      notifier.send_email('test@example.com', :trade_tariff_changes, { foo: 'bar' })
+      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
       expect(GovukNotifierAudit.first).to have_attributes(
         subject: 'test',
         body: 'test',

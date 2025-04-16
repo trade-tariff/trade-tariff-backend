@@ -7,11 +7,11 @@ class GovukNotifier
     @client = client || Notifications::Client.new(api_key)
   end
 
-  def send_email(email, template, personalisation = {})
+  def send_email(email, template_id, personalisation = {})
     # TODO: one_click_unsubscribe_url https://docs.notifications.service.gov.uk/ruby.html#one-click-unsubscribe-url-recommended
     email_response = @client.send_email(
       email_address: email,
-      template_id: template_id(template),
+      template_id: template_id,
       personalisation: personalisation,
     )
     audit(email_response)
@@ -20,17 +20,6 @@ class GovukNotifier
   end
 
   private
-
-  def template_id(template)
-    template_id = case template
-                  when :trade_tariff_changes
-                    'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c' # TODO: use a real value
-                  end
-
-    raise NoTemplateFoundError unless template_id
-
-    template_id
-  end
 
   def api_key
     @api_key ||= ENV['GOVUK_NOTIFY_API_KEY']
