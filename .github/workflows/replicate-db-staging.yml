@@ -2,17 +2,28 @@ name: Run DB Replicate Job
 
 on:
   workflow_dispatch:
+    inputs:
+      docker_tag:
+        description: "Docker image tag to run"
+        required: false
+        default: "latest"
+
+env:
+  AWS_REGION: eu-west-2
+  IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+  CLUSTER: trade-tariff-cluster-dev
+  TASK_DEFINITION: db-replicate-job-uk
+  ENVIRONMENT: staging
+  SECRET_NAME: db-replicate-uk-worker-configuration
+  SECRET_FILE: db-replicate-uk
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   run-job:
     runs-on: ubuntu-latest
-
-    env:
-      AWS_REGION: eu-west-2
-      IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
-      CLUSTER: trade-tariff-cluster-staging
-      TASK_DEFINITION: db-replicate-job-uk
-
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -20,19 +31,47 @@ jobs:
           role-to-assume: ${{ env.IAM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
 
+      - name: Fetch Secrets from AWS Secrets Manager
+        uses: trade-tariff/trade-tariff-tools/.github/actions/fetch-secrets@main
+        with:
+          secret-name: ${{ env.SECRET_NAME }}
+          env-file: ${{ env.SECRET_FILE }}
+
+      - name: Convert secrets.env to JSON for Terraform
+        id: secrets-json
+        run: |
+          TF_SECRETS=$(awk -F= '{printf("{\"name\":\"%s\",\"value\":\"%s\"},", $1, $2)}' "${{ env.SECRET_FILE }}" | sed 's/,$//')
+          echo "JSON_SECRETS=[$TF_SECRETS]" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.0
+
+      - name: Terraform Init
+        run: cd terraform/ && terraform init
+
+      - name: Terraform Apply (create ECS job definition)
+        run: |
+          terraform apply \
+            -var="create_job_task=true" \
+            -var="service_name=db-replicate-job-uk" \
+            -var="docker_image=382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production" \
+            -var="docker_tag=${{ inputs.docker_tag }}" \
+            -var="container_command=[\"/bin/sh\", \"-c\", \"./config/db_replicate.sh\"]" \
+            -var="region=${{ env.AWS_REGION }}" \
+            -var="cpu=2048" \
+            -var="memory=8192" \
+            -var="cloudwatch_log_group_name=platform-logs-${{ env.ENVIRONMENT }}" \
+            -var="service_environment_config=${{ steps.secrets-json.outputs.JSON_SECRETS }}" \
+            -auto-approve
+
+
       - name: Run ECS task
         run: |
           aws ecs run-task \
             --cluster "$CLUSTER" \
             --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[trade-tariff-staging-vpc],securityGroups=[trade-tariff-ecs-security-group-staging],assignPublicIp=DISABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=[trade-tariff-dev-vpc],securityGroups=[trade-tariff-ecs-security-group-dev],assignPublicIp=DISABLED}" \
             --task-definition "$TASK_DEFINITION" \
-            --overrides "{
-            \"containerOverrides\": [{
-              \"name\": \"db-replicate-job-uk\",
-              \"environment\": [{
-                \"name\": \"CLUSTER_NAME\",
-                \"value\": \"$CLUSTER\"
-              }]
-            }]
-          }"
+            --started-by github-action
