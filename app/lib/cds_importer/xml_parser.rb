@@ -46,6 +46,7 @@ class CdsImporter
           @target_handler.process_xml_node(key, @stack.pop)
           @in_target = false
         end
+
         return unless @in_target
 
         child = @stack.pop
