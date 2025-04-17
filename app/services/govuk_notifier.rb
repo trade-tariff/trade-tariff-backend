@@ -10,7 +10,7 @@ class GovukNotifier
   def send_email(email, template_id, personalisation = {})
     # TODO: one_click_unsubscribe_url https://docs.notifications.service.gov.uk/ruby.html#one-click-unsubscribe-url-recommended
     email_response = @client.send_email(
-      email_address: email,
+      email_address: use_email(email),
       template_id: template_id,
       personalisation: personalisation,
     )
@@ -25,7 +25,7 @@ class GovukNotifier
     @api_key ||= ENV['GOVUK_NOTIFY_API_KEY']
   end
 
-  def email(email)
+  def use_email(email)
     ENV.fetch('OVERRIDE_NOTIFY_EMAIL', email)
   end
 
