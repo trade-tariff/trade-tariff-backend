@@ -3,7 +3,7 @@
 Sequel.migration do
   up do
     create_table Sequel[:govuk_notifier_audits].qualify(:public), id: :uuid do
-      primary_key :idid
+      primary_key :id
       String :notification_uuid, null: false, unique: true
       String :subject, null: false
       String :body, null: false, text: true  
