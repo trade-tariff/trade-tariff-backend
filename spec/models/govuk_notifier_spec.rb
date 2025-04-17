@@ -23,6 +23,19 @@ RSpec.describe GovukNotifier do
       )
     end
 
+    it 'uses the override email if set' do
+      stub_const('ENV', ENV.to_hash.merge('OVERRIDE_NOTIFY_EMAIL' => 'foo@example.com'))
+      allow(notifier).to receive(:audit).and_return(nil)
+      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
+      expect(client).to have_received(:send_email).with(
+        email_address: 'foo@example.com',
+        template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
+        personalisation: {
+          foo: 'bar',
+        },
+      )
+    end
+
     it 'audits the email' do
       allow(client).to receive(:send_email).and_return(mocked_response)
       notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
