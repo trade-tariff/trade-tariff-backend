@@ -26,8 +26,6 @@ class GovukNotifier
   end
 
   def email(email)
-    return email if Rails.env.production?
-
     ENV.fetch('OVERRIDE_NOTIFY_EMAIL', email)
   end
 
