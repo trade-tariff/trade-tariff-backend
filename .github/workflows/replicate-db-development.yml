@@ -74,7 +74,7 @@ jobs:
           terraform_version: 1.10.0
 
       - name: Terraform Init
-        run: cd terraform/ && terraform init
+        run: cd terraform && terraform init
 
       - name: Terraform Apply (create ECS job definition)
         run: |
