@@ -16,7 +16,7 @@ common:
 
   # Your application name. Renaming here affects where data displays in New
   # Relic.  For more details, see https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/renaming-applications
-  app_name: "tariff-backend"
+  app_name: "backend-<%= ENV['SERVICE'] %>.tariff.internal"
 
   distributed_tracing:
     enabled: true
