@@ -65,7 +65,7 @@ jobs:
           TF_SECRETS=$(aws secretsmanager get-secret-value \
             --secret-id "${{ env.SECRET_NAME }}" \
             --query 'SecresString' \
-            --output text
+            --output text)
           echo "JSON_SECRETS=[$TF_SECRETS]" >> "$GITHUB_OUTPUT"
 
       - name: Set up Terraform
