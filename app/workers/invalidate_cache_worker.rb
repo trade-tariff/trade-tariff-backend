@@ -13,7 +13,7 @@ class InvalidateCacheWorker
       client.create_invalidation({
         distribution_id: cdn.id,
         invalidation_batch: {
-          paths: { quantity: 1, items: paths },
+          paths: { quantity: paths.size, items: paths },
           caller_reference:,
         },
       })
