@@ -76,7 +76,7 @@ jobs:
 
       - name: Terraform Apply (create ECS job definition)
         run: |
-          terraform apply \
+          cd terraform && terraform apply \
             -target=module.${{ env.SERVICE_NAME }} \
             -var="create_job_task=true" \
             -var="service_name=${{ env.SERVICE_NAME }}" \
