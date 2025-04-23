@@ -71,7 +71,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
         with:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
-      - run: cd terraform && terraform init
+      - run: cd terraform && terraform init -backend-config=backends/${{ env.ENVIRONMENT }}.tfbackend
         shell: bash
 
       - name: Terraform Apply (create ECS job definition)
