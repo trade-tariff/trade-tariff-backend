@@ -13,11 +13,8 @@ class InvalidateCacheWorker
       client.create_invalidation({
         distribution_id: cdn.id,
         invalidation_batch: {
-          paths: {
-            quantity: 1,
-            items: paths,
-          },
-          caller_reference: 'InvalidateCacheWorker',
+          paths: { quantity: paths.size, items: paths },
+          caller_reference:,
         },
       })
     end
@@ -33,5 +30,9 @@ class InvalidateCacheWorker
     SERVICES.product(PATHS).map do |service, path|
       "#{service}#{path}"
     end
+  end
+
+  def caller_reference
+    @caller_reference ||= "#{ENV.fetch('ENVIRONMENT', '').capitalize} CDN Invalidation #{Time.zone.now.to_i}"
   end
 end

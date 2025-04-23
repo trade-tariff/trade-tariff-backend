@@ -1616,29 +1616,6 @@
                   "valid": true
             },
             {
-                  "heading": "2106",
-                  "chapter": 21,
-                  "subdivision": "Food preparations not elsewhere specified or included",
-                  "min": "2106000000",
-                  "max": "2106999999",
-                  "rules": [
-                        {
-                              "rule": "Manufacture:\n\n- from materials of any heading, except that of the product,\n\nin which all the materials of [subheading&nbsp;121120](/subheadings/1211200000-80) and [subheading&nbsp;130219](/subheadings/1302190000-80) used are wholly obtained, *and*\n\nin which the value of all the materials of [chapter&nbsp;4](/chapters/04) used does not exceed **30%** of the ex-works price of the product, *and*\n\nthe value of all the materials of [chapter&nbsp;17](/chapters/17) used does not exceed **30%** of the ex-works price of the product.",
-                              "class": [
-                                    "MAXNOM",
-                                    "CTH",
-                                    "WO"
-                              ],
-                              "footnotes": [],
-                              "operator": null,
-                              "quota": false,
-                              "import": true,
-                              "export": true
-                        }
-                  ],
-                  "valid": true
-            },
-            {
                   "heading": "ex Chapter 22",
                   "chapter": 22,
                   "subdivision": "Beverages, spirits and vinegar",
