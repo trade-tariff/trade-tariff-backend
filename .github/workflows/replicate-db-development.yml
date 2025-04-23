@@ -53,29 +53,25 @@ jobs:
     needs:
       - build
     steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.IAM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-
-      - name: Fetch Secrets from AWS Secrets Manager
-        id: secrets-json
+      - id: secrets-json
         run: |
           TF_SECRETS=$(aws secretsmanager get-secret-value \
             --secret-id "${{ env.SECRET_NAME }}" \
             --query 'SecresString' \
             --output text)
           echo "JSON_SECRETS=[$TF_SECRETS]" >> "$GITHUB_OUTPUT"
-
-      - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.11.0
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
         with:
-          ssh-key: ${{ inputs.ssh-key }}
-      - run: cd terraform && terraform init -backend-config=backends/${{ inputs.environment }}.tfbackend
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      - run: cd terraform && terraform init
         shell: bash
 
       - name: Terraform Apply (create ECS job definition)
