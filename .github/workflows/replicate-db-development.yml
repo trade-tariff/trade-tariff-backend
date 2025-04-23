@@ -71,10 +71,12 @@ jobs:
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.10.0
-
-      - name: Terraform Init
-        run: cd terraform && terraform init
+          terraform_version: 1.11.0
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
+        with:
+          ssh-key: ${{ inputs.ssh-key }}
+      - run: cd terraform && terraform init -backend-config=backends/${{ inputs.environment }}.tfbackend
+        shell: bash
 
       - name: Terraform Apply (create ECS job definition)
         run: |
