@@ -81,7 +81,6 @@ jobs:
             -var-file=config_${{ env.ENVIRONMENT }}.tfvars \
             -auto-approve \
             -lock-timeout=10m \
-            -var="create_job_task=true" \
             -auto-approve
         env:
           TF_LOG: DEBUG

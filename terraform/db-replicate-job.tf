@@ -1,5 +1,5 @@
 module "db-replicate-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.13.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.14.0"
 
   region = var.region
 
@@ -20,6 +20,7 @@ module "db-replicate-job" {
   cpu             = var.cpu
   memory          = var.memory
 
+  create_job_task      = true
   container_command    = local.db_replicate_command
 
 
