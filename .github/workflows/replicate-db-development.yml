@@ -54,6 +54,8 @@ jobs:
       - build
     steps:
       - uses: actions/checkout@v4
+      - id: docker-tag
+        run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ env.IAM_ROLE_ARN }}
