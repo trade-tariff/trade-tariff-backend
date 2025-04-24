@@ -81,19 +81,10 @@ jobs:
             -var-file=config_${{ env.ENVIRONMENT }}.tfvars \
             -auto-approve \
             -lock-timeout=10m \
-            -var="create_job_task=true" \
-            -var="service_name=${{ env.SERVICE_NAME }}" \
-            -var="docker_image=382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production" \
-            -var="docker_tag=${{ inputs.docker_tag || steps.docker-tag.outputs.DOCKER_TAG }}" \
-            -var="container_command=[\"/bin/sh\", \"-c\", \"./bin/db_replicate.sh\"]" \
-            -var="region=${{ env.AWS_REGION }}" \
-            -var="cpu=2048" \
-            -var="memory=8192" \
-            -var="service_environment_config=${{ steps.secrets-json.outputs.JSON_SECRETS }}" \
-            -var="environment=${{ env.ENVIRONMENT }}" \
             -auto-approve
         env:
           TF_LOG: DEBUG
+          TF_VAR_docker_tag: ${{ inputs.docker_tag || steps.docker-tag.outputs.DOCKER_TAG }}
 
 
       - name: Run ECS task
