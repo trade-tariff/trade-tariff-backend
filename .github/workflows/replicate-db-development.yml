@@ -88,6 +88,7 @@ jobs:
             -var="memory=8192" \
             -var="cloudwatch_log_group_name=platform-logs-${{ env.ENVIRONMENT }}" \
             -var="service_environment_config=${{ steps.secrets-json.outputs.JSON_SECRETS }}" \
+            -var="environment=${{ env.ENVIRONMENT }}" \
             -auto-approve
         env:
           TF_LOG: DEBUG
