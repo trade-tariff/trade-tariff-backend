@@ -20,7 +20,6 @@ module "db-replicate-job" {
   cpu             = var.cpu
   memory          = var.memory
 
-  create_job_task      = true
   container_command    = local.db_replicate_command
 
 

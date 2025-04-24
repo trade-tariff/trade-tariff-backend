@@ -58,13 +58,6 @@ jobs:
         with:
           role-to-assume: ${{ env.IAM_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      - id: secrets-json
-        run: |
-          TF_SECRETS=$(aws secretsmanager get-secret-value \
-            --secret-id "${{ env.SECRET_NAME }}" \
-            --query 'SecresString' \
-            --output text)
-          echo "JSON_SECRETS=[$TF_SECRETS]" >> "$GITHUB_OUTPUT"
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.11.0
