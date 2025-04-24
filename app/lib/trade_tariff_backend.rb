@@ -47,10 +47,6 @@ module TradeTariffBackend
       ENV.fetch('DUMP_CDS_DATA_AS_JSON', 'false') == 'true'
     end
 
-    def green_lanes_exclude_grouped_exemptions?
-      ENV.fetch('GREEN_LANES_EXCLUDE_GROUPED_EXEMPTIONS', 'false') == 'true'
-    end
-
     def uk?
       service == 'uk'
     end
