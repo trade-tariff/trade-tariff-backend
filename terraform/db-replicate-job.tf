@@ -3,7 +3,7 @@ module "db-replicate-job" {
 
   region = var.region
 
-  service_name = "db-replicate-job"
+  service_name  = "db-replicate-job"
   service_count = 1
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
