@@ -239,6 +239,8 @@ GEM
     nokogiri (1.18.8)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
+    notifications-ruby-client (6.2.0)
+      jwt (>= 1.5, < 3)
     oauth2 (2.0.9)
       faraday (>= 0.17.3, < 3.0)
       jwt (>= 1.0, < 3.0)
@@ -503,6 +505,7 @@ DEPENDENCIES
   logstash-event
   newrelic_rpm
   nokogiri
+  notifications-ruby-client
   omniauth-rails_csrf_protection
   opensearch-ruby
   ostruct
