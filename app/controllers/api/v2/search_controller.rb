@@ -5,7 +5,7 @@ module Api
 
       def search
         results = SearchService.new(Api::V2::SearchSerializationService.new, params).to_json
-        SearchInstrumentationService.log_search_results(params[:q], results)
+        instrumentation_service.log_search_results(results)
         render json: results
       end
 
@@ -15,11 +15,15 @@ module Api
                   else
                     Api::V2::SearchSuggestionSerializer.new(matching_suggestions).serializable_hash
                   end
-        SearchInstrumentationService.log_search_suggestions_results(params[:q], results)
+        instrumentation_service.log_search_suggestions_results(results)
         render json: results
       end
 
       private
+
+      def instrumentation_service
+        @instrumentation_service ||= SearchInstrumentationService.new(params[:q])
+      end
 
       def matching_suggestions
         if params[:q].present? && !SearchService::RogueSearchService.call(params[:q])
