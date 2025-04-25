@@ -57,6 +57,9 @@ class SearchInstrumentationService
   end
 
   def count_results(attributes, results_type)
+    # override results_count if exact search
+    return 1 if results_type == :exact_search
+
     MATCH_TYPES.product(LEVELS).map { |group|
       match, level = group
       attributes&.dig(match)&.dig(level)&.size || 0
