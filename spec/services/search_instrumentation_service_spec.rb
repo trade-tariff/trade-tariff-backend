@@ -1,4 +1,34 @@
 RSpec.describe SearchInstrumentationService do
+  describe '.log_search_suggestions_results' do
+    let(:query) { 'test query' }
+    let(:results) do
+      {
+        data: [
+          { type: :search_suggestion },
+          { type: :search_suggestion },
+          { type: :search_suggestion },
+        ],
+      }
+    end
+
+    before do
+      allow(Rails.logger).to receive(:info)
+      described_class.new(query).log_search_suggestions_results(results)
+    end
+
+    it 'logs the expected result count' do
+      expect(Rails.logger).to have_received(:info).with(
+        satisfy { |msg|
+          begin
+            JSON.parse(msg)['result_count'] == 3
+          rescue StandardError
+            false
+          end
+        },
+      )
+    end
+  end
+
   describe '.log_search_results' do
     let(:test_data) do
       {
