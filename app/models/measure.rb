@@ -407,7 +407,6 @@ class Measure < Sequel::Model
         .exclude(Sequel[:measure_types][:measure_type_series_id] => MeasureType.excluded_measure_series)
     end
 
-
     def overview
       where do
         overview_types = [
