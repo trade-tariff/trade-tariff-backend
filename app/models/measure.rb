@@ -403,7 +403,7 @@ class Measure < Sequel::Model
     end
 
     def without_excluded_series
-      join(:measure_types, measure_type_id: :measure_type_id)
+      left_join(:measure_types, measure_type_id: :measure_type_id)
         .exclude(Sequel[:measure_types][:measure_type_series_id] => MeasureType.excluded_measure_series)
     end
 
