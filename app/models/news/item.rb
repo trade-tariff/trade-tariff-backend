@@ -49,6 +49,7 @@ module News
       validates_presence :slug
       validates_presence :precis if show_on_updates_page
       validates_presence :collection_ids, message: 'must include at least one collection'
+      errors.add(:chapters, 'have an invalid format') unless chapters.to_s.split.all? { |chapter| chapter.match?(/\A\d{2}\z/) }
     end
 
     def cache_key_with_version

@@ -14,6 +14,7 @@ class MeasureType < Sequel::Model
   XI_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES + QUOTA_TYPES
   GL_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES + NATIONAL_PR_TYPES
   UK_EXCLUDED_TYPES = DEFAULT_EXCLUDED_TYPES
+  XI_EXCLUDED_SERIES = %w[P Q].freeze
 
   AUTHORISED_USE_PROVISIONS_SUBMISSION = '464'.freeze
   TARIFF_PREFERENCE = %w[142 145].freeze
@@ -137,6 +138,14 @@ class MeasureType < Sequel::Model
       end
     else
       UK_EXCLUDED_TYPES
+    end
+  end
+
+  def self.excluded_measure_series
+    if TradeTariffBackend.xi?
+      XI_EXCLUDED_SERIES
+    else
+      []
     end
   end
 end

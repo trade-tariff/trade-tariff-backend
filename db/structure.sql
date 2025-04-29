@@ -6245,7 +6245,8 @@ CREATE TABLE uk.news_items (
     show_on_banner boolean DEFAULT false NOT NULL,
     precis text,
     slug character varying(255),
-    imported_at timestamp without time zone
+    imported_at timestamp without time zone,
+    chapters text
 );
 
 
@@ -12758,3 +12759,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250219092427_delete_chie
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250324091812_alter_column_nullable_path_in_goods_nomenclatures_oplog.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250331102817_update_view_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250417142520_create_subscription_models.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250411114556_create_govuk_notifier_audit.rb');
