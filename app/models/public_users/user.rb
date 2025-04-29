@@ -3,6 +3,6 @@ module PublicUsers
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
 
-    one_to_many :subscriptions, class: 'PublicUsers::Subscriptions', key: :user_id
+    one_to_many :subscriptions, class: 'PublicUsers::Subscription', key: :user_id
   end
 end
