@@ -100,6 +100,10 @@ V2Api.routes.draw do
         collection { get :search }
       end
 
+      resources :subscriptions, only: %i[index destroy] do
+        member { patch :unsubscribe }
+      end
+
       scope module: :rules_of_origin do
         resources :rules_of_origin_schemes,
                   controller: 'schemes',

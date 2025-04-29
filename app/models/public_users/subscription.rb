@@ -5,5 +5,9 @@ module PublicUsers
 
     many_to_one :user, class: 'PublicUsers::User', key: :user_id
     one_to_one :subscription_type, class: 'Subscriptions::Type', key: :subscription_type_id
+
+    def deactivate!
+      update(active: false)
+    end
   end
 end
