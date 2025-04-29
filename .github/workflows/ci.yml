@@ -9,6 +9,17 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  AWS_REGION: eu-west-2
+  BUNDLE_JOBS: "3"
+  BUNDLE_RETRY: "3"
+  DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/tariff_test"
+  ECR_URL: 382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production
+  ENVIRONMENT: development
+  IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+  RAILS_ENV: test
+  SKIP: terraform_docs,actionlint-docker
+
 permissions:
   contents: read
   id-token: write
