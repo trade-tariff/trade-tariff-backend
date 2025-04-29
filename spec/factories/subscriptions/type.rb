@@ -1,8 +1,6 @@
 FactoryBot.define do
-  factory :type do
+  factory :subscription_type, class: 'Subscriptions::Type' do
     name { 'test' }
     description { 'test' }
-    created_at { Time.zone.now }
-    updated_at { Time.zone.now }
   end
 end
