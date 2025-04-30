@@ -51,6 +51,24 @@ RSpec.describe News::Item do
 
       it { is_expected.to include(precis: ['is not present']) }
     end
+
+    context 'when chapters are invalid' do
+      let(:instance) { described_class.new(chapters: '1234') }
+
+      it { is_expected.to include(chapters: ['have an invalid format']) }
+    end
+
+    context 'when chapters are valid' do
+      let(:instance) { described_class.new(chapters: '12 34') }
+
+      it { is_expected.not_to include(chapters: ['have an invalid format']) }
+    end
+
+    context 'when chapters are empty' do
+      let(:instance) { described_class.new(chapters: '') }
+
+      it { is_expected.not_to include(chapters: ['have an invalid format']) }
+    end
   end
 
   describe 'associations' do

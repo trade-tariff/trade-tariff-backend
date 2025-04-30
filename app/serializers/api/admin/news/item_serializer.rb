@@ -20,6 +20,7 @@ module Api
                    :show_on_banner,
                    :start_date,
                    :end_date,
+                   :chapters,
                    :collection_ids,
                    :created_at,
                    :updated_at
