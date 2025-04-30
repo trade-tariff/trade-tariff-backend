@@ -13,15 +13,13 @@ module "db-replicate-job" {
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  max_capacity = 0
+  max_capacity = 1
   min_capacity = 0
 
   docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   cpu          = var.cpu
   memory       = var.memory
-
-  container_command = local.db_replicate_command
 
   service_environment_config = local.db_replicate_secret_env_vars
 }

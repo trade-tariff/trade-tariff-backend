@@ -22,7 +22,7 @@ env:
   AWS_REGION: eu-west-2
   IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
   CLUSTER: trade-tariff-cluster-dev
-  SERVICE_NAME: db-replicate-job
+  SERVICE_NAME: db-replicate-job-844815912454
   ENVIRONMENT: development
   SECRET_NAME: db-replicate-uk-worker-configuration
   ECR_URL: 382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production
@@ -60,11 +60,25 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
         with:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      - name: Fetch Subnet and Security Group IDs
+        id: network
+        run: |
+          export SUBNETS=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=*private*" --query 'Subnets[*].SubnetId' --output text --region "$AWS_REGION")
+          export SG=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=trade-tariff-ecs-security-group-development" --query 'SecurityGroups[0].GroupId' --output text --region "$AWS_REGION")
+          echo "SUBNETS=$SUBNETS" >> $GITHUB_ENV
+          echo "SG=$SG" >> $GITHUB_ENV
       - name: Run ECS task
         run: |
           aws ecs run-task \
             --cluster "$CLUSTER" \
             --launch-type FARGATE \
-            --network-configuration "awsvpcConfiguration={subnets=[trade-tariff-dev-vpc],securityGroups=[trade-tariff-ecs-security-group-dev],assignPublicIp=DISABLED}" \
+            --region "$AWS_REGION"
+            --network-configuration "awsvpcConfiguration={subnets=[${{ env.SUBNETS }}],securityGroups=[${{ env.SG }}],assignPublicIp=DISABLED}" \
             --task-definition "$SERVICE_NAME" \
-            --started-by github-action
+            --started-by github-action \
+            --overrides '{
+                "containerOverrides": [{
+                  "service_count": 1,
+                  "command": ["/bin/sh", "-c", "./bin/db_replicate.sh"]
+                }]
+              }'
