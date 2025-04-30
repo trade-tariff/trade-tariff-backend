@@ -70,11 +70,11 @@ jobs:
       - name: Run ECS task
         run: |
           aws ecs run-task \
-            --cluster "$CLUSTER" \
+            --cluster "${{ env.CLUSTER }}" \
             --launch-type FARGATE \
-            --region "$AWS_REGION"
+            --region "${{ env.AWS_REGION }}"
             --network-configuration "awsvpcConfiguration={subnets=[${{ env.SUBNETS }}],securityGroups=[${{ env.SG }}],assignPublicIp=DISABLED}" \
-            --task-definition "$SERVICE_NAME" \
+            --task-definition "${{ env.SERVICE_NAME }}" \
             --started-by github-action \
             --overrides '{
                 "containerOverrides": [{
