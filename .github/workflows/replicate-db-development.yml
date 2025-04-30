@@ -53,6 +53,13 @@ jobs:
     needs:
       - build
     steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
+        with:
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - name: Run ECS task
         run: |
           aws ecs run-task \
