@@ -17,7 +17,7 @@ Sequel.migration do
 
     unless Sequel::Model.db.table_exists?(Sequel[:users].qualify(:public))
       create_table Sequel[:users].qualify(:public) do
-        uuid :id, primary_key: true, default: "gen_random_uuid()"
+        uuid :id, primary_key: true, default: Sequel.function(:gen_random_uuid)
         String :external_id, null: false
         DateTime :created_at
         DateTime :updated_at
@@ -26,7 +26,7 @@ Sequel.migration do
 
     unless Sequel::Model.db.table_exists?(Sequel[:subscription_types].qualify(:public))
       create_table Sequel[:subscription_types].qualify(:public) do
-        uuid :id, primary_key: true, default:"gen_random_uuid()"
+        uuid :id, primary_key: true, default: Sequel.function(:gen_random_uuid)
         String :name, null: false
         String :description, null: false
         DateTime :created_at
@@ -36,7 +36,7 @@ Sequel.migration do
 
     unless Sequel::Model.db.table_exists?(Sequel[:user_subscriptions].qualify(:public))
       create_table Sequel[:user_subscriptions].qualify(:public) do
-        uuid :id, primary_key: true, default: "gen_random_uuid()" 
+        uuid :id, primary_key: true, default: Sequel.function(:gen_random_uuid)
         String :user_id, null: false
         String :subscription_type_id, null: false
         Boolean :active, null: false, default: true

@@ -9,23 +9,23 @@ module Api
       end
 
       def unsubscribe
-        return_on_invalid_subscription
-
         @subscription.deactivate!
         render json: @subscription
       end
 
       def destroy
-        return_on_invalid_subscription
-
         @subscription.destroy
-        render json: @subscription
+        head :ok
       end
 
   private
 
       def load_subscription
-        @subscription = PublicUsers::Subscription.find_by_id_and_user_id(params[:id], params[:user_id])
+        @subscription = PublicUsers::Subscription.first(id: params[:id], user_id: params[:user_id])
+        return_on_invalid_subscription if @subscription.nil?
+        @subscription
+      rescue StandardError
+        return_on_invalid_subscription
       end
 
       def return_on_invalid_subscription
