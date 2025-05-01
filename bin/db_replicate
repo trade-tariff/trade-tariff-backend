@@ -8,7 +8,7 @@ set -o noclobber
 
 START_TIME=$(date +%s)
 
-declare -A SERVICE_COUNTS
+declare -a SERVICE_COUNTS
 
 if [ -z "$ENVIRONMENT" ]; then
   echo "You need to set the ENVIRONMENT environment variable."
