@@ -37,18 +37,8 @@ RUN apk add --no-cache postgresql-client
 # Install bash
 RUN apk add --no-cache bash
 
-# Install AWS CLI v2
-RUN apk add --no-cache \
-      curl \
-      unzip \
-      less \
-      groff \
-      bash \
-      libc6-compat && \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf aws awscliv2.zip
+# Install AWS CLI v1
+RUN apk add --no-cache py3-pip && pip3 install awscli
 
 RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
