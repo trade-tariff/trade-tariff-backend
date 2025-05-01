@@ -44,7 +44,8 @@ stop_services() {
 }
 
 restore_database() {
-  /bin/sh -c \"curl --silent -u "${DB_DUMP_USER}":"${DB_DUMP_PASSWORD}" "${DB_DUMP_SERVER}""${RESTORE_FILE}" | gzip -d | psql \$DATABASE_URL\"
+  echo "$DATABASE_URL"
+  curl --silent -u "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" "$DB_DUMP_SERVER""$RESTORE_FILE" | gzip -d | psql "$DATABASE_URL"
 }
 
 start_services() {
