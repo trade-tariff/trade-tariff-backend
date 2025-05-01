@@ -34,6 +34,9 @@ FROM ruby:3.4.2-alpine3.21 as production
 # Install PostgreSQL client tools
 RUN apk add --no-cache postgresql-client
 
+# Install bash
+RUN apk add --no-cache bash
+
 RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
   cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
   echo "Europe/London" > /etc/timezone
