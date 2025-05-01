@@ -63,9 +63,9 @@ jobs:
       - name: Fetch Subnet and Security Group IDs
         id: network
         run: |
-          export SUBNETS=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=*private*" --query 'Subnets[*].SubnetId' --output text --region "$AWS_REGION" | tr '\t' '\n' | jq -R . | jq -s .)
+#          export SUBNETS=$(aws ec2 describe-subnets --filters "Name=tag:Name,Values=*private*" --query 'Subnets[*].SubnetId' --output text --region "$AWS_REGION" | tr '\t' '\n' | jq -R . | jq -s .)
           export SG=$(aws ec2 describe-security-groups --filters "Name=group-name,Values=trade-tariff-ecs-security-group-development" --query 'SecurityGroups[0].GroupId' --output text --region "$AWS_REGION")
-          echo "SUBNETS=$SUBNETS" >> $GITHUB_ENV
+#          echo "SUBNETS=$SUBNETS" >> $GITHUB_ENV
           echo "SG=$SG" >> $GITHUB_ENV
       - name: Run ECS task
         run: |
@@ -73,7 +73,7 @@ jobs:
             --cluster "${{ env.CLUSTER }}" \
             --launch-type FARGATE \
             --region "${{ env.AWS_REGION }}"
-            --network-configuration "awsvpcConfiguration={subnets=[${{ env.SUBNETS }}],securityGroups=[${{ env.SG }}],assignPublicIp=DISABLED}" \
+            --network-configuration "awsvpcConfiguration={subnets=["subnet-0b9e9f24f0cb6fbfe", "subnet-0badb8d71340d2c04", "subnet-0dbbbcbca04929f26"],securityGroups=[${{ env.SG }}],assignPublicIp=DISABLED}" \
             --task-definition "${{ env.SERVICE_NAME }}" \
             --started-by github-action \
             --overrides '{
