@@ -115,7 +115,7 @@ class ExchangeRateCurrencyRate < Sequel::Model
     # This query removes country/currency pairings where the country/currency
     # is expiring before the end of the rate
     def without_expired_countries
-      where(Sequel[:exchange_rate_currency_rates][:validity_end_date] <= (Sequel.function(:COALESCE, Sequel[:exchange_rate_countries_currencies][:validity_end_date], Sequel.lit("'infinity'"))))
+      where(Sequel[:exchange_rate_currency_rates][:validity_end_date] <= Sequel.function(:COALESCE, Sequel[:exchange_rate_countries_currencies][:validity_end_date], Sequel.lit("'infinity'")))
     end
   end
 
