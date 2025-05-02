@@ -1,15 +1,12 @@
 name: Deploy to production
 
 on:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows:
+      - 'Deploy to staging'
+    types:
+      - completed
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'The git ref to deploy'
-        required: true
-        default: 'main'
 
 permissions:
   contents: read
@@ -31,10 +28,10 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
         with:
           ecr-url: ${{ env.ECR_URL }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
 
   deploy:
-    environment: production
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -44,7 +41,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-apply@main
         with:
           environment: ${{ env.ENVIRONMENT }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   tag:
@@ -57,7 +54,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/tag-production@main
         with:
           ecr-url: ${{ env.ECR_URL }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
 
   newrelic:
     runs-on: ubuntu-latest
@@ -72,7 +69,7 @@ jobs:
           apiKey: ${{ secrets.NEW_RELIC_API_KEY }}
           region: "EU"
           guid: ${{ secrets.NEW_RELIC_APPLICATION_GUID }}
-          version: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          version: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           user: "${{ github.actor }}"
 
   post-deploy:
