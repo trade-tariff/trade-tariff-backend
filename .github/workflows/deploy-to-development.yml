@@ -2,11 +2,6 @@ name: Deploy to development
 
 on:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: 'The git ref to deploy'
-        required: true
-        default: 'main'
 
 permissions:
   contents: read
@@ -33,7 +28,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@main
         with:
           environment: ${{ env.ENVIRONMENT }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
       - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
         with:
@@ -51,7 +46,7 @@ jobs:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-apply@main
         with:
           environment: ${{ env.ENVIRONMENT }}
-          ref: ${{ inputs.ref || steps.docker-tag.outputs.DOCKER_TAG }}
+          ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   post-deploy:
