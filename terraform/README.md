@@ -14,13 +14,13 @@ Terraform to deploy the service into AWS.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.94.1 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | 5.97.0 |
 
 ## Modules
 
 | Name | Source | Version |
 |------|--------|---------|
-| <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.15.2 |
+| <a name="module_backend-job"></a> [backend-job](#module\_backend-job) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | HMRC-798-handle-scaling-for-job-kind |
 | <a name="module_backend_uk"></a> [backend\_uk](#module\_backend\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.13.1 |
 | <a name="module_backend_xi"></a> [backend\_xi](#module\_backend\_xi) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.13.1 |
 | <a name="module_worker_uk"></a> [worker\_uk](#module\_worker\_uk) | git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service | aws/ecs-service-v1.13.1 |

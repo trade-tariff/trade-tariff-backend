@@ -52,6 +52,10 @@
           bundle exec rubocop --autocorrect-all --force-exclusion $changed_files Gemfile
         '';
 
+        init = pkgs.writeScriptBin "init" ''
+          cd terraform && terraform init -input=false -no-color -backend=false
+        '';
+
         update-providers = pkgs.writeScriptBin "update-providers" ''
           cd terraform
           terraform init -backend=false -reconfigure -upgrade
@@ -78,6 +82,7 @@
           '';
 
           buildInputs = [
+            init
             lint
             pkgs.circleci-cli
             postgresql

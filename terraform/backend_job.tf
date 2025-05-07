@@ -1,12 +1,11 @@
 module "backend-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.15.2"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=HMRC-798-handle-scaling-for-job-kind"
 
   region = var.region
 
   service_name              = "backend-job"
   container_definition_kind = "job"
   service_count             = 0
-
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids
