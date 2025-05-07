@@ -31,18 +31,17 @@ RUN rm -rf node_modules log tmp && \
 # Build runtime image
 FROM ruby:3.4.2-alpine3.21 as production
 
-# Install PostgreSQL client tools
-RUN apk add --no-cache postgresql-client
-
-# Install bash
-RUN apk add --no-cache bash
-
-# Install AWS CLI v1
-RUN apk add --no-cache aws-cli
-
-RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
-  cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
-  echo "Europe/London" > /etc/timezone
+# Install required packages in one layer
+RUN apk add --no-cache \
+    bash \
+    curl \
+    postgresql-client \
+    postgresql-dev \
+    aws-cli \
+    shared-mime-info \
+    tzdata && \
+    cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
+    echo "Europe/London" > /etc/timezone
 
 RUN bundle config set without 'development test'
 

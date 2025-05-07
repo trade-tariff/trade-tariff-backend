@@ -44,7 +44,6 @@ stop_services() {
 }
 
 restore_database() {
-  echo "$DATABASE_URL"
   curl --silent -u "$DB_DUMP_USER":"$DB_DUMP_PASSWORD" "$DB_DUMP_SERVER""$RESTORE_FILE" | gzip -d | psql "$DATABASE_URL"
 }
 
@@ -61,14 +60,14 @@ start_services() {
   done
 }
 
-echo "Stopping services"
+echo "Stopping services $SERVICES"
 stop_services
 
 restore_database
 
 echo "SQL backup restored successfully"
 
-echo "Starting services"
+echo "Starting services  $SERVICES"
 start_services
 
 END_TIME=$(date +%s)

@@ -60,7 +60,7 @@ data "aws_secretsmanager_secret_version" "backend_xi_api_configuration" {
 }
 
 data "aws_secretsmanager_secret" "db_replicate_configuration" {
-  name = "db-replicate-uk-configuration"
+  name = "db-replicate-configuration"
 }
 
 data "aws_secretsmanager_secret_version" "db_replicate_configuration" {

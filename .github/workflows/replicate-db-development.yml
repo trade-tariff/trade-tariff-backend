@@ -1,12 +1,6 @@
 name: Run DB Replicate Job
 
 on:
-  push:
-    branches-ignore:
-      - main
-  pull_request:
-    branches-ignore:
-      - main
   schedule:
     - cron: 00 7 * * 1,2,3,4,5
   workflow_dispatch:

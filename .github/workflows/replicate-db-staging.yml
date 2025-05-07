@@ -7,9 +7,9 @@ on:
 
 env:
   AWS_REGION: eu-west-2
-  IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+  IAM_ROLE_ARN: arn:aws:iam::451934005581:role/GithubActions-ECS-Deployments-Role
   CLUSTER: trade-tariff-cluster-staging
-  SERVICE_NAME: backend-job-844815912454
+  SERVICE_NAME: backend-job-451934005581
   CONTAINER_NAME: backend-job
   SG_NAME: trade-tariff-ecs-security-group-staging
 
