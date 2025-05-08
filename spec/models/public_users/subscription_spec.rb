@@ -5,7 +5,7 @@ RSpec.describe PublicUsers::Subscription do
       expect(t[:type]).to eq(:many_to_one)
 
       t = described_class.association_reflections[:subscription_type]
-      expect(t[:type]).to eq(:one_to_one)
+      expect(t[:type]).to eq(:many_to_one)
     end
   end
 end
