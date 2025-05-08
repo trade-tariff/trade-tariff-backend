@@ -1,6 +1,9 @@
 name: Deploy to development
 
 on:
+  push:
+    branches-ignore:
+      - main
   workflow_dispatch:
 
 permissions:

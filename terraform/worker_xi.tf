@@ -1,5 +1,5 @@
 module "worker_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=HMRC-798-handle-scaling-for-job-kind"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.16.0"
 
   service_name              = "worker-xi"
   container_definition_kind = "db-backed"
