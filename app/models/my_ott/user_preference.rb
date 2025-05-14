@@ -1,5 +1,5 @@
 module MyOtt
-  class ChangeNotification < Sequel::Model(Sequel[:change_notifications].qualify(:public))
+  class UserPreference < Sequel::Model(Sequel[:user_preferences].qualify(:public))
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
 
