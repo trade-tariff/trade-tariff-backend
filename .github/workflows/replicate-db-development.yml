@@ -1,4 +1,4 @@
-name: Run DB Replicate Job
+name: Run Development DB Replicate Job
 
 on:
   schedule:
