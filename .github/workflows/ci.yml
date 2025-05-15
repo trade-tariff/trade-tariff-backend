@@ -18,7 +18,6 @@ env:
   ENVIRONMENT: development
   IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
   RAILS_ENV: test
-  SKIP: terraform_docs,actionlint-docker
 
 permissions:
   contents: read
@@ -48,6 +47,7 @@ jobs:
         with:
           terraform_version: 1.10.0
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-tflint@main
+      - run: GOBIN=/usr/local/bin/ go install github.com/terraform-docs/terraform-docs@v0.20.0
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
         with:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
