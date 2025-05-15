@@ -7,6 +7,9 @@ Rails.application.routes.draw do
   # Admin routes
   draw(:admin)
 
+  # User routes
+  draw(:user)
+
   # Error handling
   draw(:errors)
 
