@@ -81,4 +81,18 @@ RSpec.describe SearchSuggestionPopulatorService do
       expect { call }.to change_expired.to(nil)
     end
   end
+
+  context 'when some search suggestions belong to removed search references' do
+    let!(:search_suggestion) do
+      create(
+        :search_suggestion,
+        :search_reference,
+        value: 'something else',
+      )
+    end
+
+    it 'removes the no longer existing search reference search suggestion' do
+      expect { call }.to change { SearchSuggestion.where(id: search_suggestion.id).first }.to(nil)
+    end
+  end
 end
