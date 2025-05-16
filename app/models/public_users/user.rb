@@ -4,5 +4,7 @@ module PublicUsers
     plugin :timestamps, update_on_create: true
 
     one_to_many :subscriptions, class: 'PublicUsers::Subscription', key: :user_id
+
+    attr_accessor :email
   end
 end

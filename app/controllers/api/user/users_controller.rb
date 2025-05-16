@@ -1,9 +1,13 @@
 module Api
   module User
-    class UserController < ApiController
+    class UsersController < ApiController
       before_action :authenticate_token!
 
       attr_reader :current_user
+
+      def show
+        render json: Api::User::UserSerializer.new(@current_user).serializable_hash
+      end
 
     private
 
@@ -13,6 +17,7 @@ module Api
           if payload
             @current_user = PublicUsers::User.find(external_id: payload['sub'])
             @current_user ||= PublicUsers::User.create(external_id: payload['sub'])
+            @current_user.email = payload['email']
           end
         end
 

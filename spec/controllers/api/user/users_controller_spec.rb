@@ -1,4 +1,4 @@
-RSpec.describe Api::User::SubscriptionsController do
+RSpec.describe Api::User::UsersController do
   describe 'GET #show' do
     before do
       request.headers['Authorization'] = "Bearer #{token}"
