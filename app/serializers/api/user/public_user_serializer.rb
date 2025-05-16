@@ -1,13 +1,13 @@
 module Api
   module User
-    class UserSerializer
+    class PublicUserSerializer
       include JSONAPI::Serializer
 
       set_type :user
 
       set_id :external_id
 
-      attributes :external_id, :email
+      attributes :email, :chapter_ids, :stop_press_subscription
     end
   end
 end

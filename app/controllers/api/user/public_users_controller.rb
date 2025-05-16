@@ -1,12 +1,12 @@
 module Api
   module User
-    class UsersController < ApiController
+    class PublicUsersController < ApiController
       before_action :authenticate_token!
 
       attr_reader :current_user
 
       def show
-        render json: Api::User::UserSerializer.new(@current_user).serializable_hash
+        render json: Api::User::PublicUserSerializer.new(@current_user).serializable_hash
       end
 
     private

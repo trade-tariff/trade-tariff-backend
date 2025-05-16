@@ -4,8 +4,6 @@
 
 -- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
 -- Dumped by pg_dump version 16.8 (Homebrew)
--- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
--- Dumped by pg_dump version 16.8 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -270,7 +268,7 @@ CREATE TABLE public.user_subscriptions (
     user_id integer NOT NULL,
     subscription_type_id integer NOT NULL,
     active boolean DEFAULT true NOT NULL,
-    email boolean DEFAULT true NOT NULL,
+    email boolean DEFAULT true,
     created_at timestamp without time zone,
     updated_at timestamp without time zone
 );
@@ -12804,3 +12802,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250411114556_create_govu
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250417142520_create_subscription_models.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250425145123_add_chapters_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user_preferences.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20251516145533_optional_subscription_email.rb');
