@@ -6272,7 +6272,8 @@ CREATE TABLE uk.news_items (
     precis text,
     slug character varying(255),
     imported_at timestamp without time zone,
-    chapters text
+    chapters text,
+    notify_subscribers boolean DEFAULT false
 );
 
 
@@ -12804,3 +12805,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250411114556_create_govu
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250417142520_create_subscription_models.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250425145123_add_chapters_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user_preferences.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250516154516_add_notify_subscribers_to_news_item.rb');
