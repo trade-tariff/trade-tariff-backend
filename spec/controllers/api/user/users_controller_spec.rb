@@ -9,7 +9,7 @@ RSpec.describe Api::User::UsersController do
       subject(:rendered) { make_request && response }
 
       let(:token) { nil }
-      let(:make_request) { get :show, params: { id: 1 } }
+      let(:make_request) { get :show }
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
@@ -26,12 +26,12 @@ RSpec.describe Api::User::UsersController do
 
       it 'does not create a user' do
         expect {
-          get :show, params: { id: 1 }
+          get :show
         }.not_to change(PublicUsers::User, :count)
       end
 
       it 'returns a successful response' do
-        get :show, params: { id: 1 }
+        get :show
         expect(response).to have_http_status(:ok)
       end
     end
@@ -46,12 +46,12 @@ RSpec.describe Api::User::UsersController do
 
       it 'creates a user' do
         expect {
-          get :show, params: { id: 1 }
+          get :show
         }.to change(PublicUsers::User, :count).by 1
       end
 
       it 'returns a successful response' do
-        get :show, params: { id: 1 }
+        get :show
         expect(response).to have_http_status(:ok)
       end
     end
