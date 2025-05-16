@@ -10,9 +10,7 @@ module CognitoTokenVerifier
                                algorithms: %w[RS256],
                                jwks: { keys: jwks_keys },
                                iss: ISSUER,
-                               verify_iss: true,
-                               aud: ENV['COGNITO_CLIENT_ID'],
-                               verify_aud: true)
+                               verify_iss: true)
 
     decoded_token[0]
   rescue StandardError
