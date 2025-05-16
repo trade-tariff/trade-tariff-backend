@@ -268,7 +268,7 @@ CREATE TABLE public.user_subscriptions (
     user_id integer NOT NULL,
     subscription_type_id integer NOT NULL,
     active boolean DEFAULT true NOT NULL,
-    email boolean DEFAULT true,
+    email boolean DEFAULT true NOT NULL,
     created_at timestamp without time zone,
     updated_at timestamp without time zone
 );
@@ -12802,4 +12802,3 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250411114556_create_govu
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250417142520_create_subscription_models.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250425145123_add_chapters_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user_preferences.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20251516145533_optional_subscription_email.rb');
