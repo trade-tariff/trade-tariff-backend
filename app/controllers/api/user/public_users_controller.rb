@@ -6,10 +6,32 @@ module Api
       attr_reader :current_user
 
       def show
-        render json: Api::User::PublicUserSerializer.new(@current_user).serializable_hash
+        render json: serialize(@current_user)
+      end
+
+      def update
+        @current_user.update(user_params)
+        render json: serialize(@current_user)
+      rescue Sequel::ValidationFailed
+        render json: serialize_errors(@current_user.errors), status: :unprocessable_entity
       end
 
     private
+
+      def user_params
+        params.require(:data).require(:attributes).permit(
+          :chapter_ids,
+          :stop_press_subscription,
+        )
+      end
+
+      def serialize(user)
+        Api::User::PublicUserSerializer.new(user).serializable_hash
+      end
+
+      def serialize_errors(errors)
+        Api::User::ErrorSerializationService.new.serialized_errors(errors)
+      end
 
       def authenticate_token!
         if token.present?

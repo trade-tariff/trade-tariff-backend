@@ -1,15 +1,16 @@
 RSpec.describe Api::User::PublicUsersController do
+  subject(:api_response) { make_request && response }
+
   describe 'GET #show' do
+    let(:make_request) { get :show }
+
     before do
       request.headers['Authorization'] = "Bearer #{token}"
       allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(token)
     end
 
     context 'when token is invalid' do
-      subject(:rendered) { make_request && response }
-
       let(:token) { nil }
-      let(:make_request) { get :show }
 
       it_behaves_like 'a unauthorised response for invalid bearer token'
     end
@@ -30,10 +31,7 @@ RSpec.describe Api::User::PublicUsersController do
         }.not_to change(PublicUsers::User, :count)
       end
 
-      it 'returns a successful response' do
-        get :show
-        expect(response).to have_http_status(:ok)
-      end
+      it { is_expected.to have_http_status :ok }
     end
 
     describe 'when token is for new user' do
@@ -50,9 +48,83 @@ RSpec.describe Api::User::PublicUsersController do
         }.to change(PublicUsers::User, :count).by 1
       end
 
-      it 'returns a successful response' do
-        get :show
-        expect(response).to have_http_status(:ok)
+      it { is_expected.to have_http_status :ok }
+    end
+  end
+
+  describe 'PATCH #update' do
+    before do
+      request.headers['Authorization'] = "Bearer #{token}"
+      allow(CognitoTokenVerifier).to receive(:verify_id_token).and_return(token)
+    end
+
+    context 'when token is invalid' do
+      let(:token) { nil }
+      let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '12,13,14' } } } }
+
+      it_behaves_like 'a unauthorised response for invalid bearer token'
+    end
+
+    context 'when chapter_ids are being updated' do
+      let!(:user) { create(:public_user) }
+      let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '12,13,14' } } } }
+
+      let(:token) do
+        {
+          'sub' => user.external_id,
+          'email' => 'alice@example.com',
+        }
+      end
+
+      it 'updates the chapter_ids' do
+        api_response
+        expect(user.chapter_ids).to eq '12,13,14'
+      end
+
+      it { is_expected.to have_http_status :ok }
+
+      context 'with invalid params' do
+        let(:make_request) { patch :update, params: { data: { attributes: { chapter_ids: '123' } } } }
+
+        it { is_expected.to have_http_status :unprocessable_entity }
+
+        it 'returns errors for user' do
+          expect(JSON.parse(api_response.body)).to include('errors')
+        end
+      end
+
+      context 'when subscription is being updated' do
+        let!(:user) { create(:public_user) }
+        let(:make_request) { patch :update, params: { data: { attributes: { stop_press_subscription: active } } } }
+
+        let(:token) do
+          {
+            'sub' => user.external_id,
+            'email' => 'alice@example.com',
+          }
+        end
+
+        context 'when activating the subscription' do
+          let(:active) { true }
+
+          it 'activates the subscription' do
+            api_response
+            expect(user.stop_press_subscription).to be true
+          end
+
+          it { is_expected.to have_http_status :ok }
+        end
+
+        context 'when deactivating the subscription' do
+          let(:active) { false }
+
+          it 'deactivates the subscription' do
+            api_response
+            expect(user.stop_press_subscription).to be false
+          end
+
+          it { is_expected.to have_http_status :ok }
+        end
       end
     end
   end
