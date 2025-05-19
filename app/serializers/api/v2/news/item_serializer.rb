@@ -20,6 +20,7 @@ module Api
                    :start_date,
                    :end_date,
                    :chapters,
+                   :email_subscribers,
                    :created_at,
                    :updated_at
 

@@ -21,6 +21,7 @@ module Api
                    :start_date,
                    :end_date,
                    :chapters,
+                   :notify_subscribers,
                    :collection_ids,
                    :created_at,
                    :updated_at
