@@ -2,5 +2,10 @@ module PublicUsers
   class UserPreference < Sequel::Model(Sequel[:user_preferences].qualify(:public))
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
+
+    def validate
+      super
+      validates_unique(%i[user_id])
+    end
   end
 end
