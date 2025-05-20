@@ -269,5 +269,9 @@ module TradeTariffBackend
     def cupid_team_to_emails
       ENV['CUPID_TEAM_TO_EMAILS']
     end
+
+    def identity_encryption_secret
+      ENV['IDENTITY_ENCRYPTION_SECRET']
+    end
   end
 end
