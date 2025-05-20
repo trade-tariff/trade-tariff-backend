@@ -47,7 +47,7 @@ jobs:
         with:
           terraform_version: 1.10.0
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-tflint@main
-      - run: GOBIN=/usr/local/bin/ go install github.com/terraform-docs/terraform-docs@v0.20.0
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-terraform-docs@main
       - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
         with:
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
