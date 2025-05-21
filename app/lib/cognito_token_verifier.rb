@@ -1,18 +1,12 @@
-module CognitoTokenVerifier
+class CognitoTokenVerifier
   ISSUER = "https://cognito-idp.#{ENV['AWS_REGION']}.amazonaws.com/#{ENV['COGNITO_USER_POOL_ID']}".freeze
   JWKS_URL = "#{ISSUER}/.well-known/jwks.json".freeze
 
   def self.verify_id_token(token)
     return nil if token.blank?
-    return nil if jwks_keys.nil?
+    return nil if jwks_keys.nil? && !Rails.env.development?
 
-    decoded_token = JWT.decode(token, nil, true,
-                               algorithms: %w[RS256],
-                               jwks: { keys: jwks_keys },
-                               iss: ISSUER,
-                               verify_iss: true)
-
-    decoded_token[0]
+    new(token).verify
   rescue StandardError
     nil
   end
@@ -22,5 +16,35 @@ module CognitoTokenVerifier
       response = Faraday.get(JWKS_URL)
       JSON.parse(response.body)['keys'] if response.success?
     end
+  end
+
+  attr_accessor :token
+
+  def initialize(token)
+    @token = token
+  end
+
+  def verify
+    decrypt.decode.token[0]
+  end
+
+  def decrypt
+    unless Rails.env.development?
+      self.token = EncryptionService.decrypt_string(token)
+    end
+    self
+  end
+
+  def decode
+    self.token = if Rails.env.development?
+                   JWT.decode(token, nil, false)
+                 else
+                   JWT.decode(token, nil, true,
+                              algorithms: %w[RS256],
+                              jwks: { keys: CognitoTokenVerifier.jwks_keys },
+                              iss: ISSUER,
+                              verify_iss: true)
+                 end
+    self
   end
 end

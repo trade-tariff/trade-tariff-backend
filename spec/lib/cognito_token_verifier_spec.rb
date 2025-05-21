@@ -9,6 +9,7 @@ RSpec.describe CognitoTokenVerifier do
 
     before do
       allow(Faraday).to receive(:get).with(jwks_url).and_return(instance_double(Faraday::Response, success?: true, body: jwks_keys.to_json))
+      allow(EncryptionService).to receive(:decrypt_string).and_return(token)
       allow(JWT).to receive(:decode).and_return(decoded_token)
     end
 
@@ -16,6 +17,11 @@ RSpec.describe CognitoTokenVerifier do
       it 'returns the decoded token' do
         result = described_class.verify_id_token(token)
         expect(result).to eq(decoded_token[0])
+      end
+
+      it 'verifies the token' do
+        described_class.verify_id_token(token)
+        expect(JWT).to have_received(:decode).with(token, nil, true, algorithms: %w[RS256], jwks: hash_including(:keys), iss: anything, verify_iss: true)
       end
     end
 
