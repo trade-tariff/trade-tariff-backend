@@ -41,6 +41,8 @@ module News
 
       to_remove = collections.pluck(:id) - collection_ids
       to_remove.each(&method(:remove_collection))
+
+      StopPressSubscriptionWorker.perform_async(id)
     end
 
     def validate
@@ -54,6 +56,10 @@ module News
 
     def cache_key_with_version
       "News::Item/#{id}-#{updated_at}"
+    end
+
+    def emailable?
+      collections.any?(&:subscribable) && notify_subscribers
     end
 
     dataset_module do

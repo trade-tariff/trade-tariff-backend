@@ -471,4 +471,46 @@ RSpec.describe News::Item do
       it { is_expected.to eq 'a' * described_class::MAX_SLUG_LENGTH }
     end
   end
+
+  describe '#emailable?' do
+    subject { news_item.emailable? }
+
+    context 'when notify_subscribers is false' do
+      let(:news_item) { create :news_item, notify_subscribers: false }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when no collections are subscribable' do
+      let(:news_item) { create :news_item, notify_subscribers: true }
+      let(:collection) { create :news_collection, subscribable: false }
+
+      before do
+        news_item.add_collection(collection)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when notify_subscribers is true and some collections are subscribable' do
+      let(:news_item) { create :news_item, notify_subscribers: true }
+      let(:collection) { create :news_collection, subscribable: true }
+
+      before do
+        news_item.add_collection(collection)
+      end
+
+      it { is_expected.to be true }
+    end
+  end
+
+  describe 'after_save callback' do
+    let(:instance) { build(:news_item) }
+
+    it 'calls worker on save' do
+      allow(StopPressSubscriptionWorker).to receive(:perform_async)
+      instance.save
+      expect(StopPressSubscriptionWorker).to have_received(:perform_async).with(instance.id)
+    end
+  end
 end
