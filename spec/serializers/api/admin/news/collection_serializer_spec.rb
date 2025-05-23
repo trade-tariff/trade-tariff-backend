@@ -17,6 +17,7 @@ RSpec.describe Api::Admin::News::CollectionSerializer do
             description: collection.description,
             priority: collection.priority,
             published: collection.published,
+            subscribable: collection.subscribable,
           },
         },
       }

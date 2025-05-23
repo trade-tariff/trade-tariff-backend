@@ -6221,7 +6221,8 @@ CREATE TABLE uk.news_collections (
     priority integer DEFAULT 0 NOT NULL,
     description text,
     slug character varying(255),
-    published boolean DEFAULT true
+    published boolean DEFAULT true,
+    subscribable boolean DEFAULT false
 );
 
 
@@ -12804,3 +12805,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250417142520_create_subs
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250425145123_add_chapters_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250516154516_add_notify_subscribers_to_news_item.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250522141643_add_subscribable_to_news_collection.rb');
