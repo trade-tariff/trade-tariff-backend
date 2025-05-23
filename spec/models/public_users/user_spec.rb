@@ -79,4 +79,70 @@ RSpec.describe PublicUsers::User do
       end
     end
   end
+
+  describe 'scopes' do
+    describe '.with_active_stop_press_subscription' do
+      subject(:dataset) { described_class.with_active_stop_press_subscription }
+
+      let!(:user_with_active_subscription) { create(:public_user, :with_active_stop_press_subscription) }
+      let!(:another_user_with_active_subscription) { create(:public_user, :with_active_stop_press_subscription) }
+      let!(:user_with_inactive_subscription) { create(:public_user, :with_inactive_stop_press_subscription) }
+      let!(:user_without_subscription) { create(:public_user) }
+      let!(:user_with_different_active_subscription) { create(:public_user) }
+
+      before do
+        user_with_active_subscription
+        another_user_with_active_subscription
+        user_with_inactive_subscription
+        user_without_subscription
+        create(:user_subscription, user_id: user_with_different_active_subscription.id)
+      end
+
+      it 'returns expected users' do
+        expect(dataset).to contain_exactly(user_with_active_subscription, another_user_with_active_subscription)
+      end
+    end
+
+    describe '.matching_chapters' do
+      subject(:dataset) { described_class.matching_chapters(chapters) }
+
+      let(:user_with_chapter_1) { create(:public_user, :with_chapters_preference, chapters: '01') }
+      let(:user_with_chapter_2_3) { create(:public_user, :with_chapters_preference, chapters: '02,03') }
+      let(:user_with_chapter_3_4) { create(:public_user, :with_chapters_preference, chapters: '03,04') }
+      let(:user_with_chapter_4) { create(:public_user, :with_chapters_preference, chapters: '04') }
+      let(:user_with_chapter_1_2_3_4) { create(:public_user, :with_chapters_preference, chapters: '01,02,03,04') }
+
+      before do
+        user_with_chapter_1
+        user_with_chapter_2_3
+        user_with_chapter_3_4
+        user_with_chapter_4
+        user_with_chapter_1_2_3_4
+      end
+
+      context 'when no chapters are specified' do
+        let(:chapters) { nil }
+
+        it 'returns all users' do
+          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_2_3, user_with_chapter_3_4, user_with_chapter_4, user_with_chapter_1_2_3_4)
+        end
+      end
+
+      context 'when 1 chapter is specified' do
+        let(:chapters) { %w[01] }
+
+        it 'returns expected users' do
+          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_1_2_3_4)
+        end
+      end
+
+      context 'when multiple chapters are specified' do
+        let(:chapters) { %w[01 02] }
+
+        it 'returns expected users' do
+          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_2_3, user_with_chapter_1_2_3_4)
+        end
+      end
+    end
+  end
 end
