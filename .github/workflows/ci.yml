@@ -91,14 +91,3 @@ jobs:
       - run: bundle exec rails db:structure:load --trace
 
       - run: bundle exec rspec
-
-  notifications:
-      runs-on: ubuntu-latest
-      needs: test
-      if: always()
-      steps:
-        - uses: actions/checkout@v4
-        - uses: trade-tariff/trade-tariff-tools/.github/actions/slack-notify@main
-          with:
-            result: ${{ needs.test.result }}
-            slack_webhook: ${{ secrets.SLACK_WEBHOOK }}
