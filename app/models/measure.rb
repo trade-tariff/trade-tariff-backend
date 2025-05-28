@@ -618,7 +618,7 @@ class Measure < Sequel::Model
       additional_code_id,
       ordernumber,
       values[
-        values.key?(:effective_end_date) ? :effective_end_date : :validity_end_date
+        values.key?(:effective_end_date) ? :effective_end_date : :validity_end_date,
       ],
     ]
   end
