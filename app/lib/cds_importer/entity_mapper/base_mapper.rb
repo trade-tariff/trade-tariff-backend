@@ -16,10 +16,12 @@ class CdsImporter
 
       delegate :entity_class,
                :entity_mapping,
+               :reportable_entity_mapping,
                :mapping_path,
                :mapping_root,
                :exclude_mapping,
                :mapping_with_key_as_array,
+               :mapping_reportable_with_key_as_array,
                :mapping_keys_to_parse,
                :before_oplog_inserts_callbacks,
                :before_building_model_callbacks,
@@ -29,12 +31,13 @@ class CdsImporter
       class << self
         delegate :instrument, :subscribe, to: ActiveSupport::Notifications
 
-        attr_accessor :entity_class,        # model
-                      :entity_mapping,      # attributes mapping
-                      :mapping_path,        # path to attributes in xml
-                      :mapping_root,        # node name in xml that provides data for mapping
-                      :exclude_mapping,     # list of excluded attributes
-                      :primary_key_mapping  # how we pull out the (often composite) primary key from the xml node document
+        attr_accessor :entity_class,              # model
+                      :entity_mapping,            # attributes mapping
+                      :reportable_entity_mapping, # attributes mapping for reportable entities
+                      :mapping_path,              # path to attributes in xml
+                      :mapping_root,              # node name in xml that provides data for mapping
+                      :exclude_mapping,           # list of excluded attributes
+                      :primary_key_mapping        # how we pull out the (often composite) primary key from the xml node document
 
         def before_oplog_inserts_callbacks
           @before_oplog_inserts_callbacks ||= []
@@ -71,6 +74,12 @@ class CdsImporter
         def mapping_with_key_as_array
           @mapping_with_key_as_array ||= entity_mapping.keys.each_with_object({}) do |key, memo|
             memo[key.split(PATH_SEPARATOR)] = entity_mapping[key]
+          end
+        end
+
+        def mapping_reportable_with_key_as_array
+          @mapping_reportable_with_key_as_array ||= reportable_entity_mapping.keys.each_with_object({}) do |key, memo|
+            memo[key.split(PATH_SEPARATOR)] = reportable_entity_mapping[key]
           end
         end
 
