@@ -402,11 +402,6 @@ class Measure < Sequel::Model
       exclude(measures__measure_type_id: MeasureType.excluded_measure_types)
     end
 
-    def without_excluded_series
-      left_join(:measure_types, measure_type_id: :measure_type_id)
-        .exclude(Sequel[:measure_types][:measure_type_series_id] => MeasureType.excluded_measure_series)
-    end
-
     def overview
       where do
         overview_types = [
