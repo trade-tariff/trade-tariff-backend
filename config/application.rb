@@ -69,4 +69,5 @@ module TradeTariffBackend
   end
 
   Rails.autoloaders.main.ignore(Rails.root.join('lib/core_ext'))
+  Rails.autoloaders.main.ignore(Rails.root.join('lib/generators'))
 end
