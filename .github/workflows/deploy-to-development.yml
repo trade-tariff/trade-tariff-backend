@@ -35,16 +35,16 @@ jobs:
         run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_OUTPUT"
       - id: docker-tag
         run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@BAU-support-build-args
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@main
         with:
           environment: ${{ env.ENVIRONMENT }}
           ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
-          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }}"
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@BAU-support-build-args
         with:
           ecr-url: ${{ env.ECR_URL }}
           ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }}"
 
   deploy:
     if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
