@@ -2,7 +2,7 @@
 ARG RUBY_VERSION=3.4.2
 ARG ALPINE_VERSION=3.21
 
-FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} as builder
+FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # The application runs from /app
 WORKDIR /app
@@ -33,7 +33,7 @@ RUN rm -rf node_modules log tmp && \
 
 # Build runtime image
 
-FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} as production
+FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
 # Install required packages in one layer
 RUN apk add --no-cache \
