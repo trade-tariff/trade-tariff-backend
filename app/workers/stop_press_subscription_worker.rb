@@ -10,7 +10,7 @@ class StopPressSubscriptionWorker
 
   def queue
     users.each do |user|
-      # TODO: StopPressEmailWorker.perform_async(@stop_press, user)
+      StopPressEmailWorker.perform_async(@stop_press.id, user.id)
     end
   end
 
