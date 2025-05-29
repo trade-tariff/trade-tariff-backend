@@ -4,6 +4,7 @@ module GreenLanes
       CREATED = 0
       UPDATED = 1
       EXPIRED = 2
+      CA_CREATED = 3
       INACTIVE = 9
     end
 
