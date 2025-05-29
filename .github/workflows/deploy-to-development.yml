@@ -44,7 +44,7 @@ jobs:
         with:
           ecr-url: ${{ env.ECR_URL }}
           ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
-          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }}"
+          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }} ALPINE_VERSION=3.21"
 
   deploy:
     if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
