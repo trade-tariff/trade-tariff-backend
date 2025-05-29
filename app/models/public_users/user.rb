@@ -8,7 +8,7 @@ module PublicUsers
 
     delegate :chapter_ids, to: :preferences
 
-    attr_accessor :email
+    attr_writer :email
 
     dataset_module do
       def with_active_stop_press_subscription
@@ -24,14 +24,20 @@ module PublicUsers
       def matching_chapters(chapters)
         return self if chapters.blank?
 
-        conditions = Array(chapters).map { |chapter|
+        chapter_conditions = Array(chapters).map { |chapter|
           Sequel.like(:user_preferences__chapter_ids, "%#{chapter}%")
         }.inject(:|)
 
+        all_conditions = chapter_conditions | Sequel.expr(user_preferences__chapter_ids: nil) | Sequel.like(:user_preferences__chapter_ids, '')
+
         join(:public__user_preferences, user_id: :id)
-          .where(conditions)
+          .where(all_conditions)
           .select_all(:users)
       end
+    end
+
+    def email
+      @email ||= IdentityApiClient.get_email(external_id)
     end
 
     def stop_press_subscription
