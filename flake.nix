@@ -21,7 +21,7 @@
         ruby = pkgs."ruby-${rubyVersion}";
 
         postgresqlBuildFlags = with pkgs; [
-          "--with-pg-config=${lib.getDev postgresql_16}/bin/pg_config"
+          "--with-pg-config=${lib.getDev postgresql.pg_config}/bin/pg_config"
         ];
         psychBuildFlags = with pkgs; [
           "--with-libyaml-include=${libyaml.dev}/include"
