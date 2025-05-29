@@ -30,19 +30,17 @@ class GreenLanesUpdatesWorker
     updates
       .select { |update| update.status == ::GreenLanes::UpdateNotification::NotificationStatus::CREATED }
       .each do |update|
+      identified_ca = GreenLanes::IdentifiedMeasureTypeCategoryAssessment.where(measure_type_id: update.measure_type_id).first
 
-      identified_ca = GreenLanes::IdentifiedMeasureTypeCategoryAssessment.where(measure_type_id: update[:measure_type_id]).first
+      next unless identified_ca
 
-      if identified_ca
-        logger.info "Creating category assessment for #{update.measure_type_id}"
+      logger.info "Creating category assessment for #{update.measure_type_id}"
 
-        assessment = GreenLanes::CategoryAssessment.new(regulation_id: update.regulation_id,
-                                                        regulation_role: update.regulation_role,
-                                                        measure_type_id: update.measure_type_id,
-                                                        theme_id: identified_ca.theme_id)
-        assessment.save(validate: true)
-        identified_ca.status = ::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED
-      end
+      assessment = GreenLanes::CategoryAssessment.new(regulation_id: update.regulation_id,
+                                                      regulation_role: update.regulation_role,
+                                                      measure_type_id: update.measure_type_id,
+                                                      theme_id: identified_ca.theme_id)
+      assessment.save(validate: true)
     end
   end
 

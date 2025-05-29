@@ -4,10 +4,10 @@ module GreenLanes
     plugin :timestamps, update_on_create: true
     plugin :auto_validations, not_null: :presence
 
-    one_to_one :measure_type,
-               key: :measure_type_id,
-               primary_key: :measure_type_id,
-               class: :MeasureType
+    many_to_one :measure_type,
+                key: :measure_type_id,
+                primary_key: :measure_type_id,
+                class: :MeasureType
 
     many_to_one :theme
 

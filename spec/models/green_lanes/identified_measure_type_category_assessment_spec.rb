@@ -8,16 +8,6 @@ RSpec.describe GreenLanes::IdentifiedMeasureTypeCategoryAssessment do
     it { is_expected.to respond_to :updated_at }
   end
 
-  describe 'associations test' do
-    before do
-      assessment = build(:identified_measure_type_category_assessment)
-      puts assessment.primary_key.inspect
-      puts assessment.pk.inspect
-    end
-
-    it { expect(assessment).to exist}
-  end
-
   describe 'validations' do
     subject(:errors) { instance.tap(&:valid?).errors }
 
@@ -29,6 +19,7 @@ RSpec.describe GreenLanes::IdentifiedMeasureTypeCategoryAssessment do
 
   describe 'validations duplicates' do
     subject(:errors) { instance.tap(&:valid?).errors }
+
     let(:existing) { create :identified_measure_type_category_assessment }
 
     let :instance do
