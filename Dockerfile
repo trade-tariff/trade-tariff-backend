@@ -1,5 +1,8 @@
 # Build compilation image
-FROM ruby:3.4.2-alpine3.21 as builder
+ARG RUBY_VERSION=3.4.2
+ARG ALPINE_VERSION=3.21
+
+FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} as builder
 
 # The application runs from /app
 WORKDIR /app
@@ -29,7 +32,8 @@ RUN rm -rf node_modules log tmp && \
   find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:3.4.2-alpine3.21 as production
+
+FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} as production
 
 # Install required packages in one layer
 RUN apk add --no-cache \

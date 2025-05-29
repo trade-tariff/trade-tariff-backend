@@ -23,13 +23,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - id: ruby-version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_OUTPUT"
       - id: docker-tag
         run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
-      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@main
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/terraform-plan@BAU-support-build-args
         with:
           environment: ${{ env.ENVIRONMENT }}
           ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
           ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }}"
       - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
         with:
           ecr-url: ${{ env.ECR_URL }}
