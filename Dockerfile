@@ -1,5 +1,8 @@
 # Build compilation image
-FROM ruby:3.4.2-alpine3.21 as builder
+ARG RUBY_VERSION=3.4.4
+ARG ALPINE_VERSION=3.21
+
+FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS builder
 
 # The application runs from /app
 WORKDIR /app
@@ -29,14 +32,20 @@ RUN rm -rf node_modules log tmp && \
   find /usr/local/bundle/gems -name "*.html" -delete
 
 # Build runtime image
-FROM ruby:3.4.2-alpine3.21 as production
 
-# Install PostgreSQL client tools
-RUN apk add --no-cache postgresql-client
+FROM ruby:${RUBY_VERSION}-alpine${ALPINE_VERSION} AS production
 
-RUN apk add --update --no-cache postgresql-dev curl shared-mime-info tzdata && \
-  cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
-  echo "Europe/London" > /etc/timezone
+# Install required packages in one layer
+RUN apk add --no-cache \
+    bash \
+    curl \
+    postgresql-client \
+    postgresql-dev \
+    aws-cli \
+    shared-mime-info \
+    tzdata && \
+    cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
+    echo "Europe/London" > /etc/timezone
 
 RUN bundle config set without 'development test'
 

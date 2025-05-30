@@ -51,6 +51,24 @@ RSpec.describe News::Item do
 
       it { is_expected.to include(precis: ['is not present']) }
     end
+
+    context 'when chapters are invalid' do
+      let(:instance) { described_class.new(chapters: '1234') }
+
+      it { is_expected.to include(chapters: ['have an invalid format']) }
+    end
+
+    context 'when chapters are valid' do
+      let(:instance) { described_class.new(chapters: '12 34') }
+
+      it { is_expected.not_to include(chapters: ['have an invalid format']) }
+    end
+
+    context 'when chapters are empty' do
+      let(:instance) { described_class.new(chapters: '') }
+
+      it { is_expected.not_to include(chapters: ['have an invalid format']) }
+    end
   end
 
   describe 'associations' do
@@ -451,6 +469,71 @@ RSpec.describe News::Item do
       let(:instance) { build :news_item, title: }
 
       it { is_expected.to eq 'a' * described_class::MAX_SLUG_LENGTH }
+    end
+  end
+
+  describe '#emailable?' do
+    subject { news_item.emailable? }
+
+    context 'when notify_subscribers is false' do
+      let(:news_item) { create :news_item, notify_subscribers: false }
+
+      it { is_expected.to be false }
+    end
+
+    context 'when no collections are subscribable' do
+      let(:news_item) { create :news_item, notify_subscribers: true }
+      let(:collection) { create :news_collection, subscribable: false }
+
+      before do
+        news_item.add_collection(collection)
+      end
+
+      it { is_expected.to be false }
+    end
+
+    context 'when notify_subscribers is true and some collections are subscribable' do
+      let(:news_item) { create :news_item, notify_subscribers: true }
+      let(:collection) { create :news_collection, subscribable: true }
+
+      before do
+        news_item.add_collection(collection)
+      end
+
+      it { is_expected.to be true }
+    end
+  end
+
+  describe '#public_url' do
+    subject { news_item.public_url }
+
+    let(:news_item) { create(:news_item, slug: 'tariff-stop-press-notice---22-may-2025') }
+    let(:host) { 'https://www.trade-tariff.service.gov.uk/' }
+
+    before do
+      allow(TradeTariffBackend).to receive(:frontend_host).and_return(host)
+    end
+
+    it { is_expected.to eq 'https://www.trade-tariff.service.gov.uk/news/stories/tariff-stop-press-notice---22-may-2025' }
+  end
+
+  describe 'after_save callback' do
+    let(:instance) { build(:news_item) }
+
+    before do
+      allow(StopPressSubscriptionWorker).to receive(:perform_async)
+    end
+
+    it 'calls worker on save' do
+      instance.save
+      expect(StopPressSubscriptionWorker).to have_received(:perform_async).with(instance.id)
+    end
+
+    it 'does not call worker when feature flag is off' do
+      allow(TradeTariffBackend).to receive(:myott?).and_return(false)
+
+      instance.save
+      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(instance.id)
     end
   end
 end

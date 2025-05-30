@@ -23,6 +23,8 @@ RSpec.describe Api::Admin::News::ItemSerializer do
           show_on_banner: news_item.show_on_banner,
           start_date: news_item.start_date,
           end_date: news_item.end_date,
+          chapters: news_item.chapters,
+          notify_subscribers: news_item.notify_subscribers,
           collection_ids: news_item.collections.map(&:id),
           created_at: news_item.created_at,
           updated_at: news_item.updated_at,

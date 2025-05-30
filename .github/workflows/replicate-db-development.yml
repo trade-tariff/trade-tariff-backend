@@ -1,0 +1,63 @@
+name: Run Development DB Replicate Job
+
+on:
+  schedule:
+    - cron: 00 7 * * 1,2,3,4,5
+  workflow_dispatch:
+
+env:
+  AWS_REGION: eu-west-2
+  IAM_ROLE_ARN: arn:aws:iam::844815912454:role/GithubActions-ECS-Deployments-Role
+  CLUSTER: trade-tariff-cluster-development
+  SERVICE_NAME: backend-job-844815912454
+  CONTAINER_NAME: backend-job
+  SG_NAME: trade-tariff-ecs-security-group-development
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  run-job:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.IAM_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - uses: trade-tariff/trade-tariff-tools/.github/actions/setup-ssh@main
+        with:
+          ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      - name: Fetch Subnet and Security Group IDs
+        id: network
+        run: |
+          SUBNETS=$(aws ec2 describe-subnets \
+            --filters "Name=tag:Name,Values=*private*" \
+            --query 'Subnets[*].SubnetId' \
+            --output text \
+            --region "$AWS_REGION" | tr '\t' ',')
+
+          SG=$(aws ec2 describe-security-groups \
+            --filters "Name=group-name,Values=${{ env.SG_NAME }}" \
+            --query 'SecurityGroups[0].GroupId' \
+            --output text \
+            --region "$AWS_REGION")
+
+          echo "SUBNETS=$SUBNETS" >> "$GITHUB_ENV"
+          echo "SG=$SG" >> "$GITHUB_ENV"
+      - name: Run ECS task
+        run: |
+          aws ecs run-task \
+            --cluster "${{ env.CLUSTER }}" \
+            --launch-type FARGATE \
+            --region "${{ env.AWS_REGION }}" \
+            --network-configuration "awsvpcConfiguration={subnets=[${{ env.SUBNETS }}],securityGroups=[${{ env.SG }}],assignPublicIp=DISABLED}" \
+            --task-definition "${{ env.SERVICE_NAME }}" \
+            --started-by github-action \
+            --count 1 \
+            --overrides '{
+                "containerOverrides": [{
+                  "name": "${{ env.CONTAINER_NAME }}",
+                  "command": ["/bin/sh", "-c", "./bin/db_replicate"]
+                }]
+              }'

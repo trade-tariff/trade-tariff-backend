@@ -30,7 +30,7 @@ The schemes data returned includes both V1 rules, and where available, v2 rulese
 
 ## RoO Data sources
 
-The RoO data files are held in `/db/rules_of_origin` within this codebase. All data is read into ActiveModel data objects held in memory and connnected via an instance of `RulesOfOrigin::DataSet`
+The RoO data files are held in `/lib/rules_of_origin` within this codebase. All data is read into ActiveModel data objects held in memory and connnected via an instance of `RulesOfOrigin::DataSet`
 
 The loaded data is globally available within the running app at `TradeTariffBackend.rules_of_origin` and can be queried using an instance of `RulesOfOrigin::Query`.
 
@@ -107,15 +107,15 @@ Additionally there are RSpec tests which can be run against the datasets, these 
 bundle exec rspec --tag roo_data
 ```
 
-These specs are run automatically by CI whenever there are any changes affecting the `/db/rules_of_origin` folder
+These specs are run automatically by CI whenever there are any changes affecting the `/lib/rules_of_origin` folder
 
 ## Steps to update the RoO data files
 
 -[] copy the CSV, json, and md files in the relevant folders (see file structure above)
 -[] check the validity of the csv files using the rake tasks, for example:
-  `bundle exec rake rules_of_origin:validate_mappings CSVFILE=db/rules_of_origin/rules_to_commodities_211124.csv`
+  `bundle exec rake rules_of_origin:validate_mappings CSVFILE=lib/rules_of_origin/rules_to_commodities_211124.csv`
   and
-  `bundle exec rake rules_of_origin:validate_rules CSVFILE=db/rules_of_origin/rules_of_origin_211124.csv`
+  `bundle exec rake rules_of_origin:validate_rules CSVFILE=lib/rules_of_origin/rules_of_origin_211124.csv`
 
   these returns Success/Failure message
 

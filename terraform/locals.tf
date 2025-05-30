@@ -38,5 +38,14 @@ locals {
       value = value
     }
   ]
+
+  db_replicate_secret_value = try(data.aws_secretsmanager_secret_version.db_replicate_configuration.secret_string, "{}")
+  db_replicate_secret_map   = jsondecode(local.db_replicate_secret_value)
+  db_replicate_secret_env_vars = [
+    for key, value in local.db_replicate_secret_map : {
+      name  = key
+      value = value
+    }
+  ]
   ecr_repo = "382373577178.dkr.ecr.eu-west-2.amazonaws.com/tariff-backend-production"
 }

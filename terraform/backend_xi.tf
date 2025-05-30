@@ -1,10 +1,11 @@
 module "backend_xi" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.13.1"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.16.0"
 
   region = var.region
 
-  service_name  = "backend-xi"
-  service_count = var.service_count
+  service_name              = "backend-xi"
+  container_definition_kind = "web"
+  service_count             = var.service_count
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
   subnet_ids                = data.aws_subnets.private.ids

@@ -1,6 +1,6 @@
 module RulesOfOrigin
   class SchemeAssociations
-    DEFAULT_SOURCE_PATH = Rails.root.join('db/rules_of_origin').freeze
+    DEFAULT_SOURCE_PATH = Rails.root.join('lib/rules_of_origin').freeze
     DEFAULT_FILE = 'roo_scheme_area_associations_220315.json'.freeze
 
     class << self

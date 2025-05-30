@@ -41,6 +41,8 @@ module News
 
       to_remove = collections.pluck(:id) - collection_ids
       to_remove.each(&method(:remove_collection))
+
+      StopPressSubscriptionWorker.perform_async(id) if TradeTariffBackend.myott?
     end
 
     def validate
@@ -49,10 +51,19 @@ module News
       validates_presence :slug
       validates_presence :precis if show_on_updates_page
       validates_presence :collection_ids, message: 'must include at least one collection'
+      errors.add(:chapters, 'have an invalid format') unless chapters.to_s.split.all? { |chapter| chapter.match?(/\A\d{2}\z/) }
     end
 
     def cache_key_with_version
       "News::Item/#{id}-#{updated_at}"
+    end
+
+    def emailable?
+      collections.any?(&:subscribable) && notify_subscribers
+    end
+
+    def public_url
+      URI.join(TradeTariffBackend.frontend_host, '/news/stories/', slug).to_s
     end
 
     dataset_module do

@@ -13,7 +13,7 @@ gem 'sequel-rails'
 
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
-gem 'aws-sdk-cloudfront', '~> 1.111'
+gem 'aws-sdk-cloudfront', '~> 1.118'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -42,6 +42,7 @@ gem 'lograge'
 gem 'logstash-event'
 gem 'newrelic_rpm'
 gem 'nokogiri'
+gem 'notifications-ruby-client'
 gem 'omniauth-rails_csrf_protection'
 gem 'ostruct'
 gem 'plek'

@@ -273,5 +273,21 @@ module TradeTariffBackend
     def cupid_team_to_emails
       ENV['CUPID_TEAM_TO_EMAILS']
     end
+
+    def identity_encryption_secret
+      ENV['IDENTITY_ENCRYPTION_SECRET']
+    end
+
+    def identity_api_host
+      ENV['IDENTITY_API_HOST']
+    end
+
+    def identity_api_key
+      ENV['IDENTITY_API_KEY']
+    end
+
+    def myott?
+      ENV['MYOTT_ENABLED'].to_s == 'true'
+    end
   end
 end

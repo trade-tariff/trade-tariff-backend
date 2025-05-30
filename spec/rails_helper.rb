@@ -78,7 +78,7 @@ RSpec.configure do |config|
 
   config.verbose_retry = true
   config.display_try_failure_messages = true
-  config.around { |ex| ex.run_with_retry retry: 3 }
+  config.around { |ex| ex.run_with_retry retry: ENV.fetch('TEST_RETRIES', 3) }
 end
 
 def silence

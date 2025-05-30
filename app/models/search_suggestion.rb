@@ -85,6 +85,10 @@ class SearchSuggestion < Sequel::Model
       )
     end
 
+    def search_reference_type
+      where(type: [TYPE_SEARCH_REFERENCE])
+    end
+
     def numeric_type
       where(
         type: [

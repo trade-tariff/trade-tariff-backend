@@ -1400,7 +1400,7 @@ RSpec.describe Measure do
       let(:certificate_types_and_codes) { [] }
 
       it 'applies no filter' do
-        expect(dataset.pluck(:certificate_code)).to eq %w[123 456 789]
+        expect(dataset.order(:certificate_code).pluck(:certificate_code)).to eq %w[123 456 789]
       end
     end
 
@@ -1413,7 +1413,7 @@ RSpec.describe Measure do
       end
 
       it 'applies the filter' do
-        expect(dataset.pluck(:certificate_code)).to eq %w[123 456]
+        expect(dataset.pluck(:certificate_code)).to match_array %w[123 456]
       end
     end
   end
