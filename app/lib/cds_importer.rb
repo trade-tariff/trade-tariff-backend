@@ -47,18 +47,26 @@ class CdsImporter
       end
     end
 
+    TariffSynchronizer::CdsUpdateReporter.new(handler.imported_entities).generate
+
     @oplog_inserts
   end
 
   class XmlProcessor
+    attr_reader :imported_entities
+
     def initialize(filename)
       @filename = filename
+      @imported_entities = []
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      CdsImporter::EntityMapper.new(key, hash_from_node).import
+      # Capture for Excel report
+      @imported_entities << CdsImporter::EntityMapper.new(key, hash_from_node).import
+      # every element will be a hash, first element is an array of Entity.entity_mapping.keys
+      # and the second hash_from_node
     rescue StandardError => e
       cds_failed_log(e, key, hash_from_node)
       raise ImportException
