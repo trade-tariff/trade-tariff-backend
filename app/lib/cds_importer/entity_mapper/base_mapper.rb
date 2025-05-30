@@ -13,6 +13,11 @@ class CdsImporter
         'metainfo.opType' => :operation,
         'metainfo.transactionDate' => :operation_date,
       }.freeze
+      REPORTABLE_BASE_MAPPING = {
+        'metainfo.opType' => :operation,
+        'validityStartDate' => :validity_start_date,
+        'validityEndDate' => :validity_end_date,
+      }.freeze
 
       delegate :entity_class,
                :entity_mapping,
@@ -64,6 +69,13 @@ class CdsImporter
           BASE_MAPPING.except(*exclude_mapping).keys.each_with_object({}) do |key, memo|
             mapped_key = mapping_path.present? ? "#{mapping_path}.#{key}" : key
             memo[mapped_key] = BASE_MAPPING[key]
+          end
+        end
+
+        def reportable_base_mapping
+          REPORTABLE_BASE_MAPPING.except(*exclude_mapping).keys.each_with_object({}) do |key, memo|
+            mapped_key = mapping_path.present? ? "#{mapping_path}.#{key}" : key
+            memo[mapped_key] = REPORTABLE_BASE_MAPPING[key]
           end
         end
 
