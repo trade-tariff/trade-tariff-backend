@@ -36,8 +36,6 @@ class CdsImporter
         'measureCondition.sid' => :measure_condition_sid,
         'measureCondition.measureAction.actionCode' => :measure_action_code,
         'measureCondition.measureConditionCode' => :measure_condition_code,
-      ).freeze
-
         'sid' => :measure_sid,
       ).freeze
 
