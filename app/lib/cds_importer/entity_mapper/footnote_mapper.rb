@@ -9,6 +9,12 @@ class CdsImporter
         'footnoteId' => :footnote_id,
         'footnoteType.footnoteTypeId' => :footnote_type_id,
       ).freeze
+
+      self.reportable_entity_mapping = reportable_base_mapping.merge(
+        'footnoteId' => :footnote_id,
+        'footnoteType.footnoteTypeId' => :footnote_type_id,
+        'footnoteDescriptionPeriod.footnoteDescription.description' => :description,
+      ).freeze
     end
   end
 end

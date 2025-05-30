@@ -11,6 +11,11 @@ class CdsImporter
         'sid' => :quota_order_number_sid,
         'quotaOrderNumberId' => :quota_order_number_id,
       ).freeze
+
+      self.reportable_entity_mapping = reportable_base_mapping.merge(
+        'sid' => :quota_order_number_sid,
+        'quotaOrderNumberId' => :quota_order_number_id,
+      ).freeze
     end
   end
 end
