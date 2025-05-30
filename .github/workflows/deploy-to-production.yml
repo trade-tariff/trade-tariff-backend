@@ -23,12 +23,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - id: ruby-version
+        run: echo "RUBY_VERSION=$(cat .ruby-version)" >> "$GITHUB_OUTPUT"
       - id: docker-tag
         run: echo "DOCKER_TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - uses: trade-tariff/trade-tariff-tools/.github/actions/build-and-push@main
         with:
           ecr-url: ${{ env.ECR_URL }}
           ref: ${{ steps.docker-tag.outputs.DOCKER_TAG }}
+          build-args: "RUBY_VERSION=${{ steps.ruby-version.outputs.RUBY_VERSION }} ALPINE_VERSION=3.21"
 
   deploy:
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}

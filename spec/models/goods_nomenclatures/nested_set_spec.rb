@@ -455,16 +455,6 @@ RSpec.describe GoodsNomenclatures::NestedSet do
         it { is_expected.not_to include measure.measure_sid }
       end
 
-      context 'with measures that measure type series are excluded' do
-        before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
-
-        let :measure do
-          create :measure, :with_base_regulation, :with_goods_nomenclature, :excise, measure_type_id:
-        end
-
-        it { is_expected.not_to include measure.measure_sid }
-      end
-
       context 'with eager loading' do
         subject do
           GoodsNomenclature

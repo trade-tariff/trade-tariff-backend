@@ -504,13 +504,36 @@ RSpec.describe News::Item do
     end
   end
 
+  describe '#public_url' do
+    subject { news_item.public_url }
+
+    let(:news_item) { create(:news_item, slug: 'tariff-stop-press-notice---22-may-2025') }
+    let(:host) { 'https://www.trade-tariff.service.gov.uk/' }
+
+    before do
+      allow(TradeTariffBackend).to receive(:frontend_host).and_return(host)
+    end
+
+    it { is_expected.to eq 'https://www.trade-tariff.service.gov.uk/news/stories/tariff-stop-press-notice---22-may-2025' }
+  end
+
   describe 'after_save callback' do
     let(:instance) { build(:news_item) }
 
-    it 'calls worker on save' do
+    before do
       allow(StopPressSubscriptionWorker).to receive(:perform_async)
+    end
+
+    it 'calls worker on save' do
       instance.save
       expect(StopPressSubscriptionWorker).to have_received(:perform_async).with(instance.id)
+    end
+
+    it 'does not call worker when feature flag is off' do
+      allow(TradeTariffBackend).to receive(:myott?).and_return(false)
+
+      instance.save
+      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(instance.id)
     end
   end
 end
