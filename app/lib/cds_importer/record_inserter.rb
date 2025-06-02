@@ -14,7 +14,7 @@ class CdsImporter
         if entity.instance.skip_import?
           instrument_skip_record(entity.instance, entity.mapper)
         else
-          instrument('cds_importer.import.operations', multi_insert: true, mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance)
+          instrument('cds_importer.import.operations', mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance)
         end
       end
 
@@ -24,7 +24,7 @@ class CdsImporter
       grouped_batch.each do |operation_klass, group|
         save_group(operation_klass, group)
       rescue StandardError => e
-        instrument('cds_error.cds_importer', multi_insert: true, type: operation_klass, exception: e)
+        instrument('cds_error.cds_importer', type: operation_klass, exception: e)
         nil
       end
     end

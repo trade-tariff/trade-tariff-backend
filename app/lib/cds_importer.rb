@@ -36,6 +36,7 @@ class CdsImporter
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
 
     subscribe_to_oplog_inserts
+    Rails.logger.info "CDS Importer batch size: #{TradeTariffBackend.cds_importer_batch_size}"
 
     Zip::File.open_buffer(zip_file) do |archive|
       archive.entries.each do |entry|
