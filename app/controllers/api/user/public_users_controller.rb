@@ -50,6 +50,12 @@ module Api
           end
         end
 
+        if Rails.env.development? && @current_user.nil?
+          @current_user = PublicUsers::User.find(external_id: 'dummy_user')
+          @current_user ||= PublicUsers::User.create(external_id: 'dummy_user')
+          @current_user.email = 'dummy@user.com'
+        end
+
         if @current_user.nil?
           render json: { message: 'No bearer token was provided' }, status: :unauthorized
         end
