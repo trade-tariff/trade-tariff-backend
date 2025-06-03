@@ -25,7 +25,7 @@ RSpec.describe CdsImporter::RecordInserter do
         if entity.instance.skip_import?
           ['cds_importer.import.operations', { mapper: entity.mapper, operation: :skipped, count: 1, record: entity.instance }]
         else
-          ['cds_importer.import.operations', { multi_insert: true, mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance }]
+          ['cds_importer.import.operations', { mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance }]
         end
       end
 
