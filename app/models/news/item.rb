@@ -42,7 +42,7 @@ module News
       to_remove = collections.pluck(:id) - collection_ids
       to_remove.each(&method(:remove_collection))
 
-      StopPressSubscriptionWorker.perform_async(id)
+      StopPressSubscriptionWorker.perform_async(id) if TradeTariffBackend.myott?
     end
 
     def validate
@@ -60,6 +60,10 @@ module News
 
     def emailable?
       collections.any?(&:subscribable) && notify_subscribers
+    end
+
+    def public_url
+      URI.join(TradeTariffBackend.frontend_host, '/news/stories/', slug).to_s
     end
 
     dataset_module do

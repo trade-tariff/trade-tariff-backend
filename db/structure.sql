@@ -12630,6 +12630,14 @@ ALTER TABLE ONLY uk.green_lanes_measures
 
 
 --
+-- Name: green_lanes_update_notifications green_lanes_update_notifications_theme_id_fkey; Type: FK CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.green_lanes_update_notifications
+    ADD CONSTRAINT green_lanes_update_notifications_theme_id_fkey FOREIGN KEY (theme_id) REFERENCES uk.green_lanes_themes(id) ON DELETE SET NULL;
+
+
+--
 -- Name: news_collections_news_items news_collections_news_items_collection_id_fkey; Type: FK CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -12865,3 +12873,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250516154516_add_notify_subscribers_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250522141643_add_subscribable_to_news_collection.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250527104818_create_green_lanes_identified_measure_type_category_assessments.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250603122927_add_theme_id_to_green_lanes_update_notifications.rb');

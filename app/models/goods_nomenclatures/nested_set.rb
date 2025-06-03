@@ -127,7 +127,6 @@ module GoodsNomenclatures
           .dedupe_similar
           .with_regulation_dates_query
           .without_excluded_types
-          .without_excluded_series
       end
 
       one_to_many :overview_measures,
@@ -139,7 +138,6 @@ module GoodsNomenclatures
           .dedupe_similar
           .with_regulation_dates_query
           .without_excluded_types
-          .without_excluded_series
           .overview
       end
 
