@@ -517,6 +517,34 @@ RSpec.describe News::Item do
     it { is_expected.to eq 'https://www.trade-tariff.service.gov.uk/news/stories/tariff-stop-press-notice---22-may-2025' }
   end
 
+  describe '#subscription_reason' do
+    subject(:reason) { news_item.subscription_reason }
+
+    context 'when chapters are present' do
+      let(:news_item) { build(:news_item, chapters: '12') }
+
+      it 'returns a chapter-specific subscription reason' do
+        expect(reason).to eq 'You have previously subscribed to receive updates about this tariff chapter - 12'
+      end
+    end
+
+    context 'when chapters are not present' do
+      let(:news_item) { build(:news_item, chapters: nil) }
+
+      it 'returns a non-chapter-specific subscription reason' do
+        expect(reason).to eq 'This is a non-chapter specific update from the UK Trade Tariff Service'
+      end
+    end
+
+    context 'when chapters are empty' do
+      let(:news_item) { build(:news_item, chapters: '') }
+
+      it 'returns a non-chapter-specific subscription reason' do
+        expect(reason).to eq 'This is a non-chapter specific update from the UK Trade Tariff Service'
+      end
+    end
+  end
+
   describe 'after_save callback' do
     let(:instance) { build(:news_item) }
 
