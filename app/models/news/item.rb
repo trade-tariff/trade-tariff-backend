@@ -66,6 +66,14 @@ module News
       URI.join(TradeTariffBackend.frontend_host, '/news/stories/', slug).to_s
     end
 
+    def subscription_reason
+      if chapters.present?
+        "You have previously subscribed to receive updates about this tariff chapter - #{chapters}"
+      else
+        'This is a non-chapter specific update from the UK Trade Tariff Service'
+      end
+    end
+
     dataset_module do
       def descending
         order(Sequel.desc(:start_date), Sequel.desc(:id))
