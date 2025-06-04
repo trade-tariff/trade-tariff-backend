@@ -34,13 +34,21 @@ class GreenLanesUpdatesWorker
 
       next unless identified_ca
 
-      logger.info "Creating category assessment for #{update.measure_type_id}"
+      unless GreenLanes::CategoryAssessment[regulation_id: update.regulation_id,
+                                            regulation_role: update.regulation_role,
+                                            measure_type_id: update.measure_type_id]
 
-      assessment = GreenLanes::CategoryAssessment.new(regulation_id: update.regulation_id,
-                                                      regulation_role: update.regulation_role,
-                                                      measure_type_id: update.measure_type_id,
-                                                      theme_id: identified_ca.theme_id)
-      assessment.save(validate: true)
+        logger.info "Creating category assessment for #{update.measure_type_id}"
+
+        assessment = GreenLanes::CategoryAssessment.new(regulation_id: update.regulation_id,
+                                                        regulation_role: update.regulation_role,
+                                                        measure_type_id: update.measure_type_id,
+                                                        theme_id: identified_ca.theme_id)
+        assessment.save(validate: true)
+        update.status=::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED
+        update.theme_id=identified_ca.theme_id
+        update.theme=::GreenLanes::Theme.find(id: identified_ca.theme_id)&.to_s
+      end
     end
   end
 
