@@ -266,6 +266,10 @@ module TradeTariffBackend
       Date.parse(ENV.fetch('IMPLICIT_DELETION_CUTOFF', '2024-03-25'))
     end
 
+    def cds_importer_batch_size
+      ENV.fetch('CDS_IMPORT_BATCH_SIZE', '100').to_i
+    end
+
     def cupid_team_to_emails
       ENV['CUPID_TEAM_TO_EMAILS']
     end
