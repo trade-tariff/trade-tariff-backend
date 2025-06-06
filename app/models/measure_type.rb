@@ -140,12 +140,4 @@ class MeasureType < Sequel::Model
       UK_EXCLUDED_TYPES
     end
   end
-
-  def self.excluded_measure_series
-    if TradeTariffBackend.xi?
-      XI_EXCLUDED_SERIES
-    else
-      []
-    end
-  end
 end

@@ -14,7 +14,7 @@ FactoryBot.define do
     end
 
     theme do
-      association(:green_lanes_theme)
+      create :green_lanes_theme
     end
   end
 end
