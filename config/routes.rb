@@ -13,6 +13,9 @@ Rails.application.routes.draw do
   # Error handling
   draw(:errors)
 
+  # Sidekiq web interface
+  draw(:sidekiq)
+
   # V1 routes
   mount V1Api => '/api/v1', as: 'v1_api'
   mount V1Api => '/xi/api/v1', as: 'xi_v1_api' if TradeTariffBackend.xi?

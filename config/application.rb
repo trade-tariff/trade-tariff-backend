@@ -2,6 +2,7 @@ require_relative 'boot'
 require_relative '../lib/core_ext/object'
 require_relative '../app/middleware/handle_goods_nomenclature'
 require_relative '../app/middleware/clear_cache_control'
+require_relative '../app/middleware/sidekiq_basic_auth'
 
 require 'action_controller/railtie'
 require 'action_mailer/railtie'

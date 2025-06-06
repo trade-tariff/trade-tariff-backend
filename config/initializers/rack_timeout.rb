@@ -7,5 +7,5 @@ if Rails.env.production?
 
   Rack::Timeout::Logger.level = ::Logger::WARN
 else
-  logger.info 'Rack::Runtime is disabled in Dev env.'
+  Rails.logger.info 'Rack::Runtime is disabled in Dev env.'
 end
