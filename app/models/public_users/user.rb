@@ -5,6 +5,7 @@ module PublicUsers
 
     one_to_one :preferences, class: 'PublicUsers::Preferences', key: :user_id
     one_to_many :subscriptions, class: 'PublicUsers::Subscription', key: :user_id
+    one_to_many :action_logs, class: 'PublicUsers::UserActionLog', key: :user_id
 
     delegate :chapter_ids, to: :preferences
 
