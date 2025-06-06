@@ -149,14 +149,6 @@ module TradeTariffBackend
       Rails.root.join('db/stop_words.yml')
     end
 
-    def synonym_reference_analyzer
-      ENV['SYNONYM_REFERENCE_ANALYZER']
-    end
-
-    def stemming_exclusion_reference_analyzer
-      ENV['STEMMING_EXCLUSION_REFERENCE_ANALYZER']
-    end
-
     def handle_missing_soft_deletes?
       ENV['SOFT_DELETES_MISSING'].to_s == 'true'
     end
@@ -220,6 +212,14 @@ module TradeTariffBackend
       ENV['GREEN_LANES_API_KEYS']
     end
 
+    def green_lanes_update_email
+      ENV['GREEN_LANES_UPDATE_EMAIL']
+    end
+
+    def green_lanes_notify_measure_updates
+      ENV.fetch('GREEN_LANES_NOTIFY_MEASURE_UPDATES', 'false') == 'true'
+    end
+
     def excise_alcohol_coercian_starts_from
       @excise_alcohol_coercian_starts_from ||= Date.parse(
         ENV.fetch(
@@ -244,14 +244,6 @@ module TradeTariffBackend
 
         Redis.new(url:, db:)
       end
-    end
-
-    def green_lanes_update_email
-      ENV['GREEN_LANES_UPDATE_EMAIL']
-    end
-
-    def green_lanes_notify_measure_updates
-      ENV['GREEN_LANES_NOTIFY_MEASURE_UPDATES'].to_s == 'true'
     end
 
     def optimised_search_enabled?
