@@ -17,7 +17,7 @@ RSpec.describe ExchangeRateService do
 
     context 'when fetching for the first time' do
       before do
-        stub_request(:get, 'http://api.exchangeratesapi.io/v1/latest?access_key=flibble')
+        stub_request(:get, 'http://api.exchangeratesapi.io/v1/latest?access_key=')
           .to_return(status: 200, body: '{"foo":"bar"}')
       end
 
@@ -43,7 +43,7 @@ RSpec.describe ExchangeRateService do
     context 'when the exchange rates are expired' do
       before do
         TradeTariffBackend.redis.set(described_class::REDIS_KEY, previously_cached_result)
-        stub_request(:get, 'http://api.exchangeratesapi.io/v1/latest?access_key=flibble')
+        stub_request(:get, 'http://api.exchangeratesapi.io/v1/latest?access_key=')
           .to_return(status: 200, body: '{"baz":"qux"}')
       end
 
@@ -75,7 +75,7 @@ RSpec.describe ExchangeRateService do
     context 'when the exchange rates are current' do
       before do
         TradeTariffBackend.redis.set(described_class::REDIS_KEY, previously_cached_result)
-        stub_request(:get, 'http://api.exchangeratesapi.io/v1/latest?access_key=flibble')
+        stub_request(:get, 'http://api.exchangeratesapi.io/v1/latest?access_key=')
           .to_return(status: 200, body: '{"baz":"qux"}')
       end
 
