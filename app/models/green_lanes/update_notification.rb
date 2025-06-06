@@ -4,6 +4,7 @@ module GreenLanes
       CREATED = 0
       UPDATED = 1
       EXPIRED = 2
+      CA_CREATED = 3
       INACTIVE = 9
     end
 
@@ -17,6 +18,8 @@ module GreenLanes
                                   key: %i[regulation_id regulation_role]
     many_to_one :modification_regulation, class: :ModificationRegulation,
                                           key: %i[regulation_id regulation_role]
+
+    many_to_one :theme
 
     def regulation
       case regulation_role
