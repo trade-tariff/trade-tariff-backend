@@ -17,6 +17,10 @@ RSpec.describe PublicUsers::User do
     it 'creates a preferences record' do
       expect(user.preferences).not_to be_nil
     end
+
+    it 'creates an action log' do
+      expect(user.action_logs.first.action).to eq PublicUsers::ActionLog::REGISTERED
+    end
   end
 
   describe 'email attribute' do
@@ -76,6 +80,11 @@ RSpec.describe PublicUsers::User do
         it 'enables the subscription' do
           user.stop_press_subscription = true
           expect(user.stop_press_subscription).to be true
+        end
+
+        it 'adds an action log for subscribed' do
+          user.stop_press_subscription = true
+          expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED
         end
       end
 
