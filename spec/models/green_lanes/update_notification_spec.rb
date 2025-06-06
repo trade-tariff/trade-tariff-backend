@@ -133,7 +133,7 @@ RSpec.describe GreenLanes::UpdateNotification do
 
       it 'is updates relationship attributes' do
         expect(notification).to have_attributes regulation_id: new_regulation.regulation_id,
-                                              regulation_role: new_regulation.role
+                                                regulation_role: new_regulation.role
       end
 
       it 'is is still updated after save and reload' do
@@ -151,7 +151,7 @@ RSpec.describe GreenLanes::UpdateNotification do
 
       it 'is updates relationship attributes' do
         expect(notification).to have_attributes regulation_id: new_regulation.regulation_id,
-                                              regulation_role: new_regulation.role
+                                                regulation_role: new_regulation.role
       end
 
       it 'is is still updated after save and reload' do

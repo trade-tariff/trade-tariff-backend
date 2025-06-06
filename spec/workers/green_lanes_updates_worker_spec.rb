@@ -12,15 +12,19 @@ RSpec.describe GreenLanesUpdatesWorker, type: :worker do
   end
 
   describe 'run green lanes updates worker' do
-    it 'creates CA with identified measure type' do
+    before do
       worker.perform
+    end
 
+    it 'creates CA with identified measure type' do
       category_assessments = GreenLanes::CategoryAssessment.all.pluck(:measure_type_id, :regulation_id, :regulation_role)
 
       expect(category_assessments).to include([measure.measure_type_id,
                                                measure.measure_generating_regulation_id,
                                                measure.measure_generating_regulation_role])
+    end
 
+    it 'update notification status and and theme id' do
       notification = GreenLanes::UpdateNotification.all.pluck(:measure_type_id, :regulation_id, :regulation_role,
                                                               :status, :theme_id)
 
@@ -28,8 +32,7 @@ RSpec.describe GreenLanesUpdatesWorker, type: :worker do
                                        measure.measure_generating_regulation_id,
                                        measure.measure_generating_regulation_role,
                                        ::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED,
-                                       ca.theme_id,
-                                      ])
+                                       ca.theme_id])
     end
   end
 
@@ -46,8 +49,7 @@ RSpec.describe GreenLanesUpdatesWorker, type: :worker do
                                        measure.measure_generating_regulation_id,
                                        measure.measure_generating_regulation_role,
                                        ::GreenLanes::UpdateNotification::NotificationStatus::CREATED,
-                                       nil,
-                                      ])
+                                       nil])
     end
   end
 end
