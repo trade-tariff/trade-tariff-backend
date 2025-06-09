@@ -8,7 +8,6 @@ RSpec.describe Api::Admin::GreenLanes::MeasureTypeMappingsController do
   let(:json_response) { JSON.parse(page_response.body) }
   let(:mapping) { create :identified_measure_type_category_assessment }
 
-
   describe 'GET to #index' do
     let(:make_request) do
       authenticated_get api_admin_green_lanes_measure_type_mappings_path(format: :json)

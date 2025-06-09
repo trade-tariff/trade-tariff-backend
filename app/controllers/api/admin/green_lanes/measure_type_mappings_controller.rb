@@ -8,7 +8,10 @@ module Api
         before_action :check_service, :authenticate_user!
 
         def index
-          render json: serialize(measure_type_mappings.to_a, pagination_meta)
+          options = { is_collection: true }
+          options[:include] = %i[theme]
+          options[:meta] = pagination_meta(measure_type_mappings)
+          render json: serialize(measure_type_mappings.to_a, options)
         end
 
         def show
@@ -45,12 +48,21 @@ module Api
           )
         end
 
-        def record_count
-          @measure_type_mappings.pagination_record_count
+        def pagination_meta(data_set)
+          {
+            pagination: {
+              page: current_page,
+              per_page:,
+              total_count: data_set.pagination_record_count,
+            },
+          }
         end
 
         def measure_type_mappings
-          @measure_type_mappings ||= ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment.order(Sequel.asc(:measure_type_id)).paginate(current_page, per_page)
+          @measure_type_mappings ||= ::GreenLanes::IdentifiedMeasureTypeCategoryAssessment
+                                       .eager(:theme)
+                                       .order(Sequel.asc(:measure_type_id))
+                                       .paginate(current_page, per_page)
         end
 
         def serialize(*args)

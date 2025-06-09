@@ -15,18 +15,16 @@ RSpec.describe GreenLanes::IdentifiedMeasureTypeCategoryAssessment do
 
     it { is_expected.to include measure_type_id: ['is not present'] }
     it { is_expected.to include theme_id: ['is not present'] }
-  end
 
-  describe 'validations duplicates' do
-    subject(:errors) { instance.tap(&:valid?).errors }
+    context 'with duplicate associations' do
+      let(:existing) { create :identified_measure_type_category_assessment }
 
-    let(:existing) { create :identified_measure_type_category_assessment }
+      let :instance do
+        described_class.new measure_type_id: existing.measure_type_id
+      end
 
-    let :instance do
-      described_class.new measure_type_id: existing.measure_type_id
+      it { is_expected.to include measure_type_id: ['is already taken'] }
     end
-
-    it { is_expected.to include measure_type_id: ['is already taken'] }
   end
 
   describe 'date fields' do
