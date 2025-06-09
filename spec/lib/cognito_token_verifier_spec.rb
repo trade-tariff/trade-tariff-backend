@@ -5,7 +5,7 @@ RSpec.describe CognitoTokenVerifier do
     let(:token) { 'test-token' }
     let(:jwks_url) { "https://cognito-idp.#{ENV['AWS_REGION']}.amazonaws.com/#{ENV['COGNITO_USER_POOL_ID']}/.well-known/jwks.json" }
     let(:jwks_keys) { { 'keys' => [{ 'kty' => 'RSA', 'kid' => 'test-kid', 'use' => 'sig' }] } }
-    let(:decoded_token) { [{ 'sub' => '1234567890', 'email' => 'test@example.com' }] }
+    let(:decoded_token) { [{ 'sub' => '1234567890', 'email' => 'test@example.com', 'cognito:groups' => %w[myott] }] }
 
     before do
       allow(Faraday).to receive(:get).with(jwks_url).and_return(instance_double(Faraday::Response, success?: true, body: jwks_keys.to_json))
@@ -22,6 +22,15 @@ RSpec.describe CognitoTokenVerifier do
       it 'verifies the token' do
         described_class.verify_id_token(token)
         expect(JWT).to have_received(:decode).with(token, nil, true, algorithms: %w[RS256], jwks: hash_including(:keys), iss: anything, verify_iss: true)
+      end
+    end
+
+    context 'when the token is valid but not in the expected group' do
+      let(:decoded_token) { [{ 'sub' => '1234567890', 'email' => 'test@example.com', 'cognito:groups' => %w[other] }] }
+
+      it 'returns nil' do
+        result = described_class.verify_id_token(token)
+        expect(result).to be_nil
       end
     end
 

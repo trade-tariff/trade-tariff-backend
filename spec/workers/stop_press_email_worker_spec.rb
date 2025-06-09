@@ -18,7 +18,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
       {
         stop_press_title: stop_press.title,
         stop_press_link: stop_press.public_url,
-        chapters: stop_press.chapters,
+        subscription_reason: stop_press.subscription_reason,
         site_url: String,
         unsubscribe_url: '',
       }
@@ -32,7 +32,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
     it 'sends request to client' do
       instance.perform(stop_press.id, user.id)
 
-      expect(client).to have_received(:send_email).with(email_address, String, expected_personalisation)
+      expect(client).to have_received(:send_email).with(email_address, StopPressEmailWorker::TEMPLATE_ID, expected_personalisation)
     end
   end
 end

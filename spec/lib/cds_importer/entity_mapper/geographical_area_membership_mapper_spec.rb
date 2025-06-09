@@ -142,19 +142,18 @@ RSpec.describe CdsImporter::EntityMapper::GeographicalAreaMembershipMapper do
       end
 
       it 'creates the correct memberships' do
-        expect { entity_mapper.import }
-          .to change { GeographicalAreaMembership.where(geographical_area_sid: [331, 112], geographical_area_group_sid: [114]).count }
-          .by(2)
-      end
+        yielded_objects = []
 
-      it 'creates the correct area membership associations' do
-        entity_mapper.import
+        entity_mapper.import do |entity|
+          yielded_objects << entity
+        end
 
-        group_geographical_area = GeographicalArea.find(geographical_area_sid: 114)
-
-        expected_area_sids = group_geographical_area.contained_geographical_areas.pluck(:geographical_area_sid).sort
-
-        expect(expected_area_sids).to eq([112, 331])
+        expect(yielded_objects.map(&:instance).map { |obj| { obj.class.name.to_sym => obj.values } })
+          .to include(
+            { GeographicalArea: hash_including(geographical_area_id: '1010', geographical_area_sid: 114) },
+            { GeographicalAreaMembership: hash_including(geographical_area_sid: 331, hjid: 25_654, geographical_area_group_sid: 114) },
+            { GeographicalAreaMembership: hash_including(geographical_area_sid: 112, hjid: 25_473, geographical_area_group_sid: 114) },
+          )
       end
 
       context 'when the xml node is missing a membership group sid' do

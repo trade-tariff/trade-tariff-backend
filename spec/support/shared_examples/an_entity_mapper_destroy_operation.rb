@@ -1,9 +1,14 @@
 RSpec.shared_examples_for 'an entity mapper destroy operation' do |relation|
   it "inserts a soft delete record for #{relation}" do
-    expect { entity_mapper.import }.to change { relation::Operation.where(operation: 'D').count }.by(1)
-  end
+    yielded_objects = []
 
-  it "causes the #{relation} record to no longer be visible in the view" do
-    expect { entity_mapper.import }.to change { relation.count }.by(-1)
+    entity_mapper.import do |entity|
+      yielded_objects << entity
+    end
+
+    expect(yielded_objects.map(&:instance).map { |obj| { obj.class.name.to_sym => obj.values } })
+      .to include(
+        { relation.name.to_sym => hash_including(operation: 'D') },
+      )
   end
 end
