@@ -21,6 +21,8 @@ class GreenLanesUpdatesWorker
       if TradeTariffBackend.green_lanes_update_email.present?
         send_updates_email(updates, date)
       end
+
+      create_notification(updates)
     end
   end
 
@@ -54,7 +56,9 @@ class GreenLanesUpdatesWorker
   def send_updates_email(updates, date)
     logger.info 'Sending update emails'
     ::GreenLanesUpdatesPublisher::Mailer.update(updates, date).deliver_now
+  end
 
+  def create_notification(updates)
     logger.info 'Add tracking record'
     ::GreenLanesUpdatesPublisher::UpdateNotificationsCreator.new(updates).call
   end
