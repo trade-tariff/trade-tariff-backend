@@ -219,7 +219,8 @@ CREATE TABLE public.live_issues (
     date_discovered date NOT NULL,
     date_resolved date,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    suggested_action character varying(256)
 );
 
 
@@ -12818,3 +12819,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250516154516_add_notify_subscribers_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250522141643_add_subscribable_to_news_collection.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250605154715_create_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250609143944_add_suggested_action_to_live_issues.rb');

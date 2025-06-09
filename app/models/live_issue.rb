@@ -6,7 +6,7 @@ class LiveIssue < Sequel::Model(Sequel[:live_issues].qualify(:public))
     super
 
     validates_presence [:title, :status, :commodities, :date_discovered]
-    validates_max_length 256, :description
+    validates_max_length 256, [:description, :suggested_action]
     validates_includes ['Active', 'Resolved'], :status
   end
 end
