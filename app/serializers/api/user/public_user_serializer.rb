@@ -7,7 +7,7 @@ module Api
 
       set_id :external_id
 
-      attributes :email, :chapter_ids, :stop_press_subscription, :stop_press_subscription_token
+      attributes :email, :chapter_ids, :stop_press_subscription
     end
   end
 end
