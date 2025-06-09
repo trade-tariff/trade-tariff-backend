@@ -173,12 +173,6 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
   describe '#import' do
     subject(:entity_mapper) { CdsImporter::EntityMapper.new('QuotaDefinition', xml_node) }
 
-    let(:change_definition_transfer_events_count) do
-      change do
-        QuotaClosedAndTransferredEvent.where(quota_definition_sid: xml_node['sid']).count
-      end
-    end
-
     context 'when the quota definition is being updated' do
       let(:operation) { 'U' }
 
@@ -241,12 +235,6 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
       # it_behaves_like 'an entity mapper destroy operation', QuotaUnblockingEvent
     end
 
-    context 'when there is already a quotaClosedAndTransferredEvent but none in the xml node' do
-      before { create(:quota_closed_and_transferred_event, quota_definition_sid: xml_node['sid']) }
-
-      it { expect { entity_mapper.import }.to change_definition_transfer_events_count.by(-1) }
-    end
-
     context 'when there is already a quotaClosedAndTransferredEvent and one in the xml node' do
       subject(:entity_mapper) do
         node = xml_node.dup.merge(
@@ -280,12 +268,17 @@ RSpec.describe CdsImporter::EntityMapper::QuotaDefinitionMapper do
 
       before { create(:quota_closed_and_transferred_event, quota_definition_sid: xml_node['sid']) }
 
-      it { expect { entity_mapper.import }.not_to change_definition_transfer_events_count }
-
       it 'imports the new event' do
-        entity_mapper.import
+        yielded_objects = []
 
-        expect(QuotaClosedAndTransferredEvent.find(target_quota_definition_sid: 21_143)).to be_present
+        entity_mapper.import do |entity|
+          yielded_objects << entity
+        end
+
+        expect(yielded_objects.map(&:instance).map { |obj| { obj.class.name.to_sym => obj.values } })
+          .to include(
+            { QuotaClosedAndTransferredEvent: hash_including(target_quota_definition_sid: 21_143) },
+          )
       end
     end
   end

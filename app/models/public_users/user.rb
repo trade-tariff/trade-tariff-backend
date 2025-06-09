@@ -5,6 +5,7 @@ module PublicUsers
 
     one_to_one :preferences, class: 'PublicUsers::Preferences', key: :user_id
     one_to_many :subscriptions, class: 'PublicUsers::Subscription', key: :user_id
+    one_to_many :action_logs, class: 'PublicUsers::ActionLog', key: :user_id
 
     delegate :chapter_ids, to: :preferences
 
@@ -51,6 +52,9 @@ module PublicUsers
         current.update(active:)
       else
         add_subscription(subscription_type: Subscriptions::Type.stop_press, active:)
+        if active
+          PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED)
+        end
       end
     end
 
@@ -59,6 +63,7 @@ module PublicUsers
     def after_create
       super
       PublicUsers::Preferences.create(user_id: id)
+      PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::REGISTERED)
     end
   end
 end

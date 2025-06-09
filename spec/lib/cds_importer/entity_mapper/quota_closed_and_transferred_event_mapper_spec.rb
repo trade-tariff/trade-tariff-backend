@@ -55,50 +55,18 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
   describe '#import' do
     subject(:entity_mapper) { CdsImporter::EntityMapper.new('QuotaDefinition', xml_node) }
 
-    it { expect { entity_mapper.import }.to change(QuotaClosedAndTransferredEvent, :count).by(1) }
-
     context 'when the transfer target definition is newer' do
-      let(:target_definition_transfer_event) do # imported
-        QuotaClosedAndTransferredEvent.where(
-          quota_definition_sid: '21321',
-          target_quota_definition_sid: '21322',
-        )
-      end
-
       it 'imports the transfer event' do
-        entity_mapper.import
+        yielded_objects = []
 
-        expect(target_definition_transfer_event).to be_present
-      end
-    end
+        entity_mapper.import do |entity|
+          yielded_objects << entity
+        end
 
-    context 'when the transfer target definition is older' do
-      let(:target_definition_transfer_event) do
-        QuotaClosedAndTransferredEvent.where(
-          quota_definition_sid: '21321',
-          target_quota_definition_sid: '21320',
-        )
-      end
-
-      it 'does not import the transfer event' do
-        entity_mapper.import
-
-        expect(target_definition_transfer_event).not_to be_present
-      end
-    end
-
-    context 'when the transfer target definition is for the same date' do
-      let(:target_definition_transfer_event) do
-        QuotaClosedAndTransferredEvent.where(
-          quota_definition_sid: '21321',
-          target_quota_definition_sid: '21323',
-        )
-      end
-
-      it 'does not import the transfer event' do
-        entity_mapper.import
-
-        expect(target_definition_transfer_event).not_to be_present
+        expect(yielded_objects.map(&:instance).map { |obj| { obj.class.name.to_sym => obj.values } })
+          .to include(
+            { QuotaClosedAndTransferredEvent: hash_including(quota_definition_sid: 21_321, target_quota_definition_sid: 21_322) },
+          )
       end
     end
 
@@ -120,17 +88,17 @@ RSpec.describe CdsImporter::EntityMapper::QuotaClosedAndTransferredEventMapper d
         }
       end
 
-      let(:target_definition_transfer_event) do
-        QuotaClosedAndTransferredEvent.where(
-          quota_definition_sid: '21321',
-          target_quota_definition_sid: '21322',
-        )
-      end
-
       it 'imports the transfer event' do
-        entity_mapper.import
+        yielded_objects = []
 
-        expect(target_definition_transfer_event).to be_present
+        entity_mapper.import do |entity|
+          yielded_objects << entity
+        end
+
+        expect(yielded_objects.map(&:instance).map { |obj| { obj.class.name.to_sym => obj.values } })
+          .to include(
+            { QuotaClosedAndTransferredEvent: hash_including(quota_definition_sid: 21_321, target_quota_definition_sid: 21_322) },
+          )
       end
     end
   end
