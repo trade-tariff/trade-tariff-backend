@@ -39,9 +39,9 @@ RSpec.describe PublicUsers::User do
   end
 
   describe '#stop_press_subscription' do
-    it 'returns true when user has an active subscription' do
+    it 'returns id when user has an active subscription' do
       user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
-      expect(user.stop_press_subscription).to be true
+      expect(user.stop_press_subscription).to be_a(String)
     end
 
     it 'returns false when user has an inactive subscription' do
@@ -63,7 +63,7 @@ RSpec.describe PublicUsers::User do
       context 'when value is true' do
         it 'enables the subscription' do
           user.stop_press_subscription = true
-          expect(user.stop_press_subscription).to be true
+          expect(user.stop_press_subscription).to be_a(String)
         end
       end
 
@@ -79,7 +79,7 @@ RSpec.describe PublicUsers::User do
       context 'when value is true' do
         it 'enables the subscription' do
           user.stop_press_subscription = true
-          expect(user.stop_press_subscription).to be true
+          expect(user.stop_press_subscription).to be_a(String)
         end
 
         it 'adds an action log for subscribed' do
