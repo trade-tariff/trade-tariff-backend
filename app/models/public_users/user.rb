@@ -48,7 +48,7 @@ module PublicUsers
     end
 
     def stop_press_subscription
-      subscriptions_dataset.where(subscription_type: Subscriptions::Type.stop_press, active: true).any?
+      subscriptions_dataset.where(subscription_type: Subscriptions::Type.stop_press, active: true).first&.uuid || false
     end
 
     def stop_press_subscription=(active)

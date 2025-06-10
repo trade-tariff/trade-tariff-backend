@@ -24,6 +24,10 @@ module Api
         attribute :regulation_url do |update|
           ApplicationHelper.regulation_url(update.regulation)
         end
+
+        attribute :theme do |update|
+          update.theme&.to_s
+        end
       end
     end
   end
