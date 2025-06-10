@@ -4287,7 +4287,8 @@ CREATE TABLE uk.green_lanes_update_notifications (
     regulation_role integer,
     status integer NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    theme_id integer
 );
 
 
