@@ -17,7 +17,9 @@ Sequel.migration do
     end
 
     # Set uuid as primary key
-    execute "ALTER TABLE user_subscriptions ADD PRIMARY KEY (uuid);"
+    unless primary_key(:user_subscriptions) == 'uuid'
+      execute "ALTER TABLE user_subscriptions ADD PRIMARY KEY (uuid);"
+    end
   end
 
   down do
