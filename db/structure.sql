@@ -309,7 +309,8 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     external_id text NOT NULL,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    deleted boolean DEFAULT false
 );
 
 
@@ -12905,4 +12906,5 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250522141643_add_subscri
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250527104818_create_green_lanes_identified_measure_type_category_assessments.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250603122927_add_theme_id_to_green_lanes_update_notifications.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user_action_logs.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted_attribute_to_public_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user_subscriptions_primary_key_to_uuid_sequel.rb');

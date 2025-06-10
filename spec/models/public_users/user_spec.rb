@@ -97,6 +97,40 @@ RSpec.describe PublicUsers::User do
     end
   end
 
+  describe '#soft_delete!' do
+    context 'when user has an active stop press subscription' do
+      before do
+        user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
+        user.soft_delete!
+      end
+
+      it 'user deleted should be false' do
+        expect(user.deleted).to be false
+      end
+    end
+
+    context 'when user has an inactive stop press subscription' do
+      before do
+        user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: false)
+        user.soft_delete!
+      end
+
+      it 'user deleted shoud be true' do
+        expect(user.deleted).to be true
+      end
+    end
+
+    context 'when user has no subscription' do
+      before do
+        user.soft_delete!
+      end
+
+      it 'user deleted shoud be true' do
+        expect(user.deleted).to be true
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.with_active_stop_press_subscription' do
       subject(:dataset) { described_class.with_active_stop_press_subscription }
@@ -106,17 +140,23 @@ RSpec.describe PublicUsers::User do
       let!(:user_with_inactive_subscription) { create(:public_user, :with_inactive_stop_press_subscription) }
       let!(:user_without_subscription) { create(:public_user) }
       let!(:user_with_different_active_subscription) { create(:public_user) }
+      let!(:soft_deleted_user) { create(:public_user, :has_been_soft_deleted) }
 
       before do
         user_with_active_subscription
         another_user_with_active_subscription
         user_with_inactive_subscription
         user_without_subscription
+        soft_deleted_user
         create(:user_subscription, user_id: user_with_different_active_subscription.id)
       end
 
       it 'returns expected users' do
         expect(dataset).to contain_exactly(user_with_active_subscription, another_user_with_active_subscription)
+      end
+
+      it 'excludes soft deleted users' do
+        expect(dataset).not_to include(soft_deleted_user)
       end
     end
 

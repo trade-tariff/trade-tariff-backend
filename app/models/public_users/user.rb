@@ -12,8 +12,13 @@ module PublicUsers
     attr_writer :email
 
     dataset_module do
+      def active
+        where(deleted: false)
+      end
+
       def with_active_stop_press_subscription
-        join(:public__user_subscriptions, user_id: :id)
+        active
+          .join(:public__user_subscriptions, user_id: :id)
           .where(
             Sequel[:user_subscriptions][:active] => true,
             Sequel[:user_subscriptions][:subscription_type_id] => Subscriptions::Type.stop_press.id,
@@ -23,7 +28,7 @@ module PublicUsers
       end
 
       def matching_chapters(chapters)
-        return self if chapters.blank?
+        return active if chapters.blank?
 
         chapter_conditions = Array(chapters).map { |chapter|
           Sequel.like(:user_preferences__chapter_ids, "%#{chapter}%")
@@ -31,7 +36,8 @@ module PublicUsers
 
         all_conditions = chapter_conditions | Sequel.expr(user_preferences__chapter_ids: nil) | Sequel.like(:user_preferences__chapter_ids, '')
 
-        join(:public__user_preferences, user_id: :id)
+        active
+          .join(:public__user_preferences, user_id: :id)
           .where(all_conditions)
           .select_all(:users)
       end
@@ -56,6 +62,15 @@ module PublicUsers
           PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED)
         end
       end
+    end
+
+    def soft_delete!
+      return if deleted
+      return if subscriptions_dataset.where(active: true).any?
+
+      update(deleted: true)
+
+      PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::DELETED)
     end
 
   private
