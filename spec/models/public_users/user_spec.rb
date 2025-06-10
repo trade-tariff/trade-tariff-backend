@@ -97,14 +97,14 @@ RSpec.describe PublicUsers::User do
     end
   end
 
-  describe 'soft_delete!' do
+  describe '#soft_delete!' do
     context 'when user has an active stop press subscription' do
       before do
         user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
         user.soft_delete!
       end
 
-      it 'user not deleted' do
+      it 'user deleted should be false' do
         expect(user.deleted).to be false
       end
     end

@@ -65,7 +65,8 @@ module PublicUsers
     end
 
     def soft_delete!
-      return if deleted || stop_press_subscription
+      return if deleted
+      return if subscriptions_dataset.where(active: true).any?
 
       update(deleted: true)
 
