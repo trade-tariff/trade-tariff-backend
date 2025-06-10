@@ -19,8 +19,8 @@ RSpec.describe StopPressEmailWorker, type: :worker do
         stop_press_title: stop_press.title,
         stop_press_link: stop_press.public_url,
         subscription_reason: stop_press.subscription_reason,
-        site_url: String,
-        unsubscribe_url: '',
+        site_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/').to_s,
+        unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription).to_s,
       }
     end
 
