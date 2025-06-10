@@ -7,6 +7,12 @@ module Api
         render json: serialize(@subscription)
       end
 
+      def destroy
+        @subscription.unsubscribe
+
+        render json: { message: 'Unsubscribe successful' }, status: :ok
+      end
+
     private
 
       def serialize(subscription)
