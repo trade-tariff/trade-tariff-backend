@@ -2,8 +2,10 @@ module PublicUsers
   class ActionLog < Sequel::Model(Sequel[:user_action_logs].qualify(:public))
     REGISTERED = 'registered'.freeze
     SUBSCRIBED = 'subscribed'.freeze
+    UNSUBSCRIBED = 'unsubscribed'.freeze
+    DELETED = 'deleted'.freeze
 
-    ALLOWED_ACTIONS = [REGISTERED, SUBSCRIBED].freeze
+    ALLOWED_ACTIONS = [REGISTERED, SUBSCRIBED, UNSUBSCRIBED, DELETED].freeze
 
     plugin :auto_validations
     plugin :timestamps, update_on_create: true

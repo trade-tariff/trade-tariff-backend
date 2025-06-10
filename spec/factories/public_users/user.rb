@@ -23,5 +23,11 @@ FactoryBot.define do
         user.preferences.update(chapter_ids: evaluator.chapters)
       end
     end
+
+    trait :has_been_soft_deleted do
+      after(:create) do |user, _evaluator|
+        user.soft_delete!
+      end
+    end
   end
 end

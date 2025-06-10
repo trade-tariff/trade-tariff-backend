@@ -323,7 +323,8 @@ CREATE TABLE public.users (
     id integer NOT NULL,
     external_id text NOT NULL,
     created_at timestamp without time zone,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    deleted boolean DEFAULT false
 );
 
 
@@ -12915,6 +12916,11 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250425145123_add_chapter
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250516154516_add_notify_subscribers_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250522141643_add_subscribable_to_news_collection.rb');
+<<<<<<< Updated upstream
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250527104818_create_green_lanes_identified_measure_type_category_assessments.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250603122927_add_theme_id_to_green_lanes_update_notifications.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user_action_logs.rb');
+=======
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user_action_logs.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted_attribute_to_public_users.rb');
+>>>>>>> Stashed changes
