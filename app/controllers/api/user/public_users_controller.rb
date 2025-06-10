@@ -23,13 +23,6 @@ module Api
         render json: serialize_errors({ error: e }), status: :unprocessable_entity
       end
 
-      def destroy
-        @current_user.soft_delete!
-        head :ok
-      rescue Sequel::ValidationFailed => e
-        render json: serialize_errors({ error: e }), status: :unprocessable_entity
-      end
-
     private
 
       def user_params

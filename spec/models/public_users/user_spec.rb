@@ -97,6 +97,40 @@ RSpec.describe PublicUsers::User do
     end
   end
 
+  describe 'soft_delete!' do
+    context 'when user has an active stop press subscription' do
+      before do
+        user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
+        user.soft_delete!
+      end
+
+      it 'user not deleted' do
+        expect(user.deleted).to be false
+      end
+    end
+
+    context 'when user has an inactive stop press subscription' do
+      before do
+        user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: false)
+        user.soft_delete!
+      end
+
+      it 'user deleted shoud be true' do
+        expect(user.deleted).to be true
+      end
+    end
+
+    context 'when user has no subscription' do
+      before do
+        user.soft_delete!
+      end
+
+      it 'user deleted shoud be true' do
+        expect(user.deleted).to be true
+      end
+    end
+  end
+
   describe 'scopes' do
     describe '.with_active_stop_press_subscription' do
       subject(:dataset) { described_class.with_active_stop_press_subscription }
