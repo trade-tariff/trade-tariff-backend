@@ -1,6 +1,8 @@
 module Api
   module User
     class SubscriptionsController < ApiController
+      no_caching
+
       before_action :authenticate_token!
 
       def show

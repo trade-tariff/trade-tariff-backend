@@ -1,6 +1,8 @@
 module Api
   module User
     class PublicUsersController < ApiController
+      no_caching
+
       before_action :authenticate_token!
 
       attr_reader :current_user
