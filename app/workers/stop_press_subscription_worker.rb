@@ -18,6 +18,7 @@ private
 
   def users
     PublicUsers::User
+      .active
       .with_active_stop_press_subscription
       .matching_chapters(@stop_press.chapters)
   end

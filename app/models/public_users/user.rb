@@ -17,8 +17,7 @@ module PublicUsers
       end
 
       def with_active_stop_press_subscription
-        active
-          .join(:public__user_subscriptions, user_id: :id)
+        join(:public__user_subscriptions, Sequel[:user_subscriptions][:user_id] => Sequel[:users][:id])
           .where(
             Sequel[:user_subscriptions][:active] => true,
             Sequel[:user_subscriptions][:subscription_type_id] => Subscriptions::Type.stop_press.id,
@@ -28,7 +27,7 @@ module PublicUsers
       end
 
       def matching_chapters(chapters)
-        return active if chapters.blank?
+        return self if chapters.blank?
 
         chapter_conditions = Array(chapters).map { |chapter|
           Sequel.like(:user_preferences__chapter_ids, "%#{chapter}%")
@@ -36,10 +35,10 @@ module PublicUsers
 
         all_conditions = chapter_conditions | Sequel.expr(user_preferences__chapter_ids: nil) | Sequel.like(:user_preferences__chapter_ids, '')
 
-        active
-          .join(:public__user_preferences, user_id: :id)
+        join(:public__user_preferences, Sequel[:user_preferences][:user_id] => Sequel[:users][:id])
           .where(all_conditions)
           .select_all(:users)
+          .distinct
       end
     end
 

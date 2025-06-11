@@ -213,5 +213,26 @@ RSpec.describe PublicUsers::User do
         end
       end
     end
+
+    describe 'chain of scopes' do
+      subject(:dataset) { described_class.active.with_active_stop_press_subscription.matching_chapters(chapters) }
+
+      let(:chapters) { '01' }
+      let(:active_user_with_subscription) { create(:public_user, :with_active_stop_press_subscription) }
+      let(:inactive_user_with_subscription) { create(:public_user, :with_inactive_stop_press_subscription) }
+      let(:active_user_without_subscription) { create(:public_user, deleted: false) }
+      let(:deleted_user_with_subscription) { create(:public_user, :with_active_stop_press_subscription, deleted: true) }
+
+      before do
+        active_user_with_subscription
+        inactive_user_with_subscription
+        active_user_without_subscription
+        deleted_user_with_subscription
+      end
+
+      it 'returns only active users with active stop press subscriptions' do
+        expect(dataset).to contain_exactly(active_user_with_subscription)
+      end
+    end
   end
 end
