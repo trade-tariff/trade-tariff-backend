@@ -10,6 +10,6 @@ class RollbackWorker
       TaricSynchronizer.rollback(date, keep: redownload)
     end
 
-    GoodsNomenclatures::TreeNode.refresh!
+    ViewService.refresh_materialized_views!
   end
 end

@@ -52,7 +52,7 @@ RSpec.configure do |config|
     # Materialized Views need populating after a schema load before concurrent
     # refresh can be used. Doing a blocking refresh to ensure the View is in a
     # usable state. This is very fast since there is no data
-    GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
+    ViewService.refresh_materialized_views!(concurrently: false)
 
     TradeTariffBackend.redis.flushdb
 

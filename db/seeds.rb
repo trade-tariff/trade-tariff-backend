@@ -1,6 +1,6 @@
 # After a rake db:structure:load Materialized Views are unpopulated, causing
 # any concurrent refreshes to fail. Populating here should help avoid that.
-GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
+ViewService.refresh_materialized_views!(concurrently: false)
 
 # For API access
 dummy_api_user = User.new

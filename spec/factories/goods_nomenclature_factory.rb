@@ -42,7 +42,7 @@ FactoryBot.define do
         # loaded before the nested set tree node view was refreshed
         gono.associations.clear
 
-        GoodsNomenclatures::TreeNode.refresh!
+        ViewService.refresh_materialized_views!
       end
     end
 

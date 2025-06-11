@@ -23,7 +23,7 @@ namespace :data do
 
       ::DataMigrator.migrate_up!(version)
 
-      GoodsNomenclatures::TreeNode.refresh!
+      ViewService.refresh_materialized_views!
     end
 
     desc 'Runs the "down" for a given data migration VERSION.'
@@ -33,17 +33,17 @@ namespace :data do
 
       ::DataMigrator.migrate_down!(version)
 
-      GoodsNomenclatures::TreeNode.refresh!
+      ViewService.refresh_materialized_views!
     end
   end
 
   desc 'Migrate data to the latest version - IMPORTANT ensure migrations are idempotent'
   task migrate: 'migrate:load' do
-    refresh_tree_nodes = ::DataMigrator.pending_migrations? || ENV['VERSION'].present?
+    refresh_views = ::DataMigrator.pending_migrations? || ENV['VERSION'].present?
 
     ::DataMigrator.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
 
-    GoodsNomenclatures::TreeNode.refresh! if refresh_tree_nodes
+    ViewService.refresh_materialized_views! if refresh_views
   end
 
   desc 'Rollback the latest data migration file or down to specified VERSION=x'
@@ -55,18 +55,18 @@ namespace :data do
               end
     ::DataMigrator.migrate_down! version
 
-    GoodsNomenclatures::TreeNode.refresh!
+    ViewService.refresh_materialized_views!
   end
 
   namespace :views do
     desc 'Refresh materialized views within the site'
     task refresh: :environment do
-      GoodsNomenclatures::TreeNode.refresh!(concurrently: true)
+      ViewService.refresh_materialized_views!(concurrently: true)
     end
 
     desc 'Refresh materialized views within the site when unpopulated (does not use CONCURRENTLY)'
     task populate: :environment do
-      GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
+      ViewService.refresh_materialized_views!(concurrently: false)
     end
   end
 end

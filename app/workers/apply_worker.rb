@@ -10,7 +10,7 @@ class ApplyWorker
       TaricSynchronizer.apply
     end
 
-    GoodsNomenclatures::TreeNode.refresh!
+    ViewService.refresh_materialized_views!
 
     # Clear frontend cache
     Rails.logger.info 'Clearing frontend cache'

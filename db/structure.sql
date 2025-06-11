@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
--- Dumped by pg_dump version 16.8 (Homebrew)
+-- Dumped by pg_dump version 16.9 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -3403,10 +3403,10 @@ CREATE TABLE uk.geographical_area_memberships_oplog (
 
 
 --
--- Name: geographical_area_memberships; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_memberships; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_area_memberships AS
+CREATE MATERIALIZED VIEW uk.geographical_area_memberships AS
  SELECT geographical_area_sid,
     geographical_area_group_sid,
     validity_start_date,
@@ -3422,7 +3422,8 @@ CREATE VIEW uk.geographical_area_memberships AS
    FROM uk.geographical_area_memberships_oplog geographical_area_memberships1
   WHERE ((oid IN ( SELECT max(geographical_area_memberships2.oid) AS max
            FROM uk.geographical_area_memberships_oplog geographical_area_memberships2
-          WHERE ((geographical_area_memberships1.geographical_area_sid = geographical_area_memberships2.geographical_area_sid) AND (geographical_area_memberships1.geographical_area_group_sid = geographical_area_memberships2.geographical_area_group_sid) AND (geographical_area_memberships1.validity_start_date = geographical_area_memberships2.validity_start_date)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((geographical_area_memberships1.geographical_area_sid = geographical_area_memberships2.geographical_area_sid) AND (geographical_area_memberships1.geographical_area_group_sid = geographical_area_memberships2.geographical_area_group_sid) AND (geographical_area_memberships1.validity_start_date = geographical_area_memberships2.validity_start_date)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -12908,3 +12909,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250603122927_add_theme_i
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user_action_logs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted_attribute_to_public_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user_subscriptions_primary_key_to_uuid_sequel.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250611120515_move_geo_area_membership_to_materialized_view.rb');

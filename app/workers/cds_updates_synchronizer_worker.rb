@@ -60,7 +60,7 @@ private
   end
 
   def refresh_materialized_view
-    GoodsNomenclatures::TreeNode.refresh!
+    ViewService.refresh_materialized_views!
   end
 
   def attempt_reschedule!
