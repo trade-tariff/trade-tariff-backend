@@ -10,11 +10,7 @@ module Api
     class SearchReferencesBaseController < AdminController
       before_action :authenticate_user!
 
-      after_action :set_pagination_headers, only: [:index]
-
       def index
-        search_references = search_reference_collection.by_title.paginate(page, per_page).all
-
         render json: Api::Admin::SearchReferences::SearchReferenceListSerializer.new(search_references).serializable_hash
       end
 
@@ -63,20 +59,8 @@ module Api
 
       private
 
-      def per_page
-        params.fetch(:per_page, default_limit).to_i
-      end
-
-      def page
-        params.fetch(:page, default_page).to_i
-      end
-
-      def default_page
-        1
-      end
-
-      def default_limit
-        25
+      def search_references
+        @search_references ||= search_reference_collection.by_title.all
       end
 
       def search_reference_params

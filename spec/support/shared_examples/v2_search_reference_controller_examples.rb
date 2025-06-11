@@ -31,34 +31,6 @@ RSpec.shared_examples_for 'v2 search references controller' do
         expect(response.body).to match_json_expression pattern
       end
     end
-
-    context 'with pagination' do
-      context 'with odd pagination page/offset values' do
-        it 'does not raise exception with offset equal to zero' do
-          expect {
-            get(:index, params: { format: :json, offset: 0 }.merge(collection_query))
-          }.not_to raise_error
-        end
-
-        it 'does not raise exception with negative limit' do
-          expect {
-            get(:index, params: { format: :json, limit: -10 }.merge(collection_query))
-          }.not_to raise_error
-        end
-
-        it 'defaults to first page' do
-          get(:index, params: { format: :json }.merge(collection_query))
-
-          expect(response.body).to match_json_expression pattern
-        end
-      end
-    end
-
-    it 'includes pagination meta data in HTTP meta header' do
-      get(:index, params: { format: :json }.merge(collection_query))
-
-      expect(JSON.parse(response.headers['X-Meta'])).to have_key 'pagination'
-    end
   end
 
   describe 'GET to #show' do
