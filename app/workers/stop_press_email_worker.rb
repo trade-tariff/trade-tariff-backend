@@ -5,9 +5,10 @@ class StopPressEmailWorker
 
   def perform(stop_press_id, user_id)
     stop_press = News::Item.find(id: stop_press_id)
-    user = PublicUsers::User.find(id: user_id)
+    user = PublicUsers::User.active[id: user_id]
 
     return if stop_press.nil?
+    return if user.nil?
     return unless user.email
 
     personalisation = {

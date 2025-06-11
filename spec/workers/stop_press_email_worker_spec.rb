@@ -8,8 +8,8 @@ RSpec.describe StopPressEmailWorker, type: :worker do
 
   before do
     allow(instance).to receive(:client).and_return(client) # rubocop:disable RSpec/SubjectStub
+    allow(PublicUsers::User).to receive(:active).and_return(instance_double(Sequel::Dataset, :[] => user))
     allow(user).to receive(:email).and_return(email_address)
-    allow(PublicUsers::User).to receive(:find).and_return(user)
     allow(client).to receive(:send_email)
   end
 
@@ -33,6 +33,23 @@ RSpec.describe StopPressEmailWorker, type: :worker do
       instance.perform(stop_press.id, user.id)
 
       expect(client).to have_received(:send_email).with(email_address, StopPressEmailWorker::TEMPLATE_ID, expected_personalisation)
+    end
+
+    it 'returns if stop press is nil' do
+      allow(News::Item).to receive(:find).and_return(nil)
+
+      instance.perform(stop_press.id, user.id)
+
+      expect(client).not_to have_received(:send_email)
+    end
+
+    context 'without valid user' do
+      let(:user) { nil }
+
+      it 'does not send email' do
+        instance.perform(stop_press.id, 'invalid_user_id')
+        expect(client).not_to have_received(:send_email)
+      end
     end
   end
 end
