@@ -268,7 +268,8 @@ CREATE TABLE public.user_preferences (
     id integer NOT NULL,
     user_id integer NOT NULL,
     chapter_ids text,
-    updated_at timestamp without time zone
+    updated_at timestamp without time zone,
+    created_at timestamp without time zone
 );
 
 
@@ -12910,3 +12911,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted_attribute_to_public_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user_subscriptions_primary_key_to_uuid_sequel.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250611120515_move_geo_area_membership_to_materialized_view.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250611135620_add_created_at_to_user_preferences.rb');
