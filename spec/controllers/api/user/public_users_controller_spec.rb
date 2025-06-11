@@ -50,6 +50,24 @@ RSpec.describe Api::User::PublicUsersController do
 
       it { is_expected.to have_http_status :ok }
     end
+
+    describe 'when token is for deleted user' do
+      let!(:user) { create(:public_user, :has_been_soft_deleted) }
+      let(:token) do
+        {
+          'sub' => user.external_id,
+          'email' => 'alice@example.com',
+        }
+      end
+
+      it 'creates a user' do
+        expect {
+          get :show
+        }.to change(PublicUsers::User, :count).by 1
+      end
+
+      it { is_expected.to have_http_status :ok }
+    end
   end
 
   describe 'PATCH #update' do
