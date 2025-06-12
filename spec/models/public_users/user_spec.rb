@@ -111,6 +111,7 @@ RSpec.describe PublicUsers::User do
 
     context 'when user has an inactive stop press subscription' do
       before do
+        allow(ExternalUserDeletionWorker).to receive(:perform_async)
         user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: false)
         user.soft_delete!
       end
@@ -118,15 +119,32 @@ RSpec.describe PublicUsers::User do
       it 'user deleted shoud be true' do
         expect(user.deleted).to be true
       end
+
+      it 'creates an action log for deleted' do
+        expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::DELETED
+      end
+
+      it 'schedules deletion worker' do
+        expect(ExternalUserDeletionWorker).to have_received(:perform_async)
+      end
     end
 
     context 'when user has no subscription' do
       before do
+        allow(ExternalUserDeletionWorker).to receive(:perform_async)
         user.soft_delete!
       end
 
       it 'user deleted shoud be true' do
         expect(user.deleted).to be true
+      end
+
+      it 'creates an action log for deleted' do
+        expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::DELETED
+      end
+
+      it 'schedules deletion worker' do
+        expect(ExternalUserDeletionWorker).to have_received(:perform_async)
       end
     end
   end
