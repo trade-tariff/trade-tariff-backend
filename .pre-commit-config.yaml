@@ -18,7 +18,7 @@ repos:
       - id: trailing-whitespace
         exclude: ^db/
       - id: end-of-file-fixer
-        exclude: ^db/
+        exclude: ^db/|config/credentials.yml.enc
       - id: check-yaml
         exclude: ^db/|config/sidekiq.yml
       - id: file-contents-sorter
