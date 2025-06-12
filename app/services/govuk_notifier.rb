@@ -31,14 +31,14 @@ class GovukNotifier
 
   def audit(email_response)
     GovukNotifierAudit.create(
-      notification_uuid: email_response['id'],
-      subject: email_response['content']['subject'],
-      body: email_response['content']['body'],
-      from_email: email_response['content']['from_email'],
-      template_id: email_response['template']['id'],
-      template_version: email_response['template']['version'],
-      template_uri: email_response['template']['uri'],
-      notification_uri: email_response['uri'],
+      notification_uuid: email_response.id,
+      subject: email_response.content['subject'],
+      body: email_response.content['body'],
+      from_email: email_response.content['from_email'],
+      template_id: email_response.template['id'],
+      template_version: email_response.template['version'],
+      template_uri: email_response.template['uri'],
+      notification_uri: email_response.uri,
       created_at: Time.zone.now,
     )
   end
