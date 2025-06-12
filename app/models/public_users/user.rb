@@ -70,6 +70,8 @@ module PublicUsers
       update(deleted: true)
 
       PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::DELETED)
+
+      ExternalUserDeletionWorker.perform_async(id)
     end
 
   private
