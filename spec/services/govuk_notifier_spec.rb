@@ -7,9 +7,7 @@ RSpec.describe GovukNotifier do
   let(:notifier) { described_class.new(client: client) }
 
   describe '#send_email' do
-    let(:mocked_response) do
-      attributes_for(:notifications_client_post_email_response)[:body]
-    end
+    let(:mocked_response) { build(:notifications_client_post_email_response) }
 
     it 'sends an email' do
       allow(notifier).to receive(:audit).and_return(nil)
