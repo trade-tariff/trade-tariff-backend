@@ -15,15 +15,9 @@ class ExternalUserDeletionWorker
         return
       end
 
-      if identity_api_delete(user.external_id)
+      if IdentityApiClient.delete_user(user.external_id)
         user.update(external_id: nil)
       end
     end
-  end
-
-  private
-
-  def identity_api_delete(external_id)
-    IdentityApiClient.delete_user(external_id)
   end
 end
