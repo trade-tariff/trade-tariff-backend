@@ -16,20 +16,29 @@ RSpec.describe CdsImporter::RecordInserter do
        }.by(certificate)
     end
 
+    it 'calls skip instrument against ActiveSupport::Notifications' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+
+      do_insert
+
+      batch.map do |entity|
+        if entity.instance.skip_import?
+          args = ['cds_importer.import.operations', { mapper: entity.mapper, operation: :skipped, count: 1, record: entity.instance }]
+          expect(ActiveSupport::Notifications).to have_received(:instrument).with(*args)
+        end
+      end
+    end
+
     it 'calls instrument against ActiveSupport::Notifications' do
       allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
 
       do_insert
 
-      expected_calls = batch.map do |entity|
-        if entity.instance.skip_import?
-          ['cds_importer.import.operations', { mapper: entity.mapper, operation: :skipped, count: 1, record: entity.instance }]
-        else
-          ['cds_importer.import.operations', { mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance }]
-        end
-      end
-
-      expected_calls.each do |args|
+      filtered_batch = batch.reject { |entity| entity.instance.skip_import? }
+      groups = filtered_batch.group_by { |entity| entity.instance.class.operation_klass }
+      groups.each_value do |group|
+        first_entity = group.first
+        args = ['cds_importer.import.operations', { mapper: first_entity.mapper, operation: first_entity.instance.operation, count: group.size }]
         expect(ActiveSupport::Notifications).to have_received(:instrument).with(*args)
       end
     end

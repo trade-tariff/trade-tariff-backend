@@ -71,8 +71,9 @@ module TariffSynchronizer
     end
 
     def import!
-      TaricImporter.new(self).import
+      @oplog_inserts = TaricImporter.new(self).import
       mark_as_applied
+      store_oplog_inserts
       Rails.logger.info "Applied TARIC update #{filename}"
     end
 
@@ -138,6 +139,12 @@ module TariffSynchronizer
 
     def next_update_year
       next_update_issue_date.year
+    end
+
+    def store_oplog_inserts
+      self.inserts = @oplog_inserts.to_json
+
+      save
     end
   end
 end
