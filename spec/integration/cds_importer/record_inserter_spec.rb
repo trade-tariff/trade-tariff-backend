@@ -16,7 +16,7 @@ RSpec.describe CdsImporter::RecordInserter do
        }.by(certificate)
     end
 
-    it 'calls instrument against ActiveSupport::Notifications' do
+    it 'calls skip instrument against ActiveSupport::Notifications' do
       allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
 
       do_insert
@@ -27,10 +27,16 @@ RSpec.describe CdsImporter::RecordInserter do
           expect(ActiveSupport::Notifications).to have_received(:instrument).with(*args)
         end
       end
+    end
+
+    it 'calls instrument against ActiveSupport::Notifications' do
+      allow(ActiveSupport::Notifications).to receive(:instrument).and_call_original
+
+      do_insert
 
       filtered_batch = batch.reject { |entity| entity.instance.skip_import? }
       groups = filtered_batch.group_by { |entity| entity.instance.class.operation_klass }
-      groups.each do |operation_klass, group|
+      groups.each_value do |group|
         first_entity = group.first
         args = ['cds_importer.import.operations', { mapper: first_entity.mapper, operation: first_entity.instance.operation, count: group.size }]
         expect(ActiveSupport::Notifications).to have_received(:instrument).with(*args)

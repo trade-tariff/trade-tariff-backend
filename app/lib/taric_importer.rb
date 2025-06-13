@@ -72,8 +72,6 @@ class TaricImporter
 
   private
 
-  private
-
   attr_reader :oplog_inserts
 
   def subscribe_to_oplog_inserts

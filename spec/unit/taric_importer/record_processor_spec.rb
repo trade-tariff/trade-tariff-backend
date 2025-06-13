@@ -65,7 +65,7 @@ RSpec.describe TaricImporter::RecordProcessor do
         instance_double(
           TaricImporter::RecordProcessor::CreateOperation,
           call: true,
-          to_oplog_operation: :create
+          to_oplog_operation: :create,
         )
       end
 
@@ -99,10 +99,9 @@ RSpec.describe TaricImporter::RecordProcessor do
         instance_double(
           create_operation_class,
           call: true,
-          to_oplog_operation: :create
+          to_oplog_operation: :create,
         )
       end
-
 
       it 'performs ovverriding create operation' do
         record_processor.process!
