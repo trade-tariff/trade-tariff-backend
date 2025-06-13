@@ -40,6 +40,12 @@ module PublicUsers
           .select_all(:users)
           .distinct
       end
+
+      def failed_subscribers
+        active
+          .exclude(Sequel[:users][:id] => PublicUsers::Subscription.select(:user_id))
+          .where { created_at < 72.hours.ago }
+      end
     end
 
     def email

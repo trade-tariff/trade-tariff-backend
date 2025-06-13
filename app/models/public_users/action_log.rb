@@ -4,8 +4,9 @@ module PublicUsers
     SUBSCRIBED = 'subscribed'.freeze
     UNSUBSCRIBED = 'unsubscribed'.freeze
     DELETED = 'deleted'.freeze
+    FAILED_SUBSCRIBER = 'failed subscriber'.freeze
 
-    ALLOWED_ACTIONS = [REGISTERED, SUBSCRIBED, UNSUBSCRIBED, DELETED].freeze
+    ALLOWED_ACTIONS = [REGISTERED, SUBSCRIBED, UNSUBSCRIBED, DELETED, FAILED_SUBSCRIBER].freeze
 
     plugin :auto_validations
     plugin :timestamps, update_on_create: true
