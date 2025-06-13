@@ -59,7 +59,7 @@ RSpec.describe News::Item do
     end
 
     context 'when chapters are valid' do
-      let(:instance) { described_class.new(chapters: '12 34') }
+      let(:instance) { described_class.new(chapters: '12, 34') }
 
       it { is_expected.not_to include(chapters: ['have an invalid format']) }
     end
