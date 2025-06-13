@@ -12,4 +12,14 @@ RSpec.describe RemoveFailedSubscribersWorker, type: :worker do
     described_class.new.perform
     expect(user).to have_received(:soft_delete!)
   end
+
+  it 'creates an action log for each user', :aggregate_failures do
+    expect {
+      described_class.new.perform
+    }.to change(PublicUsers::ActionLog, :count).by(1)
+
+    action_log = PublicUsers::ActionLog.last
+    expect(action_log.user_id).to eq(user.id)
+    expect(action_log.action).to eq(PublicUsers::ActionLog::FAILED_SUBSCRIBER)
+  end
 end
