@@ -21,15 +21,18 @@ RSpec.describe CdsImporter::RecordInserter do
 
       do_insert
 
-      expected_calls = batch.map do |entity|
+      batch.map do |entity|
         if entity.instance.skip_import?
-          ['cds_importer.import.operations', { mapper: entity.mapper, operation: :skipped, count: 1, record: entity.instance }]
-        else
-          ['cds_importer.import.operations', { mapper: entity.mapper, operation: entity.instance.operation, count: 1, record: entity.instance }]
+          args = ['cds_importer.import.operations', { mapper: entity.mapper, operation: :skipped, count: 1, record: entity.instance }]
+          expect(ActiveSupport::Notifications).to have_received(:instrument).with(*args)
         end
       end
 
-      expected_calls.each do |args|
+      filtered_batch = batch.reject { |entity| entity.instance.skip_import? }
+      groups = filtered_batch.group_by { |entity| entity.instance.class.operation_klass }
+      groups.each do |operation_klass, group|
+        first_entity = group.first
+        args = ['cds_importer.import.operations', { mapper: first_entity.mapper, operation: first_entity.instance.operation, count: group.size }]
         expect(ActiveSupport::Notifications).to have_received(:instrument).with(*args)
       end
     end

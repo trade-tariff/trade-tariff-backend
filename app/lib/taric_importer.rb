@@ -19,16 +19,31 @@ class TaricImporter
 
   def initialize(taric_update)
     @taric_update = taric_update
+    @oplog_inserts = {
+      operations: {
+        create: { count: 0, duration: 0 },
+        update: { count: 0, duration: 0 },
+        destroy: { count: 0, duration: 0 },
+        destroy_missing: { count: 0, duration: 0 },
+        skipped: { count: 0, duration: 0 },
+      },
+      total_count: 0,
+      total_duration: 0,
+    }
   end
 
   def import
     filename = determine_filename(@taric_update.file_path)
     return unless proceed_with_import?(filename)
 
+    subscribe_to_oplog_inserts
+
     handler = XmlProcessor.new(@taric_update.issue_date)
     file = TariffSynchronizer::FileService.file_as_stringio(@taric_update)
     XmlParser::Reader.new(file, 'record', handler).parse
     post_import(file_path: @taric_update.file_path, filename:)
+
+    @oplog_inserts
   end
 
   class XmlProcessor
@@ -56,6 +71,35 @@ class TaricImporter
   end
 
   private
+
+  private
+
+  attr_reader :oplog_inserts
+
+  def subscribe_to_oplog_inserts
+    ActiveSupport::Notifications.subscribe('taric_importer.import.operations') do |*args|
+      oplog_event = ActiveSupport::Notifications::Event.new(*args)
+
+      count = oplog_event.payload[:count]
+      if count.positive?
+        duration = oplog_event.duration
+        operation = oplog_event.payload[:operation]
+        entity_class = oplog_event.payload[:entity_class]
+
+        oplog_inserts[:operations][operation][entity_class] ||= {}
+        oplog_inserts[:operations][operation][entity_class][:count] ||= 0
+        oplog_inserts[:operations][operation][entity_class][:duration] ||= 0
+        oplog_inserts[:operations][operation][entity_class][:count] += count
+        oplog_inserts[:operations][operation][entity_class][:duration] += duration
+
+        oplog_inserts[:operations][operation][:count] += count
+        oplog_inserts[:operations][operation][:duration] += duration
+
+        oplog_inserts[:total_count] += count
+        oplog_inserts[:total_duration] += duration
+      end
+    end
+  end
 
   def proceed_with_import?(filename)
     return true unless TradeTariffBackend.uk?

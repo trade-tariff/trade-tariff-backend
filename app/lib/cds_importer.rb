@@ -123,7 +123,6 @@ class CdsImporter
         operation = oplog_event.payload[:operation]
         entity_class = mapper.entity_class
         mapping_path = mapper.mapping_path
-        record = oplog_event.payload[:record]
 
         oplog_inserts[:operations][operation][entity_class] ||= {}
         oplog_inserts[:operations][operation][entity_class][:count] ||= 0
@@ -134,6 +133,8 @@ class CdsImporter
 
         # We only accumulate skipped operations because we can work out from the file which record was inserted for non-missing operation types
         if [CdsImporter::RecordInserter::SKIPPED_OPERATION].include?(operation)
+          record = oplog_event.payload[:record]
+
           oplog_inserts[:operations][operation][entity_class][:records] ||= []
           oplog_inserts[:operations][operation][entity_class][:records] << record.identification
         end
