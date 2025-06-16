@@ -1,8 +1,6 @@
 name: Run Staging DB Replicate Job
 
 on:
-  schedule:
-    - cron: 00 7 * * 1,2,3,4,5
   workflow_dispatch:
 
 env:
