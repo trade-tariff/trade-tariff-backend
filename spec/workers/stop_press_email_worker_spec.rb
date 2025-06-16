@@ -18,7 +18,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
       {
         stop_press_title: stop_press.title,
         stop_press_link: stop_press.public_url,
-        subscription_reason: stop_press.subscription_reason,
+        subscription_reason: 'This is a non-chapter specific update from the UK Trade Tariff Service',
         site_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/').to_s,
         unsubscribe_url: URI.join(TradeTariffBackend.frontend_host, 'subscriptions/unsubscribe/', user.stop_press_subscription).to_s,
       }
@@ -49,6 +49,62 @@ RSpec.describe StopPressEmailWorker, type: :worker do
       it 'does not send email' do
         instance.perform(stop_press.id, 'invalid_user_id')
         expect(client).not_to have_received(:send_email)
+      end
+    end
+  end
+
+  describe '#subscription_reason' do
+    before do
+      allow(stop_press).to receive(:chapters).and_return(chapters)
+      allow(user).to receive(:chapter_ids).and_return(user_chapters)
+    end
+
+    context 'when stop press has chapters' do
+      let(:chapters) { '01, 02' }
+
+      context 'when user has no chapter subscriptions' do
+        let(:user_chapters) { '' }
+
+        it 'returns a reason with all chapters listed' do
+          expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapter - 01, 02')
+        end
+      end
+
+      context 'when user has chapter subscriptions' do
+        let(:user_chapters) { '01, 03' }
+
+        it 'returns a reason with only matching chapters listed' do
+          expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapter - 01')
+        end
+
+        context 'when whitespace does not match' do
+          let(:chapters) { '01, 02, 03, 04' }
+          let(:user_chapters) { '01,03,05' }
+
+          it 'still returns a reason with only matching chapters listed' do
+            expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapter - 01, 03')
+          end
+        end
+      end
+    end
+
+    context 'when stop press has no chapters' do
+      let(:chapters) { nil }
+
+      context 'when user has no chapter subscriptions' do
+        let(:user_chapters) { '' }
+
+        it 'returns the non-chapter reason' do
+          expect(instance.subscription_reason(stop_press, user)).to eq('This is a non-chapter specific update from the UK Trade Tariff Service')
+        end
+      end
+
+      context 'when user has chapter subscriptions' do
+        let(:user_chapters) { '01, 03' }
+
+        it 'returns the non-chapter reason' do
+          expect(instance.subscription_reason(stop_press, user)).to eq('This is a non-chapter specific update from the UK Trade Tariff Service')
+        end
       end
     end
   end
