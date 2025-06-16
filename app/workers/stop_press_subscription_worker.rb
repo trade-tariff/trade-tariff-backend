@@ -3,8 +3,6 @@ class StopPressSubscriptionWorker
 
   def perform(stop_press_id)
     @stop_press = News::Item.find(id: stop_press_id)
-    return unless @stop_press.emailable?
-
     queue
   end
 
