@@ -49,7 +49,7 @@ namespace :api, defaults: { format: 'json' }, path: '/admin' do
       resources :news_items, only: %i[index show create update destroy],
                              controller: 'news/items'
 
-      resources :live_issues, only: %i[index create]
+      resources :live_issues, only: %i[index create update]
     end
 
     namespace :green_lanes do

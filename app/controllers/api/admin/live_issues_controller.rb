@@ -16,6 +16,16 @@ module Api
         end
       end
 
+      def update
+        live_issue = LiveIssue.with_pk!(params[:id])
+
+        if live_issue.update(live_issue_params)
+          render json: serialize(live_issue)
+        else
+          render json: serialize_errors(live_issue), status: :unprocessable_entity
+        end
+      end
+
       private
 
         def live_issues
