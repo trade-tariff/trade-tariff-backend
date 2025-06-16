@@ -17,9 +17,11 @@ class StopPressSubscriptionWorker
 private
 
   def users
+    chapters = @stop_press.chapters.split(',').map(&:strip)
+
     PublicUsers::User
       .active
       .with_active_stop_press_subscription
-      .matching_chapters(@stop_press.chapters)
+      .matching_chapters(chapters)
   end
 end

@@ -18,7 +18,7 @@ RSpec.describe StopPressSubscriptionWorker, type: :worker do
 
     context 'when news item is emailable' do
       it 'returns users with active stop press subscriptions matching chapters', :aggregate_failures do
-        allow(stop_press).to receive_messages(emailable?: true, chapters: %w[01 02])
+        allow(stop_press).to receive_messages(emailable?: true, chapters: '01, 02')
         allow(PublicUsers::User).to receive_messages(active: PublicUsers::User, with_active_stop_press_subscription: PublicUsers::User)
         allow(PublicUsers::User).to receive(:matching_chapters).with(%w[01 02]).and_return(PublicUsers::User)
         allow(News::Item).to receive(:find).and_return(stop_press)
@@ -30,9 +30,9 @@ RSpec.describe StopPressSubscriptionWorker, type: :worker do
       end
 
       it 'queues emails' do
-        allow(stop_press).to receive_messages(emailable?: true, chapters: %w[01 02])
+        allow(stop_press).to receive_messages(emailable?: true, chapters: '01')
         allow(PublicUsers::User).to receive(:with_active_stop_press_subscription).and_return(PublicUsers::User)
-        allow(PublicUsers::User).to receive(:matching_chapters).with(%w[01 02]).and_return([user])
+        allow(PublicUsers::User).to receive(:matching_chapters).with(%w[01]).and_return([user])
         allow(News::Item).to receive(:find).and_return(stop_press)
         allow(StopPressEmailWorker).to receive(:perform_async)
 
