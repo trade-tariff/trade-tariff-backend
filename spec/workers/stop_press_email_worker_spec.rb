@@ -32,7 +32,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
     it 'sends request to client' do
       instance.perform(stop_press.id, user.id)
 
-      expect(client).to have_received(:send_email).with(email_address, StopPressEmailWorker::TEMPLATE_ID, expected_personalisation)
+      expect(client).to have_received(:send_email).with(email_address, StopPressEmailWorker::TEMPLATE_ID, expected_personalisation, StopPressEmailWorker::REPLY_TO_ID)
     end
 
     it 'returns if stop press is nil' do
