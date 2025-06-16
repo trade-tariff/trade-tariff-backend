@@ -252,5 +252,22 @@ RSpec.describe PublicUsers::User do
         expect(dataset).to contain_exactly(active_user_with_subscription)
       end
     end
+
+    describe '.failed_subscribers' do
+      let!(:old_user_no_sub) { create(:public_user, created_at: 4.days.ago, deleted: false) }
+      let(:old_user_with_sub) { create(:public_user, :with_active_stop_press_subscription, created_at: 4.days.ago, deleted: false) }
+      let(:recent_user_no_sub) { create(:public_user, created_at: 1.day.ago, deleted: false) }
+      let(:recent_user_with_sub) { create(:public_user, :with_active_stop_press_subscription, created_at: 1.day.ago, deleted: false) }
+      let(:deleted_user_no_sub) { create(:public_user, created_at: 4.days.ago, deleted: true) }
+
+      it 'returns only users created more than 72 hours ago, not deleted, and without any subscription' do
+        old_user_with_sub
+        recent_user_no_sub
+        recent_user_with_sub
+        deleted_user_no_sub
+        result = described_class.failed_subscribers.all
+        expect(result).to contain_exactly(old_user_no_sub)
+      end
+    end
   end
 end
