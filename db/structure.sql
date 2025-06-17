@@ -3402,12 +3402,11 @@ CREATE TABLE uk.geographical_area_memberships_oplog (
     geographical_area_group_hjid integer
 );
 
-
 --
--- Name: geographical_area_memberships; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_memberships; Type: VIEW; Schema: uk; Owner: -
 --
 
-CREATE MATERIALIZED VIEW uk.geographical_area_memberships AS
+CREATE VIEW uk.geographical_area_memberships AS
  SELECT geographical_area_sid,
     geographical_area_group_sid,
     validity_start_date,
@@ -3423,8 +3422,7 @@ CREATE MATERIALIZED VIEW uk.geographical_area_memberships AS
    FROM uk.geographical_area_memberships_oplog geographical_area_memberships1
   WHERE ((oid IN ( SELECT max(geographical_area_memberships2.oid) AS max
            FROM uk.geographical_area_memberships_oplog geographical_area_memberships2
-          WHERE ((geographical_area_memberships1.geographical_area_sid = geographical_area_memberships2.geographical_area_sid) AND (geographical_area_memberships1.geographical_area_group_sid = geographical_area_memberships2.geographical_area_group_sid) AND (geographical_area_memberships1.validity_start_date = geographical_area_memberships2.validity_start_date)))) AND ((operation)::text <> 'D'::text))
-  WITH NO DATA;
+          WHERE ((geographical_area_memberships1.geographical_area_sid = geographical_area_memberships2.geographical_area_sid) AND (geographical_area_memberships1.geographical_area_group_sid = geographical_area_memberships2.geographical_area_group_sid) AND (geographical_area_memberships1.validity_start_date = geographical_area_memberships2.validity_start_date)))) AND ((operation)::text <> 'D'::text));
 
 
 --
@@ -9208,6 +9206,13 @@ ALTER TABLE ONLY uk.geographical_area_description_periods_oplog
 
 ALTER TABLE ONLY uk.geographical_area_descriptions_oplog
     ADD CONSTRAINT geographical_area_descriptions_pkey PRIMARY KEY (oid);
+
+--
+-- Name: geographical_area_memberships_oplog geographical_area_memberships_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
+--
+
+ALTER TABLE ONLY uk.geographical_area_memberships_oplog
+    ADD CONSTRAINT geographical_area_memberships_pkey PRIMARY KEY (oid);
 
 
 --
