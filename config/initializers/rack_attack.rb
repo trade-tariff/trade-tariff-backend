@@ -15,5 +15,5 @@ if Rails.env.production?
 
   Rack::Attack.throttle('requests by ip', limit: 1_000, period: 60, &:ip)
 else
-  logger.info 'Rack::Attack is disabled in Dev env.'
+  Rails.logger.info 'Rack::Attack is disabled in Dev env.'
 end
