@@ -48,8 +48,8 @@ module Api
           Api::Admin::LiveIssueSerializer.new(*args).serializable_hash
         end
 
-        def serialize_errors(live_issue)
-          Api::Admin::ErrorSerializationService.new(live_issue).call
+        def serialize_errors(*args)
+          Api::Admin::ErrorSerializationService.new(*args).call
         end
     end
   end
