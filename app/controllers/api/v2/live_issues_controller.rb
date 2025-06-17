@@ -2,11 +2,9 @@ module Api
   module V2
     class LiveIssuesController < ApiController
       def index
-        if params[:filter].present?
-          render json: serialize(live_issues.where(permitted_filter).all) and return
-        end
-
-        render json: serialize(live_issues.all)
+        render json: serialize(filtered_live_issues), status: :ok
+      rescue StandardError => e
+        render json: serialize_errors(e)
       end
 
       private
@@ -15,12 +13,18 @@ module Api
           @live_issues ||= LiveIssue.dataset
         end
 
+        def filtered_live_issues
+          return live_issues.all unless params[:filter].present?
+
+          live_issues.where(permitted_filter).all
+        end
+
         def serialize(*args)
           Api::V2::LiveIssueSerializer.new(*args).serializable_hash
         end
 
-        def serialize_errors(live_issue)
-          Api::V2::ErrorSerializationService.new(live_issue).call
+        def serialize_errors(*args)
+          Api::V2::ErrorSerializationService.new(*args).call
         end
 
         def permitted_filter

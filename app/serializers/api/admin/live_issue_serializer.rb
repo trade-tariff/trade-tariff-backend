@@ -9,6 +9,7 @@ module Api
 
       attributes :title,
                   :description,
+                  :suggested_action,
                   :commodities,
                   :status,
                   :date_discovered,
