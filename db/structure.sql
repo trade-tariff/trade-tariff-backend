@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
--- Dumped by pg_dump version 16.8 (Homebrew)
+-- Dumped by pg_dump version 16.9 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -3404,10 +3404,10 @@ CREATE TABLE uk.geographical_area_memberships_oplog (
 
 
 --
--- Name: geographical_area_memberships; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_memberships; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_area_memberships AS
+CREATE MATERIALIZED VIEW uk.geographical_area_memberships AS
  SELECT geographical_area_sid,
     geographical_area_group_sid,
     validity_start_date,
@@ -3423,7 +3423,8 @@ CREATE VIEW uk.geographical_area_memberships AS
    FROM uk.geographical_area_memberships_oplog geographical_area_memberships1
   WHERE ((oid IN ( SELECT max(geographical_area_memberships2.oid) AS max
            FROM uk.geographical_area_memberships_oplog geographical_area_memberships2
-          WHERE ((geographical_area_memberships1.geographical_area_sid = geographical_area_memberships2.geographical_area_sid) AND (geographical_area_memberships1.geographical_area_group_sid = geographical_area_memberships2.geographical_area_group_sid) AND (geographical_area_memberships1.validity_start_date = geographical_area_memberships2.validity_start_date)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((geographical_area_memberships1.geographical_area_sid = geographical_area_memberships2.geographical_area_sid) AND (geographical_area_memberships1.geographical_area_group_sid = geographical_area_memberships2.geographical_area_group_sid) AND (geographical_area_memberships1.validity_start_date = geographical_area_memberships2.validity_start_date)))) AND ((operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -9210,14 +9211,6 @@ ALTER TABLE ONLY uk.geographical_area_descriptions_oplog
 
 
 --
--- Name: geographical_area_memberships_oplog geographical_area_memberships_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
---
-
-ALTER TABLE ONLY uk.geographical_area_memberships_oplog
-    ADD CONSTRAINT geographical_area_memberships_pkey PRIMARY KEY (oid);
-
-
---
 -- Name: geographical_areas_oplog geographical_areas_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
 
@@ -11189,6 +11182,20 @@ CREATE INDEX guides_goods_nomenclatures_guide_id_index ON uk.guides_goods_nomenc
 
 
 --
+-- Name: idx_search_suggestions_distinct; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_search_suggestions_distinct ON uk.search_suggestions USING btree (value, priority);
+
+
+--
+-- Name: idx_search_suggestions_value_trgm; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gin (value public.gin_trgm_ops);
+
+
+--
 -- Name: index_additional_code_type_descriptions_on_language_id; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12911,3 +12918,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user_subscriptions_primary_key_to_uuid_sequel.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250611135620_add_created_at_to_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250612150328_allow_null_external_id_on_users.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250617113942_add_search_suggestion_indexes.rb');
