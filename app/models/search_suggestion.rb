@@ -38,22 +38,20 @@ class SearchSuggestion < Sequel::Model
           .limit(10)
           .all
       else
-        suggestions = with_sql("
-          WITH filtered AS (
-            SELECT DISTINCT ON (value) *
-            FROM search_suggestions
-            WHERE
-              type IN (?, ?) AND
-              value ILIKE ?
-            ORDER BY value, priority
-          )
-          SELECT *,
-                ? AS query,
-                similarity(value, ?) AS score
-          FROM filtered
-          ORDER BY priority ASC, score DESC
-          LIMIT ?;
-        ", 'search_reference', 'full_chemical_name', "%#{query}%", query, query, 10).all
+        filtered_cte = select_all
+          .distinct(:value)
+          .where(type: %w[search_reference full_chemical_name])
+          .where(Sequel.ilike(:value, "%#{query}%"))
+          .order(:value, :priority)
+
+        suggestions = with(:filtered, filtered_cte)
+          .from(:filtered)
+          .select_all(:filtered)
+          .with_query(query)
+          .with_score(query)
+          .order(:priority, Sequel.desc(:score))
+          .limit(10)
+          .all
 
         suggestions.select do |suggestion|
           # ilike filters can return suggestions with a score of 0
