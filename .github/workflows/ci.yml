@@ -84,3 +84,11 @@ jobs:
       - run: bundle exec rails db:structure:load --trace
 
       - run: bundle exec rspec
+      - name: Publish Test Report
+        uses: ctrf-io/github-test-reporter@v1
+        with:
+          report-path: './ctrf/*.json'
+          flaky-rate-report: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: always()
