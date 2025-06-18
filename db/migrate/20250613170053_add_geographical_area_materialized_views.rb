@@ -5,7 +5,7 @@ Sequel.migration do
     drop_view :measure_excluded_geographical_areas
     drop_view :geographical_area_memberships
 
-    create_view  :measure_excluded_geographical_areas, <<~EOV, materialized: true
+    create_view :measure_excluded_geographical_areas, <<~EOVIEW, materialized: true
       SELECT geographical_areas.measure_sid,
              geographical_areas.excluded_geographical_area,
              geographical_areas.geographical_area_sid,
@@ -20,9 +20,9 @@ Sequel.migration do
             AND geographical_areas.geographical_area_sid = geographical_areas2.geographical_area_sid))
             AND geographical_areas.operation::text <> 'D'::text
       WITH DATA
-    EOV
+    EOVIEW
 
-    create_view  :geographical_area_memberships, <<~EOV, materialized: true
+    create_view :geographical_area_memberships, <<~EOVIEW, materialized: true
       SELECT memberships.geographical_area_sid,
         memberships.geographical_area_group_sid,
         memberships.validity_start_date,
@@ -43,7 +43,7 @@ Sequel.migration do
               AND memberships.validity_start_date = memberships2.validity_start_date))
               AND memberships.operation::text <> 'D'::text
       WITH DATA
-    EOV
+    EOVIEW
 
     add_index :measure_excluded_geographical_areas, :oid, unique: true
     add_index :geographical_area_memberships, :oid, unique: true
@@ -53,7 +53,7 @@ Sequel.migration do
     drop_view :measure_excluded_geographical_areas, materialized: true
     drop_view :geographical_area_memberships, materialized: true
 
-    create_view  :measure_excluded_geographical_areas, <<~EOV
+    create_view :measure_excluded_geographical_areas, <<~EOVIEW
       SELECT geographical_areas.measure_sid,
              geographical_areas.excluded_geographical_area,
              geographical_areas.geographical_area_sid,
@@ -67,9 +67,9 @@ Sequel.migration do
       WHERE geographical_areas.measure_sid = geographical_areas2.measure_sid
             AND geographical_areas.geographical_area_sid = geographical_areas2.geographical_area_sid))
             AND geographical_areas.operation::text <> 'D'::text
-    EOV
+    EOVIEW
 
-    create_view  :geographical_area_memberships, <<~EOV
+    create_view :geographical_area_memberships, <<~EOVIEW
       SELECT memberships.geographical_area_sid,
         memberships.geographical_area_group_sid,
         memberships.validity_start_date,
@@ -89,6 +89,6 @@ Sequel.migration do
               AND memberships.geographical_area_group_sid = memberships2.geographical_area_group_sid
               AND memberships.validity_start_date = memberships2.validity_start_date))
               AND memberships.operation::text <> 'D'::text;
-    EOV
+    EOVIEW
   end
 end

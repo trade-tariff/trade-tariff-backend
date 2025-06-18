@@ -8,7 +8,6 @@ class GeographicalAreaMembership < Sequel::Model
                      geographical_area_group_sid
                      validity_start_date]
 
-
   class << self
     def refresh!(concurrently: false)
       db.refresh_view(:geographical_area_memberships, concurrently:)

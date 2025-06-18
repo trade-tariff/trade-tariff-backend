@@ -1,5 +1,7 @@
 require_relative '../../app/helpers/materialize_view_helper'
+# rubocop:disable Style/MixinUsage
 include MaterializeViewHelper
+# rubocop:enable Style/MixinUsage
 
 namespace :data do
   namespace :migrate do
