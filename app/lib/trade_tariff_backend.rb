@@ -281,5 +281,9 @@ module TradeTariffBackend
     def myott?
       ENV['MYOTT_ENABLED'].to_s == 'true'
     end
+
+    def myott_report_email
+      ENV['MYOTT_REPORT_EMAIL']
+    end
   end
 end
