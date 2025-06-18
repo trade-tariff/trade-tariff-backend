@@ -66,7 +66,25 @@ RSpec.describe StopPressEmailWorker, type: :worker do
         let(:user_chapters) { '' }
 
         it 'returns a reason with all chapters listed' do
-          expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapter - 01, 02')
+          expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapters - 01, 02')
+        end
+      end
+
+      context 'when stop press chapters have irregular whitespace' do
+        let(:chapters) { '01,02, 03,04' }
+        let(:user_chapters) { '' }
+
+        it 'returns a reason with all chapters listed regularly' do
+          expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapters - 01, 02, 03, 04')
+        end
+      end
+
+      context 'when stop press chapters have duplicates' do
+        let(:chapters) { '01,02,03,01,02' }
+        let(:user_chapters) { '' }
+
+        it 'returns a reason with all chapters listed regularly' do
+          expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapters - 01, 02, 03')
         end
       end
 
@@ -82,7 +100,7 @@ RSpec.describe StopPressEmailWorker, type: :worker do
           let(:user_chapters) { '01,03,05' }
 
           it 'still returns a reason with only matching chapters listed' do
-            expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapter - 01, 03')
+            expect(instance.subscription_reason(stop_press, user)).to eq('You have previously subscribed to receive updates about this tariff chapters - 01, 03')
           end
         end
       end
