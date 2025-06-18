@@ -1,5 +1,7 @@
+require_relative '../helpers/materialize_view_helper'
 class ApplyWorker
   include Sidekiq::Worker
+  include MaterializeViewHelper
 
   sidekiq_options queue: :rollbacks, retry: false
 
@@ -10,7 +12,7 @@ class ApplyWorker
       TaricSynchronizer.apply
     end
 
-    GoodsNomenclatures::TreeNode.refresh!
+    refresh_materialized_view
 
     # Clear frontend cache
     Rails.logger.info 'Clearing frontend cache'
