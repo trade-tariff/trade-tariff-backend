@@ -1,5 +1,7 @@
+require_relative '../helpers/materialize_view_helper'
 class RollbackWorker
   include Sidekiq::Worker
+  include MaterializeViewHelper
 
   sidekiq_options queue: :rollbacks, retry: false
 
@@ -10,6 +12,6 @@ class RollbackWorker
       TaricSynchronizer.rollback(date, keep: redownload)
     end
 
-    GoodsNomenclatures::TreeNode.refresh!
+    refresh_materialized_view
   end
 end

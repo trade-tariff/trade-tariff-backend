@@ -1,5 +1,7 @@
+require_relative '../helpers/materialize_view_helper'
 class TaricUpdatesSynchronizerWorker
   include Sidekiq::Worker
+  include MaterializeViewHelper
 
   TRY_AGAIN_IN = 20.minutes
   CUT_OFF_TIME = '10:00'.freeze
@@ -32,9 +34,5 @@ private
 
     require 'data_migrator' unless defined?(DataMigrator)
     DataMigrator.migrate_up!(nil)
-  end
-
-  def refresh_materialized_view
-    GoodsNomenclatures::TreeNode.refresh!
   end
 end
