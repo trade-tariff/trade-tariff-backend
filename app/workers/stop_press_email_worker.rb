@@ -27,16 +27,13 @@ class StopPressEmailWorker
   end
 
   def subscription_reason(stop_press, user)
-    if stop_press.chapters.blank?
-      'This is a non-chapter specific update from the UK Trade Tariff Service'
-    else
-      chapters = if user.chapter_ids.empty?
-                   stop_press.chapters
-                 else
-                   # Find common chapters between stop press and user subscriptions
-                   (stop_press.chapters.split(',').map(&:strip) & user.chapter_ids.split(',').map(&:strip)).join(', ')
-                 end
-      "You have previously subscribed to receive updates about this tariff chapter - #{chapters}"
-    end
+    return 'This is a non-chapter specific update from the UK Trade Tariff Service' if stop_press.chapters.blank?
+
+    # Extract chapters from stop_press and filter by user's subscribed chapters if present
+    chapters = stop_press.chapters.split(',').uniq.map(&:strip)
+    chapters &= user.chapter_ids.split(',').uniq.map(&:strip) if user.chapter_ids.present?
+
+    word_form = chapters.one? ? 'chapter' : 'chapters'
+    "You have previously subscribed to receive updates about this tariff #{word_form} - #{chapters.join(', ')}"
   end
 end
