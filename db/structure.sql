@@ -3,7 +3,7 @@
 --
 
 -- Dumped from database version 16.8 (Debian 16.8-1.pgdg120+1)
--- Dumped by pg_dump version 16.8 (Homebrew)
+-- Dumped by pg_dump version 16.9 (Homebrew)
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -3401,7 +3401,6 @@ CREATE TABLE uk.geographical_area_memberships_oplog (
     geographical_area_hjid integer,
     geographical_area_group_hjid integer
 );
-
 
 --
 -- Name: geographical_area_memberships; Type: VIEW; Schema: uk; Owner: -
@@ -9210,7 +9209,6 @@ ALTER TABLE ONLY uk.geographical_area_description_periods_oplog
 ALTER TABLE ONLY uk.geographical_area_descriptions_oplog
     ADD CONSTRAINT geographical_area_descriptions_pkey PRIMARY KEY (oid);
 
-
 --
 -- Name: geographical_area_memberships_oplog geographical_area_memberships_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
@@ -11198,6 +11196,20 @@ CREATE INDEX guides_goods_nomenclatures_guide_id_index ON uk.guides_goods_nomenc
 
 
 --
+-- Name: idx_search_suggestions_distinct; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_search_suggestions_distinct ON uk.search_suggestions USING btree (value, priority);
+
+
+--
+-- Name: idx_search_suggestions_value_trgm; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX idx_search_suggestions_value_trgm ON uk.search_suggestions USING gin (value public.gin_trgm_ops);
+
+
+--
 -- Name: index_additional_code_type_descriptions_on_language_id; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -12928,3 +12940,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250611135620_add_created_at_to_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250612150328_allow_null_external_id_on_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250613170053_add_geographical_area_materialized_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250617113942_add_search_suggestion_indexes.rb');

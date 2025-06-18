@@ -38,13 +38,18 @@ class SearchSuggestion < Sequel::Model
           .limit(10)
           .all
       else
-        suggestions = where(id: distinct_values(query).from_self.select(:id))
+        filtered_cte = select_all
+          .distinct(:value)
+          .where(type: %w[search_reference full_chemical_name])
+          .where(Sequel.ilike(:value, "%#{query}%"))
+          .order(:value, :priority)
+
+        suggestions = with(:filtered, filtered_cte)
+          .from(:filtered)
+          .select_all(:filtered)
           .with_query(query)
           .with_score(query)
-          .order(
-            Sequel.asc(:priority),
-            Sequel.desc(:score),
-          )
+          .order(:priority, Sequel.desc(:score))
           .limit(10)
           .all
 

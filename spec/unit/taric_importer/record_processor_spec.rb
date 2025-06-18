@@ -61,7 +61,13 @@ RSpec.describe TaricImporter::RecordProcessor do
         allow(TaricImporter::RecordProcessor::CreateOperation).to receive(:new).and_return(create_operation)
       end
 
-      let(:create_operation) { instance_double(TaricImporter::RecordProcessor::CreateOperation, call: true) }
+      let(:create_operation) do
+        instance_double(
+          TaricImporter::RecordProcessor::CreateOperation,
+          call: true,
+          to_oplog_operation: :create,
+        )
+      end
 
       it 'performs default create operation' do
         record_processor.process!
@@ -89,7 +95,13 @@ RSpec.describe TaricImporter::RecordProcessor do
         end
       end
 
-      let(:create_operation) { instance_double(create_operation_class, call: true) }
+      let(:create_operation) do
+        instance_double(
+          create_operation_class,
+          call: true,
+          to_oplog_operation: :create,
+        )
+      end
 
       it 'performs ovverriding create operation' do
         record_processor.process!

@@ -42,7 +42,7 @@ module News
       to_remove = collections.pluck(:id) - collection_ids
       to_remove.each(&method(:remove_collection))
 
-      StopPressSubscriptionWorker.perform_async(id) if TradeTariffBackend.myott?
+      StopPressSubscriptionWorker.perform_async(id) if TradeTariffBackend.myott? && emailable?
     end
 
     def validate
@@ -64,14 +64,6 @@ module News
 
     def public_url
       URI.join(TradeTariffBackend.frontend_host, '/news/stories/', slug).to_s
-    end
-
-    def subscription_reason
-      if chapters.present?
-        "You have previously subscribed to receive updates about this tariff chapter - #{chapters}"
-      else
-        'This is a non-chapter specific update from the UK Trade Tariff Service'
-      end
     end
 
     dataset_module do

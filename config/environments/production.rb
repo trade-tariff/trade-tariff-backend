@@ -1,6 +1,7 @@
 require 'active_support/core_ext/integer/time'
 
 require_relative '../../app/lib/trade_tariff_backend'
+require_relative '../../app/middleware/sidekiq_basic_auth'
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
@@ -90,4 +91,15 @@ Rails.application.configure do
 
   # Send deprecation notices to registered listeners.
   config.active_support.deprecation = :notify
+  # NOTE: Warden::Manager incorrectly sets the WWW-AUTHENTICATE header to Bearer instead of Basic leading to inability to authenticate in a browser so we want to return before that
+  config.middleware.insert_before(Warden::Manager, SidekiqBasicAuth) do |username, password|
+    ActiveSupport::SecurityUtils.secure_compare(
+      ::Digest::SHA256.hexdigest(username),
+      ::Digest::SHA256.hexdigest(Rails.application.credentials.dig(:sidekiq, :username)),
+    ) &
+      ActiveSupport::SecurityUtils.secure_compare(
+        ::Digest::SHA256.hexdigest(password),
+        ::Digest::SHA256.hexdigest(Rails.application.credentials.dig(:sidekiq, :password)),
+      )
+  end
 end

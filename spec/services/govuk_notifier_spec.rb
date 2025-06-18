@@ -11,9 +11,10 @@ RSpec.describe GovukNotifier do
 
     it 'sends an email' do
       allow(notifier).to receive(:audit).and_return(nil)
-      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
+      notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' }, 'f47ac10b-58cc-4372-a567-0e02b2c3d479')
       expect(client).to have_received(:send_email).with(
         email_address: 'test@example.com',
+        email_reply_to_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
         template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
         personalisation: {
           foo: 'bar',
@@ -27,6 +28,7 @@ RSpec.describe GovukNotifier do
       notifier.send_email('test@example.com', 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c', { foo: 'bar' })
       expect(client).to have_received(:send_email).with(
         email_address: 'foo@example.com',
+        email_reply_to_id: nil,
         template_id: 'b0f0c2b2-c5f5-4f3a-8d9c-f4c8e8ea1a7c',
         personalisation: {
           foo: 'bar',

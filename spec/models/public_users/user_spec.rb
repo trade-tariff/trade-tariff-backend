@@ -200,6 +200,22 @@ RSpec.describe PublicUsers::User do
       end
 
       context 'when no chapters are specified' do
+        let(:chapters) { '' }
+
+        it 'returns all users' do
+          expect(dataset).to contain_exactly(
+            user_with_chapter_1,
+            user_with_chapter_2_3,
+            user_with_chapter_3_4,
+            user_with_chapter_4,
+            user_with_chapter_1_2_3_4,
+            user_with_nil_preference,
+            user_with_empty_preference,
+          )
+        end
+      end
+
+      context 'when no chapters are specified with nil' do
         let(:chapters) { nil }
 
         it 'returns all users' do
@@ -215,8 +231,16 @@ RSpec.describe PublicUsers::User do
         end
       end
 
-      context 'when 1 chapter is specified' do
+      context 'when 1 chapter is specified as array' do
         let(:chapters) { %w[01] }
+
+        it 'returns expected users' do
+          expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_1_2_3_4, user_with_nil_preference, user_with_empty_preference)
+        end
+      end
+
+      context 'when 1 chapter is specified as string' do
+        let(:chapters) { '01' }
 
         it 'returns expected users' do
           expect(dataset).to contain_exactly(user_with_chapter_1, user_with_chapter_1_2_3_4, user_with_nil_preference, user_with_empty_preference)
