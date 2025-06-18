@@ -75,6 +75,7 @@ group :test do
   gem 'factory_bot_rails', require: false
   gem 'forgery'
   gem 'json_expressions'
+  gem 'rspec-ctrf'
   gem 'rspec-json_expectations'
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'

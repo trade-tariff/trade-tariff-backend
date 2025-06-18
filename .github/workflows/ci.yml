@@ -83,7 +83,7 @@ jobs:
 
       - run: bundle exec rails db:structure:load --trace
 
-      - run: bundle exec rspec
+      - run: bundle exec rspec --format progress --format Ctrf::RSpecFormatter --out ./ctrf/ctrf.json
       - name: Publish Test Report
         uses: ctrf-io/github-test-reporter@v1
         with:
