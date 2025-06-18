@@ -354,8 +354,14 @@ GEM
       actionpack (>= 5.2)
       railties (>= 5.2)
     rexml (3.4.1)
+    rspec (3.13.1)
+      rspec-core (~> 3.13.0)
+      rspec-expectations (~> 3.13.0)
+      rspec-mocks (~> 3.13.0)
     rspec-core (3.13.3)
       rspec-support (~> 3.13.0)
+    rspec-ctrf (0.0.1)
+      rspec (~> 3.0)
     rspec-expectations (3.13.4)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
@@ -522,6 +528,7 @@ DEPENDENCIES
   redis-client
   redlock
   responders
+  rspec-ctrf
   rspec-json_expectations
   rspec-rails
   rspec-rebound

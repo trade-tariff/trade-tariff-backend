@@ -54,3 +54,4 @@ searches_without_match_or_synonym.csv
 .envrc
 
 /config/master.key
+/ctrf
