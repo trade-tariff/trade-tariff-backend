@@ -66,6 +66,7 @@ namespace :api, defaults: { format: 'json' }, path: '/admin' do
       resources :exemptions, only: %i[index show create update destroy]
       resources :measures, only: %i[index show create update destroy]
       resources :update_notifications, only: %i[index show update]
+      resources :measure_type_mappings, only: %i[index show create destroy]
     end
   end
 end

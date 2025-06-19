@@ -65,7 +65,11 @@ class TaricImporter
     end
 
     def process!
-      processor_for(record.klass, operation_class).new(record, operation_date).call
+      operation = processor_for(record.klass, operation_class).new(record, operation_date)
+
+      instrument('taric_importer.import.operations', operation: operation.to_oplog_operation, count: 1, entity_class: record.klass) do
+        operation.call
+      end
     end
 
   private

@@ -13,7 +13,7 @@ gem 'sequel-rails'
 
 # File uploads and AWS
 gem 'aws-actionmailer-ses'
-gem 'aws-sdk-cloudfront', '~> 1.118'
+gem 'aws-sdk-cloudfront', '~> 1.119'
 gem 'aws-sdk-rails'
 gem 'aws-sdk-s3'
 
@@ -75,6 +75,7 @@ group :test do
   gem 'factory_bot_rails', require: false
   gem 'forgery'
   gem 'json_expressions'
+  gem 'rspec-ctrf'
   gem 'rspec-json_expectations'
   gem 'rspec_junit_formatter'
   gem 'rspec-rails'

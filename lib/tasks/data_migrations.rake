@@ -1,3 +1,8 @@
+require_relative '../../app/helpers/materialize_view_helper'
+# rubocop:disable Style/MixinUsage
+include MaterializeViewHelper
+# rubocop:enable Style/MixinUsage
+
 namespace :data do
   namespace :migrate do
     task load: :environment do # rubocop:disable Rake/Desc
@@ -23,7 +28,7 @@ namespace :data do
 
       ::DataMigrator.migrate_up!(version)
 
-      GoodsNomenclatures::TreeNode.refresh!
+      refresh_materialized_view
     end
 
     desc 'Runs the "down" for a given data migration VERSION.'
@@ -33,17 +38,17 @@ namespace :data do
 
       ::DataMigrator.migrate_down!(version)
 
-      GoodsNomenclatures::TreeNode.refresh!
+      refresh_materialized_view
     end
   end
 
   desc 'Migrate data to the latest version - IMPORTANT ensure migrations are idempotent'
   task migrate: 'migrate:load' do
-    refresh_tree_nodes = ::DataMigrator.pending_migrations? || ENV['VERSION'].present?
+    refresh_view = ::DataMigrator.pending_migrations? || ENV['VERSION'].present?
 
     ::DataMigrator.migrate_up!(ENV['VERSION'] ? ENV['VERSION'].to_i : nil)
 
-    GoodsNomenclatures::TreeNode.refresh! if refresh_tree_nodes
+    refresh_materialized_view if refresh_view
   end
 
   desc 'Rollback the latest data migration file or down to specified VERSION=x'
@@ -55,18 +60,18 @@ namespace :data do
               end
     ::DataMigrator.migrate_down! version
 
-    GoodsNomenclatures::TreeNode.refresh!
+    refresh_materialized_view
   end
 
   namespace :views do
     desc 'Refresh materialized views within the site'
     task refresh: :environment do
-      GoodsNomenclatures::TreeNode.refresh!(concurrently: true)
+      refresh_materialized_view(concurrently: true)
     end
 
     desc 'Refresh materialized views within the site when unpopulated (does not use CONCURRENTLY)'
     task populate: :environment do
-      GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
+      refresh_materialized_view(concurrently: false)
     end
   end
 end

@@ -21,7 +21,7 @@ FactoryBot.define do
     end
 
     initialize_with do
-      new(body)
+      Notifications::Client::ResponseNotification.new(body)
     end
   end
 end

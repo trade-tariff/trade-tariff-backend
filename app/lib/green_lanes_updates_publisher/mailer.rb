@@ -11,6 +11,9 @@ module GreenLanesUpdatesPublisher
       @updated_date = date.to_fs(:govuk)
       @updates = updates
       @include_measure_updates = TradeTariffBackend.green_lanes_notify_measure_updates
+      @ca_created_count = @updates.count do |update|
+        update.status == ::GreenLanes::UpdateNotification::NotificationStatus::CA_CREATED
+      end
       @expired_count = @updates.count do |update|
         update.status == ::GreenLanes::UpdateNotification::NotificationStatus::EXPIRED
       end

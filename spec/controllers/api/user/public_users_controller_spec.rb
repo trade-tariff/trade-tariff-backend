@@ -50,6 +50,24 @@ RSpec.describe Api::User::PublicUsersController do
 
       it { is_expected.to have_http_status :ok }
     end
+
+    describe 'when token is for deleted user' do
+      let!(:user) { create(:public_user, :has_been_soft_deleted) }
+      let(:token) do
+        {
+          'sub' => user.external_id,
+          'email' => 'alice@example.com',
+        }
+      end
+
+      it 'creates a user' do
+        expect {
+          get :show
+        }.to change(PublicUsers::User, :count).by 1
+      end
+
+      it { is_expected.to have_http_status :ok }
+    end
   end
 
   describe 'PATCH #update' do
@@ -115,11 +133,11 @@ RSpec.describe Api::User::PublicUsersController do
 
           it 'activates the subscription' do
             api_response
-            expect(user.stop_press_subscription).to be true
+            expect(user.stop_press_subscription).to be_a(String)
           end
 
           it 'responds with updated subscription details' do
-            expect(JSON.parse(api_response.body)['data']['attributes']['stop_press_subscription']).to be true
+            expect(JSON.parse(api_response.body)['data']['attributes']['stop_press_subscription']).to be_a(String)
           end
 
           it { is_expected.to have_http_status :ok }

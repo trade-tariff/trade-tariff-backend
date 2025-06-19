@@ -53,6 +53,8 @@ RSpec.configure do |config|
     # refresh can be used. Doing a blocking refresh to ensure the View is in a
     # usable state. This is very fast since there is no data
     GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
+    GeographicalAreaMembership.refresh!(concurrently: false)
+    MeasureExcludedGeographicalArea.refresh!(concurrently: false)
 
     TradeTariffBackend.redis.flushdb
 

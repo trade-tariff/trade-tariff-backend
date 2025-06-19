@@ -9,6 +9,7 @@ module Sequel
         model_primary_key = options.fetch(:primary_key, model.primary_key)
         primary_key = [:oid, model_primary_key].flatten
         operation_class_name = :"#{model}::Operation"
+        materialized = options.fetch(:materialized, false)
 
         # Define ModelClass::Operation
         # e.g. Measure::Operation for measure oplog table
@@ -29,6 +30,9 @@ module Sequel
 
         model.const_set(:Operation, operation_class)
         model.const_get(:Operation).unrestrict_primary_key
+        model.define_singleton_method('materialized?') do
+          materialized
+        end
 
         # Associations
         model.one_to_one :source, key: :oid,
@@ -117,6 +121,13 @@ module Sequel
           end
 
           operation_klass.insert(values)
+        end
+
+        def _refresh_get(dataset)
+          if self.class.materialized?
+            db.refresh_view(self.class.table_name, concurrently: false)
+          end
+          super
         end
       end
 

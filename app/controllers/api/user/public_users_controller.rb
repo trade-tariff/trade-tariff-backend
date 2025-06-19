@@ -1,6 +1,8 @@
 module Api
   module User
     class PublicUsersController < ApiController
+      no_caching
+
       before_action :authenticate_token!
 
       attr_reader :current_user
@@ -44,10 +46,16 @@ module Api
         if token.present?
           payload = CognitoTokenVerifier.verify_id_token(token)
           if payload
-            @current_user = PublicUsers::User.find(external_id: payload['sub'])
+            @current_user = PublicUsers::User.active[external_id: payload['sub']]
             @current_user ||= PublicUsers::User.create(external_id: payload['sub'])
             @current_user.email = payload['email']
           end
+        end
+
+        if Rails.env.development? && @current_user.nil?
+          @current_user = PublicUsers::User.active[external_id: 'dummy_user']
+          @current_user ||= PublicUsers::User.create(external_id: 'dummy_user')
+          @current_user.email = 'dummy@user.com'
         end
 
         if @current_user.nil?

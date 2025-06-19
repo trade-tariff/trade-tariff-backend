@@ -1,7 +1,7 @@
 ---
 repos:
   - repo: https://github.com/antonbabenko/pre-commit-terraform
-    rev: v1.98.0
+    rev: v1.99.2
     hooks:
       - id: terraform_fmt
       - id: terraform_validate
@@ -18,9 +18,11 @@ repos:
       - id: trailing-whitespace
         exclude: ^db/
       - id: end-of-file-fixer
-        exclude: ^db/
+        exclude: ^db/|config/credentials.yml.enc
       - id: check-yaml
         exclude: ^db/|config/sidekiq.yml
+      - id: file-contents-sorter
+        files: '.env.development|.env.test'
 
   - repo: https://github.com/koalaman/shellcheck-precommit
     rev: v0.10.0
@@ -29,7 +31,7 @@ repos:
         args: ["--severity=warning"]
 
   - repo: https://github.com/trufflesecurity/trufflehog
-    rev: v3.88.20
+    rev: v3.88.35
     hooks:
       - id: trufflehog
 

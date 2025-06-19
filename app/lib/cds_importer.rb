@@ -36,6 +36,7 @@ class CdsImporter
     zip_file = TariffSynchronizer::FileService.file_as_stringio(@cds_update)
 
     subscribe_to_oplog_inserts
+    Rails.logger.info "CDS Importer batch size: #{TradeTariffBackend.cds_importer_batch_size}"
 
     Zip::File.open_buffer(zip_file) do |archive|
       archive.entries.each do |entry|
@@ -43,6 +44,7 @@ class CdsImporter
         xml_stream = entry.get_input_stream
         # do the xml parsing depending on records root depth
         CdsImporter::XmlParser::Reader.new(xml_stream, handler).parse
+        handler.process_end
         Rails.logger.info "Successfully imported Cds file: #{@cds_update.filename}"
       end
     end
@@ -53,16 +55,34 @@ class CdsImporter
   class XmlProcessor
     def initialize(filename)
       @filename = filename
+      @count = 0
+      @batch = []
     end
 
     def process_xml_node(key, hash_from_node)
       hash_from_node['filename'] = @filename
 
-      CdsImporter::EntityMapper.new(key, hash_from_node).import
+      CdsImporter::EntityMapper.new(key, hash_from_node).import do |cds_entity|
+        @batch << cds_entity
+        @count += 1
+
+        if @count >= batch_size
+          process_batch
+        end
+      end
     rescue StandardError => e
       cds_failed_log(e, key, hash_from_node)
       raise ImportException
     end
+
+    def process_batch
+      record_inserter = CdsImporter::RecordInserter.new(@batch, @filename)
+      record_inserter.save_batch
+      @batch.clear
+      @count = 0
+    end
+
+    alias_method :process_end, :process_batch
 
     def cds_failed_log(exception, key, hash)
       "Cds import failed: #{exception}".tap do |message|
@@ -71,6 +91,20 @@ class CdsImporter
         Rails.logger.error message
       end
     end
+
+    def batch_size
+      TradeTariffBackend.cds_importer_batch_size
+    end
+  end
+
+  class CdsEntity
+    def initialize(key, instance, mapper)
+      @key = key
+      @instance = instance
+      @mapper = mapper
+    end
+
+    attr_reader :key, :instance, :mapper
   end
 
   private
@@ -89,7 +123,6 @@ class CdsImporter
         operation = oplog_event.payload[:operation]
         entity_class = mapper.entity_class
         mapping_path = mapper.mapping_path
-        record = oplog_event.payload[:record]
 
         oplog_inserts[:operations][operation][entity_class] ||= {}
         oplog_inserts[:operations][operation][entity_class][:count] ||= 0
@@ -100,6 +133,8 @@ class CdsImporter
 
         # We only accumulate skipped operations because we can work out from the file which record was inserted for non-missing operation types
         if [CdsImporter::RecordInserter::SKIPPED_OPERATION].include?(operation)
+          record = oplog_event.payload[:record]
+
           oplog_inserts[:operations][operation][entity_class][:records] ||= []
           oplog_inserts[:operations][operation][entity_class][:records] << record.identification
         end

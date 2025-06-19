@@ -7,7 +7,11 @@ class CognitoTokenVerifier
     return nil if jwks_keys.nil? && !Rails.env.development?
 
     new(token).verify
-  rescue StandardError
+  rescue JWT::ExpiredSignature
+    Rails.logger.info('Cognito JWT::ExpiredSignature')
+    nil
+  rescue JWT::DecodeError
+    Rails.logger.info('Cognito JWT::DecodeError')
     nil
   end
 
@@ -25,7 +29,8 @@ class CognitoTokenVerifier
   end
 
   def verify
-    decrypt.decode.token[0]
+    verified = decrypt.decode.token[0]
+    in_group?(verified) ? verified : nil
   end
 
   def decrypt
@@ -46,5 +51,10 @@ class CognitoTokenVerifier
                               verify_iss: true)
                  end
     self
+  end
+
+  def in_group?(token)
+    groups = token['cognito:groups'] || []
+    groups.include?('myott')
   end
 end

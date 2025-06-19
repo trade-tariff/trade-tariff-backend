@@ -194,6 +194,7 @@ RSpec.describe CdsImporter::EntityMapper::MeasureMapper do
       it 'removes the old measure excluded geographical areas' do
         old = MeasureExcludedGeographicalArea.last.oid
         entity_mapper.import
+        MeasureExcludedGeographicalArea.refresh!
         expect(MeasureExcludedGeographicalArea.pluck(:oid)).not_to include(old)
       end
     end

@@ -66,10 +66,10 @@
     SynchronizerCheckWorker:
       cron: "30 08 * * *"
       description: Checks we have recent Quota Balance Events - this is an early warning that our sync process has a potential issue
-    GreenLanesUpdateNotificationsWorker:
+    GreenLanesUpdatesWorker:
       cron: "0 4 * * *"
-      description: "Runs notification sending for green lanes related data updates"
-      class: GreenLanesUpdateNotificationsWorker
+      description: "Runs green lanes related data updates worker that will create new category assessments and send notifications"
+      class: GreenLanesUpdatesWorker
       status: <%= ENV.fetch('SERVICE', 'uk') == 'xi' ? 'enabled' : 'disabled' %>
     CheckDifferencesReportHasRun:
       cron: "0 1 * * 2"  # 1am every Tuesday
@@ -79,3 +79,13 @@
       cron: "0 9 * * 2"  # 9am every Tuesday
       description: "Sends FAQ Feedback Report"
       class: FaqFeedbackReportWorker
+    RemoveFailedSubscribersWorker:
+      cron: "0 3 * * 0"  # 3am every Sunday
+      description: "Removes failed myott subscribers"
+      class: RemoveFailedSubscribersWorker
+      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
+    ActionLogReportWorker:
+      cron: "0 6 * * *" # 6am every day
+      description: Generates and emails a CSV report of the previous day's user action logs
+      class: ActionLogReportWorker
+      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>

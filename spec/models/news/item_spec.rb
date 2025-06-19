@@ -59,7 +59,7 @@ RSpec.describe News::Item do
     end
 
     context 'when chapters are valid' do
-      let(:instance) { described_class.new(chapters: '12 34') }
+      let(:instance) { described_class.new(chapters: '12, 34') }
 
       it { is_expected.not_to include(chapters: ['have an invalid format']) }
     end
@@ -518,22 +518,31 @@ RSpec.describe News::Item do
   end
 
   describe 'after_save callback' do
-    let(:instance) { build(:news_item) }
+    let(:collection) { create :news_collection, subscribable: true }
+    let(:news_item) { create :news_item, notify_subscribers: true, collection_ids: collection.id }
 
     before do
       allow(StopPressSubscriptionWorker).to receive(:perform_async)
+      # disable calling worker initially
+      allow(TradeTariffBackend).to receive(:myott?).and_return(false)
+      news_item.save
     end
 
-    it 'calls worker on save' do
-      instance.save
-      expect(StopPressSubscriptionWorker).to have_received(:perform_async).with(instance.id)
+    it 'calls worker when saved' do
+      allow(TradeTariffBackend).to receive(:myott?).and_return(true)
+      news_item.update(precis: 'Updated precis')
+      expect(StopPressSubscriptionWorker).to have_received(:perform_async).with(news_item.id)
     end
 
     it 'does not call worker when feature flag is off' do
-      allow(TradeTariffBackend).to receive(:myott?).and_return(false)
+      news_item.update(precis: 'Updated precis')
+      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(news_item.id)
+    end
 
-      instance.save
-      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(instance.id)
+    it 'does not call worker when notify_subscribers is false' do
+      allow(TradeTariffBackend).to receive(:myott?).and_return(true)
+      news_item.update(notify_subscribers: false)
+      expect(StopPressSubscriptionWorker).not_to have_received(:perform_async).with(news_item.id)
     end
   end
 end

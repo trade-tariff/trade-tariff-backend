@@ -77,6 +77,12 @@ FactoryBot.define do
       end
     end
 
+    trait :with_skip_import do
+      after(:build) do |measure, _evaluator|
+        measure.skip_import!
+      end
+    end
+
     trait :with_gsp do
       with_gsp_enhanced_framework
     end
