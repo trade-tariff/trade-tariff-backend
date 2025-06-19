@@ -55,6 +55,9 @@ RSpec.configure do |config|
     GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
     GeographicalAreaMembership.refresh!(concurrently: false)
     MeasureExcludedGeographicalArea.refresh!(concurrently: false)
+    GeographicalArea.refresh!(concurrently: false)
+    GeographicalAreaDescription.refresh!(concurrently: false)
+    GeographicalAreaDescriptionPeriod.refresh!(concurrently: false)
 
     TradeTariffBackend.redis.flushdb
 

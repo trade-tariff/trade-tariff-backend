@@ -25,6 +25,7 @@ RSpec.describe Api::V2::QuotasController, type: :controller do
                                          quota_order_number_sid: quota_order_number.quota_order_number_sid)
 
       measure.update(geographical_area: quota_order_number_origin.geographical_area)
+      GeographicalArea.refresh!
     end
 
     context 'when not specifying an includes list in the query params' do

@@ -1,7 +1,7 @@
 class GeographicalAreaDescription < Sequel::Model
   plugin :time_machine
   plugin :oplog, primary_key: %i[geographical_area_description_period_sid
-                                 geographical_area_sid]
+                                 geographical_area_sid], materialized: true
 
   set_primary_key %i[geographical_area_description_period_sid geographical_area_sid]
 
@@ -13,6 +13,12 @@ class GeographicalAreaDescription < Sequel::Model
   dataset_module do
     def latest
       order(Sequel.desc(:operation_date))
+    end
+  end
+
+  class << self
+    def refresh!(concurrently: false)
+      db.refresh_view(:geographical_area_descriptions, concurrently:)
     end
   end
 end
