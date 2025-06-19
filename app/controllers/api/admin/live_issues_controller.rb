@@ -32,14 +32,15 @@ module Api
       end
 
       def live_issue_params
-        params.require(:live_issue).permit(
+        params.require(:data).require(:attributes).permit(
           :title,
           :description,
           :suggested_action,
-          :status,
           :date_discovered,
           :date_resolved,
-          { commodities: [] },
+        ).merge(
+          status: params[:data][:attributes][:status].first,
+          commodities: params[:data][:attributes][:commodities].split(' '),
         )
       end
 
