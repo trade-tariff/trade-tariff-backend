@@ -125,6 +125,8 @@ V2Api.routes.draw do
         get '/news_items', to: 'news/items#index', as: nil
       end
 
+      get 'live_issues', to: 'live_issues#index'
+
       get '/changes(/:as_of)', to: 'changes#index', as: :changes, constraints: { as_of: /\d{4}-\d{1,2}-\d{1,2}/ }
 
       post 'search' => 'search#search'

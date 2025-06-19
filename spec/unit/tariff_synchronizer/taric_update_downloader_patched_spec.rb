@@ -23,7 +23,6 @@ RSpec.describe TariffSynchronizer::TaricUpdateDownloaderPatched do
     context 'when the update does not yet exist in the database' do
       let(:taric_update) { build(:taric_update, example_date: Date.parse('2022-01-24')) }
 
-      # rubocop:disable RSpec/MultipleExpectations
       it 'calls the TariffDownloader until the next not found update' do
         update_downloader.perform
 
