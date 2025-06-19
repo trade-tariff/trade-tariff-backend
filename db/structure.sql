@@ -3284,24 +3284,25 @@ CREATE TABLE uk.geographical_area_description_periods_oplog (
 
 
 --
--- Name: geographical_area_description_periods; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_description_periods; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_area_description_periods AS
- SELECT geographical_area_description_period_sid,
-    geographical_area_sid,
-    validity_start_date,
-    geographical_area_id,
-    validity_end_date,
-    "national",
-    oid,
-    operation,
-    operation_date,
-    filename
+CREATE MATERIALIZED VIEW uk.geographical_area_description_periods AS
+ SELECT geographical_area_description_periods1.geographical_area_description_period_sid,
+    geographical_area_description_periods1.geographical_area_sid,
+    geographical_area_description_periods1.validity_start_date,
+    geographical_area_description_periods1.geographical_area_id,
+    geographical_area_description_periods1.validity_end_date,
+    geographical_area_description_periods1."national",
+    geographical_area_description_periods1.oid,
+    geographical_area_description_periods1.operation,
+    geographical_area_description_periods1.operation_date,
+    geographical_area_description_periods1.filename
    FROM uk.geographical_area_description_periods_oplog geographical_area_description_periods1
-  WHERE ((oid IN ( SELECT max(geographical_area_description_periods2.oid) AS max
+  WHERE ((geographical_area_description_periods1.oid IN ( SELECT max(geographical_area_description_periods2.oid) AS max
            FROM uk.geographical_area_description_periods_oplog geographical_area_description_periods2
-          WHERE ((geographical_area_description_periods1.geographical_area_description_period_sid = geographical_area_description_periods2.geographical_area_description_period_sid) AND (geographical_area_description_periods1.geographical_area_sid = geographical_area_description_periods2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((geographical_area_description_periods1.geographical_area_description_period_sid = geographical_area_description_periods2.geographical_area_description_period_sid) AND (geographical_area_description_periods1.geographical_area_sid = geographical_area_description_periods2.geographical_area_sid)))) AND ((geographical_area_description_periods1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -3343,24 +3344,25 @@ CREATE TABLE uk.geographical_area_descriptions_oplog (
 
 
 --
--- Name: geographical_area_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_area_descriptions AS
- SELECT geographical_area_description_period_sid,
-    language_id,
-    geographical_area_sid,
-    geographical_area_id,
-    description,
-    "national",
-    oid,
-    operation,
-    operation_date,
-    filename
+CREATE MATERIALIZED VIEW uk.geographical_area_descriptions AS
+ SELECT geographical_area_descriptions1.geographical_area_description_period_sid,
+    geographical_area_descriptions1.language_id,
+    geographical_area_descriptions1.geographical_area_sid,
+    geographical_area_descriptions1.geographical_area_id,
+    geographical_area_descriptions1.description,
+    geographical_area_descriptions1."national",
+    geographical_area_descriptions1.oid,
+    geographical_area_descriptions1.operation,
+    geographical_area_descriptions1.operation_date,
+    geographical_area_descriptions1.filename
    FROM uk.geographical_area_descriptions_oplog geographical_area_descriptions1
-  WHERE ((oid IN ( SELECT max(geographical_area_descriptions2.oid) AS max
+  WHERE ((geographical_area_descriptions1.oid IN ( SELECT max(geographical_area_descriptions2.oid) AS max
            FROM uk.geographical_area_descriptions_oplog geographical_area_descriptions2
-          WHERE ((geographical_area_descriptions1.geographical_area_description_period_sid = geographical_area_descriptions2.geographical_area_description_period_sid) AND (geographical_area_descriptions1.geographical_area_sid = geographical_area_descriptions2.geographical_area_sid)))) AND ((operation)::text <> 'D'::text));
+          WHERE ((geographical_area_descriptions1.geographical_area_description_period_sid = geographical_area_descriptions2.geographical_area_description_period_sid) AND (geographical_area_descriptions1.geographical_area_sid = geographical_area_descriptions2.geographical_area_sid)))) AND ((geographical_area_descriptions1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -3402,8 +3404,9 @@ CREATE TABLE uk.geographical_area_memberships_oplog (
     geographical_area_group_hjid integer
 );
 
+
 --
--- Name: geographical_area_memberships; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_area_memberships; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
 CREATE MATERIALIZED VIEW uk.geographical_area_memberships AS
@@ -3467,26 +3470,27 @@ CREATE TABLE uk.geographical_areas_oplog (
 
 
 --
--- Name: geographical_areas; Type: VIEW; Schema: uk; Owner: -
+-- Name: geographical_areas; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.geographical_areas AS
- SELECT geographical_area_sid,
-    parent_geographical_area_group_sid,
-    validity_start_date,
-    validity_end_date,
-    geographical_code,
-    geographical_area_id,
-    "national",
-    oid,
-    operation,
-    operation_date,
-    filename,
-    hjid
+CREATE MATERIALIZED VIEW uk.geographical_areas AS
+ SELECT geographical_areas1.geographical_area_sid,
+    geographical_areas1.parent_geographical_area_group_sid,
+    geographical_areas1.validity_start_date,
+    geographical_areas1.validity_end_date,
+    geographical_areas1.geographical_code,
+    geographical_areas1.geographical_area_id,
+    geographical_areas1."national",
+    geographical_areas1.oid,
+    geographical_areas1.operation,
+    geographical_areas1.operation_date,
+    geographical_areas1.filename,
+    geographical_areas1.hjid
    FROM uk.geographical_areas_oplog geographical_areas1
-  WHERE ((oid IN ( SELECT max(geographical_areas2.oid) AS max
+  WHERE ((geographical_areas1.oid IN ( SELECT max(geographical_areas2.oid) AS max
            FROM uk.geographical_areas_oplog geographical_areas2
-          WHERE (geographical_areas1.geographical_area_sid = geographical_areas2.geographical_area_sid))) AND ((operation)::text <> 'D'::text));
+          WHERE (geographical_areas1.geographical_area_sid = geographical_areas2.geographical_area_sid))) AND ((geographical_areas1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -4883,7 +4887,7 @@ CREATE TABLE uk.measure_excluded_geographical_areas_oplog (
 
 
 --
--- Name: measure_excluded_geographical_areas; Type: VIEW; Schema: uk; Owner: -
+-- Name: measure_excluded_geographical_areas; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
 CREATE MATERIALIZED VIEW uk.measure_excluded_geographical_areas AS
@@ -10923,10 +10927,31 @@ CREATE INDEX geog_area_pk ON uk.geographical_areas_oplog USING btree (geographic
 
 
 --
+-- Name: geographical_area_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX geographical_area_description_periods_oid_index ON uk.geographical_area_description_periods USING btree (oid);
+
+
+--
+-- Name: geographical_area_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX geographical_area_descriptions_oid_index ON uk.geographical_area_descriptions USING btree (oid);
+
+
+--
 -- Name: geographical_area_memberships_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX geographical_area_memberships_oid_index ON uk.geographical_area_memberships USING btree (oid);
+
+
+--
+-- Name: geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX geographical_areas_oid_index ON uk.geographical_areas USING btree (oid);
 
 
 --
@@ -12939,5 +12964,6 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user_subscriptions_primary_key_to_uuid_sequel.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250611135620_add_created_at_to_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250612150328_allow_null_external_id_on_users.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250613170053_add_geographical_area_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250617113942_add_search_suggestion_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250613170053_add_geographical_area_materialized_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250619131935_add_base_geographical_area_materialized_views.rb');

@@ -9,7 +9,7 @@ class GeographicalArea < Sequel::Model
   DCTS = %w[1060 1061 1062].freeze
 
   plugin :time_machine
-  plugin :oplog, primary_key: :geographical_area_sid
+  plugin :oplog, primary_key: :geographical_area_sid, materialized: true
 
   set_primary_key :geographical_area_sid
 
@@ -70,6 +70,12 @@ class GeographicalArea < Sequel::Model
   one_to_many :measures, key: :geographical_area_sid,
                          primary_key: :geographical_area_sid do |ds|
     ds.with_actual(Measure)
+  end
+
+  class << self
+    def refresh!(concurrently: false)
+      db.refresh_view(:geographical_areas, concurrently:)
+    end
   end
 
   dataset_module do
