@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations
 # rubocop:disable RSpec/AnyInstance
 RSpec.describe TaricSynchronizer, :truncation do
   describe '.initial_update_date' do

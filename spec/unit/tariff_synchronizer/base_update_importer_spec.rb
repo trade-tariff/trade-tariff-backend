@@ -1,4 +1,3 @@
-# rubocop:disable RSpec/MultipleExpectations
 RSpec.describe TariffSynchronizer::BaseUpdateImporter do
   let(:taric_update) { create :taric_update, :pending }
   let(:base_update_importer) { described_class.new(taric_update) }
