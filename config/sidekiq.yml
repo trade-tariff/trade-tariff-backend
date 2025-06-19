@@ -84,3 +84,8 @@
       description: "Removes failed myott subscribers"
       class: RemoveFailedSubscribersWorker
       status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
+    ActionLogReportWorker:
+      cron: "0 6 * * *" # 6am every day
+      description: Generates and emails a CSV report of the previous day's user action logs
+      class: ActionLogReportWorker
+      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
