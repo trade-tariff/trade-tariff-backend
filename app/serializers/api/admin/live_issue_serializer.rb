@@ -8,13 +8,13 @@ module Api
       set_id :id
 
       attributes :title,
-                  :description,
-                  :suggested_action,
-                  :commodities,
-                  :status,
-                  :date_discovered,
-                  :date_resolved,
-                  :updated_at
+                 :description,
+                 :suggested_action,
+                 :commodities,
+                 :status,
+                 :date_discovered,
+                 :date_resolved,
+                 :updated_at
     end
   end
 end

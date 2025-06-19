@@ -1,7 +1,6 @@
 module Api
   module Admin
     class LiveIssuesController < AdminController
-
       def index
         render json: serialize(live_issues)
       end
@@ -28,29 +27,29 @@ module Api
 
       private
 
-        def live_issues
-          @live_issues ||= LiveIssue.all
-        end
+      def live_issues
+        @live_issues ||= LiveIssue.all
+      end
 
-        def live_issue_params
-          params.require(:live_issue).permit(
-            :title,
-            :description,
-            :suggested_action,
-            :status,
-            :date_discovered,
-            :date_resolved,
-            { commodities: [] }
-          )
-        end
+      def live_issue_params
+        params.require(:live_issue).permit(
+          :title,
+          :description,
+          :suggested_action,
+          :status,
+          :date_discovered,
+          :date_resolved,
+          { commodities: [] },
+        )
+      end
 
-        def serialize(*args)
-          Api::Admin::LiveIssueSerializer.new(*args).serializable_hash
-        end
+      def serialize(*args)
+        Api::Admin::LiveIssueSerializer.new(*args).serializable_hash
+      end
 
-        def serialize_errors(*args)
-          Api::Admin::ErrorSerializationService.new(*args).call
-        end
+      def serialize_errors(*args)
+        Api::Admin::ErrorSerializationService.new(*args).call
+      end
     end
   end
 end

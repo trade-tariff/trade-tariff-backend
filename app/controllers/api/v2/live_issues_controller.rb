@@ -9,27 +9,27 @@ module Api
 
       private
 
-        def live_issues
-          @live_issues ||= LiveIssue.dataset
-        end
+      def live_issues
+        @live_issues ||= LiveIssue.dataset
+      end
 
-        def filtered_live_issues
-          return live_issues.all unless params[:filter].present?
+      def filtered_live_issues
+        return live_issues.all if params[:filter].blank?
 
-          live_issues.where(permitted_filter).all
-        end
+        live_issues.where(permitted_filter).all
+      end
 
-        def serialize(*args)
-          Api::V2::LiveIssueSerializer.new(*args).serializable_hash
-        end
+      def serialize(*args)
+        Api::V2::LiveIssueSerializer.new(*args).serializable_hash
+      end
 
-        def serialize_errors(*args)
-          Api::V2::ErrorSerializationService.new(*args).call
-        end
+      def serialize_errors(*args)
+        Api::V2::ErrorSerializationService.new(*args).call
+      end
 
-        def permitted_filter
-          params.require(:filter).permit(:status).to_h.symbolize_keys
-        end
+      def permitted_filter
+        params.require(:filter).permit(:status).to_h.symbolize_keys
+      end
     end
   end
 end

@@ -3,7 +3,6 @@ RSpec.describe Api::Admin::LiveIssuesController do
   let(:live_issue) { create(:live_issue) }
 
   describe 'GET #index' do
-
     it 'returns a list of live issues' do
       live_issue
 
@@ -22,8 +21,8 @@ RSpec.describe Api::Admin::LiveIssuesController do
         description: 'Description',
         suggested_action: 'Suggested Action',
         status: 'Active',
-        date_discovered: Date.today,
-        commodities: ["01010101", "01010102"]
+        date_discovered: Time.zone.today,
+        commodities: %w[01010101 01010102],
       }
     end
 

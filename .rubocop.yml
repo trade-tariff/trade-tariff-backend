@@ -94,3 +94,6 @@ RSpec/MessageChain:
 
 RSpec/IndexedLet:
   Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
