@@ -55,6 +55,10 @@ RSpec.describe PublicUsers::User do
   end
 
   describe '#stop_press_subscription=' do
+    before do
+      allow(SubscriptionConfirmationEmailWorker).to receive(:perform_async)
+    end
+
     context 'when user has subscription' do
       before do
         user.add_subscription(subscription_type_id: Subscriptions::Type.stop_press.id, active: true)
@@ -72,6 +76,11 @@ RSpec.describe PublicUsers::User do
           user.stop_press_subscription = false
           expect(user.subscriptions.first.active).to be false
         end
+
+        it 'does not send a subscription confirmation email' do
+          user.stop_press_subscription = false
+          expect(SubscriptionConfirmationEmailWorker).not_to have_received(:perform_async)
+        end
       end
     end
 
@@ -85,6 +94,11 @@ RSpec.describe PublicUsers::User do
         it 'adds an action log for subscribed' do
           user.stop_press_subscription = true
           expect(user.action_logs.last.action).to eq PublicUsers::ActionLog::SUBSCRIBED
+        end
+
+        it 'sends a subscription confirmation email' do
+          user.stop_press_subscription = true
+          expect(SubscriptionConfirmationEmailWorker).to have_received(:perform_async).with(user.id)
         end
       end
 
