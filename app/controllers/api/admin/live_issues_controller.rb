@@ -22,9 +22,10 @@ module Api
       def update
         live_issue = LiveIssue.with_pk!(params[:id])
 
-        if live_issue.update(live_issue_params)
-          render json: serialize(live_issue)
-        else
+        begin
+          live_issue.update(live_issue_params)
+          render json: serialize(live_issue), status: :ok
+        rescue
           render json: serialize_errors(live_issue), status: :unprocessable_entity
         end
       end
