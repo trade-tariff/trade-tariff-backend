@@ -5,7 +5,7 @@ RSpec.describe ActionLogReportWorker do
     subject(:worker) { described_class.new }
 
     let(:yesterday) { Time.zone.yesterday }
-    let(:start_date) { yesterday.beginning_of_day }
+    let(:start_date) { described_class::START_DATE.beginning_of_day }
     let(:end_date) { yesterday.end_of_day }
 
     context 'when there are action logs from yesterday' do

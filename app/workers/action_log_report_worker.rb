@@ -3,9 +3,11 @@ require 'csv'
 class ActionLogReportWorker
   include Sidekiq::Worker
 
+  START_DATE = Date.new(2025, 6, 19).freeze
+
   def perform
     yesterday = Time.zone.yesterday
-    start_date = yesterday.beginning_of_day
+    start_date = START_DATE.beginning_of_day
     end_date = yesterday.end_of_day
 
     action_logs = PublicUsers::ActionLog
