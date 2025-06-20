@@ -36,10 +36,10 @@ module Api
           :title,
           :description,
           :suggested_action,
+          :status,
           :date_discovered,
           :date_resolved,
         ).merge(
-          status: params[:data][:attributes][:status].first,
           commodities: params[:data][:attributes][:commodities].split(' '),
         )
       end
