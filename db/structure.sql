@@ -3337,7 +3337,6 @@ CREATE MATERIALIZED VIEW uk.geographical_area_description_periods AS
   WITH NO DATA;
 
 
-
 --
 -- Name: geographical_area_description_periods_oid_seq; Type: SEQUENCE; Schema: uk; Owner: -
 --
@@ -3460,6 +3459,7 @@ CREATE MATERIALIZED VIEW uk.geographical_area_memberships AS
            FROM uk.geographical_area_memberships_oplog memberships2
           WHERE ((memberships.geographical_area_sid = memberships2.geographical_area_sid) AND (memberships.geographical_area_group_sid = memberships2.geographical_area_group_sid) AND (memberships.validity_start_date = memberships2.validity_start_date)))) AND ((memberships.operation)::text <> 'D'::text))
   WITH NO DATA;
+
 
 --
 -- Name: geographical_area_memberships_oid_seq; Type: SEQUENCE; Schema: uk; Owner: -
@@ -4935,6 +4935,7 @@ CREATE MATERIALIZED VIEW uk.measure_excluded_geographical_areas AS
            FROM uk.measure_excluded_geographical_areas_oplog geographical_areas2
           WHERE ((geographical_areas.measure_sid = geographical_areas2.measure_sid) AND (geographical_areas.geographical_area_sid = geographical_areas2.geographical_area_sid)))) AND ((geographical_areas.operation)::text <> 'D'::text))
   WITH NO DATA;
+
 
 --
 -- Name: measure_excluded_geographical_areas_oid_seq; Type: SEQUENCE; Schema: uk; Owner: -
@@ -9252,6 +9253,7 @@ ALTER TABLE ONLY uk.geographical_area_description_periods_oplog
 ALTER TABLE ONLY uk.geographical_area_descriptions_oplog
     ADD CONSTRAINT geographical_area_descriptions_pkey PRIMARY KEY (oid);
 
+
 --
 -- Name: geographical_area_memberships_oplog geographical_area_memberships_pkey; Type: CONSTRAINT; Schema: uk; Owner: -
 --
@@ -12968,15 +12970,16 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250425145123_add_chapter
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250514093320_create_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250516154516_add_notify_subscribers_to_news_item.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250522141643_add_subscribable_to_news_collection.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250605154715_create_live_issues.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250609143944_add_suggested_action_to_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user_action_logs.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250527104818_create_green_lanes_identified_measure_type_category_assessments.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250603122927_add_theme_id_to_green_lanes_update_notifications.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250606144014_create_user_action_logs.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted_attribute_to_public_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609121000_change_user_subscriptions_primary_key_to_uuid_sequel.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250609105128_add_deleted_attribute_to_public_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250611135620_add_created_at_to_user_preferences.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250612150328_allow_null_external_id_on_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250617113942_add_search_suggestion_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250613170053_add_geographical_area_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250619131935_add_base_geographical_area_materialized_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250605154715_create_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250609143944_add_suggested_action_to_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250620150030_add_geographical_area_materialized_views_fix.rb');
