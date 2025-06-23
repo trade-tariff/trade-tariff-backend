@@ -20,5 +20,9 @@ module "backend-job" {
   cpu          = var.cpu
   memory       = var.memory
 
+  task_role_policy_arns = [aws_iam_policy.task.arn]
+
   service_environment_config = local.db_replicate_secret_env_vars
+
+  enable_ecs_exec = true
 }
