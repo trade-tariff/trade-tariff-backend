@@ -6,5 +6,11 @@ module MaterializeViewHelper
     GeographicalArea.refresh!(concurrently:)
     GeographicalAreaDescription.refresh!(concurrently:)
     GeographicalAreaDescriptionPeriod.refresh!(concurrently:)
+    AdditionalCode.refresh!(concurrently:)
+    AdditionalCodeType.refresh!(concurrently:)
+    AdditionalCodeTypeMeasureType.refresh!(concurrently:)
+    AdditionalCodeTypeDescription.refresh!(concurrently:)
+    AdditionalCodeDescription.refresh!(concurrently:)
+    AdditionalCodeDescriptionPeriod.refresh!(concurrently:)
   end
 end

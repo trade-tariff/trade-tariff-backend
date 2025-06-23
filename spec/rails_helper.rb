@@ -58,6 +58,12 @@ RSpec.configure do |config|
     GeographicalArea.refresh!(concurrently: false)
     GeographicalAreaDescription.refresh!(concurrently: false)
     GeographicalAreaDescriptionPeriod.refresh!(concurrently: false)
+    AdditionalCode.refresh!(concurrently: false)
+    AdditionalCodeType.refresh!(concurrently: false)
+    AdditionalCodeTypeMeasureType.refresh!(concurrently: false)
+    AdditionalCodeTypeDescription.refresh!(concurrently: false)
+    AdditionalCodeDescription.refresh!(concurrently: false)
+    AdditionalCodeDescriptionPeriod.refresh!(concurrently: false)
 
     TradeTariffBackend.redis.flushdb
 

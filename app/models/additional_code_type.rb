@@ -1,5 +1,5 @@
 class AdditionalCodeType < Sequel::Model
-  plugin :oplog, primary_key: :additional_code_type_id
+  plugin :oplog, primary_key: :additional_code_type_id, materialized: true
 
   set_primary_key [:additional_code_type_id]
 
@@ -26,6 +26,12 @@ class AdditionalCodeType < Sequel::Model
     3 => 'Meursing addition codes',
     4 => 'Export refund for processed agricultural goods',
   }.freeze
+
+  class << self
+    def refresh!(concurrently: false)
+      db.refresh_view(:additional_code_types, concurrently:)
+    end
+  end
 
   def meursing?
     application_code.in?('3')

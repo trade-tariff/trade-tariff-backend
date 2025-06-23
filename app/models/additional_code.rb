@@ -10,7 +10,7 @@ class AdditionalCode < Sequel::Model
   EXCISE_TYPE_IDS = %w[X].freeze
 
   plugin :time_machine
-  plugin :oplog, primary_key: :additional_code_sid
+  plugin :oplog, primary_key: :additional_code_sid, materialized: true
 
   set_primary_key [:additional_code_sid]
 
@@ -28,6 +28,12 @@ class AdditionalCode < Sequel::Model
 
   one_to_many :measures, key: :additional_code_sid,
                          primary_key: :additional_code_sid
+
+  class << self
+    def refresh!(concurrently: false)
+      db.refresh_view(:additional_codes, concurrently:)
+    end
+  end
 
   def additional_code_description
     additional_code_descriptions.first
