@@ -10,7 +10,7 @@ class AdditionalCode < Sequel::Model
   EXCISE_TYPE_IDS = %w[X].freeze
 
   plugin :time_machine
-  plugin :oplog, primary_key: :additional_code_sid
+  plugin :oplog, primary_key: :additional_code_sid, materialized: true
 
   set_primary_key [:additional_code_sid]
 

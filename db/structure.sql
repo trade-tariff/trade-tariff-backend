@@ -381,10 +381,10 @@ CREATE TABLE uk.additional_code_description_periods_oplog (
 
 
 --
--- Name: additional_code_description_periods; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_description_periods; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_description_periods AS
+CREATE MATERIALIZED VIEW uk.additional_code_description_periods AS
  SELECT additional_code_description_periods1.additional_code_description_period_sid,
     additional_code_description_periods1.additional_code_sid,
     additional_code_description_periods1.additional_code_type_id,
@@ -398,7 +398,8 @@ CREATE VIEW uk.additional_code_description_periods AS
    FROM uk.additional_code_description_periods_oplog additional_code_description_periods1
   WHERE ((additional_code_description_periods1.oid IN ( SELECT max(additional_code_description_periods2.oid) AS max
            FROM uk.additional_code_description_periods_oplog additional_code_description_periods2
-          WHERE ((additional_code_description_periods1.additional_code_description_period_sid = additional_code_description_periods2.additional_code_description_period_sid) AND (additional_code_description_periods1.additional_code_sid = additional_code_description_periods2.additional_code_sid) AND ((additional_code_description_periods1.additional_code_type_id)::text = (additional_code_description_periods2.additional_code_type_id)::text)))) AND ((additional_code_description_periods1.operation)::text <> 'D'::text));
+          WHERE ((additional_code_description_periods1.additional_code_description_period_sid = additional_code_description_periods2.additional_code_description_period_sid) AND (additional_code_description_periods1.additional_code_sid = additional_code_description_periods2.additional_code_sid) AND ((additional_code_description_periods1.additional_code_type_id)::text = (additional_code_description_periods2.additional_code_type_id)::text)))) AND ((additional_code_description_periods1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -441,10 +442,10 @@ CREATE TABLE uk.additional_code_descriptions_oplog (
 
 
 --
--- Name: additional_code_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_descriptions AS
+CREATE MATERIALIZED VIEW uk.additional_code_descriptions AS
  SELECT additional_code_descriptions1.additional_code_description_period_sid,
     additional_code_descriptions1.language_id,
     additional_code_descriptions1.additional_code_sid,
@@ -459,7 +460,8 @@ CREATE VIEW uk.additional_code_descriptions AS
    FROM uk.additional_code_descriptions_oplog additional_code_descriptions1
   WHERE ((additional_code_descriptions1.oid IN ( SELECT max(additional_code_descriptions2.oid) AS max
            FROM uk.additional_code_descriptions_oplog additional_code_descriptions2
-          WHERE ((additional_code_descriptions1.additional_code_description_period_sid = additional_code_descriptions2.additional_code_description_period_sid) AND (additional_code_descriptions1.additional_code_sid = additional_code_descriptions2.additional_code_sid)))) AND ((additional_code_descriptions1.operation)::text <> 'D'::text));
+          WHERE ((additional_code_descriptions1.additional_code_description_period_sid = additional_code_descriptions2.additional_code_description_period_sid) AND (additional_code_descriptions1.additional_code_sid = additional_code_descriptions2.additional_code_sid)))) AND ((additional_code_descriptions1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -499,10 +501,10 @@ CREATE TABLE uk.additional_code_type_descriptions_oplog (
 
 
 --
--- Name: additional_code_type_descriptions; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_type_descriptions; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_type_descriptions AS
+CREATE MATERIALIZED VIEW uk.additional_code_type_descriptions AS
  SELECT additional_code_type_descriptions1.additional_code_type_id,
     additional_code_type_descriptions1.language_id,
     additional_code_type_descriptions1.description,
@@ -514,7 +516,8 @@ CREATE VIEW uk.additional_code_type_descriptions AS
    FROM uk.additional_code_type_descriptions_oplog additional_code_type_descriptions1
   WHERE ((additional_code_type_descriptions1.oid IN ( SELECT max(additional_code_type_descriptions2.oid) AS max
            FROM uk.additional_code_type_descriptions_oplog additional_code_type_descriptions2
-          WHERE (((additional_code_type_descriptions1.additional_code_type_id)::text = (additional_code_type_descriptions2.additional_code_type_id)::text) AND ((additional_code_type_descriptions1.language_id)::text = (additional_code_type_descriptions2.language_id)::text)))) AND ((additional_code_type_descriptions1.operation)::text <> 'D'::text));
+          WHERE (((additional_code_type_descriptions1.additional_code_type_id)::text = (additional_code_type_descriptions2.additional_code_type_id)::text) AND ((additional_code_type_descriptions1.language_id)::text = (additional_code_type_descriptions2.language_id)::text)))) AND ((additional_code_type_descriptions1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -555,10 +558,10 @@ CREATE TABLE uk.additional_code_type_measure_types_oplog (
 
 
 --
--- Name: additional_code_type_measure_types; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_type_measure_types; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_type_measure_types AS
+CREATE MATERIALIZED VIEW uk.additional_code_type_measure_types AS
  SELECT additional_code_type_measure_types1.measure_type_id,
     additional_code_type_measure_types1.additional_code_type_id,
     additional_code_type_measure_types1.validity_start_date,
@@ -571,7 +574,8 @@ CREATE VIEW uk.additional_code_type_measure_types AS
    FROM uk.additional_code_type_measure_types_oplog additional_code_type_measure_types1
   WHERE ((additional_code_type_measure_types1.oid IN ( SELECT max(additional_code_type_measure_types2.oid) AS max
            FROM uk.additional_code_type_measure_types_oplog additional_code_type_measure_types2
-          WHERE (((additional_code_type_measure_types1.measure_type_id)::text = (additional_code_type_measure_types2.measure_type_id)::text) AND ((additional_code_type_measure_types1.additional_code_type_id)::text = (additional_code_type_measure_types2.additional_code_type_id)::text)))) AND ((additional_code_type_measure_types1.operation)::text <> 'D'::text));
+          WHERE (((additional_code_type_measure_types1.measure_type_id)::text = (additional_code_type_measure_types2.measure_type_id)::text) AND ((additional_code_type_measure_types1.additional_code_type_id)::text = (additional_code_type_measure_types2.additional_code_type_id)::text)))) AND ((additional_code_type_measure_types1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -613,10 +617,10 @@ CREATE TABLE uk.additional_code_types_oplog (
 
 
 --
--- Name: additional_code_types; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_code_types; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_code_types AS
+CREATE MATERIALIZED VIEW uk.additional_code_types AS
  SELECT additional_code_types1.additional_code_type_id,
     additional_code_types1.validity_start_date,
     additional_code_types1.validity_end_date,
@@ -630,7 +634,8 @@ CREATE VIEW uk.additional_code_types AS
    FROM uk.additional_code_types_oplog additional_code_types1
   WHERE ((additional_code_types1.oid IN ( SELECT max(additional_code_types2.oid) AS max
            FROM uk.additional_code_types_oplog additional_code_types2
-          WHERE ((additional_code_types1.additional_code_type_id)::text = (additional_code_types2.additional_code_type_id)::text))) AND ((additional_code_types1.operation)::text <> 'D'::text));
+          WHERE ((additional_code_types1.additional_code_type_id)::text = (additional_code_types2.additional_code_type_id)::text))) AND ((additional_code_types1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -672,10 +677,10 @@ CREATE TABLE uk.additional_codes_oplog (
 
 
 --
--- Name: additional_codes; Type: VIEW; Schema: uk; Owner: -
+-- Name: additional_codes; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.additional_codes AS
+CREATE MATERIALIZED VIEW uk.additional_codes AS
  SELECT additional_codes1.additional_code_sid,
     additional_codes1.additional_code_type_id,
     additional_codes1.additional_code,
@@ -689,7 +694,8 @@ CREATE VIEW uk.additional_codes AS
    FROM uk.additional_codes_oplog additional_codes1
   WHERE ((additional_codes1.oid IN ( SELECT max(additional_codes2.oid) AS max
            FROM uk.additional_codes_oplog additional_codes2
-          WHERE (additional_codes1.additional_code_sid = additional_codes2.additional_code_sid))) AND ((additional_codes1.operation)::text <> 'D'::text));
+          WHERE (additional_codes1.additional_code_sid = additional_codes2.additional_code_sid))) AND ((additional_codes1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -10177,10 +10183,52 @@ CREATE INDEX adco_types_pk ON uk.additional_code_types_oplog USING btree (additi
 
 
 --
+-- Name: additional_code_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_description_periods_oid_index ON uk.additional_code_description_periods USING btree (oid);
+
+
+--
+-- Name: additional_code_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_descriptions_oid_index ON uk.additional_code_descriptions USING btree (oid);
+
+
+--
 -- Name: additional_code_type; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX additional_code_type ON uk.footnote_association_additional_codes_oplog USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_type_descriptions_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_type_descriptions_oid_index ON uk.additional_code_type_descriptions USING btree (oid);
+
+
+--
+-- Name: additional_code_type_measure_types_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_type_measure_types_oid_index ON uk.additional_code_type_measure_types USING btree (oid);
+
+
+--
+-- Name: additional_code_types_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_code_types_oid_index ON uk.additional_code_types USING btree (oid);
+
+
+--
+-- Name: additional_codes_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX additional_codes_oid_index ON uk.additional_codes USING btree (oid);
 
 
 --
@@ -12983,3 +13031,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250619131935_add_base_ge
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250605154715_create_live_issues.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609143944_add_suggested_action_to_live_issues.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250620150030_add_geographical_area_materialized_views_fix.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250623123926_add_additional_codes_materialized_views.rb');

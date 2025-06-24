@@ -15,10 +15,4 @@ class GeographicalAreaDescription < Sequel::Model
       order(Sequel.desc(:operation_date))
     end
   end
-
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:geographical_area_descriptions, concurrently:)
-    end
-  end
 end

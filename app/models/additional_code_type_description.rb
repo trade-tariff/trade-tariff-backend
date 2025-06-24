@@ -1,5 +1,5 @@
 class AdditionalCodeTypeDescription < Sequel::Model
-  plugin :oplog, primary_key: %i[additional_code_type_id language_id]
+  plugin :oplog, primary_key: %i[additional_code_type_id language_id], materialized: true
 
   set_primary_key %i[additional_code_type_id language_id]
 
