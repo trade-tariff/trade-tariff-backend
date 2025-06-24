@@ -85,6 +85,7 @@
             init
             lint
             pkgs.circleci-cli
+            pkgs.socat
             postgresql
             postgresql-start
             ruby

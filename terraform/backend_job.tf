@@ -5,6 +5,7 @@ module "backend-job" {
 
   service_name              = "backend-job"
   container_definition_kind = "job"
+  container_command         = local.job_command
   service_count             = 0
 
   cluster_name              = "trade-tariff-cluster-${var.environment}"
