@@ -7,5 +7,4 @@ class GeographicalAreaDescriptionPeriod < Sequel::Model
 
   one_to_one :geographical_area_description, key: :geographical_area_description_period_sid,
                                              primary_key: :geographical_area_description_period_sid
-
 end

@@ -72,7 +72,6 @@ class GeographicalArea < Sequel::Model
     ds.with_actual(Measure)
   end
 
-
   dataset_module do
     def by_id(id)
       where(geographical_area_id: id)
