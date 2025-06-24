@@ -29,12 +29,6 @@ class AdditionalCode < Sequel::Model
   one_to_many :measures, key: :additional_code_sid,
                          primary_key: :additional_code_sid
 
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:additional_codes, concurrently:)
-    end
-  end
-
   def additional_code_description
     additional_code_descriptions.first
   end

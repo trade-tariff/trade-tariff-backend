@@ -1,16 +1,11 @@
 module MaterializeViewHelper
   def refresh_materialized_view(concurrently: false)
     GoodsNomenclatures::TreeNode.refresh!(concurrently:)
-    GeographicalAreaMembership.refresh!(concurrently:)
-    MeasureExcludedGeographicalArea.refresh!(concurrently:)
-    GeographicalArea.refresh!(concurrently:)
-    GeographicalAreaDescription.refresh!(concurrently:)
-    GeographicalAreaDescriptionPeriod.refresh!(concurrently:)
-    AdditionalCode.refresh!(concurrently:)
-    AdditionalCodeType.refresh!(concurrently:)
-    AdditionalCodeTypeMeasureType.refresh!(concurrently:)
-    AdditionalCodeTypeDescription.refresh!(concurrently:)
-    AdditionalCodeDescription.refresh!(concurrently:)
-    AdditionalCodeDescriptionPeriod.refresh!(concurrently:)
+
+    Sequel::Plugins::Oplog.models.each do |model|
+      if model.materialized?
+        model.refresh!(concurrently:)
+      end
+    end
   end
 end

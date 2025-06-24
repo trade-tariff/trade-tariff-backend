@@ -236,6 +236,5 @@ Sequel.migration do
               WHERE additional_code_description_periods1.additional_code_description_period_sid = additional_code_description_periods2.additional_code_description_period_sid AND additional_code_description_periods1.additional_code_sid = additional_code_description_periods2.additional_code_sid AND additional_code_description_periods1.additional_code_type_id::text = additional_code_description_periods2.additional_code_type_id::text)) AND additional_code_description_periods1.operation::text <> 'D'::text
       WITH DATA
     EOVIEW
-
   end
 end

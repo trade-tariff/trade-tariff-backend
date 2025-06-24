@@ -52,18 +52,7 @@ RSpec.configure do |config|
     # Materialized Views need populating after a schema load before concurrent
     # refresh can be used. Doing a blocking refresh to ensure the View is in a
     # usable state. This is very fast since there is no data
-    GoodsNomenclatures::TreeNode.refresh!(concurrently: false)
-    GeographicalAreaMembership.refresh!(concurrently: false)
-    MeasureExcludedGeographicalArea.refresh!(concurrently: false)
-    GeographicalArea.refresh!(concurrently: false)
-    GeographicalAreaDescription.refresh!(concurrently: false)
-    GeographicalAreaDescriptionPeriod.refresh!(concurrently: false)
-    AdditionalCode.refresh!(concurrently: false)
-    AdditionalCodeType.refresh!(concurrently: false)
-    AdditionalCodeTypeMeasureType.refresh!(concurrently: false)
-    AdditionalCodeTypeDescription.refresh!(concurrently: false)
-    AdditionalCodeDescription.refresh!(concurrently: false)
-    AdditionalCodeDescriptionPeriod.refresh!(concurrently: false)
+    refresh_materialized_view
 
     TradeTariffBackend.redis.flushdb
 
@@ -106,6 +95,16 @@ def silence
   $stdout = @original_stdout
   @original_stderr = nil
   @original_stdout = nil
+end
+
+def refresh_materialized_view(concurrently: false)
+  GoodsNomenclatures::TreeNode.refresh!(concurrently:)
+
+  Sequel::Plugins::Oplog.models.each do |model|
+    if model.materialized?
+      model.refresh!(concurrently:)
+    end
+  end
 end
 
 def strong_params(wimpy_params)

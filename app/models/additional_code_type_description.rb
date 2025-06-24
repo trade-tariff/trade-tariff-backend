@@ -5,10 +5,4 @@ class AdditionalCodeTypeDescription < Sequel::Model
 
   many_to_one :additional_code_type, key: :additional_code_type_id
   many_to_one :language, key: :language_id, primary_key: :language_id
-
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:additional_code_type_descriptions, concurrently:)
-    end
-  end
 end

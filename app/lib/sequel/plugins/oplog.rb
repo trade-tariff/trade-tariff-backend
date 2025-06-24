@@ -5,7 +5,10 @@ module Sequel
       UPDATE_OPERATION = 'U'.freeze
       DESTROY_OPERATION = 'D'.freeze
 
+      @oplog_models = []
+
       def self.configure(model, options = {})
+        @oplog_models << model
         model_primary_key = options.fetch(:primary_key, model.primary_key)
         primary_key = [:oid, model_primary_key].flatten
         operation_class_name = :"#{model}::Operation"
@@ -47,6 +50,10 @@ module Sequel
         model.delegate :operation_klass, to: model
 
         model.plugin :identification
+      end
+
+      def self.models
+        @oplog_models
       end
 
       module InstanceMethods
@@ -145,6 +152,14 @@ module Sequel
 
         def operation_klass
           @operation_klass ||= "#{self}::Operation".constantize
+        end
+
+        def refresh!(concurrently: false)
+          if materialized?
+            db.refresh_view(table_name, concurrently:)
+          else
+            raise NotImplementedError
+          end
         end
       end
 

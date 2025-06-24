@@ -13,10 +13,4 @@ class AdditionalCodeDescription < Sequel::Model
       where(Sequel.ilike(:description, "%#{description}%"))
     end
   end
-
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:additional_code_descriptions, concurrently:)
-    end
-  end
 end

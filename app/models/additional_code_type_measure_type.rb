@@ -5,10 +5,4 @@ class AdditionalCodeTypeMeasureType < Sequel::Model
 
   many_to_one :measure_type
   many_to_one :additional_code_type
-
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:additional_code_type_measure_types, concurrently:)
-    end
-  end
 end

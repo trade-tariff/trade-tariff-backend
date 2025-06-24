@@ -27,12 +27,6 @@ class AdditionalCodeType < Sequel::Model
     4 => 'Export refund for processed agricultural goods',
   }.freeze
 
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:additional_code_types, concurrently:)
-    end
-  end
-
   def meursing?
     application_code.in?('3')
   end

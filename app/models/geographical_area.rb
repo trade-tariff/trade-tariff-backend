@@ -72,11 +72,6 @@ class GeographicalArea < Sequel::Model
     ds.with_actual(Measure)
   end
 
-  class << self
-    def refresh!(concurrently: false)
-      db.refresh_view(:geographical_areas, concurrently:)
-    end
-  end
 
   dataset_module do
     def by_id(id)
