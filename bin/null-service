@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+[[ "$TRACE" ]] && set -o xtrace
+set -o errexit
+set -o nounset
+set -o pipefail
+set -o noclobber
+
+PORT=$(grep PORT= Dockerfile | awk -F= '{print $2}')
+
+
+echo "Starting null service on port $PORT..."
+while true; do
+  socat TCP-LISTEN:"$PORT",reuseaddr,fork SYSTEM:'
+    read request
+    echo "HTTP/1.1 200 OK"
+    echo "Content-Type: text/plain"
+    echo "Content-Length: 2"
+    echo "Connection: close"
+    echo ""
+    echo "OK"
+  '
+done

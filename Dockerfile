@@ -43,6 +43,7 @@ RUN apk add --no-cache \
     postgresql-dev \
     aws-cli \
     shared-mime-info \
+    socat \
     tzdata && \
     cp /usr/share/zoneinfo/Europe/London /etc/localtime && \
     echo "Europe/London" > /etc/timezone
