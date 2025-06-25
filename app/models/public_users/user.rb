@@ -64,6 +64,7 @@ module PublicUsers
       else
         add_subscription(subscription_type: Subscriptions::Type.stop_press, active:)
         if active
+          SubscriptionConfirmationEmailWorker.perform_async(id)
           PublicUsers::ActionLog.create(user_id: id, action: PublicUsers::ActionLog::SUBSCRIBED)
         end
       end
