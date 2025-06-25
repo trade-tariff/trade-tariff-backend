@@ -1,9 +1,6 @@
 name: Stop Development Services
 
 on:
-  push:
-    branches-ignore:
-      - main
   workflow_dispatch:
   schedule:
     - cron: '0 17 * * *'
