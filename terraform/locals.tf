@@ -1,4 +1,5 @@
 locals {
+  has_autoscaler = var.environment == "development" ? false : true
   account_id     = data.aws_caller_identity.current.account_id
   worker_command = ["/bin/sh", "-c", "bundle exec sidekiq -C ./config/sidekiq.yml"]
   init_command   = ["/bin/sh", "-c", "bundle exec rails db:migrate && bundle exec rails data:migrate"]
