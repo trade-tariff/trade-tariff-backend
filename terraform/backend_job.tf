@@ -1,5 +1,5 @@
 module "backend-job" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.16.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.17.0"
 
   region = var.region
 
@@ -13,9 +13,6 @@ module "backend-job" {
   security_groups           = [data.aws_security_group.this.id]
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
-  max_capacity = 1
-  min_capacity = 0
-
   docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
   cpu          = var.cpu
@@ -26,4 +23,8 @@ module "backend-job" {
   service_environment_config = local.db_replicate_secret_env_vars
 
   enable_ecs_exec = true
+
+  has_autoscaler = false
+  max_capacity   = 1
+  min_capacity   = 0
 }

@@ -1,5 +1,5 @@
 module "worker_uk" {
-  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.16.0"
+  source = "git@github.com:trade-tariff/trade-tariff-platform-terraform-modules.git//aws/ecs-service?ref=aws/ecs-service-v1.17.0"
 
   service_name              = "worker-uk"
   container_definition_kind = "db-backed"
@@ -11,8 +11,6 @@ module "worker_uk" {
   cloudwatch_log_group_name = "platform-logs-${var.environment}"
 
   service_count = 1
-  min_capacity  = 1
-  max_capacity  = var.max_capacity
 
   docker_image = local.ecr_repo
   docker_tag   = var.docker_tag
@@ -35,4 +33,8 @@ module "worker_uk" {
   init_container_command    = local.init_command
 
   service_environment_config = local.worker_uk_secret_env_vars
+
+  has_autoscaler = local.has_autoscaler
+  min_capacity   = 1
+  max_capacity   = var.max_capacity
 }
