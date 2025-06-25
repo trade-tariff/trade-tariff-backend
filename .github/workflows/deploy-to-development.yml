@@ -21,7 +21,7 @@ jobs:
     with:
       app-name: tariff-backend
       environment: development
+      test-flavour: none
     secrets:
-      basic-password: ${{ secrets.BASIC_PASSWORD }}
       slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
