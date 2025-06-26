@@ -112,12 +112,6 @@ Sequel.migration do
   end
 
   down do
-    remove_index :geographical_areas, :oid, unique: true
-    remove_index :geographical_area_descriptions, :oid, unique: true
-    remove_index :geographical_area_description_periods, :oid, unique: true
-    remove_index :measure_excluded_geographical_areas, :oid, unique: true
-    remove_index :geographical_area_memberships, :oid, unique: true
-
     drop_view :geographical_areas, materialized: true
     drop_view :geographical_area_descriptions, materialized: true
     drop_view :geographical_area_description_periods, materialized: true
