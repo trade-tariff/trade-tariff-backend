@@ -146,7 +146,6 @@ Sequel.migration do
         WHERE (additional_codes1.oid IN ( SELECT max(additional_codes2.oid) AS max
                 FROM additional_codes_oplog additional_codes2
                 WHERE additional_codes1.additional_code_sid = additional_codes2.additional_code_sid)) AND additional_codes1.operation::text <> 'D'::text
-        WITH DATA
     EOVIEW
 
     create_view :additional_code_types, <<~EOVIEW
@@ -164,7 +163,6 @@ Sequel.migration do
       WHERE (additional_code_types1.oid IN ( SELECT max(additional_code_types2.oid) AS max
                FROM additional_code_types_oplog additional_code_types2
               WHERE additional_code_types1.additional_code_type_id::text = additional_code_types2.additional_code_type_id::text)) AND additional_code_types1.operation::text <> 'D'::text
-      WITH DATA
     EOVIEW
 
     create_view :additional_code_type_measure_types, <<~EOVIEW
@@ -181,7 +179,6 @@ Sequel.migration do
       WHERE (additional_code_type_measure_types1.oid IN ( SELECT max(additional_code_type_measure_types2.oid) AS max
                FROM additional_code_type_measure_types_oplog additional_code_type_measure_types2
               WHERE additional_code_type_measure_types1.measure_type_id::text = additional_code_type_measure_types2.measure_type_id::text AND additional_code_type_measure_types1.additional_code_type_id::text = additional_code_type_measure_types2.additional_code_type_id::text)) AND additional_code_type_measure_types1.operation::text <> 'D'::text
-      WITH DATA
     EOVIEW
 
     create_view :additional_code_type_descriptions, <<~EOVIEW
@@ -197,7 +194,6 @@ Sequel.migration do
         WHERE (additional_code_type_descriptions1.oid IN ( SELECT max(additional_code_type_descriptions2.oid) AS max
                  FROM additional_code_type_descriptions_oplog additional_code_type_descriptions2
                 WHERE additional_code_type_descriptions1.additional_code_type_id::text = additional_code_type_descriptions2.additional_code_type_id::text AND additional_code_type_descriptions1.language_id::text = additional_code_type_descriptions2.language_id::text)) AND additional_code_type_descriptions1.operation::text <> 'D'::text
-       WITH DATA
     EOVIEW
 
     create_view :additional_code_descriptions, <<~EOVIEW
@@ -216,7 +212,6 @@ Sequel.migration do
         WHERE (additional_code_descriptions1.oid IN ( SELECT max(additional_code_descriptions2.oid) AS max
                  FROM additional_code_descriptions_oplog additional_code_descriptions2
                 WHERE additional_code_descriptions1.additional_code_description_period_sid = additional_code_descriptions2.additional_code_description_period_sid AND additional_code_descriptions1.additional_code_sid = additional_code_descriptions2.additional_code_sid)) AND additional_code_descriptions1.operation::text <> 'D'::text
-      WITH DATA
     EOVIEW
 
     create_view :additional_code_description_periods, <<~EOVIEW
@@ -234,7 +229,6 @@ Sequel.migration do
         WHERE (additional_code_description_periods1.oid IN ( SELECT max(additional_code_description_periods2.oid) AS max
                FROM additional_code_description_periods_oplog additional_code_description_periods2
               WHERE additional_code_description_periods1.additional_code_description_period_sid = additional_code_description_periods2.additional_code_description_period_sid AND additional_code_description_periods1.additional_code_sid = additional_code_description_periods2.additional_code_sid AND additional_code_description_periods1.additional_code_type_id::text = additional_code_description_periods2.additional_code_type_id::text)) AND additional_code_description_periods1.operation::text <> 'D'::text
-      WITH DATA
     EOVIEW
   end
 end
