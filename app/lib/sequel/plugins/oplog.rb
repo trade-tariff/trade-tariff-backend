@@ -37,6 +37,15 @@ module Sequel
           materialized
         end
 
+        model.define_singleton_method(:actually_materialized?) do
+          result = db.fetch(<<~SQL, table_name.to_s).first
+            SELECT relkind = 'm' as is_materialized
+            FROM pg_class
+            WHERE relname = ?
+          SQL
+          result && result[:is_materialized]
+        end
+
         # Associations
         model.one_to_one :source, key: :oid,
                                   primary_key: :oid,
