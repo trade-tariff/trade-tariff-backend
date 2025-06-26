@@ -139,23 +139,18 @@ module Sequel
           operation_klass.insert(values)
         end
 
-        # NOTE: This method is called by Sequel::Model#refresh after we insert a new record
-        #       a materialized view is not refreshed in during TaricSynchronizer.apply work
-        #       to reduce the number of low value refreshes this would cause
+        # NOTE: This method is called by Sequel::Model#_refresh after we save a new record.
+        #       We skip refreshes of the full materialized view in production to avoid excessive work and
+        #       file apply slowness.
         #
         #       The original values are returned to avoid the default Sequel::Model#refresh handling of falsey values as an error
         #       but also preserve some of the instrumentation of oplog inserts we store for the admin UI.
         def _refresh_get(dataset)
-          if self.class.materialized?
-            if Rails.env.test?
-              db.refresh_view(self.class.table_name, concurrently: false)
-              super
-            else
-              values
-            end
-          else
-            super
-          end
+          return super unless self.class.materialized?
+          return values unless Rails.env.test?
+
+          self.class.refresh!(concurrently: false)
+          super
         end
       end
 
