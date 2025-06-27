@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::ThemesController do
+RSpec.describe Api::Admin::GreenLanes::ThemesController, :admin do
   subject(:page_response) { make_request && response }
 
   before do

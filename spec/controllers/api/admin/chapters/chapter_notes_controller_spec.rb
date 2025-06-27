@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::Chapters::ChapterNotesController do
+  routes { AdminApi.routes }
+
   describe '#show' do
     let(:pattern) do
       {

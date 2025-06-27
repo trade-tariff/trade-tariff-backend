@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RemoveFailedSubscribersWorker, type: :worker do
   let(:user) { create(:public_user) }
 

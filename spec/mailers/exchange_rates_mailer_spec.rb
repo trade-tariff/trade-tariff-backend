@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ExchangeRatesMailer, type: :mailer do
   describe '#monthly_files' do
     subject(:mail) { described_class.monthly_files(date).tap(&:deliver_now) }

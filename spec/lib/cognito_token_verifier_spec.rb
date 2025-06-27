@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 RSpec.describe CognitoTokenVerifier do
   describe '.verify_id_token' do
     let(:token) { 'test-token' }

@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::Sections::SectionNotesController do
+  routes { AdminApi.routes }
+
   describe 'GET #show' do
     let(:pattern) do
       {

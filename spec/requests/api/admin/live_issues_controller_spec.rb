@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::LiveIssuesController do
+RSpec.describe Api::Admin::LiveIssuesController, :admin do
   let(:json_response) { JSON.parse(response.body) }
   let(:live_issue) { create(:live_issue) }
 

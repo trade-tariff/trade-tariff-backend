@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController do
+RSpec.describe Api::Admin::GreenLanes::CategoryAssessmentsController, :admin do
   subject(:page_response) { make_request && response }
 
   before do

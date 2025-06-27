@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::ExemptionsController do
+RSpec.describe Api::Admin::GreenLanes::ExemptionsController, :admin do
   subject(:page_response) { make_request && response }
 
   before do

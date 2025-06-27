@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ReportsMailer, type: :mailer do
   describe '#differences' do
     subject(:mail) { described_class.differences(report).tap(&:deliver_now) }

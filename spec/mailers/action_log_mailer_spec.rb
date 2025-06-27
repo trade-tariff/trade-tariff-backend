@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ActionLogMailer do
   describe '#daily_report' do
     subject(:mail) { described_class.daily_report(csv_data, yesterday) }

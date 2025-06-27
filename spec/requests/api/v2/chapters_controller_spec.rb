@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::ChaptersController, type: :request do
+RSpec.describe Api::V2::ChaptersController, :v2 do
   let(:now) { Time.zone.today }
   let(:expires_at) { now.end_of_day }
 

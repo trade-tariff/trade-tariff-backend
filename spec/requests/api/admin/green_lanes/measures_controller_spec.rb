@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::MeasuresController do
+RSpec.describe Api::Admin::GreenLanes::MeasuresController, :admin do
   subject(:page_response) { make_request && response }
 
   before do

@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::SectionsController do
+RSpec.describe Api::V2::SectionsController, :v2 do
   describe 'GET #index' do
     it_behaves_like 'a successful csv response' do
       let(:path) { '/api/v2/sections' }

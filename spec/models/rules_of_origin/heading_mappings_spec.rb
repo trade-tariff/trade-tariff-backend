@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::HeadingMappings do
   subject(:mappings) { described_class.new test_file }
 
