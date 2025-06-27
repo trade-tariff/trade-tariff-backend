@@ -34,7 +34,7 @@ module Api
         live_issue = LiveIssue.with_pk!(params[:id])
         live_issue.destroy
 
-        render json: serialize(live_issue), status: :no_content
+        head :no_content
       end
 
       private
