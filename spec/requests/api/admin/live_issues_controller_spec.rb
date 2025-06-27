@@ -14,6 +14,18 @@ RSpec.describe Api::Admin::LiveIssuesController do
     end
   end
 
+  describe 'GET #show' do
+    it 'returns a single live issue' do
+      live_issue
+
+      authenticated_get api_admin_live_issue_path(live_issue.id, format: :json)
+
+      expect(response).to have_http_status(:ok)
+      expect(json_response).to include('data')
+      expect(json_response['data']['attributes'].size).to eq(8)
+    end
+  end
+
   describe 'POST #create' do
     let(:live_issue_data) do
       {
@@ -80,6 +92,24 @@ RSpec.describe Api::Admin::LiveIssuesController do
         expect(response).to have_http_status(:unprocessable_entity)
         expect(json_response['errors'].first['detail']).to include('Title is not present')
       end
+    end
+  end
+
+  describe 'DELETE #destroy' do
+    context 'when the live issue is valid' do
+      it 'deletes the live issue' do
+        live_issue
+
+        authenticated_delete api_admin_live_issue_path(live_issue.id, format: :json)
+
+        expect(response).to have_http_status(:no_content)
+      end
+    end
+
+    it 'returns 404 if the live issue does not exist' do
+      authenticated_delete api_admin_live_issue_path(0, format: :json)
+
+      expect(response).to have_http_status(:not_found)
     end
   end
 end
