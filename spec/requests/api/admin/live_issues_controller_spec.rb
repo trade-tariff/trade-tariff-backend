@@ -24,6 +24,12 @@ RSpec.describe Api::Admin::LiveIssuesController do
       expect(json_response).to include('data')
       expect(json_response['data']['attributes'].size).to eq(8)
     end
+
+    it 'returns 404 if the live issue does not exist' do
+      authenticated_get api_admin_live_issue_path(0, format: :json)
+
+      expect(response).to have_http_status(:not_found)
+    end
   end
 
   describe 'POST #create' do
