@@ -5,6 +5,10 @@ module Api
         render json: serialize(live_issues)
       end
 
+      def show
+        render json: serialize(LiveIssue.with_pk!(params[:id]))
+      end
+
       def create
         live_issue = LiveIssue.new(live_issue_params)
 
@@ -18,11 +22,19 @@ module Api
       def update
         live_issue = LiveIssue.with_pk!(params[:id])
 
-        if live_issue.update(live_issue_params)
-          render json: serialize(live_issue)
-        else
+        begin
+          live_issue.update(live_issue_params)
+          render json: serialize(live_issue), status: :ok
+        rescue StandardError
           render json: serialize_errors(live_issue), status: :unprocessable_entity
         end
+      end
+
+      def destroy
+        live_issue = LiveIssue.with_pk!(params[:id])
+        live_issue.destroy
+
+        head :no_content
       end
 
       private
@@ -32,14 +44,15 @@ module Api
       end
 
       def live_issue_params
-        params.require(:live_issue).permit(
+        params.require(:data).require(:attributes).permit(
           :title,
           :description,
           :suggested_action,
           :status,
           :date_discovered,
           :date_resolved,
-          { commodities: [] },
+        ).merge(
+          commodities: params[:data][:attributes][:commodities]&.split(' '),
         )
       end
 
