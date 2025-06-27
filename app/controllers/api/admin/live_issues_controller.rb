@@ -25,7 +25,7 @@ module Api
         begin
           live_issue.update(live_issue_params)
           render json: serialize(live_issue), status: :ok
-        rescue
+        rescue StandardError
           render json: serialize_errors(live_issue), status: :unprocessable_entity
         end
       end
@@ -52,7 +52,7 @@ module Api
           :date_discovered,
           :date_resolved,
         ).merge(
-          commodities: params[:data][:attributes][:commodities].split(' '),
+          commodities: params[:data][:attributes][:commodities]&.split(' '),
         )
       end
 
