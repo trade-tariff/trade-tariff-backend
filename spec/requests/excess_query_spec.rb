@@ -1,4 +1,4 @@
-RSpec.describe 'excess query counts', type: :request do
+RSpec.describe 'excess query counts', :v2 do
   before { allow(NewRelic::Agent).to receive(:notice_error).and_return true }
 
   let(:get_page) { get api_heading_path(heading, format: :json) }

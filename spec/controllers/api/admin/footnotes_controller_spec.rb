@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::FootnotesController do
+  routes { AdminApi.routes }
+
   describe 'GET to #index' do
     let!(:non_national_footnote) { create(:footnote, :non_national, :with_description) }
     let!(:national_footnote) { create(:footnote, :national, :with_description) }

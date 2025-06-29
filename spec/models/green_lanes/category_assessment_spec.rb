@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe GreenLanes::CategoryAssessment do
   before do
     TradeTariffRequest.time_machine_now = Time.current

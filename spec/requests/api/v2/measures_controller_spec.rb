@@ -1,6 +1,4 @@
-require 'rails_helper'
-
-RSpec.describe Api::V2::MeasuresController do
+RSpec.describe Api::V2::MeasuresController, :v2 do
   describe 'GET #show' do
     subject(:rendered) { make_request && response }
 

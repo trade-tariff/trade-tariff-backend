@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::V2::RuleSet do
   subject { described_class.new scheme: }
 

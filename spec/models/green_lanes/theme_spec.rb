@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe GreenLanes::Theme do
   describe 'attributes' do
     it { is_expected.to respond_to :section }

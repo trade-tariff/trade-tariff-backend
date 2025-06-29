@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::Headings::SearchReferencesController do
+  routes { AdminApi.routes }
+
   it_behaves_like 'v2 search references controller' do
     let(:search_reference_parent)  { create :heading }
     let(:search_reference)         { create :search_reference, referenced: search_reference_parent }

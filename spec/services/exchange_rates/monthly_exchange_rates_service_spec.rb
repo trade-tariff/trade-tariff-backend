@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ExchangeRates::MonthlyExchangeRatesService do
   describe '.call' do
     subject(:call) { described_class.new(date, sample_date, download:).call }

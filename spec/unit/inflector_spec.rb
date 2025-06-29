@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe 'ActiveSupport::Inflector' do
   describe '#pluralize' do
     it { expect('rule_of_origin'.pluralize).to eq 'rules_of_origin' }

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe GoodsNomenclatures::NestedSet do
   before do
     TradeTariffRequest.time_machine_now = Time.current

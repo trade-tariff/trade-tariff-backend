@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::Commodities::SearchReferencesController do
+  routes { AdminApi.routes }
+
   before do
     TradeTariffRequest.time_machine_now = Time.current
   end

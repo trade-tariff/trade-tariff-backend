@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::LiveIssuesController do
+RSpec.describe Api::V2::LiveIssuesController, :v2 do
   let(:json_response) { JSON.parse(response.body) }
   let(:active_live_issue) { create :live_issue }
   let(:resolved_live_issue) { create :live_issue, status: 'Resolved', date_resolved: Time.zone.today }

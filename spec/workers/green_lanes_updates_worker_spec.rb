@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe GreenLanesUpdatesWorker, type: :worker do
   subject(:worker) { described_class.new }
 

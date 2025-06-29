@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe GoodsNomenclatures::TreeNodeAlias do
   subject(:instance) { described_class.new :aliased_table }
 

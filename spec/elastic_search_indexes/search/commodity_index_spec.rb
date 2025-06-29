@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Search::CommodityIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 

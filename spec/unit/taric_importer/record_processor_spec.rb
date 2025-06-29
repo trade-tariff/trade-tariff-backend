@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe TaricImporter::RecordProcessor do
   subject(:record_processor) { described_class.new(record_hash, Date.new(2013, 8, 1)) }
 

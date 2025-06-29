@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::ExchangeRates::FilesController, type: :request do
+RSpec.describe Api::V2::ExchangeRates::FilesController, :v2 do
   describe 'GET #index' do
     let(:year) { 2023 }
     let(:month) { 7 }

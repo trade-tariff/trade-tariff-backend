@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::ExemptingAdditionalCodeOverridesController do
+RSpec.describe Api::Admin::GreenLanes::ExemptingAdditionalCodeOverridesController, :admin do
   subject(:page_response) { make_request && response }
 
   before do

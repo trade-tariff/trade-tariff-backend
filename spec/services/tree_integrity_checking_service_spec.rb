@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe TreeIntegrityCheckingService do
   let(:instance) { described_class.new }
   let(:commodity) { create :commodity, :with_chapter_and_heading }

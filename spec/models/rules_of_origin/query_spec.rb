@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::Query do
   subject(:query) do
     described_class.new roo_data_set, heading_code, country_code, nil

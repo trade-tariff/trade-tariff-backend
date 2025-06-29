@@ -1,6 +1,4 @@
-require 'rails_helper'
-
-RSpec.describe Api::V2::RulesOfOrigin::ProductSpecificRulesController do
+RSpec.describe Api::V2::RulesOfOrigin::ProductSpecificRulesController, :v2 do
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 

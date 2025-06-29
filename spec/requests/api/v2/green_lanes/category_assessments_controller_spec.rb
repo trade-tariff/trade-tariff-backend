@@ -1,6 +1,4 @@
-require 'rails_helper'
-
-RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController do
+RSpec.describe Api::V2::GreenLanes::CategoryAssessmentsController, :v2 do
   before { allow(TradeTariffBackend).to receive(:service).and_return 'xi' }
 
   let(:category_assessments) { create_pair :category_assessment }

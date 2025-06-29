@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe GoodsNomenclatures::TreeNodeOverride do
   describe 'attributes' do
     it { is_expected.to respond_to :goods_nomenclature_indent_sid }

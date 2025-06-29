@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ExchangeRates::CreateAverageExchangeRatesService do
   describe '.call' do
     subject(:create_average_rates) { described_class.call(force_run:, selected_date: test_date) }

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 RSpec.describe Sequel::Plugins::Elasticsearch do
   let(:commodity) { create :commodity }
 

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ExchangeRates::UpdateCurrencyRatesService do
   let(:xe_api) { instance_double(ExchangeRates::XeApi) }
 

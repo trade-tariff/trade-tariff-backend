@@ -1,6 +1,4 @@
-require 'spec_helper'
-
-RSpec.describe 'Maintenance mode', type: :request do
+RSpec.describe 'Maintenance mode' do
   subject { response }
 
   describe 'making an API request whilst maintenance mode is enabled' do

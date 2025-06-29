@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::News::CollectionsController do
+RSpec.describe Api::Admin::News::CollectionsController, :admin do
   subject(:page_response) { make_request && response }
 
   let(:json_response) { JSON.parse(page_response.body) }

@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::GreenLanes::FaqFeedbackController do
+RSpec.describe Api::V2::GreenLanes::FaqFeedbackController, :v2 do
   subject(:api_response) { make_request && response }
 
   let(:json_response) { JSON.parse(api_response.body) }

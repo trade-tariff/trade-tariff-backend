@@ -1,6 +1,4 @@
-require 'rails_helper'
-
-RSpec.describe Api::V2::ExchangeRatesController, type: :request do
+RSpec.describe Api::V2::ExchangeRatesController, :v2 do
   describe 'GET #show' do
     subject { make_request && response }
 

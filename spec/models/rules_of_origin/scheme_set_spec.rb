@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::SchemeSet do
   subject(:scheme_set) { described_class.from_file test_file }
 

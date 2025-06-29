@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::Rule do
   describe 'attributes' do
     it { is_expected.to respond_to :id_rule }

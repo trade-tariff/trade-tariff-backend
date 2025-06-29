@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::DataSet do
   subject { described_class.new scheme_set, rule_set, mappings, scheme_associations }
 

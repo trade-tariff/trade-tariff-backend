@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionsController, type: :request do
+RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionsController, :admin do
   before do
     allow(TimeMachine).to receive(:no_time_machine).and_call_original
   end

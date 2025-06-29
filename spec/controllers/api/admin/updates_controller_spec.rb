@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::UpdatesController do
+  routes { AdminApi.routes }
+
   describe 'GET #index' do
     let(:pattern) do
       {
