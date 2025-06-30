@@ -3,7 +3,6 @@ module Api
     module QuotaOrderNumbers
       class QuotaDefinitionsController < AdminController
         before_action :authenticate_user!
-        around_action :skip_time_machine
 
         DEFAULT_EAGER_LOAD_GRAPH = [
           { measurement_unit: %i[measurement_unit_description measurement_unit_abbreviations] },
@@ -65,14 +64,15 @@ module Api
 
         def quota_order_number
           @quota_order_number ||= QuotaOrderNumber
-            .by_order_number(params[:quota_order_number_id])
-            .eager(
-              [
-                { quota_definitions: DEFAULT_EAGER_LOAD_GRAPH },
-                :quota_order_number_origins,
-              ],
-            )
-            .take
+              .actual
+              .by_order_number(params[:quota_order_number_id])
+              .eager(
+                [
+                  { quota_definitions: DEFAULT_EAGER_LOAD_GRAPH },
+                  :quota_order_number_origins,
+                ],
+              )
+              .take
         end
       end
     end

@@ -16,11 +16,6 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionsController, :admin
     end
 
     it_behaves_like 'a successful jsonapi response'
-
-    it 'does not use the time machine' do
-      do_request
-      expect(TimeMachine).to have_received(:no_time_machine)
-    end
   end
 
   describe 'GET #index' do
@@ -35,10 +30,5 @@ RSpec.describe Api::Admin::QuotaOrderNumbers::QuotaDefinitionsController, :admin
     end
 
     it_behaves_like 'a successful jsonapi response'
-
-    it 'does not use the time machine' do
-      do_request
-      expect(TimeMachine).to have_received(:no_time_machine)
-    end
   end
 end
