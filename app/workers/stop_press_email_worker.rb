@@ -34,6 +34,6 @@ class StopPressEmailWorker
     chapters &= user.chapter_ids.split(',').uniq.map(&:strip) if user.chapter_ids.present?
 
     word_form = chapters.one? ? 'chapter' : 'chapters'
-    "You have previously subscribed to receive updates about this tariff #{word_form} - #{chapters.join(', ')}"
+    "You have previously subscribed to receive updates about tariff #{word_form} - #{chapters.join(', ')}"
   end
 end
