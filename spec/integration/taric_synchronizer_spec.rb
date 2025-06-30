@@ -100,7 +100,7 @@ RSpec.describe TaricSynchronizer do
           described_class.rollback(Time.zone.yesterday, keep: true)
         end
 
-        it 'removes entries from oplog tables' do
+        it_with_refresh_materialized_view 'removes entries from oplog tables' do
           expect(Measure).to be_none
         end
 
@@ -136,7 +136,7 @@ RSpec.describe TaricSynchronizer do
           described_class.rollback(Time.zone.yesterday)
         end
 
-        it 'removes entries from oplog derived tables' do
+        it_with_refresh_materialized_view 'removes entries from oplog derived tables' do
           expect(Measure).to be_none
         end
 
@@ -154,7 +154,7 @@ RSpec.describe TaricSynchronizer do
           described_class.rollback(Time.zone.yesterday)
         end
 
-        it 'removes entries from oplog derived tables' do
+        it_with_refresh_materialized_view 'removes entries from oplog derived tables' do
           expect(Measure).to be_none
         end
 

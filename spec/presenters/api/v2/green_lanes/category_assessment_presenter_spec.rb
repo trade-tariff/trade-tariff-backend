@@ -105,6 +105,7 @@ RSpec.describe Api::V2::GreenLanes::CategoryAssessmentPresenter do
                                      certificate_type_code: 'f',
                                      certificate_code: 'def',
                                      condition_duty_amount: 30_000)
+          Measure.refresh!
         end
 
         it { is_expected.to be_empty }
