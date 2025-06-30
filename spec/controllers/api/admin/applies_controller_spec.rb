@@ -1,4 +1,6 @@
 RSpec.describe Api::Admin::AppliesController do
+  routes { AdminApi.routes }
+
   describe 'POST to #create' do
     before do
       login_as_api_user

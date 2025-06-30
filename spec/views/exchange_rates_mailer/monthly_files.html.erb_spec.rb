@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe 'exchange_rates_mailer/monthly_files', type: :view do
   let(:date) { Date.new(2023, 7, 15) }
   let!(:exchange_rate_file_csv_hmrc) { create(:exchange_rate_file, type: 'monthly_csv_hmrc', period_month: date.month, period_year: date.year) }

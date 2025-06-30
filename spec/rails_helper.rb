@@ -23,7 +23,6 @@ RSpec.configure do |config|
   config.infer_base_class_for_anonymous_controllers = false
   config.alias_it_should_behave_like_to :it_results_in, 'it results in'
   config.alias_it_should_behave_like_to :it_is_associated, 'it is associated'
-  config.include RSpec::Rails::RequestExampleGroup, type: :request, file_path: /spec\/api/
   config.include ControllerSpecHelper, type: :controller
   config.include RequestSpecHelper, type: :request
   config.include SynchronizerHelper
@@ -74,11 +73,12 @@ RSpec.configure do |config|
 
   config.after { travel_back }
 
-  config.include V2Api.routes.url_helpers, type: :request
+  config.include AdminApi.routes.url_helpers, admin: true
+  config.include V2Api.routes.url_helpers, v2: true
 
   config.verbose_retry = true
   config.display_try_failure_messages = true
-  config.around { |ex| ex.run_with_retry retry: ENV.fetch('TEST_RETRIES', 3) }
+  config.around { |ex| ex.run_with_retry retry: ENV.fetch('TEST_RETRIES', 0) }
 end
 
 def silence

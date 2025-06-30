@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ReindexModelsWorker, type: :worker do
   describe '#perform' do
     let(:perform) { described_class.new.perform }

@@ -4,9 +4,6 @@ Rails.application.routes.draw do
   # Application liveness
   get 'healthcheckz' => 'healthcheck#checkz'
 
-  # Admin routes
-  draw(:admin)
-
   # User routes
   draw(:user)
 
@@ -15,6 +12,11 @@ Rails.application.routes.draw do
 
   # Sidekiq web interface
   draw(:sidekiq)
+
+  # Admin routes
+  mount AdminApi => '/xi', as: 'xi_admin_api' if TradeTariffBackend.xi?
+  mount AdminApi => '/uk', as: 'uk_admin_api' if TradeTariffBackend.uk?
+  mount AdminApi => '/'
 
   # V1 routes
   mount V1Api => '/api/v1', as: 'v1_api'

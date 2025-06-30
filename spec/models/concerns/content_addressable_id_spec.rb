@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ContentAddressableId do
   describe '#id' do
     subject { first.id }

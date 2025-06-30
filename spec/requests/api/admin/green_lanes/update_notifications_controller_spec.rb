@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController do
+RSpec.describe Api::Admin::GreenLanes::UpdateNotificationsController, :admin do
   subject(:page_response) { make_request && response }
 
   before do

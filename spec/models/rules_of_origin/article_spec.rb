@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::Article do
   let(:scheme) { build :rules_of_origin_scheme, :with_articles }
 

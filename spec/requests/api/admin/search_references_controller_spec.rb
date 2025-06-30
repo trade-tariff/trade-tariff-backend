@@ -1,4 +1,4 @@
-RSpec.describe Api::Admin::SearchReferencesController, type: :request do
+RSpec.describe Api::Admin::SearchReferencesController, :admin do
   before do
     TradeTariffRequest.time_machine_now = Time.current
     create :search_reference, referenced: create(:heading), title: 'aa'

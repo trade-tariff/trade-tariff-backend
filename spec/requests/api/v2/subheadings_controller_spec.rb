@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::SubheadingsController do
+RSpec.describe Api::V2::SubheadingsController, :v2 do
   describe 'GET #show' do
     subject(:rendered) { make_request && response } # Subheading api requires the producline suffix to identify the subheading
 

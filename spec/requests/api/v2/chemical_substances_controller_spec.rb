@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::ChemicalSubstancesController, type: :request do
+RSpec.describe Api::V2::ChemicalSubstancesController, :v2 do
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 

@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ModificationRegulation do
   describe 'standardisation' do
     subject(:regulation) { build :modification_regulation }

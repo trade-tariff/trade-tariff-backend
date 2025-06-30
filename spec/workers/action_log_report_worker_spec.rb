@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ActionLogReportWorker do
   describe '#perform' do
     subject(:worker) { described_class.new }

@@ -1,5 +1,3 @@
-require 'spec_helper'
-
 RSpec.describe ExchangeRates::XeApi do
   let(:mock_response_body) do
     {

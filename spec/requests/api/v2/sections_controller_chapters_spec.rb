@@ -1,4 +1,4 @@
-RSpec.describe Api::V2::Sections do
+RSpec.describe Api::V2::Sections, :v2 do
   describe 'GET #chapters' do
     let(:section) { create(:section, :with_chapter) }
 

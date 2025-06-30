@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe QueryCountChecker do
   subject(:check_count) { described_class.new(threshold).check }
 

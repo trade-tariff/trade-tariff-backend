@@ -1,6 +1,4 @@
-require 'rails_helper'
-
-RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController do
+RSpec.describe Api::V2::GreenLanes::GoodsNomenclaturesController, :v2 do
   before do
     TradeTariffRequest.time_machine_now = Time.current
     create :category_assessment, measure: gn.measures.first

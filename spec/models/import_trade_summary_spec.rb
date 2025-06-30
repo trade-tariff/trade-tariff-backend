@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe ImportTradeSummary do
   describe 'attributes' do
     it { is_expected.to respond_to :basic_third_country_duty }

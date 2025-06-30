@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Sequel::Plugins::TimeMachine do
   shared_context 'with TimeMachine' do
     around do |example|

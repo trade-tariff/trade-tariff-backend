@@ -1,6 +1,4 @@
-require 'rails_helper'
-
-RSpec.describe Api::V2::RulesOfOrigin::SchemesController do
+RSpec.describe Api::V2::RulesOfOrigin::SchemesController, :v2 do
   describe 'GET #index' do
     subject(:rendered) { make_request && response }
 

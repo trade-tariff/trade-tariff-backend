@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe RulesOfOrigin::RuleSet do
   subject(:rule_set) { described_class.new test_file }
 

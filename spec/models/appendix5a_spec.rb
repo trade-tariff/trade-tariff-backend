@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Appendix5a do
   subject(:appendix_5a) { create(:appendix_5a) }
 

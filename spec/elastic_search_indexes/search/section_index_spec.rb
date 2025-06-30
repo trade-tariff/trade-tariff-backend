@@ -1,5 +1,3 @@
-require 'rails_helper'
-
 RSpec.describe Search::SectionIndex do
   subject(:instance) { described_class.new 'testnamespace' }
 
