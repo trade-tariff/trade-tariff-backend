@@ -2,7 +2,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
-    # rubocop:disable RSpec/NoExpectationExample
+    # rubocop:disable RSpec/EmptyExampleGroup
     context 'when the database is empty' do
       before do
         db[:measures_oplog].delete
@@ -12,7 +12,7 @@ RSpec.describe ChangesTablePopulator::MeasureStarted do
         expect { described_class.populate }.not_to change(Change, :count)
       end
     end
-    # rubocop:enable RSpec/NoExpectationExample
+    # rubocop:enable RSpec/EmptyExampleGroup
 
     context 'when there are measures but haven\'t changed' do
       before do

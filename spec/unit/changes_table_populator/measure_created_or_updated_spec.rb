@@ -12,7 +12,7 @@ RSpec.describe ChangesTablePopulator::MeasureCreatedOrUpdated do
       end
     end
 
-    # rubocop:disable RSpec/NoExpectationExample
+    # rubocop:disable RSpec/EmptyExampleGroup
     context 'when there are measures created today' do
       before do
         measure = create :measure, :with_goods_nomenclature
@@ -113,6 +113,6 @@ RSpec.describe ChangesTablePopulator::MeasureCreatedOrUpdated do
         expect(db[:changes].first[:end_line]).to be false
       end
     end
-    # rubocop:enable RSpec/NoExpectationExample
+    # rubocop:enable RSpec/EmptyExampleGroup
   end
 end
