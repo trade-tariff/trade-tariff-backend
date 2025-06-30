@@ -133,6 +133,19 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
         it { is_expected.not_to include second_measure.measure_type_id }
       end
+
+      # rubocop:disable RSpec/NoExpectationExample
+      context 'for assessment with expired measures' do
+        before do
+          ca.measures.first.tap { |m| m.update(validity_end_date: 5.days.ago) }
+          ca.reload
+        end
+
+        it_with_refresh_materialized_view 'returns empty measures' do
+          expect(measures).to match_array([])
+        end
+      end
+      # rubocop:enable RSpec/NoExpectationExample
     end
 
     describe '#green_lanes_measures' do

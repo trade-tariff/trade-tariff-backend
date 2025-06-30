@@ -83,6 +83,24 @@ RSpec.describe QuotaSearchService do
       end
     end
 
+    # rubocop:disable RSpec/NoExpectationExample
+    context 'when filtering by the geographical_area_id' do
+      let(:filter) { { 'geographical_area_id' => quota_order_number_origin1.geographical_area_id } }
+
+      it_with_refresh_materialized_view 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_definition1])
+      end
+    end
+
+    context 'when filtering by the geographical_area_id of a member' do
+      let(:filter) { { 'geographical_area_id' => geographical_area_member.geographical_area_id } }
+
+      it_with_refresh_materialized_view 'returns the correct quota definition' do
+        expect(service.call).to eq([quota_definition2])
+      end
+    end
+    # rubocop:enable RSpec/NoExpectationExample
+
     context 'when filtering by the order number' do
       let(:filter) { { 'order_number' => quota_order_number1.quota_order_number_id } }
 
