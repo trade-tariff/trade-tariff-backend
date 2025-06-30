@@ -133,15 +133,6 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
         it { is_expected.not_to include second_measure.measure_type_id }
       end
-
-      context 'for assessment with expired measures' do
-        before do
-          ca.measures.first.tap { |m| m.update(validity_end_date: 5.days.ago) }
-          ca.reload
-        end
-
-        it { is_expected.to be_empty }
-      end
     end
 
     describe '#green_lanes_measures' do

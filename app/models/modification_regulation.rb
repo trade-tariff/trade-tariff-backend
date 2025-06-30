@@ -1,6 +1,6 @@
 class ModificationRegulation < Sequel::Model
   plugin :oplog, primary_key: %i[modification_regulation_id
-                                 modification_regulation_role]
+                                 modification_regulation_role], materialized: true
   plugin :time_machine, period_end_column: :effective_end_date
 
   set_primary_key %i[modification_regulation_id modification_regulation_role]

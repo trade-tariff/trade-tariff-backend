@@ -21,7 +21,7 @@ class Measure < Sequel::Model
   set_primary_key [:measure_sid]
 
   plugin :time_machine
-  plugin :oplog, primary_key: :measure_sid
+  plugin :oplog, primary_key: :measure_sid, materialized: true
   plugin :national
 
   many_to_one :goods_nomenclature, key: :goods_nomenclature_sid,

@@ -99,13 +99,21 @@ end
 
 def refresh_materialized_view(concurrently: false)
   GoodsNomenclatures::TreeNode.refresh!(concurrently:)
-
   Sequel::Plugins::Oplog.models.each do |model|
     if model.materialized?
       model.refresh!(concurrently:)
     end
   end
 end
+
+# rubocop:disable RSpec/NoExpectationExample
+def it_with_refresh_materialized_view(description, &block)
+  it(description) do
+    refresh_materialized_view
+    instance_exec(&block)
+  end
+end
+# rubocop:enable RSpec/NoExpectationExample
 
 def strong_params(wimpy_params)
   ActionController::Parameters.new(wimpy_params).permit!
