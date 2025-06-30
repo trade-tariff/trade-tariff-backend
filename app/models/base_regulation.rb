@@ -1,5 +1,5 @@
 class BaseRegulation < Sequel::Model
-  plugin :oplog, primary_key: %i[base_regulation_id base_regulation_role]
+  plugin :oplog, primary_key: %i[base_regulation_id base_regulation_role], materialized: true
   plugin :time_machine, period_end_column: :effective_end_date
 
   set_primary_key %i[base_regulation_id base_regulation_role]

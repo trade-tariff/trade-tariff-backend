@@ -2,15 +2,17 @@ RSpec.describe ChangesTablePopulator::MeasureEndDated do
   let(:db) { Sequel::Model.db }
 
   describe '#populate' do
+    # rubocop:disable RSpec/EmptyExampleGroup
     context 'when the database is empty' do
       before do
-        db[:measures].delete
+        db[:measures_oplog].delete
       end
 
-      it 'doesn\'t extract changes' do
+      it_with_refresh_materialized_view 'doesn\'t extract changes' do
         expect { described_class.populate }.not_to change(Change, :count)
       end
     end
+    # rubocop:enable RSpec/EmptyExampleGroup
 
     context 'when there are measures but haven\'t changed' do
       before do

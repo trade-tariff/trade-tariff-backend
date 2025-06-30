@@ -1,14 +1,15 @@
 RSpec.describe ChangesTablePopulator do
   let(:db) { Sequel::Model.db }
 
+  # rubocop:disable RSpec::EmptyExampleGroup
   describe '#populate' do
     context 'with an empty database' do
       before do
-        db[:measures].delete
+        db[:measures_oplog].delete
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t extract changes' do
+      it_with_refresh_materialized_view 'doesn\'t extract changes' do
         expect { described_class.populate }.not_to change(Change, :count)
       end
     end
@@ -17,11 +18,12 @@ RSpec.describe ChangesTablePopulator do
   describe '#populate_backlog' do
     context 'with an empty database' do
       before do
-        db[:measures].delete
+        db[:measures_oplog].delete
+        Measure.refresh!
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t extract changes' do
+      it_with_refresh_materialized_view 'doesn\'t extract changes' do
         expect { described_class.populate_backlog }.not_to change(Change, :count)
       end
     end
@@ -30,13 +32,14 @@ RSpec.describe ChangesTablePopulator do
   describe '#cleanup_outdated' do
     context 'with an empty database' do
       before do
-        db[:measures].delete
+        db[:measures_oplog].delete
         db[:goods_nomenclatures].delete
       end
 
-      it 'doesn\'t change the changes' do
+      it_with_refresh_materialized_view 'doesn\'t change the changes' do
         expect { described_class.cleanup_outdated }.not_to change(Change, :count)
       end
     end
   end
+  # rubocop:enable RSpec::EmptyExampleGroup
 end
