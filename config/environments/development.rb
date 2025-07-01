@@ -48,7 +48,7 @@ Rails.application.configure do
   end
 
   # enable sequel transaction logs by setting RAILS_LOG_LEVEL=debug
-  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'debug').to_sym
+  config.log_level = ENV.fetch('RAILS_LOG_LEVEL', 'info').to_sym
 
   # Don't care if the mailer can't send.
   config.action_mailer.raise_delivery_errors = false
