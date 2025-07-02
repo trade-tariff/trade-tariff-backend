@@ -19,7 +19,7 @@ jobs:
     if: >
       github.event_name == 'workflow_dispatch' ||
       contains(github.event.pull_request.labels.*.name, 'needs-full-deployment')
-    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-multi-ecs.yml@HMRC-1380-full-deployments
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-multi-ecs.yml@main
     with:
       environment: development
       apps: |
