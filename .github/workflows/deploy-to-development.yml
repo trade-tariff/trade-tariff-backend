@@ -27,7 +27,7 @@ jobs:
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   start-services:
-    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || contains(github.event.pull_request.labels.*.name, 'needs-full-deployment') || github.event_name == 'workflow_dispatch'
+    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     steps:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/start-services@main
@@ -45,17 +45,20 @@ jobs:
           {
             "name": "tariff-backend",
             "repo": "trade-tariff/trade-tariff-backend",
-            "ref": "${{ github.head_ref || github.ref }}"
+            "ref": "${{ github.head_ref || github.ref }}",
+            "service-names": ["backend-uk", "backend-xi", "worker-uk", "worker-xi"]
           },
           {
             "name": "tariff-frontend",
             "repo": "trade-tariff/trade-tariff-frontend",
-            "ref": "main"
+            "ref": "main",
+            "service-names": ["frontend"]
           },
           {
             "name": "tariff-admin",
             "repo": "trade-tariff/trade-tariff-admin",
-            "ref": "main"
+            "ref": "main",
+            "service-names": ["admin"]
           }
         ]
       test-flavour: tariff
