@@ -16,7 +16,9 @@ permissions:
 
 jobs:
   deploy:
-    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: tariff-backend
@@ -27,6 +29,9 @@ jobs:
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   start-services:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
     runs-on: ubuntu-latest
     steps:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/start-services@main
