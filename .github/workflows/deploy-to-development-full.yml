@@ -1,0 +1,50 @@
+name: Deploy to development full
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-full-stack:
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-full-deployment')
+    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-multi-ecs.yml@HMRC-1380-full-deployments
+    with:
+      environment: development
+      apps: |
+        [
+          {
+            "name": "tariff-backend",
+            "repo": "trade-tariff/trade-tariff-backend",
+            "ref": "${{ github.head_ref || github.ref }}",
+            "service-names": ["backend-uk", "backend-xi", "worker-uk", "worker-xi"]
+          },
+          {
+            "name": "tariff-frontend",
+            "repo": "trade-tariff/trade-tariff-frontend",
+            "ref": "main",
+            "service-names": ["frontend"]
+          },
+          {
+            "name": "tariff-admin",
+            "repo": "trade-tariff/trade-tariff-admin",
+            "ref": "main",
+            "service-names": ["admin"]
+          }
+        ]
+      test-flavour: tariff
+    secrets:
+      ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
+      slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
+      basic-password: ${{ secrets.BASIC_PASSWORD }}

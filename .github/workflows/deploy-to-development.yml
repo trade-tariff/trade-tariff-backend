@@ -16,7 +16,9 @@ permissions:
 
 jobs:
   deploy:
-    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
     uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-ecs.yml@main
     with:
       app-name: tariff-backend
@@ -27,42 +29,12 @@ jobs:
       ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
 
   start-services:
-    if: contains(github.event.pull_request.labels.*.name, 'needs-deployment') || github.event_name == 'workflow_dispatch'
+    if: >
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.pull_request.labels.*.name, 'needs-deployment')
     runs-on: ubuntu-latest
     steps:
       - uses: trade-tariff/trade-tariff-tools/.github/actions/start-services@main
         with:
           service-names: backend-uk backend-xi worker-uk worker-xi backend-job
           environment: development
-
-  deploy-full-stack:
-    if: contains(github.event.pull_request.labels.*.name, 'needs-full-deployment')
-    uses: trade-tariff/trade-tariff-tools/.github/workflows/deploy-multi-ecs.yml@HMRC-1380-full-deployments
-    with:
-      environment: development
-      apps: |
-        [
-          {
-            "name": "tariff-backend",
-            "repo": "trade-tariff/trade-tariff-backend",
-            "ref": "${{ github.head_ref || github.ref }}",
-            "service-names": ["backend-uk", "backend-xi", "worker-uk", "worker-xi"]
-          },
-          {
-            "name": "tariff-frontend",
-            "repo": "trade-tariff/trade-tariff-frontend",
-            "ref": "main",
-            "service-names": ["frontend"]
-          },
-          {
-            "name": "tariff-admin",
-            "repo": "trade-tariff/trade-tariff-admin",
-            "ref": "main",
-            "service-names": ["admin"]
-          }
-        ]
-      test-flavour: tariff
-    secrets:
-      ssh-key: ${{ secrets.PRIVATE_SSH_KEY }}
-      slack-webhook: ${{ secrets.SLACK_WEBHOOK }}
-      basic-password: ${{ secrets.BASIC_PASSWORD }}
