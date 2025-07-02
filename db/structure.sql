@@ -10193,10 +10193,73 @@ CREATE INDEX add_code_desc_description_trgm_idx ON uk.additional_code_descriptio
 
 
 --
+-- Name: additional_code_description_periods_additional_code; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_additional_code ON uk.additional_code_description_periods USING btree (additional_code_description_period_sid, additional_code_sid, additional_code_type_id);
+
+
+--
+-- Name: additional_code_description_periods_additional_code_description; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_additional_code_description ON uk.additional_code_description_periods USING btree (additional_code_description_period_sid);
+
+
+--
+-- Name: additional_code_description_periods_additional_code_type_id_ind; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_additional_code_type_id_ind ON uk.additional_code_description_periods USING btree (additional_code_type_id);
+
+
+--
 -- Name: additional_code_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX additional_code_description_periods_oid_index ON uk.additional_code_description_periods USING btree (oid);
+
+
+--
+-- Name: additional_code_description_periods_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_description_periods_operation_date_index ON uk.additional_code_description_periods USING btree (operation_date);
+
+
+--
+-- Name: additional_code_descriptions_additional_code; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code ON uk.additional_code_descriptions USING btree (additional_code_description_period_sid, additional_code_type_id, additional_code_sid);
+
+
+--
+-- Name: additional_code_descriptions_additional_code_description_period; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code_description_period ON uk.additional_code_descriptions USING btree (additional_code_description_period_sid);
+
+
+--
+-- Name: additional_code_descriptions_additional_code_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code_sid_index ON uk.additional_code_descriptions USING btree (additional_code_sid);
+
+
+--
+-- Name: additional_code_descriptions_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_additional_code_type_id_index ON uk.additional_code_descriptions USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_descriptions_language_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_language_id_index ON uk.additional_code_descriptions USING btree (language_id);
 
 
 --
@@ -10207,10 +10270,31 @@ CREATE UNIQUE INDEX additional_code_descriptions_oid_index ON uk.additional_code
 
 
 --
+-- Name: additional_code_descriptions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_descriptions_operation_date_index ON uk.additional_code_descriptions USING btree (operation_date);
+
+
+--
 -- Name: additional_code_type; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX additional_code_type ON uk.footnote_association_additional_codes_oplog USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_type_descriptions_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_descriptions_additional_code_type_id_index ON uk.additional_code_type_descriptions USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_type_descriptions_language_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_descriptions_language_id_index ON uk.additional_code_type_descriptions USING btree (language_id);
 
 
 --
@@ -10221,10 +10305,45 @@ CREATE UNIQUE INDEX additional_code_type_descriptions_oid_index ON uk.additional
 
 
 --
+-- Name: additional_code_type_descriptions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_descriptions_operation_date_index ON uk.additional_code_type_descriptions USING btree (operation_date);
+
+
+--
+-- Name: additional_code_type_measure_types_measure_type_id_additional_c; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_measure_types_measure_type_id_additional_c ON uk.additional_code_type_measure_types USING btree (measure_type_id, additional_code_type_id);
+
+
+--
 -- Name: additional_code_type_measure_types_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX additional_code_type_measure_types_oid_index ON uk.additional_code_type_measure_types USING btree (oid);
+
+
+--
+-- Name: additional_code_type_measure_types_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_type_measure_types_operation_date_index ON uk.additional_code_type_measure_types USING btree (operation_date);
+
+
+--
+-- Name: additional_code_types_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_types_additional_code_type_id_index ON uk.additional_code_types USING btree (additional_code_type_id);
+
+
+--
+-- Name: additional_code_types_meursing_table_plan_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_types_meursing_table_plan_id_index ON uk.additional_code_types USING btree (meursing_table_plan_id);
 
 
 --
@@ -10235,10 +10354,38 @@ CREATE UNIQUE INDEX additional_code_types_oid_index ON uk.additional_code_types 
 
 
 --
+-- Name: additional_code_types_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_code_types_operation_date_index ON uk.additional_code_types USING btree (operation_date);
+
+
+--
+-- Name: additional_codes_additional_code_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_codes_additional_code_sid_index ON uk.additional_codes USING btree (additional_code_sid);
+
+
+--
+-- Name: additional_codes_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_codes_additional_code_type_id_index ON uk.additional_codes USING btree (additional_code_type_id);
+
+
+--
 -- Name: additional_codes_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX additional_codes_oid_index ON uk.additional_codes USING btree (oid);
+
+
+--
+-- Name: additional_codes_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX additional_codes_operation_date_index ON uk.additional_codes USING btree (operation_date);
 
 
 --
@@ -10256,10 +10403,59 @@ CREATE INDEX base_regulation ON uk.modification_regulations_oplog USING btree (b
 
 
 --
+-- Name: base_regulations_antidumping_regulation_role_related_antidumpin; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_antidumping_regulation_role_related_antidumpin ON uk.base_regulations USING btree (antidumping_regulation_role, related_antidumping_regulation_id);
+
+
+--
+-- Name: base_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_approved_flag_index ON uk.base_regulations USING btree (approved_flag);
+
+
+--
+-- Name: base_regulations_base_regulation_id_base_regulation_role_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_base_regulation_id_base_regulation_role_index ON uk.base_regulations USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: base_regulations_complete_abrogation_regulation_role_complete_a; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_complete_abrogation_regulation_role_complete_a ON uk.base_regulations USING btree (complete_abrogation_regulation_role, complete_abrogation_regulation_id);
+
+
+--
+-- Name: base_regulations_effective_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_effective_end_date_index ON uk.base_regulations USING btree (effective_end_date);
+
+
+--
+-- Name: base_regulations_explicit_abrogation_regulation_role_explicit_a; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_explicit_abrogation_regulation_role_explicit_a ON uk.base_regulations USING btree (explicit_abrogation_regulation_role, explicit_abrogation_regulation_id);
+
+
+--
 -- Name: base_regulations_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX base_regulations_oid_index ON uk.base_regulations USING btree (oid);
+
+
+--
+-- Name: base_regulations_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_operation_date_index ON uk.base_regulations USING btree (operation_date);
 
 
 --
@@ -10295,6 +10491,27 @@ CREATE INDEX base_regulations_oplog_validity_start_date_index ON uk.base_regulat
 --
 
 CREATE INDEX base_regulations_pk ON uk.base_regulations_oplog USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: base_regulations_regulation_group_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_regulation_group_id_index ON uk.base_regulations USING btree (regulation_group_id);
+
+
+--
+-- Name: base_regulations_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_validity_end_date_index ON uk.base_regulations USING btree (validity_end_date);
+
+
+--
+-- Name: base_regulations_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX base_regulations_validity_start_date_index ON uk.base_regulations USING btree (validity_start_date);
 
 
 --
@@ -11026,10 +11243,38 @@ CREATE INDEX geog_area_pk ON uk.geographical_areas_oplog USING btree (geographic
 
 
 --
+-- Name: geographical_area_description_periods_geographical_area_descrip; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_geographical_area_descrip ON uk.geographical_area_description_periods USING btree (geographical_area_description_period_sid, geographical_area_sid);
+
+
+--
 -- Name: geographical_area_description_periods_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX geographical_area_description_periods_oid_index ON uk.geographical_area_description_periods USING btree (oid);
+
+
+--
+-- Name: geographical_area_description_periods_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_description_periods_operation_date_index ON uk.geographical_area_description_periods USING btree (operation_date);
+
+
+--
+-- Name: geographical_area_descriptions_geographical_area_description_pe; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_descriptions_geographical_area_description_pe ON uk.geographical_area_descriptions USING btree (geographical_area_description_period_sid, geographical_area_sid);
+
+
+--
+-- Name: geographical_area_descriptions_language_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_descriptions_language_id_index ON uk.geographical_area_descriptions USING btree (language_id);
 
 
 --
@@ -11040,6 +11285,20 @@ CREATE UNIQUE INDEX geographical_area_descriptions_oid_index ON uk.geographical_
 
 
 --
+-- Name: geographical_area_descriptions_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_descriptions_operation_date_index ON uk.geographical_area_descriptions USING btree (operation_date);
+
+
+--
+-- Name: geographical_area_memberships_geographical_area_sid_geographica; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_memberships_geographical_area_sid_geographica ON uk.geographical_area_memberships USING btree (geographical_area_sid, geographical_area_group_sid, validity_start_date);
+
+
+--
 -- Name: geographical_area_memberships_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11047,10 +11306,45 @@ CREATE UNIQUE INDEX geographical_area_memberships_oid_index ON uk.geographical_a
 
 
 --
+-- Name: geographical_area_memberships_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_area_memberships_operation_date_index ON uk.geographical_area_memberships USING btree (operation_date);
+
+
+--
+-- Name: geographical_areas_geographical_area_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_geographical_area_id_index ON uk.geographical_areas USING btree (geographical_area_id);
+
+
+--
+-- Name: geographical_areas_geographical_area_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_geographical_area_sid_index ON uk.geographical_areas USING btree (geographical_area_sid);
+
+
+--
 -- Name: geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX geographical_areas_oid_index ON uk.geographical_areas USING btree (oid);
+
+
+--
+-- Name: geographical_areas_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_operation_date_index ON uk.geographical_areas USING btree (operation_date);
+
+
+--
+-- Name: geographical_areas_parent_geographical_area_group_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX geographical_areas_parent_geographical_area_group_sid_index ON uk.geographical_areas USING btree (parent_geographical_area_group_sid);
 
 
 --
@@ -11894,10 +12188,31 @@ CREATE INDEX measure_conditions_oplog_certificate_type_code_index ON uk.measure_
 
 
 --
+-- Name: measure_excluded_geographical_areas_geographical_area_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_geographical_area_sid_index ON uk.measure_excluded_geographical_areas USING btree (geographical_area_sid);
+
+
+--
+-- Name: measure_excluded_geographical_areas_measure_sid_excluded_geogra; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_measure_sid_excluded_geogra ON uk.measure_excluded_geographical_areas USING btree (measure_sid, excluded_geographical_area, geographical_area_sid);
+
+
+--
 -- Name: measure_excluded_geographical_areas_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX measure_excluded_geographical_areas_oid_index ON uk.measure_excluded_geographical_areas USING btree (oid);
+
+
+--
+-- Name: measure_excluded_geographical_areas_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measure_excluded_geographical_areas_operation_date_index ON uk.measure_excluded_geographical_areas USING btree (operation_date);
 
 
 --
@@ -11929,10 +12244,38 @@ CREATE INDEX measurement_unit_qualifier_code ON uk.measure_condition_components_
 
 
 --
+-- Name: measures_additional_code_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_additional_code_id_index ON uk.measures USING btree (additional_code_id);
+
+
+--
+-- Name: measures_additional_code_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_additional_code_sid_index ON uk.measures USING btree (additional_code_sid);
+
+
+--
+-- Name: measures_additional_code_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_additional_code_type_id_index ON uk.measures USING btree (additional_code_type_id);
+
+
+--
 -- Name: measures_export_refund_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE INDEX measures_export_refund_nomenclature_sid_index ON uk.measures_oplog USING btree (export_refund_nomenclature_sid);
+
+
+--
+-- Name: measures_geographical_area_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_geographical_area_sid_index ON uk.measures USING btree (geographical_area_sid);
 
 
 --
@@ -11943,10 +12286,59 @@ CREATE INDEX measures_goods_nomenclature_item_id_index ON uk.measures_oplog USIN
 
 
 --
+-- Name: measures_goods_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_goods_nomenclature_sid_index ON uk.measures USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: measures_justification_regulation_role_justification_regulation; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_justification_regulation_role_justification_regulation ON uk.measures USING btree (justification_regulation_role, justification_regulation_id);
+
+
+--
+-- Name: measures_measure_generating_regulation_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_generating_regulation_id_index ON uk.measures USING btree (measure_generating_regulation_id);
+
+
+--
+-- Name: measures_measure_generating_regulation_role_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_generating_regulation_role_index ON uk.measures USING btree (measure_generating_regulation_role);
+
+
+--
+-- Name: measures_measure_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_sid_index ON uk.measures USING btree (measure_sid);
+
+
+--
+-- Name: measures_measure_type_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_measure_type_id_index ON uk.measures USING btree (measure_type_id);
+
+
+--
 -- Name: measures_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX measures_oid_index ON uk.measures USING btree (oid);
+
+
+--
+-- Name: measures_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_operation_date_index ON uk.measures USING btree (operation_date);
 
 
 --
@@ -11989,6 +12381,41 @@ CREATE INDEX measures_oplog_validity_end_date_index ON uk.measures_oplog USING b
 --
 
 CREATE INDEX measures_oplog_validity_start_date_index ON uk.measures_oplog USING btree (validity_start_date);
+
+
+--
+-- Name: measures_ordernumber_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_ordernumber_validity_start_date_index ON uk.measures USING btree (ordernumber, validity_start_date);
+
+
+--
+-- Name: measures_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_validity_end_date_index ON uk.measures USING btree (validity_end_date);
+
+
+--
+-- Name: measures_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_validity_start_date_index ON uk.measures USING btree (validity_start_date);
+
+
+--
+-- Name: measures_view_export_refund_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_view_export_refund_nomenclature_sid_index ON uk.measures USING btree (export_refund_nomenclature_sid);
+
+
+--
+-- Name: measures_view_goods_nomenclature_item_id_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX measures_view_goods_nomenclature_item_id_index ON uk.measures USING btree (goods_nomenclature_item_id);
 
 
 --
@@ -12104,10 +12531,59 @@ CREATE INDEX mod_reg_pk ON uk.modification_regulations_oplog USING btree (modifi
 
 
 --
+-- Name: modification_regulations_approved_flag_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_approved_flag_index ON uk.modification_regulations USING btree (approved_flag);
+
+
+--
+-- Name: modification_regulations_base_regulation_id_base_regulation_rol; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_base_regulation_id_base_regulation_rol ON uk.modification_regulations USING btree (base_regulation_id, base_regulation_role);
+
+
+--
+-- Name: modification_regulations_complete_abrogation_regulation_role_co; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_complete_abrogation_regulation_role_co ON uk.modification_regulations USING btree (complete_abrogation_regulation_role, complete_abrogation_regulation_id);
+
+
+--
+-- Name: modification_regulations_effective_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_effective_end_date_index ON uk.modification_regulations USING btree (effective_end_date);
+
+
+--
+-- Name: modification_regulations_explicit_abrogation_regulation_role_ex; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_explicit_abrogation_regulation_role_ex ON uk.modification_regulations USING btree (explicit_abrogation_regulation_role, explicit_abrogation_regulation_id);
+
+
+--
+-- Name: modification_regulations_modification_regulation_id_modificatio; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_modification_regulation_id_modificatio ON uk.modification_regulations USING btree (modification_regulation_id, modification_regulation_role);
+
+
+--
 -- Name: modification_regulations_oid_index; Type: INDEX; Schema: uk; Owner: -
 --
 
 CREATE UNIQUE INDEX modification_regulations_oid_index ON uk.modification_regulations USING btree (oid);
+
+
+--
+-- Name: modification_regulations_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_operation_date_index ON uk.modification_regulations USING btree (operation_date);
 
 
 --
@@ -12136,6 +12612,20 @@ CREATE INDEX modification_regulations_oplog_validity_end_date_index ON uk.modifi
 --
 
 CREATE INDEX modification_regulations_oplog_validity_start_date_index ON uk.modification_regulations_oplog USING btree (validity_start_date);
+
+
+--
+-- Name: modification_regulations_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_validity_end_date_index ON uk.modification_regulations USING btree (validity_end_date);
+
+
+--
+-- Name: modification_regulations_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX modification_regulations_validity_start_date_index ON uk.modification_regulations USING btree (validity_start_date);
 
 
 --
@@ -13072,9 +13562,10 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250611135620_add_created
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250612150328_allow_null_external_id_on_users.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250617113942_add_search_suggestion_indexes.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250613170053_add_geographical_area_materialized_views.rb');
-INSERT INTO "schema_migrations" ("filename") VALUES ('20250619131935_add_base_geographical_area_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250605154715_create_live_issues.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250609143944_add_suggested_action_to_live_issues.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250619131935_add_base_geographical_area_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250620150030_add_geographical_area_materialized_views_fix.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250623123926_add_additional_codes_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250625101149_add_measure_and_regulation_materialized_views.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250701123907_add_materialized_view_indexes.rb');
