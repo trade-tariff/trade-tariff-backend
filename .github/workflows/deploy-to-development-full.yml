@@ -26,8 +26,6 @@ jobs:
         [
           {
             "name": "tariff-backend",
-            "repo": "trade-tariff/trade-tariff-backend",
-            "ref": "${{ github.head_ref || github.ref }}",
             "service-names": ["backend-uk", "backend-xi", "worker-uk", "worker-xi"]
           },
           {
