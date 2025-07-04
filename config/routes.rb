@@ -13,6 +13,11 @@ Rails.application.routes.draw do
   # Sidekiq web interface
   draw(:sidekiq)
 
+  # Accept header versioned routes
+  mount V2Api => '/api', as: 'v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0)
+  mount V2Api => '/xi/api', as: 'xi_v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0) if TradeTariffBackend.xi?
+  mount V2Api => '/uk/api', as: 'uk_v2_versioned_api', constraints: VersionedAcceptHeader.new(version: 2.0) if TradeTariffBackend.uk?
+
   # Admin routes
   mount AdminApi => '/xi', as: 'xi_admin_api' if TradeTariffBackend.xi?
   mount AdminApi => '/uk', as: 'uk_admin_api' if TradeTariffBackend.uk?
