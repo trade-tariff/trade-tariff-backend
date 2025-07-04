@@ -10,7 +10,7 @@ class GoodsNomenclature < Sequel::Model
 
   plugin :time_machine
 
-  plugin :oplog, primary_key: :goods_nomenclature_sid
+  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
   plugin :nullable
   plugin :active_model
 

@@ -290,7 +290,9 @@ RSpec.describe GreenLanes::CategoryAssessment do
       let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
 
       it { is_expected.to include tariff_measure }
-      it { is_expected.not_to include green_lanes_measure }
+      it_with_refresh_materialized_view 'not return gl measures' do
+        expect(category_assessment.combined_measures).not_to include green_lanes_measure
+      end
     end
   end
 
@@ -307,14 +309,18 @@ RSpec.describe GreenLanes::CategoryAssessment do
 
     it { is_expected.to include gl_measure }
 
+    # rubocop:disable RSpec::EmptyExampleGroup
     context 'with expired goods_nomenclature' do
       before do
         gl_measure.goods_nomenclature.update validity_end_date: 2.days.ago
         assessment.reload
       end
 
-      it { is_expected.not_to include gl_measure }
+      it_with_refresh_materialized_view 'not return gl measures' do
+        expect(assessment.active_green_lanes_measures).not_to include gl_measure
+      end
     end
+    # rubocop:enable RSpec::EmptyExampleGroup
   end
 
   describe '#latest' do

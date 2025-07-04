@@ -112,6 +112,7 @@ RSpec.describe FullChemical do
         it { is_expected.to eq([expected_chemical]) }
       end
 
+      # rubocop:disable RSpec::EmptyExampleGroup
       context 'when an expired goods nomenclature is filtered' do
         subject(:full_chemicals) do
           TimeMachine.now { described_class.with_filter(goods_nomenclature_item_id: '0409000002') }
@@ -124,8 +125,11 @@ RSpec.describe FullChemical do
           full_chemical.reload
         end
 
-        it { is_expected.to be_empty }
+        it_with_refresh_materialized_view 'not return full_chemicals' do
+          expect(full_chemicals).to be_empty
+        end
       end
+      # rubocop:enable RSpec::EmptyExampleGroup
 
       context 'when no filters are provided' do
         let(:filters) { {} }

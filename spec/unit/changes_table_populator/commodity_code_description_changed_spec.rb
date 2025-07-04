@@ -4,7 +4,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeDescriptionChanged do
   describe '#populate' do
     context 'when the database is empty' do
       before do
-        db[:goods_nomenclatures].delete
+        db[:goods_nomenclatures_oplog].delete
       end
 
       it 'doesn\'t extract changes' do

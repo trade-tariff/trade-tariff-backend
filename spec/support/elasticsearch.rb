@@ -2,6 +2,7 @@ RSpec.configure do |config|
   config.before(:suite) do
     connection_attempts ||= 0
 
+    GoodsNomenclature.refresh!(concurrently: false)
     TradeTariffBackend.search_client.reindex_all
   rescue Faraday::ConnectionFailed => e
     connection_attempts += 1

@@ -1,5 +1,5 @@
 class Chapter < GoodsNomenclature
-  plugin :oplog, primary_key: :goods_nomenclature_sid
+  plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
   plugin :elasticsearch
 
   set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id LIKE ?', '__00000000')

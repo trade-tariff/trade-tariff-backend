@@ -146,10 +146,17 @@ module Sequel
         #       The original values are returned to avoid the default Sequel::Model#refresh handling of falsey values as an error
         #       but also preserve some of the instrumentation of oplog inserts we store for the admin UI.
         def _refresh_get(dataset)
-          return super unless self.class.materialized?
+          return super unless self.class.materialized? ||
+                              (self.class.superclass.respond_to?(:materialized?) && self.class.superclass.materialized?)
+
           return values unless Rails.env.test?
 
-          self.class.refresh!(concurrently: false)
+          if self.class.materialized?
+            self.class.refresh!(concurrently: false)
+          else
+            self.class.superclass.refresh!(concurrently: false)
+          end
+
           super
         end
       end
