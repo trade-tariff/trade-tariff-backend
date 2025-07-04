@@ -34,7 +34,7 @@ unless RSpec.configuration.filter.opposite.rules[:roo_data]
           .select { |c| c.file? && c.extname == '.md' }
           .each do |file|
             context "for #{country_folder.basename}/#{file.basename}" do
-              subject(:markdown) { IO.read(file) }
+              subject(:markdown) { File.read(file) }
 
               it 'has parseable numbered lists' do
                 # Empty list entries are invalid markdown.
