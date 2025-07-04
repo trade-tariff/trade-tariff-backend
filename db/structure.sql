@@ -4004,10 +4004,10 @@ CREATE TABLE uk.goods_nomenclatures_oplog (
 
 
 --
--- Name: goods_nomenclatures; Type: VIEW; Schema: uk; Owner: -
+-- Name: goods_nomenclatures; Type: MATERIALIZED VIEW; Schema: uk; Owner: -
 --
 
-CREATE VIEW uk.goods_nomenclatures AS
+CREATE MATERIALIZED VIEW uk.goods_nomenclatures AS
  SELECT goods_nomenclatures1.goods_nomenclature_sid,
     goods_nomenclatures1.goods_nomenclature_item_id,
     goods_nomenclatures1.producline_suffix,
@@ -4027,7 +4027,8 @@ CREATE VIEW uk.goods_nomenclatures AS
    FROM uk.goods_nomenclatures_oplog goods_nomenclatures1
   WHERE ((goods_nomenclatures1.oid IN ( SELECT max(goods_nomenclatures2.oid) AS max
            FROM uk.goods_nomenclatures_oplog goods_nomenclatures2
-          WHERE (goods_nomenclatures1.goods_nomenclature_sid = goods_nomenclatures2.goods_nomenclature_sid))) AND ((goods_nomenclatures1.operation)::text <> 'D'::text));
+          WHERE (goods_nomenclatures1.goods_nomenclature_sid = goods_nomenclatures2.goods_nomenclature_sid))) AND ((goods_nomenclatures1.operation)::text <> 'D'::text))
+  WITH NO DATA;
 
 
 --
@@ -11523,6 +11524,34 @@ CREATE INDEX goods_nomenclature_validity_dates ON uk.goods_nomenclature_indents_
 
 
 --
+-- Name: goods_nomenclatures_goods_nomenclature_item_id_producline_suffi; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_goods_nomenclature_item_id_producline_suffi ON uk.goods_nomenclatures USING btree (goods_nomenclature_item_id, producline_suffix);
+
+
+--
+-- Name: goods_nomenclatures_goods_nomenclature_sid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_goods_nomenclature_sid_index ON uk.goods_nomenclatures USING btree (goods_nomenclature_sid);
+
+
+--
+-- Name: goods_nomenclatures_oid_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE UNIQUE INDEX goods_nomenclatures_oid_index ON uk.goods_nomenclatures USING btree (oid);
+
+
+--
+-- Name: goods_nomenclatures_operation_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_operation_date_index ON uk.goods_nomenclatures USING btree (operation_date);
+
+
+--
 -- Name: goods_nomenclatures_oplog_path_index; Type: INDEX; Schema: uk; Owner: -
 --
 
@@ -11541,6 +11570,27 @@ CREATE INDEX goods_nomenclatures_oplog_validity_end_date_index ON uk.goods_nomen
 --
 
 CREATE INDEX goods_nomenclatures_oplog_validity_start_date_index ON uk.goods_nomenclatures_oplog USING btree (validity_start_date);
+
+
+--
+-- Name: goods_nomenclatures_path_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_path_index ON uk.goods_nomenclatures USING gin (path);
+
+
+--
+-- Name: goods_nomenclatures_validity_end_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_validity_end_date_index ON uk.goods_nomenclatures USING btree (validity_end_date);
+
+
+--
+-- Name: goods_nomenclatures_validity_start_date_index; Type: INDEX; Schema: uk; Owner: -
+--
+
+CREATE INDEX goods_nomenclatures_validity_start_date_index ON uk.goods_nomenclatures USING btree (validity_start_date);
 
 
 --
@@ -13569,3 +13619,4 @@ INSERT INTO "schema_migrations" ("filename") VALUES ('20250620150030_add_geograp
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250623123926_add_additional_codes_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250625101149_add_measure_and_regulation_materialized_views.rb');
 INSERT INTO "schema_migrations" ("filename") VALUES ('20250701123907_add_materialized_view_indexes.rb');
+INSERT INTO "schema_migrations" ("filename") VALUES ('20250702142253_add_goods_nomenclatures_materialized_views.rb');

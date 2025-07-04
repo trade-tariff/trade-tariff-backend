@@ -16,6 +16,8 @@ RSpec.describe Reporting::Basic do
           description: 'Live horses, asses, mules and hinnies',
           goods_nomenclature_item_id: '0100000002',
         )
+        refresh_materialized_view
+
         described_class.generate
       end
 

@@ -2,7 +2,7 @@ module TenDigitGoodsNomenclature
   extend ActiveSupport::Concern
 
   included do
-    plugin :oplog, primary_key: :goods_nomenclature_sid
+    plugin :oplog, primary_key: :goods_nomenclature_sid, materialized: true
 
     set_dataset filter('goods_nomenclatures.goods_nomenclature_item_id NOT LIKE ?', '____000000')
       .order(Sequel.asc(:goods_nomenclatures__goods_nomenclature_item_id),
