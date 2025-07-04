@@ -70,7 +70,7 @@ Sequel.migration do
       add_index :validity_end_date
       add_index :validity_start_date
       add_index :goods_nomenclature_sid
-      add_index [:goods_nomenclature_item_id, :producline_suffix]
+      add_index %i[goods_nomenclature_item_id producline_suffix]
       add_index :path, type: :gin
     end
 
@@ -141,7 +141,7 @@ Sequel.migration do
         nomenclatures.validity_end_date,
         indents.oid,
         overrides.depth
-      EOVIEW
+    EOVIEW
 
     alter_table :goods_nomenclature_tree_nodes do
       add_index :oid, unique: true # needed for concurrent view refresh

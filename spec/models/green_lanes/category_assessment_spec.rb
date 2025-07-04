@@ -290,6 +290,7 @@ RSpec.describe GreenLanes::CategoryAssessment do
       let(:green_lanes_measure) { create :green_lanes_measure, category_assessment: }
 
       it { is_expected.to include tariff_measure }
+
       it_with_refresh_materialized_view 'not return gl measures' do
         expect(category_assessment.combined_measures).not_to include green_lanes_measure
       end

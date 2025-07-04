@@ -147,7 +147,7 @@ module Sequel
         #       but also preserve some of the instrumentation of oplog inserts we store for the admin UI.
         def _refresh_get(dataset)
           return super unless self.class.materialized? ||
-                              (self.class.superclass.respond_to?(:materialized?) && self.class.superclass.materialized?)
+            (self.class.superclass.respond_to?(:materialized?) && self.class.superclass.materialized?)
 
           return values unless Rails.env.test?
 
