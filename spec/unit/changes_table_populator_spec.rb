@@ -6,7 +6,7 @@ RSpec.describe ChangesTablePopulator do
     context 'with an empty database' do
       before do
         db[:measures_oplog].delete
-        db[:goods_nomenclatures].delete
+        db[:goods_nomenclatures_oplog].delete
       end
 
       it_with_refresh_materialized_view 'doesn\'t extract changes' do
@@ -20,7 +20,7 @@ RSpec.describe ChangesTablePopulator do
       before do
         db[:measures_oplog].delete
         Measure.refresh!
-        db[:goods_nomenclatures].delete
+        db[:goods_nomenclatures_oplog].delete
       end
 
       it_with_refresh_materialized_view 'doesn\'t extract changes' do
@@ -33,7 +33,7 @@ RSpec.describe ChangesTablePopulator do
     context 'with an empty database' do
       before do
         db[:measures_oplog].delete
-        db[:goods_nomenclatures].delete
+        db[:goods_nomenclatures_oplog].delete
       end
 
       it_with_refresh_materialized_view 'doesn\'t change the changes' do

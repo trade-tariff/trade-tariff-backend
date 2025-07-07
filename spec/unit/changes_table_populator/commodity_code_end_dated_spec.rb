@@ -4,7 +4,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
   describe '#populate' do
     context 'when the database is empty' do
       before do
-        db[:goods_nomenclatures].delete
+        db[:goods_nomenclatures_oplog].delete
       end
 
       it 'doesn\'t extract changes' do
@@ -66,6 +66,7 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
       end
     end
 
+    # rubocop:disable RSpec::EmptyExampleGroup
     context 'when there are commodities with children that ended on the previous day' do
       before do
         commodity = create :commodity, :with_heading
@@ -75,19 +76,20 @@ RSpec.describe ChangesTablePopulator::CommodityCodeEndDated do
         heading.save
       end
 
-      it 'extracts a change' do
+      it_with_refresh_materialized_view 'extracts a change' do
         expect { described_class.populate }.to change(Change, :count).by(1)
       end
 
-      it 'extracts the correct productline suffix' do
+      it_with_refresh_materialized_view 'extracts the correct productline suffix' do
         described_class.populate
         expect(db[:changes].first[:productline_suffix]).to eq('80')
       end
 
-      it 'flags it as not end line' do
+      it_with_refresh_materialized_view 'flags it as not end line' do
         described_class.populate
         expect(db[:changes].first[:end_line]).to be false
       end
     end
+    # rubocop:enable RSpec::EmptyExampleGroup
   end
 end
