@@ -38,12 +38,12 @@
       cron: "0 5 * * *"
       description: "Runs ETL of CDS files and populates indexes"
       class: CdsUpdatesSynchronizerWorker
-      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     XIUpdatesSynchronizerWorker:
       cron: "0 0 * * *"
       description: "Runs ETL of Taric files and populates indexes"
       class: TaricUpdatesSynchronizerWorker
-      status: <%= ENV.fetch('SERVICE', 'uk') == 'xi' ? 'enabled' : 'disabled' %>
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     HealthcheckWorker:
       every: 30.minutes
       description: Trigger the health check
@@ -69,8 +69,7 @@
     GreenLanesUpdatesWorker:
       cron: "0 4 * * *"
       description: "Runs green lanes related data updates worker that will create new category assessments and send notifications"
-      class: GreenLanesUpdatesWorker
-      status: <%= ENV.fetch('SERVICE', 'uk') == 'xi' ? 'enabled' : 'disabled' %>
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'xi' %>
     CheckDifferencesReportHasRun:
       cron: "0 1 * * 2"  # 1am every Tuesday
       description: "Checks if the differences report has run"
@@ -82,10 +81,8 @@
     RemoveFailedSubscribersWorker:
       cron: "0 3 * * 0"  # 3am every Sunday
       description: "Removes failed myott subscribers"
-      class: RemoveFailedSubscribersWorker
-      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
     ActionLogReportWorker:
       cron: "0 6 * * *" # 6am every day
       description: Generates and emails a CSV report of the previous day's user action logs
-      class: ActionLogReportWorker
-      status: <%= ENV.fetch('SERVICE', 'uk') == 'uk' ? 'enabled' : 'disabled' %>
+      enabled: <%= ENV.fetch('SERVICE', 'uk') == 'uk' %>
